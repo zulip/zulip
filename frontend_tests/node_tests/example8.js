@@ -67,7 +67,7 @@ people.add_active_user(kitty);
 */
 run_test("typing_events.render_notifications_for_narrow", ({override_rewire, mock_template}) => {
     // All typists are rendered in `#typing_notifications`.
-    const typing_notifications = $("#typing_notifications");
+    const $typing_notifications = $("#typing_notifications");
 
     const two_typing_users_ids = [anna.user_id, vronsky.user_id];
     const two_typing_users = [anna, vronsky];
@@ -107,7 +107,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override_rewire, moc
     typing_events.render_notifications_for_narrow();
     // Make sure #typing_notifications's html content is set to the rendered template
     // which we mocked and gave a custom return value.
-    assert.equal(typing_notifications.html(), two_typing_users_rendered_html);
+    assert.equal($typing_notifications.html(), two_typing_users_rendered_html);
 
     // Now we'll see how setting the second argument to `true`
     // can be helpful in testing conditionals inside the template.
@@ -118,9 +118,9 @@ run_test("typing_events.render_notifications_for_narrow", ({override_rewire, moc
     // Since we only have two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'
     typing_events.render_notifications_for_narrow();
-    assert.ok(typing_notifications.html().includes(`${anna.full_name} is typing…`));
-    assert.ok(typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
-    assert.ok(!typing_notifications.html().includes("Several people are typing…"));
+    assert.ok($typing_notifications.html().includes(`${anna.full_name} is typing…`));
+    assert.ok($typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
+    assert.ok(!$typing_notifications.html().includes("Several people are typing…"));
 
     // Change to having four typists and verify the rendered html has
     // 'Several people are typing…' but not the list of users.
@@ -128,9 +128,9 @@ run_test("typing_events.render_notifications_for_narrow", ({override_rewire, moc
     override_rewire(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
 
     typing_events.render_notifications_for_narrow();
-    assert.ok(typing_notifications.html().includes("Several people are typing…"));
-    assert.ok(!typing_notifications.html().includes(`${anna.full_name} is typing…`));
-    assert.ok(!typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
-    assert.ok(!typing_notifications.html().includes(`${levin.full_name} is typing…`));
-    assert.ok(!typing_notifications.html().includes(`${kitty.full_name} is typing…`));
+    assert.ok($typing_notifications.html().includes("Several people are typing…"));
+    assert.ok(!$typing_notifications.html().includes(`${anna.full_name} is typing…`));
+    assert.ok(!$typing_notifications.html().includes(`${vronsky.full_name} is typing…`));
+    assert.ok(!$typing_notifications.html().includes(`${levin.full_name} is typing…`));
+    assert.ok(!$typing_notifications.html().includes(`${kitty.full_name} is typing…`));
 });

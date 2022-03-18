@@ -52,25 +52,25 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.17.6',
+      'version' => '1.18',
       'sha256' => {
-        'amd64'   => '231654bbf2dab3d86c1619ce799e77b03d96f9b50770297c8f4dff8836fc8ca2',
-        'aarch64' => '82c1a033cce9bc1b47073fd6285233133040f0378439f3c4659fe77cc534622a',
+        'amd64'   => 'e85278e98f57cdb150fe8409e6e5df5343ecb13cebf03a5d5ff12bd55a80264f',
+        'aarch64' => '7ac7b396a691e588c5fb57687759e6c4db84a2a3bbebb0765f4b38e5b1c5b00e',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '96dc8b043d3f22dcb65a9c2ccf22e3794e2da3a1',
+      'version' => 'dbb816b62b790432414db7cafbb4583d5092c601',
       # Source code, so arch-invariant sha256
-      'sha256' => 'c2b8080999c3ba9e2b509f8d4cf300922557e7c070fb16ac7d1ea220416f8660',
+      'sha256' => '3c02676af074bf7c18a29343e0824cb87da4837bf7bbe2837ac81c254f813c32',
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version' => '1.1.1-rc',
+      'version' => '1.1.3-rc-with-build',
       'sha256' => {
-        'amd64' => 'eed4de63c2657add6e0fe70f8c0fbe62a4a54405b9bfc801b1912b6c4f2c7107',
+        'amd64' => '109a80f4c019e0f1d52602e90d2a181eb844494ece2d099a149cf9204b71113e',
         # No aarch64 builds
       },
     },
@@ -80,10 +80,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.3.6',
+      'version' => '8.4.3',
       'sha256' => {
-        'amd64'   => 'f2047de7ec42243ddedb95b16e6b5704cb12ec775b07ebf0adc67db00a52c459',
-        'aarch64' => 'd7dfdc1d08499f19b84b51f878d5380ba293468cf753420ce25caf423fb7231a',
+        'amd64'   => '97718f494722f35d8a6c728c5c7b52e0e96f632b8a94139e4022ed2efbe48732',
+        'aarch64' => '9f03bde847c50d55f3bd4a443db2c104fc164baa4c83cba8ad2c9c5e2c77fe24',
       },
     },
 
@@ -98,10 +98,10 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.33.1',
+      'version' => '2.34.0',
       'sha256' => {
-        'amd64'   => '55de29727fc4d3977d3400c54fa222ebb52755bd0201936f1e1052fea6f2b44b',
-        'aarch64' => '21d89df7a98882a1a872bd3210aeaac3915a7f7be9f2ad28c986c80ad64ee77d',
+        'amd64'   => '9ec560940bf53361dd9d3a867d51ceb96f3854ae12f5e532b7d3f60c27f364d0',
+        'aarch64' => 'f00255293a801b34003e0ad1d34bb89827bbfd1bba286c39575884aac84a6058',
       },
     },
 

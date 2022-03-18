@@ -8,8 +8,8 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
-let window_stub;
-set_global("to_$", () => window_stub);
+let $window_stub;
+set_global("to_$", () => $window_stub);
 
 mock_esm("../../static/js/search", {
     update_button_visibility: () => {},
@@ -165,7 +165,7 @@ function test_helper({override, override_rewire, change_tab}) {
 }
 
 run_test("hash_interactions", ({override, override_rewire}) => {
-    window_stub = $.create("window-stub");
+    $window_stub = $.create("window-stub");
     user_settings.default_view = "recent_topics";
 
     override_rewire(recent_topics_util, "is_visible", () => false);
@@ -189,7 +189,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#all_messages";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -199,7 +199,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     ]);
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -211,7 +211,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#narrow/stream/Denmark";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -225,7 +225,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#narrow";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -240,7 +240,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#narrow/foo.foo";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -251,7 +251,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#streams/whatever";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [stream_settings_ui, "launch"],
@@ -261,7 +261,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#reload:send_after_reload=0...";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([]);
     // If it's reload hash it shouldn't show the default view.
     assert.equal(recent_topics_ui_shown, false);
@@ -269,25 +269,25 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#keyboard-shortcuts/whatever";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: keyboard-shortcuts"]);
 
     window.location.hash = "#message-formatting/whatever";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: message-formatting"]);
 
     window.location.hash = "#search-operators/whatever";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: search-operators"]);
 
     window.location.hash = "#drafts";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [drafts, "launch"],
@@ -296,7 +296,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#settings/alert-words";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [settings, "launch"],
@@ -305,7 +305,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     window.location.hash = "#organization/user-list-admin";
 
     helper.clear_events();
-    window_stub.trigger("hashchange");
+    $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [admin, "launch"],

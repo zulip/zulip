@@ -101,49 +101,49 @@ export function initialize() {
         initialize_long_tap();
     }
 
-    function is_clickable_message_element(target) {
+    function is_clickable_message_element($target) {
         // This function defines all the elements within a message
         // body that have UI behavior other than starting a reply.
 
         // Links should be handled by the browser.
-        if (target.closest("a").length > 0) {
+        if ($target.closest("a").length > 0) {
             return true;
         }
 
         // Forms for message editing contain input elements
-        if (target.is("textarea") || target.is("input")) {
+        if ($target.is("textarea") || $target.is("input")) {
             return true;
         }
 
         // Widget for adjusting the height of a message.
-        if (target.is("div.message_length_controller")) {
+        if ($target.is("div.message_length_controller")) {
             return true;
         }
 
         // Inline image and twitter previews.
-        if (target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
+        if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
             return true;
         }
 
         // UI elements for triggering message editing or viewing edit history.
-        if (target.is("i.edit_content_button") || target.is(".message_edit_notice")) {
+        if ($target.is("i.edit_content_button") || $target.is(".message_edit_notice")) {
             return true;
         }
 
         // For spoilers, allow clicking either the header or elements within it
-        if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
+        if ($target.is(".spoiler-header") || $target.parents(".spoiler-header").length > 0) {
             return true;
         }
 
         // Ideally, this should be done via ClipboardJS, but it doesn't support
         // feature of stopPropagation once clicked.
         // See https://github.com/zenorocha/clipboard.js/pull/475
-        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
+        if ($target.is(".copy_codeblock") || $target.parents(".copy_codeblock").length > 0) {
             return true;
         }
 
         // Don't select message on clicking message control buttons.
-        if (target.parents(".message_controls").length > 0) {
+        if ($target.parents(".message_controls").length > 0) {
             return true;
         }
 
@@ -169,8 +169,8 @@ export function initialize() {
             return;
         }
 
-        const row = $(this).closest(".message_row");
-        const id = rows.id(row);
+        const $row = $(this).closest(".message_row");
+        const id = rows.id($row);
 
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
@@ -261,45 +261,45 @@ export function initialize() {
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
-        const row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
-        message_lists.current.select_id(rows.id(row));
-        message_edit.start(row);
+        const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        message_lists.current.select_id(rows.id($row));
+        message_edit.start($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.start_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.save_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.save_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.end_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.end_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.save_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.save_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.end_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.end_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -310,8 +310,8 @@ export function initialize() {
     });
     $(".message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
-        const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
-        $(send_status).stop(true).fadeOut(200);
+        const $send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
+        $($send_status).stop(true).fadeOut(200);
     });
     $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
@@ -322,44 +322,44 @@ export function initialize() {
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-        const row = rows.get_closest_row(e.target);
-        const $msg_edit_content = row.find(".message_edit_content");
+        const $row = rows.get_closest_row(e.target);
+        const $msg_edit_content = $row.find(".message_edit_content");
         const content = $msg_edit_content.val();
         $msg_edit_content.hide();
-        row.find(".markdown_preview").hide();
-        row.find(".undo_markdown_preview").show();
-        row.find(".preview_message_area").show();
+        $row.find(".markdown_preview").hide();
+        $row.find(".undo_markdown_preview").show();
+        $row.find(".preview_message_area").show();
 
         compose.render_and_show_preview(
-            row.find(".markdown_preview_spinner"),
-            row.find(".preview_content"),
+            $row.find(".markdown_preview_spinner"),
+            $row.find(".preview_content"),
             content,
         );
     });
 
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-        const row = rows.get_closest_row(e.target);
-        row.find(".message_edit_content").show();
-        row.find(".undo_markdown_preview").hide();
-        row.find(".preview_message_area").hide();
-        row.find(".preview_content").empty();
-        row.find(".markdown_preview").show();
+        const $row = rows.get_closest_row(e.target);
+        $row.find(".message_edit_content").show();
+        $row.find(".undo_markdown_preview").hide();
+        $row.find(".preview_message_area").hide();
+        $row.find(".preview_content").empty();
+        $row.find(".markdown_preview").show();
     });
 
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
-        const recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row(recipient_row);
+        const $recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
 
     $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
         e.stopPropagation();
-        const recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row(recipient_row);
+        const $recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
@@ -449,9 +449,9 @@ export function initialize() {
         e.stopPropagation();
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
-        const topic_row = $(e.target).closest("tr");
-        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
-        const topic_row_index = topic_row.index();
+        const $topic_row = $(e.target).closest("tr");
+        const topic_key = $topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_row_index = $topic_row.index();
         recent_topics_ui.focus_clicked_element(
             topic_row_index,
             recent_topics_ui.COLUMNS.topic,
@@ -479,8 +479,8 @@ export function initialize() {
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
-        const group = rows.get_closest_group(narrow_link_elem);
-        const msg_id = rows.id_for_recipient_row(group);
+        const $group = rows.get_closest_group(narrow_link_elem);
+        const msg_id = rows.id_for_recipient_row($group);
 
         const nearest = message_lists.current.get(msg_id);
         const selected = message_lists.current.selected_message();
@@ -535,9 +535,9 @@ export function initialize() {
     $("#user_presences")
         .expectOne()
         .on("click", ".selectable_sidebar_block", (e) => {
-            const li = $(e.target).parents("li");
+            const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({li});
+            activity.narrow_for_user({$li});
 
             e.preventDefault();
             e.stopPropagation();
@@ -545,7 +545,7 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
-    function do_render_buddy_list_tooltip(elem, title_data) {
+    function do_render_buddy_list_tooltip($elem, title_data) {
         let placement = "left";
         let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -553,7 +553,7 @@ export function initialize() {
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy(elem[0], {
+        tippy($elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
@@ -598,22 +598,22 @@ export function initialize() {
     // BUDDY LIST TOOLTIPS
     $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
-        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        const user_id_string = elem.attr("data-user-id");
+        const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = $elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
-        do_render_buddy_list_tooltip(elem.parent(), title_data);
+        do_render_buddy_list_tooltip($elem.parent(), title_data);
     });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
         e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const user_ids_string = elem.attr("data-user-ids-string");
+        const $elem = $(e.currentTarget);
+        const user_ids_string = $elem.attr("data-user-ids-string");
         // This converts from 'true' in the DOM to true.
-        const is_group = JSON.parse(elem.attr("data-is-group"));
+        const is_group = JSON.parse($elem.attr("data-is-group"));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
-        do_render_buddy_list_tooltip(elem, title_data);
+        do_render_buddy_list_tooltip($elem, title_data);
     });
 
     // MISC
@@ -791,7 +791,7 @@ export function initialize() {
 
         overlays.open_overlay({
             name: overlay_name,
-            overlay: $(`#${CSS.escape(overlay_name)}`),
+            $overlay: $(`#${CSS.escape(overlay_name)}`),
             on_close: function () {
                 // close popover
                 $(this).css({display: "block"});

@@ -334,7 +334,7 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 # CACHING CONFIGURATION
 ########################################################################
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
 
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 

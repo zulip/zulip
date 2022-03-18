@@ -89,7 +89,7 @@ run_test("scroll_delta", () => {
 });
 
 run_test("scroll_element_into_container", () => {
-    const container = (function () {
+    const $container = (function () {
         let top = 3;
         return {
             height: () => 100,
@@ -103,21 +103,21 @@ run_test("scroll_element_into_container", () => {
         };
     })();
 
-    const elem1 = {
+    const $elem1 = {
         innerHeight: () => 25,
         position: () => ({
             top: 0,
         }),
     };
-    scroll_util.scroll_element_into_container(elem1, container);
-    assert.equal(container.scrollTop(), 3);
+    scroll_util.scroll_element_into_container($elem1, $container);
+    assert.equal($container.scrollTop(), 3);
 
-    const elem2 = {
+    const $elem2 = {
         innerHeight: () => 15,
         position: () => ({
             top: 250,
         }),
     };
-    scroll_util.scroll_element_into_container(elem2, container);
-    assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
+    scroll_util.scroll_element_into_container($elem2, $container);
+    assert.equal($container.scrollTop(), 250 - 100 + 3 + 15);
 });

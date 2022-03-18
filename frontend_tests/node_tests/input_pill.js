@@ -69,12 +69,12 @@ run_test("basics", ({override_rewire, mock_template}) => {
     blueslip.expect("error", "Pill needs container.");
     input_pill.create(config);
 
-    const pill_input = $.create("pill_input");
-    const container = $.create("container");
-    container.set_find_results(".input", pill_input);
+    const $pill_input = $.create("pill_input");
+    const $container = $.create("container");
+    $container.set_find_results(".input", $pill_input);
 
     blueslip.expect("error", "Pill needs create_item_from_text");
-    config.container = container;
+    config.$container = $container;
     input_pill.create(config);
 
     blueslip.expect("error", "Pill needs get_text_from_item");
@@ -101,9 +101,9 @@ run_test("basics", ({override_rewire, mock_template}) => {
     let inserted_before;
     const expected_html = pill_html("JavaScript", "some_id1", example_img_link, status_emoji_info);
 
-    pill_input.before = (elem) => {
+    $pill_input.before = ($elem) => {
         inserted_before = true;
-        assert.equal(elem.html(), expected_html);
+        assert.equal($elem.html(), expected_html);
     };
 
     widget.appendValidatedData(item);
@@ -134,27 +134,27 @@ function set_up() {
         },
     };
 
-    const pill_input = $.create("pill_input");
+    const $pill_input = $.create("pill_input");
 
-    pill_input[0] = {};
-    pill_input.before = () => {};
+    $pill_input[0] = {};
+    $pill_input.before = () => {};
 
     const create_item_from_text = (text) => items[text];
 
-    const container = $.create("container");
-    container.set_find_results(".input", pill_input);
+    const $container = $.create("container");
+    $container.set_find_results(".input", $pill_input);
 
     const config = {
-        container,
+        $container,
         create_item_from_text,
         get_text_from_item: (item) => item.display_value,
     };
 
     return {
         config,
-        pill_input,
+        $pill_input,
         items,
-        container,
+        $container,
     };
 }
 
@@ -167,16 +167,16 @@ run_test("copy from pill", ({override_rewire, mock_template}) => {
     override_random_id({override_rewire});
     const info = set_up();
     const config = info.config;
-    const container = info.container;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    const copy_handler = container.get_on_handler("copy", ".pill");
+    const copy_handler = $container.get_on_handler("copy", ".pill");
 
     let copied_text;
 
-    const pill_stub = {
+    const $pill_stub = {
         data: (field) => {
             assert.equal(field, "id");
             return "some_id2";
@@ -195,7 +195,7 @@ run_test("copy from pill", ({override_rewire, mock_template}) => {
         preventDefault: noop,
     };
 
-    container.set_find_results(":focus", pill_stub);
+    $container.set_find_results(":focus", $pill_stub);
 
     copy_handler(e);
 
@@ -210,12 +210,12 @@ run_test("paste to input", ({mock_template}) => {
 
     const info = set_up();
     const config = info.config;
-    const container = info.container;
+    const $container = info.$container;
     const items = info.items;
 
     const widget = input_pill.create(config);
 
-    const paste_handler = container.get_on_handler("paste", ".input");
+    const paste_handler = $container.get_on_handler("paste", ".input");
 
     const paste_text = "blue,yellow";
 
@@ -233,7 +233,7 @@ run_test("paste to input", ({mock_template}) => {
 
     document.execCommand = (cmd, _, text) => {
         assert.equal(cmd, "insertText");
-        container.find(".input").text(text);
+        $container.find(".input").text(text);
     };
 
     paste_handler(e);
@@ -257,12 +257,12 @@ run_test("arrows on pills", ({mock_template}) => {
 
     const info = set_up();
     const config = info.config;
-    const container = info.container;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    const key_handler = container.get_on_handler("keydown", ".pill");
+    const key_handler = $container.get_on_handler("keydown", ".pill");
 
     function test_key(c) {
         key_handler({
@@ -273,7 +273,7 @@ run_test("arrows on pills", ({mock_template}) => {
     let prev_focused = false;
     let next_focused = false;
 
-    const pill_stub = {
+    const $pill_stub = {
         prev: () => ({
             trigger: (type) => {
                 if (type === "focus") {
@@ -290,7 +290,7 @@ run_test("arrows on pills", ({mock_template}) => {
         }),
     };
 
-    container.set_find_results(".pill:focus", pill_stub);
+    $container.set_find_results(".pill:focus", $pill_stub);
 
     // We use the same stub to test both arrows, since we don't
     // actually cause any real state changes here.  We stub out
@@ -310,16 +310,16 @@ run_test("left arrow on input", ({mock_template}) => {
 
     const info = set_up();
     const config = info.config;
-    const container = info.container;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
-    const key_handler = container.get_on_handler("keydown", ".input");
+    const key_handler = $container.get_on_handler("keydown", ".input");
 
     let last_pill_focused = false;
 
-    container.set_find_results(".pill", {
+    $container.set_find_results(".pill", {
         last: () => ({
             trigger: (type) => {
                 if (type === "focus") {
@@ -345,17 +345,17 @@ run_test("comma", ({mock_template}) => {
     const info = set_up();
     const config = info.config;
     const items = info.items;
-    const pill_input = info.pill_input;
-    const container = info.container;
+    const $pill_input = info.$pill_input;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const key_handler = container.get_on_handler("keydown", ".input");
+    const key_handler = $container.get_on_handler("keydown", ".input");
 
-    pill_input.text(" yel");
+    $pill_input.text(" yel");
 
     key_handler({
         key: ",",
@@ -364,7 +364,7 @@ run_test("comma", ({mock_template}) => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    pill_input.text(" yellow");
+    $pill_input.text(" yellow");
 
     key_handler({
         key: ",",
@@ -383,14 +383,14 @@ run_test("Enter key with text", ({mock_template}) => {
     const info = set_up();
     const config = info.config;
     const items = info.items;
-    const container = info.container;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
     widget.appendValue("blue,red");
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    const key_handler = container.get_on_handler("keydown", ".input");
+    const key_handler = $container.get_on_handler("keydown", ".input");
 
     key_handler({
         key: "Enter",
@@ -415,13 +415,13 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
     const info = set_up();
 
     const config = info.config;
-    const pill_input = info.pill_input;
+    const $pill_input = info.$pill_input;
     const items = info.items;
-    const container = info.container;
+    const $container = info.$container;
 
     const inserted_html = [];
-    pill_input.before = (elem) => {
-        inserted_html.push(elem.html());
+    $pill_input.before = ($elem) => {
+        inserted_html.push($elem.html());
     };
 
     const widget = input_pill.create(config);
@@ -450,11 +450,11 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 
-    assert.equal(pill_input.text(), "chartreuse, mauve");
+    assert.equal($pill_input.text(), "chartreuse, mauve");
 
     assert.equal(widget.is_pending(), true);
     widget.clear_text();
-    assert.equal(pill_input.text(), "");
+    assert.equal($pill_input.text(), "");
     assert.equal(widget.is_pending(), false);
 
     let color_removed;
@@ -469,7 +469,7 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
         pill.$element.remove = set_colored_removed_func(pill.item.display_value);
     }
 
-    let key_handler = container.get_on_handler("keydown", ".input");
+    let key_handler = $container.get_on_handler("keydown", ".input");
 
     key_handler({
         key: "Backspace",
@@ -486,7 +486,7 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
 
     let next_pill_focused = false;
 
-    const next_pill_stub = {
+    const $next_pill_stub = {
         trigger: (type) => {
             if (type === "focus") {
                 next_pill_focused = true;
@@ -494,17 +494,17 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
         },
     };
 
-    const focus_pill_stub = {
-        next: () => next_pill_stub,
+    const $focus_pill_stub = {
+        next: () => $next_pill_stub,
         data: (field) => {
             assert.equal(field, "id");
             return "some_id1";
         },
     };
 
-    container.set_find_results(".pill:focus", focus_pill_stub);
+    $container.set_find_results(".pill:focus", $focus_pill_stub);
 
-    key_handler = container.get_on_handler("keydown", ".pill");
+    key_handler = $container.get_on_handler("keydown", ".pill");
     key_handler({
         key: "Backspace",
         preventDefault: noop,
@@ -526,7 +526,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
 
     const config = info.config;
     const items = info.items;
-    const container = info.container;
+    const $container = info.$container;
 
     const widget = input_pill.create(config);
 
@@ -539,7 +539,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
 
     let next_pill_focused = false;
 
-    const next_pill_stub = {
+    const $next_pill_stub = {
         trigger: (type) => {
             if (type === "focus") {
                 next_pill_focused = true;
@@ -547,8 +547,8 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
         },
     };
 
-    const curr_pill_stub = {
-        next: () => next_pill_stub,
+    const $curr_pill_stub = {
+        next: () => $next_pill_stub,
         data: (field) => {
             assert.equal(field, "id");
             return "some_id1";
@@ -559,7 +559,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
         to_$: () => ({
             closest: (sel) => {
                 assert.equal(sel, ".pill");
-                return curr_pill_stub;
+                return $curr_pill_stub;
             },
         }),
     };
@@ -567,7 +567,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
     const e = {
         stopPropagation: noop,
     };
-    const exit_click_handler = container.get_on_handler("click", ".exit");
+    const exit_click_handler = $container.get_on_handler("click", ".exit");
 
     exit_click_handler.call(exit_button_stub, e);
 
@@ -580,13 +580,13 @@ run_test("misc things", () => {
     const info = set_up();
 
     const config = info.config;
-    const container = info.container;
-    const pill_input = info.pill_input;
+    const $container = info.$container;
+    const $pill_input = info.$pill_input;
 
     const widget = input_pill.create(config);
 
     // animation
-    const animation_end_handler = container.get_on_handler("animationend", ".input");
+    const animation_end_handler = $container.get_on_handler("animationend", ".input");
 
     let shake_class_removed = false;
 
@@ -614,17 +614,17 @@ run_test("misc things", () => {
     });
 
     // click on container
-    const container_click_handler = container.get_on_handler("click");
+    const container_click_handler = $container.get_on_handler("click");
 
-    const stub = $.create("the-pill-container");
-    stub.set_find_results(".input", pill_input);
-    stub.is = (sel) => {
+    const $stub = $.create("the-pill-container");
+    $stub.set_find_results(".input", $pill_input);
+    $stub.is = (sel) => {
         assert.equal(sel, ".pill-container");
         return true;
     };
 
     const this_ = {
-        to_$: () => stub,
+        to_$: () => $stub,
     };
 
     container_click_handler.call(this_, {target: this_});
@@ -637,18 +637,18 @@ run_test("appendValue/clear", ({mock_template}) => {
         return html;
     });
 
-    const pill_input = $.create("pill_input");
-    const container = $.create("container");
-    container.set_find_results(".input", pill_input);
+    const $pill_input = $.create("pill_input");
+    const $container = $.create("container");
+    $container.set_find_results(".input", $pill_input);
 
     const config = {
-        container,
+        $container,
         create_item_from_text: (s) => ({type: "color", display_value: s}),
         get_text_from_item: (s) => s.display_value,
     };
 
-    pill_input.before = () => {};
-    pill_input[0] = {};
+    $pill_input.before = () => {};
+    $pill_input[0] = {};
 
     const widget = input_pill.create(config);
 
@@ -672,5 +672,5 @@ run_test("appendValue/clear", ({mock_template}) => {
 
     // Note that we remove colors in the reverse order that we inserted.
     assert.deepEqual(removed_colors, ["blue", "yellow", "red"]);
-    assert.equal(pill_input[0].textContent, "");
+    assert.equal($pill_input[0].textContent, "");
 });

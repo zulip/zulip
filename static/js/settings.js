@@ -22,7 +22,7 @@ import {user_settings} from "./user_settings";
 
 export let settings_label;
 
-$("body").ready(() => {
+$(() => {
     $("#settings_overlay_container").on("click", (e) => {
         if (!overlays.is_modal_open()) {
             return;

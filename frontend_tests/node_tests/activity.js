@@ -8,8 +8,8 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
-const window_stub = $.create("window-stub");
-set_global("to_$", () => window_stub);
+const $window_stub = $.create("window-stub");
+set_global("to_$", () => $window_stub);
 $(window).idle = () => {};
 
 const _document = {
@@ -242,34 +242,34 @@ function simulate_right_column_buddy_list() {
     };
 }
 
-function buddy_list_add(user_id, stub) {
-    if (stub.attr) {
-        stub.attr("data-user-id", user_id);
+function buddy_list_add(user_id, $stub) {
+    if ($stub.attr) {
+        $stub.attr("data-user-id", user_id);
     }
-    stub.length = 1;
+    $stub.length = 1;
     const sel = `li.user_sidebar_entry[data-user-id='${CSS.escape(user_id)}']`;
-    $("#user_presences").set_find_results(sel, stub);
+    $("#user_presences").set_find_results(sel, $stub);
 }
 
 test("PM_update_dom_counts", () => {
-    const count = $.create("alice-unread-count");
+    const $count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
-    const li = $.create("alice stub");
-    buddy_list_add(pm_key, li);
-    li.set_find_results(".unread_count", count);
-    count.set_parents_result("li", li);
+    const $li = $.create("alice stub");
+    buddy_list_add(pm_key, $li);
+    $li.set_find_results(".unread_count", $count);
+    $count.set_parents_result("li", $li);
 
     const counts = new Map();
     counts.set(pm_key, 5);
-    li.addClass("user_sidebar_entry");
+    $li.addClass("user_sidebar_entry");
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert.equal(count.text(), "5");
+    assert.equal($count.text(), "5");
 
     counts.set(pm_key, 0);
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert.equal(count.text(), "");
+    assert.equal($count.text(), "");
 });
 
 test("handlers", ({override, override_rewire, mock_template}) => {
@@ -289,9 +289,9 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
-    let me_li;
-    let alice_li;
-    let fred_li;
+    let $me_li;
+    let $alice_li;
+    let $fred_li;
 
     let narrowed;
 
@@ -307,13 +307,13 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         });
         activity.set_cursor_and_filter();
 
-        me_li = $.create("me stub");
-        alice_li = $.create("alice stub");
-        fred_li = $.create("fred stub");
+        $me_li = $.create("me stub");
+        $alice_li = $.create("alice stub");
+        $fred_li = $.create("fred stub");
 
-        buddy_list_add(me.user_id, me_li);
-        buddy_list_add(alice.user_id, alice_li);
-        buddy_list_add(fred.user_id, fred_li);
+        buddy_list_add(me.user_id, $me_li);
+        buddy_list_add(alice.user_id, $alice_li);
+        buddy_list_add(fred.user_id, $fred_li);
     }
 
     (function test_filter_keys() {
@@ -364,7 +364,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
         narrowed = false;
-        activity.narrow_for_user({li: alice_li});
+        activity.narrow_for_user({$li: $alice_li});
         assert.ok(narrowed);
     })();
 
@@ -420,7 +420,7 @@ test("first/prev/next", ({override, mock_template}) => {
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    override(buddy_list.container, "append", () => {});
+    override(buddy_list.$container, "append", () => {});
 
     activity.redraw_user(alice.user_id);
     activity.redraw_user(fred.user_id);
@@ -457,7 +457,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
 
     let appended_html;
-    override(buddy_list.container, "append", (html) => {
+    override(buddy_list.$container, "append", (html) => {
         appended_html = html;
     });
 
@@ -470,7 +470,7 @@ test("insert_alice_then_fred", ({override, mock_template}) => {
     mock_template("user_presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
-    override(buddy_list.container, "append", (html) => {
+    override(buddy_list.$container, "append", (html) => {
         appended_html = html;
     });
     override(padded_widget, "update_padding", () => {});
@@ -488,7 +488,7 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     mock_template("user_presence_row.hbs", true, (data, html) => html);
 
     let appended_html;
-    override(buddy_list.container, "append", (html) => {
+    override(buddy_list.$container, "append", (html) => {
         appended_html = html;
     });
     override(padded_widget, "update_padding", () => {});
@@ -497,16 +497,16 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     assert.ok(appended_html.indexOf('data-user-id="2"') > 0);
     assert.ok(appended_html.indexOf("user_circle_green") > 0);
 
-    const fred_stub = $.create("fred-first");
-    buddy_list_add(fred.user_id, fred_stub);
+    const $fred_stub = $.create("fred-first");
+    buddy_list_add(fred.user_id, $fred_stub);
 
     let inserted_html;
-    fred_stub.before = (html) => {
+    $fred_stub.before = (html) => {
         inserted_html = html;
     };
 
     let fred_removed;
-    fred_stub.remove = () => {
+    $fred_stub.remove = () => {
         fred_removed = true;
     };
 
@@ -522,10 +522,10 @@ test("insert_fred_then_alice_then_rename", ({override, mock_template}) => {
     };
     people.add_active_user(fred_with_new_name);
 
-    const alice_stub = $.create("alice-first");
-    buddy_list_add(alice.user_id, alice_stub);
+    const $alice_stub = $.create("alice-first");
+    buddy_list_add(alice.user_id, $alice_stub);
 
-    alice_stub.before = (html) => {
+    $alice_stub.before = (html) => {
         inserted_html = html;
     };
 
@@ -541,8 +541,8 @@ test("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
-    const user_filter = $(".user-list-filter");
-    user_filter.val("do-not-match-filter");
+    const $user_filter = $(".user-list-filter");
+    $user_filter.val("do-not-match-filter");
     activity.redraw_user(fred.user_id);
 });
 
@@ -579,8 +579,8 @@ test("update_presence_info", ({override, override_rewire}) => {
 
     override_rewire(buddy_data, "matches_filter", () => true);
 
-    const alice_li = $.create("alice stub");
-    buddy_list_add(alice.user_id, alice_li);
+    const $alice_li = $.create("alice stub");
+    buddy_list_add(alice.user_id, $alice_li);
 
     let inserted;
     override(buddy_list, "insert_or_move", () => {
@@ -613,8 +613,8 @@ test("initialize", ({override, mock_template}) => {
 
     function clear() {
         $.clear_all_elements();
-        buddy_list.container = $("#user_presences");
-        buddy_list.container.append = () => {};
+        buddy_list.$container = $("#user_presences");
+        buddy_list.$container.append = () => {};
         clear_buddy_list();
         page_params.presences = {};
     }

@@ -20,10 +20,11 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
+from zerver.lib.types import ProfileDataElementValue, ProfileFieldData, Validator
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
     check_capped_string,
+    check_dict,
     check_dict_only,
     check_int,
     check_list,
@@ -94,14 +95,19 @@ def validate_custom_profile_field(
         raise JsonableError(_("Invalid field type."))
 
 
+check_profile_field_data: Validator[ProfileFieldData] = check_dict(
+    value_validator=check_union([check_dict(value_validator=check_string), check_string])
+)
+
+
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: str = REQ(default="", converter=lambda x: x.strip()),
+    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
-    field_data: ProfileFieldData = REQ(default={}, converter=orjson.loads),
+    field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     field_type: int = REQ(json_validator=check_int),
 ) -> HttpResponse:
     validate_custom_profile_field(name, hint, field_type, field_data)
@@ -146,9 +152,9 @@ def update_realm_custom_profile_field(
     request: HttpRequest,
     user_profile: UserProfile,
     field_id: int,
-    name: str = REQ(default="", converter=lambda x: x.strip()),
+    name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
-    field_data: ProfileFieldData = REQ(default={}, converter=orjson.loads),
+    field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
 ) -> HttpResponse:
     realm = user_profile.realm
     try:

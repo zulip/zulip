@@ -21,7 +21,7 @@ types-oauthlib
 types-polib
 types-pika
 types-Pillow
-types-psycopg2
+types-psycopg2<2.9.8  # https://github.com/python/typeshed/pull/7494
 types-Pygments
 types-python-dateutil
 types-pytz

@@ -43,8 +43,8 @@ function make_zjquery() {
     const fn = {};
 
     function new_elem(selector, create_opts) {
-        const elem = FakeElement(selector, {...create_opts});
-        Object.assign(elem, fn);
+        const $elem = FakeElement(selector, {...create_opts});
+        Object.assign($elem, fn);
 
         // Create a proxy handler to detect missing stubs.
         //
@@ -59,7 +59,7 @@ function make_zjquery() {
                 if (key === "stack") {
                     const error =
                         "\nInstead of doing equality checks on a full object, " +
-                        'do `assert_equal(foo.selector, ".some_class")\n';
+                        'do `assert_equal($foo.selector, ".some_class")\n';
                     throw new Error(error);
                 }
 
@@ -76,7 +76,7 @@ function make_zjquery() {
             },
         };
 
-        const proxy = new Proxy(elem, handler);
+        const proxy = new Proxy($elem, handler);
 
         return proxy;
     }
@@ -130,8 +130,8 @@ function make_zjquery() {
         verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
-            const elem = new_elem(selector);
-            elems.set(selector, elem);
+            const $elem = new_elem(selector);
+            elems.set(selector, $elem);
         }
         return elems.get(selector);
     };
@@ -146,10 +146,10 @@ function make_zjquery() {
 
     zjquery.create = function (name, opts) {
         assert.ok(!elems.has(name), "You already created an object with this name!!");
-        const elem = new_elem(name, opts);
-        elems.set(name, elem);
+        const $elem = new_elem(name, opts);
+        elems.set(name, $elem);
 
-        return elem;
+        return $elem;
     };
 
     zjquery.trim = function (s) {
@@ -158,7 +158,7 @@ function make_zjquery() {
 
     zjquery.state = function () {
         // useful for debugging
-        let res = Array.from(elems.values(), (v) => v.debug());
+        let res = Array.from(elems.values(), ($v) => $v.debug());
 
         res = res.map((v) => [v.selector, v.value, v.shown]);
 
@@ -250,4 +250,4 @@ const $ = new Proxy(make_zjquery(), {
     },
 });
 
-module.exports = $;
+module.exports = $; // eslint-disable-line no-jquery/variable-pattern

@@ -98,6 +98,14 @@ aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_runnin
 if aux_services:
     subprocess.check_call(["supervisorctl", "start", *aux_services])
 
+
+def restart_or_start(service: str) -> None:
+    our_verb = action
+    if our_verb == "restart" and len(list_supervisor_processes([service], only_running=True)) == 0:
+        our_verb = "start"
+    subprocess.check_call(["supervisorctl", our_verb, service])
+
+
 if action == "restart" and len(workers) > 0:
     if args.less_graceful:
         # The less graceful form stops every worker now; we start them
@@ -111,7 +119,7 @@ if action == "restart" and len(workers) > 0:
         # requires multiple `supervisorctl restart` calls.
         for worker in workers:
             logging.info("Restarting %s", worker)
-            subprocess.check_call(["supervisorctl", "restart", worker])
+            restart_or_start(worker)
 
 if has_application_server():
     # Next, we restart the Tornado processes sequentially, in order to
@@ -130,12 +138,10 @@ if has_application_server():
             # supervisord group where if any individual process is slow to
             # stop, the whole bundle stays stopped for an extended time.
             logging.info("%s Tornado process on port %s", verbing, p)
-            subprocess.check_call(
-                ["supervisorctl", action, f"zulip-tornado:zulip-tornado-port-{p}"]
-            )
+            restart_or_start(f"zulip-tornado:zulip-tornado-port-{p}")
     else:
         logging.info("%s Tornado process", verbing)
-        subprocess.check_call(["supervisorctl", action, "zulip-tornado:*"])
+        restart_or_start("zulip-tornado:*")
 
     # Finally, restart the Django uWSGI processes.
     if (
@@ -160,7 +166,7 @@ if has_application_server():
             subprocess.check_call(["supervisorctl", "start", "zulip-django"])
     else:
         logging.info("%s django server", verbing)
-        subprocess.check_call(["supervisorctl", action, "zulip-django"])
+        restart_or_start("zulip-django")
 
     using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
     if using_sso.strip() == b"True":

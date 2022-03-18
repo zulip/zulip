@@ -106,12 +106,12 @@ export function warn_if_private_stream_is_linked(linked_stream) {
 
     const stream_name = linked_stream.name;
 
-    const warning_area = $("#compose_private_stream_alert");
+    const $warning_area = $("#compose_private_stream_alert");
     const context = {stream_name};
     const new_row = render_compose_private_stream_alert(context);
 
-    warning_area.append(new_row);
-    warning_area.show();
+    $warning_area.append(new_row);
+    $warning_area.show();
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned) {
@@ -143,10 +143,10 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
     }
 
     if (needs_subscribe_warning(user_id, sub.stream_id)) {
-        const error_area = $("#compose_invite_users");
-        const existing_invites_area = $("#compose_invite_users .compose_invite_user");
+        const $error_area = $("#compose_invite_users");
+        const $existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
-        const existing_invites = Array.from($(existing_invites_area), (user_row) =>
+        const existing_invites = Array.from($($existing_invites_area), (user_row) =>
             Number.parseInt($(user_row).data("user-id"), 10),
         );
 
@@ -159,10 +159,10 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             };
 
             const new_row = render_compose_invite_users(context);
-            error_area.append(new_row);
+            $error_area.append(new_row);
         }
 
-        error_area.show();
+        $error_area.show();
     }
 }
 
@@ -172,17 +172,31 @@ export function clear_topic_resolved_warning() {
     $("#compose-send-status").hide();
 }
 
-export function warn_if_topic_resolved() {
-    const stream_name = compose_state.stream_name();
+export function warn_if_topic_resolved(topic_changed) {
+    // This function is called with topic_changed=false on every
+    // keypress when typing a message, so it should not do anything
+    // expensive in that case.
+    //
+    // Pass topic_changed=true if this function was called in response
+    // to a topic being edited.
     const topic_name = compose_state.topic();
 
+    if (!topic_changed && !resolved_topic.is_resolved(topic_name)) {
+        // The resolved topic warning will only ever appear when
+        // composing to a resolve topic, so we return early without
+        // inspecting additional fields in this case.
+        return;
+    }
+
+    const stream_name = compose_state.stream_name();
+    const message_content = compose_state.message_content();
     const sub = stream_data.get_sub(stream_name);
+    const $resolved_notice_area = $("#compose_resolved_topic");
 
-    if (sub && resolved_topic.is_resolved(topic_name)) {
-        const error_area = $("#compose_resolved_topic");
-
-        if (error_area.html()) {
-            clear_topic_resolved_warning(); // This warning already exists
+    if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
+        if ($resolved_notice_area.html()) {
+            // Error is already displayed; no action required.
+            return;
         }
 
         const context = {
@@ -192,11 +206,14 @@ export function warn_if_topic_resolved() {
         };
 
         const new_row = render_compose_resolved_topic(context);
-        error_area.append(new_row);
+        $resolved_notice_area.append(new_row);
 
-        error_area.show();
+        $resolved_notice_area.show();
     } else {
-        clear_topic_resolved_warning();
+        // Only clear the notice if already displayed.
+        if ($resolved_notice_area.html()) {
+            clear_topic_resolved_warning();
+        }
     }
 }
 
@@ -207,14 +224,14 @@ function show_all_everyone_warnings(stream_id) {
         count: stream_count,
         mention: wildcard_mention,
     });
-    const error_area_all_everyone = $("#compose-all-everyone");
+    const $error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
-    if (!error_area_all_everyone.is(":visible")) {
-        error_area_all_everyone.append(all_everyone_template);
+    if (!$error_area_all_everyone.is(":visible")) {
+        $error_area_all_everyone.append(all_everyone_template);
     }
 
-    error_area_all_everyone.show();
+    $error_area_all_everyone.show();
     user_acknowledged_all_everyone = false;
 }
 
@@ -228,13 +245,13 @@ function show_announce_warnings(stream_id) {
     const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     const announce_template = render_compose_announce({count: stream_count});
-    const error_area_announce = $("#compose-announce");
+    const $error_area_announce = $("#compose-announce");
 
-    if (!error_area_announce.is(":visible")) {
-        error_area_announce.append(announce_template);
+    if (!$error_area_announce.is(":visible")) {
+        $error_area_announce.append(announce_template);
     }
 
-    error_area_announce.show();
+    $error_area_announce.show();
     user_acknowledged_announce = false;
 }
 
@@ -524,7 +541,9 @@ function validate_stream_message() {
 
     if (page_params.realm_mandatory_topics) {
         const topic = compose_state.topic();
-        if (topic === "") {
+        // TODO: We plan to migrate the empty topic to only using the
+        // `""` representation for i18n reasons, but have not yet done so.
+        if (topic === "" || topic === "(no topic)") {
             compose_error.show(
                 $t_html({defaultMessage: "Topics are required in this organization"}),
                 $("#stream_message_recipient_topic"),
@@ -636,14 +655,17 @@ function validate_private_message() {
 }
 
 export function check_overflow_text() {
+    // This function is called when typing every character in the
+    // compose box, so it's important that it not doing anything
+    // expensive.
     const text = compose_state.message_content();
     const max_length = page_params.max_message_length;
-    const indicator = $("#compose_limit_indicator");
+    const $indicator = $("#compose_limit_indicator");
 
     if (text.length > max_length) {
-        indicator.addClass("over_limit");
+        $indicator.addClass("over_limit");
         $("#compose-textarea").addClass("over_limit");
-        indicator.text(text.length + "/" + max_length);
+        $indicator.text(text.length + "/" + max_length);
         compose_error.show(
             $t_html(
                 {
@@ -655,16 +677,16 @@ export function check_overflow_text() {
         );
         $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
-        indicator.removeClass("over_limit");
+        $indicator.removeClass("over_limit");
         $("#compose-textarea").removeClass("over_limit");
-        indicator.text(text.length + "/" + max_length);
+        $indicator.text(text.length + "/" + max_length);
 
         $("#compose-send-button").prop("disabled", false);
         if ($("#compose-send-status").hasClass("alert-error")) {
             $("#compose-send-status").stop(true).fadeOut();
         }
     } else {
-        indicator.text("");
+        $indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);

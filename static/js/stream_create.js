@@ -121,21 +121,21 @@ function update_announce_stream_state() {
 
     // If the stream is invite only, disable the "Announce stream" option.
     // Otherwise enable it.
-    const announce_stream_checkbox = $("#announce-new-stream input");
-    const announce_stream_label = $("#announce-new-stream");
+    const $announce_stream_checkbox = $("#announce-new-stream input");
+    const $announce_stream_label = $("#announce-new-stream");
     let disable_it = false;
     const privacy_type = $("input:radio[name=privacy]:checked").val();
     const is_invite_only =
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
-    announce_stream_label.removeClass("control-label-disabled");
+    $announce_stream_label.removeClass("control-label-disabled");
 
     if (is_invite_only) {
         disable_it = true;
-        announce_stream_checkbox.prop("checked", false);
-        announce_stream_label.addClass("control-label-disabled");
+        $announce_stream_checkbox.prop("checked", false);
+        $announce_stream_label.addClass("control-label-disabled");
     }
 
-    announce_stream_checkbox.prop("disabled", disable_it);
+    $announce_stream_checkbox.prop("disabled", disable_it);
     $("#announce-new-stream").show();
 }
 
@@ -196,7 +196,7 @@ function create_stream() {
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
     const stream_post_policy = Number.parseInt(
-        $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
+        $("#stream_creation_form select[name=stream-post-policy]").val(),
         10,
     );
 
@@ -294,7 +294,7 @@ export function show_new_stream_modal() {
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled]):first").prop("checked", true);
+    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
     // Make the options default to the same each time:
     // "announce stream" on.
     $("#stream_creation_form .stream-message-retention-days-input").hide();
@@ -321,14 +321,14 @@ export function show_new_stream_modal() {
 }
 
 export function set_up_handlers() {
-    const people_to_add_holder = $("#people_to_add").expectOne();
-    stream_create_subscribers.create_handlers(people_to_add_holder);
+    const $people_to_add_holder = $("#people_to_add").expectOne();
+    stream_create_subscribers.create_handlers($people_to_add_holder);
 
-    const container = $("#stream-creation").expectOne();
+    const $container = $("#stream-creation").expectOne();
 
-    container.on("change", "#make-invite-only input", update_announce_stream_state);
+    $container.on("change", "#make-invite-only input", update_announce_stream_state);
 
-    container.on("click", ".finalize_create_stream", (e) => {
+    $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
         clear_error_display();
 
@@ -367,16 +367,16 @@ export function set_up_handlers() {
         }
     });
 
-    container.on("input", "#create_stream_name", () => {
+    $container.on("input", "#create_stream_name", () => {
         const stream_name = $("#create_stream_name").val().trim();
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
     });
 
-    container.on("mouseover", "#announce-stream-docs", (e) => {
-        const announce_stream_docs = $("#announce-stream-docs");
-        announce_stream_docs.popover({
+    $container.on("mouseover", "#announce-stream-docs", (e) => {
+        const $announce_stream_docs = $("#announce-stream-docs");
+        $announce_stream_docs.popover({
             placement: "right",
             content: render_announce_stream_docs({
                 notifications_stream: stream_data.get_notifications_stream(),
@@ -384,23 +384,23 @@ export function set_up_handlers() {
             html: true,
             trigger: "manual",
         });
-        announce_stream_docs.popover("show");
-        announce_stream_docs.data("popover").tip().css("z-index", 2000);
-        announce_stream_docs
+        $announce_stream_docs.popover("show");
+        $announce_stream_docs.data("popover").tip().css("z-index", 2000);
+        $announce_stream_docs
             .data("popover")
             .tip()
             .find(".popover-content")
             .css("margin", "9px 14px");
         e.stopPropagation();
     });
-    container.on("mouseout", "#announce-stream-docs", (e) => {
+    $container.on("mouseout", "#announce-stream-docs", (e) => {
         $("#announce-stream-docs").popover("hide");
         e.stopPropagation();
     });
 
     // Do not allow the user to enter newline characters while typing out the
     // stream's description during it's creation.
-    container.on("keydown", "#create_stream_description", (e) => {
+    $container.on("keydown", "#create_stream_description", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
         }

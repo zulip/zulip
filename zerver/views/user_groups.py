@@ -126,7 +126,8 @@ def add_members_to_group_backend(
                 )
             )
 
-    bulk_add_members_to_user_group(user_group, user_profiles)
+    user_profile_ids = [user.id for user in user_profiles]
+    bulk_add_members_to_user_group(user_group, user_profile_ids)
     return json_success(request)
 
 
@@ -143,5 +144,6 @@ def remove_members_from_group_backend(
         if member not in group_member_ids:
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
 
-    remove_members_from_user_group(user_group, user_profiles)
+    user_profile_ids = [user.id for user in user_profiles]
+    remove_members_from_user_group(user_group, user_profile_ids)
     return json_success(request)

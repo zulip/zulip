@@ -508,34 +508,29 @@ things you need to be careful about when configuring it:
 Zulip's configuration allows for [warm standby database
 replicas][warm-standby] as a disaster recovery solution; see the
 linked PostgreSQL documentation for details on this type of
-deployment. Zulip's configuration leverages `wal-g`, our [database
-backup solution][wal-g], and thus requires that it be configured for
-the primary and all secondary warm standby replicas.
+deployment. Zulip's configuration builds on top of `wal-g`, our
+[database backup solution][wal-g], and thus requires that it be
+configured for the primary and all secondary warm standby replicas.
 
-The primary should have log-shipping enabled, with:
-
-```ini
-[postgresql]
-replication = yes
-```
-
-Warm spare replicas should have log-shipping enabled, and their
-primary replica and replication username configured:
+In addition to having `wal-g` backups configured, warm standby
+replicas should configure the hostname of their primary replica, and
+username to use for replication, in `/etc/zulip/zulip.conf`:
 
 ```ini
 [postgresql]
-replication = yes
 replication_user = replicator
 replication_primary = hostname-of-primary.example.com
 ```
 
 The `postgres` user on the replica will need to be able to
-authenticate as the `replicator` user, which may require further
-configuration of `pg_hba.conf` and client certificates on the
-replica.
+authenticate as the `replication_user` user, which may require further
+configuration of `pg_hba.conf` and client certificates on the replica.
+If you are using password authentication, you can set a
+`postgresql_replication_password` secret in
+`/etc/zulip/zulip-secrets.conf`.
 
 [warm-standby]: https://www.postgresql.org/docs/current/warm-standby.html
-[wal-g]: export-and-import.md#backup-details
+[wal-g]: export-and-import.md#database-only-backup-tools
 
 ## System and deployment configuration
 
@@ -688,14 +683,6 @@ setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#
 Override PostgreSQL's [`random_page_cost`
 setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
 
-#### `replication`
-
-Set to true to enable replication to enable [log shipping replication
-between PostgreSQL servers](#postgresql-warm-standby). This should be
-enabled on the primary, as well as any replicas, and further requires
-configuration of
-[wal-g](export-and-import.md#backup-details).
-
 #### `replication_primary`
 
 On the [warm standby replicas](#postgresql-warm-standby), set to the
@@ -706,7 +693,10 @@ should be done from.
 
 On the [warm standby replicas](#postgresql-warm-standby), set to the
 username that the host should authenticate to the primary PostgreSQL
-server as, for streaming replication.
+server as, for streaming replication. Authentication will be done
+based on the `pg_hba.conf` file; if you are using password
+authentication, you can set a `postgresql_replication_password` secret
+for authentication.
 
 #### `ssl_ca_file`
 
@@ -722,6 +712,15 @@ client connections.
 
 Set to the path to the PEM-encoded private key used to secure client
 connections.
+
+#### `ssl_mode`
+
+The mode that should be used to verify the server certificate. The
+PostgreSQL default is `prefer`, which provides no security benefit; we
+strongly suggest setting this to `require` or better if you are using
+certificate authentication. See the [PostgreSQL
+documentation](https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS)
+for potential values.
 
 #### `version`
 

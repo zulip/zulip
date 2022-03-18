@@ -1,10 +1,9 @@
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -16,33 +15,36 @@ ALL_EVENT_TYPES = ["new", "finished"]
 def api_buildbot_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    topic = payload["project"]
+    topic = payload["project"].tame(check_string)
     if not topic:
         topic = "general"
     body = get_message(payload)
-    check_send_webhook_message(request, user_profile, topic, body, payload["event"])
+    check_send_webhook_message(
+        request, user_profile, topic, body, payload["event"].tame(check_string)
+    )
     return json_success(request)
 
 
-def get_message(payload: Dict[str, Any]) -> str:
+def get_message(payload: WildValue) -> str:
     if "results" in payload:
         # See http://docs.buildbot.net/latest/developer/results.html
         results = ("success", "warnings", "failure", "skipped", "exception", "retry", "cancelled")
-        status = results[payload["results"]]
+        status = results[payload["results"].tame(check_int)]
 
-    if payload["event"] == "new":
+    event = payload["event"].tame(check_string)
+    if event == "new":
         body = "Build [#{id}]({url}) for **{name}** started.".format(
-            id=payload["buildid"],
-            name=payload["buildername"],
-            url=payload["url"],
+            id=payload["buildid"].tame(check_int),
+            name=payload["buildername"].tame(check_string),
+            url=payload["url"].tame(check_string),
         )
-    elif payload["event"] == "finished":
+    elif event == "finished":
         body = "Build [#{id}]({url}) (result: {status}) for **{name}** finished.".format(
-            id=payload["buildid"],
-            name=payload["buildername"],
-            url=payload["url"],
+            id=payload["buildid"].tame(check_int),
+            name=payload["buildername"].tame(check_string),
+            url=payload["url"].tame(check_string),
             status=status,
         )
 

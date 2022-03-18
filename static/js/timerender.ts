@@ -176,23 +176,23 @@ function maybe_add_update_list_entry(entry: UpdateEntry): void {
 }
 
 function render_date_span(
-    elem: JQuery,
+    $elem: JQuery,
     rendered_time: TimeRender,
     rendered_time_above?: TimeRender,
 ): JQuery {
-    elem.text("");
+    $elem.text("");
     if (rendered_time_above !== undefined) {
-        elem.append(
-            '<i class="date-direction fa fa-caret-up"></i>',
+        $elem.append(
+            $("<i>").addClass(["date-direction", "fa", "fa-caret-up"]),
             _.escape(rendered_time_above.time_str),
-            '<hr class="date-line">',
-            '<i class="date-direction fa fa-caret-down"></i>',
+            $("<hr>").addClass("date-line"),
+            $("<i>").addClass(["date-direction", "fa", "fa-caret-down"]),
             _.escape(rendered_time.time_str),
         );
-        return elem;
+        return $elem;
     }
-    elem.append(_.escape(rendered_time.time_str));
-    return elem.attr("data-tippy-content", rendered_time.formal_time_str);
+    $elem.append(_.escape(rendered_time.time_str));
+    return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
 
 // Given an Date object 'time', return a DOM node that initially
@@ -208,12 +208,12 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time, today);
-    let node = $("<span />").attr("class", className);
+    let $node = $("<span>").attr("class", className);
     if (time_above !== undefined) {
         const rendered_time_above = render_now(time_above, today);
-        node = render_date_span(node, rendered_time, rendered_time_above);
+        $node = render_date_span($node, rendered_time, rendered_time_above);
     } else {
-        node = render_date_span(node, rendered_time);
+        $node = render_date_span($node, rendered_time);
     }
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,
@@ -221,7 +221,7 @@ export function render_date(time: Date, time_above: Date | undefined, today: Dat
         time,
         time_above,
     });
-    return node;
+    return $node;
 }
 
 // Renders the timestamp returned by the <time:> Markdown syntax.
@@ -249,16 +249,16 @@ export function update_timestamps(): void {
 
         for (const entry of to_process) {
             const className = entry.className;
-            const elements = $(`.${CSS.escape(className)}`);
+            const $elements = $(`.${CSS.escape(className)}`);
             // The element might not exist any more (because it
             // was in the zfilt table, or because we added
             // messages above it and re-collapsed).
-            if (elements.length > 0) {
+            if ($elements.length > 0) {
                 const time = entry.time;
                 const time_above = entry.time_above;
                 const rendered_time = render_now(time, today);
                 const rendered_time_above = time_above ? render_now(time_above, today) : undefined;
-                for (const element of elements) {
+                for (const element of $elements) {
                     render_date_span($(element), rendered_time, rendered_time_above);
                 }
                 maybe_add_update_list_entry({

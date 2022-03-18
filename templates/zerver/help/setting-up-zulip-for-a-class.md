@@ -187,9 +187,10 @@ how to assign roles and permissions for a class.
   Admins and moderators for large classes)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)
-- Set [who can create and manage user groups](/help/restrict-user-group-management).
+- Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
+[user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
 [move-between-streams]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
 
 #### Recommended roles and permissions for a department
@@ -216,7 +217,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)
-- Set [who can create and manage user groups](/help/restrict-user-group-management).
+- Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
 ## Create streams

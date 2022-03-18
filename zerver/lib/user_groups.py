@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _
 from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
-from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile
+from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
 
 
 def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
@@ -126,3 +126,64 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[User
         )
     )
     return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+
+
+def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
+    """Any changes to this function likely require a migration to adjust
+    existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,
+    which is a copy of this function from when we introduced system groups.
+    """
+    role_system_groups_dict: Dict[int, UserGroup] = {}
+    for role in UserGroup.SYSTEM_USER_GROUP_ROLE_MAP.keys():
+        user_group_params = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[role]
+        user_group = UserGroup(
+            name=user_group_params["name"],
+            description=user_group_params["description"],
+            realm=realm,
+            is_system_group=True,
+        )
+        role_system_groups_dict[role] = user_group
+
+    full_members_system_group = UserGroup(
+        name="@role:fullmembers",
+        description="Members of this organization, not including new accounts and guests",
+        realm=realm,
+        is_system_group=True,
+    )
+    everyone_on_internet_system_group = UserGroup(
+        name="@role:internet",
+        description="Everyone on the Internet",
+        realm=realm,
+        is_system_group=True,
+    )
+    # Order of this list here is important to create correct GroupGroupMembership objects
+    system_user_groups_list = [
+        role_system_groups_dict[UserProfile.ROLE_REALM_OWNER],
+        role_system_groups_dict[UserProfile.ROLE_REALM_ADMINISTRATOR],
+        role_system_groups_dict[UserProfile.ROLE_MODERATOR],
+        full_members_system_group,
+        role_system_groups_dict[UserProfile.ROLE_MEMBER],
+        role_system_groups_dict[UserProfile.ROLE_GUEST],
+        everyone_on_internet_system_group,
+    ]
+
+    UserGroup.objects.bulk_create(system_user_groups_list)
+
+    subgroup_objects = []
+    subgroup, remaining_groups = system_user_groups_list[0], system_user_groups_list[1:]
+    for supergroup in remaining_groups:
+        subgroup_objects.append(GroupGroupMembership(subgroup=subgroup, supergroup=supergroup))
+        subgroup = supergroup
+
+    GroupGroupMembership.objects.bulk_create(subgroup_objects)
+
+    return role_system_groups_dict
+
+
+def get_system_user_group_for_user(user_profile: UserProfile) -> UserGroup:
+    system_user_group_name = UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
+
+    system_user_group = UserGroup.objects.get(
+        name=system_user_group_name, realm=user_profile.realm, is_system_group=True
+    )
+    return system_user_group

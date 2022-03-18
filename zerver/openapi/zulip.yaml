@@ -822,7 +822,7 @@ paths:
                                     - enum:
                                         - message
                                 message:
-                                  $ref: "#/components/schemas/Messages"
+                                  $ref: "#/components/schemas/MessagesEvent"
                                 flags:
                                   type: array
                                   description: |
@@ -2541,6 +2541,16 @@ paths:
                                 removed from a message.
 
                                 [message-flags]: /api/update-message-flags#available-flags
+                              required:
+                                [
+                                  "id",
+                                  "type",
+                                  "op",
+                                  "operation",
+                                  "flag",
+                                  "messages",
+                                  "all",
+                                ]
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2567,6 +2577,9 @@ paths:
                                   type: string
                                   description: |
                                     The flag to be removed.
+                                  enum:
+                                    - starred
+                                    - read
                                 messages:
                                   type: array
                                   description: |
@@ -2579,6 +2592,70 @@ paths:
                                   description: |
                                     Whether the flag was removed from all messages.
                                     If this is true then the `messages` array will be empty.
+                                message_details:
+                                  description: |
+                                    Present if `message` and `update_message_flags` are both present in
+                                    `event_types` and the `flag` is `read` and the `op` is `remove`.
+
+                                    A set of data structures describing the messages that
+                                    are being marked as unread with additional details to
+                                    allow a client to update the `unread_msgs` data
+                                    structure for these messages (which may not be
+                                    otherwise known to the client).
+
+                                    **Changes**: New in Zulip 5.0 (feature level 121). Previously,
+                                    marking already read messages as unread was not
+                                    supported by the Zulip API.
+                                  type: object
+                                  additionalProperties:
+                                    type: object
+                                    description: |
+                                      Additional properties.
+                                    additionalProperties: false
+                                    required: ["type"]
+                                    properties:
+                                      type:
+                                        type: string
+                                        description: |
+                                          The type of this message.
+                                        enum:
+                                          - private
+                                          - stream
+                                      mentioned:
+                                        type: boolean
+                                        description: |
+                                          A flag which indicates whether the message contains a mention
+                                          of the user.
+
+                                          Present only if the message mentions the current user.
+                                      user_ids:
+                                        type: array
+                                        items:
+                                          type: integer
+                                        description: |
+                                          Present only if `type` is `private`.
+
+                                          The user IDs of every recipient of this private message, excluding yourself.
+                                          Will be the empty list for a message you had sent to only yourself.
+                                      stream_id:
+                                        type: integer
+                                        description: |
+                                          Present only if `type` is `stream`.
+
+                                          The ID of the stream where the message was sent.
+                                      topic:
+                                        type: string
+                                        description: |
+                                          Present only if `type` is `stream`.
+
+                                          Name of the topic where the message was sent.
+                                      unmuted_stream_msg:
+                                        type: boolean
+                                        deprecated: true
+                                        description: |
+                                          **Deprecated**
+                                          Internal implementation detail. Clients should
+                                          ignore this field as it will be removed in the future.
                               example:
                                 {
                                   "type": "update_message_flags",
@@ -2586,6 +2663,15 @@ paths:
                                   "operation": "remove",
                                   "flag": "starred",
                                   "messages": [63],
+                                  "message_details":
+                                    {
+                                      63:
+                                        {
+                                          "type": "stream",
+                                          "stream_id": 22,
+                                          "topic": "lunch",
+                                        },
+                                    },
                                   "all": false,
                                   "id": 0,
                                 }
@@ -3791,12 +3877,14 @@ paths:
                                       type: integer
                                       description: |
                                         The organization's policy for [who can manage user groups
-                                        ](/help/restrict-user-group-management).
+                                        ][user-group-permissions].
 
                                         - 1 = All members can create and edit user groups
                                         - 2 = Only organization administrators can create and edit user groups
                                         - 3 = Only full members can create and edit user groups
                                         - 4 = Only organization administrators and moderators can create and edit user groups
+
+                                        [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -4741,10 +4829,59 @@ paths:
                       messages:
                         type: array
                         description: |
-                          an array of `message` objects, each containing the following
+                          An array of `message` objects, each containing the following
                           fields:
                         items:
-                          $ref: "#/components/schemas/GetMessages"
+                          allOf:
+                            - $ref: "#/components/schemas/MessagesBase"
+                            - additionalProperties: false
+                              properties:
+                                avatar_url:
+                                  nullable: true
+                                client: {}
+                                content: {}
+                                content_type: {}
+                                display_recipient: {}
+                                edit_history: {}
+                                id: {}
+                                is_me_message: {}
+                                last_edit_timestamp: {}
+                                reactions: {}
+                                recipient_id: {}
+                                sender_email: {}
+                                sender_full_name: {}
+                                sender_id: {}
+                                sender_realm_str: {}
+                                stream_id: {}
+                                subject: {}
+                                submessages: {}
+                                timestamp: {}
+                                topic_links: {}
+                                type: {}
+                                flags:
+                                  type: array
+                                  description: |
+                                    The user's [message flags][message-flags] for the message.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
+                                  items:
+                                    type: string
+                                match_content:
+                                  type: string
+                                  description: |
+                                    Only present if keyword search was included among the narrow parameters.
+
+                                    HTML content of a queried message that matches the narrow, with
+                                    `<span class="highlight">` elements wrapping the matches for the
+                                    search keywords.
+                                match_subject:
+                                  type: string
+                                  description: |
+                                    Only present if keyword search was included among the narrow parameters.
+
+                                    HTML-escaped topic of a queried message that matches the narrow, with
+                                    `<span class="highlight">` elements wrapping the matches for the
+                                    search keywords.
                     example:
                       {
                         "anchor": 21,
@@ -5475,20 +5612,37 @@ paths:
                       }
   /messages/{message_id}:
     get:
-      operationId: get-raw-message
-      summary: Get a message's raw Markdown
+      operationId: get-message
+      summary: Fetch a single message.
       tags: ["messages"]
       description: |
-        Get the raw content of a message.
+        Given a message ID, return the message object.
 
         `GET {{ api_url }}/v1/messages/{msg_id}`
 
-        This is a rarely-used endpoint relevant for clients that primarily
-        work with HTML-rendered messages but might need to occasionally fetch
-        the message's raw Markdown (e.g. for pre-filling a message-editing
-        UI).
+        Additionally, a `raw_content` field is included. This field is
+        useful for clients that primarily work with HTML-rendered
+        messages but might need to occasionally fetch the message's
+        raw Markdown (e.g. for [view
+        source](/help/view-the-markdown-source-of-a-message) or
+        prefilling a message edit textarea).
+
+        **Changes**: Before Zulip 5.0 (feature level 120), this
+        endpoint only returned the `raw_content` field.
       parameters:
         - $ref: "#/components/parameters/MessageId"
+        - name: apply_markdown
+          in: query
+          description: |
+            If `true`, message content is returned in the rendered HTML
+            format. If `false`, message content is returned in the raw
+            Markdown-format text that user entered.
+
+            **Changes**: New in Zulip 5.0 (feature level 120).
+          schema:
+            type: boolean
+            default: true
+          example: false
       responses:
         "200":
           description: Success.
@@ -5504,13 +5658,99 @@ paths:
                       msg: {}
                       raw_content:
                         type: string
+                        deprecated: true
                         description: |
-                          The raw content of the message.
+                          The raw Markdown content of the message.
+
+                          **Deprecated** and to be removed once no longer required for
+                          legacy clients. Modern clients should prefer passing
+                          `apply_markdown=false` to request raw message content.
+                      message:
+                        description: |
+                          An object containing details of the message.
+
+                          **Changes**: New in Zulip 5.0 (feature level 120).
+                        allOf:
+                          - $ref: "#/components/schemas/MessagesBase"
+                          - additionalProperties: false
+                            properties:
+                              avatar_url:
+                                nullable: true
+                              client: {}
+                              content: {}
+                              content_type: {}
+                              display_recipient: {}
+                              edit_history: {}
+                              id: {}
+                              is_me_message: {}
+                              last_edit_timestamp: {}
+                              reactions: {}
+                              recipient_id: {}
+                              sender_email: {}
+                              sender_full_name: {}
+                              sender_id: {}
+                              sender_realm_str: {}
+                              stream_id: {}
+                              subject: {}
+                              submessages: {}
+                              timestamp: {}
+                              topic_links: {}
+                              type: {}
+                              flags:
+                                type: array
+                                description: |
+                                  The user's [message flags][message-flags] for the message.
+
+                                  [message-flags]: /api/update-message-flags#available-flags
+                                items:
+                                  type: string
                     example:
                       {
                         "raw_content": "**Don't** forget your towel!",
                         "result": "success",
                         "msg": "",
+                        "message":
+                          {
+                            "subject": "",
+                            "sender_realm_str": "zulip",
+                            "type": "private",
+                            "content": "<p>Security experts agree that relational algorithms are an interesting new topic in the field of networking, and scholars concur.</p>",
+                            "flags": ["read"],
+                            "id": 16,
+                            "display_recipient":
+                              [
+                                {
+                                  "id": 4,
+                                  "is_mirror_dummy": false,
+                                  "email": "hamlet@zulip.com",
+                                  "full_name": "King Hamlet",
+                                },
+                                {
+                                  "id": 5,
+                                  "is_mirror_dummy": false,
+                                  "email": "iago@zulip.com",
+                                  "full_name": "Iago",
+                                },
+                                {
+                                  "id": 8,
+                                  "is_mirror_dummy": false,
+                                  "email": "prospero@zulip.com",
+                                  "full_name": "Prospero from The Tempest",
+                                },
+                              ],
+                            "content_type": "text/html",
+                            "is_me_message": false,
+                            "timestamp": 1527921326,
+                            "sender_id": 4,
+                            "sender_full_name": "King Hamlet",
+                            "recipient_id": 27,
+                            "topic_links": [],
+                            "client": "populate_db",
+                            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "submessages": [],
+                            "sender_email": "hamlet@zulip.com",
+                            "reactions": [],
+                          },
                       }
         "400":
           description: Bad request.
@@ -9337,14 +9577,29 @@ paths:
                             items:
                               type: object
                               description: |
-                                Object containing the details of a unread private
-                                message with a specific user.
+                                Object containing the details of a unread private message with
+                                a specific user. Note that in rare situations, it is possible
+                                for a message that you sent to another user to be marked as
+                                unread and thus appear here.
                               additionalProperties: false
                               properties:
-                                sender_id:
+                                other_user_id:
                                   type: integer
                                   description: |
-                                    The user id of the other participant in a PM conversation.
+                                    The user id of the other participant in this non-group private
+                                    message conversation. Will be your own user ID for messages
+                                    that you sent to only yourself.
+                                sender_id:
+                                  deprecated: true
+                                  type: integer
+                                  description: |
+                                    Old name for `other_user_id`. Clients should access this
+                                    field in Zulip server versions that do not yet support
+                                    `other_user_id`.
+
+                                    **Changes**: Deprecated in Zulip 5.0 (feature level 119).
+                                    We expect to provide a next version of the full `unread_msgs`
+                                    API before removing this legacy name.
                                 message_ids:
                                   type: array
                                   description: |
@@ -9398,8 +9653,9 @@ paths:
                                 user_ids_string:
                                   type: string
                                   description: |
-                                    A string containing the ids of all users in the huddle(group PMs)
-                                    separated by commas(,). Example: "1,2,3".
+                                    A string containing the IDs of all users in the group
+                                    private message conversation separated by commas
+                                    (,). Example: "1,2,3".
                                 message_ids:
                                   type: array
                                   description: |
@@ -10751,12 +11007,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The organization's policy for [who can manage user groups
-                          ](/help/restrict-user-group-management).
+                          ][user-group-permissions].
 
                           - 1 = All members can create and edit user groups
                           - 2 = Only organization administrators can create and edit user groups
                           - 3 = Only full members can create and edit user groups.
                           - 4 = Only organization administrators and moderators can create and edit user groups.
+
+                          [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
                       realm_default_code_block_language:
                         type: string
                         nullable: true
@@ -13539,7 +13797,7 @@ paths:
                       in the `zuliprc` file downloaded when creating the bot.
                   message:
                     description: |
-                      A dict containing details on the message that triggered the
+                      A dictionary containing details on the message that triggered the
                       outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                     allOf:
                       - $ref: "#/components/schemas/MessagesBase"
@@ -13551,8 +13809,10 @@ paths:
                           content: {}
                           content_type: {}
                           display_recipient: {}
+                          edit_history: {}
                           id: {}
                           is_me_message: {}
+                          last_edit_timestamp: {}
                           reactions: {}
                           recipient_id: {}
                           sender_email: {}
@@ -13561,9 +13821,9 @@ paths:
                           sender_realm_str: {}
                           stream_id: {}
                           subject: {}
-                          topic_links: {}
                           submessages: {}
                           timestamp: {}
+                          topic_links: {}
                           type: {}
                           rendered_content:
                             type: string
@@ -14572,7 +14832,7 @@ components:
                   type: boolean
                   description: |
                     Whether the user is a mirror dummy.
-    Messages:
+    MessagesEvent:
       allOf:
         - $ref: "#/components/schemas/MessagesBase"
         - additionalProperties: false
@@ -14583,8 +14843,10 @@ components:
             content: {}
             content_type: {}
             display_recipient: {}
+            edit_history: {}
             id: {}
             is_me_message: {}
+            last_edit_timestamp: {}
             reactions: {}
             recipient_id: {}
             sender_email: {}
@@ -14593,9 +14855,9 @@ components:
             sender_realm_str: {}
             stream_id: {}
             subject: {}
-            topic_links: {}
             submessages: {}
             timestamp: {}
+            topic_links: {}
             type: {}
     MessagesBase:
       type: object
@@ -14673,7 +14935,7 @@ components:
 
                   The rendered HTML representation of `prev_content`.
               prev_rendered_content_version:
-                type: string
+                type: integer
                 description: |
                   Only present if message's content was edited.
 
@@ -14737,7 +14999,7 @@ components:
               - timestamp
           description: |
             An array of objects, with each object documenting the
-            changes made in a previous edit made to the the message,
+            changes in a previous edit made to the the message,
             ordered chronologically from most recent to least recent
             edit.
 
@@ -14747,7 +15009,7 @@ components:
             Every object will contain `user_id` and `timestamp`.
 
             The other fields are optional, and will be present or not
-            depending on which of the stream, topic, and message
+            depending on whether the stream, topic, and/or message
             content were modified in the edit event. For example, if
             only the topic was edited, only `prev_topic` and `topic`
             will be present in addition to `user_id` and `timestamp`.
@@ -14764,6 +15026,13 @@ components:
             Whether the message is a [/me status message][status-messages]
 
             [status-messages]: /help/format-your-message-using-markdown#status-messages
+        last_edit_timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was last edited,
+            in UTC seconds.
+
+            Not present if the message has never been edited.
         reactions:
           type: array
           description: |
@@ -14808,6 +15077,17 @@ components:
 
             The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
+        submessages:
+          type: array
+          items:
+            type: string
+          description: |
+            Data used for certain experimental Zulip integrations.
+        timestamp:
+          type: integer
+          description: |
+            The UNIX timestamp for when the message was sent,
+            in UTC seconds.
         topic_links:
           type: array
           items:
@@ -14834,73 +15114,10 @@ components:
             New in Zulip 3.0 (feature level 1): Previously, this field was called
             `subject_links`; clients are recommended to rename `subject_links` to `topic_links`
             if present for compatibility with older Zulip servers.
-        submessages:
-          type: array
-          items:
-            type: string
-          description: |
-            Data used for certain experimental Zulip integrations.
-        timestamp:
-          type: integer
-          description: |
-            The UNIX timestamp for when the message was sent,
-            in UTC seconds.
         type:
           type: string
           description: |
             The type of the message: `stream` or `private`.
-    GetMessages:
-      allOf:
-        - $ref: "#/components/schemas/MessagesBase"
-        - additionalProperties: false
-          properties:
-            avatar_url:
-              nullable: true
-            client: {}
-            content: {}
-            content_type: {}
-            display_recipient: {}
-            id: {}
-            is_me_message: {}
-            reactions: {}
-            recipient_id: {}
-            sender_email: {}
-            sender_full_name: {}
-            sender_id: {}
-            sender_realm_str: {}
-            stream_id: {}
-            subject: {}
-            topic_links: {}
-            submessages: {}
-            timestamp: {}
-            type: {}
-            flags:
-              type: array
-              description: |
-                The user's [message flags][message-flags] for the message.
-
-                [message-flags]: /api/update-message-flags#available-flags
-              items:
-                type: string
-            last_edit_timestamp:
-              type: integer
-              description: |
-                The UNIX timestamp for when the message was last edited,
-                in UTC seconds.
-            match_content:
-              type: string
-              description: |
-                Only present if keyword search was included among the narrow parameters.
-                HTML content of a queried message that matches the narrow, with
-                `<span class="highlight">` elements wrapping the matches for the
-                search keywords.
-            match_subject:
-              type: string
-              description: |
-                Only present if keyword search was included among the narrow parameters.
-                HTML-escaped topic of a queried message that matches the narrow, with
-                `<span class="highlight">` elements wrapping the matches for the
-                search keywords.
     Presence:
       type: object
       description: |
@@ -15532,7 +15749,7 @@ components:
         The ID of the target user group.
       schema:
         type: integer
-      example: 1
+      example: 22
       required: true
     QueueId:
       name: queue_id

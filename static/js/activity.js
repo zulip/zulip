@@ -59,8 +59,8 @@ function get_pm_list_item(user_id) {
 }
 
 function set_pm_count(user_ids_string, count) {
-    const pm_li = get_pm_list_item(user_ids_string);
-    ui_util.update_unread_count_in_dom(pm_li, count);
+    const $pm_li = get_pm_list_item(user_ids_string);
+    ui_util.update_unread_count_in_dom($pm_li, count);
 }
 
 export function update_dom_with_unread_counts(counts) {
@@ -285,7 +285,7 @@ export function reset_users() {
 }
 
 export function narrow_for_user(opts) {
-    const user_id = buddy_list.get_key_from_li({li: opts.li});
+    const user_id = buddy_list.get_key_from_li({$li: opts.$li});
     return narrow_for_user_id({user_id});
 }
 
@@ -324,7 +324,7 @@ export function set_cursor_and_filter() {
     $input.on("blur", () => user_cursor.clear());
 
     keydown_util.handle({
-        elem: $input,
+        $elem: $input,
         handlers: {
             Enter() {
                 keydown_enter_key();

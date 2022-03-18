@@ -28,18 +28,18 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom(stream_li, count) {
+export function update_count_in_dom($stream_li, count) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
-    const subscription_block = stream_li.find(".subscription_block");
+    const $subscription_block = $stream_li.find(".subscription_block");
 
-    ui_util.update_unread_count_in_dom(subscription_block, count);
+    ui_util.update_unread_count_in_dom($subscription_block, count);
 
     if (count === 0) {
-        subscription_block.removeClass("stream-with-count");
+        $subscription_block.removeClass("stream-with-count");
     } else {
-        subscription_block.addClass("stream-with-count");
+        $subscription_block.addClass("stream-with-count");
     }
 }
 
@@ -71,8 +71,8 @@ class StreamSidebar {
 export const stream_sidebar = new StreamSidebar();
 
 function get_search_term() {
-    const search_box = $(".stream-list-filter");
-    const search_term = search_box.expectOne().val().trim();
+    const $search_box = $(".stream-list-filter");
+    const search_term = $search_box.expectOne().val().trim();
     return search_term;
 }
 
@@ -105,9 +105,9 @@ export function build_stream_list(force_rerender) {
     // which largely is a matter of arranging the individual rows in
     // the right order.
     const streams = stream_data.subscribed_stream_ids();
-    const parent = $("#stream_filters");
+    const $parent = $("#stream_filters");
     if (streams.length === 0) {
-        parent.empty();
+        $parent.empty();
         return;
     }
 
@@ -128,7 +128,7 @@ export function build_stream_list(force_rerender) {
     }
 
     topic_list.clear();
-    parent.empty();
+    $parent.empty();
 
     for (const stream_id of stream_groups.pinned_streams) {
         add_sidebar_li(stream_id);
@@ -154,7 +154,7 @@ export function build_stream_list(force_rerender) {
         add_sidebar_li(stream_id);
     }
 
-    parent.append(elems);
+    $parent.append(elems);
 }
 
 export function get_stream_li(stream_id) {
@@ -166,22 +166,22 @@ export function get_stream_li(stream_id) {
         return undefined;
     }
 
-    const li = row.get_li();
-    if (!li) {
+    const $li = row.get_li();
+    if (!$li) {
         blueslip.error("Cannot find li for id " + stream_id);
         return undefined;
     }
 
-    if (li.length > 1) {
+    if ($li.length > 1) {
         blueslip.error("stream_li has too many elements for " + stream_id);
         return undefined;
     }
 
-    return li;
+    return $li;
 }
 
-function stream_id_for_elt(elt) {
-    return Number.parseInt(elt.attr("data-stream-id"), 10);
+function stream_id_for_elt($elt) {
+    return Number.parseInt($elt.attr("data-stream-id"), 10);
 }
 
 export function zoom_in_topics(options) {
@@ -200,13 +200,13 @@ export function zoom_in_topics(options) {
     });
 
     $("#stream_filters li.narrow-filter").each(function () {
-        const elt = $(this);
+        const $elt = $(this);
         const stream_id = options.stream_id;
 
-        if (stream_id_for_elt(elt) === stream_id) {
-            elt.show();
+        if (stream_id_for_elt($elt) === stream_id) {
+            $elt.show();
         } else {
-            elt.hide();
+            $elt.hide();
         }
     });
 }
@@ -225,16 +225,16 @@ export function zoom_out_topics() {
 }
 
 export function set_in_home_view(stream_id, in_home) {
-    const li = get_stream_li(stream_id);
-    if (!li) {
+    const $li = get_stream_li(stream_id);
+    if (!$li) {
         blueslip.error("passed in bad stream id " + stream_id);
         return;
     }
 
     if (in_home) {
-        li.removeClass("out_of_home_view");
+        $li.removeClass("out_of_home_view");
     } else {
-        li.addClass("out_of_home_view");
+        $li.addClass("out_of_home_view");
     }
 }
 
@@ -251,36 +251,36 @@ function build_stream_sidebar_li(sub) {
         pin_to_top: sub.pin_to_top,
     };
     args.dark_background = color_class.get_css_class(args.color);
-    const list_item = $(render_stream_sidebar_row(args));
-    return list_item;
+    const $list_item = $(render_stream_sidebar_row(args));
+    return $list_item;
 }
 
 class StreamSidebarRow {
     constructor(sub) {
         this.sub = sub;
-        this.list_item = build_stream_sidebar_li(sub);
+        this.$list_item = build_stream_sidebar_li(sub);
         this.update_unread_count();
     }
 
     update_whether_active() {
         if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
-            this.list_item.removeClass("inactive_stream");
+            this.$list_item.removeClass("inactive_stream");
         } else {
-            this.list_item.addClass("inactive_stream");
+            this.$list_item.addClass("inactive_stream");
         }
     }
 
     get_li() {
-        return this.list_item;
+        return this.$list_item;
     }
 
     remove() {
-        this.list_item.remove();
+        this.$list_item.remove();
     }
 
     update_unread_count() {
         const count = unread.num_unread_for_stream(this.sub.stream_id);
-        update_count_in_dom(this.list_item, count);
+        update_count_in_dom(this.$list_item, count);
     }
 }
 
@@ -298,15 +298,15 @@ export function create_sidebar_row(sub) {
 }
 
 export function redraw_stream_privacy(sub) {
-    const li = get_stream_li(sub.stream_id);
-    if (!li) {
+    const $li = get_stream_li(sub.stream_id);
+    if (!$li) {
         // We don't want to raise error here, if we can't find stream in subscription
         // stream list. Cause we allow org admin to update stream privacy
         // even if they don't subscribe to public stream.
         return;
     }
 
-    const div = li.find(".stream-privacy");
+    const $div = $li.find(".stream-privacy");
     const dark_background = color_class.get_css_class(sub.color);
 
     const args = {
@@ -316,18 +316,18 @@ export function redraw_stream_privacy(sub) {
     };
 
     const html = render_stream_privacy(args);
-    div.html(html);
+    $div.html(html);
 }
 
 function set_stream_unread_count(stream_id, count) {
-    const stream_li = get_stream_li(stream_id);
-    if (!stream_li) {
+    const $stream_li = get_stream_li(stream_id);
+    if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
         // just in case.
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom(stream_li, count);
+    update_count_in_dom($stream_li, count);
 }
 
 export function update_streams_sidebar(force_rerender) {
@@ -367,12 +367,12 @@ export function refresh_pinned_or_unpinned_stream(sub) {
     // a topic, we may be literally trying to get it out of
     // our sight.
     if (sub.pin_to_top) {
-        const stream_li = get_stream_li(sub.stream_id);
-        if (!stream_li) {
+        const $stream_li = get_stream_li(sub.stream_id);
+        if (!$stream_li) {
             blueslip.error("passed in bad stream id " + sub.stream_id);
             return;
         }
-        scroll_stream_into_view(stream_li);
+        scroll_stream_into_view($stream_li);
     }
 }
 
@@ -422,9 +422,9 @@ export function update_stream_sidebar_for_narrow(filter) {
         return undefined;
     }
 
-    const stream_li = get_stream_li(stream_id);
+    const $stream_li = get_stream_li(stream_id);
 
-    if (!stream_li) {
+    if (!$stream_li) {
         // This is a sanity check.  When we narrow to a subscribed
         // stream, there will always be a stream list item
         // corresponding to that stream in our sidebar.  This error
@@ -436,22 +436,22 @@ export function update_stream_sidebar_for_narrow(filter) {
     }
 
     if (!info.topic_selected) {
-        stream_li.addClass("active-filter");
+        $stream_li.addClass("active-filter");
     }
 
     if (stream_id !== topic_list.active_stream_id()) {
         topic_zoom.clear_topics();
     }
 
-    topic_list.rebuild(stream_li, stream_id);
+    topic_list.rebuild($stream_li, stream_id);
 
-    return stream_li;
+    return $stream_li;
 }
 
 export function handle_narrow_activated(filter) {
-    const stream_li = update_stream_sidebar_for_narrow(filter);
-    if (stream_li) {
-        scroll_stream_into_view(stream_li);
+    const $stream_li = update_stream_sidebar_for_narrow(filter);
+    if ($stream_li) {
+        scroll_stream_into_view($stream_li);
     }
 }
 
@@ -554,7 +554,7 @@ export function set_event_handlers() {
     const $search_input = $(".stream-list-filter").expectOne();
 
     keydown_util.handle({
-        elem: $search_input,
+        $elem: $search_input,
         handlers: {
             Enter() {
                 keydown_enter_key();
@@ -581,24 +581,24 @@ export function searching() {
 }
 
 export function escape_search() {
-    const filter = $(".stream-list-filter").expectOne();
-    if (filter.val() === "") {
+    const $filter = $(".stream-list-filter").expectOne();
+    if ($filter.val() === "") {
         clear_and_hide_search();
         return;
     }
-    filter.val("");
+    $filter.val("");
     update_streams_for_search();
 }
 
 export function clear_search(e) {
     e.stopPropagation();
-    const filter = $(".stream-list-filter").expectOne();
-    if (filter.val() === "") {
+    const $filter = $(".stream-list-filter").expectOne();
+    if ($filter.val() === "") {
         clear_and_hide_search();
         return;
     }
-    filter.val("");
-    filter.trigger("blur");
+    $filter.val("");
+    $filter.trigger("blur");
     update_streams_for_search();
 }
 
@@ -615,7 +615,7 @@ export function hide_search_section() {
 export function initiate_search() {
     show_search_section();
 
-    const filter = $(".stream-list-filter").expectOne();
+    const $filter = $(".stream-list-filter").expectOne();
 
     if (
         // Check if left column is a popover and is not visible.
@@ -625,19 +625,19 @@ export function initiate_search() {
         popovers.hide_all();
         stream_popover.show_streamlist_sidebar();
     }
-    filter.trigger("focus");
+    $filter.trigger("focus");
 
     stream_cursor.reset();
 }
 
 export function clear_and_hide_search() {
-    const filter = $(".stream-list-filter");
-    if (filter.val() !== "") {
-        filter.val("");
+    const $filter = $(".stream-list-filter");
+    if ($filter.val() !== "") {
+        $filter.val("");
         update_streams_for_search();
     }
     stream_cursor.clear();
-    filter.trigger("blur");
+    $filter.trigger("blur");
 
     hide_search_section();
 }
@@ -651,15 +651,15 @@ export function toggle_filter_displayed(e) {
     e.preventDefault();
 }
 
-export function scroll_stream_into_view(stream_li) {
-    const container = $("#stream-filters-container");
+export function scroll_stream_into_view($stream_li) {
+    const $container = $("#stream-filters-container");
 
-    if (stream_li.length !== 1) {
+    if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
 
-    scroll_util.scroll_element_into_container(stream_li, container);
+    scroll_util.scroll_element_into_container($stream_li, $container);
 }
 
 export function maybe_scroll_narrow_into_view() {
@@ -668,9 +668,9 @@ export function maybe_scroll_narrow_into_view() {
         return;
     }
 
-    const stream_li = get_current_stream_li();
-    if (stream_li) {
-        scroll_stream_into_view(stream_li);
+    const $stream_li = get_current_stream_li();
+    if ($stream_li) {
+        scroll_stream_into_view($stream_li);
     }
 }
 
@@ -682,13 +682,13 @@ export function get_current_stream_li() {
         return undefined;
     }
 
-    const stream_li = get_stream_li(stream_id);
+    const $stream_li = get_stream_li(stream_id);
 
-    if (!stream_li) {
+    if (!$stream_li) {
         // This code path shouldn't ever be reached.
         blueslip.warn("No active stream_li found for defined id " + stream_id);
         return undefined;
     }
 
-    return stream_li;
+    return $stream_li;
 }

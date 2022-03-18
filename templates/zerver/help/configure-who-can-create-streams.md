@@ -2,17 +2,11 @@
 
 {!admin-only.md!}
 
-Zulip allows you to separately control permissions for creating public and private streams.
-You can restrict stream creation to:
-
-* Organization administrators
-* Organization administrators and moderators
-* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
-* Organization administrators and all members
-
-For corporations and other entities with controlled access, we highly
-recommend keeping stream creation open. Open organizations may choose to be
-less permissive, especially with public streams.
+Zulip allows you to separately control
+[permissions](/help/roles-and-permissions) for creating public and private
+streams. For corporations and other entities with controlled access, we highly
+recommend keeping stream creation open. Open organizations may choose to be less
+permissive, especially with public streams.
 
 ### Manage who can create streams
 
@@ -35,3 +29,8 @@ less permissive, especially with public streams.
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [Create a stream](/help/create-a-stream)
+* [Roles and permissions](/help/roles-and-permissions)

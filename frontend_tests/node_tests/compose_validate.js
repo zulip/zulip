@@ -131,10 +131,10 @@ test_ui("validate", ({override, mock_template}) => {
         $("#compose-send-button").trigger("focus");
         $("#compose-send-button .loader").hide();
 
-        const pm_pill_container = $.create("fake-pm-pill-container");
+        const $pm_pill_container = $.create("fake-pm-pill-container");
         $("#private_message_recipient")[0] = {};
-        $("#private_message_recipient").set_parent(pm_pill_container);
-        pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+        $("#private_message_recipient").set_parent($pm_pill_container);
+        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
         $("#private_message_recipient").before = () => {};
 
         compose_pm_pill.initialize();
@@ -242,6 +242,13 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
+    assert.ok(!compose_validate.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "Topics are required in this organization"}),
+    );
+
+    compose_state.topic("(no topic)");
     assert.ok(!compose_validate.validate());
     assert.equal(
         $("#compose-error-msg").html(),
@@ -467,38 +474,38 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
 test_ui("test_check_overflow_text", () => {
     page_params.max_message_length = 10000;
 
-    const textarea = $("#compose-textarea");
-    const indicator = $("#compose_limit_indicator");
-    const send_button = $("#compose-send-button");
+    const $textarea = $("#compose-textarea");
+    const $indicator = $("#compose_limit_indicator");
+    const $send_button = $("#compose-send-button");
 
     // Indicator should show red colored text
-    textarea.val("a".repeat(10000 + 1));
+    $textarea.val("a".repeat(10000 + 1));
     compose_validate.check_overflow_text();
-    assert.ok(indicator.hasClass("over_limit"));
-    assert.equal(indicator.text(), "10001/10000");
-    assert.ok(textarea.hasClass("over_limit"));
+    assert.ok($indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "10001/10000");
+    assert.ok($textarea.hasClass("over_limit"));
     assert.equal(
         $("#compose-error-msg").html(),
         "translated HTML: Message length shouldn't be greater than 10000 characters.",
     );
-    assert.ok(send_button.prop("disabled"));
+    assert.ok($send_button.prop("disabled"));
 
     $("#compose-send-status").stop = () => ({fadeOut: () => {}});
 
     // Indicator should show orange colored text
-    textarea.val("a".repeat(9000 + 1));
+    $textarea.val("a".repeat(9000 + 1));
     compose_validate.check_overflow_text();
-    assert.ok(!indicator.hasClass("over_limit"));
-    assert.equal(indicator.text(), "9001/10000");
-    assert.ok(!textarea.hasClass("over_limit"));
-    assert.ok(!send_button.prop("disabled"));
+    assert.ok(!$indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "9001/10000");
+    assert.ok(!$textarea.hasClass("over_limit"));
+    assert.ok(!$send_button.prop("disabled"));
 
     // Indicator must be empty
-    textarea.val("a".repeat(9000));
+    $textarea.val("a".repeat(9000));
     compose_validate.check_overflow_text();
-    assert.ok(!indicator.hasClass("over_limit"));
-    assert.equal(indicator.text(), "");
-    assert.ok(!textarea.hasClass("over_limit"));
+    assert.ok(!$indicator.hasClass("over_limit"));
+    assert.equal($indicator.text(), "");
+    assert.ok(!$textarea.hasClass("over_limit"));
 });
 
 test_ui("test_message_overflow", () => {
@@ -729,10 +736,10 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     }
 
     // Simulate that the row was added to the DOM.
-    const warning_row = $("<warning row>");
+    const $warning_row = $("<warning-row-stub>");
 
     let looked_for_existing;
-    warning_row.data = (field) => {
+    $warning_row.data = (field) => {
         if (field === "user-id") {
             looked_for_existing = true;
             return "34";
@@ -743,9 +750,9 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
         throw new Error(`Unknown field ${field}`);
     };
 
-    const previous_users = $("#compose_invite_users .compose_invite_user");
-    previous_users.length = 1;
-    previous_users[0] = warning_row;
+    const $previous_users = $("#compose_invite_users .compose_invite_user");
+    $previous_users.length = 1;
+    $previous_users[0] = $warning_row;
     $("#compose_invite_users").hide();
 
     // Now try to mention the same person again. The template should
@@ -781,26 +788,39 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     stream_data.add_sub(sub);
 
     // The error message area where it is shown
-    const error_area = $("#compose_resolved_topic");
-    error_area.html("");
+    const $error_area = $("#compose_resolved_topic");
+    compose_validate.clear_topic_resolved_warning();
+    // Hack to make this empty for zjquery; this is conceptually done
+    // in the previous line.
+    $error_area.html("");
+    assert.ok(!$error_area.visible());
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("Do not exist");
     compose_state.topic(resolved_topic.resolve_name("hello"));
+    compose_state.message_content("content");
 
     // Do not show a warning if stream name does not exist
-    compose_validate.warn_if_topic_resolved();
-    assert.ok(!error_area.visible());
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok(!$error_area.visible());
 
     compose_state.stream_name("random");
 
     // Show the warning now as stream also exists
-    compose_validate.warn_if_topic_resolved();
-    assert.ok(error_area.visible());
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok($error_area.visible());
+
+    // Call it again with false; this should be a noop.
+    compose_validate.warn_if_topic_resolved(false);
+    assert.ok($error_area.visible());
 
     compose_state.topic("hello");
 
     // The warning will be cleared now
-    compose_validate.warn_if_topic_resolved();
-    assert.ok(!error_area.visible());
+    compose_validate.warn_if_topic_resolved(true);
+    assert.ok(!$error_area.visible());
+
+    // Calling with false won't do anything.
+    compose_validate.warn_if_topic_resolved(false);
+    assert.ok(!$error_area.visible());
 });

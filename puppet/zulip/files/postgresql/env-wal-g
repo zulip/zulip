@@ -4,11 +4,18 @@ if [ -z "$ZULIP_SECRETS_CONF" ]; then
 fi
 
 export PGHOST=/var/run/postgresql/
-AWS_REGION=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_region)
+AWS_REGION=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_region 2>/dev/null)
+if [ "$AWS_REGION" = "" ]; then
+    # Fall back to the current region, if possible
+    AZ=$(ec2metadata --availability-zone || true)
+    if [ -n "$AZ" ] && [ "$AZ" != "unavailable" ]; then
+        AWS_REGION=$(echo "$AZ" | sed 's/.$//')
+    fi
+fi
 export AWS_REGION
-AWS_ACCESS_KEY_ID=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_key)
+AWS_ACCESS_KEY_ID=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_key 2>/dev/null)
 export AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_secret_key)
+AWS_SECRET_ACCESS_KEY=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_secret_key 2>/dev/null)
 export AWS_SECRET_ACCESS_KEY
 if ! s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_bucket 2>&1); then
     echo "Could not determine which s3 bucket to use:" "$s3_backups_bucket"

@@ -56,7 +56,7 @@ def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]], huddle:
 
 
 def session_cache_items(items_for_remote_cache: Dict[str, str], session: Session) -> None:
-    if settings.SESSION_ENGINE != "django.contrib.sessions.backends.cached_db":
+    if settings.SESSION_ENGINE != "zerver.lib.safe_session_cached_db":
         # If we're not using the cached_db session engine, we there
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.

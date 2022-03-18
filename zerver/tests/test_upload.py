@@ -1303,49 +1303,42 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
-        # Test an image larger than max is resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((50, 50), im.size)
-            self.assertTrue(is_animated)
-            assert still_img_data
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+        for img_format in ("gif", "png"):
+            animated_large_img_data = read_test_image_file(f"animated_large_img.{img_format}")
 
-        # Test an image file larger than max is resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((50, 50), im.size)
-            self.assertTrue(is_animated)
-            assert still_img_data is not None
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+            def test_resize(size: int = 50) -> None:
+                resized_img_data, is_animated, still_img_data = resize_emoji(
+                    animated_large_img_data, size=50
+                )
+                im = Image.open(io.BytesIO(resized_img_data))
+                self.assertEqual((size, size), im.size)
+                self.assertTrue(is_animated)
+                assert still_img_data
+                still_image = Image.open(io.BytesIO(still_img_data))
+                self.assertEqual((50, 50), still_image.size)
 
-        # Test an image smaller than max and smaller than file size max is not resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((256, 256), im.size)
-            self.assertTrue(is_animated)
+            # Test an image larger than max is resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
+                test_resize()
 
-            # We unconditionally resize the still_image
-            assert still_img_data is not None
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+            # Test an image file larger than max is resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
+                test_resize()
 
-        # Test a non-animated image which does need to be resized
+            # Test an image smaller than max and smaller than file size max is not resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
+                test_resize(size=256)
+
+        # Test a non-animated GIF image which does need to be resized
         still_large_img_data = read_test_image_file("still_large_img.gif")
+        resized_img_data, is_animated, no_still_data = resize_emoji(still_large_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
+        self.assertFalse(is_animated)
+        assert no_still_data is None
+
+        # Test a non-animated and non-animatable image format which needs to be resized
+        still_large_img_data = read_test_image_file("img.jpg")
         resized_img_data, is_animated, no_still_data = resize_emoji(still_large_img_data, size=50)
         im = Image.open(io.BytesIO(resized_img_data))
         self.assertEqual((50, 50), im.size)

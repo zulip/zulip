@@ -56,33 +56,33 @@ function format_user_group_list_item(group) {
 
 function render_user_stream_list(streams, user) {
     streams.sort(compare_by_name);
-    const container = $("#user-profile-modal .user-stream-list");
-    container.empty();
-    ListWidget.create(container, streams, {
+    const $container = $("#user-profile-modal .user-stream-list");
+    $container.empty();
+    ListWidget.create($container, streams, {
         name: `user-${user.user_id}-stream-list`,
         modifier(item) {
             return format_user_stream_list_item(item, user);
         },
         filter: {
-            element: $("#user-profile-streams-tab .stream-search"),
+            $element: $("#user-profile-streams-tab .stream-search"),
             predicate(item, value) {
                 return item && item.name.toLocaleLowerCase().includes(value);
             },
         },
-        simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__body"),
     });
 }
 
 function render_user_group_list(groups, user) {
     groups.sort(compare_by_name);
-    const container = $("#user-profile-modal .user-group-list");
-    container.empty();
-    ListWidget.create(container, groups, {
+    const $container = $("#user-profile-modal .user-group-list");
+    $container.empty();
+    ListWidget.create($container, groups, {
         name: `user-${user.user_id}-group-list`,
         modifier(item) {
             return format_user_group_list_item(item);
         },
-        simplebar_container: $("#user-profile-modal .modal__body"),
+        $simplebar_container: $("#user-profile-modal .modal__body"),
     });
 }
 
@@ -190,9 +190,9 @@ export function show_user_profile(user) {
         },
     };
 
-    const elem = components.toggle(opts).get();
-    elem.addClass("large allow-overflow");
-    $("#tab-toggle").append(elem);
+    const $elem = components.toggle(opts).get();
+    $elem.addClass("large allow-overflow");
+    $("#tab-toggle").append($elem);
 
     settings_account.initialize_custom_user_type_fields(
         "#user-profile-modal #content",
@@ -228,14 +228,14 @@ export function register_click_handlers() {
 
     $("body").on("click", "#user-profile-modal .remove-subscription-button", (e) => {
         e.preventDefault();
-        const stream_row = $(e.currentTarget).closest("[data-stream-id]");
-        const stream_id = Number.parseInt(stream_row.attr("data-stream-id"), 10);
+        const $stream_row = $(e.currentTarget).closest("[data-stream-id]");
+        const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
         const target_user_id = Number.parseInt(
-            stream_row.closest("#user-profile-modal").attr("data-user-id"),
+            $stream_row.closest("#user-profile-modal").attr("data-user-id"),
             10,
         );
-        const alert_box = $("#user-profile-streams-tab .stream_list_info");
+        const $alert_box = $("#user-profile-streams-tab .stream_list_info");
 
         function removal_success(data) {
             if (data.removed.length > 0) {
@@ -244,17 +244,17 @@ export function register_click_handlers() {
                 // However, the user profile component has not yet
                 // implemented live update, so we do update its
                 // UI manually here by removing the stream from this list.
-                stream_row.remove();
+                $stream_row.remove();
 
                 ui_report.success(
                     $t_html({defaultMessage: "Unsubscribed successfully!"}),
-                    alert_box,
+                    $alert_box,
                     1200,
                 );
             } else {
                 ui_report.client_error(
                     $t_html({defaultMessage: "Already not subscribed."}),
-                    alert_box,
+                    $alert_box,
                     1200,
                 );
             }
@@ -274,7 +274,7 @@ export function register_click_handlers() {
                 );
             }
 
-            ui_report.client_error(error_message, alert_box, 1200);
+            ui_report.client_error(error_message, $alert_box, 1200);
         }
 
         if (sub.invite_only && people.is_my_user_id(target_user_id)) {
@@ -287,12 +287,12 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", "#user-profile-modal #clear_stream_search", (e) => {
-        const input = $("#user-profile-streams-tab .stream-search");
-        input.val("");
+        const $input = $("#user-profile-streams-tab .stream-search");
+        $input.val("");
 
         // This is a hack to rerender complete
         // stream list once the text is cleared.
-        input.trigger("input");
+        $input.trigger("input");
 
         e.stopPropagation();
         e.preventDefault();
@@ -309,13 +309,13 @@ export function register_click_handlers() {
     });
 
     $("body").on("input", "#user-profile-streams-tab .stream-search", () => {
-        const input = $("#user-profile-streams-tab .stream-search");
-        if (input.val().trim().length > 0) {
+        const $input = $("#user-profile-streams-tab .stream-search");
+        if ($input.val().trim().length > 0) {
             $("#user-profile-streams-tab #clear_stream_search").show();
-            input.css("margin-right", "-20px");
+            $input.css("margin-right", "-20px");
         } else {
             $("#user-profile-streams-tab #clear_stream_search").hide();
-            input.css("margin-right", "0");
+            $input.css("margin-right", "0");
         }
     });
 }

@@ -312,7 +312,7 @@ The code in `static/js/zform.js` renders the form (not
 shown here) and then sets up a click handler like below:
 
 ```js
-    elem.find('button').on('click', function (e) {
+    $elem.find('button').on('click', function (e) {
         e.stopPropagation();
 
         // Grab our index from the markup.

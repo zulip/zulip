@@ -50,6 +50,7 @@ from zerver.models import Realm, RealmUserDefault, Stream, Subscription, UserPro
 # These fields are used for "stream" events, and are included in the
 # larger "subscription" events that also contain personal settings.
 basic_stream_fields = [
+    ("date_created", int),
     ("description", str),
     ("first_message_id", OptionalType(int)),
     ("history_public_to_subscribers", bool),
@@ -61,7 +62,6 @@ basic_stream_fields = [
     ("rendered_description", str),
     ("stream_id", int),
     ("stream_post_policy", int),
-    ("date_created", int),
 ]
 
 subscription_fields: Sequence[Tuple[str, object]] = [
@@ -1644,10 +1644,29 @@ update_message_flags_remove_event = event_dict_type(
         ("type", Equals("update_message_flags")),
         ("op", Equals("remove")),
         ("operation", Equals("remove")),
-        ("flag", str),
+        ("flag", EnumType(["read", "starred"])),
         ("messages", ListType(int)),
         ("all", bool),
-    ]
+    ],
+    optional_keys=[
+        (
+            "message_details",
+            StringDictType(
+                DictType(
+                    required_keys=[
+                        ("type", EnumType(["private", "stream"])),
+                    ],
+                    optional_keys=[
+                        ("mentioned", bool),
+                        ("user_ids", ListType(int)),
+                        ("stream_id", int),
+                        ("topic", str),
+                        ("unmuted_stream_msg", bool),
+                    ],
+                )
+            ),
+        )
+    ],
 )
 check_update_message_flags_remove = make_checker(update_message_flags_remove_event)
 

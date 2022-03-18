@@ -43,9 +43,9 @@ run_test("pills", ({override}) => {
 
     people.get_realm_users = () => [iago, othello, hamlet];
 
-    const recipient_stub = $("#private_message_recipient");
+    const $recipient_stub = $("#private_message_recipient");
     const pill_container_stub = "pill-container";
-    recipient_stub.set_parent(pill_container_stub);
+    $recipient_stub.set_parent(pill_container_stub);
     let create_item_handler;
 
     const all_pills = new Map();
@@ -132,7 +132,7 @@ run_test("pills", ({override}) => {
     }
 
     function input_pill_stub(opts) {
-        assert.equal(opts.container, pill_container_stub);
+        assert.equal(opts.$container, pill_container_stub);
         create_item_handler = opts.create_item_from_text;
         assert.ok(create_item_handler);
         return pills;

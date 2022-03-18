@@ -23,8 +23,8 @@ import * as sub_store from "./sub_store";
 // doing so is unnecessary with the current code.  Ideally, we'd do a
 // refactor to address that, however.
 function update_stream_setting(sub, value, setting) {
-    const setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id)}`);
-    setting_checkbox.prop("checked", value);
+    const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id)}`);
+    $setting_checkbox.prop("checked", value);
     sub[setting] = value;
 }
 

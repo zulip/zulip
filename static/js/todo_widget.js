@@ -158,7 +158,7 @@ export class TaskData {
 }
 
 export function activate(opts) {
-    const elem = opts.elem;
+    const $elem = opts.$elem;
     const callback = opts.callback;
 
     const task_data = new TaskData({
@@ -167,24 +167,24 @@ export function activate(opts) {
 
     function render() {
         const html = render_widgets_todo_widget();
-        elem.html(html);
+        $elem.html(html);
 
-        elem.find("button.add-task").on("click", (e) => {
+        $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
-            elem.find(".widget-error").text("");
-            const task = elem.find("input.add-task").val().trim();
-            const desc = elem.find("input.add-desc").val().trim();
+            $elem.find(".widget-error").text("");
+            const task = $elem.find("input.add-task").val().trim();
+            const desc = $elem.find("input.add-desc").val().trim();
 
             if (task === "") {
                 return;
             }
 
-            elem.find(".add-task").val("").trigger("focus");
-            elem.find(".add-desc").val("").trigger("focus");
+            $elem.find(".add-task").val("").trigger("focus");
+            $elem.find(".add-desc").val("").trigger("focus");
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {
-                elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
+                $elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
                 return;
             }
 
@@ -196,10 +196,10 @@ export function activate(opts) {
     function render_results() {
         const widget_data = task_data.get_widget_data();
         const html = render_widgets_todo_widget_tasks(widget_data);
-        elem.find("ul.todo-widget").html(html);
-        elem.find(".widget-error").text("");
+        $elem.find("ul.todo-widget").html(html);
+        $elem.find(".widget-error").text("");
 
-        elem.find("input.task").on("click", (e) => {
+        $elem.find("input.task").on("click", (e) => {
             e.stopPropagation();
 
             if (page_params.is_spectator) {
@@ -209,7 +209,7 @@ export function activate(opts) {
                 // so we need to just toggle the checkbox back to its
                 // previous state.
                 $(e.target).prop("checked", !$(e.target).is(":checked"));
-                $(e.target).blur();
+                $(e.target).trigger("blur");
                 return;
             }
             const key = $(e.target).attr("data-key");
@@ -219,7 +219,7 @@ export function activate(opts) {
         });
     }
 
-    elem.handle_events = function (events) {
+    $elem.handle_events = function (events) {
         for (const event of events) {
             task_data.handle_event(event.sender_id, event.data);
         }

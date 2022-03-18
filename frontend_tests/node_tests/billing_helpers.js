@@ -52,8 +52,8 @@ run_test("create_ajax_request", ({override}) => {
         make_indicator: 0,
     };
 
-    loading.make_indicator = (loading_indicator, config) => {
-        assert.equal(loading_indicator.selector, form_loading_indicator);
+    loading.make_indicator = ($loading_indicator, config) => {
+        assert.equal($loading_indicator.selector, form_loading_indicator);
         assert.equal(config.text, "Processing ...");
         assert.equal(config.abs_positioned, true);
         state.make_indicator += 1;

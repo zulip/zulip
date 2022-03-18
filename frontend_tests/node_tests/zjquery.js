@@ -45,28 +45,28 @@ run_test("basics", () => {
 
     // Next, look at how several functions correctly simulate setting
     // and getting for you.
-    const widget = $("#my-widget");
+    const $widget = $("#my-widget");
 
-    widget.attr("data-employee-id", 42);
-    assert.equal(widget.attr("data-employee-id"), 42);
-    assert.equal(widget.data("employee-id"), 42);
+    $widget.attr("data-employee-id", 42);
+    assert.equal($widget.attr("data-employee-id"), 42);
+    assert.equal($widget.data("employee-id"), 42);
 
-    widget.data("department-id", 77);
-    assert.equal(widget.attr("data-department-id"), 77);
-    assert.equal(widget.data("department-id"), 77);
+    $widget.data("department-id", 77);
+    assert.equal($widget.attr("data-department-id"), 77);
+    assert.equal($widget.data("department-id"), 77);
 
-    widget.data("department-name", "hr");
-    assert.equal(widget.attr("data-department-name"), "hr");
-    assert.equal(widget.data("department-name"), "hr");
+    $widget.data("department-name", "hr");
+    assert.equal($widget.attr("data-department-name"), "hr");
+    assert.equal($widget.data("department-name"), "hr");
 
-    widget.html("<b>hello</b>");
-    assert.equal(widget.html(), "<b>hello</b>");
+    $widget.html("<b>hello</b>"); // eslint-disable-line no-jquery/no-parse-html-literal
+    assert.equal($widget.html(), "<b>hello</b>");
 
-    widget.prop("title", "My widget");
-    assert.equal(widget.prop("title"), "My widget");
+    $widget.prop("title", "My widget");
+    assert.equal($widget.prop("title"), "My widget");
 
-    widget.val("42");
-    assert.equal(widget.val(), "42");
+    $widget.val("42");
+    assert.equal($widget.val(), "42");
 });
 
 run_test("finding_related_objects", () => {
@@ -84,17 +84,17 @@ run_test("finding_related_objects", () => {
     // But you can set up your tests to simulate DOM relationships.
     //
     // We will use set_find_results(), which is a special zjquery helper.
-    const emoji = $('<div class="emoji">');
-    $("#my-message").set_find_results(".emoji", emoji);
+    const $emoji = $("<emoji-stub>");
+    $("#my-message").set_find_results(".emoji", $emoji);
 
     // And then calling the function produces the desired effect:
     update_message_emoji("foo.png");
-    assert.equal(emoji.attr("src"), "foo.png");
+    assert.equal($emoji.attr("src"), "foo.png");
 
     // Sometimes you want to deliberately test paths that do not find an
     // element. You can pass 'false' as the result for those cases.
-    emoji.set_find_results(".random", false);
-    assert.equal(emoji.find(".random").length, 0);
+    $emoji.set_find_results(".random", false);
+    assert.equal($emoji.find(".random").length, 0);
     /*
     An important thing to understand is that zjquery doesn't truly
     simulate DOM.  The way you make relationships work in zjquery
@@ -103,12 +103,12 @@ run_test("finding_related_objects", () => {
     Here is another example.
     */
 
-    const my_parents = $("#folder1,#folder4");
-    const elem = $("#folder555");
+    const $my_parents = $("#folder1,#folder4");
+    const $elem = $("#folder555");
 
-    elem.set_parents_result(".folder", my_parents);
-    elem.parents(".folder").addClass("active");
-    assert.ok(my_parents.hasClass("active"));
+    $elem.set_parents_result(".folder", $my_parents);
+    $elem.parents(".folder").addClass("active");
+    assert.ok($my_parents.hasClass("active"));
 });
 
 run_test("clicks", () => {
@@ -188,12 +188,12 @@ run_test("create", () => {
     // You can create jQuery objects that aren't tied to any particular
     // selector, and which just have a name.
 
-    const obj1 = $.create("the table holding employees");
-    const obj2 = $.create("the collection of rows in the table");
+    const $obj1 = $.create("the table holding employees");
+    const $obj2 = $.create("the collection of rows in the table");
 
-    obj1.show();
-    assert.ok(obj1.visible());
+    $obj1.show();
+    assert.ok($obj1.visible());
 
-    obj2.addClass(".striped");
-    assert.ok(obj2.hasClass(".striped"));
+    $obj2.addClass(".striped");
+    assert.ok($obj2.hasClass(".striped"));
 });

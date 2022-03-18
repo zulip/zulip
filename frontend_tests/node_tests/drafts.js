@@ -120,8 +120,8 @@ test("draft_model add", ({override}) => {
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     override(Date, "now", () => 1);
     const expected = {...draft_1};
@@ -136,8 +136,8 @@ test("draft_model edit", () => {
     assert.equal(ls.get("draft"), undefined);
     let id;
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     with_overrides(({override}) => {
         override(Date, "now", () => 1);
@@ -161,8 +161,8 @@ test("draft_model delete", ({override}) => {
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     override(Date, "now", () => 1);
     const expected = {...draft_1};
@@ -212,8 +212,8 @@ test("initialize", ({override_rewire}) => {
         assert.ok(called);
     };
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
 });
@@ -239,8 +239,8 @@ test("remove_old_drafts", () => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.remove_old_drafts();
     assert.deepEqual(draft_model.get(), {id3: draft_3});
@@ -256,9 +256,9 @@ test("update_draft", ({override}) => {
     override(compose_state, "get_message_type", () => "private");
     override(compose_state, "private_message_recipient", () => "aaron@zulip.com");
 
-    const container = $(".top_left_drafts");
-    const child = $(".unread_count");
-    container.set_find_results(".unread_count", child);
+    const $container = $(".top_left_drafts");
+    const $child = $(".unread_count");
+    $container.set_find_results(".unread_count", $child);
 
     tippy_args = {
         content: "translated: Saved as draft",
@@ -313,8 +313,8 @@ test("delete_all_drafts", () => {
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.delete_all_drafts();
     assert.deepEqual(draft_model.get(), {});
@@ -451,8 +451,8 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     expected[0].stream_name = "stream-rename";
 
-    const unread_count = $('<span class="unread_count"></span>');
-    $(".top_left_drafts").set_find_results(".unread_count", unread_count);
+    const $unread_count = $("<unread-count-stub>");
+    $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.launch();
     timerender.__Rewire__("render_now", stub_render_now);

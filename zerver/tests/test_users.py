@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -45,8 +46,9 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_topics import add_topic_mute
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -61,6 +63,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroupMembership,
     UserHotspot,
     UserProfile,
     check_valid_user_ids,
@@ -213,7 +216,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -223,7 +226,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -235,7 +238,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -276,7 +279,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -287,7 +290,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -520,17 +523,32 @@ class PermissionTest(ZulipTestCase):
 
         user_profile = self.example_user(user_email)
         old_role = user_profile.role
+        old_system_group = get_system_user_group_for_user(user_profile)
 
         self.assertTrue(self.check_property_for_role(user_profile, old_role))
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=old_system_group
+            ).exists()
+        )
 
         req = dict(role=orjson.dumps(new_role).decode())
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        num_events = 3
+        if UserProfile.ROLE_MEMBER in [old_role, new_role]:
+            num_events = 4
+        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
         user_profile = self.example_user(user_email)
         self.assertTrue(self.check_property_for_role(user_profile, new_role))
+        system_group = get_system_user_group_for_user(user_profile)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=system_group
+            ).exists()
+        )
 
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], user_profile.id)
@@ -793,7 +811,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=8):
+                with self.tornado_redirected_to_list(events, expected_num_events=10):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -803,8 +821,8 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 84)
-        self.assert_length(cache_tries, 27)
+        self.assert_length(queries, 90)
+        self.assert_length(cache_tries, 29)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1551,6 +1569,24 @@ class ActivateTest(ZulipTestCase):
             Confirmation.objects.get(
                 confirmation_key=desdemona_never_expire_multiuse_key
             ).expiry_date
+        )
+
+    def test_clear_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        session_key = self.client.session.session_key
+        self.assertTrue(session_key)
+
+        result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
+
+        do_deactivate_user(user, acting_user=None)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
+
+        result = self.client_get("/json/users")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
         )
 
     def test_clear_scheduled_jobs(self) -> None:

@@ -14,7 +14,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/airbrake?api_key={bot.api_key}"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
-        body = "{}"  # This empty body should generate a KeyError on the webhook code side.
+        body = "{}"  # This empty body should generate a ValidationError on the webhook code side.
 
         data = {
             "url": url,
@@ -29,9 +29,9 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             expected_response = {"result": "error", "msg": "Internal server error"}
             self.assertEqual(orjson.loads(response.content), expected_response)
 
-        # Intention of this test looks like to trigger keyError
-        # so just testing KeyError is printed along with Traceback in logs
-        self.assertTrue("KeyError" in logs.output[0])
+        # Intention of this test looks like to trigger ValidationError
+        # so just testing ValidationError is printed along with Traceback in logs
+        self.assertTrue("ValidationError" in logs.output[0])
         self.assertTrue("Traceback (most recent call last)" in logs.output[0])
         self.assertEqual(
             logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake"

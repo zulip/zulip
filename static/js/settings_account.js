@@ -30,10 +30,10 @@ import {user_settings} from "./user_settings";
 let password_quality; // Loaded asynchronously
 
 export function update_email(new_email) {
-    const email_input = $("#change_email");
+    const $email_input = $("#change_email");
 
-    if (email_input) {
-        email_input.text(new_email);
+    if ($email_input) {
+        $email_input.text(new_email);
     }
 }
 
@@ -41,9 +41,9 @@ export function update_full_name(new_full_name) {
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
-    const full_name_input = $(".full-name-change-form input[name='full_name']");
-    if (full_name_input) {
-        full_name_input.val(new_full_name);
+    const $full_name_input = $(".full-name-change-form input[name='full_name']");
+    if ($full_name_input) {
+        $full_name_input.val(new_full_name);
     }
 }
 
@@ -103,14 +103,14 @@ function update_custom_profile_field(field, method) {
         field_id = field.id;
     }
 
-    const spinner_element = $(
+    const $spinner_element = $(
         `.custom_user_field[data-field-id="${CSS.escape(field_id)}"] .custom-field-status`,
     ).expectOne();
     settings_ui.do_settings_change(
         method,
         "/json/users/me/profile_data",
         {data: JSON.stringify([field])},
-        spinner_element,
+        $spinner_element,
     );
 }
 
@@ -225,10 +225,10 @@ export function initialize_custom_user_type_fields(
         // If field is not editable and field value is null, we don't expect
         // pill container for that field and proceed further
         if (field.type === field_types.USER.id && (field_value_raw || is_editable)) {
-            const pill_container = $(element_id)
+            const $pill_container = $(element_id)
                 .find(`.custom_user_field[data-field-id="${CSS.escape(field.id)}"] .pill-container`)
                 .expectOne();
-            const pills = user_pill.create_pills(pill_container);
+            const pills = user_pill.create_pills($pill_container);
 
             function update_custom_user_field() {
                 const fields = [];
@@ -253,15 +253,15 @@ export function initialize_custom_user_type_fields(
             }
 
             if (is_editable) {
-                const input = pill_container.children(".input");
+                const $input = $pill_container.children(".input");
                 if (set_handler_on_update) {
                     const opts = {update_func: update_custom_user_field, user: true};
-                    pill_typeahead.set_up(input, pills, opts);
+                    pill_typeahead.set_up($input, pills, opts);
                     pills.onPillRemove(() => {
                         update_custom_user_field();
                     });
                 } else {
-                    pill_typeahead.set_up(input, pills, {user: true});
+                    pill_typeahead.set_up($input, pills, {user: true});
                 }
             }
             user_pills.set(field.id, pills);
@@ -488,26 +488,32 @@ export function set_up() {
             validate_input,
         });
         $("#pw_change_controls").show();
+
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             password_quality = (await import("./password_quality")).password_quality;
             $("#pw_strength .bar").removeClass("fade");
+
+            $("#new_password").on("input", () => {
+                const $field = $("#new_password");
+                password_quality($field.val(), $("#pw_strength .bar"), $field);
+            });
         }
     });
 
     function do_change_password(e) {
         e.preventDefault();
         e.stopPropagation();
-        const change_password_error = $("#change_password_modal").find("#dialog_error");
-        change_password_error.hide();
+        const $change_password_error = $("#change_password_modal").find("#dialog_error");
+        $change_password_error.hide();
 
         const data = {
             old_password: $("#old_password").val(),
             new_password: $("#new_password").val(),
         };
 
-        const new_pw_field = $("#new_password");
+        const $new_pw_field = $("#new_password");
         const new_pw = data.new_password;
         if (new_pw !== "") {
             if (password_quality === undefined) {
@@ -517,7 +523,7 @@ export function set_up() {
                         "Sorry for the trouble!",
                 );
                 return;
-            } else if (!password_quality(new_pw, undefined, new_pw_field)) {
+            } else if (!password_quality(new_pw, undefined, $new_pw_field)) {
                 settings_change_error($t_html({defaultMessage: "New password is too weak"}));
                 return;
             }
@@ -533,7 +539,7 @@ export function set_up() {
                 dialog_widget.hide_dialog_spinner();
                 channel.set_password_change_in_progress(false);
             },
-            error_msg_element: change_password_error,
+            $error_msg_element: $change_password_error,
             failure_msg_html: null,
         };
         settings_ui.do_settings_change(
@@ -545,11 +551,6 @@ export function set_up() {
         );
         clear_password_change();
     }
-
-    $("#new_password").on("input", () => {
-        const field = $("#new_password");
-        password_quality?.(field.val(), $("#pw_strength .bar"), field);
-    });
 
     $("#full_name").on("change", (e) => {
         e.preventDefault();
@@ -569,7 +570,7 @@ export function set_up() {
     function do_change_email(e) {
         e.preventDefault();
         e.stopPropagation();
-        const change_email_error = $("#change_email_modal").find("#dialog_error");
+        const $change_email_error = $("#change_email_modal").find("#dialog_error");
         const data = {};
         data.email = $("#change_email_container").find("input[name='email']").val();
 
@@ -588,7 +589,7 @@ export function set_up() {
             error_continuation() {
                 dialog_widget.hide_dialog_spinner();
             },
-            error_msg_element: change_email_error,
+            $error_msg_element: $change_email_error,
             success_msg_html: $t_html(
                 {defaultMessage: "Check your email ({email}) to confirm the new address."},
                 {email: data.email},
@@ -605,9 +606,9 @@ export function set_up() {
     }
 
     function change_email_post_render() {
-        const input_elem = $("#change_email_container").find("input[name='email']");
+        const $input_elem = $("#change_email_container").find("input[name='email']");
         const email = $("#change_email").text().trim();
-        input_elem.val(email);
+        $input_elem.val(email);
     }
 
     $("#change_email").on("click", (e) => {
@@ -633,8 +634,8 @@ export function set_up() {
     $("#profile-settings").on("click", ".custom_user_field .remove_date", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const field = $(e.target).closest(".custom_user_field").expectOne();
-        const field_id = Number.parseInt($(field).attr("data-field-id"), 10);
+        const $field = $(e.target).closest(".custom_user_field").expectOne();
+        const field_id = Number.parseInt($($field).attr("data-field-id"), 10);
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
@@ -731,11 +732,11 @@ export function set_up() {
         });
     });
 
-    function upload_avatar(file_input) {
+    function upload_avatar($file_input) {
         const form_data = new FormData();
 
         form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
+        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
             form_data.append("file-" + i, file);
         }
         display_avatar_upload_started();
@@ -785,9 +786,9 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
 
-        const input_elem = $(e.currentTarget);
-        const setting_name = input_elem.attr("name");
-        const checked = input_elem.prop("checked");
+        const $input_elem = $(e.currentTarget);
+        const setting_name = $input_elem.attr("name");
+        const checked = $input_elem.prop("checked");
 
         const data = {[setting_name]: checked};
         settings_ui.do_settings_change(

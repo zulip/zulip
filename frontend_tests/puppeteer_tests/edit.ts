@@ -4,8 +4,8 @@ import common from "../puppeteer_lib/common";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.evaluate(() => {
-        const msg = $("#zhome .message_row").last();
-        msg.find(".message_control_button.actions_hover").trigger("click");
+        const $msg = $("#zhome .message_row").last();
+        $msg.find(".message_control_button.actions_hover").trigger("click");
         $(".popover_edit_message").trigger("click");
     });
     await page.waitForSelector(".message_edit_content", {visible: true});

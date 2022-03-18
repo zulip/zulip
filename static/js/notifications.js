@@ -170,7 +170,7 @@ export function notify_above_composebox(
     link_msg_id,
     link_text,
 ) {
-    const notification_html = $(
+    const $notification = $(
         render_compose_notification({
             note,
             link_class,
@@ -180,7 +180,7 @@ export function notify_above_composebox(
         }),
     );
     clear_compose_notifications();
-    $("#out-of-view-notification").append(notification_html);
+    $("#out-of-view-notification").append($notification);
     $("#out-of-view-notification").show();
 }
 
@@ -237,10 +237,10 @@ export function process_notification(notification) {
     let msg_count = 1;
     let notification_source;
     // Convert the content to plain text, replacing emoji with their alt text
-    content = $("<div/>").html(message.content);
-    ui.replace_emoji_with_text(content);
-    spoilers.hide_spoilers_in_notification(content);
-    content = content.text();
+    const $content = $("<div>").html(message.content);
+    ui.replace_emoji_with_text($content);
+    spoilers.hide_spoilers_in_notification($content);
+    content = $content.text();
 
     const topic = message.topic;
 
@@ -552,8 +552,8 @@ function get_message_header(message) {
 }
 
 export function get_local_notify_mix_reason(message) {
-    const row = message_lists.current.get_row(message.id);
-    if (row.length > 0) {
+    const $row = message_lists.current.get_row(message.id);
+    if ($row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
         return undefined;
@@ -697,11 +697,11 @@ export function reify_message_id(opts) {
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
     for (const e of $("#out-of-view-notification a")) {
-        const elem = $(e);
-        const message_id = elem.data("message-id");
+        const $elem = $(e);
+        const message_id = $elem.data("message-id");
 
         if (message_id === old_id) {
-            elem.data("message-id", new_id);
+            $elem.data("message-id", new_id);
         }
     }
 }

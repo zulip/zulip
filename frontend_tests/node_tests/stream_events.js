@@ -136,32 +136,32 @@ test("update_property", ({override}) => {
     // Test desktop notifications
     stream_events.update_property(stream_id, "desktop_notifications", true);
     assert.equal(sub.desktop_notifications, true);
-    let checkbox = checkbox_for("desktop_notifications");
-    assert.equal(checkbox.prop("checked"), true);
+    let $checkbox = checkbox_for("desktop_notifications");
+    assert.equal($checkbox.prop("checked"), true);
 
     // Tests audible notifications
     stream_events.update_property(stream_id, "audible_notifications", true);
     assert.equal(sub.audible_notifications, true);
-    checkbox = checkbox_for("audible_notifications");
-    assert.equal(checkbox.prop("checked"), true);
+    $checkbox = checkbox_for("audible_notifications");
+    assert.equal($checkbox.prop("checked"), true);
 
     // Tests push notifications
     stream_events.update_property(stream_id, "push_notifications", true);
     assert.equal(sub.push_notifications, true);
-    checkbox = checkbox_for("push_notifications");
-    assert.equal(checkbox.prop("checked"), true);
+    $checkbox = checkbox_for("push_notifications");
+    assert.equal($checkbox.prop("checked"), true);
 
     // Tests email notifications
     stream_events.update_property(stream_id, "email_notifications", true);
     assert.equal(sub.email_notifications, true);
-    checkbox = checkbox_for("email_notifications");
-    assert.equal(checkbox.prop("checked"), true);
+    $checkbox = checkbox_for("email_notifications");
+    assert.equal($checkbox.prop("checked"), true);
 
     // Tests wildcard_mentions_notify notifications
     stream_events.update_property(stream_id, "wildcard_mentions_notify", true);
     assert.equal(sub.wildcard_mentions_notify, true);
-    checkbox = checkbox_for("wildcard_mentions_notify");
-    assert.equal(checkbox.prop("checked"), true);
+    $checkbox = checkbox_for("wildcard_mentions_notify");
+    assert.equal($checkbox.prop("checked"), true);
 
     // Test name change
     {
@@ -195,8 +195,8 @@ test("update_property", ({override}) => {
     {
         override(stream_list, "refresh_pinned_or_unpinned_stream", noop);
         stream_events.update_property(stream_id, "pin_to_top", true);
-        checkbox = checkbox_for("pin_to_top");
-        assert.equal(checkbox.prop("checked"), true);
+        $checkbox = checkbox_for("pin_to_top");
+        assert.equal($checkbox.prop("checked"), true);
     }
 
     // Test stream privacy change event

@@ -10,7 +10,7 @@ export function create_ajax_request(
     type = "POST",
     success_callback,
 ) {
-    const form = $(`#${CSS.escape(form_name)}-form`);
+    const $form = $(`#${CSS.escape(form_name)}-form`);
     const form_loading_indicator = `#${CSS.escape(form_name)}_loading_indicator`;
     const form_input_section = `#${CSS.escape(form_name)}-input-section`;
     const form_success = `#${CSS.escape(form_name)}-success`;
@@ -32,7 +32,7 @@ export function create_ajax_request(
 
     const data = {};
 
-    for (const item of form.serializeArray()) {
+    for (const item of $form.serializeArray()) {
         if (ignored_inputs.includes(item.name)) {
             continue;
         }

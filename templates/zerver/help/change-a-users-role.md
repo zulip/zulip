@@ -15,22 +15,32 @@ there is at least one other owner in the organization (consider
 promoting a new owner or [deactivating the
 organization](/help/deactivate-your-organization) instead).
 
-**Changes** Organization owners were introduced in Zulip 3.0; users
-that were marked as administrators in older Zulip instances are
-automatically converted during the upgrade to Zulip 3.0 into owners
-(who have the same permissions as administrators did previously).
-
 ### Change a user's role
 
 {start_tabs}
 
+{tab|via-user-profile}
+
+1. Hover over a user's name in the right sidebar.
+
+1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
+   to the right of their name.
+
+1. Click **Manage this user**.
+
+1. Under **User role**, select a [role](/help/roles-and-permissions).
+
+1. Click **Save changes**. The new permissions will take effect immediately.
+
+{tab|via-organization-settings}
+
 {settings_tab|user-list-admin}
 
 1. Find the user you would like to manage. Click the **pencil**
-(<i class="fa fa-pencil"></i>) to the right of their name.
+   (<i class="fa fa-pencil"></i>) to the right of their name.
 
-1. Under **User role**, select **Owner**, **Administrator**, **Moderators**, **Member** or **Guest**.
+1. Under **User role**, select a [role](/help/roles-and-permissions).
 
-1. Click **Save changes**. The new rights will take effect immediately.
+1. Click **Save changes**. The new permissions will take effect immediately.
 
 {end_tabs}

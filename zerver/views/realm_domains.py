@@ -34,7 +34,9 @@ def create_realm_domain(
         raise JsonableError(
             _("The domain {domain} is already a part of your organization.").format(domain=domain)
         )
-    realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
+    realm_domain = do_add_realm_domain(
+        user_profile.realm, domain, allow_subdomains, acting_user=user_profile
+    )
     return json_success(request, data={"new_domain": [realm_domain.id, realm_domain.domain]})
 
 
@@ -48,7 +50,7 @@ def patch_realm_domain(
 ) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_change_realm_domain(realm_domain, allow_subdomains)
+        do_change_realm_domain(realm_domain, allow_subdomains, acting_user=user_profile)
     except RealmDomain.DoesNotExist:
         raise JsonableError(_("No entry found for domain {domain}.").format(domain=domain))
     return json_success(request)

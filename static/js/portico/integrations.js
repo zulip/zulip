@@ -156,11 +156,10 @@ function hide_catalog_show_integration() {
                     link = name;
                 }
             }
-            const category_el = $("<a></a>")
-                .attr("href", "/integrations/" + link)
-                .append('<h3 class="integration-category"></h3>');
-            category_el.find(".integration-category").attr("data-category", link).text(category);
-            $("#integration-instructions-group .categories").append(category_el);
+            const $category_el = $("<a>", {href: "/integrations/" + link}).append(
+                $("<h3>", {class: "integration-category", ["data-category"]: link}).text(category),
+            );
+            $("#integration-instructions-group .categories").append($category_el);
         }
         $("#integration-instructions-group").css({
             opacity: 0,
@@ -305,10 +304,10 @@ function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
         if (e.key === "Enter" && e.target.value !== "") {
             for (const integration_element of $(".integration-lozenges").children()) {
-                const integration = $(integration_element).find(".integration-lozenge");
+                const $integration = $(integration_element).find(".integration-lozenge");
 
-                if ($(integration).css("display") !== "none") {
-                    $(integration).closest("a")[0].click();
+                if ($($integration).css("display") !== "none") {
+                    $($integration).closest("a")[0].click();
                     break;
                 }
             }

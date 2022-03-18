@@ -71,9 +71,9 @@ function beforeSend() {
 }
 
 function submit_invitation_form() {
-    const invite_status = $("#invite_status");
-    const invitee_emails = $("#invitee_emails");
-    const invitee_emails_group = invitee_emails.closest(".control-group");
+    const $invite_status = $("#invite_status");
+    const $invitee_emails = $("#invitee_emails");
+    const $invitee_emails_group = $invitee_emails.closest(".control-group");
     const data = get_common_invitation_data();
     data.invitee_emails = $("#invitee_emails").val();
 
@@ -84,10 +84,10 @@ function submit_invitation_form() {
         success() {
             ui_report.success(
                 $t_html({defaultMessage: "User(s) invited successfully."}),
-                invite_status,
+                $invite_status,
             );
-            invitee_emails_group.removeClass("warning");
-            invitee_emails.val("");
+            $invitee_emails_group.removeClass("warning");
+            $invitee_emails.val("");
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -98,7 +98,7 @@ function submit_invitation_form() {
             const arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
-                ui_report.error("", xhr, invite_status);
+                ui_report.error("", xhr, $invite_status);
             } else {
                 // Some users were not invited.
                 const invitee_emails_errored = [];
@@ -122,25 +122,25 @@ function submit_invitation_form() {
                     has_billing_access: page_params.is_owner || page_params.is_billing_admin,
                     daily_limit_reached: arr.daily_limit_reached,
                 });
-                ui_report.message(error_response, invite_status, "alert-warning");
-                invitee_emails_group.addClass("warning");
+                ui_report.message(error_response, $invite_status, "alert-warning");
+                $invitee_emails_group.addClass("warning");
 
                 if (arr.sent_invitations) {
-                    invitee_emails.val(invitee_emails_errored.join("\n"));
+                    $invitee_emails.val(invitee_emails_errored.join("\n"));
                 }
             }
         },
         complete() {
             $("#submit-invitation").text($t({defaultMessage: "Invite"}));
             $("#submit-invitation").prop("disabled", false);
-            $("#invitee_emails").focus();
+            $("#invitee_emails").trigger("focus");
             ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
         },
     });
 }
 
 function generate_multiuse_invite() {
-    const invite_status = $("#multiuse_invite_status");
+    const $invite_status = $("#multiuse_invite_status");
     const data = get_common_invitation_data();
     channel.post({
         url: "/json/invites/multiuse",
@@ -148,11 +148,11 @@ function generate_multiuse_invite() {
         beforeSend,
         success(data) {
             const copy_link_html = copy_invite_link(data);
-            ui_report.success(copy_link_html, invite_status);
+            ui_report.success(copy_link_html, $invite_status);
             new ClipboardJS("#copy_generated_invite_link");
         },
         error(xhr) {
-            ui_report.error("", xhr, invite_status);
+            ui_report.error("", xhr, $invite_status);
         },
         complete() {
             $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
@@ -187,7 +187,7 @@ export function launch() {
 
     overlays.open_overlay({
         name: "invite",
-        overlay: $("#invite-user"),
+        $overlay: $("#invite-user"),
         on_close() {
             browser_history.exit_overlay();
         },

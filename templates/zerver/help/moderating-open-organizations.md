@@ -53,13 +53,11 @@ organization's policy choices.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
   [delete custom emoji](/help/custom-emoji#delete-custom-emoji).
 
-## In the works
+## Web-public streams
 
-* **Delete spammer**. This will wipe the user from your Zulip, by deleting
-  all their messages and reactions, banning them, etc.
-* **New users join as guests**. This will allow users joining via open
-  registration to have extremely limited permissions by default, but still
-  enough permissions to ask the core team a question or to get a feel for your
-  community.
-* **Public archive**. This will give a read-only view of selected streams,
-  removing the need in some organizations for having open registration.
+{!web-public-streams-intro.md!}
+
+## Related articles
+
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Web-public streams](/help/web-public-streams)

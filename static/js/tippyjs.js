@@ -73,9 +73,9 @@ export function initialize() {
         target: ".message_reaction, .message_reactions .reaction_button",
         placement: "bottom",
         onShow(instance) {
-            const elem = $(instance.reference);
+            const $elem = $(instance.reference);
             if (!instance.reference.classList.contains("reaction_button")) {
-                const local_id = elem.attr("data-reaction-id");
+                const local_id = $elem.attr("data-reaction-id");
                 const message_id = rows.get_message_id(instance.reference);
                 const title = reactions.get_reaction_title_data(message_id, local_id);
                 instance.setContent(title);
@@ -85,7 +85,7 @@ export function initialize() {
             // are still active.
             // We target the message table and check for removal of it, it's children
             // and the reactions individually down in the subtree.
-            const target_node = elem.parents(".message_table.focused_table").get(0);
+            const target_node = $elem.parents(".message_table.focused_table").get(0);
             if (!target_node) {
                 // The `reaction` was removed from DOM before we reached here.
                 // In that case, we simply hide the tooltip.
@@ -96,9 +96,9 @@ export function initialize() {
             }
 
             const nodes_to_check_for_removal = [
-                elem.parents(".recipient_row").get(0),
-                elem.parents(".message_reactions").get(0),
-                elem.get(0),
+                $elem.parents(".recipient_row").get(0),
+                $elem.parents(".message_reactions").get(0),
+                $elem.get(0),
             ];
             const config = {attributes: false, childList: true, subtree: true};
 
@@ -146,8 +146,8 @@ export function initialize() {
         delay: [300, 20],
         onShow(instance) {
             // Handle dynamic "starred messages" and "edit" widgets.
-            const elem = $(instance.reference);
-            let content = elem.attr("data-tippy-content");
+            const $elem = $(instance.reference);
+            let content = $elem.attr("data-tippy-content");
             if (content === undefined) {
                 // Tippy cannot get the content for message edit button
                 // as it is dynamically inserted based on editability.
@@ -155,8 +155,8 @@ export function initialize() {
                 // content from it.
                 //
                 // TODO: Change the template structure so logic is unnecessary.
-                const edit_button = elem.find("i.edit_content_button");
-                content = edit_button.attr("data-tippy-content");
+                const $edit_button = $elem.find("i.edit_content_button");
+                content = $edit_button.attr("data-tippy-content");
             }
 
             instance.setContent(content);
@@ -175,9 +175,9 @@ export function initialize() {
         target: ".message_table .message_time",
         appendTo: () => document.body,
         onShow(instance) {
-            const time_elem = $(instance.reference);
-            const row = time_elem.closest(".message_row");
-            const message = message_lists.current.get(rows.id(row));
+            const $time_elem = $(instance.reference);
+            const $row = $time_elem.closest(".message_row");
+            const message = message_lists.current.get(rows.id($row));
             const time = new Date(message.timestamp * 1000);
             instance.setContent(timerender.get_full_datetime(time));
         },

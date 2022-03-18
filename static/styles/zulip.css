@@ -86,7 +86,7 @@ pre {
     font-family: "Source Sans 3", sans-serif !important;
 
     /* Affects all tippy tooltips not using any theme. */
-    .tippy-box:not[data-theme] {
+    .tippy-box:not([data-theme]) {
         background-color: hsl(0, 0%, 12%);
 
         &[data-placement^="top"] {
@@ -461,7 +461,8 @@ button:focus,
 .new-style label.checkbox input[type="checkbox"]:focus ~ span,
 i.fa:focus,
 i.zulip-icon:focus,
-.auto-select:focus {
+.auto-select:focus,
+[role="button"]:focus {
     outline: 2px solid hsl(215, 47%, 50%);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
 }
@@ -734,7 +735,7 @@ strong {
 li.actual-dropdown-menu > a:focus {
     color: hsl(0, 0%, 100%);
     text-decoration: none;
-    background-color: none;
+    background-color: transparent;
     background-image: none;
     filter: none;
     outline: 0;
@@ -3041,7 +3042,7 @@ select.inline_select_topic_edit {
 
     .include-sender .message_controls {
         background: none !important;
-        padding: none !important;
+        padding: 0 !important;
         border: none !important;
     }
 

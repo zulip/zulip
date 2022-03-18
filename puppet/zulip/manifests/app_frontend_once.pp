@@ -51,6 +51,14 @@ class zulip::app_frontend_once {
     source => 'puppet:///modules/zulip/cron.d/soft-deactivate-users',
   }
 
+  file { '/etc/cron.d/promote-new-full-members':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip/cron.d/promote-new-full-members',
+  }
+
   file { '/etc/cron.d/archive-messages':
     ensure => file,
     owner  => 'root',

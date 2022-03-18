@@ -10,35 +10,35 @@ const blueslip = require("../zjsunit/zblueslip");
 let env;
 
 function make_tab(i) {
-    const self = {};
+    const $self = {};
 
     assert.equal(env.tabs.length, i);
 
-    self.stub = true;
-    self.class = [];
+    $self.stub = true;
+    $self.class = [];
 
-    self.addClass = (c) => {
-        self.class += " " + c;
-        const tokens = self.class.trim().split(/ +/);
-        self.class = Array.from(new Set(tokens)).join(" ");
+    $self.addClass = (c) => {
+        $self.class += " " + c;
+        const tokens = $self.class.trim().split(/ +/);
+        $self.class = Array.from(new Set(tokens)).join(" ");
     };
 
-    self.removeClass = (c) => {
-        const tokens = self.class.trim().split(/ +/);
-        self.class = tokens.filter((token) => token !== c).join(" ");
+    $self.removeClass = (c) => {
+        const tokens = $self.class.trim().split(/ +/);
+        $self.class = tokens.filter((token) => token !== c).join(" ");
     };
 
-    self.hasClass = (c) => {
-        const tokens = self.class.trim().split(/ +/);
+    $self.hasClass = (c) => {
+        const tokens = $self.class.trim().split(/ +/);
         return tokens.includes(c);
     };
 
-    self.data = (name) => {
+    $self.data = (name) => {
         assert.equal(name, "tab-id");
         return i;
     };
 
-    self.text = (text) => {
+    $self.text = (text) => {
         assert.equal(
             text,
             [
@@ -49,23 +49,23 @@ function make_tab(i) {
         );
     };
 
-    self.trigger = (type) => {
+    $self.trigger = (type) => {
         if (type === "focus") {
             env.focused_tab = i;
         }
     };
 
-    env.tabs.push(self);
+    env.tabs.push($self);
 
-    return self;
+    return $self;
 }
 
 const ind_tab = (function () {
-    const self = {};
+    const $self = {};
 
-    self.stub = true;
+    $self.stub = true;
 
-    self.on = (name, f) => {
+    $self.on = (name, f) => {
         if (name === "click") {
             env.click_f = f;
         } else if (name === "keydown") {
@@ -73,36 +73,36 @@ const ind_tab = (function () {
         }
     };
 
-    self.removeClass = (c) => {
-        for (const tab of env.tabs) {
-            tab.removeClass(c);
+    $self.removeClass = (c) => {
+        for (const $tab of env.tabs) {
+            $tab.removeClass(c);
         }
     };
 
-    self.eq = (idx) => env.tabs[idx];
+    $self.eq = (idx) => env.tabs[idx];
 
-    return self;
+    return $self;
 })();
 
 function make_switcher() {
-    const self = {};
+    const $self = {};
 
-    self.stub = true;
+    $self.stub = true;
 
-    self.children = [];
+    $self.children = [];
 
-    self.classList = new Set();
+    $self.classList = new Set();
 
-    self.append = (child) => {
-        self.children.push(child);
+    $self.append = (child) => {
+        $self.children.push(child);
     };
 
-    self.addClass = (c) => {
-        self.classList.add(c);
-        self.addedClass = c;
+    $self.addClass = (c) => {
+        $self.classList.add(c);
+        $self.addedClass = c;
     };
 
-    self.find = (sel) => {
+    $self.find = (sel) => {
         switch (sel) {
             case ".ind-tab":
                 return ind_tab;
@@ -111,7 +111,7 @@ function make_switcher() {
         }
     };
 
-    return self;
+    return $self;
 }
 
 mock_jquery((sel, attributes) => {
@@ -121,11 +121,10 @@ mock_jquery((sel, attributes) => {
     }
 
     switch (sel) {
-        case "<div class='tab-switcher'></div>":
-            return env.switcher;
-        case "<div class='tab-switcher stream_sorter_toggle'></div>":
-            return env.switcher;
         case "<div>": {
+            if (attributes.class === "tab-switcher") {
+                return env.switcher;
+            }
             const tab_id = attributes["data-tab-id"];
             assert.deepEqual(
                 attributes,

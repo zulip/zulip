@@ -23,29 +23,29 @@ function zoom_in() {
 }
 
 export function zoom_out() {
-    const stream_li = topic_list.get_stream_li();
+    const $stream_li = topic_list.get_stream_li();
 
     popovers.hide_all_except_sidebars();
     topic_list.zoom_out();
     stream_list.zoom_out_topics();
 
-    if (stream_li) {
-        stream_list.scroll_stream_into_view(stream_li);
+    if ($stream_li) {
+        stream_list.scroll_stream_into_view($stream_li);
     }
 
     zoomed_in = false;
 }
 
 export function clear_topics() {
-    const stream_li = topic_list.get_stream_li();
+    const $stream_li = topic_list.get_stream_li();
 
     topic_list.close();
 
     if (zoomed_in) {
         stream_list.zoom_out_topics();
 
-        if (stream_li) {
-            stream_list.scroll_stream_into_view(stream_li);
+        if ($stream_li) {
+            stream_list.scroll_stream_into_view($stream_li);
         }
     }
 

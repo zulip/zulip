@@ -7,6 +7,8 @@
         "eslint:recommended",
         "plugin:import/errors",
         "plugin:import/warnings",
+        "plugin:no-jquery/recommended",
+        "plugin:no-jquery/deprecated",
         "plugin:unicorn/recommended",
         "prettier"
     ],
@@ -15,9 +17,15 @@
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
-    "plugins": ["formatjs"],
+    "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"]
+        "additionalFunctionNames": ["$t", "$t_html"],
+        "no-jquery": {
+            "collectionReturningPlugins": {
+                "expectOne": "always"
+            },
+            "variablePattern": "^\\$(?!t$|t_html$)."
+        }
     },
     "reportUnusedDisableDirectives": true,
     "rules": {
@@ -65,6 +73,7 @@
         "no-implied-eval": "error",
         "no-inner-declarations": "off",
         "no-iterator": "error",
+        "no-jquery/no-parse-html-literal": "error",
         "no-label-var": "error",
         "no-labels": "error",
         "no-loop-func": "error",
@@ -120,6 +129,12 @@
         "yoda": "error"
     },
     "overrides": [
+        {
+            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**"],
+            "rules": {
+                "no-jquery/no-selector-prop": "off"
+            }
+        },
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {

@@ -130,9 +130,9 @@ export function append_user(user, pills) {
     }
 }
 
-export function create_pills(pill_container, pill_config) {
+export function create_pills($pill_container, pill_config) {
     const pills = input_pill.create({
-        container: pill_container,
+        $container: $pill_container,
         pill_config,
         create_item_from_text: create_item_from_email,
         get_text_from_item: get_email_from_item,

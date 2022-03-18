@@ -43,13 +43,13 @@ export function field_type_id_to_string(type_id) {
 }
 
 function update_profile_fields_table_element() {
-    const profile_fields_table = $("#admin_profile_fields_table").expectOne();
+    const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
     // If there are no custom fields, hide the table headers at the top
     if (page_params.custom_profile_fields.length < 1) {
-        profile_fields_table.hide();
+        $profile_fields_table.hide();
     } else {
-        profile_fields_table.show();
+        $profile_fields_table.show();
     }
 }
 
@@ -91,16 +91,16 @@ function read_external_account_field_data(field_elem) {
     return field_data;
 }
 
-function update_choice_delete_btn(container, display_flag) {
-    const no_of_choice_row = container.find(".choice-row").length;
+function update_choice_delete_btn($container, display_flag) {
+    const no_of_choice_row = $container.find(".choice-row").length;
 
     // Disable delete button if there only one choice row
     // Enable choice delete button more one than once choice
     if (no_of_choice_row === 1) {
         if (display_flag === true) {
-            container.find(".choice-row .delete-choice").show();
+            $container.find(".choice-row .delete-choice").show();
         } else {
-            container.find(".choice-row .delete-choice").hide();
+            $container.find(".choice-row .delete-choice").hide();
         }
     }
 }
@@ -126,30 +126,30 @@ function clear_form_data() {
     $("#custom_external_account_url_pattern").hide();
     $("#profile_field_external_accounts").hide();
     $("#profile_field_external_accounts_type").val(
-        $("#profile_field_external_accounts_type option:first").val(),
+        $("#profile_field_external_accounts_type option:first-child").val(),
     );
 }
 
 function set_up_create_field_form() {
-    const field_elem = $("#profile_field_external_accounts");
-    const field_url_pattern_elem = $("#custom_external_account_url_pattern");
+    const $field_elem = $("#profile_field_external_accounts");
+    const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
 
     if (Number.parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
-        field_elem.show();
+        $field_elem.show();
         if ($("#profile_field_external_accounts_type").val() === "custom") {
-            field_url_pattern_elem.show();
+            $field_url_pattern_elem.show();
             $("#profile_field_name").val("").closest(".control-group").show();
             $("#profile_field_hint").val("").closest(".control-group").show();
         } else {
-            field_url_pattern_elem.hide();
+            $field_url_pattern_elem.hide();
             $("#profile_field_name").closest(".control-group").hide();
             $("#profile_field_hint").closest(".control-group").hide();
         }
     } else {
         $("#profile_field_name").closest(".control-group").show();
         $("#profile_field_hint").closest(".control-group").show();
-        field_url_pattern_elem.hide();
-        field_elem.hide();
+        $field_url_pattern_elem.hide();
+        $field_elem.hide();
     }
 }
 
@@ -205,16 +205,16 @@ function add_choice_row(e) {
 }
 
 function delete_choice_row(e) {
-    const row = $(e.currentTarget).parent();
-    const container = row.parent();
-    row.remove();
-    update_choice_delete_btn(container, false);
+    const $row = $(e.currentTarget).parent();
+    const $container = $row.parent();
+    $row.remove();
+    update_choice_delete_btn($container, false);
 }
 
 function get_profile_field_info(id) {
     const info = {};
-    info.row = $(`tr.profile-field-row[data-profile-field-id='${CSS.escape(id)}']`);
-    info.form = $(`tr.profile-field-form[data-profile-field-id='${CSS.escape(id)}']`);
+    info.$row = $(`tr.profile-field-row[data-profile-field-id='${CSS.escape(id)}']`);
+    info.$form = $(`tr.profile-field-form[data-profile-field-id='${CSS.escape(id)}']`);
     return info;
 }
 
@@ -236,28 +236,28 @@ export function parse_field_choices_from_field_data(field_data) {
 }
 
 function set_up_external_account_field_edit_form(field_elem, url_pattern_val) {
-    if (field_elem.form.find("select[name=external_acc_field_type]").val() === "custom") {
-        field_elem.form.find("input[name=url_pattern]").val(url_pattern_val);
-        field_elem.form.find(".custom_external_account_detail").show();
-        field_elem.form.find("input[name=name]").val("").closest(".control-group").show();
-        field_elem.form.find("input[name=hint]").val("").closest(".control-group").show();
+    if (field_elem.$form.find("select[name=external_acc_field_type]").val() === "custom") {
+        field_elem.$form.find("input[name=url_pattern]").val(url_pattern_val);
+        field_elem.$form.find(".custom_external_account_detail").show();
+        field_elem.$form.find("input[name=name]").val("").closest(".control-group").show();
+        field_elem.$form.find("input[name=hint]").val("").closest(".control-group").show();
     } else {
-        field_elem.form.find("input[name=name]").closest(".control-group").hide();
-        field_elem.form.find("input[name=hint]").closest(".control-group").hide();
-        field_elem.form.find(".custom_external_account_detail").hide();
+        field_elem.$form.find("input[name=name]").closest(".control-group").hide();
+        field_elem.$form.find("input[name=hint]").closest(".control-group").hide();
+        field_elem.$form.find(".custom_external_account_detail").hide();
     }
 }
 
 function set_up_select_field_edit_form(profile_field, field_data) {
     // Re-render field choices in edit form to load initial select data
-    const choice_list = profile_field.form.find(".edit_profile_field_choices_container");
-    choice_list.off();
-    choice_list.html("");
+    const $choice_list = profile_field.$form.find(".edit_profile_field_choices_container");
+    $choice_list.off();
+    $choice_list.html("");
 
     const choices_data = parse_field_choices_from_field_data(field_data);
 
     for (const choice of choices_data) {
-        choice_list.append(
+        $choice_list.append(
             render_settings_profile_field_choice({
                 text: choice.text,
             }),
@@ -265,9 +265,9 @@ function set_up_select_field_edit_form(profile_field, field_data) {
     }
 
     // Add blank choice at last
-    create_choice_row(choice_list);
-    update_choice_delete_btn(choice_list, false);
-    Sortable.create(choice_list[0], {
+    create_choice_row($choice_list);
+    update_choice_delete_btn($choice_list, false);
+    Sortable.create($choice_list[0], {
         onUpdate() {},
         filter: "input",
         preventOnFilter: false,
@@ -278,8 +278,8 @@ function open_edit_form(e) {
     const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
     const profile_field = get_profile_field_info(field_id);
 
-    profile_field.row.hide();
-    profile_field.form.show();
+    profile_field.$row.hide();
+    profile_field.$form.show();
     const field = get_profile_field(field_id);
     let field_data = {};
     if (field.field_data) {
@@ -291,47 +291,47 @@ function open_edit_form(e) {
     }
 
     if (Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
-        profile_field.form.find("select[name=external_acc_field_type]").val(field_data.subtype);
+        profile_field.$form.find("select[name=external_acc_field_type]").val(field_data.subtype);
         set_up_external_account_field_edit_form(profile_field, field_data.url_pattern);
     }
 
     // Set initial value in edit form
-    profile_field.form.find("input[name=name]").val(field.name);
-    profile_field.form.find("input[name=hint]").val(field.hint);
+    profile_field.$form.find("input[name=name]").val(field.name);
+    profile_field.$form.find("input[name=hint]").val(field.hint);
 
-    profile_field.form.find(".reset").on("click", () => {
-        profile_field.form.hide();
-        profile_field.row.show();
+    profile_field.$form.find(".reset").on("click", () => {
+        profile_field.$form.hide();
+        profile_field.$row.show();
     });
 
-    profile_field.form.find(".submit").on("click", () => {
+    profile_field.$form.find(".submit").on("click", () => {
         e.preventDefault();
         e.stopPropagation();
 
-        const profile_field_status = $("#admin-profile-field-status").expectOne();
+        const $profile_field_status = $("#admin-profile-field-status").expectOne();
 
         // For some reason jQuery's serialize() is not working with
         // channel.patch even though it is supported by $.ajax.
         const data = {};
 
-        data.name = profile_field.form.find("input[name=name]").val();
-        data.hint = profile_field.form.find("input[name=hint]").val();
+        data.name = profile_field.$form.find("input[name=name]").val();
+        data.hint = profile_field.$form.find("input[name=hint]").val();
         data.field_data = JSON.stringify(
-            read_field_data_from_form(Number.parseInt(field.type, 10), profile_field.form),
+            read_field_data_from_form(Number.parseInt(field.type, 10), profile_field.$form),
         );
 
         settings_ui.do_settings_change(
             channel.patch,
             "/json/realm/profile_fields/" + field_id,
             data,
-            profile_field_status,
+            $profile_field_status,
         );
     });
 
-    profile_field.form
+    profile_field.$form
         .find(".edit_profile_field_choices_container")
         .on("input", ".choice-row input", add_choice_row);
-    profile_field.form
+    profile_field.$form
         .find(".edit_profile_field_choices_container")
         .on("click", "button.delete-choice", delete_choice_row);
     $(".profile_field_external_accounts_edit select").on("change", (e) => {
@@ -372,10 +372,10 @@ export function populate_profile_fields(profile_fields_data) {
 
 export function do_populate_profile_fields(profile_fields_data) {
     // We should only call this internally or from tests.
-    const profile_fields_table = $("#admin_profile_fields_table").expectOne();
+    const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
-    profile_fields_table.find("tr.profile-field-row").remove(); // Clear all rows.
-    profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
+    $profile_fields_table.find("tr.profile-field-row").remove(); // Clear all rows.
+    $profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
     order = [];
 
     for (const profile_field of profile_fields_data) {
@@ -389,7 +389,7 @@ export function do_populate_profile_fields(profile_fields_data) {
             choices = parse_field_choices_from_field_data(field_data);
         }
 
-        profile_fields_table.append(
+        $profile_fields_table.append(
             render_admin_profile_field_list({
                 profile_field: {
                     id: profile_field.id,

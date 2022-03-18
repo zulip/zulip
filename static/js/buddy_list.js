@@ -28,12 +28,12 @@ class BuddyListConf {
 
     get_li_from_key(opts) {
         const user_id = opts.key;
-        const container = $(this.container_sel);
-        return container.find(`${this.item_sel}[data-user-id='${CSS.escape(user_id)}']`);
+        const $container = $(this.container_sel);
+        return $container.find(`${this.item_sel}[data-user-id='${CSS.escape(user_id)}']`);
     }
 
     get_key_from_li(opts) {
-        return Number.parseInt(opts.li.expectOne().attr("data-user-id"), 10);
+        return Number.parseInt(opts.$li.expectOne().attr("data-user-id"), 10);
     }
 
     get_data_from_keys(opts) {
@@ -60,7 +60,7 @@ export class BuddyList extends BuddyListConf {
 
     populate(opts) {
         this.render_count = 0;
-        this.container.html("");
+        this.$container.html("");
 
         // We rely on our caller to give us items
         // in already-sorted order.
@@ -88,8 +88,8 @@ export class BuddyList extends BuddyListConf {
         const html = this.items_to_html({
             items,
         });
-        this.container = $(this.container_sel);
-        this.container.append(html);
+        this.$container = $(this.container_sel);
+        this.$container.append(html);
 
         // Invariant: more_keys.length >= items.length.
         // (Usually they're the same, but occasionally keys
@@ -102,8 +102,8 @@ export class BuddyList extends BuddyListConf {
     }
 
     get_items() {
-        const obj = this.container.find(`${this.item_sel}`);
-        return obj.map((i, elem) => $(elem));
+        const $obj = this.$container.find(`${this.item_sel}`);
+        return $obj.map((i, elem) => $(elem));
     }
 
     first_key() {
@@ -141,8 +141,8 @@ export class BuddyList extends BuddyListConf {
 
         if (pos < this.render_count) {
             this.render_count -= 1;
-            const li = this.find_li({key: opts.key});
-            li.remove();
+            const $li = this.find_li({key: opts.key});
+            $li.remove();
             this.update_padding();
         }
     }
@@ -182,18 +182,18 @@ export class BuddyList extends BuddyListConf {
         const key = opts.key;
 
         // Try direct DOM lookup first for speed.
-        let li = this.get_li_from_key({
+        let $li = this.get_li_from_key({
             key,
         });
 
-        if (li.length === 1) {
-            return li;
+        if ($li.length === 1) {
+            return $li;
         }
 
         if (!opts.force_render) {
             // Most callers don't force us to render a list
             // item that wouldn't be on-screen anyway.
-            return li;
+            return $li;
         }
 
         const pos = this.keys.indexOf(key);
@@ -208,11 +208,11 @@ export class BuddyList extends BuddyListConf {
             pos,
         });
 
-        li = this.get_li_from_key({
+        $li = this.get_li_from_key({
             key,
         });
 
-        return li;
+        return $li;
     }
 
     insert_new_html(opts) {
@@ -223,7 +223,7 @@ export class BuddyList extends BuddyListConf {
         if (other_key === undefined) {
             if (pos === this.render_count) {
                 this.render_count += 1;
-                this.container.append(html);
+                this.$container.append(html);
                 this.update_padding();
             }
             return;
@@ -231,8 +231,8 @@ export class BuddyList extends BuddyListConf {
 
         if (pos < this.render_count) {
             this.render_count += 1;
-            const li = this.find_li({key: other_key});
-            li.before(html);
+            const $li = this.find_li({key: other_key});
+            $li.before(html);
             this.update_padding();
         }
     }
@@ -288,14 +288,14 @@ export class BuddyList extends BuddyListConf {
 
     // This is a bit of a hack to make sure we at least have
     // an empty list to start, before we get the initial payload.
-    container = $(this.container_sel);
+    $container = $(this.container_sel);
 
     start_scroll_handler() {
         // We have our caller explicitly call this to make
         // sure everything's in place.
-        const scroll_container = ui.get_scroll_element($(this.scroll_container_sel));
+        const $scroll_container = ui.get_scroll_element($(this.scroll_container_sel));
 
-        scroll_container.on("scroll", () => {
+        $scroll_container.on("scroll", () => {
             this.fill_screen_with_content();
         });
     }

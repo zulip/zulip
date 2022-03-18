@@ -76,28 +76,28 @@ export function is_sub_already_present(sub) {
 }
 
 export function update_left_panel_row(sub) {
-    const row = row_for_stream_id(sub.stream_id);
+    const $row = row_for_stream_id(sub.stream_id);
 
-    if (row.length === 0) {
+    if ($row.length === 0) {
         return;
     }
 
     blueslip.debug(`Updating row in left panel of stream settings for: ${sub.name}`);
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_browse_streams_list_item(setting_sub);
-    const new_row = $(html);
+    const $new_row = $(html);
 
     // TODO: Clean up this hack when we eliminate `notdisplayed`
-    if (row.hasClass("notdisplayed")) {
-        new_row.addClass("notdisplayed");
+    if ($row.hasClass("notdisplayed")) {
+        $new_row.addClass("notdisplayed");
     }
 
     // TODO: Remove this if/when we just handle "active" when rendering templates.
-    if (row.hasClass("active")) {
-        new_row.addClass("active");
+    if ($row.hasClass("active")) {
+        $new_row.addClass("active");
     }
 
-    row.replaceWith(new_row);
+    $row.replaceWith($new_row);
 }
 
 export function settings_button_for_sub(sub) {
@@ -108,8 +108,8 @@ export function settings_button_for_sub(sub) {
     );
 }
 
-function get_row_data(row) {
-    const row_id = Number.parseInt(row.attr("data-stream-id"), 10);
+function get_row_data($row) {
+    const row_id = Number.parseInt($row.attr("data-stream-id"), 10);
     if (row_id) {
         const row_object = sub_store.get(row_id);
         return {
@@ -121,13 +121,13 @@ function get_row_data(row) {
 }
 
 export function get_active_data() {
-    const active_row = $("div.stream-row.active");
-    const valid_active_id = Number.parseInt(active_row.attr("data-stream-id"), 10);
-    const active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
+    const $active_row = $("div.stream-row.active");
+    const valid_active_id = Number.parseInt($active_row.attr("data-stream-id"), 10);
+    const $active_tabs = $(".subscriptions-container").find("div.ind-tab.selected");
     return {
-        row: active_row,
+        $row: $active_row,
         id: valid_active_id,
-        tabs: active_tabs,
+        $tabs: $active_tabs,
     };
 }
 
@@ -175,8 +175,8 @@ export function update_stream_name(sub, new_name) {
     stream_edit.update_stream_name(sub, new_name);
 
     // Update the subscriptions page
-    const sub_row = row_for_stream_id(stream_id);
-    sub_row.find(".stream-name").text(new_name);
+    const $sub_row = row_for_stream_id(stream_id);
+    $sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
@@ -196,8 +196,8 @@ export function update_stream_description(sub, description, rendered_description
     stream_data.clean_up_description(sub);
 
     // Update stream row
-    const sub_row = row_for_stream_id(sub.stream_id);
-    sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
+    const $sub_row = row_for_stream_id(sub.stream_id);
+    $sub_row.find(".description").html(util.clean_user_content_links(sub.rendered_description));
 
     // Update stream settings
     stream_edit.update_stream_description(sub);
@@ -262,13 +262,13 @@ export function add_sub_to_table(sub) {
 
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_browse_streams_list_item(setting_sub);
-    const new_row = $(html);
+    const $new_row = $(html);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend(new_row);
+        ui.get_content_element($(".streams-list")).prepend($new_row);
         ui.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append(new_row);
+        ui.get_content_element($(".streams-list")).append($new_row);
     }
 
     const settings_html = render_stream_settings(sub);
@@ -289,8 +289,8 @@ export function add_sub_to_table(sub) {
 export function remove_stream(stream_id) {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
-    const row = row_for_stream_id(stream_id);
-    row.remove();
+    const $row = row_for_stream_id(stream_id);
+    $row.remove();
     if (hash_util.is_editing_stream(stream_id)) {
         stream_edit.open_edit_panel_empty();
     }
@@ -325,8 +325,8 @@ export function show_active_stream_in_left_panel() {
     const selected_row = hash_util.get_current_hash_section();
 
     if (Number.parseFloat(selected_row)) {
-        const sub_row = row_for_stream_id(selected_row);
-        sub_row.addClass("active");
+        const $sub_row = row_for_stream_id(selected_row);
+        $sub_row.addClass("active");
     }
 }
 
@@ -487,8 +487,8 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
 let sort_order = "by-stream-name";
 
 export function get_left_panel_params() {
-    const search_box = $("#stream_filter input[type='text']");
-    const input = search_box.expectOne().val().trim();
+    const $search_box = $("#stream_filter input[type='text']");
+    const input = $search_box.expectOne().val().trim();
     const params = {
         input,
         subscribed_only,
@@ -697,18 +697,18 @@ export function setup_page(callback) {
 }
 
 export function switch_to_stream_row(stream_id) {
-    const stream_row = row_for_stream_id(stream_id);
-    const container = $(".streams-list");
+    const $stream_row = row_for_stream_id(stream_id);
+    const $container = $(".streams-list");
 
-    get_active_data().row.removeClass("active");
-    stream_row.addClass("active");
+    get_active_data().$row.removeClass("active");
+    $stream_row.addClass("active");
 
-    scroll_util.scroll_element_into_container(stream_row, container);
+    scroll_util.scroll_element_into_container($stream_row, $container);
 
     // It's dubious that we need this timeout any more.
     setTimeout(() => {
         if (stream_id === get_active_data().id) {
-            stream_row.trigger("click");
+            $stream_row.trigger("click");
         }
     }, 100);
 }
@@ -763,7 +763,7 @@ export function launch(section) {
     setup_page(() => {
         overlays.open_overlay({
             name: "subscriptions",
-            overlay: $("#subscription_overlay"),
+            $overlay: $("#subscription_overlay"),
             on_close() {
                 browser_history.exit_overlay();
                 $(".colorpicker").spectrum("destroy");
@@ -782,20 +782,20 @@ export function launch(section) {
 
 export function switch_rows(event) {
     const active_data = get_active_data();
-    let switch_row;
+    let $switch_row;
     if (hash_util.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
         return false;
-    } else if (!active_data.id || active_data.row.hasClass("notdisplayed")) {
-        switch_row = $("div.stream-row:not(.notdisplayed)").first();
+    } else if (!active_data.id || active_data.$row.hasClass("notdisplayed")) {
+        $switch_row = $("div.stream-row:not(.notdisplayed)").first();
         if ($("#search_stream_name").is(":focus")) {
             $("#search_stream_name").trigger("blur");
         }
     } else {
         if (event === "up_arrow") {
-            switch_row = active_data.row.prevAll().not(".notdisplayed").first();
+            $switch_row = active_data.$row.prevAll().not(".notdisplayed").first();
         } else if (event === "down_arrow") {
-            switch_row = active_data.row.nextAll().not(".notdisplayed").first();
+            $switch_row = active_data.$row.nextAll().not(".notdisplayed").first();
         }
         if ($("#search_stream_name").is(":focus")) {
             // remove focus from Filter streams input instead of switching rows
@@ -804,7 +804,7 @@ export function switch_rows(event) {
         }
     }
 
-    const row_data = get_row_data(switch_row);
+    const row_data = get_row_data($switch_row);
     if (row_data) {
         const stream_id = row_data.id;
         switch_to_stream_row(stream_id);
@@ -816,7 +816,7 @@ export function switch_rows(event) {
 
 export function keyboard_sub() {
     const active_data = get_active_data();
-    const row_data = get_row_data(active_data.row);
+    const row_data = get_row_data(active_data.$row);
     if (row_data) {
         sub_or_unsub(row_data.object);
     }
@@ -824,7 +824,7 @@ export function keyboard_sub() {
 
 export function toggle_view(event) {
     const active_data = get_active_data();
-    const stream_filter_tab = $(active_data.tabs[0]).text();
+    const stream_filter_tab = $(active_data.$tabs[0]).text();
 
     if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
         toggler.goto("all-streams");
@@ -835,7 +835,7 @@ export function toggle_view(event) {
 
 export function view_stream() {
     const active_data = get_active_data();
-    const row_data = get_row_data(active_data.row);
+    const row_data = get_row_data(active_data.$row);
     if (row_data) {
         const stream_narrow_hash =
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
@@ -849,13 +849,13 @@ function display_subscribe_toggle_spinner(stream_row) {
     $(stream_row).find(".check").removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const tick = $(stream_row).find("svg");
-    tick.addClass("hide");
+    const $tick = $(stream_row).find("svg");
+    $tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
-    const spinner = $(stream_row).find(".sub_unsub_status").expectOne();
-    spinner.show();
-    loading.make_indicator(spinner);
+    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
+    $spinner.show();
+    loading.make_indicator($spinner);
 }
 
 /* For the given stream_row, add the tick and delete the spinner. */
@@ -864,20 +864,20 @@ function hide_subscribe_toggle_spinner(stream_row) {
     $(stream_row).find(".check").addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const tick = $(stream_row).find("svg");
-    tick.removeClass("hide");
+    const $tick = $(stream_row).find("svg");
+    $tick.removeClass("hide");
 
     /* Destroy the spinner. */
-    const spinner = $(stream_row).find(".sub_unsub_status").expectOne();
-    loading.destroy_indicator(spinner);
+    const $spinner = $(stream_row).find(".sub_unsub_status").expectOne();
+    loading.destroy_indicator($spinner);
 }
 
-function ajaxSubscribe(stream, color, stream_row) {
+function ajaxSubscribe(stream, color, $stream_row) {
     // Subscribe yourself to a single stream.
     let true_stream_name;
 
-    if (stream_row !== undefined) {
-        display_subscribe_toggle_spinner(stream_row);
+    if ($stream_row !== undefined) {
+        display_subscribe_toggle_spinner($stream_row);
     }
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -901,13 +901,13 @@ function ajaxSubscribe(stream, color, stream_row) {
             }
             // The rest of the work is done via the subscribe event we will get
 
-            if (stream_row !== undefined) {
-                hide_subscribe_toggle_spinner(stream_row);
+            if ($stream_row !== undefined) {
+                hide_subscribe_toggle_spinner($stream_row);
             }
         },
         error(xhr) {
-            if (stream_row !== undefined) {
-                hide_subscribe_toggle_spinner(stream_row);
+            if ($stream_row !== undefined) {
+                hide_subscribe_toggle_spinner($stream_row);
             }
             ui_report.error(
                 $t_html({defaultMessage: "Error adding subscription"}),
@@ -918,10 +918,10 @@ function ajaxSubscribe(stream, color, stream_row) {
     });
 }
 
-function ajaxUnsubscribe(sub, stream_row) {
+function ajaxUnsubscribe(sub, $stream_row) {
     // TODO: use stream_id when backend supports it
-    if (stream_row !== undefined) {
-        display_subscribe_toggle_spinner(stream_row);
+    if ($stream_row !== undefined) {
+        display_subscribe_toggle_spinner($stream_row);
     }
     return channel.del({
         url: "/json/users/me/subscriptions",
@@ -930,13 +930,13 @@ function ajaxUnsubscribe(sub, stream_row) {
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
 
-            if (stream_row !== undefined) {
-                hide_subscribe_toggle_spinner(stream_row);
+            if ($stream_row !== undefined) {
+                hide_subscribe_toggle_spinner($stream_row);
             }
         },
         error(xhr) {
-            if (stream_row !== undefined) {
-                hide_subscribe_toggle_spinner(stream_row);
+            if ($stream_row !== undefined) {
+                hide_subscribe_toggle_spinner($stream_row);
             }
             ui_report.error(
                 $t_html({defaultMessage: "Error removing subscription"}),
@@ -972,14 +972,14 @@ export function unsubscribe_from_private_stream(sub) {
     const html_body = render_unsubscribe_private_stream_modal();
 
     function unsubscribe_from_stream() {
-        let stream_row;
+        let $stream_row;
         if (overlays.streams_open()) {
-            stream_row = $(
+            $stream_row = $(
                 "#manage_streams_container div.stream-row[data-stream-id='" + sub.stream_id + "']",
             );
         }
 
-        ajaxUnsubscribe(sub, stream_row);
+        ajaxUnsubscribe(sub, $stream_row);
     }
 
     confirm_dialog.launch({
@@ -992,83 +992,85 @@ export function unsubscribe_from_private_stream(sub) {
     });
 }
 
-export function sub_or_unsub(sub, stream_row) {
+export function sub_or_unsub(sub, $stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || page_params.is_guest) {
             unsubscribe_from_private_stream(sub);
             return;
         }
-        ajaxUnsubscribe(sub, stream_row);
+        ajaxUnsubscribe(sub, $stream_row);
     } else {
-        ajaxSubscribe(sub.name, sub.color, stream_row);
+        ajaxSubscribe(sub.name, sub.color, $stream_row);
     }
 }
 
-export function update_web_public_stream_privacy_option_state(container) {
-    const web_public_stream_elem = container.find(
+export function update_web_public_stream_privacy_option_state($container) {
+    const $web_public_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.web_public.code)}']`,
     );
     if (
         !page_params.server_web_public_streams_enabled ||
         !page_params.realm_enable_spectator_access
     ) {
-        const for_change_privacy_modal = container.attr("id") === "stream_privacy_modal";
-        if (for_change_privacy_modal && web_public_stream_elem.is(":checked")) {
+        const for_change_privacy_modal = $container.attr("id") === "stream_privacy_modal";
+        if (for_change_privacy_modal && $web_public_stream_elem.is(":checked")) {
             // We do not hide web-public option in the "Change privacy" modal if
             // stream is web-public already. The option is disabled in this case.
-            web_public_stream_elem.prop("disabled", true);
+            $web_public_stream_elem.prop("disabled", true);
             return;
         }
-        web_public_stream_elem.closest(".radio-input-parent").hide();
-        container
-            .find(".stream-privacy-values .radio-input-parent:visible:last")
+        $web_public_stream_elem.closest(".radio-input-parent").hide();
+        $container
+            .find(".stream-privacy-values .radio-input-parent:visible")
+            .last()
             .css("border-bottom", "none");
     } else {
-        if (!web_public_stream_elem.is(":visible")) {
-            container
-                .find(".stream-privacy-values .radio-input-parent:visible:last")
+        if (!$web_public_stream_elem.is(":visible")) {
+            $container
+                .find(".stream-privacy-values .radio-input-parent:visible")
+                .last()
                 .css("border-bottom", "");
-            web_public_stream_elem.closest(".radio-input-parent").show();
+            $web_public_stream_elem.closest(".radio-input-parent").show();
         }
-        web_public_stream_elem.prop(
+        $web_public_stream_elem.prop(
             "disabled",
             !settings_data.user_can_create_web_public_streams(),
         );
     }
 }
 
-export function update_public_stream_privacy_option_state(container) {
-    const public_stream_elem = container.find(
+export function update_public_stream_privacy_option_state($container) {
+    const $public_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.public.code)}']`,
     );
-    public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
+    $public_stream_elem.prop("disabled", !settings_data.user_can_create_public_streams());
 }
 
-export function update_private_stream_privacy_option_state(container) {
+export function update_private_stream_privacy_option_state($container) {
     // Disable both "Private, shared history" and "Private, protected history" options.
-    const private_stream_elem = container.find(
+    const $private_stream_elem = $container.find(
         `input[value='${CSS.escape(stream_data.stream_privacy_policy_values.private.code)}']`,
     );
-    const private_with_public_history_elem = container.find(
+    const $private_with_public_history_elem = $container.find(
         `input[value='${CSS.escape(
             stream_data.stream_privacy_policy_values.private_with_public_history.code,
         )}']`,
     );
 
-    private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
-    private_with_public_history_elem.prop(
+    $private_stream_elem.prop("disabled", !settings_data.user_can_create_private_streams());
+    $private_with_public_history_elem.prop(
         "disabled",
         !settings_data.user_can_create_private_streams(),
     );
 }
 
-export function hide_or_disable_stream_privacy_options_if_required(container) {
-    update_web_public_stream_privacy_option_state(container);
+export function hide_or_disable_stream_privacy_options_if_required($container) {
+    update_web_public_stream_privacy_option_state($container);
 
-    update_public_stream_privacy_option_state(container);
+    update_public_stream_privacy_option_state($container);
 
-    update_private_stream_privacy_option_state(container);
+    update_private_stream_privacy_option_state($container);
 }
 
 export function update_stream_privacy_choices(policy) {
@@ -1081,19 +1083,19 @@ export function update_stream_privacy_choices(policy) {
     if (!change_privacy_modal_opened && !stream_creation_form_opened) {
         return;
     }
-    let container = $("#stream-creation");
+    let $container = $("#stream-creation");
     if (change_privacy_modal_opened) {
-        container = $("#stream_privacy_modal");
+        $container = $("#stream_privacy_modal");
     }
 
     if (policy === "create_private_stream_policy") {
-        update_private_stream_privacy_option_state(container);
+        update_private_stream_privacy_option_state($container);
     }
     if (policy === "create_public_stream_policy") {
-        update_public_stream_privacy_option_state(container);
+        update_public_stream_privacy_option_state($container);
     }
     if (policy === "create_web_public_stream_policy") {
-        update_web_public_stream_privacy_option_state(container);
+        update_web_public_stream_privacy_option_state($container);
     }
 }
 

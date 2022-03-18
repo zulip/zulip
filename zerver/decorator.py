@@ -857,7 +857,7 @@ def internal_notify_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(timestamp: str) -> datetime.datetime:
+def to_utc_datetime(var_name: str, timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
 

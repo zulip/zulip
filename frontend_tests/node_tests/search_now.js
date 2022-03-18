@@ -28,46 +28,58 @@ set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
 
+run_test("clear_search_form", () => {
+    $("#search_query").val("noise");
+    $("#search_query").trigger("focus");
+    $(".search_button").prop("disabled", false);
+
+    search.clear_search_form();
+
+    assert.equal($("#search_query").is_focused(), false);
+    assert.equal($("#search_query").val(), "");
+    assert.equal($(".search_button").prop("disabled"), true);
+});
+
 run_test("update_button_visibility", () => {
-    const search_query = $("#search_query");
-    const search_button = $(".search_button");
+    const $search_query = $("#search_query");
+    const $search_button = $(".search_button");
 
-    search_query.is = () => false;
-    search_query.val("");
+    $search_query.is = () => false;
+    $search_query.val("");
     narrow_state.active = () => false;
-    search_button.prop("disabled", true);
+    $search_button.prop("disabled", true);
     search.update_button_visibility();
-    assert.ok(search_button.prop("disabled"));
+    assert.ok($search_button.prop("disabled"));
 
-    search_query.is = () => true;
-    search_query.val("");
+    $search_query.is = () => true;
+    $search_query.val("");
     narrow_state.active = () => false;
-    search_button.prop("disabled", true);
+    $search_button.prop("disabled", true);
     search.update_button_visibility();
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 
-    search_query.is = () => false;
-    search_query.val("Test search term");
+    $search_query.is = () => false;
+    $search_query.val("Test search term");
     narrow_state.active = () => false;
-    search_button.prop("disabled", true);
+    $search_button.prop("disabled", true);
     search.update_button_visibility();
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 
-    search_query.is = () => false;
-    search_query.val("");
+    $search_query.is = () => false;
+    $search_query.val("");
     narrow_state.active = () => true;
-    search_button.prop("disabled", true);
+    $search_button.prop("disabled", true);
     search.update_button_visibility();
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 });
 
 run_test("initialize", () => {
-    const search_query_box = $("#search_query");
-    const searchbox_form = $("#searchbox_form");
-    const search_button = $(".search_button");
+    const $search_query_box = $("#search_query");
+    const $searchbox_form = $("#searchbox_form");
+    const $search_button = $(".search_button");
 
     search_suggestion.max_num_of_search_results = 999;
-    search_query_box.typeahead = (opts) => {
+    $search_query_box.typeahead = (opts) => {
         assert.equal(opts.fixed, true);
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
@@ -115,13 +127,13 @@ run_test("initialize", () => {
         {
             let operators;
             let is_blurred;
-            search_query_box.on("blur", () => {
+            $search_query_box.on("blur", () => {
                 is_blurred = true;
             });
             /* Test updater */
             const _setup = (search_box_val) => {
                 is_blurred = false;
-                search_query_box.val(search_box_val);
+                $search_query_box.val(search_box_val);
                 Filter.parse = (search_string) => {
                     assert.equal(search_string, search_box_val);
                     return operators;
@@ -159,26 +171,26 @@ run_test("initialize", () => {
             assert.equal(opts.updater("stream:Verona"), "stream:Verona");
             assert.ok(!is_blurred);
 
-            search_query_box.off("blur");
+            $search_query_box.off("blur");
         }
     };
 
     search.initialize();
 
-    search_button.prop("disabled", true);
-    search_query_box.trigger("focus");
-    assert.ok(!search_button.prop("disabled"));
+    $search_button.prop("disabled", true);
+    $search_query_box.trigger("focus");
+    assert.ok(!$search_button.prop("disabled"));
 
-    search_query_box.val("test string");
+    $search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
-    search_query_box.trigger("blur");
-    assert.equal(search_query_box.val(), "test string");
+    $search_query_box.trigger("blur");
+    assert.equal($search_query_box.val(), "test string");
 
     search.__Rewire__("is_using_input_method", false);
-    searchbox_form.trigger("compositionend");
+    $searchbox_form.trigger("compositionend");
     assert.ok(search.is_using_input_method);
 
-    const keydown = searchbox_form.get_on_handler("keydown");
+    const keydown = $searchbox_form.get_on_handler("keydown");
     let default_prevented = false;
     let ev = {
         type: "keydown",
@@ -187,7 +199,7 @@ run_test("initialize", () => {
             default_prevented = true;
         },
     };
-    search_query_box.is = () => false;
+    $search_query_box.is = () => false;
     assert.equal(keydown(ev), undefined);
     assert.ok(!default_prevented);
 
@@ -196,7 +208,7 @@ run_test("initialize", () => {
     assert.ok(!default_prevented);
 
     ev.key = "Enter";
-    search_query_box.is = () => true;
+    $search_query_box.is = () => true;
     assert.equal(keydown(ev), undefined);
     assert.ok(default_prevented);
 
@@ -206,15 +218,15 @@ run_test("initialize", () => {
     let operators;
     let is_blurred;
     narrow_state.active = () => false;
-    search_query_box.off("blur");
-    search_query_box.on("blur", () => {
+    $search_query_box.off("blur");
+    $search_query_box.on("blur", () => {
         is_blurred = true;
     });
 
     const _setup = (search_box_val) => {
         is_blurred = false;
-        search_button.prop("disabled", false);
-        search_query_box.val(search_box_val);
+        $search_button.prop("disabled", false);
+        $search_query_box.val(search_box_val);
         Filter.parse = (search_string) => {
             assert.equal(search_string, search_box_val);
             return operators;
@@ -235,37 +247,37 @@ run_test("initialize", () => {
     _setup("");
 
     ev.key = "a";
-    search_query_box.is = () => false;
-    searchbox_form.trigger(ev);
+    $search_query_box.is = () => false;
+    $searchbox_form.trigger(ev);
 
     assert.ok(!is_blurred);
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 
     ev.key = "Enter";
-    search_query_box.is = () => false;
-    searchbox_form.trigger(ev);
+    $search_query_box.is = () => false;
+    $searchbox_form.trigger(ev);
 
     assert.ok(!is_blurred);
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 
     ev.key = "Enter";
-    search_query_box.is = () => true;
-    searchbox_form.trigger(ev);
+    $search_query_box.is = () => true;
+    $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
 
     _setup("ver");
     search.__Rewire__("is_using_input_method", true);
-    searchbox_form.trigger(ev);
+    $searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
     assert.ok(!is_blurred);
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 
     _setup("ver");
     ev.key = "Enter";
-    search_query_box.is = () => true;
-    searchbox_form.trigger(ev);
+    $search_query_box.is = () => true;
+    $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
-    assert.ok(!search_button.prop("disabled"));
+    assert.ok(!$search_button.prop("disabled"));
 });
 
 run_test("initiate_search", () => {

@@ -51,7 +51,7 @@ function show_stream_subscription_request_result({
     already_subscribed_users,
     ignored_deactivated_users,
 }) {
-    const stream_subscription_req_result_elem = $(
+    const $stream_subscription_req_result_elem = $(
         ".stream_subscription_request_result",
     ).expectOne();
     const html = render_stream_subscription_request_result({
@@ -60,19 +60,19 @@ function show_stream_subscription_request_result({
         already_subscribed_users,
         ignored_deactivated_users,
     });
-    ui.get_content_element(stream_subscription_req_result_elem).html(html);
+    ui.get_content_element($stream_subscription_req_result_elem).html(html);
     if (add_class) {
-        stream_subscription_req_result_elem.addClass(add_class);
+        $stream_subscription_req_result_elem.addClass(add_class);
     }
     if (remove_class) {
-        stream_subscription_req_result_elem.removeClass(remove_class);
+        $stream_subscription_req_result_elem.removeClass(remove_class);
     }
 }
 
-export function enable_subscriber_management({sub, parent_container}) {
+export function enable_subscriber_management({sub, $parent_container}) {
     const stream_id = sub.stream_id;
 
-    const pill_container = parent_container.find(".pill-container");
+    const $pill_container = $parent_container.find(".pill-container");
 
     // current_stream_id and pill_widget are module-level variables
     current_stream_id = stream_id;
@@ -82,7 +82,7 @@ export function enable_subscriber_management({sub, parent_container}) {
     }
 
     pill_widget = add_subscribers_pill.create({
-        pill_container,
+        $pill_container,
         get_potential_subscribers,
     });
 
@@ -91,28 +91,28 @@ export function enable_subscriber_management({sub, parent_container}) {
     // We track a single subscribers_list_widget for this module, since we
     // only ever have one list of subscribers visible at a time.
     subscribers_list_widget = make_list_widget({
-        parent_container,
+        $parent_container,
         name: "stream_subscribers",
         user_ids,
     });
 }
 
-function make_list_widget({parent_container, name, user_ids}) {
+function make_list_widget({$parent_container, name, user_ids}) {
     const users = people.get_users_from_ids(user_ids);
     people.sort_but_pin_current_user_on_top(users);
 
-    const list_container = parent_container.find(".subscriber_table");
-    list_container.empty();
+    const $list_container = $parent_container.find(".subscriber_table");
+    $list_container.empty();
 
-    const simplebar_container = parent_container.find(".subscriber_list_container");
+    const $simplebar_container = $parent_container.find(".subscriber_list_container");
 
-    return ListWidget.create(list_container, users, {
+    return ListWidget.create($list_container, users, {
         name,
         modifier(item) {
             return format_member_list_elem(item);
         },
         filter: {
-            element: parent_container.find(".search"),
+            $element: $parent_container.find(".search"),
             predicate(person, value) {
                 const matcher = people.build_person_matcher(value);
                 const match = matcher(person);
@@ -120,7 +120,7 @@ function make_list_widget({parent_container, name, user_ids}) {
                 return match;
             },
         },
-        simplebar_container,
+        $simplebar_container,
     });
 }
 
@@ -196,7 +196,7 @@ function subscribe_new_users({pill_user_ids}) {
     subscriber_api.add_user_ids_to_stream(user_ids, sub, invite_success, invite_failure);
 }
 
-function remove_subscriber({stream_id, target_user_id, list_entry}) {
+function remove_subscriber({stream_id, target_user_id, $list_entry}) {
     const sub = get_sub(stream_id);
     if (!sub) {
         return;
@@ -212,7 +212,7 @@ function remove_subscriber({stream_id, target_user_id, list_entry}) {
 
         if (data.removed.length > 0) {
             // Remove the user from the subscriber list.
-            list_entry.remove();
+            $list_entry.remove();
             message = $t({defaultMessage: "Unsubscribed successfully!"});
             // The rest of the work is done via the subscription -> remove event we will get
         } else {
@@ -302,7 +302,7 @@ function update_subscribers_list_widget(subscriber_ids) {
 export function initialize() {
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
-        parent_container: $("#manage_streams_container"),
+        $parent_container: $("#manage_streams_container"),
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
         action: subscribe_new_users,
@@ -314,11 +314,11 @@ export function initialize() {
         (e) => {
             e.preventDefault();
 
-            const list_entry = $(e.target).closest("tr");
-            const target_user_id = Number.parseInt(list_entry.attr("data-subscriber-id"), 10);
+            const $list_entry = $(e.target).closest("tr");
+            const target_user_id = Number.parseInt($list_entry.attr("data-subscriber-id"), 10);
             const stream_id = current_stream_id;
 
-            remove_subscriber({stream_id, target_user_id, list_entry});
+            remove_subscriber({stream_id, target_user_id, $list_entry});
         },
     );
 }

@@ -16,7 +16,7 @@
     <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tippy-content="{{t 'Drafts' }}">
         {{t 'Drafts' }}
     </a>
-    <div class="compose_control_menu_wrapper">
-        <a class="compose_control_button zulip-icon zulip-icon-ellipsis-v-solid hide {{#if message_id}}show-lg{{else}}show-sm{{/if}} compose_control_menu" tabindex=0 data-tippy-content="Compose actions"></a>
+    <div class="compose_control_menu_wrapper" role="button" tabindex=0>
+        <a class="compose_control_button zulip-icon zulip-icon-ellipsis-v-solid hide {{#if message_id}}show-lg{{else}}show-sm{{/if}} compose_control_menu" tabindex="-1" data-tippy-content="Compose actions"></a>
     </div>
 </div>

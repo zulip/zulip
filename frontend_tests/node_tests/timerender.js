@@ -210,20 +210,20 @@ run_test("render_date_renders_time_html", () => {
     const expected_html = $t({defaultMessage: "Today"});
 
     const attrs = {};
-    const span_stub = $("<span />");
+    const $span_stub = $("<span>");
 
-    span_stub.attr = (name, val) => {
+    $span_stub.attr = (name, val) => {
         attrs[name] = val;
-        return span_stub;
+        return $span_stub;
     };
 
-    span_stub.append = (str) => {
-        span_stub.html(str);
-        return span_stub;
+    $span_stub.append = (str) => {
+        $span_stub.html(str);
+        return $span_stub;
     };
 
-    const actual = timerender.render_date(message_time, undefined, today);
-    assert.equal(actual.html(), expected_html);
+    const $actual = timerender.render_date(message_time, undefined, today);
+    assert.equal($actual.html(), expected_html);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
 });
@@ -234,19 +234,19 @@ run_test("render_date_renders_time_above_html", () => {
     const message_time = today;
     const message_time_above = add(today, {days: -1});
 
-    const span_stub = $("<span />");
+    const $span_stub = $("<span>");
 
     let appended_val;
-    span_stub.append = (...val) => {
+    $span_stub.append = (...val) => {
         appended_val = val;
-        return span_stub;
+        return $span_stub;
     };
 
     const expected = [
-        '<i class="date-direction fa fa-caret-up"></i>',
+        $("<i>"),
         $t({defaultMessage: "Yesterday"}),
-        '<hr class="date-line">',
-        '<i class="date-direction fa fa-caret-down"></i>',
+        $("<hr>"),
+        $("<i>"),
         $t({defaultMessage: "Today"}),
     ];
 

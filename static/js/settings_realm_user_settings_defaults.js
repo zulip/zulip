@@ -25,18 +25,18 @@ export function update_page(property) {
     if (!overlays.settings_open()) {
         return;
     }
-    const container = $(realm_default_settings_panel.container);
+    const $container = $(realm_default_settings_panel.container);
     let value = realm_user_settings_defaults[property];
 
     // settings_org.set_input_element_value doesn't support radio
     // button widgets like this one.
     if (property === "emojiset") {
-        container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
+        $container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }
 
     if (property === "email_notifications_batching_period_seconds") {
-        settings_notifications.set_notification_batching_ui(container, value);
+        settings_notifications.set_notification_batching_ui($container, value);
         return;
     }
 
@@ -47,17 +47,17 @@ export function update_page(property) {
         value = value.toString();
     }
 
-    const input_elem = container.find(`[name=${CSS.escape(property)}]`);
-    settings_org.set_input_element_value(input_elem, value);
+    const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
+    settings_org.set_input_element_value($input_elem, value);
 }
 
 export function set_up() {
-    const container = $(realm_default_settings_panel.container);
+    const $container = $(realm_default_settings_panel.container);
     settings_display.set_up(realm_default_settings_panel);
     settings_notifications.set_up(realm_default_settings_panel);
 
     settings_org.register_save_discard_widget_handlers(
-        container,
+        $container,
         "/json/realm/user_settings_defaults",
         true,
     );

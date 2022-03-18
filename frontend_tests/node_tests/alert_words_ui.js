@@ -50,31 +50,31 @@ run_test("add_alert_word", ({override_rewire}) => {
 
     alert_words_ui.set_up_alert_words();
 
-    const create_form = $("#create_alert_word_form");
-    const add_func = create_form.get_on_handler("click", "#create_alert_word_button");
+    const $create_form = $("#create_alert_word_form");
+    const add_func = $create_form.get_on_handler("click", "#create_alert_word_button");
 
-    const new_alert_word = $("#create_alert_word_name");
-    const alert_word_status = $("#alert_word_status");
-    const alert_word_status_text = $(".alert_word_status_text");
-    alert_word_status.set_find_results(".alert_word_status_text", alert_word_status_text);
+    const $new_alert_word = $("#create_alert_word_name");
+    const $alert_word_status = $("#alert_word_status");
+    const $alert_word_status_text = $(".alert_word_status_text");
+    $alert_word_status.set_find_results(".alert_word_status_text", $alert_word_status_text);
 
     // add '' as alert word
     add_func();
-    assert.equal(new_alert_word.val(), "");
-    assert.ok(alert_word_status.hasClass("alert-danger"));
-    assert.equal(alert_word_status_text.text(), "translated: Alert word can't be empty!");
-    assert.ok(alert_word_status.visible());
+    assert.equal($new_alert_word.val(), "");
+    assert.ok($alert_word_status.hasClass("alert-danger"));
+    assert.equal($alert_word_status_text.text(), "translated: Alert word can't be empty!");
+    assert.ok($alert_word_status.visible());
 
     // add 'foo' as alert word (existing word)
-    new_alert_word.val("foo");
+    $new_alert_word.val("foo");
 
     add_func();
-    assert.ok(alert_word_status.hasClass("alert-danger"));
-    assert.equal(alert_word_status_text.text(), "translated: Alert word already exists!");
-    assert.ok(alert_word_status.visible());
+    assert.ok($alert_word_status.hasClass("alert-danger"));
+    assert.equal($alert_word_status_text.text(), "translated: Alert word already exists!");
+    assert.ok($alert_word_status.visible());
 
     // add 'zot' as alert word (new word)
-    new_alert_word.val("zot");
+    $new_alert_word.val("zot");
 
     let success_func;
     let fail_func;
@@ -89,26 +89,29 @@ run_test("add_alert_word", ({override_rewire}) => {
 
     // test failure
     fail_func();
-    assert.ok(alert_word_status.hasClass("alert-danger"));
-    assert.equal(alert_word_status_text.text(), "translated: Error adding alert word!");
-    assert.ok(alert_word_status.visible());
+    assert.ok($alert_word_status.hasClass("alert-danger"));
+    assert.equal($alert_word_status_text.text(), "translated: Error adding alert word!");
+    assert.ok($alert_word_status.visible());
 
     // test success
     success_func();
-    assert.ok(alert_word_status.hasClass("alert-success"));
-    assert.equal(alert_word_status_text.text(), 'translated: Alert word "zot" added successfully!');
-    assert.ok(alert_word_status.visible());
+    assert.ok($alert_word_status.hasClass("alert-success"));
+    assert.equal(
+        $alert_word_status_text.text(),
+        'translated: Alert word "zot" added successfully!',
+    );
+    assert.ok($alert_word_status.visible());
 });
 
 run_test("add_alert_word_keypress", ({override_rewire}) => {
     override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
-    const create_form = $("#create_alert_word_form");
-    const keypress_func = create_form.get_on_handler("keypress", "#create_alert_word_name");
+    const $create_form = $("#create_alert_word_form");
+    const keypress_func = $create_form.get_on_handler("keypress", "#create_alert_word_name");
 
-    const new_alert_word = $("#create_alert_word_name");
-    new_alert_word.val("zot");
+    const $new_alert_word = $("#create_alert_word_name");
+    $new_alert_word.val("zot");
 
     const event = {
         preventDefault: () => {},
@@ -130,16 +133,16 @@ run_test("remove_alert_word", ({override_rewire}) => {
     override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
-    const word_list = $("#alert-words-table");
-    const remove_func = word_list.get_on_handler("click", ".remove-alert-word");
+    const $word_list = $("#alert-words-table");
+    const remove_func = $word_list.get_on_handler("click", ".remove-alert-word");
 
-    const remove_alert_word = $(".remove-alert-word");
-    const list_item = $("tr.alert-word-item");
-    const val_item = $("span.value");
-    val_item.text($t({defaultMessage: "zot"}));
+    const $remove_alert_word = $(".remove-alert-word");
+    const $list_item = $("tr.alert-word-item");
+    const $val_item = $("span.value");
+    $val_item.text($t({defaultMessage: "zot"}));
 
-    remove_alert_word.set_parents_result("tr", list_item);
-    list_item.set_find_results(".value", val_item);
+    $remove_alert_word.set_parents_result("tr", $list_item);
+    $list_item.set_find_results(".value", $val_item);
 
     const event = {
         currentTarget: ".remove-alert-word",
@@ -156,42 +159,42 @@ run_test("remove_alert_word", ({override_rewire}) => {
 
     remove_func(event);
 
-    const alert_word_status = $("#alert_word_status");
-    const alert_word_status_text = $(".alert_word_status_text");
-    alert_word_status.set_find_results(".alert_word_status_text", alert_word_status_text);
+    const $alert_word_status = $("#alert_word_status");
+    const $alert_word_status_text = $(".alert_word_status_text");
+    $alert_word_status.set_find_results(".alert_word_status_text", $alert_word_status_text);
 
     // test failure
     fail_func();
-    assert.ok(alert_word_status.hasClass("alert-danger"));
-    assert.equal(alert_word_status_text.text(), "translated: Error removing alert word!");
-    assert.ok(alert_word_status.visible());
+    assert.ok($alert_word_status.hasClass("alert-danger"));
+    assert.equal($alert_word_status_text.text(), "translated: Error removing alert word!");
+    assert.ok($alert_word_status.visible());
 
     // test success
     success_func();
-    assert.ok(alert_word_status.hasClass("alert-success"));
-    assert.equal(alert_word_status_text.text(), "translated: Alert word removed successfully!");
-    assert.ok(alert_word_status.visible());
+    assert.ok($alert_word_status.hasClass("alert-success"));
+    assert.equal($alert_word_status_text.text(), "translated: Alert word removed successfully!");
+    assert.ok($alert_word_status.visible());
 });
 
 run_test("close_status_message", ({override_rewire}) => {
     override_rewire(alert_words_ui, "rerender_alert_words_ui", () => {});
     alert_words_ui.set_up_alert_words();
 
-    const alert_word_settings = $("#alert-word-settings");
-    const close = alert_word_settings.get_on_handler("click", ".close-alert-word-status");
+    const $alert_word_settings = $("#alert-word-settings");
+    const close = $alert_word_settings.get_on_handler("click", ".close-alert-word-status");
 
-    const alert = $(".alert");
-    const close_btn = $(".close-alert-word-status");
-    close_btn.set_parents_result(".alert", alert);
+    const $alert = $(".alert");
+    const $close_btn = $(".close-alert-word-status");
+    $close_btn.set_parents_result(".alert", $alert);
 
-    alert.show();
+    $alert.show();
 
     const event = {
         preventDefault: () => {},
         currentTarget: ".close-alert-word-status",
     };
 
-    assert.ok(alert.visible());
+    assert.ok($alert.visible());
     close(event);
-    assert.ok(!alert.visible());
+    assert.ok(!$alert.visible());
 });

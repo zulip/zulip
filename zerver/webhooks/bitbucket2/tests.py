@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.validator import wrap_wild_value
 from zerver.webhooks.bitbucket2.view import get_user_info
 
 TOPIC = "Repository name"
@@ -430,7 +431,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_get_user_info(self) -> None:
-        self.assertEqual(get_user_info({}), "Unknown user")
+        self.assertEqual(get_user_info(wrap_wild_value("request", {})), "Unknown user")
 
         dct = dict(
             nickname="alice",
@@ -438,10 +439,10 @@ class Bitbucket2HookTests(WebhookTestCase):
             display_name="Alice Smith",
         )
 
-        self.assertEqual(get_user_info(dct), "Alice Smith")
+        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "Alice Smith")
         del dct["display_name"]
 
-        self.assertEqual(get_user_info(dct), "alice")
+        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "alice")
         del dct["nickname"]
 
-        self.assertEqual(get_user_info(dct), "Unknown user")
+        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "Unknown user")

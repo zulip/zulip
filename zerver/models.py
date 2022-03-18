@@ -17,6 +17,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from uuid import UUID, uuid4
 
 import django.contrib.auth
 import orjson
@@ -85,6 +86,7 @@ from zerver.lib.types import (
     ProfileData,
     ProfileDataElementBase,
     ProfileDataElementValue,
+    RealmPlaygroundDict,
     RealmUserValidator,
     UnspecifiedValue,
     UserFieldElement,
@@ -266,7 +268,9 @@ class Realm(models.Model):
     deactivated: bool = models.BooleanField(default=False)
 
     # Redirect URL if the Realm has moved to another server
-    deactivated_redirect = models.URLField(max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True)
+    deactivated_redirect: Optional[str] = models.URLField(
+        max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True
+    )
 
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
@@ -439,7 +443,7 @@ class Realm(models.Model):
     MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
-    message_content_delete_limit_seconds: int = models.PositiveIntegerField(
+    message_content_delete_limit_seconds: Optional[int] = models.PositiveIntegerField(
         default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS, null=True
     )
 
@@ -923,11 +927,20 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
-    def web_public_streams_enabled(self) -> bool:
+    def web_public_streams_available_for_realm(self) -> bool:
+        if self.string_id in settings.WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS:
+            return True
+
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:
             # To help protect against accidentally web-public streams in
             # self-hosted servers, we require the feature to be enabled at
             # the server level before it is available to users.
+            return False
+
+        return True
+
+    def web_public_streams_enabled(self) -> bool:
+        if not self.web_public_streams_available_for_realm():
             return False
 
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
@@ -1049,7 +1062,7 @@ class EmailContainsPlusError(Exception):
     pass
 
 
-def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
+def get_realm_domains(realm: Realm) -> List[Dict[str, Union[str, bool]]]:
     return list(realm.realmdomain_set.values("domain", "allow_subdomains"))
 
 
@@ -1371,11 +1384,11 @@ class RealmPlayground(models.Model):
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
 
 
-def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
-    playgrounds: List[Dict[str, Union[int, str]]] = []
+def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
+    playgrounds: List[RealmPlaygroundDict] = []
     for playground in RealmPlayground.objects.filter(realm=realm).all():
         playgrounds.append(
-            dict(
+            RealmPlaygroundDict(
                 id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,
@@ -1524,7 +1537,7 @@ class UserBaseSettings(models.Model):
     presence_enabled: bool = models.BooleanField(default=True)
 
     # Whether or not the user wants to sync their drafts.
-    enable_drafts_synchronization = models.BooleanField(default=True)
+    enable_drafts_synchronization: bool = models.BooleanField(default=True)
 
     # Privacy settings
     send_stream_typing_notifications: bool = models.BooleanField(default=True)
@@ -1678,6 +1691,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     date_joined: datetime.datetime = models.DateTimeField(default=timezone_now)
     tos_version: Optional[str] = models.CharField(null=True, max_length=10)
     api_key: str = models.CharField(max_length=API_KEY_LENGTH)
+
+    # A UUID generated on user creation. Introduced primarily to
+    # provide a unique key for a user for the mobile push
+    # notifications bouncer that will not have collisions after doing
+    # a data export and then import.
+    uuid: UUID = models.UUIDField(default=uuid4, unique=True)
 
     # Whether the user has access to server-level administrator pages, like /activity
     is_staff: bool = models.BooleanField(default=False)
@@ -2092,6 +2111,31 @@ class UserGroup(models.Model):
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
 
+    # We do not have "Full members" and "Everyone on the internet" group here since there isn't a
+    # separate role value for full members and spectators.
+    SYSTEM_USER_GROUP_ROLE_MAP = {
+        UserProfile.ROLE_REALM_OWNER: {
+            "name": "@role:owners",
+            "description": "Owners of this organization",
+        },
+        UserProfile.ROLE_REALM_ADMINISTRATOR: {
+            "name": "@role:administrators",
+            "description": "Administrators of this organization, including owners",
+        },
+        UserProfile.ROLE_MODERATOR: {
+            "name": "@role:moderators",
+            "description": "Moderators of this organization, including administrators",
+        },
+        UserProfile.ROLE_MEMBER: {
+            "name": "@role:members",
+            "description": "Members of this organization, not including guests",
+        },
+        UserProfile.ROLE_GUEST: {
+            "name": "@role:everyone",
+            "description": "Everyone in this organization, including guests",
+        },
+    }
+
     class Meta:
         unique_together = (("realm", "name"),)
 
@@ -2410,17 +2454,17 @@ class Stream(models.Model):
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
-        "name",
-        "id",
+        "date_created",
         "description",
-        "rendered_description",
+        "first_message_id",
+        "history_public_to_subscribers",
+        "id",
         "invite_only",
         "is_web_public",
-        "stream_post_policy",
-        "history_public_to_subscribers",
-        "first_message_id",
         "message_retention_days",
-        "date_created",
+        "name",
+        "rendered_description",
+        "stream_post_policy",
     ]
 
     @staticmethod
@@ -2512,8 +2556,8 @@ class UserTopic(models.Model):
 
 
 class MutedUser(models.Model):
-    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
-    muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
     date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
 
     class Meta:
@@ -2755,7 +2799,7 @@ class ArchivedMessage(AbstractMessage):
 
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    search_tsvector = SearchVectorField(null=True)
+    search_tsvector: Optional[str] = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
         """
@@ -3434,15 +3478,15 @@ class Subscription(models.Model):
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
     API_FIELDS = [
-        "color",
-        "is_muted",
-        "pin_to_top",
         "audible_notifications",
+        "color",
         "desktop_notifications",
         "email_notifications",
+        "is_muted",
+        "pin_to_top",
         "push_notifications",
-        "wildcard_mentions_notify",
         "role",
+        "wildcard_mentions_notify",
     ]
 
 
@@ -4062,6 +4106,11 @@ class AbstractRealmAuditLog(models.Model):
     REALM_CREATED = 215
     REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
     REALM_ORG_TYPE_CHANGED = 217
+    REALM_DOMAIN_ADDED = 218
+    REALM_DOMAIN_CHANGED = 219
+    REALM_DOMAIN_REMOVED = 220
+    REALM_PLAYGROUND_ADDED = 221
+    REALM_PLAYGROUND_REMOVED = 222
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302

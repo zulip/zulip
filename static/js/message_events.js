@@ -173,9 +173,9 @@ export function update_messages(events) {
             msg.is_me_message = event.is_me_message;
         }
 
-        const row = message_lists.current.get_row(event.message_id);
-        if (row.length > 0) {
-            message_edit.end_message_row_edit(row);
+        const $row = message_lists.current.get_row(event.message_id);
+        if ($row.length > 0) {
+            message_edit.end_message_row_edit($row);
         }
 
         const new_topic = util.get_edit_event_topic(event);
@@ -184,7 +184,37 @@ export function update_messages(events) {
 
         const old_stream = sub_store.get(event.stream_id);
 
-        // A topic edit may affect multiple messages, listed in
+        // Save the content edit to the front end msg.edit_history
+        // before topic edits to ensure that combined topic / content
+        // edits have edit_history logged for both before any
+        // potential narrowing as part of the topic edit loop.
+        if (event.orig_content !== undefined) {
+            if (page_params.realm_allow_edit_history) {
+                // Note that we do this for topic edits separately, below.
+                // If an event changed both content and topic, we'll generate
+                // two client-side events, which is probably good for display.
+                const edit_history_entry = {
+                    user_id: event.user_id,
+                    prev_content: event.orig_content,
+                    prev_rendered_content: event.orig_rendered_content,
+                    prev_rendered_content_version: event.prev_rendered_content_version,
+                    timestamp: event.edit_timestamp,
+                };
+                // Add message's edit_history in message dict
+                // For messages that are edited, edit_history needs to
+                // be added to message in frontend.
+                if (msg.edit_history === undefined) {
+                    msg.edit_history = [];
+                }
+                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+            }
+            message_content_edited = true;
+
+            // Update raw_content, so that editing a few times in a row is fast.
+            msg.raw_content = event.content;
+        }
+
+        // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
         topic_edited = new_topic !== undefined;
@@ -223,7 +253,7 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
-                compose_validate.warn_if_topic_resolved();
+                compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
 
@@ -234,18 +264,23 @@ export function update_messages(events) {
                      * messages that were moved are displayed as such
                      * without a browser reload. */
                     const edit_history_entry = {
-                        edited_by: event.edited_by,
-                        prev_topic: orig_topic,
-                        prev_stream: event.stream_id,
+                        user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
+                    if (stream_changed) {
+                        edit_history_entry.stream = event.new_stream_id;
+                        edit_history_entry.prev_stream = event.stream_id;
+                    }
+                    if (topic_edited) {
+                        edit_history_entry.topic = new_topic;
+                        edit_history_entry.prev_topic = orig_topic;
+                    }
                     if (msg.edit_history === undefined) {
                         msg.edit_history = [];
                     }
                     msg.edit_history = [edit_history_entry].concat(msg.edit_history);
                 }
                 msg.last_edit_timestamp = event.edit_timestamp;
-                delete msg.last_edit_timestr;
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
@@ -389,34 +424,13 @@ export function update_messages(events) {
             }
         }
 
-        if (event.orig_content !== undefined) {
-            if (page_params.realm_allow_edit_history) {
-                // Note that we do this for topic edits separately, above.
-                // If an event changed both content and topic, we'll generate
-                // two client-side events, which is probably good for display.
-                const edit_history_entry = {
-                    edited_by: event.edited_by,
-                    prev_content: event.orig_content,
-                    prev_rendered_content: event.orig_rendered_content,
-                    prev_rendered_content_version: event.prev_rendered_content_version,
-                    timestamp: event.edit_timestamp,
-                };
-                // Add message's edit_history in message dict
-                // For messages that are edited, edit_history needs to
-                // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
-                }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
-            }
-            message_content_edited = true;
-
-            // Update raw_content, so that editing a few times in a row is fast.
-            msg.raw_content = event.content;
+        // Mark the message as edited for the UI. The rendering_only
+        // flag is used to indicated update_message events that are
+        // triggered by server latency optimizations, not user
+        // interactions; these should not generate edit history updates.
+        if (!event.rendering_only) {
+            msg.last_edit_timestamp = event.edit_timestamp;
         }
-
-        msg.last_edit_timestamp = event.edit_timestamp;
-        delete msg.last_edit_timestr;
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);

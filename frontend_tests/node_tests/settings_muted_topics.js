@@ -51,15 +51,15 @@ run_test("settings", ({override_rewire}) => {
         stopPropagation: noop,
     };
 
-    const topic_fake_this = $.create("fake.settings-unmute-topic");
-    const topic_tr_html = $('tr[data-topic="js"]');
-    topic_fake_this.closest = (opts) => {
+    const $topic_fake_this = $.create("fake.settings-unmute-topic");
+    const $topic_tr_html = $('tr[data-topic="js"]');
+    $topic_fake_this.closest = (opts) => {
         assert.equal(opts, "tr");
-        return topic_tr_html;
+        return $topic_tr_html;
     };
 
     let topic_data_called = 0;
-    topic_tr_html.attr = (opts) => {
+    $topic_tr_html.attr = (opts) => {
         if (opts === "data-stream-id") {
             topic_data_called += 1;
             return frontend.stream_id;
@@ -77,7 +77,7 @@ run_test("settings", ({override_rewire}) => {
         assert.equal(topic, "js");
         unmute_topic_called = true;
     };
-    topic_click_handler.call(topic_fake_this, event);
+    topic_click_handler.call($topic_fake_this, event);
     assert.ok(unmute_topic_called);
     assert.equal(topic_data_called, 2);
 });

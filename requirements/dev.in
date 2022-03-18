@@ -21,7 +21,7 @@ coverage<6.3  # https://github.com/nedbat/coveragepy/issues/1310
 fakeldap
 
 # For testing mock http requests
-responses
+responses<0.19.0  # https://github.com/getsentry/responses/issues/511
 
 # For sorting imports
 isort

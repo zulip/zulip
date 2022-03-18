@@ -81,6 +81,7 @@ export interface DisplaySettings {
     };
 }
 
+/* istanbul ignore next */
 export const get_all_display_settings = (): DisplaySettings => ({
     settings: {
         user_display_settings: [

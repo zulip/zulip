@@ -189,19 +189,19 @@ export function set_up_toggler() {
     };
 
     toggler = components.toggle(opts);
-    const elem = toggler.get();
-    elem.addClass("large allow-overflow");
+    const $elem = toggler.get();
+    $elem.addClass("large allow-overflow");
 
     const modals = opts.values.map((item) => {
         const key = item.key; // e.g. message-formatting
-        const modal = $(`#${CSS.escape(key)}`).find(".modal-body");
-        return modal;
+        const $modal = $(`#${CSS.escape(key)}`).find(".modal-body");
+        return $modal;
     });
 
-    for (const modal of modals) {
-        ui.get_scroll_element(modal).prop("tabindex", 0);
+    for (const $modal of modals) {
+        ui.get_scroll_element($modal).prop("tabindex", 0);
         keydown_util.handle({
-            elem: modal,
+            $elem: $modal,
             handlers: {
                 ArrowLeft: toggler.maybe_go_left,
                 ArrowRight: toggler.maybe_go_right,
@@ -209,7 +209,7 @@ export function set_up_toggler() {
         });
     }
 
-    $(".informational-overlays .overlay-tabs").append(elem);
+    $(".informational-overlays .overlay-tabs").append($elem);
 
     $("#go-to-default-view-hotkey-help").toggleClass(
         "notdisplayed",
@@ -224,12 +224,12 @@ export function show(target) {
         set_up_toggler();
     }
 
-    const overlay = $(".informational-overlays");
+    const $overlay = $(".informational-overlays");
 
-    if (!overlay.hasClass("show")) {
+    if (!$overlay.hasClass("show")) {
         overlays.open_overlay({
             name: "informationalOverlays",
-            overlay,
+            $overlay,
             on_close() {
                 browser_history.exit_overlay();
             },

@@ -11,7 +11,6 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
-    STREAM_ASSIGNMENT_COLORS,
     bulk_add_subscriptions,
     bulk_get_subscriber_user_ids,
     bulk_remove_subscriptions,
@@ -35,21 +34,23 @@ from zerver.lib.actions import (
     ensure_stream,
     gather_subscriptions,
     gather_subscriptions_helper,
-    get_average_weekly_stream_traffic,
     get_default_streams_for_realm,
     get_topic_messages,
     lookup_default_stream_groups,
-    pick_colors,
-    round_to_2_significant_digits,
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
+)
+from zerver.lib.stream_traffic import (
+    get_average_weekly_stream_traffic,
+    round_to_2_significant_digits,
 )
 from zerver.lib.streams import (
     StreamDict,
@@ -72,6 +73,7 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
 )
+from zerver.lib.types import NeverSubscribedStreamDict, SubscriptionInfo
 from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
@@ -1497,13 +1499,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
             "* **Old description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "Test description\n"
-            "```\n"
+            "````\n"
             "* **New description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "a multi line description\n"
-            "```"
+            "````"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -1559,13 +1561,13 @@ class StreamAdminTest(ZulipTestCase):
         expected_notification = (
             f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
             "* **Old description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "See https://zulip.com/team\n"
-            "```\n"
+            "````\n"
             "* **New description:**\n"
-            "``` quote\n"
+            "```` quote\n"
             "Test description\n"
-            "```"
+            "````"
         )
         self.assertEqual(messages[-1].content, expected_notification)
 
@@ -2535,9 +2537,9 @@ class DefaultStreamTest(ZulipTestCase):
         never_subscribed = sub_info.never_subscribed
 
         self.assert_length(streams, len(subscribed) + len(unsubscribed) + len(never_subscribed))
-        expected_streams = subscribed + unsubscribed + never_subscribed
         stream_names = [stream["name"] for stream in streams]
-        expected_stream_names = [stream["name"] for stream in expected_streams]
+        expected_stream_names = [stream["name"] for stream in subscribed + unsubscribed]
+        expected_stream_names += [stream["name"] for stream in never_subscribed]
         self.assertEqual(set(stream_names), set(expected_stream_names))
 
 
@@ -5377,6 +5379,36 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = self.example_user("hamlet")
         self.login_user(self.user_profile)
 
+    def verify_sub_fields(self, sub_data: SubscriptionInfo) -> None:
+        other_fields = {
+            "email_address",
+            "is_announcement_only",
+            "in_home_view",
+            "stream_id",
+            "stream_weekly_traffic",
+            "subscribers",
+        }
+
+        expected_fields = set(Stream.API_FIELDS) | set(Subscription.API_FIELDS) | other_fields
+        expected_fields -= {"id"}
+
+        for lst in [sub_data.subscriptions, sub_data.unsubscribed]:
+            for sub in lst:
+                self.assertEqual(set(sub), expected_fields)
+
+        other_fields = {
+            "is_announcement_only",
+            "stream_id",
+            "stream_weekly_traffic",
+            "subscribers",
+        }
+
+        expected_fields = set(Stream.API_FIELDS) | other_fields
+        expected_fields -= {"id"}
+
+        for never_sub in sub_data.never_subscribed:
+            self.assertEqual(set(never_sub), expected_fields)
+
     def assert_user_got_subscription_notification(
         self, user: UserProfile, expected_msg: str
     ) -> None:
@@ -5576,9 +5608,10 @@ class GetSubscribersTest(ZulipTestCase):
 
         create_private_streams()
 
-        def get_never_subscribed() -> List[Dict[str, Any]]:
+        def get_never_subscribed() -> List[NeverSubscribedStreamDict]:
             with queries_captured() as queries:
                 sub_data = gather_subscriptions_helper(self.user_profile)
+                self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
             self.assert_length(queries, 4)
 
@@ -5613,6 +5646,7 @@ class GetSubscribersTest(ZulipTestCase):
         def test_guest_user_case() -> None:
             self.user_profile.role = UserProfile.ROLE_GUEST
             helper_result = gather_subscriptions_helper(self.user_profile)
+            self.verify_sub_fields(helper_result)
             sub = helper_result.subscriptions
             unsub = helper_result.unsubscribed
             never_sub = helper_result.never_subscribed
@@ -5656,6 +5690,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.subscribe(normal_user, stream_name_unsub)
 
         helper_result = gather_subscriptions_helper(guest_user)
+        self.verify_sub_fields(helper_result)
         subs = helper_result.subscriptions
         neversubs = helper_result.never_subscribed
 
@@ -5675,6 +5710,14 @@ class GetSubscribersTest(ZulipTestCase):
         # Guest user only get data about never subscribed web-public streams
         self.assert_length(neversubs, 1)
 
+    def test_api_fields_present(self) -> None:
+        user = self.example_user("cordelia")
+
+        sub_data = gather_subscriptions_helper(user)
+        subscribed = sub_data.subscriptions
+        self.assertGreaterEqual(len(subscribed), 1)
+        self.verify_sub_fields(sub_data)
+
     def test_previously_subscribed_private_streams(self) -> None:
         admin_user = self.example_user("iago")
         non_admin_user = self.example_user("cordelia")
@@ -5693,17 +5736,20 @@ class GetSubscribersTest(ZulipTestCase):
 
         # Test admin user gets previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(admin_user)
+        self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
         self.assert_length(unsubscribed_streams, 1)
         self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
 
         # Test non admin users cannot get previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(non_admin_user)
+        self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
         self.assert_length(unsubscribed_streams, 1)
         self.assertEqual(unsubscribed_streams[0]["subscribers"], [])
 
         sub_data = gather_subscriptions_helper(guest_user)
+        self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
         self.assert_length(unsubscribed_streams, 1)
         self.assertEqual(unsubscribed_streams[0]["subscribers"], [])

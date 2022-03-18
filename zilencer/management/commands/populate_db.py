@@ -19,7 +19,6 @@ from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
 from zerver.lib.actions import (
-    STREAM_ASSIGNMENT_COLORS,
     build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
@@ -36,6 +35,7 @@ from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
@@ -57,6 +57,8 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    UserGroup,
+    UserGroupMembership,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -485,6 +487,25 @@ class Command(BaseCommand):
             assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
             assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+
+            users = UserProfile.objects.filter(realm=zulip_realm)
+            # All users in development environment are full members initially because
+            # waiting period threshold is 0. Groups of Iago, Dedemona, Shiva and
+            # Polonius will be updated according to their role in do_change_user_role.
+            full_members_user_group = UserGroup.objects.get(
+                realm=zulip_realm, name="@role:fullmembers", is_system_group=True
+            )
+            members_user_group = UserGroup.objects.get(
+                realm=zulip_realm, name="@role:members", is_system_group=True
+            )
+            user_group_memberships = []
+            for user_profile in list(users):
+                for group in [full_members_user_group, members_user_group]:
+                    user_group_membership = UserGroupMembership(
+                        user_group=group, user_profile=user_profile
+                    )
+                    user_group_memberships.append(user_group_membership)
+            UserGroupMembership.objects.bulk_create(user_group_memberships)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)

@@ -285,8 +285,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", (spinner) => {
-        assert.equal(spinner.selector, "#compose-send-button .loader");
+    override(loading, "show_button_spinner", ($spinner) => {
+        assert.equal($spinner.selector, "#compose-send-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -333,8 +333,8 @@ test_ui("finish", ({override, override_rewire}) => {
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", (spinner) => {
-        assert.equal(spinner.selector, "#compose-send-button .loader");
+    override(loading, "show_button_spinner", ($spinner) => {
+        assert.equal($spinner.selector, "#compose-send-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -552,27 +552,28 @@ test_ui("on_events", ({override, override_rewire}) => {
     override(rendered_markdown, "update_elements", () => {});
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        const container = $.create("fake " + container_sel);
+        const $container = $.create("fake " + container_sel);
         let container_removed = false;
 
-        container.remove = () => {
+        $container.remove = () => {
             container_removed = true;
         };
 
-        const target = $.create("fake click target (" + target_sel + ")");
+        const $target = $.create("fake click target (" + target_sel + ")");
 
-        target.set_parents_result(parent, container);
+        $target.set_parents_result(parent, $container);
 
         const event = {
             preventDefault: noop,
             stopPropagation: noop,
-            target,
+            // FIXME: event.target should not be a jQuery object
+            target: $target,
         };
 
         const helper = {
             event,
-            container,
-            target,
+            $container,
+            $target,
             container_was_removed: () => container_removed,
         };
 
@@ -633,7 +634,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             ".compose_invite_user",
         );
 
-        helper.container.data = (field) => {
+        helper.$container.data = (field) => {
             if (field === "user-id") {
                 return "34";
             }
@@ -642,7 +643,7 @@ test_ui("on_events", ({override, override_rewire}) => {
             }
             throw new Error(`Unknown field ${field}`);
         };
-        helper.target.prop("disabled", false);
+        helper.$target.prop("disabled", false);
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);
@@ -814,8 +815,8 @@ test_ui("on_events", ({override, override_rewire}) => {
 
             function test(func, param) {
                 let destroy_indicator_called = false;
-                override(loading, "destroy_indicator", (spinner) => {
-                    assert.equal(spinner, $("#compose .markdown_preview_spinner"));
+                override(loading, "destroy_indicator", ($spinner) => {
+                    assert.equal($spinner, $("#compose .markdown_preview_spinner"));
                     destroy_indicator_called = true;
                 });
                 setup_mock_markdown_contains_backend_only_syntax(current_message, true);
@@ -852,8 +853,8 @@ test_ui("on_events", ({override, override_rewire}) => {
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
 
-        override(loading, "make_indicator", (spinner) => {
-            assert.equal(spinner.selector, "#compose .markdown_preview_spinner");
+        override(loading, "make_indicator", ($spinner) => {
+            assert.equal($spinner.selector, "#compose .markdown_preview_spinner");
             make_indicator_called = true;
         });
 

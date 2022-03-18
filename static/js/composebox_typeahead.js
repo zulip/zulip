@@ -153,7 +153,7 @@ export function should_enter_send(e) {
     return this_enter_sends;
 }
 
-export function handle_enter(textarea, e) {
+export function handle_enter($textarea, e) {
     // Used only if Enter doesn't send.
 
     // Since this Enter doesn't send, we just want to do
@@ -175,15 +175,15 @@ export function handle_enter(textarea, e) {
     // To properly emulate browser "Enter", if the
     // user had selected something in the textarea,
     // we need those characters to be cleared.
-    const range = textarea.range();
+    const range = $textarea.range();
     if (range.length > 0) {
-        textarea.range(range.start, range.end).range("");
+        $textarea.range(range.start, range.end).range("");
     }
 
     // Now add the newline, remembering to resize the
     // textarea if needed.
-    textarea.caret("\n");
-    compose_ui.autosize_textarea(textarea);
+    $textarea.caret("\n");
+    compose_ui.autosize_textarea($textarea);
     e.preventDefault();
 }
 
@@ -191,7 +191,7 @@ export function handle_enter(textarea, e) {
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
 // has reliable information about whether it was a Tab or a Shift+Tab.
-let nextFocus = false;
+let $nextFocus = false;
 
 function handle_keydown(e) {
     const key = e.key;
@@ -245,11 +245,11 @@ function handle_keydown(e) {
         } else if (on_stream || on_topic || on_pm) {
             // We are doing the focusing on keyup to not abort the typeahead.
             if (on_stream) {
-                nextFocus = $("#stream_message_recipient_topic");
+                $nextFocus = $("#stream_message_recipient_topic");
             } else if (on_topic) {
-                nextFocus = $("#compose-textarea");
+                $nextFocus = $("#compose-textarea");
             } else if (on_pm) {
-                nextFocus = $("#compose-textarea");
+                $nextFocus = $("#compose-textarea");
             }
         }
     }
@@ -259,18 +259,18 @@ function handle_keyup(e) {
     if (
         // Enter key or Tab key
         (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) &&
-        nextFocus
+        $nextFocus
     ) {
-        nextFocus.trigger("focus");
-        nextFocus = false;
+        $nextFocus.trigger("focus");
+        $nextFocus = false;
 
         // Prevent the form from submitting
         e.preventDefault();
     }
 }
 
-export function split_at_cursor(query, input) {
-    const cursor = input.caret();
+export function split_at_cursor(query, $input) {
+    const cursor = $input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
 }
 
@@ -517,10 +517,10 @@ export function get_person_suggestions(query, opts) {
 
 export function get_stream_topic_data(hacky_this) {
     const opts = {};
-    const message_row = hacky_this.$element.closest(".message_row");
-    if (message_row.length === 1) {
+    const $message_row = hacky_this.$element.closest(".message_row");
+    if ($message_row.length === 1) {
         // we are editing a message so we try to use it's keys.
-        const msg = message_store.get(rows.id(message_row));
+        const msg = message_store.get(rows.id($message_row));
         if (msg.type === "stream") {
             opts.stream = msg.stream;
             opts.topic = msg.topic;
@@ -770,7 +770,7 @@ export function content_typeahead_selected(item, event) {
     const pieces = split_at_cursor(this.query, this.$element);
     let beginning = pieces[0];
     let rest = pieces[1];
-    const textbox = this.$element;
+    const $textbox = this.$element;
     // this highlight object will hold the start and end indices
     // for highlighting any placeholder text
     const highlight = {};
@@ -898,9 +898,9 @@ export function content_typeahead_selected(item, event) {
                 if (rest.startsWith(">")) {
                     rest = rest.slice(1);
                 }
-                textbox.val(beginning + rest);
-                textbox.caret(beginning.length, beginning.length);
-                compose_ui.autosize_textarea(textbox);
+                $textbox.val(beginning + rest);
+                $textbox.caret(beginning.length, beginning.length);
+                compose_ui.autosize_textarea($textbox);
             };
             flatpickr.show_flatpickr(this.$element[0], on_timestamp_selection, timestamp);
             return beginning + rest;
@@ -908,19 +908,19 @@ export function content_typeahead_selected(item, event) {
     }
 
     // Keep the cursor after the newly inserted text / selecting the
-    // placeholder text, as Bootstrap will call textbox.change() to
+    // placeholder text, as Bootstrap will call $textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(() => {
         if (item.placeholder) {
             // This placeholder block is exclusively for slash
             // commands, which always appear at the start of the message.
-            textbox.get(0).setSelectionRange(highlight.start, highlight.end);
-            textbox.trigger("focus");
+            $textbox.get(0).setSelectionRange(highlight.start, highlight.end);
+            $textbox.trigger("focus");
         } else {
-            textbox.caret(beginning.length, beginning.length);
+            $textbox.caret(beginning.length, beginning.length);
         }
         // Also, trigger autosize to check if compose box needs to be resized.
-        compose_ui.autosize_textarea(textbox);
+        compose_ui.autosize_textarea($textbox);
     }, 0);
     return beginning + rest;
 }

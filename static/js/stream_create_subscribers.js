@@ -36,24 +36,24 @@ function remove_user_ids(user_ids) {
     redraw_subscriber_list();
 }
 
-function build_pill_widget({parent_container}) {
-    const pill_container = parent_container.find(".pill-container");
+function build_pill_widget({$parent_container}) {
+    const $pill_container = $parent_container.find(".pill-container");
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
 
-    pill_widget = add_subscribers_pill.create({pill_container, get_potential_subscribers});
+    pill_widget = add_subscribers_pill.create({$pill_container, get_potential_subscribers});
 }
 
-export function create_handlers(container) {
-    container.on("click", ".add_all_users_to_stream", (e) => {
+export function create_handlers($container) {
+    $container.on("click", ".add_all_users_to_stream", (e) => {
         e.preventDefault();
         add_all_users();
-        $(".add-user-list-filter").focus();
+        $(".add-user-list-filter").trigger("focus");
     });
 
-    container.on("click", ".remove_potential_subscriber", (e) => {
+    $container.on("click", ".remove_potential_subscriber", (e) => {
         e.preventDefault();
-        const elem = $(e.target);
-        const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
+        const $elem = $(e.target);
+        const user_id = Number.parseInt($elem.attr("data-user-id"), 10);
         remove_user_ids([user_id]);
     });
 
@@ -64,7 +64,7 @@ export function create_handlers(container) {
 
     add_subscribers_pill.set_up_handlers({
         get_pill_widget: () => pill_widget,
-        parent_container: container,
+        $parent_container: $container,
         pill_selector: ".add_subscribers_container .input",
         button_selector: ".add_subscribers_container button.add-subscriber-button",
         action: add_users,
@@ -72,19 +72,19 @@ export function create_handlers(container) {
 }
 
 export function build_widgets() {
-    const add_people_container = $("#people_to_add");
-    add_people_container.html(render_new_stream_users({}));
+    const $add_people_container = $("#people_to_add");
+    $add_people_container.html(render_new_stream_users({}));
 
-    const simplebar_container = add_people_container.find(".subscriber_list_container");
+    const $simplebar_container = $add_people_container.find(".subscriber_list_container");
 
-    build_pill_widget({parent_container: add_people_container});
+    build_pill_widget({$parent_container: $add_people_container});
 
     stream_create_subscribers_data.initialize_with_current_user();
     const current_user_id = page_params.user_id;
 
     all_users_list_widget = ListWidget.create($("#create_stream_subscribers"), [current_user_id], {
         name: "new_stream_add_users",
-        parent_container: add_people_container,
+        $parent_container: $add_people_container,
         modifier(user_id) {
             const user = people.get_by_user_id(user_id);
             const item = {
@@ -98,13 +98,13 @@ export function build_widgets() {
             return render_new_stream_user(item);
         },
         filter: {
-            element: $("#people_to_add .add-user-list-filter"),
+            $element: $("#people_to_add .add-user-list-filter"),
             predicate(user_id, search_term) {
                 const user = people.get_by_user_id(user_id);
                 return people.build_person_matcher(search_term)(user);
             },
         },
-        simplebar_container,
+        $simplebar_container,
         html_selector: (user_id) => {
             const user = people.get_by_user_id(user_id);
             return $(`#${CSS.escape("user_checkbox_" + user.user_id)}`);

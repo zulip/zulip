@@ -969,7 +969,7 @@ body.dark-theme {
 
     .alert-box {
         .alert.alert-error::before {
-            color: 1px solid hsl(0, 75%, 65%);
+            color: hsl(0, 75%, 65%);
         }
 
         .stacktrace {
@@ -1118,7 +1118,7 @@ body.dark-theme {
     }
 
     #out-of-view-notification {
-        border: 1px solid 1px solid hsl(144, 45%, 62%);
+        border: 1px solid hsl(144, 45%, 62%);
     }
 
     #bots_lists_navbar .active a {
@@ -1164,7 +1164,8 @@ body.dark-theme {
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
-    .auto-select:focus {
+    .auto-select:focus,
+    [role="button"]:focus {
         outline-color: hsl(0, 0%, 67%);
     }
 

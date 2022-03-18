@@ -273,12 +273,16 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## "APIs & Services" > "Credentials", and create a "Project" which will
 ## correspond to your Zulip instance.
 ##
-## (2) Navigate to "APIs & services" > "Library", and find the
-## "Identity Toolkit API".  Choose "Enable".
+## (2) Go to "Oauth consent screen" and create a consent screen,
+## authorizing your domain and enabling the .../auth/userinfo.email,
+## .../auth/userinfo.profile and openid scopes.  If all of your users
+## share a Google Workspace, you can select the "Internal" user type
+## during Oauth screen creation to limit authentication via this
+## backend to users within your Google Workspace organization.
 ##
 ## (3) Return to "Credentials", and select "Create credentials".
-## Choose "OAuth client ID", and follow prompts to create a consent
-## screen.  Fill in "Authorized redirect URIs" with a value like
+## Choose "OAuth client ID", and fill in the app name as desired
+## and "Authorized redirect URIs" with a value like
 ##   https://zulip.example.com/complete/google/
 ## based on your value for EXTERNAL_HOST.
 ##

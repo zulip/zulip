@@ -31,12 +31,12 @@ mock_esm("../../static/js/loading", {
     destroy_indicator: noop,
 });
 mock_esm("../../static/js/ui_report", {
-    success(msg, elem) {
-        elem.val(msg);
+    success(msg, $elem) {
+        $elem.val(msg);
     },
 
-    error(msg, xhr, elem) {
-        elem.val(msg);
+    error(msg, xhr, $elem) {
+        $elem.val(msg);
     },
 });
 
@@ -74,9 +74,9 @@ test("unloaded", () => {
 });
 
 function simulate_realm_domains_table() {
-    const tr_stub = $.create("realm-tr-stub");
-    $("#realm_domains_table tbody").set_find_results("tr", tr_stub);
-    tr_stub.remove = () => {};
+    const $tr_stub = $.create("realm-tr-stub");
+    $("#realm_domains_table tbody").set_find_results("tr", $tr_stub);
+    $tr_stub.remove = () => {};
 
     let appended;
     $("#realm_domains_table tbody").append = (html) => {
@@ -90,7 +90,7 @@ function simulate_realm_domains_table() {
 }
 
 function test_realms_domain_modal(override, add_realm_domain) {
-    const info = $(".realm_domains_info");
+    const $info = $(".realm_domains_info");
 
     $("#add-realm-domain-widget").set_find_results(
         ".new-realm-domain",
@@ -117,46 +117,46 @@ function test_realms_domain_modal(override, add_realm_domain) {
     assert.ok(posted);
 
     success_callback();
-    assert.equal(info.val(), "translated HTML: Added successfully!");
+    assert.equal($info.val(), "translated HTML: Added successfully!");
 
     error_callback({});
-    assert.equal(info.val(), "translated HTML: Failed");
+    assert.equal($info.val(), "translated HTML: Failed");
 }
 
 function createSaveButtons(subsection) {
-    const stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
-    const save_button_controls = $(".save-button-controls");
-    const stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
-    const stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
-    const stub_save_button_text = $(".save-discard-widget-button-text");
-    stub_save_button_header.set_find_results(
+    const $stub_save_button_header = $(`#org-${CSS.escape(subsection)}`);
+    const $save_button_controls = $(".save-button-controls");
+    const $stub_save_button = $(`#org-submit-${CSS.escape(subsection)}`);
+    const $stub_discard_button = $(`#org-discard-${CSS.escape(subsection)}`);
+    const $stub_save_button_text = $(".save-discard-widget-button-text");
+    $stub_save_button_header.set_find_results(
         ".subsection-failed-status p",
-        $("<failed status element>"),
+        $("<failed-status-stub>"),
     );
-    stub_save_button.closest = () => stub_save_button_header;
-    save_button_controls.set_find_results(".save-button", stub_save_button);
-    stub_save_button.set_find_results(".save-discard-widget-button-text", stub_save_button_text);
-    stub_save_button_header.set_find_results(".save-button-controls", save_button_controls);
-    stub_save_button_header.set_find_results(
+    $stub_save_button.closest = () => $stub_save_button_header;
+    $save_button_controls.set_find_results(".save-button", $stub_save_button);
+    $stub_save_button.set_find_results(".save-discard-widget-button-text", $stub_save_button_text);
+    $stub_save_button_header.set_find_results(".save-button-controls", $save_button_controls);
+    $stub_save_button_header.set_find_results(
         ".subsection-changes-discard button",
         $(`#org-discard-${CSS.escape(subsection)}`),
     );
-    save_button_controls.set_find_results(".discard-button", stub_discard_button);
+    $save_button_controls.set_find_results(".discard-button", $stub_discard_button);
     const props = {};
     props.hidden = false;
-    save_button_controls.fadeIn = () => {
+    $save_button_controls.fadeIn = () => {
         props.hidden = false;
     };
-    save_button_controls.fadeOut = () => {
+    $save_button_controls.fadeOut = () => {
         props.hidden = true;
     };
     return {
         props,
-        save_button: stub_save_button,
-        discard_button: stub_discard_button,
-        save_button_header: stub_save_button_header,
-        save_button_controls,
-        save_button_text: stub_save_button_text,
+        $save_button: $stub_save_button,
+        $discard_button: $stub_discard_button,
+        $save_button_header: $stub_save_button_header,
+        $save_button_controls,
+        $save_button_text: $stub_save_button_text,
     };
 }
 
@@ -193,55 +193,55 @@ function test_submit_settings_form(override, submit_form) {
     let subsection = "other-permissions";
     ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
     let stubs = createSaveButtons(subsection);
-    let save_button = stubs.save_button;
-    save_button.attr("id", `org-submit-${subsection}`);
-    save_button.replace = () => `${subsection}`;
+    let $save_button = stubs.$save_button;
+    $save_button.attr("id", `org-submit-${subsection}`);
+    $save_button.replace = () => `${subsection}`;
 
     $("#id_realm_waiting_period_threshold").val(10);
 
-    const invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
-    invite_to_stream_policy_elem.val("1");
-    invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
-    invite_to_stream_policy_elem.data = () => "number";
+    const $invite_to_stream_policy_elem = $("#id_realm_invite_to_stream_policy");
+    $invite_to_stream_policy_elem.val("1");
+    $invite_to_stream_policy_elem.attr("id", "id_realm_invite_to_stream_policy");
+    $invite_to_stream_policy_elem.data = () => "number";
 
-    const create_public_stream_policy_elem = $("#id_realm_create_public_stream_policy");
-    create_public_stream_policy_elem.val("2");
-    create_public_stream_policy_elem.attr("id", "id_realm_create_public_stream_policy");
-    create_public_stream_policy_elem.data = () => "number";
+    const $create_public_stream_policy_elem = $("#id_realm_create_public_stream_policy");
+    $create_public_stream_policy_elem.val("2");
+    $create_public_stream_policy_elem.attr("id", "id_realm_create_public_stream_policy");
+    $create_public_stream_policy_elem.data = () => "number";
 
-    const create_private_stream_policy_elem = $("#id_realm_create_private_stream_policy");
-    create_private_stream_policy_elem.val("2");
-    create_private_stream_policy_elem.attr("id", "id_realm_create_private_stream_policy");
-    create_private_stream_policy_elem.data = () => "number";
+    const $create_private_stream_policy_elem = $("#id_realm_create_private_stream_policy");
+    $create_private_stream_policy_elem.val("2");
+    $create_private_stream_policy_elem.attr("id", "id_realm_create_private_stream_policy");
+    $create_private_stream_policy_elem.data = () => "number";
 
-    const add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
-    add_custom_emoji_policy_elem.val("1");
-    add_custom_emoji_policy_elem.attr("id", "id_realm_add_custom_emoji_policy");
-    add_custom_emoji_policy_elem.data = () => "number";
+    const $add_custom_emoji_policy_elem = $("#id_realm_add_custom_emoji_policy");
+    $add_custom_emoji_policy_elem.val("1");
+    $add_custom_emoji_policy_elem.attr("id", "id_realm_add_custom_emoji_policy");
+    $add_custom_emoji_policy_elem.data = () => "number";
 
-    const bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
-    bot_creation_policy_elem.val("1");
-    bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
-    bot_creation_policy_elem.data = () => "number";
-    const email_address_visibility_elem = $("#id_realm_email_address_visibility");
-    email_address_visibility_elem.val("1");
-    email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
-    email_address_visibility_elem.data = () => "number";
+    const $bot_creation_policy_elem = $("#id_realm_bot_creation_policy");
+    $bot_creation_policy_elem.val("1");
+    $bot_creation_policy_elem.attr("id", "id_realm_bot_creation_policy");
+    $bot_creation_policy_elem.data = () => "number";
+    const $email_address_visibility_elem = $("#id_realm_email_address_visibility");
+    $email_address_visibility_elem.val("1");
+    $email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
+    $email_address_visibility_elem.data = () => "number";
 
-    const invite_to_realm_policy_elem = $("#id_realm_invite_to_realm_policy");
-    invite_to_realm_policy_elem.val("2");
-    invite_to_realm_policy_elem.attr("id", "id_realm_invite_to_realm_policy");
-    invite_to_realm_policy_elem.data = () => "number";
+    const $invite_to_realm_policy_elem = $("#id_realm_invite_to_realm_policy");
+    $invite_to_realm_policy_elem.val("2");
+    $invite_to_realm_policy_elem.attr("id", "id_realm_invite_to_realm_policy");
+    $invite_to_realm_policy_elem.data = () => "number";
 
-    let subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    subsection_elem.closest = () => subsection_elem;
-    subsection_elem.set_find_results(".prop-element", [
-        bot_creation_policy_elem,
-        email_address_visibility_elem,
-        add_custom_emoji_policy_elem,
-        create_public_stream_policy_elem,
-        create_private_stream_policy_elem,
-        invite_to_stream_policy_elem,
+    let $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
+    $subsection_elem.closest = () => $subsection_elem;
+    $subsection_elem.set_find_results(".prop-element", [
+        $bot_creation_policy_elem,
+        $email_address_visibility_elem,
+        $add_custom_emoji_policy_elem,
+        $create_public_stream_policy_elem,
+        $create_private_stream_policy_elem,
+        $invite_to_stream_policy_elem,
     ]);
 
     patched = false;
@@ -261,17 +261,17 @@ function test_submit_settings_form(override, submit_form) {
     subsection = "user-defaults";
     ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
     stubs = createSaveButtons(subsection);
-    save_button = stubs.save_button;
-    save_button.attr("id", `org-submit-${subsection}`);
+    $save_button = stubs.$save_button;
+    $save_button.attr("id", `org-submit-${subsection}`);
 
-    const realm_default_language_elem = $("#id_realm_default_language");
-    realm_default_language_elem.val("en");
-    realm_default_language_elem.attr("id", "id_realm_default_language");
-    realm_default_language_elem.data = () => "string";
+    const $realm_default_language_elem = $("#id_realm_default_language");
+    $realm_default_language_elem.val("en");
+    $realm_default_language_elem.attr("id", "id_realm_default_language");
+    $realm_default_language_elem.data = () => "string";
 
-    subsection_elem = $(`#org-${CSS.escape(subsection)}`);
-    subsection_elem.closest = () => subsection_elem;
-    subsection_elem.set_find_results(".prop-element", [realm_default_language_elem]);
+    $subsection_elem = $(`#org-${CSS.escape(subsection)}`);
+    $subsection_elem.closest = () => $subsection_elem;
+    $subsection_elem.set_find_results(".prop-element", [$realm_default_language_elem]);
 
     submit_form(ev);
     assert.ok(patched);
@@ -284,50 +284,50 @@ function test_submit_settings_form(override, submit_form) {
     // Testing only once for since callback is same for all cases
     success_callback();
     assert.equal(stubs.props.hidden, true);
-    assert.equal(save_button.attr("data-status"), "saved");
-    assert.equal(stubs.save_button_text.text(), "translated: Saved");
+    assert.equal($save_button.attr("data-status"), "saved");
+    assert.equal(stubs.$save_button_text.text(), "translated: Saved");
 }
 
 function test_change_save_button_state() {
-    const {save_button_controls, save_button_text, save_button, discard_button, props} =
+    const {$save_button_controls, $save_button_text, $save_button, $discard_button, props} =
         createSaveButtons("msg-editing");
-    save_button.attr("id", "org-submit-msg-editing");
+    $save_button.attr("id", "org-submit-msg-editing");
 
     {
-        settings_org.change_save_button_state(save_button_controls, "unsaved");
-        assert.equal(save_button_text.text(), "translated: Save changes");
+        settings_org.change_save_button_state($save_button_controls, "unsaved");
+        assert.equal($save_button_text.text(), "translated: Save changes");
         assert.equal(props.hidden, false);
-        assert.equal(save_button.attr("data-status"), "unsaved");
-        assert.equal(discard_button.visible(), true);
+        assert.equal($save_button.attr("data-status"), "unsaved");
+        assert.equal($discard_button.visible(), true);
     }
     {
-        settings_org.change_save_button_state(save_button_controls, "saved");
-        assert.equal(save_button_text.text(), "translated: Save changes");
+        settings_org.change_save_button_state($save_button_controls, "saved");
+        assert.equal($save_button_text.text(), "translated: Save changes");
         assert.equal(props.hidden, true);
-        assert.equal(save_button.attr("data-status"), "");
+        assert.equal($save_button.attr("data-status"), "");
     }
     {
-        settings_org.change_save_button_state(save_button_controls, "saving");
-        assert.equal(save_button_text.text(), "translated: Saving");
-        assert.equal(save_button.attr("data-status"), "saving");
-        assert.equal(save_button.hasClass("saving"), true);
-        assert.equal(discard_button.visible(), false);
+        settings_org.change_save_button_state($save_button_controls, "saving");
+        assert.equal($save_button_text.text(), "translated: Saving");
+        assert.equal($save_button.attr("data-status"), "saving");
+        assert.equal($save_button.hasClass("saving"), true);
+        assert.equal($discard_button.visible(), false);
     }
     {
-        settings_org.change_save_button_state(save_button_controls, "discarded");
+        settings_org.change_save_button_state($save_button_controls, "discarded");
         assert.equal(props.hidden, true);
     }
     {
-        settings_org.change_save_button_state(save_button_controls, "succeeded");
+        settings_org.change_save_button_state($save_button_controls, "succeeded");
         assert.equal(props.hidden, true);
-        assert.equal(save_button.attr("data-status"), "saved");
-        assert.equal(save_button_text.text(), "translated: Saved");
+        assert.equal($save_button.attr("data-status"), "saved");
+        assert.equal($save_button_text.text(), "translated: Saved");
     }
     {
-        settings_org.change_save_button_state(save_button_controls, "failed");
+        settings_org.change_save_button_state($save_button_controls, "failed");
         assert.equal(props.hidden, false);
-        assert.equal(save_button.attr("data-status"), "failed");
-        assert.equal(save_button_text.text(), "translated: Save changes");
+        assert.equal($save_button.attr("data-status"), "failed");
+        assert.equal($save_button_text.text(), "translated: Save changes");
     }
 }
 
@@ -358,8 +358,8 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         stopPropagation: noop,
     };
 
-    const info = $(".realm_domains_info");
-    info.fadeOut = noop;
+    const $info = $(".realm_domains_info");
+    $info.fadeOut = noop;
     const domain = "example.com";
     let allow = true;
 
@@ -372,33 +372,33 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         error_callback = req.error;
     };
 
-    const domain_obj = $.create("domain object");
-    domain_obj.text(domain);
+    const $domain_obj = $.create("domain object");
+    $domain_obj.text(domain);
 
-    const elem_obj = $.create("<elem html>");
-    const parents_obj = $.create("parents object");
+    const $elem_obj = $.create("<elem html>");
+    const $parents_obj = $.create("parents object");
 
-    elem_obj.set_parents_result("tr", parents_obj);
-    parents_obj.set_find_results(".domain", domain_obj);
-    elem_obj.prop("checked", allow);
+    $elem_obj.set_parents_result("tr", $parents_obj);
+    $parents_obj.set_find_results(".domain", $domain_obj);
+    $elem_obj.prop("checked", allow);
 
-    change_allow_subdomains.call(elem_obj, ev);
+    change_allow_subdomains.call($elem_obj, ev);
 
     success_callback();
     assert.equal(
-        info.val(),
+        $info.val(),
         "translated HTML: Update successful: Subdomains allowed for example.com",
     );
 
     error_callback({});
-    assert.equal(info.val(), "translated HTML: Failed");
+    assert.equal($info.val(), "translated HTML: Failed");
 
     allow = false;
-    elem_obj.prop("checked", allow);
-    change_allow_subdomains.call(elem_obj, ev);
+    $elem_obj.prop("checked", allow);
+    change_allow_subdomains.call($elem_obj, ev);
     success_callback();
     assert.equal(
-        info.val(),
+        $info.val(),
         "translated HTML: Update successful: Subdomains no longer allowed for example.com",
     );
 }
@@ -431,9 +431,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test invalid settings property sync */
-        const property_elem = $("#id_realm_invalid_settings_property");
-        property_elem.attr("id", "id_realm_invalid_settings_property");
-        property_elem.length = 1;
+        const $property_elem = $("#id_realm_invalid_settings_property");
+        $property_elem.attr("id", "id_realm_invalid_settings_property");
+        $property_elem.length = 1;
 
         blueslip.expect(
             "error",
@@ -443,9 +443,9 @@ function test_sync_realm_settings() {
     }
 
     function test_common_policy(property_name) {
-        const property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
-        property_elem.length = 1;
-        property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
+        const $property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
+        $property_elem.length = 1;
+        $property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
 
         /* Each policy is initialized to 'by_members' and then all the values are tested
         in the following order - by_admins_only, by_moderators_only, by_full_members,
@@ -453,14 +453,14 @@ function test_sync_realm_settings() {
 
         page_params[`realm_${property_name}`] =
             settings_config.common_policy_values.by_members.code;
-        property_elem.val(settings_config.common_policy_values.by_members.code);
+        $property_elem.val(settings_config.common_policy_values.by_members.code);
 
         for (const policy_value of Array.from(
             Object.values(settings_config.common_policy_values),
         )) {
             page_params[`realm_${property_name}`] = policy_value.code;
             settings_org.sync_realm_settings(property_name);
-            assert.equal(property_elem.val(), policy_value.code);
+            assert.equal($property_elem.val(), policy_value.code);
         }
     }
 
@@ -471,9 +471,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit minutes sync */
-        const property_elem = $("#id_realm_message_content_edit_limit_minutes");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
+        const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
 
         page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
@@ -484,9 +484,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit dropdown value sync */
-        const property_elem = $("#id_realm_msg_edit_limit_setting");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_msg_edit_limit_setting");
+        const $property_elem = $("#id_realm_msg_edit_limit_setting");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_msg_edit_limit_setting");
 
         page_params.realm_allow_message_editing = false;
         page_params.realm_message_content_edit_limit_seconds = 120;
@@ -506,9 +506,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit minutes sync */
-        const property_elem = $("#id_realm_message_content_edit_limit_minutes");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
+        const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
 
         page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
@@ -519,9 +519,9 @@ function test_sync_realm_settings() {
 
     {
         /* Test organization joining restrictions settings sync */
-        const property_elem = $("#id_realm_org_join_restrictions");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_org_join_restrictions");
+        const $property_elem = $("#id_realm_org_join_restrictions");
+        $property_elem.length = 1;
+        $property_elem.attr("id", "id_realm_org_join_restrictions");
 
         page_params.realm_emails_restricted_to_domains = true;
         page_params.realm_disallow_disposable_email_addresses = false;
@@ -541,10 +541,10 @@ function test_sync_realm_settings() {
 }
 
 function test_parse_time_limit() {
-    const elem = $("#id_realm_message_content_edit_limit_minutes");
+    const $elem = $("#id_realm_message_content_edit_limit_minutes");
     const test_function = (value, expected_value = value) => {
-        elem.val(value);
-        page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit(elem);
+        $elem.val(value);
+        page_params.realm_message_content_edit_limit_seconds = settings_org.parse_time_limit($elem);
         assert.equal(
             settings_org.get_realm_time_limits_in_minutes(
                 "realm_message_content_edit_limit_seconds",
@@ -587,40 +587,40 @@ function test_discard_changes_button(discard_changes) {
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_message_content_delete_limit_seconds = 120;
 
-    const allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
-    const edit_topic_policy = $("#id_realm_edit_topic_policy").val(
+    const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
+    const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
         settings_config.common_message_policy_values.by_admins_only.code,
     );
-    const msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_limit");
-    const message_content_edit_limit_minutes = $(
+    const $msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_limit");
+    const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
-    const msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_limit");
-    const message_content_delete_limit_minutes = $(
+    const $msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_limit");
+    const $message_content_delete_limit_minutes = $(
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
-    allow_edit_history.attr("id", "id_realm_allow_edit_history");
-    msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
-    msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
-    edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
-    message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
-    message_content_delete_limit_minutes.attr(
+    $allow_edit_history.attr("id", "id_realm_allow_edit_history");
+    $msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
+    $msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
+    $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
+    $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
+    $message_content_delete_limit_minutes.attr(
         "id",
         "id_realm_message_content_delete_limit_minutes",
     );
 
-    const discard_button_parent = $(".org-subsection-parent");
-    discard_button_parent.find = () => [
-        allow_edit_history,
-        msg_edit_limit_setting,
-        msg_delete_limit_setting,
-        edit_topic_policy,
-        message_content_edit_limit_minutes,
-        message_content_delete_limit_minutes,
+    const $discard_button_parent = $(".org-subsection-parent");
+    $discard_button_parent.find = () => [
+        $allow_edit_history,
+        $msg_edit_limit_setting,
+        $msg_delete_limit_setting,
+        $edit_topic_policy,
+        $message_content_edit_limit_minutes,
+        $message_content_delete_limit_minutes,
     ];
 
-    $("#org-discard-msg-editing").closest = () => discard_button_parent;
+    $("#org-discard-msg-editing").closest = () => $discard_button_parent;
 
     const stubbed_function = settings_org.change_save_button_state;
     settings_org.__Rewire__("change_save_button_state", (save_button_controls, state) => {
@@ -629,15 +629,15 @@ function test_discard_changes_button(discard_changes) {
 
     discard_changes(ev);
 
-    assert.equal(allow_edit_history.prop("checked"), true);
+    assert.equal($allow_edit_history.prop("checked"), true);
     assert.equal(
-        edit_topic_policy.val(),
+        $edit_topic_policy.val(),
         settings_config.common_message_policy_values.by_everyone.code,
     );
-    assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
-    assert.equal(message_content_edit_limit_minutes.val(), "60");
-    assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
-    assert.equal(message_content_delete_limit_minutes.val(), "2");
+    assert.equal($msg_edit_limit_setting.val(), "upto_one_hour");
+    assert.equal($message_content_edit_limit_minutes.val(), "60");
+    assert.equal($msg_delete_limit_setting.val(), "upto_two_min");
+    assert.equal($message_content_delete_limit_minutes.val(), "2");
 
     settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
@@ -683,8 +683,8 @@ test("set_up", ({override, override_rewire, mock_template}) => {
     $("#enable_digest_emails_label").set_parent($.create("<stub digest setting checkbox>"));
     $("#id_realm_digest_weekday").set_parent($.create("<stub digest weekday setting dropdown>"));
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
-    const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
-    $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
+    const $waiting_period_parent_elem = $.create("waiting-period-parent-stub");
+    $("#id_realm_waiting_period_threshold").set_parent($waiting_period_parent_elem);
     $("#id_realm_create_web_public_stream_policy").set_parent(
         $.create("<stub-create-web-public-stream-policy-parent>"),
     );
@@ -829,8 +829,8 @@ test("test get_sorted_options_list", () => {
 test("misc", ({override_rewire}) => {
     page_params.is_admin = false;
 
-    const stub_notification_disable_parent = $.create("<stub notification_disable parent");
-    stub_notification_disable_parent.set_find_results(
+    const $stub_notification_disable_parent = $.create("<stub notification_disable parent");
+    $stub_notification_disable_parent.set_find_results(
         ".dropdown_list_reset_button",
         $.create("<disable link>"),
     );
@@ -904,14 +904,14 @@ test("misc", ({override_rewire}) => {
         "realm_signup_notifications_stream_id",
         "realm_default_code_block_language",
     ];
-    const dropdown_list_parent = $.create("<list parent>");
-    dropdown_list_parent.set_find_results(
+    const $dropdown_list_parent = $.create("<list parent>");
+    $dropdown_list_parent.set_find_results(
         ".dropdown_list_reset_button",
         $.create("<disable button>"),
     );
     for (const name of widget_settings) {
-        const elem = $.create(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
-        elem.closest = () => dropdown_list_parent;
+        const $elem = $.create(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
+        $elem.closest = () => $dropdown_list_parent;
     }
 
     // We do not define any settings we need in page_params yet, but we don't need to for this test.
@@ -923,32 +923,32 @@ test("misc", ({override_rewire}) => {
     settings_org.init_dropdown_widgets();
 
     let setting_name = "realm_notifications_stream_id";
-    let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    elem.closest = () => stub_notification_disable_parent;
+    let $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
+    $elem.closest = () => $stub_notification_disable_parent;
     sub_store.__Rewire__("get", (stream_id) => {
         assert.equal(stream_id, 42);
         return {name: "some_stream"};
     });
     settings_org.notifications_stream_widget.render(42);
-    assert.equal(elem.text(), "#some_stream");
-    assert.ok(!elem.hasClass("text-warning"));
+    assert.equal($elem.text(), "#some_stream");
+    assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.notifications_stream_widget.render(undefined);
-    assert.equal(elem.text(), "translated: Disabled");
-    assert.ok(elem.hasClass("text-warning"));
+    assert.equal($elem.text(), "translated: Disabled");
+    assert.ok($elem.hasClass("text-warning"));
 
     setting_name = "realm_signup_notifications_stream_id";
-    elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
-    elem.closest = () => stub_notification_disable_parent;
+    $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
+    $elem.closest = () => $stub_notification_disable_parent;
     sub_store.__Rewire__("get", (stream_id) => {
         assert.equal(stream_id, 75);
         return {name: "some_stream"};
     });
     settings_org.signup_notifications_stream_widget.render(75);
-    assert.equal(elem.text(), "#some_stream");
-    assert.ok(!elem.hasClass("text-warning"));
+    assert.equal($elem.text(), "#some_stream");
+    assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.signup_notifications_stream_widget.render(undefined);
-    assert.equal(elem.text(), "translated: Disabled");
-    assert.ok(elem.hasClass("text-warning"));
+    assert.equal($elem.text(), "translated: Disabled");
+    assert.ok($elem.hasClass("text-warning"));
 });

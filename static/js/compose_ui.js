@@ -21,22 +21,22 @@ export function is_full_size() {
     return full_size_status;
 }
 
-export function autosize_textarea(textarea) {
+export function autosize_textarea($textarea) {
     // Since this supports both compose and file upload, one must pass
     // in the text area to autosize.
     if (!is_full_size()) {
-        autosize.update(textarea);
+        autosize.update($textarea);
     }
 }
 
-export function smart_insert(textarea, syntax) {
+export function smart_insert($textarea, syntax) {
     function is_space(c) {
         return c === " " || c === "\t" || c === "\n";
     }
 
-    const pos = textarea.caret();
-    const before_str = textarea.val().slice(0, pos);
-    const after_str = textarea.val().slice(pos);
+    const pos = $textarea.caret();
+    const before_str = $textarea.val().slice(0, pos);
+    const after_str = $textarea.val().slice(pos);
 
     if (
         pos > 0 &&
@@ -60,32 +60,32 @@ export function smart_insert(textarea, syntax) {
         syntax += " ";
     }
 
-    textarea.trigger("focus");
+    $textarea.trigger("focus");
 
     // We prefer to use insertText, which supports things like undo better
     // for rich-text editing features like inserting links.  But we fall
     // back to textarea.caret if the browser doesn't support insertText.
     if (!document.execCommand("insertText", false, syntax)) {
-        textarea.caret(syntax);
+        $textarea.caret(syntax);
     }
 
-    autosize_textarea(textarea);
+    autosize_textarea($textarea);
 }
 
-export function insert_syntax_and_focus(syntax, textarea = $("#compose-textarea")) {
+export function insert_syntax_and_focus(syntax, $textarea = $("#compose-textarea")) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
-    smart_insert(textarea, syntax);
+    smart_insert($textarea, syntax);
 }
 
-export function replace_syntax(old_syntax, new_syntax, textarea = $("#compose-textarea")) {
+export function replace_syntax(old_syntax, new_syntax, $textarea = $("#compose-textarea")) {
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
     // a string it will only replace the first instance. If `old_syntax` is
     // a RegExp with a global flag, it will replace all instances.
-    textarea.val(
-        textarea.val().replace(
+    $textarea.val(
+        $textarea.val().replace(
             old_syntax,
             () =>
                 // We need this anonymous function to avoid JavaScript's
@@ -193,7 +193,7 @@ export function make_compose_box_original_size() {
     $("#compose-textarea").trigger("focus");
 }
 
-export function handle_keydown(event, textarea) {
+export function handle_keydown(event, $textarea) {
     // The event.key property will have uppercase letter if
     // the "Shift + <key>" combo was used or the Caps Lock
     // key was on. We turn to key to lowercase so the key bindings
@@ -212,26 +212,26 @@ export function handle_keydown(event, textarea) {
     const isCmdOrCtrl = common.has_mac_keyboard() ? event.metaKey : event.ctrlKey;
 
     if (type && isCmdOrCtrl) {
-        format_text(textarea, type);
-        autosize_textarea(textarea);
+        format_text($textarea, type);
+        autosize_textarea($textarea);
         event.preventDefault();
     }
 }
 
-export function handle_keyup(event, textarea) {
+export function handle_keyup(event, $textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
-    rtl.set_rtl_class_for_textarea(textarea);
+    rtl.set_rtl_class_for_textarea($textarea);
 }
 
-export function format_text(textarea, type) {
+export function format_text($textarea, type) {
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
-    const field = textarea.get(0);
-    let range = textarea.range();
-    let text = textarea.val();
+    const field = $textarea.get(0);
+    let range = $textarea.range();
+    let text = $textarea.val();
     const selected_text = range.text;
 
     // Remove new line and space around selected text.
@@ -239,7 +239,7 @@ export function format_text(textarea, type) {
     const right_trim_length = range.text.length - range.text.trimEnd().length;
 
     field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
-    range = textarea.range();
+    range = $textarea.range();
 
     const is_selection_bold = () =>
         // First check if there are enough characters before/after selection.

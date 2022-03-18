@@ -37,8 +37,8 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
-from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
     Message,
@@ -54,6 +54,15 @@ from zerver.models import (
     get_usermessage_by_message_id,
     query_for_ids,
 )
+
+
+class MessageDetailsDict(TypedDict, total=False):
+    type: str
+    mentioned: bool
+    user_ids: List[int]
+    stream_id: int
+    topic: str
+    unmuted_stream_msg: bool
 
 
 class RawReactionRow(TypedDict):
@@ -72,7 +81,7 @@ class RawUnreadStreamDict(TypedDict):
 
 
 class RawUnreadPrivateMessageDict(TypedDict):
-    sender_id: int
+    other_user_id: int
 
 
 class RawUnreadHuddleDict(TypedDict):
@@ -96,6 +105,8 @@ class UnreadStreamInfo(TypedDict):
 
 
 class UnreadPrivateMessageInfo(TypedDict):
+    other_user_id: int
+    # Deprecated and misleading synonym for other_user_id
     sender_id: int
     unread_message_ids: List[int]
 
@@ -974,7 +985,9 @@ def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
     )
 
 
-def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
+def get_raw_unread_data(
+    user_profile: UserProfile, message_ids: Optional[List[int]] = None
+) -> RawUnreadMessagesResult:
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
 
     user_msgs = (
@@ -983,9 +996,6 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         )
         .exclude(
             message__recipient_id__in=excluded_recipient_ids,
-        )
-        .extra(
-            where=[UserMessage.where_unread()],
         )
         .values(
             "message_id",
@@ -998,6 +1008,16 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
         )
         .order_by("-message_id")
     )
+
+    if message_ids is not None:
+        # When users are marking just a few messages as unread, we just need
+        # those ids, and we know they're unread.
+        user_msgs = user_msgs.filter(message_id__in=message_ids)
+    else:
+        # At page load we need all unread messages.
+        user_msgs = user_msgs.extra(
+            where=[UserMessage.where_unread()],
+        )
 
     # Limit unread messages for performance reasons.
     user_msgs = list(user_msgs[:MAX_UNREAD_MESSAGES])
@@ -1080,14 +1100,8 @@ def extract_unread_data_from_um_rows(
             else:
                 other_user_id = sender_id
 
-            # The `sender_id` field here is misnamed.  It's really
-            # just the other participant in a PM conversation.  For
-            # most unread PM messages, the other user is also the sender,
-            # but that's not true for certain messages sent from the
-            # API.  Unfortunately, it's difficult now to rename the
-            # field without breaking mobile.
             pm_dict[message_id] = dict(
-                sender_id=other_user_id,
+                other_user_id=other_user_id,
             )
 
         elif msg_type == Recipient.HUDDLE:
@@ -1148,9 +1162,13 @@ def aggregate_pms(
 ) -> List[UnreadPrivateMessageInfo]:
     lookup_dict: Dict[int, UnreadPrivateMessageInfo] = {}
     for message_id, attribute_dict in input_dict.items():
-        other_user_id = attribute_dict["sender_id"]
+        other_user_id = attribute_dict["other_user_id"]
         if other_user_id not in lookup_dict:
+            # The `sender_id` field here is only supported for
+            # legacy mobile clients. Its actual semantics are the same
+            # as `other_user_id`.
             obj = UnreadPrivateMessageInfo(
+                other_user_id=other_user_id,
                 sender_id=other_user_id,
                 unread_message_ids=[],
             )
@@ -1248,13 +1266,12 @@ def apply_unread_message_event(
 
     elif message_type == "private":
         if len(others) == 1:
-            other_id = others[0]["id"]
+            other_user_id = others[0]["id"]
         else:
-            other_id = user_profile.id
+            other_user_id = user_profile.id
 
-        # The `sender_id` field here is misnamed.
         state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
-            sender_id=other_id,
+            other_user_id=other_user_id,
         )
 
     else:
@@ -1282,6 +1299,98 @@ def remove_message_id_from_unread_mgs(state: RawUnreadMessagesResult, message_id
     state["huddle_dict"].pop(message_id, None)
     state["unmuted_stream_msgs"].discard(message_id)
     state["mentions"].discard(message_id)
+
+
+def format_unread_message_details(
+    my_user_id: int,
+    raw_unread_data: RawUnreadMessagesResult,
+) -> Dict[str, MessageDetailsDict]:
+    unread_data = {}
+
+    for message_id, private_message_details in raw_unread_data["pm_dict"].items():
+        other_user_id = private_message_details["other_user_id"]
+        if other_user_id == my_user_id:
+            user_ids = []
+        else:
+            user_ids = [other_user_id]
+
+        # Note that user_ids excludes ourself, even for the case we send messages
+        # to ourself.
+        message_details = MessageDetailsDict(
+            type="private",
+            user_ids=user_ids,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
+        if message_id in raw_unread_data["unmuted_stream_msgs"]:
+            unmuted_stream_msg = True
+        else:
+            unmuted_stream_msg = False
+
+        message_details = MessageDetailsDict(
+            type="stream",
+            stream_id=stream_message_details["stream_id"],
+            topic=stream_message_details["topic"],
+            # Clients don't need this detail, but we need it internally for apply_events.
+            unmuted_stream_msg=unmuted_stream_msg,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
+        # The client wants a list of user_ids in the conversation, excluding ourself,
+        # that is sorted in numerical order.
+        user_ids = [int(s) for s in huddle_message_details["user_ids_string"].split(",")]
+        user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
+        user_ids.sort()
+        message_details = MessageDetailsDict(
+            type="private",
+            user_ids=user_ids,
+        )
+        if message_id in raw_unread_data["mentions"]:
+            message_details["mentioned"] = True
+        unread_data[str(message_id)] = message_details
+
+    return unread_data
+
+
+def add_message_to_unread_msgs(
+    my_user_id: int,
+    state: RawUnreadMessagesResult,
+    message_id: int,
+    message_details: MessageDetailsDict,
+) -> None:
+    if message_details.get("mentioned"):
+        state["mentions"].add(message_id)
+
+    if message_details["type"] == "private":
+        user_ids: List[int] = message_details["user_ids"]
+        user_ids = [user_id for user_id in user_ids if user_id != my_user_id]
+        if user_ids == []:
+            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+                other_user_id=my_user_id,
+            )
+        elif len(user_ids) == 1:
+            state["pm_dict"][message_id] = RawUnreadPrivateMessageDict(
+                other_user_id=user_ids[0],
+            )
+        else:
+            user_ids.append(my_user_id)
+            user_ids_string = ",".join(str(user_id) for user_id in sorted(user_ids))
+            state["huddle_dict"][message_id] = RawUnreadHuddleDict(
+                user_ids_string=user_ids_string,
+            )
+    elif message_details["type"] == "stream":
+        state["stream_dict"][message_id] = RawUnreadStreamDict(
+            stream_id=message_details["stream_id"],
+            topic=message_details["topic"],
+        )
+        if message_details["unmuted_stream_msg"]:
+            state["unmuted_stream_msgs"].add(message_id)
 
 
 def estimate_recent_messages(realm: Realm, hours: int) -> int:

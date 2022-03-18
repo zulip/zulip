@@ -10,8 +10,8 @@ export function initialize() {
     if (!page_params.search_pills_enabled) {
         return;
     }
-    const container = $("#search_arrows");
-    widget = search_pill.create_pills(container);
+    const $container = $("#search_arrows");
+    widget = search_pill.create_pills($container);
 
     widget.onPillRemove(() => {
         if (widget.items().length === 0) {

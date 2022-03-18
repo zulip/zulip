@@ -16,7 +16,6 @@ from zerver.lib.actions import (
     get_default_streams_for_realm,
     get_owned_bot_dicts,
     get_web_public_streams,
-    get_web_public_subs,
     streams_to_dicts_sorted,
 )
 from zerver.lib.alert_words import user_alert_words
@@ -28,6 +27,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
+    add_message_to_unread_msgs,
     aggregate_unread_data,
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
@@ -44,13 +44,14 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.subscription_info import get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_topics import get_topic_mutes
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -297,7 +298,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
-        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
+        state["server_web_public_streams_enabled"] = realm.web_public_streams_available_for_realm()
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
@@ -1157,6 +1158,14 @@ def apply_event(
         if "raw_unread_msgs" in state and event["flag"] == "read" and event["op"] == "add":
             for remove_id in event["messages"]:
                 remove_message_id_from_unread_mgs(state["raw_unread_msgs"], remove_id)
+        if event["flag"] == "read" and event["op"] == "remove":
+            for message_id_str, message_details in event["message_details"].items():
+                add_message_to_unread_msgs(
+                    user_profile.id,
+                    state["raw_unread_msgs"],
+                    int(message_id_str),
+                    message_details,
+                )
         if event["flag"] == "starred" and "starred_messages" in state:
             if event["op"] == "add":
                 state["starred_messages"] += event["messages"]

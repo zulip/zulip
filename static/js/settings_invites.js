@@ -57,8 +57,8 @@ function populate_invites(invites_data) {
 
     add_invited_as_text(invites_data.invites);
 
-    const invites_table = $("#admin_invites_table").expectOne();
-    ListWidget.create(invites_table, invites_data.invites, {
+    const $invites_table = $("#admin_invites_table").expectOne();
+    ListWidget.create($invites_table, invites_data.invites, {
         name: "admin_invites_list",
         modifier(item) {
             item.invited_absolute_time = timerender.absolute_time(item.invited * 1000);
@@ -73,7 +73,7 @@ function populate_invites(invites_data) {
             return render_admin_invites_list({invite: item});
         },
         filter: {
-            element: invites_table.closest(".settings-section").find(".search"),
+            $element: $invites_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
                 const referrer = people.get_by_user_id(item.invited_by_user_id);
                 const referrer_email = referrer.email;
@@ -87,12 +87,12 @@ function populate_invites(invites_data) {
                 return referrer_email_matched || referrer_name_matched || invitee_email_matched;
             },
         },
-        parent_container: $("#admin-invites-list").expectOne(),
+        $parent_container: $("#admin-invites-list").expectOne(),
         init_sort: [sort_invitee],
         sort_fields: {
             invitee: sort_invitee,
         },
-        simplebar_container: $("#admin-invites-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-invites-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
@@ -101,7 +101,7 @@ function populate_invites(invites_data) {
 function do_revoke_invite() {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
     const modal_is_multiuse = $(".dialog_submit_button").attr("data-is-multiuse");
-    const revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
+    const $revoke_button = meta.$current_revoke_invite_user_modal_row.find("button.revoke");
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
@@ -113,7 +113,7 @@ function do_revoke_invite() {
         );
     }
 
-    revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+    $revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     let url = "/json/invites/" + meta.invite_id;
 
     if (modal_is_multiuse === "true") {
@@ -122,17 +122,17 @@ function do_revoke_invite() {
     channel.del({
         url,
         error(xhr) {
-            ui_report.generic_row_button_error(xhr, revoke_button);
+            ui_report.generic_row_button_error(xhr, $revoke_button);
         },
         success() {
-            meta.current_revoke_invite_user_modal_row.remove();
+            meta.$current_revoke_invite_user_modal_row.remove();
         },
     });
 }
 
 function do_resend_invite() {
     const modal_invite_id = $(".dialog_submit_button").attr("data-invite-id");
-    const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
+    const $resend_button = meta.$current_resend_invite_user_modal_row.find("button.resend");
 
     if (modal_invite_id !== meta.invite_id) {
         blueslip.error("Invite resending canceled due to non-matching fields.");
@@ -144,17 +144,17 @@ function do_resend_invite() {
         );
     }
 
-    resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+    $resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     channel.post({
         url: "/json/invites/" + meta.invite_id + "/resend",
         error(xhr) {
-            ui_report.generic_row_button_error(xhr, resend_button);
+            ui_report.generic_row_button_error(xhr, $resend_button);
         },
         success(data) {
-            resend_button.text($t({defaultMessage: "Sent!"}));
-            resend_button.removeClass("resend btn-warning").addClass("sea-green");
+            $resend_button.text($t({defaultMessage: "Sent!"}));
+            $resend_button.removeClass("resend btn-warning").addClass("sea-green");
             data.timestamp = timerender.absolute_time(data.timestamp * 1000);
-            meta.current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
+            meta.$current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
         },
     });
 }
@@ -188,10 +188,10 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        const row = $(e.target).closest(".invite_row");
-        const email = row.find(".email").text();
-        const referred_by = row.find(".referred_by").text();
-        meta.current_revoke_invite_user_modal_row = row;
+        const $row = $(e.target).closest(".invite_row");
+        const email = $row.find(".email").text();
+        const referred_by = $row.find(".referred_by").text();
+        meta.$current_revoke_invite_user_modal_row = $row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         meta.is_multiuse = $(e.currentTarget).attr("data-is-multiuse");
         const ctx = {
@@ -219,9 +219,9 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         e.preventDefault();
         e.stopPropagation();
 
-        const row = $(e.target).closest(".invite_row");
-        const email = row.find(".email").text();
-        meta.current_resend_invite_user_modal_row = row;
+        const $row = $(e.target).closest(".invite_row");
+        const email = $row.find(".email").text();
+        meta.$current_resend_invite_user_modal_row = $row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
         const html_body = render_settings_resend_invite_modal({email});
 

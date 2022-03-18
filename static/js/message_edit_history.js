@@ -178,8 +178,8 @@ export function initialize() {
     $("body").on("click", ".message_edit_notice", (e) => {
         popovers.hide_all();
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = message_lists.current.get_row(message_id);
-        const message = message_lists.current.get(rows.id(row));
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
 
         if (page_params.realm_allow_edit_history) {
             show_history(message);

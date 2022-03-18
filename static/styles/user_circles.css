@@ -27,7 +27,7 @@ $idle_color: hsl(29, 84%, 51%);
 }
 
 .user_circle_empty {
-    background-color: none;
+    background-color: transparent;
     border-color: hsl(0, 0%, 50%);
 }
 

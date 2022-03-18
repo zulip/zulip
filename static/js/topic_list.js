@@ -130,8 +130,8 @@ function filter_topics_li() {
 export class TopicListWidget {
     prior_dom = undefined;
 
-    constructor(parent_elem, my_stream_id) {
-        this.parent_elem = parent_elem;
+    constructor($parent_elem, my_stream_id) {
+        this.$parent_elem = $parent_elem;
         this.my_stream_id = my_stream_id;
         this.topic_search_text = "";
         this.topic_search_focused_before_build = true;
@@ -170,7 +170,7 @@ export class TopicListWidget {
     }
 
     get_parent() {
-        return this.parent_elem;
+        return this.$parent_elem;
     }
 
     get_stream_id() {
@@ -182,15 +182,15 @@ export class TopicListWidget {
     }
 
     update_topic_search_input() {
-        const input = this.parent_elem.find("#filter-topic-input");
-        if (input.length) {
+        const $input = this.$parent_elem.find("#filter-topic-input");
+        if ($input.length) {
             // Restore topic search text saved in remove()
             // after the element was rerendered.
-            input.val(this.topic_search_text);
+            $input.val(this.topic_search_text);
             if (this.topic_search_focused_before_build) {
                 // Don't focus topic search if it wasn't focused before.
                 // This avoids unwanted change of focus.
-                input.trigger("focus");
+                $input.trigger("focus");
             }
 
             // set up display of clear(x) button.
@@ -202,7 +202,7 @@ export class TopicListWidget {
 
             // set up event handlers.
             const rebuild_list = () => this.build();
-            input.on("input", rebuild_list);
+            $input.on("input", rebuild_list);
         }
     }
 
@@ -211,9 +211,9 @@ export class TopicListWidget {
         // the input value lazily before removing old elements.  This
         // is a workaround for the quirk that the filter input is part
         // of the region that we rerender.
-        const input = this.parent_elem.find("#filter-topic-input");
-        if (input.length) {
-            this.update_topic_search_text(input.val());
+        const $input = this.$parent_elem.find("#filter-topic-input");
+        if ($input.length) {
+            this.update_topic_search_text($input.val());
             // Only set focus on search input if it was focused before the update.
             this.topic_search_focused_before_build =
                 document.activeElement.id === "filter-topic-input";
@@ -221,7 +221,7 @@ export class TopicListWidget {
             // Clear the topic search input when zooming out.
             this.update_topic_search_text("");
         }
-        this.parent_elem.find(".topic-list").remove();
+        this.$parent_elem.find(".topic-list").remove();
         this.prior_dom = undefined;
     }
 
@@ -230,11 +230,11 @@ export class TopicListWidget {
 
         const replace_content = (html) => {
             this.remove();
-            this.parent_elem.append(html);
+            this.$parent_elem.append(html);
             this.update_topic_search_input();
         };
 
-        const find = () => this.parent_elem.find(".topic-list");
+        const find = () => this.$parent_elem.find(".topic-list");
 
         vdom.update(replace_content, find, new_dom, this.prior_dom);
 
@@ -244,10 +244,10 @@ export class TopicListWidget {
 
 export function clear_topic_search(e) {
     e.stopPropagation();
-    const input = $("#filter-topic-input");
-    if (input.length) {
-        input.val("");
-        input.trigger("blur");
+    const $input = $("#filter-topic-input");
+    if ($input.length) {
+        $input.val("");
+        $input.trigger("blur");
 
         // Since this changes the contents of the search input, we
         // need to rerender the topic list.
@@ -278,11 +278,11 @@ export function get_stream_li() {
         return undefined;
     }
 
-    const stream_li = widgets[0].get_parent();
-    return stream_li;
+    const $stream_li = widgets[0].get_parent();
+    return $stream_li;
 }
 
-export function rebuild(stream_li, stream_id) {
+export function rebuild($stream_li, stream_id) {
     const active_widget = active_widgets.get(stream_id);
 
     if (active_widget) {
@@ -291,7 +291,7 @@ export function rebuild(stream_li, stream_id) {
     }
 
     clear();
-    const widget = new TopicListWidget(stream_li, stream_id);
+    const widget = new TopicListWidget($stream_li, stream_id);
     widget.build();
 
     active_widgets.set(stream_id, widget);
@@ -337,11 +337,11 @@ export function zoom_in() {
 }
 
 export function get_topic_search_term() {
-    const filter = $("#filter-topic-input");
-    if (filter.val() === undefined) {
+    const $filter = $("#filter-topic-input");
+    if ($filter.val() === undefined) {
         return "";
     }
-    return filter.val().trim();
+    return $filter.val().trim();
 }
 
 export function initialize() {
@@ -356,8 +356,8 @@ export function initialize() {
         // In a more componentized world, we would delegate some
         // of this stuff back up to our parents.
 
-        const stream_row = $(e.target).parents(".narrow-filter");
-        const stream_id = Number.parseInt(stream_row.attr("data-stream-id"), 10);
+        const $stream_row = $(e.target).parents(".narrow-filter");
+        const stream_id = Number.parseInt($stream_row.attr("data-stream-id"), 10);
         const sub = sub_store.get(stream_id);
         const topic = $(e.target).parents("li").attr("data-topic-name");
 

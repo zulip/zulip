@@ -449,7 +449,6 @@ run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
 });
 
 run_test("hide_empty_narrow_message", () => {
-    $(".empty_feed_notice_main").html("<div class='empty_feed_notice'>Nothing here</div>");
     narrow_banner.hide_empty_narrow_message();
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });

@@ -183,12 +183,12 @@ export function render_lightbox_list_images(preview_source) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
 
-            const node = $("<div></div>", {
+            const $node = $("<div>", {
                 class: className,
                 "data-src": src,
             }).css({backgroundImage: "url(" + src + ")"});
 
-            $image_list.append(node);
+            $image_list.append($node);
 
             // We parse the data for each image to show in the list,
             // while we still have its original DOM element handy, so
@@ -205,10 +205,10 @@ function display_image(payload) {
     $(".player-container").hide();
     $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
 
-    const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
+    const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
     img.src = payload.source;
-    img_container.html(img).show();
+    $img_container.html(img).show();
 
     $(".image-description .title")
         .text(payload.title || "N/A")
@@ -244,16 +244,16 @@ function display_video(payload) {
             break;
     }
 
-    const iframe = $("<iframe></iframe>");
-    iframe.attr(
+    const $iframe = $("<iframe>");
+    $iframe.attr(
         "sandbox",
         "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",
     );
-    iframe.attr("src", source);
-    iframe.attr("frameborder", 0);
-    iframe.attr("allowfullscreen", true);
+    $iframe.attr("src", source);
+    $iframe.attr("frameborder", 0);
+    $iframe.attr("allowfullscreen", true);
 
-    $("#lightbox_overlay .player-container").html(iframe).show();
+    $("#lightbox_overlay .player-container").html($iframe).show();
     $(".image-actions .open").attr("href", payload.url);
 }
 
@@ -303,7 +303,7 @@ export function build_open_image_function(on_close) {
 
         overlays.open_overlay({
             name: "lightbox",
-            overlay: $("#lightbox_overlay"),
+            $overlay: $("#lightbox_overlay"),
             on_close,
         });
 
@@ -359,11 +359,11 @@ export function show_from_selected_message() {
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_image_data(image) {
     const $image = $(image);
-    const $preview_src = $image.attr("src");
+    const preview_src = $image.attr("src");
 
-    if (asset_map.has($preview_src)) {
+    if (asset_map.has(preview_src)) {
         // check if image's data is already present in asset_map.
-        return asset_map.get($preview_src);
+        return asset_map.get(preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
@@ -376,24 +376,24 @@ export function parse_image_data(image) {
     const is_compose_preview_image = $image.closest("#compose .preview_content").length === 1;
 
     const $parent = $image.parent();
-    let $type;
-    let $source;
-    const $url = $parent.attr("href");
+    let type;
+    let source;
+    const url = $parent.attr("href");
     if (is_youtube_video) {
-        $type = "youtube-video";
-        $source = $parent.attr("data-id");
+        type = "youtube-video";
+        source = $parent.attr("data-id");
     } else if (is_vimeo_video) {
-        $type = "vimeo-video";
-        $source = $parent.attr("data-id");
+        type = "vimeo-video";
+        source = $parent.attr("data-id");
     } else if (is_embed_video) {
-        $type = "embed-video";
-        $source = $parent.attr("data-id");
+        type = "embed-video";
+        source = $parent.attr("data-id");
     } else {
-        $type = "image";
+        type = "image";
         if ($image.attr("data-src-fullsize")) {
-            $source = $image.attr("data-src-fullsize");
+            source = $image.attr("data-src-fullsize");
         } else {
-            $source = $preview_src;
+            source = preview_src;
         }
     }
     let sender_full_name;
@@ -412,13 +412,13 @@ export function parse_image_data(image) {
     const payload = {
         user: sender_full_name,
         title: $parent.attr("title"),
-        type: $type,
-        preview: $preview_src,
-        source: $source,
-        url: $url,
+        type,
+        preview: preview_src,
+        source,
+        url,
     };
 
-    asset_map.set($preview_src, payload);
+    asset_map.set(preview_src, payload);
     return payload;
 }
 

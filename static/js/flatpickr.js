@@ -10,9 +10,9 @@ function is_numeric_key(key) {
 }
 
 export function show_flatpickr(element, callback, default_timestamp, options = {}) {
-    const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+    const $flatpickr_input = $("<input>", {id: "#timestamp_flatpickr"});
 
-    const instance = flatpickr_input.flatpickr({
+    const instance = $flatpickr_input.flatpickr({
         mode: "single",
         enableTime: true,
         clickOpens: false,
@@ -59,9 +59,9 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         ...options,
     });
 
-    const container = $($(instance.innerContainer).parent());
+    const $container = $($(instance.innerContainer).parent());
 
-    container.on("keydown", (e) => {
+    $container.on("keydown", (e) => {
         if (is_numeric_key(e.key)) {
             // Let users type numeric values
             return true;
@@ -83,7 +83,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
                 return true; // use flatpickr default implementation
             }
             $(element).toggleClass("has_popover");
-            container.find(".flatpickr-confirm").trigger("click");
+            $container.find(".flatpickr-confirm").trigger("click");
         }
 
         if (hotkey.name === "escape") {
@@ -106,8 +106,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         return true;
     });
 
-    container.on("click", ".flatpickr-confirm", () => {
-        callback(flatpickr_input.val());
+    $container.on("click", ".flatpickr-confirm", () => {
+        callback($flatpickr_input.val());
         instance.close();
         instance.destroy();
     });

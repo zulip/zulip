@@ -40,19 +40,19 @@ export function DropdownListWidget({
     this.setup();
 }
 
-DropdownListWidget.prototype.render_default_text = function (elem) {
-    elem.text(this.default_text);
-    elem.addClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button").hide();
+DropdownListWidget.prototype.render_default_text = function ($elem) {
+    $elem.text(this.default_text);
+    $elem.addClass("text-warning");
+    $elem.closest(".input-group").find(".dropdown_list_reset_button").hide();
 };
 
 DropdownListWidget.prototype.render = function (value) {
     $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.value_id)}`).data("value", value);
 
-    const elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
+    const $elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
 
     if (!value || value === this.null_value) {
-        this.render_default_text(elem);
+        this.render_default_text($elem);
         return;
     }
 
@@ -60,14 +60,14 @@ DropdownListWidget.prototype.render = function (value) {
     const item = this.data.find((x) => x.value === value.toString());
 
     if (item === undefined) {
-        this.render_default_text(elem);
+        this.render_default_text($elem);
         return;
     }
 
     const text = this.render_text(item.name);
-    elem.text(text);
-    elem.removeClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button").show();
+    $elem.text(text);
+    $elem.removeClass("text-warning");
+    $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
 };
 
 DropdownListWidget.prototype.update = function (value) {
@@ -80,12 +80,12 @@ DropdownListWidget.prototype.register_event_handlers = function () {
         "click keypress",
         ".list_item",
         (e) => {
-            const setting_elem = $(e.currentTarget).closest(
+            const $setting_elem = $(e.currentTarget).closest(
                 `.${CSS.escape(this.widget_name)}_setting`,
             );
             if (e.type === "keypress") {
                 if (e.key === "Enter") {
-                    setting_elem.find(".dropdown-menu").dropdown("toggle");
+                    $setting_elem.find(".dropdown-menu").dropdown("toggle");
                 } else {
                     return;
                 }
@@ -101,10 +101,12 @@ DropdownListWidget.prototype.register_event_handlers = function () {
 };
 
 DropdownListWidget.prototype.setup_dropdown_widget = function (data) {
-    const dropdown_list_body = $(
+    const $dropdown_list_body = $(
         `#${CSS.escape(this.container_id)} .dropdown-list-body`,
     ).expectOne();
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
     const get_data = () => {
         if (this.include_current_item) {
             return data;
@@ -112,59 +114,63 @@ DropdownListWidget.prototype.setup_dropdown_widget = function (data) {
         return data.filter((x) => x.value !== this.value.toString());
     };
 
-    ListWidget.create(dropdown_list_body, get_data(data), {
+    ListWidget.create($dropdown_list_body, get_data(data), {
         name: `${CSS.escape(this.widget_name)}_list`,
         modifier(item) {
             return render_dropdown_list({item});
         },
         filter: {
-            element: search_input,
+            $element: $search_input,
             predicate(item, value) {
                 return item.name.toLowerCase().includes(value);
             },
         },
-        simplebar_container: $(`#${CSS.escape(this.container_id)} .dropdown-list-wrapper`),
+        $simplebar_container: $(`#${CSS.escape(this.container_id)} .dropdown-list-wrapper`),
     });
 };
 
 // Sets the focus to the ListWidget input once the dropdown button is clicked.
 DropdownListWidget.prototype.dropdown_toggle_click_handler = function () {
-    const dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
+    const $dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
 
-    dropdown_toggle.on("click", () => {
-        search_input.val("").trigger("input");
+    $dropdown_toggle.on("click", () => {
+        $search_input.val("").trigger("input");
     });
 };
 
 DropdownListWidget.prototype.dropdown_focus_events = function () {
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
-    const dropdown_menu = $(`.${CSS.escape(this.widget_name)}_setting .dropdown-menu`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
+    const $dropdown_menu = $(`.${CSS.escape(this.widget_name)}_setting .dropdown-menu`);
 
     const dropdown_elements = () => {
-        const dropdown_list_body = $(
+        const $dropdown_list_body = $(
             `#${CSS.escape(this.container_id)} .dropdown-list-body`,
         ).expectOne();
 
-        return dropdown_list_body.children().find("a");
+        return $dropdown_list_body.children().find("a");
     };
 
     // Rest of the key handlers are supported by our
     // bootstrap library.
-    dropdown_menu.on("keydown", (e) => {
-        function trigger_element_focus(element) {
+    $dropdown_menu.on("keydown", (e) => {
+        function trigger_element_focus($element) {
             e.preventDefault();
             e.stopPropagation();
-            element.trigger("focus");
+            $element.trigger("focus");
         }
 
         switch (e.key) {
             case "ArrowDown": {
                 switch (e.target) {
                     case dropdown_elements().last()[0]:
-                        trigger_element_focus(search_input);
+                        trigger_element_focus($search_input);
                         break;
-                    case search_input[0]:
+                    case $search_input[0]:
                         trigger_element_focus(dropdown_elements().first());
                         break;
                 }
@@ -174,9 +180,9 @@ DropdownListWidget.prototype.dropdown_focus_events = function () {
             case "ArrowUp": {
                 switch (e.target) {
                     case dropdown_elements().first()[0]:
-                        trigger_element_focus(search_input);
+                        trigger_element_focus($search_input);
                         break;
-                    case search_input[0]:
+                    case $search_input[0]:
                         trigger_element_focus(dropdown_elements().last());
                 }
 
@@ -184,11 +190,11 @@ DropdownListWidget.prototype.dropdown_focus_events = function () {
             }
             case "Tab": {
                 switch (e.target) {
-                    case search_input[0]:
+                    case $search_input[0]:
                         trigger_element_focus(dropdown_elements().first());
                         break;
                     case dropdown_elements().last()[0]:
-                        trigger_element_focus(search_input);
+                        trigger_element_focus($search_input);
                         break;
                 }
 
@@ -200,11 +206,13 @@ DropdownListWidget.prototype.dropdown_focus_events = function () {
 
 DropdownListWidget.prototype.setup = function () {
     // populate the dropdown
-    const dropdown_list_body = $(
+    const $dropdown_list_body = $(
         `#${CSS.escape(this.container_id)} .dropdown-list-body`,
     ).expectOne();
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
-    const dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
+    const $dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
 
     this.setup_dropdown_widget(this.data);
 
@@ -214,7 +222,7 @@ DropdownListWidget.prototype.setup = function () {
 
     this.dropdown_toggle_click_handler();
 
-    dropdown_toggle.on("focus", (e) => {
+    $dropdown_toggle.on("focus", (e) => {
         // On opening a Bootstrap Dropdown, the parent element receives focus.
         // Here, we want our search input to have focus instead.
         e.preventDefault();
@@ -222,8 +230,8 @@ DropdownListWidget.prototype.setup = function () {
         // dropdown, and only in the second call is the input
         // field visible in the DOM; so the following visibility
         // check ensures we wait for the second call to focus.
-        if (dropdown_list_body.is(":visible")) {
-            search_input.trigger("focus");
+        if ($dropdown_list_body.is(":visible")) {
+            $search_input.trigger("focus");
         }
     });
 
@@ -292,15 +300,15 @@ MultiSelectDropdownListWidget.prototype.initialize_dropdown_values = function ()
     if (!this.initial_value || this.initial_value === this.null_value) {
         return;
     }
-    const elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
+    const $elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
 
     // Push values from initial valued array to `data_selected`.
     this.data_selected.push(...this.initial_value);
-    this.render_button_text(elem, this.limit);
+    this.render_button_text($elem, this.limit);
 };
 
 // Set the button text as per the selected data.
-MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, limit) {
+MultiSelectDropdownListWidget.prototype.render_button_text = function ($elem, limit) {
     const items_selected = this.data_selected.length;
     let text = "";
 
@@ -308,7 +316,7 @@ MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, lim
     this.destroy_tooltip();
 
     if (items_selected === 0) {
-        this.render_default_text(elem);
+        this.render_default_text($elem);
         return;
     } else if (limit >= items_selected) {
         const data_selected = this.data.filter((data) => this.data_selected.includes(data.value));
@@ -318,29 +326,31 @@ MultiSelectDropdownListWidget.prototype.render_button_text = function (elem, lim
         this.render_tooltip();
     }
 
-    elem.text(text);
-    elem.removeClass("text-warning");
-    elem.closest(".input-group").find(".dropdown_list_reset_button").show();
+    $elem.text(text);
+    $elem.removeClass("text-warning");
+    $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
 };
 
 // Override the DrodownListWidget `render` function.
 MultiSelectDropdownListWidget.prototype.render = function (value) {
-    const elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
+    const $elem = $(`#${CSS.escape(this.container_id)} #${CSS.escape(this.widget_name)}_name`);
 
     if (!value || value === this.null_value) {
-        this.render_default_text(elem);
+        this.render_default_text($elem);
         return;
     }
-    this.render_button_text(elem, this.limit);
+    this.render_button_text($elem, this.limit);
 };
 
 MultiSelectDropdownListWidget.prototype.dropdown_toggle_click_handler = function () {
-    const dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
+    const $dropdown_toggle = $(`#${CSS.escape(this.container_id)} .dropdown-toggle`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
 
-    dropdown_toggle.on("click", () => {
+    $dropdown_toggle.on("click", () => {
         this.reset_dropdown_items();
-        search_input.val("").trigger("input");
+        $search_input.val("").trigger("input");
     });
 };
 
@@ -372,12 +382,14 @@ MultiSelectDropdownListWidget.prototype.reset_dropdown_items = function () {
 
 // Override the DrodownListWidget `setup_dropdown_widget` function.
 MultiSelectDropdownListWidget.prototype.setup_dropdown_widget = function (data) {
-    const dropdown_list_body = $(
+    const $dropdown_list_body = $(
         `#${CSS.escape(this.container_id)} .dropdown-list-body`,
     ).expectOne();
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
 
-    ListWidget.create(dropdown_list_body, data, {
+    ListWidget.create($dropdown_list_body, data, {
         name: `${CSS.escape(this.widget_name)}_list`,
         modifier(item) {
             return render_dropdown_list({item});
@@ -386,51 +398,51 @@ MultiSelectDropdownListWidget.prototype.setup_dropdown_widget = function (data) 
             selected_items: this.data_selected,
         },
         filter: {
-            element: search_input,
+            $element: $search_input,
             predicate(item, value) {
                 return item.name.toLowerCase().includes(value);
             },
         },
-        simplebar_container: $(`#${CSS.escape(this.container_id)} .dropdown-list-wrapper`),
+        $simplebar_container: $(`#${CSS.escape(this.container_id)} .dropdown-list-wrapper`),
     });
 };
 
 // Add the check mark to dropdown element passed.
-MultiSelectDropdownListWidget.prototype.add_check_mark = function (element) {
-    const value = element.attr("data-value");
-    const link_elem = element.find("a").expectOne();
-    link_elem.prepend($("<i>", {class: "fa fa-check"}));
-    element.addClass("checked");
+MultiSelectDropdownListWidget.prototype.add_check_mark = function ($element) {
+    const value = $element.attr("data-value");
+    const $link_elem = $element.find("a").expectOne();
+    $link_elem.prepend($("<i>", {class: "fa fa-check"}));
+    $element.addClass("checked");
     this.data_selected.push(value);
 };
 
 // Remove the check mark from dropdown element.
-MultiSelectDropdownListWidget.prototype.remove_check_mark = function (element) {
-    const icon = element.find("i").expectOne();
-    const value = element.attr("data-value");
+MultiSelectDropdownListWidget.prototype.remove_check_mark = function ($element) {
+    const $icon = $element.find("i").expectOne();
+    const value = $element.attr("data-value");
     const index = this.data_selected.indexOf(value);
 
     if (index > -1) {
-        icon.remove();
-        element.removeClass("checked");
+        $icon.remove();
+        $element.removeClass("checked");
         this.data_selected.splice(index, 1);
     }
 };
 
 // Render the tooltip once the text changes to `n` selected.
 MultiSelectDropdownListWidget.prototype.render_tooltip = function () {
-    const elem = $(`#${CSS.escape(this.container_id)}`);
+    const $elem = $(`#${CSS.escape(this.container_id)}`);
     const selected_items = this.data.filter((item) => this.checked_items.includes(item.value));
 
-    tippy(elem[0], {
+    tippy($elem[0], {
         content: selected_items.map((item) => item.name).join(", "),
         placement: "top",
     });
 };
 
 MultiSelectDropdownListWidget.prototype.destroy_tooltip = function () {
-    const elem = $(`#${CSS.escape(this.container_id)}`);
-    const tippy_instance = elem[0]._tippy;
+    const $elem = $(`#${CSS.escape(this.container_id)}`);
+    const tippy_instance = $elem[0]._tippy;
     if (!tippy_instance) {
         return;
     }
@@ -442,35 +454,37 @@ MultiSelectDropdownListWidget.prototype.dropdown_focus_events = function () {
     // Main keydown event handler which transfers the focus from one child element
     // to another.
 
-    const search_input = $(`#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`);
-    const dropdown_menu = $(`.${CSS.escape(this.widget_name)}_setting .dropdown-menu`);
-    const filter_button = $(`#${CSS.escape(this.container_id)} .multiselect_btn`);
+    const $search_input = $(
+        `#${CSS.escape(this.container_id)} .dropdown-search > input[type=text]`,
+    );
+    const $dropdown_menu = $(`.${CSS.escape(this.widget_name)}_setting .dropdown-menu`);
+    const $filter_button = $(`#${CSS.escape(this.container_id)} .multiselect_btn`);
 
     const dropdown_elements = () => {
-        const dropdown_list_body = $(
+        const $dropdown_list_body = $(
             `#${CSS.escape(this.container_id)} .dropdown-list-body`,
         ).expectOne();
 
-        return dropdown_list_body.children().find("a");
+        return $dropdown_list_body.children().find("a");
     };
 
-    dropdown_menu.on("keydown", (e) => {
-        function trigger_element_focus(element) {
+    $dropdown_menu.on("keydown", (e) => {
+        function trigger_element_focus($element) {
             e.preventDefault();
             e.stopPropagation();
-            element.trigger("focus");
+            $element.trigger("focus");
         }
 
         switch (e.key) {
             case "ArrowDown": {
                 switch (e.target) {
                     case dropdown_elements().last()[0]:
-                        trigger_element_focus(filter_button);
+                        trigger_element_focus($filter_button);
                         break;
                     case $(`#${CSS.escape(this.container_id)} .multiselect_btn`)[0]:
-                        trigger_element_focus(search_input);
+                        trigger_element_focus($search_input);
                         break;
-                    case search_input[0]:
+                    case $search_input[0]:
                         trigger_element_focus(dropdown_elements().first());
                         break;
                 }
@@ -480,10 +494,10 @@ MultiSelectDropdownListWidget.prototype.dropdown_focus_events = function () {
             case "ArrowUp": {
                 switch (e.target) {
                     case dropdown_elements().first()[0]:
-                        trigger_element_focus(search_input);
+                        trigger_element_focus($search_input);
                         break;
-                    case search_input[0]:
-                        trigger_element_focus(filter_button);
+                    case $search_input[0]:
+                        trigger_element_focus($filter_button);
                         break;
                     case $(`#${CSS.escape(this.container_id)} .multiselect_btn`)[0]:
                         trigger_element_focus(dropdown_elements().last());
@@ -494,11 +508,11 @@ MultiSelectDropdownListWidget.prototype.dropdown_focus_events = function () {
             }
             case "Tab": {
                 switch (e.target) {
-                    case search_input[0]:
+                    case $search_input[0]:
                         trigger_element_focus(dropdown_elements().first());
                         break;
-                    case filter_button[0]:
-                        trigger_element_focus(search_input);
+                    case $filter_button[0]:
+                        trigger_element_focus($search_input);
                         break;
                 }
 
@@ -510,20 +524,20 @@ MultiSelectDropdownListWidget.prototype.dropdown_focus_events = function () {
 
 // Override the `register_event_handlers` function.
 MultiSelectDropdownListWidget.prototype.register_event_handlers = function () {
-    const dropdown_list_body = $(
+    const $dropdown_list_body = $(
         `#${CSS.escape(this.container_id)} .dropdown-list-body`,
     ).expectOne();
 
-    dropdown_list_body.on("click keypress", ".list_item", (e) => {
+    $dropdown_list_body.on("click keypress", ".list_item", (e) => {
         if (e.type === "keypress" && e.key !== "Enter") {
             return;
         }
 
-        const element = $(e.target.closest("li"));
-        if (element.hasClass("checked")) {
-            this.remove_check_mark(element);
+        const $element = $(e.target.closest("li"));
+        if ($element.hasClass("checked")) {
+            this.remove_check_mark($element);
         } else {
-            this.add_check_mark(element);
+            this.add_check_mark($element);
         }
 
         e.stopPropagation();
@@ -556,10 +570,10 @@ MultiSelectDropdownListWidget.prototype.register_event_handlers = function () {
         // the dropdown is closed.
         if (this.on_close) {
             e.stopPropagation();
-            const setting_elem = $(e.currentTarget).closest(
+            const $setting_elem = $(e.currentTarget).closest(
                 `.${CSS.escape(this.widget_name)}_setting`,
             );
-            setting_elem.find(".dropdown-menu").dropdown("toggle");
+            $setting_elem.find(".dropdown-menu").dropdown("toggle");
 
             this.on_close();
         }

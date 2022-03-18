@@ -45,8 +45,8 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
-from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
+from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     AlertWord,
     Attachment,

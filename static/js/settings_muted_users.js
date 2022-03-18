@@ -16,25 +16,25 @@ export function populate_list() {
         user_name: people.get_full_name(user.id),
         date_muted_str: user.date_muted_str,
     }));
-    const muted_users_table = $("#muted_users_table");
+    const $muted_users_table = $("#muted_users_table");
     const $search_input = $("#muted_users_search");
 
-    ListWidget.create(muted_users_table, all_muted_users, {
+    ListWidget.create($muted_users_table, all_muted_users, {
         name: "muted-users-list",
         modifier(muted_user) {
             return render_muted_user_ui_row({muted_user});
         },
         filter: {
-            element: $search_input,
+            $element: $search_input,
             predicate(item, value) {
                 return item.user_name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar(muted_users_table.closest(".progressive-table-wrapper"));
+                ui.reset_scrollbar($muted_users_table.closest(".progressive-table-wrapper"));
             },
         },
-        parent_container: $("#muted-user-settings"),
-        simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
+        $parent_container: $("#muted-user-settings"),
+        $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
     });
 }
 

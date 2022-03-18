@@ -51,7 +51,7 @@ def REQ_topic() -> Optional[str]:
     return REQ(
         whence="topic",
         aliases=["subject"],
-        converter=lambda x: x.strip(),
+        converter=lambda var_name, x: x.strip(),
         default=None,
     )
 

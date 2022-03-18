@@ -191,7 +191,7 @@ def read_stripe_fixture(
             requestor.interpret_response(
                 fixture["http_body"], fixture["http_status"], fixture["headers"]
             )
-        return stripe.util.convert_to_stripe_object(fixture)  # type: ignore[attr-defined] # missing from stubs
+        return stripe.util.convert_to_stripe_object(fixture)
 
     return _read_stripe_fixture
 

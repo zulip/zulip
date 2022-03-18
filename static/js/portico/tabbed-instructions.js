@@ -52,8 +52,8 @@ export function activate_correct_tab($codeSection) {
     });
 
     // if no tab was activated, just activate the first one
-    const active_list_items = $li.filter(".active");
-    if (!active_list_items.length) {
+    const $active_list_items = $li.filter(".active");
+    if (!$active_list_items.length) {
         $li.first().addClass("active");
         const language = $li.first()[0].dataset.language;
         $blocks.filter("[data-language=" + language + "]").addClass("active");

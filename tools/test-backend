@@ -140,6 +140,8 @@ not_yet_fully_covered = [
     "zerver/webhooks/teamcity/view.py",
     "zerver/webhooks/travis/view.py",
     "zerver/webhooks/zapier/view.py",
+    # Cannot have coverage, as tests run in a transaction
+    "zerver/lib/safe_session_cached_db.py",
 ]
 
 enforce_fully_covered = sorted(

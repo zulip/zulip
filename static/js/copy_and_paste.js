@@ -6,15 +6,15 @@ import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
 
-function find_boundary_tr(initial_tr, iterate_row) {
+function find_boundary_tr($initial_tr, iterate_row) {
     let j;
     let skip_same_td_check = false;
-    let tr = initial_tr;
+    let $tr = $initial_tr;
 
     // If the selection boundary is somewhere that does not have a
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
-    if (tr.length === 0) {
+    if ($tr.length === 0) {
         return undefined;
     }
 
@@ -24,8 +24,8 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; !tr.is(".message_row") && j < 10; j += 1) {
-        tr = iterate_row(tr);
+    for (j = 0; !$tr.is(".message_row") && j < 10; j += 1) {
+        $tr = iterate_row($tr);
     }
     if (j === 10) {
         return undefined;
@@ -36,12 +36,12 @@ function find_boundary_tr(initial_tr, iterate_row) {
         // in this case)
         skip_same_td_check = true;
     }
-    return [rows.id(tr), skip_same_td_check];
+    return [rows.id($tr), skip_same_td_check];
 }
 
-function construct_recipient_header(message_row) {
+function construct_recipient_header($message_row) {
     const message_header_content = rows
-        .get_message_recipient_header(message_row)
+        .get_message_recipient_header($message_row)
         .text()
         .replace(/\s+/g, " ")
         .replace(/^\s/, "")
@@ -64,40 +64,40 @@ Do not be afraid to change this code if you understand
 how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
-function construct_copy_div(div, start_id, end_id) {
+function construct_copy_div($div, start_id, end_id) {
     const copy_rows = rows.visible_range(start_id, end_id);
 
-    const start_row = copy_rows[0];
-    const start_recipient_row = rows.get_message_recipient_row(start_row);
-    const start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
+    const $start_row = copy_rows[0];
+    const $start_recipient_row = rows.get_message_recipient_row($start_row);
+    const start_recipient_row_id = rows.id_for_recipient_row($start_recipient_row);
     let should_include_start_recipient_header = false;
     let last_recipient_row_id = start_recipient_row_id;
 
-    for (const row of copy_rows) {
-        const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
+    for (const $row of copy_rows) {
+        const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
         // so we have to add new recipient's bar to final copied message
         // and wouldn't forget to add start_recipient's bar at the beginning of final message
         if (recipient_row_id !== last_recipient_row_id) {
-            div.append(construct_recipient_header(row));
+            $div.append(construct_recipient_header($row));
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
         }
-        const message = message_lists.current.get(rows.id(row));
-        const message_firstp = $(message.content).slice(0, 1);
-        message_firstp.prepend(message.sender_full_name + ": ");
-        div.append(message_firstp);
-        div.append($(message.content).slice(1));
+        const message = message_lists.current.get(rows.id($row));
+        const $message_firstp = $(message.content).slice(0, 1);
+        $message_firstp.prepend(message.sender_full_name + ": ");
+        $div.append($message_firstp);
+        $div.append($(message.content).slice(1));
     }
 
     if (should_include_start_recipient_header) {
-        div.prepend(construct_recipient_header(start_row));
+        $div.prepend(construct_recipient_header($start_row));
     }
 }
 
-function select_div(div, selection) {
-    div.css({
+function select_div($div, selection) {
+    $div.css({
         position: "absolute",
         left: "-99999px",
         // Color and background is made according to "light theme"
@@ -110,8 +110,8 @@ function select_div(div, selection) {
         color: "#333",
         background: "#FFF",
     }).attr("id", "copytempdiv");
-    $("body").append(div);
-    selection.selectAllChildren(div[0]);
+    $("body").append($div);
+    selection.selectAllChildren($div[0]);
 }
 
 function remove_div(div, ranges, selection) {
@@ -149,7 +149,7 @@ export function copy_handler() {
     const start_id = analysis.start_id;
     const end_id = analysis.end_id;
     const skip_same_td_check = analysis.skip_same_td_check;
-    const div = $("<div>");
+    const $div = $("<div>");
 
     if (start_id === undefined || end_id === undefined) {
         // In this case either the starting message or the ending
@@ -176,13 +176,13 @@ export function copy_handler() {
     // chance for overlaps between same message ids, avoiding which is much
     // more difficult since we can get a range (start_id and end_id) for
     // each selection `Range`.
-    construct_copy_div(div, start_id, end_id);
+    construct_copy_div($div, start_id, end_id);
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    select_div(div, selection);
+    select_div($div, selection);
     document.execCommand("copy");
-    remove_div(div, ranges, selection);
+    remove_div($div, ranges, selection);
 }
 
 export function analyze_selection(selection) {
@@ -200,9 +200,9 @@ export function analyze_selection(selection) {
     let i;
     let range;
     const ranges = [];
-    let startc;
-    let endc;
-    let initial_end_tr;
+    let $startc;
+    let $endc;
+    let $initial_end_tr;
     let start_id;
     let end_id;
     let start_data;
@@ -216,10 +216,10 @@ export function analyze_selection(selection) {
         range = selection.getRangeAt(i);
         ranges.push(range);
 
-        startc = $(range.startContainer);
+        $startc = $(range.startContainer);
         start_data = find_boundary_tr(
-            $(startc.parents(".selectable_row, .message_header")[0]),
-            (row) => row.next(),
+            $($startc.parents(".selectable_row, .message_header")[0]),
+            ($row) => $row.next(),
         );
         if (start_data === undefined) {
             // Skip any selection sections that don't intersect a message.
@@ -231,21 +231,21 @@ export function analyze_selection(selection) {
             start_id = start_data[0];
         }
 
-        endc = $(range.endContainer);
+        $endc = $(range.endContainer);
         // If the selection ends in the bottom whitespace, we should
         // act as though the selection ends on the final message.
         // This handles the issue that Chrome seems to like selecting
         // the compose_close button when you go off the end of the
         // last message
-        if (endc.attr("id") === "bottom_whitespace" || endc.attr("id") === "compose_close") {
-            initial_end_tr = $(".message_row").last();
+        if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
+            $initial_end_tr = $(".message_row").last();
             // The selection goes off the end of the message feed, so
             // this is a multi-message selection.
             skip_same_td_check = true;
         } else {
-            initial_end_tr = $(endc.parents(".selectable_row")[0]);
+            $initial_end_tr = $($endc.parents(".selectable_row")[0]);
         }
-        end_data = find_boundary_tr(initial_end_tr, (row) => row.prev());
+        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.

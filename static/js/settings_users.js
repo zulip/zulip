@@ -85,42 +85,44 @@ function get_user_info_row(user_id) {
 }
 
 export function update_view_on_deactivate(user_id) {
-    const row = get_user_info_row(user_id);
-    if (row.length === 0) {
+    const $row = get_user_info_row(user_id);
+    if ($row.length === 0) {
         return;
     }
 
-    const button = row.find("button.deactivate");
-    const user_role = row.find(".user_role");
-    button.prop("disabled", false);
-    row.find("button.open-user-form").hide();
-    row.find("i.deactivated-user-icon").show();
-    button.addClass("btn-warning reactivate");
-    button.removeClass("deactivate btn-danger");
-    button.html("<i class='fa fa-user-plus' aria-hidden='true'></i>");
-    button.attr("title", "Reactivate");
-    row.addClass("deactivated_user");
+    const $button = $row.find("button.deactivate");
+    const $user_role = $row.find(".user_role");
+    $button.prop("disabled", false);
+    $row.find("button.open-user-form").hide();
+    $row.find("i.deactivated-user-icon").show();
+    $button.addClass("btn-warning reactivate");
+    $button.removeClass("deactivate btn-danger");
+    $button.empty().append($("<i>", {class: "fa fa-user-plus", ["aria-hidden"]: "true"}));
+    $button.attr("title", "Reactivate");
+    $row.addClass("deactivated_user");
 
-    if (user_role) {
-        const user_id = row.data("user-id");
-        user_role.text(`${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`);
+    if ($user_role) {
+        const user_id = $row.data("user-id");
+        $user_role.text(
+            `${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`,
+        );
     }
 }
 
-function update_view_on_reactivate(row) {
-    const button = row.find("button.reactivate");
-    const user_role = row.find(".user_role");
-    row.find("button.open-user-form").show();
-    row.find("i.deactivated-user-icon").hide();
-    button.addClass("btn-danger deactivate");
-    button.removeClass("btn-warning reactivate");
-    button.attr("title", "Deactivate");
-    button.html('<i class="fa fa-user-times" aria-hidden="true"></i>');
-    row.removeClass("deactivated_user");
+function update_view_on_reactivate($row) {
+    const $button = $row.find("button.reactivate");
+    const $user_role = $row.find(".user_role");
+    $row.find("button.open-user-form").show();
+    $row.find("i.deactivated-user-icon").hide();
+    $button.addClass("btn-danger deactivate");
+    $button.removeClass("btn-warning reactivate");
+    $button.attr("title", "Deactivate");
+    $button.empty().append($("<i>", {class: "fa fa-user-times", ["aria-hidden"]: "true"}));
+    $row.removeClass("deactivated_user");
 
-    if (user_role) {
-        const user_id = row.data("user-id");
-        user_role.text(people.get_user_type(user_id));
+    if ($user_role) {
+        const user_id = $row.data("user-id");
+        $user_role.text(people.get_user_type(user_id));
     }
 }
 
@@ -260,7 +262,7 @@ section.bots.create_table = () => {
         modifier: render_admin_user_list,
         html_selector: (item) => `tr[data-user-id='${CSS.escape(item)}']`,
         filter: {
-            element: $bots_table.closest(".settings-section").find(".search"),
+            $element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
                 if (!item) {
                     return false;
@@ -272,14 +274,14 @@ section.bots.create_table = () => {
             },
             onupdate: reset_scrollbar($bots_table),
         },
-        parent_container: $("#admin-bot-list").expectOne(),
+        $parent_container: $("#admin-bot-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
             id: sort_user_id,
         },
-        simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
@@ -296,11 +298,11 @@ section.active.create_table = (active_users) => {
             return render_admin_user_list(info);
         },
         filter: {
-            element: $users_table.closest(".settings-section").find(".search"),
+            $element: $users_table.closest(".settings-section").find(".search"),
             filterer: people.filter_for_user_settings_search,
             onupdate: reset_scrollbar($users_table),
         },
-        parent_container: $("#admin-user-list").expectOne(),
+        $parent_container: $("#admin-user-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_email,
@@ -308,7 +310,7 @@ section.active.create_table = (active_users) => {
             role: sort_role,
             id: sort_user_id,
         },
-        simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-user-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
@@ -325,18 +327,18 @@ section.deactivated.create_table = (deactivated_users) => {
             return render_admin_user_list(info);
         },
         filter: {
-            element: $deactivated_users_table.closest(".settings-section").find(".search"),
+            $element: $deactivated_users_table.closest(".settings-section").find(".search"),
             filterer: people.filter_for_user_settings_search,
             onupdate: reset_scrollbar($deactivated_users_table),
         },
-        parent_container: $("#admin-deactivated-users-list").expectOne(),
+        $parent_container: $("#admin-deactivated-users-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],
         sort_fields: {
             email: sort_email,
             role: sort_role,
             id: sort_user_id,
         },
-        simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
+        $simplebar_container: $("#admin-deactivated-users-list .progressive-table-wrapper"),
     });
 
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
@@ -352,19 +354,19 @@ export function update_bot_data(bot_user_id) {
 }
 
 export function update_user_data(user_id, new_data) {
-    const user_row = get_user_info_row(user_id);
+    const $user_row = get_user_info_row(user_id);
 
-    if (user_row.length === 0) {
+    if ($user_row.length === 0) {
         return;
     }
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
-        user_row.find(".user_name").text(new_data.full_name);
+        $user_row.find(".user_name").text(new_data.full_name);
     }
 
     if (new_data.role !== undefined) {
-        user_row.find(".user_role").text(people.get_user_type(user_id));
+        $user_row.find(".user_role").text(people.get_user_type(user_id));
     }
 }
 
@@ -431,77 +433,77 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-function handle_deactivation(tbody, status_field) {
-    tbody.on("click", ".deactivate", (e) => {
+function handle_deactivation($tbody, $status_field) {
+    $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
-        const row = $(e.target).closest(".user_row");
-        const user_id = row.data("user-id");
+        const $row = $(e.target).closest(".user_row");
+        const user_id = $row.data("user-id");
 
         function handle_confirm() {
-            const row = get_user_info_row(user_id);
-            const row_deactivate_button = row.find("button.deactivate");
-            row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+            const $row = get_user_info_row(user_id);
+            const $row_deactivate_button = $row.find("button.deactivate");
+            $row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
             const opts = {
                 error_continuation() {
-                    row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
+                    $row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
                 },
             };
             const url = "/json/users/" + encodeURIComponent(user_id);
-            settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
+            settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
         }
 
         confirm_deactivation(user_id, handle_confirm, false);
     });
 }
 
-function handle_bot_deactivation(tbody, status_field) {
-    tbody.on("click", ".deactivate", (e) => {
+function handle_bot_deactivation($tbody, $status_field) {
+    $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const button_elem = $(e.target);
-        const row = button_elem.closest(".user_row");
-        const bot_id = Number.parseInt(row.attr("data-user-id"), 10);
+        const $button_elem = $(e.target);
+        const $row = $button_elem.closest(".user_row");
+        const bot_id = Number.parseInt($row.attr("data-user-id"), 10);
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
             error_continuation(xhr) {
-                ui_report.generic_row_button_error(xhr, button_elem);
+                ui_report.generic_row_button_error(xhr, $button_elem);
             },
         };
-        settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
+        settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
     });
 }
 
-function handle_reactivation(tbody, status_field) {
-    tbody.on("click", ".reactivate", (e) => {
+function handle_reactivation($tbody, $status_field) {
+    $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
         // Go up the tree until we find the user row, then grab the email element
-        const button_elem = $(e.target);
-        const row = button_elem.closest(".user_row");
-        const user_id = Number.parseInt(row.attr("data-user-id"), 10);
+        const $button_elem = $(e.target);
+        const $row = $button_elem.closest(".user_row");
+        const user_id = Number.parseInt($row.attr("data-user-id"), 10);
         const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
 
         const opts = {
             success_continuation() {
-                update_view_on_reactivate(row);
+                update_view_on_reactivate($row);
             },
             error_continuation(xhr) {
-                ui_report.generic_row_button_error(xhr, button_elem);
+                ui_report.generic_row_button_error(xhr, $button_elem);
             },
         };
 
-        settings_ui.do_settings_change(channel.post, url, data, status_field, opts);
+        settings_ui.do_settings_change(channel.post, url, data, $status_field, opts);
     });
 }
 
-export function show_edit_user_info_modal(user_id, from_user_info_popover, status_field) {
+export function show_edit_user_info_modal(user_id, from_user_info_popover, $status_field) {
     const person = people.get_by_user_id(user_id);
 
     if (!person) {
@@ -576,18 +578,18 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
 
     function submit_user_details() {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-        const full_name = $("#edit-user-form").find("input[name='full_name']");
+        const $full_name = $("#edit-user-form").find("input[name='full_name']");
         const profile_data = get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
         const data = {
-            full_name: full_name.val(),
+            full_name: $full_name.val(),
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
 
         if (!from_user_info_popover) {
-            settings_ui.do_settings_change(channel.patch, url, data, status_field);
+            settings_ui.do_settings_change(channel.patch, url, data, $status_field);
             dialog_widget.close_modal();
             return;
         }
@@ -614,17 +616,17 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, statu
     });
 }
 
-function handle_human_form(tbody, status_field) {
-    tbody.on("click", ".open-user-form", (e) => {
+function handle_human_form($tbody, $status_field) {
+    $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_edit_user_info_modal(user_id, false, status_field);
+        show_edit_user_info_modal(user_id, false, $status_field);
     });
 }
 
-function handle_bot_form(tbody, status_field) {
-    tbody.on("click", ".open-user-form", (e) => {
+function handle_bot_form($tbody, $status_field) {
+    $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
@@ -643,11 +645,11 @@ function handle_bot_form(tbody, status_field) {
         let owner_widget;
 
         function submit_bot_details() {
-            const full_name = $("#dialog_widget_modal").find("input[name='full_name']");
+            const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
-                full_name: full_name.val(),
+                full_name: $full_name.val(),
             };
 
             if (owner_widget === undefined) {
@@ -658,7 +660,7 @@ function handle_bot_form(tbody, status_field) {
                 data.bot_owner_id = human_user_id;
             }
 
-            settings_ui.do_settings_change(channel.patch, url, data, status_field);
+            settings_ui.do_settings_change(channel.patch, url, data, $status_field);
             dialog_widget.close_modal();
         }
 
@@ -693,30 +695,30 @@ function handle_bot_form(tbody, status_field) {
 }
 
 section.active.handle_events = () => {
-    const tbody = $("#admin_users_table").expectOne();
-    const status_field = $("#user-field-status").expectOne();
+    const $tbody = $("#admin_users_table").expectOne();
+    const $status_field = $("#user-field-status").expectOne();
 
-    handle_deactivation(tbody, status_field);
-    handle_reactivation(tbody, status_field);
-    handle_human_form(tbody, status_field);
+    handle_deactivation($tbody, $status_field);
+    handle_reactivation($tbody, $status_field);
+    handle_human_form($tbody, $status_field);
 };
 
 section.deactivated.handle_events = () => {
-    const tbody = $("#admin_deactivated_users_table").expectOne();
-    const status_field = $("#deactivated-user-field-status").expectOne();
+    const $tbody = $("#admin_deactivated_users_table").expectOne();
+    const $status_field = $("#deactivated-user-field-status").expectOne();
 
-    handle_deactivation(tbody, status_field);
-    handle_reactivation(tbody, status_field);
-    handle_human_form(tbody, status_field);
+    handle_deactivation($tbody, $status_field);
+    handle_reactivation($tbody, $status_field);
+    handle_human_form($tbody, $status_field);
 };
 
 section.bots.handle_events = () => {
-    const tbody = $("#admin_bots_table").expectOne();
-    const status_field = $("#bot-field-status").expectOne();
+    const $tbody = $("#admin_bots_table").expectOne();
+    const $status_field = $("#bot-field-status").expectOne();
 
-    handle_bot_deactivation(tbody, status_field);
-    handle_reactivation(tbody, status_field);
-    handle_bot_form(tbody, status_field);
+    handle_bot_deactivation($tbody, $status_field);
+    handle_reactivation($tbody, $status_field);
+    handle_bot_form($tbody, $status_field);
 };
 
 export function set_up_humans() {

@@ -29,12 +29,12 @@ const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
-    const elem = $("#below-compose-content .video_link");
-    elem.toggle = (show) => {
+    const $elem = $("#below-compose-content .video_link");
+    $elem.toggle = (show) => {
         if (show) {
-            elem.show();
+            $elem.show();
         } else {
-            elem.hide();
+            $elem.hide();
         }
     };
 }
@@ -78,14 +78,14 @@ test("videos", ({override, override_rewire}) => {
     (function test_no_provider_video_link_compose_clicked() {
         let called = false;
 
-        const textarea = $.create("target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -104,14 +104,14 @@ test("videos", ({override, override_rewire}) => {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("jitsi-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("jitsi-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -142,14 +142,14 @@ test("videos", ({override, override_rewire}) => {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("zoom-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("zoom-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -188,14 +188,14 @@ test("videos", ({override, override_rewire}) => {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("bbb-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("bbb-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 

@@ -70,12 +70,12 @@ run_test("single item list", ({override}) => {
     });
     const cursor = new ListCursor(conf);
 
-    const li_stub = {
+    const $li_stub = {
         length: 1,
         addClass: () => {},
     };
 
-    override(conf.list, "find_li", () => li_stub);
+    override(conf.list, "find_li", () => $li_stub);
     override(cursor, "adjust_scroll", () => {});
 
     cursor.go_to(valid_key);

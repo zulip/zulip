@@ -243,7 +243,7 @@ def join_bigbluebutton(
         if payload.find("returncode").text != "SUCCESS":
             raise JsonableError(_("BigBlueButton server returned an unexpected error."))
 
-        join_params = urlencode(  # type: ignore[type-var] # https://github.com/python/typeshed/issues/4234
+        join_params = urlencode(
             {
                 "meetingID": meeting_id,
                 "password": password,

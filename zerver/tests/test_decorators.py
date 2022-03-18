@@ -42,6 +42,7 @@ from zerver.lib.exceptions import (
     AccessDeniedError,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
+    InvalidJSONError,
     JsonableError,
     UnsupportedWebhookEventType,
 )
@@ -82,6 +83,7 @@ from zerver.lib.validator import (
     check_url,
     equals,
     to_non_negative_int,
+    to_wild_value,
 )
 from zerver.middleware import parse_client
 from zerver.models import Realm, UserProfile, get_realm, get_user
@@ -130,7 +132,8 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_aliases(self) -> None:
         @has_request_variables
         def double(
-            request: HttpRequest, x: int = REQ(whence="number", aliases=["x", "n"], converter=int)
+            request: HttpRequest,
+            x: int = REQ(whence="number", aliases=["x", "n"], json_validator=check_int),
         ) -> HttpResponse:
             return json_response(data={"number": x + x})
 
@@ -153,7 +156,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
 
     def test_REQ_converter(self) -> None:
-        def my_converter(data: str) -> List[int]:
+        def my_converter(var_name: str, data: str) -> List[int]:
             lst = orjson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError("not a list")
@@ -246,6 +249,12 @@ class DecoratorTestCase(ZulipTestCase):
             request: HttpRequest, payload: Dict[str, Any] = REQ(argument_type="body")
         ) -> HttpResponse:
             return json_response(data={"payload": payload})
+
+        request = HostRequestMock()
+        request.body = b"\xde\xad\xbe\xef"
+        with self.assertRaises(JsonableError) as cm:
+            get_payload(request)
+        self.assertEqual(str(cm.exception), "Malformed payload")
 
         request = HostRequestMock()
         request.body = b"notjson"
@@ -765,13 +774,13 @@ class ValidatorTestCase(ZulipTestCase):
             check_int("x", x)
 
     def test_to_non_negative_int(self) -> None:
-        self.assertEqual(to_non_negative_int("5"), 5)
+        self.assertEqual(to_non_negative_int("x", "5"), 5)
         with self.assertRaisesRegex(ValueError, "argument is negative"):
-            to_non_negative_int("-1")
+            to_non_negative_int("x", "-1")
         with self.assertRaisesRegex(ValueError, re.escape("5 is too large (max 4)")):
-            to_non_negative_int("5", max_int_size=4)
+            to_non_negative_int("x", "5", max_int_size=4)
         with self.assertRaisesRegex(ValueError, re.escape(f"{2**32} is too large (max {2**32-1})")):
-            to_non_negative_int(str(2**32))
+            to_non_negative_int("x", str(2**32))
 
     def test_check_float(self) -> None:
         x: Any = 5.5
@@ -992,6 +1001,63 @@ class ValidatorTestCase(ZulipTestCase):
         x = None
         with self.assertRaisesRegex(ValidationError, r"x is not a string or integer"):
             check_string_or_int("x", x)
+
+    def test_wild_value(self) -> None:
+        x = to_wild_value("x", '{"a": 1, "b": ["c", false, null]}')
+
+        self.assertEqual(x, x)
+        self.assertTrue(x)
+        self.assertEqual(len(x), 2)
+        self.assertEqual(list(x.keys()), ["a", "b"])
+        self.assertEqual(list(x.values()), [1, ["c", False, None]])
+        self.assertEqual(list(x.items()), [("a", 1), ("b", ["c", False, None])])
+        self.assertTrue("a" in x)
+        self.assertEqual(x["a"], 1)
+        self.assertEqual(x.get("a"), 1)
+        self.assertEqual(x.get("z"), None)
+        self.assertEqual(x.get("z", x["a"]).tame(check_int), 1)
+        self.assertEqual(x["a"].tame(check_int), 1)
+        self.assertEqual(x["b"], x["b"])
+        self.assertTrue(x["b"])
+        self.assertEqual(len(x["b"]), 3)
+        self.assert_length(list(x["b"]), 3)
+        self.assertEqual(x["b"][0].tame(check_string), "c")
+        self.assertFalse(x["b"][1])
+        self.assertFalse(x["b"][2])
+
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            x.tame(check_string)
+        with self.assertRaisesRegex(ValidationError, r"x is not a list"):
+            x[0]
+        with self.assertRaisesRegex(ValidationError, r"x\['z'\] is missing"):
+            x["z"]
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a list"):
+            x["a"][0]
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a list"):
+            iter(x["a"])
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            x["a"]["a"]
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            x["a"].get("a")
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            "a" in x["a"]
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            x["a"].keys()
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            x["a"].values()
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] is not a dict"):
+            x["a"].items()
+        with self.assertRaisesRegex(ValidationError, r"x\['a'\] does not have a length"):
+            len(x["a"])
+        with self.assertRaisesRegex(ValidationError, r"x\['b'\]\[1\] is not a string"):
+            x["b"][1].tame(check_string)
+        with self.assertRaisesRegex(ValidationError, r"x\['b'\]\[99\] is missing"):
+            x["b"][99]
+        with self.assertRaisesRegex(ValidationError, r"x\['b'\] is not a dict"):
+            x["b"]["b"]
+
+        with self.assertRaisesRegex(InvalidJSONError, r"Malformed JSON"):
+            to_wild_value("x", "invalidjson")
 
 
 class DeactivatedRealmTest(ZulipTestCase):

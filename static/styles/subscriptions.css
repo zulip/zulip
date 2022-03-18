@@ -141,22 +141,6 @@
     margin-right: 10px;
 }
 
-.preview-stream {
-    display: none;
-    float: right;
-    padding: 3px 10px;
-    border: 1px solid hsl(0, 0%, 80%);
-    margin: 9px 10px 0 0;
-    color: hsl(0, 0%, 20%);
-}
-
-.preview-stream:hover {
-    color: hsl(0, 0%, 20%);
-    text-decoration: none;
-    background-color: hsl(0, 0%, 92%);
-    border: 1px solid hsl(0, 0%, 68%);
-}
-
 .create_stream_plus_button {
     font-size: 24px;
     font-weight: 500;
@@ -313,7 +297,7 @@ h4.stream_setting_subsection_title {
 
 .subscriber_list_add {
     width: 100%;
-    margin: 10px auto;
+    margin: 0 0 10px;
 
     .stream_subscription_request_result {
         a {
@@ -608,7 +592,7 @@ h4.stream_setting_subsection_title {
     }
 
     #announce-new-stream {
-        margin-top: 10px;
+        margin: 25px auto;
 
         div[class^="fa"] {
             margin-left: 3px;
@@ -755,10 +739,6 @@ h4.stream_setting_subsection_title {
         float: right;
         margin-left: 10px;
         color: hsl(0, 0%, 67%);
-    }
-
-    &:hover .preview-stream {
-        display: inline-block;
     }
 
     &:hover .check:not(.checked) svg,
@@ -1022,10 +1002,8 @@ h4.stream_setting_subsection_title {
         font-weight: 400;
         line-height: 20px;
     }
-}
 
-#subscription_overlay .subsection-parent {
-    .input-group {
+    .subsection-parent .input-group {
         input[type="checkbox"] {
             margin-top: 0;
         }
@@ -1055,8 +1033,8 @@ h4.stream_setting_subsection_title {
 
         .radio-input-parent {
             border-bottom: 1px solid hsl(0, 0%, 87%);
-            margin: 5px 0 5px 5px;
-            padding: 5px 0;
+            margin: 2px 0 2px 5px;
+            padding: 2px 0;
 
             &:last-of-type {
                 border-bottom: none;
@@ -1076,10 +1054,15 @@ h4.stream_setting_subsection_title {
             }
 
             select {
-                width: auto;
                 margin-bottom: 0;
             }
         }
+    }
+
+    select {
+        /* Match .setting_desktop_icon_count_display */
+        width: 325px;
+        height: fit-content;
     }
 }
 
@@ -1213,42 +1196,44 @@ h4.stream_setting_subsection_title {
         .stream-header .button-group {
             margin-top: -5px;
         }
-    }
 
-    #subscription_overlay .subscription_settings .stream_change_property_info {
-        /* For small widths where there is not enough space
-        to show alert beside stream name we set its display
-        to block so it is shown in new line. But to avoid
-        it covering whole screen width we set max-width
-        so that it does not losses inline-block appearance. */
+        .stream_change_property_info {
+            /* For small widths where there is not enough space
+            to show alert beside stream name we set its display
+            to block so it is shown in new line. But to avoid
+            it covering whole screen width we set max-width
+            so that it does not losses inline-block appearance. */
 
-        /* TODO: This will probably be not required once
-        we have tabbed navigation as button group width
-        will be smaller. */
-        display: block;
-        max-width: max-content;
-        white-space: nowrap;
+            /* TODO: This will probably be not required once
+            we have tabbed navigation as button group width
+            will be smaller. */
+            display: block;
+            max-width: max-content;
+            white-space: nowrap;
+        }
     }
 }
 
 @media (width <= 500px) {
-    #subscription_overlay .stream_settings_header {
-        display: block;
-        text-align: center;
-        margin-left: 0;
+    #subscription_overlay {
+        .stream_settings_header {
+            display: block;
+            text-align: center;
+            margin-left: 0;
 
-        .tab-container {
-            .ind-tab {
-                width: 85px;
+            .tab-container {
+                .ind-tab {
+                    width: 85px;
+                }
             }
         }
-    }
 
-    #subscription_overlay .stream_setting_subsection_header {
-        display: block;
+        .stream_setting_subsection_header {
+            display: block;
 
-        .stream_permission_change_info {
-            margin: 12px auto 0 3px;
+            .stream_permission_change_info {
+                margin: 12px auto 0 3px;
+            }
         }
     }
 }

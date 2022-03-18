@@ -1,0 +1,16 @@
+## Use cases
+
+* [Business](/for/business/)
+* [Education](/for/education/)
+* [Research](/for/research/)
+* [Events and conferences](/for/events/)
+* [Open source projects](/for/open-source/)
+* [Communities](/for/communities/)
+
+## Customer stories
+
+* [iDrift AS company](/case-studies/idrift/)
+* [Technical University of Munich](/case-studies/tum/)
+* [University of California San Diego](/case-studies/ucsd/)
+* [Lean theorem prover community](/case-studies/lean/)
+* [Rust language community](/case-studies/rust/)

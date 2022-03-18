@@ -641,6 +641,7 @@ i18n_urls = [
         "for/working-groups-and-communities/",
         RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
+    path("use-cases/", landing_view, {"template_name": "zerver/use-cases.html"}),
     path("self-hosting/", landing_view, {"template_name": "zerver/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
 ]

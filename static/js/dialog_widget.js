@@ -45,8 +45,8 @@ export function hide_dialog_spinner() {
     $(".dialog_submit_button span").show();
     $("#dialog_widget_modal .modal__btn").prop("disabled", false);
 
-    const spinner = $("#dialog_widget_modal .modal__spinner");
-    loading.destroy_indicator(spinner);
+    const $spinner = $("#dialog_widget_modal .modal__spinner");
+    loading.destroy_indicator($spinner);
 }
 
 export function show_dialog_spinner() {
@@ -54,8 +54,8 @@ export function show_dialog_spinner() {
     // Disable both the buttons.
     $("#dialog_widget_modal .modal__btn").prop("disabled", true);
 
-    const spinner = $("#dialog_widget_modal .modal__spinner");
-    loading.make_indicator(spinner);
+    const $spinner = $("#dialog_widget_modal .modal__spinner");
+    loading.make_indicator($spinner);
 }
 
 // Supports a callback to be called once the modal finishes closing.
@@ -109,24 +109,24 @@ export function launch(conf) {
         id: conf.id,
         single_footer_button: conf.single_footer_button,
     });
-    const dialog = $(html);
-    $("body").append(dialog);
+    const $dialog = $(html);
+    $("body").append($dialog);
 
     if (conf.post_render !== undefined) {
         conf.post_render();
     }
 
-    const submit_button = dialog.find(".dialog_submit_button");
+    const $submit_button = $dialog.find(".dialog_submit_button");
 
     // This is used to link the submit button with the form, if present, in the modal.
     // This makes it so that submitting this form by pressing Enter on an input element
     // triggers a click on the submit button.
     if (conf.form_id) {
-        submit_button.attr("form", conf.form_id);
+        $submit_button.attr("form", conf.form_id);
     }
 
     // Set up handlers.
-    submit_button.on("click", (e) => {
+    $submit_button.on("click", (e) => {
         if (conf.validate_input && !conf.validate_input(e)) {
             return;
         }
@@ -144,7 +144,7 @@ export function launch(conf) {
         micromodal: true,
         on_show: () => {
             if (conf.focus_submit_on_open) {
-                submit_button.trigger("focus");
+                $submit_button.trigger("focus");
             }
             if (conf.on_show) {
                 conf.on_show();

@@ -32,6 +32,7 @@ from zerver.lib.server_initialization import create_internal_realm, server_initi
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
+from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -1179,6 +1180,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
         bulk_import_model(data, GroupGroupMembership)
 
+    # We expect Zulip server exports to contain these system groups,
+    # this logic here is needed to handle the imports from other services.
+    if not UserGroup.objects.filter(realm=realm, is_system_group=True).exists():
+        create_and_add_users_to_system_user_groups(realm, user_profiles)
+
     if "zerver_botstoragedata" in data:
         re_map_foreign_keys(
             data, "zerver_botstoragedata", "bot_profile", related_table="user_profile"
@@ -1557,3 +1563,27 @@ def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     re_map_foreign_keys(data, "analytics_streamcount", "stream", related_table="stream")
     update_model_ids(StreamCount, data, "analytics_streamcount")
     bulk_import_model(data, StreamCount)
+
+
+def create_and_add_users_to_system_user_groups(
+    realm: Realm, user_profiles: List[UserProfile]
+) -> None:
+    role_system_groups_dict = create_system_user_groups_for_realm(realm)
+
+    full_members_system_group = UserGroup.objects.get(
+        name="@role:fullmembers",
+        realm=realm,
+        is_system_group=True,
+    )
+
+    usergroup_memberships = []
+    for user_profile in user_profiles:
+        user_group = role_system_groups_dict[user_profile.role]
+        usergroup_memberships.append(
+            UserGroupMembership(user_profile=user_profile, user_group=user_group)
+        )
+        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+            usergroup_memberships.append(
+                UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
+            )
+    UserGroupMembership.objects.bulk_create(usergroup_memberships)

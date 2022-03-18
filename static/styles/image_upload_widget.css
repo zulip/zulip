@@ -41,7 +41,6 @@
 
     .image-delete-button:focus,
     .image-delete-button:hover {
-        opacity: 1;
         color: hsl(0, 0%, 100%);
     }
 
@@ -97,6 +96,10 @@
             visibility: visible;
         }
 
+        .image-delete-button {
+            opacity: 1;
+        }
+
         .image-upload-background {
             display: block;
         }
@@ -110,7 +113,7 @@
     position: relative;
 
     .inline-block {
-        margin: 5px 20px 0 0;
+        margin-top: 15px;
         vertical-align: top;
         border-radius: 4px;
     }
@@ -119,8 +122,24 @@
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image_upload_button {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
         border-radius: 5px;
         box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
+    }
+
+    .image-disabled-text {
+        color: hsl(0, 0%, 85%);
+        cursor: not-allowed;
+        position: absolute;
+        text-align: center;
+        visibility: hidden;
         z-index: 99;
     }
 
@@ -128,14 +147,12 @@
         font-size: 3rem;
     }
 
-    .image-delete-text {
-        top: 90px;
-        right: 40px;
-    }
-
-    .image-upload-text {
-        top: 90px;
-        right: 24px;
+    .image-delete-text,
+    .image-upload-text,
+    .image-disabled-text {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0 10px;
     }
 
     .image_upload_spinner {
@@ -152,16 +169,18 @@
         height: 200px;
         top: 0;
     }
+
+    &:hover {
+        .image-disabled-text {
+            visibility: visible;
+        }
+    }
 }
 
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
-
-    a {
-        position: relative;
-        top: 10px;
-    }
+    margin-top: 10px;
 }
 
 /* CSS related to settings page realm icon upload widget only */

@@ -32,16 +32,16 @@ export function toggle(opts: {
     child_wants_focus?: boolean;
     selected?: number;
 }): Toggle {
-    const component = $("<div class='tab-switcher'></div>");
+    const $component = $("<div>", {class: "tab-switcher"});
     if (opts.html_class) {
         // add a check inside passed arguments in case some extra
         // classes need to be added for correct alignment or other purposes
-        component.addClass(opts.html_class);
+        $component.addClass(opts.html_class);
     }
     for (const [i, value] of opts.values.entries()) {
         // create a tab with a tab-id so they don't have to be referenced
         // by text value which can be inconsistent.
-        const tab = $("<div>", {
+        const $tab = $("<div>", {
             class: "ind-tab",
             "data-tab-key": value.key,
             "data-tab-id": i,
@@ -51,37 +51,37 @@ export function toggle(opts: {
         /* istanbul ignore if */
         if (value.label_html !== undefined) {
             const html = value.label_html;
-            tab.html(html);
+            $tab.html(html);
         } else {
-            tab.text(value.label);
+            $tab.text(value.label);
         }
 
         // add proper classes for styling in CSS.
         if (i === 0) {
             // this should be default selected unless otherwise specified.
-            tab.addClass("first selected");
+            $tab.addClass("first selected");
         } else if (i === opts.values.length - 1) {
-            tab.addClass("last");
+            $tab.addClass("last");
         } else {
-            tab.addClass("middle");
+            $tab.addClass("middle");
         }
-        component.append(tab);
+        $component.append($tab);
     }
 
     const meta = {
-        $ind_tab: component.find(".ind-tab"),
+        $ind_tab: $component.find(".ind-tab"),
         idx: -1,
     };
 
     // Returns false if the requested tab is disabled.
     function select_tab(idx: number): boolean {
-        const elem = meta.$ind_tab.eq(idx);
-        if (elem.hasClass("disabled")) {
+        const $elem = meta.$ind_tab.eq(idx);
+        if ($elem.hasClass("disabled")) {
             return false;
         }
         meta.$ind_tab.removeClass("selected");
 
-        elem.addClass("selected");
+        $elem.addClass("selected");
 
         meta.idx = idx;
         if (opts.callback) {
@@ -89,7 +89,7 @@ export function toggle(opts: {
         }
 
         if (!opts.child_wants_focus) {
-            elem.trigger("focus");
+            $elem.trigger("focus");
         }
         return true;
     }
@@ -124,7 +124,7 @@ export function toggle(opts: {
     });
 
     keydown_util.handle({
-        elem: meta.$ind_tab,
+        $elem: meta.$ind_tab,
         handlers: {
             ArrowLeft: maybe_go_left,
             ArrowRight: maybe_go_right,
@@ -172,7 +172,7 @@ export function toggle(opts: {
         },
 
         get() {
-            return component;
+            return $component;
         },
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.

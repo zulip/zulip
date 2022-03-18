@@ -20,20 +20,20 @@ export function scroll_delta(opts) {
     return delta;
 }
 
-export function scroll_element_into_container(elem, container) {
+export function scroll_element_into_container($elem, $container) {
     // This does the minimum amount of scrolling that is needed to make
     // the element visible.  It doesn't try to center the element, so
     // this will be non-intrusive to users when they already have
     // the element visible.
 
-    container = ui.get_scroll_element(container);
-    const elem_top = elem.position().top;
-    const elem_bottom = elem_top + elem.innerHeight();
+    $container = ui.get_scroll_element($container);
+    const elem_top = $elem.position().top;
+    const elem_bottom = elem_top + $elem.innerHeight();
 
     const opts = {
         elem_top,
         elem_bottom,
-        container_height: container.height(),
+        container_height: $container.height(),
     };
 
     const delta = scroll_delta(opts);
@@ -42,5 +42,5 @@ export function scroll_element_into_container(elem, container) {
         return;
     }
 
-    container.scrollTop(container.scrollTop() + delta);
+    $container.scrollTop($container.scrollTop() + delta);
 }

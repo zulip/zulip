@@ -302,7 +302,7 @@ def remove_realm_playground() -> Dict[str, object]:
         pygments_language="Python",
         url_prefix="https://python.example.com",
     )
-    playground_id = do_add_realm_playground(get_realm("zulip"), **playground_info)
+    playground_id = do_add_realm_playground(get_realm("zulip"), acting_user=None, **playground_info)
     return {
         "playground_id": playground_id,
     }

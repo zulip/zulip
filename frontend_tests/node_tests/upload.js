@@ -15,11 +15,7 @@ let uppy_stub;
 function Uppy(options) {
     return uppy_stub.call(this, options);
 }
-Uppy.Plugin = {
-    prototype: {
-        constructor: null,
-    },
-};
+Uppy.UIPlugin = class UIPlugin {};
 mock_cjs("@uppy/core", Uppy);
 
 mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
@@ -36,14 +32,14 @@ function test(label, f) {
 }
 
 test("feature_check", ({override}) => {
-    const upload_button = $.create("upload-button-stub");
-    upload_button.addClass("notdisplayed");
-    upload.feature_check(upload_button);
-    assert.ok(upload_button.hasClass("notdisplayed"));
+    const $upload_button = $.create("upload-button-stub");
+    $upload_button.addClass("notdisplayed");
+    upload.feature_check($upload_button);
+    assert.ok($upload_button.hasClass("notdisplayed"));
 
     override(window, "XMLHttpRequest", () => ({upload: true}));
-    upload.feature_check(upload_button);
-    assert.ok(!upload_button.hasClass("notdisplayed"));
+    upload.feature_check($upload_button);
+    assert.ok(!$upload_button.hasClass("notdisplayed"));
 });
 
 test("get_item", () => {

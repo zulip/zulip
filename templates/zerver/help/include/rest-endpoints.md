@@ -9,7 +9,7 @@
 * [Add an emoji reaction](/api/add-reaction)
 * [Remove an emoji reaction](/api/remove-reaction)
 * [Render a message](/api/render-message)
-* [Get a message's raw Markdown](/api/get-raw-message)
+* [Fetch a single message](/api/get-message)
 * [Check if messages match narrow](/api/check-messages-match-narrow)
 * [Get a message's edit history](/api/get-message-history)
 * [Update personal message flags](/api/update-message-flags)

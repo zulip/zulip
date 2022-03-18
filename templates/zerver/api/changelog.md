@@ -20,6 +20,26 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 5.0
 
+**Feature level 121**
+
+* [`GET /events`](/api/get-events): Added `message_details` field
+  appearing in message flag update events when marking previously read
+  messages as unread.
+
+**Feature level 120**
+
+* [`GET /messages/{message_id}`](/api/get-message): This endpoint
+  now sends the full message details. Previously, it only returned
+  the message's raw Markdown content.
+
+**Feature level 119**
+
+* [`POST /register`](/api/register-queue): The `unread_msgs` section
+  of the response now prefers `other_user_id` over the poorly named
+  `sender_id` field in the `pms` dictionaries. This change is
+  motivated by the possibility that a message you yourself sent to
+  another user could be marked as unread.
+
 **Feature level 118**
 
 * [`GET /messages`](/api/get-messages), [`GET

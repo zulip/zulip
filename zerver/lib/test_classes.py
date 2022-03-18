@@ -73,6 +73,7 @@ from zerver.lib.test_console_output import (
     tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import (
@@ -89,6 +90,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroupMembership,
     UserMessage,
     UserProfile,
     UserStatus,
@@ -1518,6 +1520,12 @@ Output:
 
         if count == 0:
             raise AssertionError("test is meaningless without any pertinent rows")
+
+    def check_user_added_in_system_group(self, user: UserProfile) -> None:
+        user_group = get_system_user_group_for_user(user)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(user_profile=user, user_group=user_group).exists()
+        )
 
 
 class WebhookTestCase(ZulipTestCase):

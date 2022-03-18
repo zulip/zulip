@@ -13,10 +13,10 @@ const pill_config = {
 };
 
 export function initialize_pill() {
-    const container = $("#private_message_recipient").parent();
+    const $container = $("#private_message_recipient").parent();
 
     const pill = input_pill.create({
-        container,
+        $container,
         pill_config,
         create_item_from_text: user_pill.create_item_from_email,
         get_text_from_item: user_pill.get_email_from_item,

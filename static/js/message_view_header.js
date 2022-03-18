@@ -77,18 +77,18 @@ export function colorize_message_view_header() {
 }
 
 function append_and_display_title_area(message_view_header_data) {
-    const message_view_header_elem = $("#message_view_header");
-    message_view_header_elem.empty();
+    const $message_view_header_elem = $("#message_view_header");
+    $message_view_header_elem.empty();
     const rendered = render_message_view_header(message_view_header_data);
-    message_view_header_elem.append(rendered);
+    $message_view_header_elem.append(rendered);
     if (message_view_header_data.stream_settings_link) {
         colorize_message_view_header();
     }
-    message_view_header_elem.removeClass("notdisplayed");
-    const content = message_view_header_elem.find("span.rendered_markdown");
-    if (content) {
+    $message_view_header_elem.removeClass("notdisplayed");
+    const $content = $message_view_header_elem.find("span.rendered_markdown");
+    if ($content) {
         // Update syntax like stream names, emojis, mentions, timestamps.
-        rendered_markdown.update_elements(content);
+        rendered_markdown.update_elements($content);
     }
 }
 

@@ -1,8 +1,10 @@
+import datetime
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 from django.http import HttpResponse
 from django.utils.functional import Promise
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 ViewFuncT = TypeVar("ViewFuncT", bound=Callable[..., HttpResponse])
 
@@ -128,3 +130,107 @@ class FormattedEditHistoryEvent(TypedDict, total=False):
     prev_rendered_content: Optional[str]
     rendered_content: Optional[str]
     content_html_diff: str
+
+
+# This next batch of types is for Stream/Subscription objects.
+class RawStreamDict(TypedDict):
+    """Dictionary containing fields fetched from the Stream model that
+    are needed to encode the stream for the API.
+    """
+
+    date_created: datetime.datetime
+    description: str
+    email_token: str
+    first_message_id: Optional[int]
+    history_public_to_subscribers: bool
+    id: int
+    invite_only: Optional[bool]
+    is_web_public: bool
+    message_retention_days: Optional[int]
+    name: str
+    rendered_description: str
+    stream_post_policy: int
+
+
+class RawSubscriptionDict(TypedDict):
+    """Dictionary containing fields fetched from the Subscription model
+    that are needed to encode the subscription for the API.
+    """
+
+    active: bool
+    audible_notifications: Optional[bool]
+    color: str
+    desktop_notifications: Optional[bool]
+    email_notifications: Optional[bool]
+    is_muted: Optional[bool]
+    pin_to_top: bool
+    push_notifications: Optional[bool]
+    recipient_id: int
+    role: int
+    wildcard_mentions_notify: Optional[bool]
+
+
+class SubscriptionStreamDict(TypedDict):
+    """Conceptually, the union of RawSubscriptionDict and RawStreamDict
+    (i.e. containing all the user's personal settings for the stream
+    as well as the stream's global settings), with a few additional
+    computed fields.
+    """
+
+    audible_notifications: Optional[bool]
+    color: str
+    date_created: int
+    description: str
+    desktop_notifications: Optional[bool]
+    email_address: str
+    email_notifications: Optional[bool]
+    first_message_id: Optional[int]
+    history_public_to_subscribers: bool
+    in_home_view: Optional[bool]
+    # Bug: invite_only should be bool.
+    invite_only: Optional[bool]
+    is_announcement_only: bool
+    is_muted: Optional[bool]
+    is_web_public: bool
+    message_retention_days: Optional[int]
+    name: str
+    pin_to_top: bool
+    push_notifications: Optional[bool]
+    rendered_description: str
+    role: int
+    stream_id: int
+    stream_post_policy: int
+    stream_weekly_traffic: Optional[int]
+    subscribers: NotRequired[List[int]]
+    wildcard_mentions_notify: Optional[bool]
+
+
+class NeverSubscribedStreamDict(TypedDict):
+    date_created: int
+    description: str
+    first_message_id: Optional[int]
+    history_public_to_subscribers: bool
+    invite_only: Optional[bool]
+    is_announcement_only: bool
+    is_web_public: bool
+    message_retention_days: Optional[int]
+    name: str
+    rendered_description: str
+    stream_id: int
+    stream_post_policy: int
+    stream_weekly_traffic: Optional[int]
+    subscribers: NotRequired[List[int]]
+
+
+@dataclass
+class SubscriptionInfo:
+    subscriptions: List[SubscriptionStreamDict]
+    unsubscribed: List[SubscriptionStreamDict]
+    never_subscribed: List[NeverSubscribedStreamDict]
+
+
+class RealmPlaygroundDict(TypedDict):
+    id: int
+    name: str
+    pygments_language: str
+    url_prefix: str

@@ -2,20 +2,10 @@
 
 !!! warn ""
 
-    This feature is under development, and is not yet available on Zulip Cloud.
+    This feature is in beta. Contact [support@zulip.com](mailto:support@zulip.com) to
+    enable it for your Zulip Cloud organization.
 
-Administrators may enable the option to create **web-public streams**.
-Web-public streams can be viewed by anyone on the Internet without
-creating an account in your organization.
-
-For example, you can [link to a Zulip
-topic](/help/link-to-a-message-or-conversation) in a web-public stream
-from a GitHub issue, a social media post, or a forum thread, and
-anyone will be able to click the link and view the discussion in the
-Zulip web application without needing to create an account.
-
-Users who wish to post content will need to create an account in order
-to do so.
+{!web-public-streams-intro.md!}
 
 Web-public streams are indicated with a globe (<i class="zulip-icon zulip-icon-globe"></i>) icon.
 
@@ -142,7 +132,8 @@ Zulip API:
 The following information is available to all users with an account,
 but not to logged out visitors:
 
-* Presence information, i.e. whether the user is currently online, their status,
+* Presence information, i.e. whether the user is currently online,
+  [their status](/help/status-and-availability),
   and whether they have set themselves as unavailable.
 * Detailed profile information, such as [custom profile
   fields](/help/add-custom-profile-fields).
@@ -176,9 +167,14 @@ with Zulip's Rules of Use.
 
 ## Caveats
 
-The web-public visitors feature is not yet integrated with Zulip's
-live-update system. As a result, a visitor will not see messages that are sent
-while Zulip is open until they reload the browser window.
+* Web-public streams do not yet support search engine indexing. You
+  can use [zulip-archive](https://github.com/zulip/zulip-archive) to
+  create an archive of a Zulip organization that can be indexed by
+  search engines.
+* The web-public view is not yet integrated with Zulip's live-update
+  system. As a result, a visitor will not see new messages that are
+  sent to a topic they are currently viewing without reloading the
+  browser window.
 
 ## Related articles
 

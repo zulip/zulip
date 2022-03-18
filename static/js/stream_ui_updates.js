@@ -11,16 +11,16 @@ import * as stream_settings_containers from "./stream_settings_containers";
 import * as stream_settings_ui from "./stream_settings_ui";
 
 export function initialize_disable_btn_hint_popover(
-    btn_wrapper,
-    popover_btn,
-    disabled_btn,
+    $btn_wrapper,
+    $popover_btn,
+    $disabled_btn,
     hint_text,
 ) {
     // Disabled button blocks mouse events(hover) from reaching
     // to it's parent div element, so popover don't get triggered.
     // Add css to prevent this.
-    disabled_btn.css("pointer-events", "none");
-    popover_btn.popover({
+    $disabled_btn.css("pointer-events", "none");
+    $popover_btn.popover({
         placement: "bottom",
         content: $("<div>", {class: "sub_disable_btn_hint"}).text(hint_text).prop("outerHTML"),
         trigger: "manual",
@@ -28,26 +28,26 @@ export function initialize_disable_btn_hint_popover(
         animation: false,
     });
 
-    btn_wrapper.on("mouseover", (e) => {
-        popover_btn.popover("show");
+    $btn_wrapper.on("mouseover", (e) => {
+        $popover_btn.popover("show");
         e.stopPropagation();
     });
 
-    btn_wrapper.on("mouseout", (e) => {
-        popover_btn.popover("hide");
+    $btn_wrapper.on("mouseout", (e) => {
+        $popover_btn.popover("hide");
         e.stopPropagation();
     });
 }
 
 export function initialize_cant_subscribe_popover(sub) {
-    const button_wrapper = stream_settings_containers
+    const $button_wrapper = stream_settings_containers
         .get_edit_container(sub)
         .find(".sub_unsub_button_wrapper");
-    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
+    const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
     initialize_disable_btn_hint_popover(
-        button_wrapper,
-        settings_button,
-        settings_button,
+        $button_wrapper,
+        $settings_button,
+        $settings_button,
         $t({defaultMessage: "Only stream members can add users to a private stream"}),
     );
 }
@@ -74,20 +74,20 @@ export function update_toggler_for_sub(sub) {
 
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
-    const settings_button = stream_settings_ui.settings_button_for_sub(sub);
+    const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
     if (sub.subscribed) {
-        settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
+        $settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
     } else {
-        settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
+        $settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
     }
     if (stream_data.can_toggle_subscription(sub)) {
-        settings_button.prop("disabled", false);
-        settings_button.popover("destroy");
-        settings_button.css("pointer-events", "");
+        $settings_button.prop("disabled", false);
+        $settings_button.popover("destroy");
+        $settings_button.css("pointer-events", "");
     } else {
-        settings_button.attr("title", "");
+        $settings_button.attr("title", "");
         initialize_cant_subscribe_popover(sub);
-        settings_button.prop("disabled", true);
+        $settings_button.prop("disabled", true);
     }
 }
 
@@ -113,22 +113,22 @@ export function update_regular_sub_settings(sub) {
 
 export function update_change_stream_privacy_settings(sub) {
     // This is in the right panel.
-    const stream_privacy_btn = $(".change-stream-privacy");
+    const $stream_privacy_btn = $(".change-stream-privacy");
 
     if (sub.can_change_stream_permissions) {
-        stream_privacy_btn.show();
+        $stream_privacy_btn.show();
     } else {
-        stream_privacy_btn.hide();
+        $stream_privacy_btn.hide();
     }
 }
 
 export function update_notification_setting_checkbox(notification_name) {
     // This is in the right panel (Personal settings).
-    const stream_row = $("#manage_streams_container .stream-row.active");
-    if (!stream_row.length) {
+    const $stream_row = $("#manage_streams_container .stream-row.active");
+    if (!$stream_row.length) {
         return;
     }
-    const stream_id = stream_row.data("stream-id");
+    const stream_id = $stream_row.data("stream-id");
     $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id)}`).prop(
         "checked",
         stream_data.receives_notifications(stream_id, notification_name),
@@ -143,18 +143,18 @@ export function update_stream_row_in_settings_tab(sub) {
     // "Subscribed" tab, otherwise if stream is not public hide
     // stream row under tab.
     if (stream_settings_ui.is_subscribed_stream_tab_active()) {
-        const sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
+        const $sub_row = stream_settings_ui.row_for_stream_id(sub.stream_id);
         if (sub.subscribed) {
-            sub_row.removeClass("notdisplayed");
+            $sub_row.removeClass("notdisplayed");
         } else if (sub.invite_only || page_params.is_guest) {
-            sub_row.addClass("notdisplayed");
+            $sub_row.addClass("notdisplayed");
         }
     }
 }
 
 export function update_stream_subscription_type_text(sub) {
     // This is in the right panel.
-    const stream_settings = stream_settings_containers.get_edit_container(sub);
+    const $stream_settings = stream_settings_containers.get_edit_container(sub);
     const template_data = {
         ...sub,
         stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -162,7 +162,7 @@ export function update_stream_subscription_type_text(sub) {
     };
     const html = render_stream_permission_description(template_data);
     if (hash_util.is_editing_stream(sub.stream_id)) {
-        stream_settings.find(".subscription-type-text").expectOne().html(html);
+        $stream_settings.find(".subscription-type-text").expectOne().html(html);
     }
 }
 
@@ -172,35 +172,35 @@ export function update_add_subscriptions_elements(sub) {
     }
 
     // We are only concerned with the Subscribers tab for editing streams.
-    const add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
+    const $add_subscribers_container = $(".edit_subscribers_for_stream .add_subscribers_container");
 
     if (page_params.is_guest || page_params.realm_is_zephyr_mirror_realm) {
         // For guest users, we just hide the add_subscribers feature.
-        add_subscribers_container.hide();
+        $add_subscribers_container.hide();
         return;
     }
 
     // Otherwise, we adjust whether the widgets are disabled based on
     // whether this user is authorized to add subscribers.
-    const input_element = add_subscribers_container.find(".input").expectOne();
-    const button_element = add_subscribers_container
+    const $input_element = $add_subscribers_container.find(".input").expectOne();
+    const $button_element = $add_subscribers_container
         .find('button[name="add_subscriber"]')
         .expectOne();
     const allow_user_to_add_subs = sub.can_add_subscribers;
 
     if (allow_user_to_add_subs) {
-        input_element.prop("disabled", false);
-        button_element.prop("disabled", false);
-        button_element.css("pointer-events", "");
-        input_element.popover("destroy");
+        $input_element.prop("disabled", false);
+        $button_element.prop("disabled", false);
+        $button_element.css("pointer-events", "");
+        $input_element.popover("destroy");
     } else {
-        input_element.prop("disabled", true);
-        button_element.prop("disabled", true);
+        $input_element.prop("disabled", true);
+        $button_element.prop("disabled", true);
 
         initialize_disable_btn_hint_popover(
-            add_subscribers_container,
-            input_element,
-            button_element,
+            $add_subscribers_container,
+            $input_element,
+            $button_element,
             $t({defaultMessage: "Only stream members can add users to a private stream"}),
         );
     }

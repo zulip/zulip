@@ -261,6 +261,8 @@ OPEN_REALM_CREATION = False
 
 # Whether it's possible to create web-public streams on this server.
 WEB_PUBLIC_STREAMS_ENABLED = False
+# Temporary setting during web-public streams beta.
+WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS: List[str] = []
 
 # Setting for where the system bot users are.  Likely has no
 # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.

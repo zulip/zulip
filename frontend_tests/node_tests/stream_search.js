@@ -64,32 +64,32 @@ function clear_search_input() {
 
 run_test("basics", ({override_rewire}) => {
     let cursor_helper;
-    const input = $(".stream-list-filter");
-    const section = $(".stream_search_section");
+    const $input = $(".stream-list-filter");
+    const $section = $(".stream_search_section");
 
     expand_sidebar();
-    section.addClass("notdisplayed");
+    $section.addClass("notdisplayed");
 
     cursor_helper = make_cursor_helper();
 
     function verify_expanded() {
-        assert.ok(!section.hasClass("notdisplayed"));
+        assert.ok(!$section.hasClass("notdisplayed"));
         simulate_search_expanded();
     }
 
     function verify_focused() {
         assert.ok(stream_list.searching());
-        assert.ok(input.is_focused());
+        assert.ok($input.is_focused());
     }
 
     function verify_blurred() {
         assert.ok(stream_list.searching());
-        assert.ok(input.is_focused());
+        assert.ok($input.is_focused());
     }
 
     function verify_collapsed() {
-        assert.ok(section.hasClass("notdisplayed"));
-        assert.ok(!input.is_focused());
+        assert.ok($section.hasClass("notdisplayed"));
+        assert.ok(!$input.is_focused());
         assert.ok(!stream_list.searching());
         simulate_search_collapsed();
     }
@@ -126,7 +126,7 @@ run_test("basics", ({override_rewire}) => {
 
     (function add_some_text_and_collapse() {
         cursor_helper = make_cursor_helper();
-        input.val("foo");
+        $input.val("foo");
         verify_list_updated(() => {
             toggle_filter();
         });
@@ -149,7 +149,7 @@ run_test("basics", ({override_rewire}) => {
     stream_list.initiate_search();
 
     // Clear a non-empty search.
-    input.val("foo");
+    $input.val("foo");
     verify_list_updated(() => {
         clear_search_input();
     });
@@ -160,7 +160,7 @@ run_test("basics", ({override_rewire}) => {
     stream_list.initiate_search();
 
     // Escape a non-empty search.
-    input.val("foo");
+    $input.val("foo");
     stream_list.escape_search();
     verify_blurred();
 
@@ -169,7 +169,7 @@ run_test("basics", ({override_rewire}) => {
     stream_list.initiate_search();
 
     // Escape an empty search.
-    input.val("");
+    $input.val("");
     stream_list.escape_search();
     verify_collapsed();
 });

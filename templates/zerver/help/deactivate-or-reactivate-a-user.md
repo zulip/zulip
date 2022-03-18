@@ -14,12 +14,27 @@ Note that organization administrators cannot deactivate organization owners.
 
 {start_tabs}
 
+{tab|via-user-profile}
+
+1. Hover over a user's name in the right sidebar.
+
+1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
+   to the right of their name.
+
+1. Click **Manage this user**.
+
+1. Click the **Deactivate user** button at the bottom.
+
+1. Approve by clicking **Confirm**.
+
+{tab|via-organization-settings}
+
 {settings_tab|user-list-admin}
 
- 4. Click the **Deactivate** button to the right of the user account that you
-want to deactivate.
+1. Click the **Deactivate** button to the right of the user account that you
+   want to deactivate.
 
-4. Approve by clicking **Confirm**.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 

@@ -1,5 +1,6 @@
 import datetime
 import re
+from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Union
 from unittest import mock
 
@@ -34,6 +35,8 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
+    UserGroup,
+    UserGroupMembership,
     UserMessage,
     UserProfile,
     get_realm,
@@ -847,6 +850,10 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
 
+            with self.settings(WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS=["zulip"]):
+                self.assertEqual(realm.has_web_public_streams(), True)
+                self.assertEqual(realm.web_public_streams_enabled(), True)
+
         realm.enable_spectator_access = False
         realm.save()
         self.assertEqual(realm.has_web_public_streams(), False)
@@ -883,6 +890,143 @@ class RealmTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertEqual(realm.web_public_streams_enabled(), False)
             self.assertEqual(realm.has_web_public_streams(), False)
+
+    def test_creating_realm_creates_system_groups(self) -> None:
+        realm = do_create_realm("realm_string_id", "realm name")
+        system_user_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
+
+        self.assert_length(system_user_groups, 7)
+        user_group_names = [group.name for group in system_user_groups]
+        expected_system_group_names = [
+            "@role:owners",
+            "@role:administrators",
+            "@role:moderators",
+            "@role:fullmembers",
+            "@role:members",
+            "@role:everyone",
+            "@role:internet",
+        ]
+        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
+
+    def test_changing_waiting_period_updates_system_groups(self) -> None:
+        realm = get_realm("zulip")
+        members_system_group = UserGroup.objects.get(
+            realm=realm, name="@role:members", is_system_group=True
+        )
+        full_members_system_group = UserGroup.objects.get(
+            realm=realm, name="@role:fullmembers", is_system_group=True
+        )
+
+        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 6)
+        self.assert_length(
+            UserGroupMembership.objects.filter(user_group=full_members_system_group), 6
+        )
+        self.assertEqual(realm.waiting_period_threshold, 0)
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
+
+        hamlet.date_joined = timezone_now() - timedelta(days=50)
+        hamlet.save()
+        othello.date_joined = timezone_now() - timedelta(days=75)
+        othello.save()
+        prospero.date_joined = timezone_now() - timedelta(days=150)
+        prospero.save()
+        do_set_realm_property(realm, "waiting_period_threshold", 100, acting_user=None)
+
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
+
+        do_set_realm_property(realm, "waiting_period_threshold", 70, acting_user=None)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
 
 
 class RealmAPITest(ZulipTestCase):

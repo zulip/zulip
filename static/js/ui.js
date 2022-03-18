@@ -7,8 +7,8 @@ import * as message_lists from "./message_lists";
 
 // What, if anything, obscures the home tab?
 
-export function replace_emoji_with_text(element) {
-    element.find(".emoji").replaceWith(function () {
+export function replace_emoji_with_text($element) {
+    $element.find(".emoji").replaceWith(function () {
         if ($(this).is("img")) {
             return $(this).attr("alt");
         }
@@ -16,17 +16,17 @@ export function replace_emoji_with_text(element) {
     });
 }
 
-export function get_content_element(element_selector) {
-    const element = element_selector.expectOne()[0];
+export function get_content_element($element) {
+    const element = $element.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getContentElement());
     }
-    return element_selector;
+    return $element;
 }
 
-export function get_scroll_element(element_selector) {
-    const element = element_selector.expectOne()[0];
+export function get_scroll_element($element) {
+    const element = $element.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getScrollElement());
@@ -35,11 +35,11 @@ export function get_scroll_element(element_selector) {
         // Create the SimpleBar early in case we need to add event listeners.
         return $(new SimpleBar(element).getScrollElement());
     }
-    return element_selector;
+    return $element;
 }
 
-export function reset_scrollbar(element_selector) {
-    const element = element_selector.expectOne()[0];
+export function reset_scrollbar($element) {
+    const element = $element.expectOne()[0];
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         sb.getScrollElement().scrollTop = 0;
@@ -53,13 +53,13 @@ function update_message_in_all_views(message_id, callback) {
         if (list === undefined) {
             continue;
         }
-        const row = list.get_row(message_id);
-        if (row === undefined) {
+        const $row = list.get_row(message_id);
+        if ($row === undefined) {
             // The row may not exist, e.g. if you do an action on a message in
             // a narrowed view
             continue;
         }
-        callback(row);
+        callback($row);
     }
 }
 
@@ -68,18 +68,18 @@ export function update_starred_view(message_id, new_value) {
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message_id, (row) => {
-        const elt = row.find(".star");
-        const star_container = row.find(".star_container");
+    update_message_in_all_views(message_id, ($row) => {
+        const $elt = $row.find(".star");
+        const $star_container = $row.find(".star_container");
         if (starred) {
-            elt.addClass("fa-star").removeClass("fa-star-o");
-            star_container.removeClass("empty-star");
+            $elt.addClass("fa-star").removeClass("fa-star-o");
+            $star_container.removeClass("empty-star");
         } else {
-            elt.removeClass("fa-star").addClass("fa-star-o");
-            star_container.addClass("empty-star");
+            $elt.removeClass("fa-star").addClass("fa-star-o");
+            $star_container.addClass("empty-star");
         }
         const title_state = starred ? $t({defaultMessage: "Unstar"}) : $t({defaultMessage: "Star"});
-        star_container.attr(
+        $star_container.attr(
             "data-tippy-content",
             $t(
                 {defaultMessage: "{starred_status} this message (Ctrl + s)"},
@@ -91,17 +91,17 @@ export function update_starred_view(message_id, new_value) {
 
 export function show_message_failed(message_id, failed_msg) {
     // Failed to send message, so display inline retry/cancel
-    update_message_in_all_views(message_id, (row) => {
-        const failed_div = row.find(".message_failed");
-        failed_div.toggleClass("notvisible", false);
-        failed_div.find(".failed_text").attr("title", failed_msg);
+    update_message_in_all_views(message_id, ($row) => {
+        const $failed_div = $row.find(".message_failed");
+        $failed_div.toggleClass("notvisible", false);
+        $failed_div.find(".failed_text").attr("title", failed_msg);
     });
 }
 
 export function show_failed_message_success(message_id) {
     // Previously failed message succeeded
-    update_message_in_all_views(message_id, (row) => {
-        row.find(".message_failed").toggleClass("notvisible", true);
+    update_message_in_all_views(message_id, ($row) => {
+        $row.find(".message_failed").toggleClass("notvisible", true);
     });
 }
 

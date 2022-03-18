@@ -719,7 +719,14 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "read":
-                    unread_ops.process_read_messages_event(event.messages);
+                    if (event.op === "add") {
+                        unread_ops.process_read_messages_event(event.messages);
+                    } else {
+                        unread_ops.process_unread_messages_event({
+                            message_ids: event.messages,
+                            message_details: event.message_details,
+                        });
+                    }
                     break;
             }
             break;
