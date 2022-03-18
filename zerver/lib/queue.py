@@ -307,6 +307,8 @@ class TornadoQueueClient(QueueClient[Channel]):
     def _on_connection_closed(
         self, connection: pika.connection.Connection, reason: Exception
     ) -> None:
+        if self.connection is None:
+            return
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning(
@@ -335,6 +337,7 @@ class TornadoQueueClient(QueueClient[Channel]):
     def close(self) -> None:
         if self.connection is not None:
             self.connection.close()
+            self.connection = None
 
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
         def set_qos(frame: Any) -> None:

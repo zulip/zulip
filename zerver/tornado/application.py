@@ -1,5 +1,3 @@
-import atexit
-
 import tornado.web
 from django.conf import settings
 from tornado import autoreload
@@ -10,7 +8,6 @@ from zerver.tornado.handlers import AsyncDjangoHandler
 
 def setup_tornado_rabbitmq(queue_client: TornadoQueueClient) -> None:  # nocoverage
     # When tornado is shut down, disconnect cleanly from RabbitMQ
-    atexit.register(lambda: queue_client.close())
     autoreload.add_reload_hook(lambda: queue_client.close())
 
 

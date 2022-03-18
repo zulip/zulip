@@ -49,6 +49,7 @@ no_implicit_reexport = false
 module = [
     "ahocorasick.*",
     "aioapns.*",
+    "asgiref.*",
     "bitfield.*",
     "bmemcached.*",
     "bson.*",

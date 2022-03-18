@@ -1,9 +1,11 @@
+import asyncio
 import logging
 import urllib
 import weakref
 from typing import Any, Dict, List
 
 import tornado.web
+from asgiref.sync import sync_to_async
 from django import http
 from django.core import signals
 from django.core.handlers import base
@@ -63,7 +65,8 @@ def finish_handler(
         else:
             log_data["extra"] = "[{}/1/{}]".format(event_queue_id, contents[0]["type"])
 
-        handler.zulip_finish(
+        tornado.ioloop.IOLoop.current().add_callback(
+            handler.zulip_finish,
             dict(result="success", msg="", events=contents, queue_id=event_queue_id),
             request,
             apply_markdown=apply_markdown,
@@ -146,9 +149,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # Close the connection.
         self.finish()
 
-    def get(self, *args: Any, **kwargs: Any) -> None:
+    async def get(self, *args: Any, **kwargs: Any) -> None:
         request = self.convert_tornado_request_to_django_request()
-        response = self.get_response(request)
+        response = await asyncio.ensure_future(
+            sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
+        )
 
         try:
             if hasattr(response, "asynchronous"):
@@ -179,16 +184,16 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # the Django side; this triggers cleanup work like
             # resetting the urlconf and any cache/database
             # connections.
-            response.close()
+            await asyncio.ensure_future(sync_to_async(response.close, thread_sensitive=True)())
 
-    def head(self, *args: Any, **kwargs: Any) -> None:
-        self.get(*args, **kwargs)
+    async def head(self, *args: Any, **kwargs: Any) -> None:
+        await self.get(*args, **kwargs)
 
-    def post(self, *args: Any, **kwargs: Any) -> None:
-        self.get(*args, **kwargs)
+    async def post(self, *args: Any, **kwargs: Any) -> None:
+        await self.get(*args, **kwargs)
 
-    def delete(self, *args: Any, **kwargs: Any) -> None:
-        self.get(*args, **kwargs)
+    async def delete(self, *args: Any, **kwargs: Any) -> None:
+        await self.get(*args, **kwargs)
 
     def on_connection_close(self) -> None:
         # Register a Tornado handler that runs when client-side
@@ -201,7 +206,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
-    def zulip_finish(
+    async def zulip_finish(
         self, result_dict: Dict[str, Any], old_request: HttpRequest, apply_markdown: bool
     ) -> None:
         # Function called when we want to break a long-polled
@@ -257,7 +262,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             res_type=result_dict["result"], data=result_dict, status=self.get_status()
         )
 
-        response = self.get_response(request)
+        response = await asyncio.ensure_future(
+            sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
+        )
         try:
             # Explicitly mark requests as varying by cookie, since the
             # middleware will not have seen a session access
@@ -266,4 +273,4 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django we're done processing this request
-            response.close()
+            await asyncio.ensure_future(sync_to_async(response.close, thread_sensitive=True)())
