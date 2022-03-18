@@ -81,6 +81,9 @@ async function test_subscription_button(page: Page): Promise<void> {
 
 async function click_create_new_stream(page: Page): Promise<void> {
     await page.click("#add_new_subscription .create_stream_button");
+    await page.waitForSelector(".finalize_create_stream", {visible: true});
+
+    // sanity check that desdemona is the initial subsscriber
     await await_user_visible(page, "desdemona");
 }
 
