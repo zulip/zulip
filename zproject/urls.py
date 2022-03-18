@@ -176,6 +176,7 @@ from zerver.views.user_groups import (
     add_user_group,
     delete_user_group,
     edit_user_group,
+    get_is_user_group_member,
     get_user_group,
     update_subgroups_of_user_group,
     update_user_group_backend,
@@ -374,6 +375,9 @@ v1_api_and_json_patterns = [
     rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
     rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
     rest_path("user_groups/<int:user_group_id>/subgroups", POST=update_subgroups_of_user_group),
+    rest_path(
+        "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
+    ),
     # users/me -> zerver.views.user_settings
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots

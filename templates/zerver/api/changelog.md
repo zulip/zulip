@@ -31,6 +31,9 @@ format used by the Zulip server that they are interacting with.
   `remove_subgroups`).
 * [`PATCH /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups):
   Added new endpoint for updating subgroups of a user group.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Added new endpoint for checking whether a given user is member of a
+  given user group.
 
 **Feature level 126**
 
