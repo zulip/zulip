@@ -45,7 +45,7 @@ cd "$THIS_DIR/../.."
 #
 # In either case, it doesn't make sense to restart supervisor jobs
 if [ -e "/var/run/supervisor.sock" ]; then
-    supervisorctl restart all
+    ./scripts/restart-server
 fi
 
 set +x
