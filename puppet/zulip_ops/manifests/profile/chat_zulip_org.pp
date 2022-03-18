@@ -1,6 +1,5 @@
 class zulip_ops::profile::chat_zulip_org {
   include zulip::profile::standalone
-  include zulip::profile::smokescreen
   include zulip::postfix_localmail
   include zulip::postgresql_backups
 
