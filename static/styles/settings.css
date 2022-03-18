@@ -1149,8 +1149,13 @@ input[type="checkbox"] {
                     margin: 0 2px;
                 }
 
-                .sea-green {
+                .save-status {
+                    height: fit-content;
                     width: 65px;
+                    margin: 0 2px;
+                    text-align: center;
+                    color: hsl(156, 41%, 40%);
+                    padding: 7px 0;
                 }
             }
         }
