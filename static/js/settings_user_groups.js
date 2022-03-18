@@ -3,9 +3,11 @@ import _ from "lodash";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
 import render_admin_user_group_list from "../templates/settings/admin_user_group_list.hbs";
+import render_edit_user_group_modal from "../templates/settings/edit_user_group_modal.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -230,6 +232,16 @@ export function populate_user_groups() {
                 }, 100);
             });
         }
+
+        if (can_edit(data.id)) {
+            $(`#user-groups #${CSS.escape(data.id)} h4`).css("display", "grid");
+            $(`#user-groups #${CSS.escape(data.id)} .buttons-container`).show();
+        }
+
+        if (!can_edit(data.id)) {
+            $(`#user-groups #${CSS.escape(data.id)} h4`).css("display", "block");
+            $(`#user-groups #${CSS.escape(data.id)} .buttons-container`).hide();
+        }
     }
 }
 
@@ -304,6 +316,78 @@ export function set_up() {
             html_heading: $t_html({defaultMessage: "Delete user group"}),
             html_body,
             on_click: delete_user_group,
+        });
+    });
+
+    $("#user-groups").on("click", ".edit", function () {
+        const group_id = Number.parseInt($(this).parents(".user-group").attr("id"), 10);
+        if (!can_edit(group_id)) {
+            return;
+        }
+        const user_group = user_groups.get_user_group_from_id(group_id);
+        const $user_group_status = $(`#user-groups #${CSS.escape(group_id)} .user-group-status`);
+
+        function show_saved_button() {
+            const $saved_button = $(`#user-groups #${CSS.escape(group_id)} .save-status`);
+            if (!$saved_button.is(":visible")) {
+                $saved_button
+                    .css({display: "inline-block", opacity: "0", visbility: "visible"})
+                    .fadeTo(400, 1)
+                    .delay(2000)
+                    .fadeTo(400, 0);
+            }
+        }
+
+        function update_user_group() {
+            const name = $("#change_user_group_name").val();
+            const description = $("#change_user_group_description").val();
+
+            if (user_group.description === description && user_group.name === name) {
+                dialog_widget.close_modal();
+                return;
+            }
+
+            if (!name) {
+                $user_group_status.show();
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed: Group name cannot be empty!"}),
+                    {},
+                    $user_group_status,
+                );
+                dialog_widget.close_modal();
+                return;
+            }
+
+            channel.patch({
+                url: "/json/user_groups/" + group_id,
+                data: {
+                    name,
+                    description,
+                },
+                success() {
+                    $user_group_status.hide();
+                    setTimeout(show_saved_button, 200);
+                },
+                error(xhr) {
+                    $user_group_status.show();
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
+                },
+            });
+            dialog_widget.close_modal();
+        }
+
+        const html_body = render_edit_user_group_modal({
+            group_name: user_group.name,
+            group_description: user_group.description,
+        });
+
+        dialog_widget.launch({
+            html_heading: $t_html(
+                {defaultMessage: "Edit {group_name}"},
+                {group_name: user_group.name},
+            ),
+            html_body,
+            on_click: update_user_group,
         });
     });
 

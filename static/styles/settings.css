@@ -1221,6 +1221,11 @@ input[type="checkbox"] {
     }
 }
 
+#change_user_group_name,
+#change_user_group_description {
+    width: 100%;
+}
+
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
