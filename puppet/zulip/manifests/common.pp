@@ -96,6 +96,15 @@ class zulip::common {
       },
     },
 
+    # https://github.com/ncabatoff/process-exporter/releases
+    'process_exporter' => {
+      'version' => '0.7.10',
+      'sha256' => {
+        'amd64'   => '52503649649c0be00e74e8347c504574582b95ad428ff13172d658e82b3da1b5',
+        'aarch64' => 'b377e673558bd0d51f5f771c2b3b3be44b60fcac0689709f47d8c7ca8136f6f5',
+      }
+    },
+
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
       'version' => '2.34.0',
