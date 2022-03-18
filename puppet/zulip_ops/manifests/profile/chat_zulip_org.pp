@@ -1,7 +1,6 @@
 class zulip_ops::profile::chat_zulip_org {
   include zulip::profile::standalone
   include zulip::postfix_localmail
-  include zulip::postgresql_backups
 
   include zulip_ops::profile::base
   include zulip_ops::prometheus::uwsgi
