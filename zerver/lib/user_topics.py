@@ -1,6 +1,7 @@
 import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
@@ -152,3 +153,13 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
         return (recipient_id, topic.lower()) in tups
 
     return is_muted
+
+
+def get_users_muting_topic(stream_id: int, topic_name: str) -> QuerySet[UserProfile]:
+    return UserProfile.objects.select_related("realm").filter(
+        id__in=UserTopic.objects.filter(
+            stream_id=stream_id,
+            visibility_policy=UserTopic.MUTED,
+            topic_name__iexact=topic_name,
+        ).values("user_profile_id")
+    )

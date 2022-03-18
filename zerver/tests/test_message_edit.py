@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    check_update_message,
     do_add_reaction,
     do_change_realm_plan_type,
     do_change_stream_post_policy,
@@ -24,6 +25,12 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.user_topics import (
+    get_topic_mutes,
+    get_users_muting_topic,
+    set_topic_mutes,
+    topic_is_muted,
+)
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
@@ -1235,6 +1242,108 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(hamlet)
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
+
+    @mock.patch("zerver.lib.actions.send_event")
+    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Stream 123"
+        stream = self.make_stream(stream_name)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="Topic1", content="Hello World"
+        )
+
+        self.subscribe(cordelia, stream_name)
+        self.login_user(cordelia)
+        self.subscribe(aaron, stream_name)
+        self.login_user(aaron)
+
+        muted_topics = [
+            [stream_name, "Topic1"],
+            [stream_name, "Topic2"],
+        ]
+        set_topic_mutes(hamlet, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        # Returns the users that need to be notified when a message topic is changed
+        def notify(user_id: int) -> Dict[str, Any]:
+            um = UserMessage.objects.get(message=message_id)
+            if um.user_profile_id == user_id:
+                return {
+                    "id": user_id,
+                    "flags": um.flags_list(),
+                }
+
+            else:
+                return {
+                    "id": user_id,
+                    "flags": ["read"],
+                }
+
+        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
+        change_all_topic_name = "Topic 1 edited"
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=hamlet,
+                message_id=message_id,
+                stream_id=None,
+                topic_name=change_all_topic_name,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            # This code path adds 9 (1 + 4/user with muted topics) to
+            # the number of database queries for moving a topic.
+            self.assert_length(queries, 18)
+
+        for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
+            for user in users_to_be_notified:
+                if muting_user.id == user["id"]:
+                    user["muted_topics"] = get_topic_mutes(muting_user)
+                    break
+
+        self.assertFalse(topic_is_muted(hamlet, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic1"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, "Topic2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, change_all_topic_name))
+        self.assertFalse(topic_is_muted(aaron, stream.id, change_all_topic_name))
+
+        change_later_topic_name = "Topic 1 edited again"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_later_topic_name,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        change_one_topic_name = "Topic 1 edited change_one"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_one_topic_name,
+            propagate_mode="change_one",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_one_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
 
     @mock.patch("zerver.lib.actions.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
