@@ -371,6 +371,14 @@ export function update_user_data(user_id, new_data) {
     }
 }
 
+export function redraw_bots_list() {
+    if (!bot_list_widget) {
+        return;
+    }
+
+    bot_list_widget.hard_redraw();
+}
+
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
     loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {

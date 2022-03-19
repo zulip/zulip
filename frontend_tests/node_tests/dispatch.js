@@ -498,10 +498,20 @@ run_test("realm_bot remove", ({override}) => {
     admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
-run_test("realm_bot delete", () => {
+run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
-    // We don't handle live updates for delete events, this is a noop.
+    const bot_stub = make_stub();
+    const admin_stub = make_stub();
+    override(bot_data, "del", bot_stub.f);
+    override(settings_bots, "render_bots", () => {});
+    override(settings_users, "redraw_bots_list", admin_stub.f);
+
     dispatch(event);
+    assert.equal(bot_stub.num_calls, 1);
+    const args = bot_stub.get_args("user_id");
+    assert_same(args.user_id, event.bot.user_id);
+
+    assert.equal(admin_stub.num_calls, 1);
 });
 
 run_test("realm_bot update", ({override}) => {
