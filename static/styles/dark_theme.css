@@ -193,6 +193,28 @@ body.dark-theme {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
 
+    .sp-replacer {
+        background-color: hsl(211, 29%, 14%);
+
+        .sp-dd {
+            color: hsl(0, 0%, 87%);
+        }
+    }
+
+    .sp-container {
+        background-color: hsl(211, 29%, 14%);
+        border: solid 1px hsl(210, 36%, 4%);
+
+        .sp-picker-container {
+            border-left: 1px solid hsl(210, 36%, 4%);
+        }
+
+        .sp-palette-container {
+            border-right: 1px solid hsl(210, 36%, 4%);
+        }
+    }
+
+
     .streams_popover .sp-container {
         background-color: transparent;
 
