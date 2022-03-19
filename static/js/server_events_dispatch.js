@@ -335,7 +335,9 @@ export function dispatch_normal_event(event) {
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
-                    blueslip.info("ignoring bot deletion for live UI update");
+                    bot_data.del(event.bot.user_id);
+                    settings_bots.render_bots();
+                    settings_users.redraw_bots_list();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
