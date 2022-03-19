@@ -11,8 +11,8 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-16 00:39+0000\n"
-"PO-Revision-Date: 2022-03-16 00:39+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2015-12-06 00:18+0000\n"
+"Last-Translator: David Wood <heavy.spot0252@fuligin.ink>, 2022\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/zulip/zulip/language/en_GB/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2425,11 +2425,11 @@ msgstr "Webhook bots can only access webhooks"
 msgid ""
 "Your account {username} has been deactivated. Please contact your "
 "organization administrator to reactivate it."
-msgstr ""
+msgstr "Your account {username} has been deactivated. Please contact your organisation administrator to reactivate it."
 
 #: zerver/forms.py:60
 msgid "The password is too weak."
-msgstr ""
+msgstr "The password is too weak."
 
 #: zerver/forms.py:81
 msgid "Subdomain needs to have length 3 or greater."
@@ -2492,13 +2492,13 @@ msgstr "New password confirmation"
 msgid ""
 "You're making too many attempts to sign in. Try again in {} seconds or "
 "contact your organization administrator for help."
-msgstr ""
+msgstr "You're making too many attempts to sign in. Try again in {} seconds or contact your organisation administrator for help."
 
 #: zerver/forms.py:434
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
-msgstr ""
+msgstr "Your password has been disabled because it is too weak. Reset your password to create a new one."
 
 #: zerver/forms.py:451
 #, python-brace-format
@@ -2506,7 +2506,7 @@ msgid ""
 "Your Zulip account {username} is not a member of the organization associated"
 " with this subdomain.  Please contact your organization administrator with "
 "any questions."
-msgstr ""
+msgstr "Your Zulip account {username} is not a member of the organisation associated with this subdomain.  Please contact your organisation administrator with any questions."
 
 #: zerver/forms.py:485
 msgid "Token"
@@ -2727,15 +2727,15 @@ msgstr "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 #: zerver/lib/actions.py:5418
 #, python-brace-format
 msgid "{user} changed the description for this stream."
-msgstr ""
+msgstr "{user} changed the description for this stream."
 
 #: zerver/lib/actions.py:5420
 msgid "Old description"
-msgstr ""
+msgstr "Old description"
 
 #: zerver/lib/actions.py:5424
 msgid "New description"
-msgstr ""
+msgstr "New description"
 
 #: zerver/lib/actions.py:5492 zerver/lib/actions.py:5497
 msgid "Forever"
@@ -3524,7 +3524,7 @@ msgstr "Bad value for '{var_name}': {bad_value}"
 
 #: zerver/lib/request.py:385
 msgid "Malformed payload"
-msgstr ""
+msgstr "Malformed payload"
 
 #: zerver/lib/request.py:433
 msgid "Argument \"{}\" is not valid JSON."
@@ -3622,11 +3622,11 @@ msgstr "Image size exceeds limit."
 
 #: zerver/lib/upload.py:161
 msgid "Corrupt animated image."
-msgstr ""
+msgstr "Corrupt animated image."
 
 #: zerver/lib/upload.py:170
 msgid "Unknown animated image format."
-msgstr ""
+msgstr "Unknown animated image format."
 
 #: zerver/lib/upload.py:366
 msgid "Upload would exceed your organization's upload quota."
@@ -3827,12 +3827,12 @@ msgstr "{var_name} is not a string or integer"
 #: zerver/lib/validator.py:609
 #, python-brace-format
 msgid "{var_name} does not have a length"
-msgstr ""
+msgstr "{var_name} does not have a length"
 
 #: zerver/lib/validator.py:666 zerver/lib/validator.py:686
 #, python-brace-format
 msgid "{var_name} is missing"
-msgstr ""
+msgstr "{var_name} is missing"
 
 #: zerver/lib/webhooks/common.py:72
 #, python-brace-format
@@ -4413,7 +4413,7 @@ msgstr "new streams"
 #: zerver/views/streams.py:690
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** stream created by {user_name}. **Description:**"
 
 #: zerver/views/streams.py:910
 msgid "Unknown subscription property: {}"
@@ -4704,11 +4704,11 @@ msgstr "{} is not a valid hostname"
 
 #: zilencer/views.py:166
 msgid "Missing user_id or user_uuid"
-msgstr ""
+msgstr "Missing user_id or user_uuid"
 
 #: zilencer/views.py:171
 msgid "Specify only one of user_id or user_uuid"
-msgstr ""
+msgstr "Specify only one of user_id or user_uuid"
 
 #: zilencer/views.py:311
 msgid "Invalid property {}"
