@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import asyncio
 import os
 import pwd
 import signal
@@ -17,7 +18,7 @@ from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from tornado import httpclient, httputil, web
-from tornado.ioloop import IOLoop
+from tornado.platform.asyncio import AsyncIOMainLoop
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -197,7 +198,7 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     return newpath
 
 
-client = httpclient.AsyncHTTPClient()
+client: httpclient.AsyncHTTPClient
 
 
 class BaseHandler(web.RequestHandler):
@@ -317,14 +318,6 @@ class Application(web.Application):
             super().log_request(handler)
 
 
-def shutdown_handler(*args: Any, **kwargs: Any) -> None:
-    io_loop = IOLoop.instance()
-    if io_loop._callbacks:
-        io_loop.call_later(1, shutdown_handler)
-    else:
-        io_loop.stop()
-
-
 def print_listeners() -> None:
     # Since we can't import settings from here, we duplicate some
     # EXTERNAL_HOST logic from dev_settings.py.
@@ -354,7 +347,12 @@ def print_listeners() -> None:
 
 children = []
 
-try:
+
+async def serve() -> None:
+    global client
+
+    AsyncIOMainLoop().install()
+
     if options.test:
         do_one_time_webpack_compile()
     else:
@@ -363,6 +361,7 @@ try:
     for cmd in server_processes():
         children.append(subprocess.Popen(cmd))
 
+    client = httpclient.AsyncHTTPClient()
     app = Application(enable_logging=options.enable_tornado_logging)
     try:
         app.listen(proxy_port, address=options.interface)
@@ -373,10 +372,14 @@ try:
 
     print_listeners()
 
-    ioloop = IOLoop.instance()
+
+loop = asyncio.new_event_loop()
+
+try:
+    loop.run_until_complete(serve())
     for s in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(s, shutdown_handler)
-    ioloop.start()
+        loop.add_signal_handler(s, loop.stop)
+    loop.run_forever()
 finally:
     for child in children:
         child.terminate()
