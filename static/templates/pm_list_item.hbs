@@ -10,8 +10,9 @@
         </div>
 
         <a href='{{url}}' class="conversation-partners">
-            {{recipients}}
-            {{> status_emoji status_emoji_info}}
+            {{#each recipients}}
+                {{#unless @first}}&nbsp;{{/unless}}{{> pm_list_item_recipient}}{{#unless @last}},{{/unless}}
+            {{/each}}
         </a>
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}

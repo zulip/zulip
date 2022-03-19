@@ -4,6 +4,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as unread from "./unread";
+import * as user_display from "./user_display";
 import * as user_status from "./user_status";
 
 export function get_active_user_ids_string() {
@@ -30,7 +31,7 @@ export function get_convos() {
     for (const private_message_obj of private_messages) {
         const user_ids_string = private_message_obj.user_ids_string;
         const reply_to = people.user_ids_string_to_emails_string(user_ids_string);
-        const recipients_string = people.get_recipients(user_ids_string);
+        const recipients = user_display.get_recipients_obj(user_ids_string);
 
         const num_unread = unread.num_unread_for_person(user_ids_string);
 
@@ -55,7 +56,7 @@ export function get_convos() {
         }
 
         const display_message = {
-            recipients: recipients_string,
+            recipients,
             user_ids_string,
             unread: num_unread,
             is_zero: num_unread === 0,

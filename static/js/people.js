@@ -306,7 +306,7 @@ export function get_full_names_for_poll_option(user_ids) {
     return get_display_full_names(user_ids).join(", ");
 }
 
-function get_display_full_name(user_id) {
+export function get_display_full_name(user_id) {
     const person = get_by_user_id(user_id);
     if (!person) {
         blueslip.error("Unknown user id " + user_id);
@@ -328,7 +328,7 @@ export function get_full_name(user_id) {
     return people_by_user_id_dict.get(user_id).full_name;
 }
 
-function _calc_user_and_other_ids(user_ids_string) {
+export function _calc_user_and_other_ids(user_ids_string) {
     const user_ids = split_to_ints(user_ids_string);
     const other_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
     return {user_ids, other_ids};

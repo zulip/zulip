@@ -68,7 +68,11 @@ test("get_convos", ({override}) => {
             is_active: false,
             is_group: false,
             is_zero: false,
-            recipients: "Me Myself",
+            recipients: [
+                {
+                    full_name: "Me Myself",
+                },
+            ],
             unread: 1,
             url: "#narrow/pm-with/103-me",
             user_circle_class: "user_circle_empty",
@@ -78,7 +82,14 @@ test("get_convos", ({override}) => {
             },
         },
         {
-            recipients: "Alice, Bob",
+            recipients: [
+                {
+                    full_name: "Alice",
+                },
+                {
+                    full_name: "Bob",
+                },
+            ],
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
@@ -116,18 +127,29 @@ test("get_convos bot", ({override}) => {
 
     const expected_data = [
         {
-            recipients: "Outgoing webhook",
+            recipients: [
+                {
+                    full_name: "Outgoing webhook",
+                },
+            ],
             user_ids_string: "314",
             unread: 1,
             is_zero: false,
             is_active: false,
             url: "#narrow/pm-with/314-outgoingwebhook",
-            status_emoji_info: undefined,
             user_circle_class: "user_circle_green",
             is_group: false,
+            status_emoji_info: undefined,
         },
         {
-            recipients: "Alice, Bob",
+            recipients: [
+                {
+                    full_name: "Alice",
+                },
+                {
+                    full_name: "Bob",
+                },
+            ],
             user_ids_string: "101,102",
             unread: 1,
             is_zero: false,
