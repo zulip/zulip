@@ -306,20 +306,22 @@ export function get_full_names_for_poll_option(user_ids) {
     return get_display_full_names(user_ids).join(", ");
 }
 
+function get_display_full_name(user_id) {
+    const person = get_by_user_id(user_id);
+    if (!person) {
+        blueslip.error("Unknown user id " + user_id);
+        return "?";
+    }
+
+    if (muted_users.is_user_muted(user_id)) {
+        return $t({defaultMessage: "Muted user"});
+    }
+
+    return person.full_name;
+}
+
 export function get_display_full_names(user_ids) {
-    return user_ids.map((user_id) => {
-        const person = get_by_user_id(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id " + user_id);
-            return "?";
-        }
-
-        if (muted_users.is_user_muted(user_id)) {
-            return $t({defaultMessage: "Muted user"});
-        }
-
-        return person.full_name;
-    });
+    return user_ids.map((user_id) => get_display_full_name(user_id));
 }
 
 export function get_full_name(user_id) {
