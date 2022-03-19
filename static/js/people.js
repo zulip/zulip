@@ -328,11 +328,16 @@ export function get_full_name(user_id) {
     return people_by_user_id_dict.get(user_id).full_name;
 }
 
+function _calc_user_and_other_ids(user_ids_string) {
+    const user_ids = split_to_ints(user_ids_string);
+    const other_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
+    return {user_ids, other_ids};
+}
+
 export function get_recipients(user_ids_string) {
     // See message_store.get_pm_full_names() for a similar function.
 
-    const user_ids = split_to_ints(user_ids_string);
-    const other_ids = user_ids.filter((user_id) => !is_my_user_id(user_id));
+    const {other_ids} = _calc_user_and_other_ids(user_ids_string);
 
     if (other_ids.length === 0) {
         // private message with oneself
