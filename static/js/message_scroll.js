@@ -137,7 +137,7 @@ export function hide_scroll_to_bottom() {
     if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
-        $show_scroll_to_bottom_button.hide();
+        $show_scroll_to_bottom_button.fadeOut(500);
         return;
     }
 
@@ -170,9 +170,9 @@ $(document).on("keydown", (e) => {
         return;
     }
 
-    // Instantly hide scroll to bottom button on any keypress.
+    // Hide scroll to bottom button on any keypress.
     // Keyboard users are very less likely to use this button.
-    $("#scroll-to-bottom-button-container").hide();
+    $("#scroll-to-bottom-button-container").fadeOut(500);
 });
 
 export function is_actively_scrolling() {
