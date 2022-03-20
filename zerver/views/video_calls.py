@@ -176,7 +176,7 @@ def get_bigbluebutton_url(
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
-    password = b32encode(secrets.token_bytes(7))[:20].decode()
+    password = b32encode(secrets.token_bytes(20)).decode()  # 20 bytes means 32 characters
 
     # We sign our data here to ensure a Zulip user can not tamper with
     # the join link to gain access to other meetings that are on the
