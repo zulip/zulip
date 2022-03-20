@@ -289,11 +289,23 @@ AUTH_LDAP_USER_SEARCH = LDAPSearchUnion(
 
 You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
-settings in `/etc/zulip/settings.py`. See the
-[upstream django-auth-ldap documentation][upstream-ldap-groups] for
-details.
+settings in `/etc/zulip/settings.py`.
 
-[upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html#limiting-access
+An example configation for Active Directory group restriction can be:
+
+```
+import django_auth_ldap
+AUTH_LDAP_GROUP_TYPE = django_auth_ldap.config.ActiveDirectoryGroupType()
+
+AUTH_LDAP_REQUIRE_GROUP = "cn=enabled,ou=groups,dc=example,dc=com"
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch("ou=groups,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)")
+```
+
+Please note that `AUTH_LDAP_GROUP_TYPE` needs to be set to the correct
+group type for your LDAP server. See the [upstream django-auth-ldap
+documentation][upstream-ldap-groups] for details.
+
+[upstream-ldap-groups]: https://django-auth-ldap.readthedocs.io/en/latest/groups.html
 
 ### Restricting LDAP user access to specific organizations
 
