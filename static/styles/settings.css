@@ -699,13 +699,6 @@ input[type="checkbox"] {
     text-align: right;
 }
 
-#account-settings-status {
-    text-align: center;
-    width: 50%;
-    margin: auto;
-    margin-bottom: 20px;
-}
-
 .add-new-emoji-box,
 .add-new-user-group-box,
 .add-new-alert-word-box,
