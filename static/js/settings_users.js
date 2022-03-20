@@ -506,7 +506,7 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-function handle_reactivation($tbody, $status_field) {
+function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -514,19 +514,24 @@ function handle_reactivation($tbody, $status_field) {
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
         const user_id = Number.parseInt($row.attr("data-user-id"), 10);
-        const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-        const data = {};
 
-        const opts = {
-            success_continuation() {
-                update_view_on_reactivate($row);
-            },
-            error_continuation(xhr) {
-                ui_report.generic_row_button_error(xhr, $button_elem);
-            },
-        };
+        function handle_confirm() {
+            const $row = get_user_info_row(user_id);
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+            channel.post({
+                url,
+                success() {
+                    dialog_widget.close_modal();
+                    update_view_on_reactivate($row);
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
 
-        settings_ui.do_settings_change(channel.post, url, data, $status_field, opts);
+        confirm_reactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -726,7 +731,7 @@ section.active.handle_events = () => {
     const $status_field = $("#user-field-status").expectOne();
 
     handle_deactivation($tbody);
-    handle_reactivation($tbody, $status_field);
+    handle_reactivation($tbody);
     handle_human_form($tbody, $status_field);
 };
 
@@ -735,7 +740,7 @@ section.deactivated.handle_events = () => {
     const $status_field = $("#deactivated-user-field-status").expectOne();
 
     handle_deactivation($tbody);
-    handle_reactivation($tbody, $status_field);
+    handle_reactivation($tbody);
     handle_human_form($tbody, $status_field);
 };
 
@@ -744,7 +749,7 @@ section.bots.handle_events = () => {
     const $status_field = $("#bot-field-status").expectOne();
 
     handle_bot_deactivation($tbody, $status_field);
-    handle_reactivation($tbody, $status_field);
+    handle_reactivation($tbody);
     handle_bot_form($tbody, $status_field);
 };
 
