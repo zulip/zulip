@@ -47,23 +47,25 @@
         </div>
 
         <p>{{t "A wide image for the upper left corner of the app." }}</p>
-        <div class="realm-logo-block realm-logo-section">
-            <h5 class="realm-logo-title">{{t 'Day logo' }}</h5>
-            {{> image_upload_widget
-              widget = "realm-day-logo"
-              upload_text = (t "Upload logo")
-              delete_text = (t "Delete logo")
-              is_editable_by_current_user = user_can_change_logo
-              image = realm_logo_url }}
-        </div>
-        <div class="realm-logo-block realm-logo-section">
-            <h5 class="realm-logo-title">{{t 'Night logo' }}</h5>
-            {{> image_upload_widget
-              widget = "realm-night-logo"
-              upload_text = (t "Upload logo")
-              delete_text = (t "Delete logo")
-              is_editable_by_current_user = user_can_change_logo
-              image = realm_night_logo_url }}
+        <div class="realm-logo-group">
+            <div class="realm-logo-block realm-logo-section">
+                <h5 class="realm-logo-title">{{t 'Day logo' }}</h5>
+                {{> image_upload_widget
+                  widget = "realm-day-logo"
+                  upload_text = (t "Upload logo")
+                  delete_text = (t "Delete logo")
+                  is_editable_by_current_user = user_can_change_logo
+                  image = realm_logo_url }}
+            </div>
+            <div class="realm-logo-block realm-logo-section">
+                <h5 class="realm-logo-title">{{t 'Night logo' }}</h5>
+                {{> image_upload_widget
+                  widget = "realm-night-logo"
+                  upload_text = (t "Upload logo")
+                  delete_text = (t "Delete logo")
+                  is_editable_by_current_user = user_can_change_logo
+                  image = realm_night_logo_url }}
+            </div>
         </div>
         <h3 class="light">
             {{t "Deactivate organization" }}

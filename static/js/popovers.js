@@ -15,15 +15,17 @@ import render_user_info_popover_title from "../templates/user_info_popover_title
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
+import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -45,6 +47,7 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
+import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -219,6 +222,7 @@ function render_user_info_popover(
         can_revoke_away,
         can_set_away,
         can_mute: muting_allowed && !is_muted,
+        can_manage_user: page_params.is_admin && !is_me,
         can_unmute: muting_allowed && is_muted,
         has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
@@ -243,7 +247,6 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
-        show_manage_user_option: page_params.is_admin && !is_me,
     };
 
     if (user.is_bot) {
@@ -1029,6 +1032,27 @@ export function register_click_handlers() {
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
+    });
+
+    $("body").on("click", ".info_popover_actions .sidebar-popover-reactivate-user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        hide_all();
+        e.stopPropagation();
+        e.preventDefault();
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+            channel.post({
+                url,
+                success() {
+                    dialog_widget.close_modal();
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+        settings_users.confirm_reactivation(user_id, handle_confirm, true);
     });
 
     $("#user_presences").on("click", ".user-list-sidebar-menu-icon", function (e) {

@@ -3282,7 +3282,7 @@ class AbstractAttachment(models.Model):
     # then its path_id will be a/b/abc/temp_file.py.
     path_id: str = models.TextField(db_index=True, unique=True)
     owner: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    realm: Optional[Realm] = models.ForeignKey(Realm, blank=True, null=True, on_delete=CASCADE)
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
     create_time: datetime.datetime = models.DateTimeField(
         default=timezone_now,

@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
@@ -34,53 +34,11 @@ async function stream_name_error(page: Page): Promise<string> {
     return await common.get_text_from_selector(page, "#stream_name_error");
 }
 
-async function open_streams_modal(page: Page): Promise<void> {
-    const all_streams_selector = "#add-stream-link";
-    await page.waitForSelector(all_streams_selector, {visible: true});
-    await page.click(all_streams_selector);
-
-    await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
-    const url = await common.page_url_with_fragment(page);
-    assert.ok(url.includes("#streams/all"));
-}
-
-async function test_subscription_button(page: Page): Promise<void> {
-    const stream_selector = "[data-stream-name='Venice']";
-    const button_selector = `${stream_selector} .sub_unsub_button`;
-    const subscribed_selector = `${button_selector}.checked`;
-    const unsubscribed_selector = `${button_selector}:not(.checked)`;
-
-    async function subscribed(): Promise<ElementHandle | null> {
-        return await page.waitForSelector(subscribed_selector, {visible: true});
-    }
-
-    async function unsubscribed(): Promise<ElementHandle | null> {
-        return await page.waitForSelector(unsubscribed_selector, {visible: true});
-    }
-
-    // Make sure that Venice is even in our list of streams.
-    await page.waitForSelector(stream_selector, {visible: true});
-    await page.waitForSelector(button_selector, {visible: true});
-
-    // Note that we intentionally re-find the button after each click, since
-    // the live-update code may replace the whole row.
-    let button;
-
-    // We assume Venice is already subscribed, so the first line here
-    // should happen immediately.
-    button = await subscribed();
-    await button!.click();
-    button = await unsubscribed();
-    await button!.click();
-    button = await subscribed();
-    await button!.click();
-    button = await unsubscribed();
-    await button!.click();
-    button = await subscribed();
-}
-
 async function click_create_new_stream(page: Page): Promise<void> {
     await page.click("#add_new_subscription .create_stream_button");
+    await page.waitForSelector(".finalize_create_stream", {visible: true});
+
+    // sanity check that desdemona is the initial subsscriber
     await await_user_visible(page, "desdemona");
 }
 
@@ -205,8 +163,7 @@ async function test_streams_search_feature(page: Page): Promise<void> {
 
 async function subscriptions_tests(page: Page): Promise<void> {
     await common.log_in(page);
-    await open_streams_modal(page);
-    await test_subscription_button(page);
+    await common.open_streams_modal(page);
     await test_stream_creation(page);
     await test_streams_search_feature(page);
 }

@@ -8097,7 +8097,7 @@ paths:
         - name: desktop_icon_count_display
           in: query
           description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+            Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
             - 2 - Private messages and mentions
@@ -9982,7 +9982,7 @@ paths:
                           desktop_icon_count_display:
                             type: integer
                             description: |
-                              Unread count summary (appears in desktop sidebar and browser tab)
+                              Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
                               - 2 - Private messages and mentions
@@ -11681,7 +11681,7 @@ paths:
                           desktop_icon_count_display:
                             type: integer
                             description: |
-                              Unread count summary (appears in desktop sidebar and browser tab)
+                              Unread count badge (appears in desktop sidebar and browser tab)
 
                               - 1 - All unreads
                               - 2 - Private messages and mentions
@@ -12788,7 +12788,7 @@ paths:
         - name: desktop_icon_count_display
           in: query
           description: |
-            Unread count summary (appears in desktop sidebar and browser tab)
+            Unread count badge (appears in desktop sidebar and browser tab)
 
             - 1 - All unreads
             - 2 - Private messages and mentions
@@ -13868,6 +13868,16 @@ paths:
       description: |
         Create a video call URL for a BigBlueButton video call.
         Requires BigBlueButton to be configured on the Zulip server.
+      parameters:
+        - in: query
+          name: meeting_name
+          schema:
+            type: string
+          required: true
+          description: |
+            Title to use for the BigBlueButton meeting.
+
+            A good choice is something like "{stream_name} meeting".
       responses:
         "200":
           description: Success.
@@ -13885,12 +13895,12 @@ paths:
                         description: |
                           The URL for the BigBlueButton video call.
                         type: string
-                        example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
+                        example: "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&name=%22your_meeting_name%22&checksum=%22somechecksum%22"
                     example:
                       {
                         "msg": "",
                         "result": "success",
-                        "url": "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
+                        "url": "/calls/bigbluebutton/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22",
                       }
 
 components:

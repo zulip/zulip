@@ -8,14 +8,14 @@
 # Leon H., 2020
 # Sean Yuan <sean@meepshop.com>, 2021
 # s s <sshiuan2+transifex.com@gmail.com>, 2020-2021
-# Tim Abbott <tabbott@kandralabs.com>, 2021
+# Tim Abbott <tabbott@kandralabs.com>, 2021-2022
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-16 00:39+0000\n"
-"PO-Revision-Date: 2022-03-16 00:39+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"PO-Revision-Date: 2015-12-06 00:18+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021-2022\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/zulip/zulip/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -416,7 +416,7 @@ msgstr ""
 
 #: templates/corporate/support_request.html:27
 msgid "Message"
-msgstr ""
+msgstr "訊息"
 
 #: templates/corporate/support_request.html:33
 msgid "Submit"
@@ -3122,7 +3122,7 @@ msgstr "必須是組織所有者"
 
 #: zerver/lib/exceptions.py:252
 msgid "Must be an organization or stream administrator"
-msgstr "必須是組織或是頻道管理者"
+msgstr "必須是組織或是頻道管理者"
 
 #: zerver/lib/exceptions.py:265
 msgid "Your username or password is incorrect"

@@ -322,6 +322,7 @@
         .on('blur',     this.blur.bind(this))
         .on('keypress', this.keypress.bind(this))
         .on('keyup',    this.keyup.bind(this))
+        .on('click',    this.element_click.bind(this))
 
       if (this.eventSupported('keydown')) {
         this.$element.on('keydown', this.keydown.bind(this))
@@ -446,6 +447,12 @@
         }
       }, 150)
     }
+
+  , element_click: function (e) {
+    // update / hide the typeahead menu if the user clicks anywhere
+    // inside the typing area, to avoid misplaced typeahead insertion.
+    this.lookup()
+  }
 
   , click: function (e) {
       e.stopPropagation()

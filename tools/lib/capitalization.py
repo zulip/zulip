@@ -47,6 +47,9 @@ IGNORED_PHRASES = [
     r"BigBlueButton",
     # Code things
     r"\.zuliprc",
+    # BeautifulSoup will remove <z-user> which is horribly confusing,
+    # so we need more of the sentence.
+    r"<z-user></z-user> will have the same role",
     # Things using "I"
     r"I understand",
     r"I'm",

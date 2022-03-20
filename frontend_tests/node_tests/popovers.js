@@ -173,6 +173,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             can_set_away: false,
             can_revoke_away: false,
             can_mute: true,
+            can_manage_user: false,
             can_unmute: false,
             user_full_name: "Alice Smith",
             user_email: "alice@example.com",
@@ -198,7 +199,6 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_mention_syntax: "@**Alice Smith**",
             date_joined: undefined,
             spectator_view: false,
-            show_manage_user_option: false,
         });
         return "content-html";
     });

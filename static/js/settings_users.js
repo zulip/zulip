@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
+import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
@@ -427,6 +428,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
         html_body,
         on_click: handle_confirm,
         loading_spinner,
@@ -476,6 +478,22 @@ function handle_bot_deactivation($tbody, $status_field) {
             },
         };
         settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
+    });
+}
+
+export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
+    const user = people.get_by_user_id(user_id);
+    const opts = {
+        username: user.full_name,
+    };
+    const html_body = render_settings_reactivation_user_modal(opts);
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-user#reactivate-a-user",
+        html_body,
+        on_click: handle_confirm,
+        loading_spinner,
     });
 }
 

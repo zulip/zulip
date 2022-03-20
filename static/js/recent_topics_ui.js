@@ -17,7 +17,6 @@ import * as message_view_header from "./message_view_header";
 import * as muted_topics from "./muted_topics";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
-import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as people from "./people";
 import * as recent_senders from "./recent_senders";
@@ -622,6 +621,10 @@ export function complete_rerender() {
 }
 
 export function show() {
+    if (narrow.has_shown_message_list_view) {
+        narrow.save_pre_narrow_offset_for_reload();
+    }
+
     if (is_visible()) {
         // If we're already visible, E.g. because the user hit Esc
         // while already in the recent topics view, do nothing.
@@ -680,9 +683,8 @@ export function hide() {
     // before it completely re-rerenders.
     message_view_header.render_title_area();
 
-    // Fixes misaligned message_view and hidden
-    // floating_recipient_bar.
-    navbar_alerts.resize_app();
+    // Fire our custom event
+    $("#message_feed_container").trigger("message_feed_shown");
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.

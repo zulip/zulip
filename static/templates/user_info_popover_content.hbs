@@ -24,7 +24,7 @@
             </div>
             {{/if}}
         {{else}}
-            <li class="user_popover_email half-opacity italic">{{#tr}}(This user has been deactivated){{/tr}}</li>
+            <li class="user_popover_email half-opacity italic">{{#tr}}This user has been deactivated.{{/tr}}</li>
         {{/if}}
 
 
@@ -183,12 +183,20 @@
             </a>
         </li>
         {{/if}}
-        {{#if show_manage_user_option}}
-        <li>
-            <a tabindex="0" class="sidebar-popover-manage-user">
-                <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
-            </a>
-        </li>
+        {{#if can_manage_user}}
+            {{#if is_active}}
+            <li>
+                <a tabindex="0" class="sidebar-popover-manage-user">
+                    <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Manage this user{{/tr}}
+                </a>
+            </li>
+            {{else}}
+            <li>
+                <a tabindex="0" class="sidebar-popover-reactivate-user">
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{#tr}}Reactivate this user{{/tr}}
+                </a>
+            </li>
+            {{/if}}
         {{/if}}
     {{/if}}
 </ul>

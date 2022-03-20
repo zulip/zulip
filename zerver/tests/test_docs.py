@@ -303,7 +303,7 @@ class HelpTest(ZulipTestCase):
 
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-stream-by-email")
-        self.assertIn('<a href="/#streams/subscribed">Your streams</a>', str(result.content))
+        self.assertIn('<a href="/#streams/subscribed">Subscribed</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):

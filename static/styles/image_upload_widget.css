@@ -3,25 +3,36 @@
     position: relative;
     border-radius: 5px;
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    overflow: hidden;
 
     transition: all 0.3s ease;
 
     .image-block {
-        background-size: 100%;
+        background-size: contain;
         height: 100%;
     }
 
     .image-upload-background {
         content: "";
-        background-color: hsl(0, 0%, 0%);
+        background-color: hsla(0, 0%, 0%, 0.6);
         height: 100%;
         width: 100%;
-        opacity: 0.6;
         z-index: 99;
         position: absolute;
         display: none;
         cursor: pointer;
-        border-radius: 5px;
+    }
+
+    .image_upload_button {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
     }
 
     .image-delete-button {
@@ -30,13 +41,30 @@
         cursor: pointer;
         color: hsl(0, 0%, 75%);
         opacity: 0;
-        padding: 3px 0;
+        padding: 0;
         position: absolute;
         font-size: 2rem;
         top: 10px;
         right: 10px;
         z-index: 99;
         line-height: 20px;
+    }
+
+    .image-disabled-text {
+        color: hsl(0, 0%, 100%);
+        cursor: not-allowed;
+        position: absolute;
+        text-align: center;
+        visibility: hidden;
+        z-index: 99;
+    }
+
+    .image-delete-text,
+    .image-upload-text,
+    .image-disabled-text {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 0 10px;
     }
 
     .image-delete-button:focus,
@@ -74,6 +102,9 @@
     }
 
     .upload-spinner-background {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         background-color: hsl(0, 0%, 10%);
         font-size: 0.8rem;
         width: 100%;
@@ -83,12 +114,7 @@
         visibility: hidden;
         z-index: 99;
         cursor: pointer;
-    }
-
-    .image_upload_spinner {
-        position: absolute;
-        z-index: 99;
-        display: block;
+        border-radius: 5px;
     }
 
     &:hover {
@@ -109,65 +135,14 @@
 .user-avatar-section,
 .realm-logo-section,
 .realm-icon-section {
-    margin-bottom: 20px;
-    position: relative;
-
-    .inline-block {
-        margin-top: 15px;
-        vertical-align: top;
-        border-radius: 4px;
-    }
+    margin: 20px 0;
 }
 
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
-    .image_upload_button {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        text-align: center;
-        justify-content: center;
-        border-radius: 5px;
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
-        z-index: 99;
-    }
-
-    .image-disabled-text {
-        color: hsl(0, 0%, 85%);
-        cursor: not-allowed;
-        position: absolute;
-        text-align: center;
-        visibility: hidden;
-        z-index: 99;
-    }
-
-    .image-delete-button {
-        font-size: 3rem;
-    }
-
-    .image-delete-text,
-    .image-upload-text,
-    .image-disabled-text {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 0 10px;
-    }
-
-    .image_upload_spinner {
-        top: 40%;
-        right: 40%;
-        width: 50px;
-        height: 50px;
-    }
-
     .image-block {
-        border-radius: 5px;
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
         width: 200px;
         height: 200px;
-        top: 0;
     }
 
     &:hover {
@@ -187,30 +162,12 @@
 #realm-icon-upload-widget {
     width: 100px;
     height: 100px;
-    border-radius: 5px;
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
-    .image-delete-text {
-        top: 40px;
-        right: 18px;
+    .image-delete-button {
+        top: 5px;
+        right: 5px;
     }
-
-    .image-upload-text {
-        top: 40px;
-        right: 18px;
-    }
-
-    .image_upload_spinner {
-        width: 40px;
-        height: 40px;
-        top: 30%;
-        right: 30%;
-    }
-}
-
-.realm-icon-section {
-    float: none;
-    display: inline-block;
 }
 
 /* CSS related to settings page realm day/night logo upload widget only */
@@ -219,28 +176,15 @@
     width: 220px;
     height: 55px;
     text-align: center;
-    margin: 0 80px 0 20px;
 
-    .image-upload-text,
-    .image-delete-text {
-        top: 17px;
-        right: 80px;
-    }
-
-    .upload-spinner-background {
-        left: 0;
-    }
-
-    .image_upload_spinner {
-        width: 45px;
-        height: 55px;
-        top: 5%;
-        right: 40%;
+    .image-delete-button {
+        top: 5px;
+        right: 5px;
     }
 }
 
 #realm-day-logo-upload-widget {
-    background-color: hsla(0, 100%, 100%, 1);
+    background-color: hsl(0, 100%, 100%);
 }
 
 #realm-night-logo-upload-widget {
@@ -248,9 +192,15 @@
 }
 
 .realm-logo-block {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
 }
 
-.realm-logo-title {
-    padding-left: 30%;
+.realm-logo-group {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
 }

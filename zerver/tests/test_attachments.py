@@ -11,7 +11,11 @@ class AttachmentsTests(ZulipTestCase):
         super().setUp()
         user_profile = self.example_user("cordelia")
         self.attachment = Attachment.objects.create(
-            file_name="test.txt", path_id="foo/bar/test.txt", owner=user_profile, size=512
+            file_name="test.txt",
+            path_id="foo/bar/test.txt",
+            owner=user_profile,
+            realm=user_profile.realm,
+            size=512,
         )
 
     def test_list_by_user(self) -> None:

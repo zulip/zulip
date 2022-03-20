@@ -97,9 +97,10 @@ mock_esm("../../static/js/muted_topics", {
         return false;
     },
 });
-mock_esm("../../static/js/narrow", {
+const narrow = mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
     hide_mark_as_read_turned_off_banner: noop,
+    has_shown_message_list_view: true,
 });
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
@@ -338,7 +339,9 @@ function test(label, f) {
     });
 }
 
-test("test_recent_topics_show", ({mock_template}) => {
+test("test_recent_topics_show", ({mock_template, override}) => {
+    override(narrow, "save_pre_narrow_offset_for_reload", () => {});
+
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
