@@ -6,11 +6,11 @@ from django.db.models import Count
 from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
-    create_users,
     do_add_reaction,
     do_send_messages,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
+    setup_realm_internal_bots,
 )
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
@@ -27,27 +27,6 @@ def missing_any_realm_internal_bots() -> bool:
     )
     realm_count = Realm.objects.count()
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
-
-
-def setup_realm_internal_bots(realm: Realm) -> None:
-    """Create this realm's internal bots.
-
-    This function is idempotent; it does nothing for a bot that
-    already exists.
-    """
-    internal_bots = [
-        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
-        for bot in settings.REALM_INTERNAL_BOTS
-    ]
-    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    bots = UserProfile.objects.filter(
-        realm=realm,
-        email__in=[bot_info[1] for bot_info in internal_bots],
-        bot_owner__isnull=True,
-    )
-    for bot in bots:
-        bot.bot_owner = bot
-        bot.save()
 
 
 def create_if_missing_realm_internal_bots() -> None:
