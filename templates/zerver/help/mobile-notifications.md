@@ -22,8 +22,8 @@ notifications while you are actively using one of the Zulip apps.
 
 {settings_tab|notifications}
 
-1. Under **Mobile message notifications**, check or uncheck
-   **Send mobile notifications even if I'm online** as desired.
+1. Under **Mobile message notifications**, toggle
+   **Send mobile notifications even if I'm online**, as desired.
 
 {end_tabs}
 
