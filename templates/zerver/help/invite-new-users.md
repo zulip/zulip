@@ -53,7 +53,8 @@ invitation, but require them to authenticate via LDAP.
 1. Toggle **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to either
-   **Don't allow disposable email addresses** (recommended) or **No**.
+   **Don't allow disposable email addresses** (recommended)
+   or **No restrictions**.
 
 1. Click **Save changes**.
 
