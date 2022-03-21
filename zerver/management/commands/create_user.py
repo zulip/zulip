@@ -35,25 +35,29 @@ Omit both <email> and <full name> for interactive user creation.
         try:
             email = options["email"]
             full_name = options["full_name"]
-            try:
-                validators.validate_email(email)
-            except ValidationError:
-                raise CommandError("Invalid email address.")
         except KeyError:
             if "email" in options or "full_name" in options:
                 raise CommandError(
                     """Either specify an email and full name as two
 parameters, or specify no parameters for interactive user creation."""
                 )
-            else:
-                while True:
-                    email = input("Email: ")
-                    try:
-                        validators.validate_email(email)
-                        break
-                    except ValidationError:
-                        print("Invalid email address.", file=sys.stderr)
-                full_name = input("Full name: ")
+
+        if "email" not in options:
+            while True:
+                email = input("Email: ")
+                try:
+                    validators.validate_email(email)
+                    break
+                except ValidationError:
+                    print("Invalid email address.", file=sys.stderr)
+
+        if "full_name" not in options:
+            full_name = input("Full name: ")
+
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            raise CommandError("Invalid email address.")
 
         try:
             if options["password_file"] is not None:
