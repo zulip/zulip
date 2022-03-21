@@ -46,30 +46,28 @@ Omit both <email> and <full name> for interactive user creation.
         else:
             full_name = options["full_name"]
 
-        try:
-            if options["password_file"] is not None:
-                with open(options["password_file"]) as f:
-                    pw: Optional[str] = f.read().strip()
-            elif options["password"] is not None:
-                logging.warning(
-                    "Passing password on the command line is insecure; prefer --password-file."
-                )
-                pw = options["password"]
+        if options["password_file"] is not None:
+            with open(options["password_file"]) as f:
+                pw: Optional[str] = f.read().strip()
+        elif options["password"] is not None:
+            logging.warning(
+                "Passing password on the command line is insecure; prefer --password-file."
+            )
+            pw = options["password"]
+        else:
+            # initial_password will return a random password that
+            # is a salted hash of the email address in a
+            # development environment, and None in a production
+            # environment.
+            user_initial_password = initial_password(email)
+            if user_initial_password is None:
+                logging.info("User will be created with a disabled password.")
             else:
-                # initial_password will return a random password that
-                # is a salted hash of the email address in a
-                # development environment, and None in a production
-                # environment.
-                user_initial_password = initial_password(email)
-                if user_initial_password is None:
-                    logging.info("User will be created with a disabled password.")
-                else:
-                    assert settings.DEVELOPMENT
-                    logging.info(
-                        "Password will be available via `./manage.py print_initial_password`."
-                    )
-                pw = user_initial_password
+                assert settings.DEVELOPMENT
+                logging.info("Password will be available via `./manage.py print_initial_password`.")
+            pw = user_initial_password
 
+        try:
             do_create_user(
                 email,
                 pw,
