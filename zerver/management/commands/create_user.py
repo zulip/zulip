@@ -15,43 +15,13 @@ from zerver.lib.management import ZulipBaseCommand
 class Command(ZulipBaseCommand):
     help = """Create the specified user with a default initial password.
 
-Set tos_version=None, so that the user needs to do a ToS flow on login.
+Sets tos_version=None, so that the user needs to do a ToS flow on login.
 
 Omit both <email> and <full name> for interactive user creation.
 """
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            "--this-user-has-accepted-the-tos",
-            dest="tos",
-            action="store_true",
-            help="Acknowledgement that the user has already accepted the ToS.",
-        )
-        parser.add_argument(
-            "--password",
-            help="password of new user. For development only."
-            "Note that we recommend against setting "
-            "passwords this way, since they can be snooped by any user account "
-            "on the server via `ps -ef` or by any superuser with"
-            "read access to the user's bash history.",
-        )
-        parser.add_argument(
-            "--password-file", help="The file containing the password of the new user."
-        )
-        parser.add_argument(
-            "email",
-            metavar="<email>",
-            nargs="?",
-            default=argparse.SUPPRESS,
-            help="email address of new user",
-        )
-        parser.add_argument(
-            "full_name",
-            metavar="<full name>",
-            nargs="?",
-            default=argparse.SUPPRESS,
-            help="full name of new user",
-        )
+        self.add_create_user_args(parser)
         self.add_realm_args(
             parser, required=True, help="The name of the existing realm to which to add the user."
         )

@@ -1,5 +1,5 @@
 # Library code for use in management commands
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import SUPPRESS, ArgumentParser, RawTextHelpFormatter
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
@@ -46,6 +46,39 @@ class ZulipBaseCommand(BaseCommand):
 You can use the command list_realms to find ID of the realms in this server."""
 
         parser.add_argument("-r", "--realm", dest="realm_id", required=required, help=help)
+
+    def add_create_user_args(self, parser: ArgumentParser) -> None:
+        parser.add_argument(
+            "email",
+            metavar="<email>",
+            nargs="?",
+            default=SUPPRESS,
+            help="email address of new user",
+        )
+        parser.add_argument(
+            "full_name",
+            metavar="<full name>",
+            nargs="?",
+            default=SUPPRESS,
+            help="full name of new user",
+        )
+        parser.add_argument(
+            "--password",
+            help="password of new user. For development only."
+            "Note that we recommend against setting "
+            "passwords this way, since they can be snooped by any user account "
+            "on the server via `ps -ef` or by any superuser with"
+            "read access to the user's bash history.",
+        )
+        parser.add_argument(
+            "--password-file", help="The file containing the password of the new user."
+        )
+        parser.add_argument(
+            "--this-user-has-accepted-the-tos",
+            dest="tos",
+            action="store_true",
+            help="Acknowledgement that the user has already accepted the ToS.",
+        )
 
     def add_user_list_args(
         self,
