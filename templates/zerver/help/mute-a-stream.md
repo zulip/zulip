@@ -18,7 +18,7 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {!stream-actions.md!}
 
-3. Select **Mute the stream (stream name)**.
+3. Select **Mute stream**.
 
 {end_tabs}
 
@@ -29,7 +29,7 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {!stream-actions.md!}
 
-3. Select the **Unmute the stream (stream name)**.
+3. Select **Unmute stream**.
 
 {end_tabs}
 
