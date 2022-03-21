@@ -1345,6 +1345,106 @@ class EditMessageTest(EditMessageTestCase):
         self.assertFalse(topic_is_muted(hamlet, stream.id, change_one_topic_name))
         self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
 
+        # Move topic between two public streams.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_public_stream = self.make_stream("New public stream")
+        self.subscribe(desdemona, new_public_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 31)
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "New topic"))
+
+        # Move topic to a private stream.
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_private_stream = self.make_stream("New private stream", invite_only=True)
+        self.subscribe(desdemona, new_private_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_private_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 31)
+
+        # Cordelia is not subscribed to the private stream, so
+        # Cordelia should have had the topic unmuted, while Desdemona
+        # should have had her muted topic record moved.
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_private_stream.id, "New topic"))
+
+        # Move topic between two public streams with change in topic name.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic 2", content="Hello World"
+        )
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic 2"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                topic_name="changed topic name",
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 31)
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic 2"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+
     @mock.patch("zerver.lib.actions.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
@@ -2090,7 +2190,7 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(queries, 52)
+        self.assert_length(queries, 53)
         self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
