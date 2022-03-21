@@ -641,7 +641,18 @@ def create_user_backend(
     if not check_password_strength(password):
         raise JsonableError(PASSWORD_TOO_WEAK_ERROR)
 
-    target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
+    target_user = do_create_user(
+        email,
+        password,
+        realm,
+        full_name,
+        # Explicitly set tos_version=None. For servers that have
+        # configured Terms of Service, this means that users created
+        # via this mechanism will be prompted to accept the Terms of
+        # Service on first login.
+        tos_version=None,
+        acting_user=user_profile,
+    )
     return json_success(request, data={"user_id": target_user.id})
 
 
