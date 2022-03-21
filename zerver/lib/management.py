@@ -53,26 +53,26 @@ You can use the command list_realms to find ID of the realms in this server."""
             metavar="<email>",
             nargs="?",
             default=SUPPRESS,
-            help="email address of new user",
+            help="Email address for the new user",
         )
         parser.add_argument(
             "full_name",
             metavar="<full name>",
             nargs="?",
             default=SUPPRESS,
-            help="full name of new user",
+            help="Full name for the new user",
         )
         parser.add_argument(
             "--password",
-            help="password of new user. For development only."
-            "Note that we recommend against setting "
-            "passwords this way, since they can be snooped by any user account "
-            "on the server via `ps -ef` or by any superuser with"
-            "read access to the user's bash history.",
+            help="""\
+Password for the new user. Recommended only in a development environment.
+
+Sending passwords via command-line arguments is insecure,
+since it can be snooped by any process running on the
+server via `ps -ef` or reading bash history. Prefer
+--password-file.""",
         )
-        parser.add_argument(
-            "--password-file", help="The file containing the password of the new user."
-        )
+        parser.add_argument("--password-file", help="File containing a password for the new user.")
         parser.add_argument(
             "--this-user-has-accepted-the-tos",
             dest="tos",
