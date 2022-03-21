@@ -1,6 +1,6 @@
 # Library code for use in management commands
 import logging
-from argparse import SUPPRESS, ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser, RawTextHelpFormatter
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
@@ -63,14 +63,12 @@ You can use the command list_realms to find ID of the realms in this server."""
             "email",
             metavar="<email>",
             nargs="?",
-            default=SUPPRESS,
             help="Email address for the new user",
         )
         parser.add_argument(
             "full_name",
             metavar="<full name>",
             nargs="?",
-            default=SUPPRESS,
             help="Full name for the new user",
         )
         parser.add_argument(
@@ -183,7 +181,7 @@ server via `ps -ef` or reading bash history. Prefer
         """
         Parses parameters for user creation defined in add_create_user_args.
         """
-        if "email" not in options:
+        if options["email"] is None:
             email = input("Email: ")
         else:
             email = options["email"]
@@ -193,7 +191,7 @@ server via `ps -ef` or reading bash history. Prefer
         except ValidationError:
             raise CommandError("Invalid email address.")
 
-        if "full_name" not in options:
+        if options["full_name"] is None:
             full_name = input("Full name: ")
         else:
             full_name = options["full_name"]
