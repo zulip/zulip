@@ -7147,7 +7147,7 @@ def do_update_message(
     # moved_all_visible_messages below for related details.
     #
     # So for now, we require new_stream=None for this feature.
-    if topic_name is not None and propagate_mode != "change_one" and new_stream is None:
+    if propagate_mode != "change_one" and (topic_name is not None or new_stream is not None):
         assert stream_being_edited is not None
         for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
             # TODO: Ideally, this would be a bulk update operation,
@@ -7159,12 +7159,24 @@ def do_update_message(
             # writing, no individual topic in Zulip Cloud had been
             # muted by more than 100 users.
 
-            # We call remove_topic_mute rather than do_unmute_topic to
-            # avoid sending two events with new muted topics in
-            # immediate succession; this is correct only because
-            # muted_topics events always send the full set of topics.
-            remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
-            do_mute_topic(muting_user, stream_being_edited, topic_name)
+            if new_stream is not None and muting_user.id in delete_event_notify_user_ids:
+                # If the messages are being moved to a stream the user
+                # cannot access, then we treat this as the
+                # messages/topic being deleted for this user. Unmute
+                # the topic for such users.
+                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
+            else:
+                # Otherwise, we move the muted topic record for the user.
+                # We call remove_topic_mute rather than do_unmute_topic to
+                # avoid sending two events with new muted topics in
+                # immediate succession; this is correct only because
+                # muted_topics events always send the full set of topics.
+                remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
+                do_mute_topic(
+                    muting_user,
+                    new_stream if new_stream is not None else stream_being_edited,
+                    topic_name if topic_name is not None else orig_topic_name,
+                )
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
