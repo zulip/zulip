@@ -253,7 +253,7 @@ function format_topic(topic_data) {
     }
     const topic = last_msg.topic;
     const time = new Date(last_msg.timestamp * 1000);
-    const last_msg_time = timerender.format_time_modern(time);
+    const last_msg_time = timerender.last_seen_status_from_date(time);
     const full_datetime = timerender.get_full_datetime(time);
 
     // We hide the row according to filters or if it's muted.
