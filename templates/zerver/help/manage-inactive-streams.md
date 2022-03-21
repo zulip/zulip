@@ -15,7 +15,7 @@ is your first time using Zulip.
 
 {settings_tab|display-settings}
 
-2. Under **Display settings**, configure **Demote inactive streams**.
+2. Under **Advanced**, configure **Demote inactive streams**.
 
 {end_tabs}
 
