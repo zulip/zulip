@@ -9,11 +9,15 @@ from zerver.lib.management import ZulipBaseCommand
 
 
 class Command(ZulipBaseCommand):
-    help = """Create the specified user with a default initial password.
+    help = """Create a new Zulip user via the command line.
 
-Sets tos_version=None, so that the user needs to do a ToS flow on login.
+Prompts the user for <email> and <full name> if not specified.
 
-Omit both <email> and <full name> for interactive user creation.
+We recommend the Zulip API (https://zulip.com/api/create-user) instead
+of this tool for most use cases.
+
+If the server has Terms of Service configured, the user will be
+prompted to accept the Terms of Service the first time they login.
 """
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
