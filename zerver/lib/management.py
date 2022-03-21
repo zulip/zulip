@@ -1,11 +1,15 @@
 # Library code for use in management commands
+import logging
 from argparse import SUPPRESS, ArgumentParser, RawTextHelpFormatter
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
-from django.core.exceptions import MultipleObjectsReturned
+from django.core import validators
+from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
+from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile, get_client
 
 
@@ -28,6 +32,13 @@ def check_config() -> None:
             pass
 
         raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
+
+
+@dataclass
+class CreateUserParameters:
+    email: str
+    full_name: str
+    password: Optional[str]
 
 
 class ZulipBaseCommand(BaseCommand):
@@ -167,3 +178,49 @@ server via `ps -ef` or reading bash history. Prefer
     def get_client(self) -> Client:
         """Returns a Zulip Client object to be used for things done in management commands"""
         return get_client("ZulipServer")
+
+    def get_create_user_params(self, options: Dict[str, Any]) -> CreateUserParameters:  # nocoverage
+        """
+        Parses parameters for user creation defined in add_create_user_args.
+        """
+        if "email" not in options:
+            email = input("Email: ")
+        else:
+            email = options["email"]
+
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            raise CommandError("Invalid email address.")
+
+        if "full_name" not in options:
+            full_name = input("Full name: ")
+        else:
+            full_name = options["full_name"]
+
+        if options["password_file"] is not None:
+            with open(options["password_file"]) as f:
+                password: Optional[str] = f.read().strip()
+        elif options["password"] is not None:
+            logging.warning(
+                "Passing password on the command line is insecure; prefer --password-file."
+            )
+            password = options["password"]
+        else:
+            # initial_password will return a random password that
+            # is a salted hash of the email address in a
+            # development environment, and None in a production
+            # environment.
+            user_initial_password = initial_password(email)
+            if user_initial_password is None:
+                logging.info("User will be created with a disabled password.")
+            else:
+                assert settings.DEVELOPMENT
+                logging.info("Password will be available via `./manage.py print_initial_password`.")
+            password = user_initial_password
+
+        return CreateUserParameters(
+            email=email,
+            full_name=full_name,
+            password=password,
+        )
