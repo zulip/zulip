@@ -753,6 +753,17 @@ def do_create_user(
             default_stream_groups=default_stream_groups,
             realm_creation=realm_creation,
         )
+
+    if realm_creation:
+        assert realm.signup_notifications_stream is not None
+        bulk_add_subscriptions(
+            realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
+        )
+
+        from zerver.lib.onboarding import send_initial_realm_messages
+
+        send_initial_realm_messages(realm)
+
     return user_profile
 
 

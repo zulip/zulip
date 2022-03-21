@@ -35,7 +35,6 @@ from zerver.forms import (
     RegistrationForm,
 )
 from zerver.lib.actions import (
-    bulk_add_subscriptions,
     do_activate_mirror_dummy_user,
     do_change_full_name,
     do_change_password,
@@ -46,7 +45,6 @@ from zerver.lib.actions import (
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimited
-from zerver.lib.onboarding import send_initial_realm_messages
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
@@ -456,12 +454,6 @@ def accounts_register(
             )
 
         if realm_creation:
-            assert realm.signup_notifications_stream is not None
-            bulk_add_subscriptions(
-                realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
-            )
-            send_initial_realm_messages(realm)
-
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.
