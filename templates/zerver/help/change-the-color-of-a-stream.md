@@ -27,9 +27,9 @@ stream. Changing a stream's color does not change it for anyone else.
 
 1. Select a stream.
 
-1. Select the **Personal** tab on the right.
+{!select-stream-view-personal.md!}
 
-1. Click on the colored square below **Stream color**.
+1. Under **Personal settings**, click on the colored square below **Stream color**.
 
 1. Select a color from the grid, use the color picker, or enter a hex code.
 
