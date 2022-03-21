@@ -73,12 +73,6 @@ server via `ps -ef` or reading bash history. Prefer
 --password-file.""",
         )
         parser.add_argument("--password-file", help="File containing a password for the new user.")
-        parser.add_argument(
-            "--this-user-has-accepted-the-tos",
-            dest="tos",
-            action="store_true",
-            help="Acknowledgement that the user has already accepted the ToS.",
-        )
 
     def add_user_list_args(
         self,

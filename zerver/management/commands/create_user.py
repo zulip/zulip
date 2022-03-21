@@ -27,11 +27,6 @@ Omit both <email> and <full name> for interactive user creation.
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if not options["tos"]:
-            raise CommandError(
-                """You must confirm that this user has accepted the
-Terms of Service by passing --this-user-has-accepted-the-tos."""
-            )
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
