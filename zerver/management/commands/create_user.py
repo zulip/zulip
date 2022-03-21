@@ -74,6 +74,11 @@ parameters, or specify no parameters for interactive user creation."""
                 pw,
                 realm,
                 full_name,
+                # Explicitly set tos_version=None. For servers that
+                # have configured Terms of Service, this means that
+                # users created via this mechanism will be prompted to
+                # accept the Terms of Service on first login.
+                tos_version=None,
                 acting_user=None,
             )
         except IntegrityError:
