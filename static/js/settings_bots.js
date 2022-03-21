@@ -493,7 +493,7 @@ export function set_up() {
                         const service_interface = $("#edit_service_interface :selected").val();
                         formData.append("service_payload_url", JSON.stringify(service_payload_url));
                         formData.append("service_interface", service_interface);
-                    } else if (type === EMBEDDED_BOT_TYPE) {
+                    } else if (type === EMBEDDED_BOT_TYPE && service !== undefined) {
                         const config_data = {};
                         $("#config_edit_inputbox input").each(function () {
                             config_data[$(this).attr("name")] = $(this).val();
