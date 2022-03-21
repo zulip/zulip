@@ -4,7 +4,7 @@ Pinning a stream moves it to the top of the left sidebar. We recommend
 pinning important streams if you have more streams than fit in the left
 sidebar.
 
-### Pin a stream
+## Pin a stream
 
 {start_tabs}
 
@@ -22,6 +22,8 @@ sidebar.
 
 1. Select a stream.
 
-1. Click **Pin stream to top of left sidebar**.
+{!select-stream-view-personal.md!}
+
+1. Under **Personal settings**, toggle **Pin stream to top of left sidebar**.
 
 {end_tabs}
