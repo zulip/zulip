@@ -1,7 +1,9 @@
 import argparse
+import logging
 import sys
-from typing import Any
+from typing import Any, Optional
 
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
@@ -56,14 +58,27 @@ parameters, or specify no parameters for interactive user creation."""
         try:
             if options["password_file"] is not None:
                 with open(options["password_file"]) as f:
-                    pw = f.read().strip()
+                    pw: Optional[str] = f.read().strip()
             elif options["password"] is not None:
+                logging.warning(
+                    "Passing password on the command line is insecure; prefer --password-file."
+                )
                 pw = options["password"]
             else:
+                # initial_password will return a random password that
+                # is a salted hash of the email address in a
+                # development environment, and None in a production
+                # environment.
                 user_initial_password = initial_password(email)
                 if user_initial_password is None:
-                    raise CommandError("Password is unusable.")
+                    logging.info("User will be created with a disabled password.")
+                else:
+                    assert settings.DEVELOPMENT
+                    logging.info(
+                        "Password will be available via `./manage.py print_initial_password`."
+                    )
                 pw = user_initial_password
+
             do_create_user(
                 email,
                 pw,
