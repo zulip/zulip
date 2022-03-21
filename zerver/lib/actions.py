@@ -5593,6 +5593,27 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
 
 
+def setup_realm_internal_bots(realm: Realm) -> None:
+    """Create this realm's internal bots.
+
+    This function is idempotent; it does nothing for a bot that
+    already exists.
+    """
+    internal_bots = [
+        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
+        for bot in settings.REALM_INTERNAL_BOTS
+    ]
+    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
+    bots = UserProfile.objects.filter(
+        realm=realm,
+        email__in=[bot_info[1] for bot_info in internal_bots],
+        bot_owner__isnull=True,
+    )
+    for bot in bots:
+        bot.bot_owner = bot
+        bot.save()
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -5701,6 +5722,8 @@ def do_create_realm(
         # If the signups stream hasn't been created in the admin
         # realm, don't auto-create it to send to it; just do nothing.
         pass
+
+    setup_realm_internal_bots(realm)
     return realm
 
 
