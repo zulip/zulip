@@ -1,6 +1,5 @@
 import argparse
 import logging
-import sys
 from typing import Any, Optional
 
 from django.conf import settings
@@ -32,32 +31,20 @@ Omit both <email> and <full name> for interactive user creation.
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
-        try:
-            email = options["email"]
-            full_name = options["full_name"]
-        except KeyError:
-            if "email" in options or "full_name" in options:
-                raise CommandError(
-                    """Either specify an email and full name as two
-parameters, or specify no parameters for interactive user creation."""
-                )
-
         if "email" not in options:
-            while True:
-                email = input("Email: ")
-                try:
-                    validators.validate_email(email)
-                    break
-                except ValidationError:
-                    print("Invalid email address.", file=sys.stderr)
-
-        if "full_name" not in options:
-            full_name = input("Full name: ")
+            email = input("Email: ")
+        else:
+            email = options["email"]
 
         try:
             validators.validate_email(email)
         except ValidationError:
             raise CommandError("Invalid email address.")
+
+        if "full_name" not in options:
+            full_name = input("Full name: ")
+        else:
+            full_name = options["full_name"]
 
         try:
             if options["password_file"] is not None:
