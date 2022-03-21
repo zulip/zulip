@@ -48,12 +48,12 @@ Omit both <email> and <full name> for interactive user creation.
 
         if options["password_file"] is not None:
             with open(options["password_file"]) as f:
-                pw: Optional[str] = f.read().strip()
+                password: Optional[str] = f.read().strip()
         elif options["password"] is not None:
             logging.warning(
                 "Passing password on the command line is insecure; prefer --password-file."
             )
-            pw = options["password"]
+            password = options["password"]
         else:
             # initial_password will return a random password that
             # is a salted hash of the email address in a
@@ -65,12 +65,12 @@ Omit both <email> and <full name> for interactive user creation.
             else:
                 assert settings.DEVELOPMENT
                 logging.info("Password will be available via `./manage.py print_initial_password`.")
-            pw = user_initial_password
+            password = user_initial_password
 
         try:
             do_create_user(
                 email,
-                pw,
+                password,
                 realm,
                 full_name,
                 # Explicitly set tos_version=None. For servers that
