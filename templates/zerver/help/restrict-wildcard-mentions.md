@@ -21,7 +21,7 @@ receiving email and mobile push notifications.
 {settings_tab|organization-permissions}
 
 2. Under **Stream permissions**, configure
-   **Who can use wildcard mentions in large streams**.
+   **Who can use @all/@everyone mentions in large streams**.
 
 {!save-changes.md!}
 

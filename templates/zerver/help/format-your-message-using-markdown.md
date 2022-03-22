@@ -287,7 +287,7 @@ A summary of the formatting syntax is available in-app.
 
 {!start-composing.md!}
 
-1. Click help at the bottom of the compose box.
+1. Click <i class="fa fa-question"></i> at the bottom of the compose box.
 
 {end_tabs}
 

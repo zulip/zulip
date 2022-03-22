@@ -163,7 +163,7 @@ these anti-abuse features.
 
 As a reminder, Zulip Cloud organizations are expected to
 [moderate content](/help/moderating-open-organizations) to ensure compliance
-with Zulip's Rules of Use.
+with [Zulip's Rules of Use](https://zulip.com/policies/rules).
 
 ## Caveats
 
