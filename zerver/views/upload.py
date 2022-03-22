@@ -21,15 +21,19 @@ from zerver.lib.upload import (
 from zerver.models import UserProfile, validate_attachment_request
 
 
-def serve_s3(request: HttpRequest, url_path: str, url_only: bool) -> HttpResponse:
-    url = get_signed_upload_url(url_path)
+def serve_s3(
+    request: HttpRequest, url_path: str, url_only: bool, download: bool = False
+) -> HttpResponse:
+    url = get_signed_upload_url(url_path, download=download)
     if url_only:
         return json_success(request, data=dict(url=url))
 
     return redirect(url)
 
 
-def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpResponse:
+def serve_local(
+    request: HttpRequest, path_id: str, url_only: bool, download: bool = False
+) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound("<p>File not found</p>")
@@ -56,13 +60,19 @@ def serve_local(request: HttpRequest, path_id: str, url_only: bool) -> HttpRespo
     # and filename, see the below docs:
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
     mimetype, encoding = guess_type(local_path)
-    attachment = mimetype not in INLINE_MIME_TYPES
+    attachment = download or mimetype not in INLINE_MIME_TYPES
 
     response = sendfile(
         request, local_path, attachment=attachment, mimetype=mimetype, encoding=encoding
     )
     patch_cache_control(response, private=True, immutable=True)
     return response
+
+
+def serve_file_download_backend(
+    request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
+) -> HttpRequest:
+    return serve_file(request, user_profile, realm_id_str, filename, url_only=False, download=True)
 
 
 def serve_file_backend(
@@ -88,6 +98,7 @@ def serve_file(
     realm_id_str: str,
     filename: str,
     url_only: bool = False,
+    download: bool = False,
 ) -> HttpResponse:
     path_id = f"{realm_id_str}/{filename}"
     is_authorized = validate_attachment_request(user_profile, path_id)
@@ -97,9 +108,9 @@ def serve_file(
     if not is_authorized:
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
     if settings.LOCAL_UPLOADS_DIR is not None:
-        return serve_local(request, path_id, url_only)
+        return serve_local(request, path_id, url_only, download=download)
 
-    return serve_s3(request, path_id, url_only)
+    return serve_s3(request, path_id, url_only, download=download)
 
 
 def serve_local_file_unauthed(request: HttpRequest, token: str, filename: str) -> HttpResponse:
