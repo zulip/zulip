@@ -435,9 +435,10 @@ input.recipient_box {
 }
 
 #stream_message_recipient_topic.recipient_box {
-    width: calc(20% + 14px);
-    min-width: 120px;
-    max-width: 165px;
+    /* This width roughly corresponds to how long of a topic can appear in
+       the left sidebar with a single digit unread count without being
+       cut off. */
+    width: 175px;
 }
 
 #private_message_recipient.recipient_box {
@@ -721,7 +722,9 @@ a.compose_control_button.hide {
 
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
-        width: calc(100% - 192px);
+        /* The max-width here is designed to allow this to share space with
+           the Stream input in small windows, without leaving empty space. */
+        max-width: calc(100% - 90px);
         min-width: 110px;
     }
 
