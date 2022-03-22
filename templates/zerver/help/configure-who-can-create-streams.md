@@ -2,11 +2,19 @@
 
 {!admin-only.md!}
 
-Zulip allows you to separately control
-[permissions](/help/roles-and-permissions) for creating public and private
-streams. For corporations and other entities with controlled access, we highly
-recommend keeping stream creation open. Open organizations may choose to be less
-permissive, especially with public streams.
+Zulip allows you to separately control [permissions](/help/roles-and-permissions)
+for creating [web-public](/help/web-public-streams), public and private
+streams.
+
+For corporations and other organizations with controlled access, we
+recommend keeping stream creation open to make it easy for users to
+self-organize.
+
+Only users in trusted roles (moderators and administrators) can be
+given permission to create web-public streams. This is intended
+[to help manage abuse](/help/web-public-streams#managing-abuse) by
+making it hard for an attacker to host malicious content in an
+unadvertised web-public stream in a legitimate organization.
 
 ### Manage who can create streams
 
@@ -16,7 +24,7 @@ permissive, especially with public streams.
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, configure **Who can create public streams**.
+1. Under **Stream permissions**, configure **Who can create public streams**.
 
 {!save-changes.md!}
 
@@ -24,7 +32,15 @@ permissive, especially with public streams.
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, configure **Who can create private streams**.
+1. Under **Stream permissions**, configure **Who can create private streams**.
+
+{!save-changes.md!}
+
+{tab|web-public-streams}
+
+{settings_tab|organization-permissions}
+
+1. Under **Stream permissions**, configure **Who can create web-public streams**.
 
 {!save-changes.md!}
 

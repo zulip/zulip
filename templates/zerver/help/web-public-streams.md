@@ -149,9 +149,9 @@ In order to protect Zulip organizations from
 bad actors, web-public streams have a few limitations designed to make
 Zulip an inconvenient target:
 
-* Only users in trusted roles like Moderators can be given permission
-  to create web-public streams. This is intended to make it hard for
-  an attacker to host malicious content in an unadvertised web-public
+* Only users in trusted roles (moderators and administrators) can be given
+  permission to create web-public streams. This is intended to make it hard
+  for an attacker to host malicious content in an unadvertised web-public
   stream in a legitimate organization.
 * There are rate limits for unauthenticated access to uploaded
   files, including viewing avatars and custom emoji.
