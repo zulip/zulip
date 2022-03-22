@@ -66,8 +66,8 @@ templating systems.
 
 - `node_modules/` Third-party JavaScript installed via `yarn`.
 
-- `static/assets/` For assets not to be served to the web (e.g. the system to
-  generate our favicons).
+- `static/shared/icons/` Icons placed in this directory are compiled
+  into an icon font.
 
 ---
 

@@ -91,7 +91,7 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/assets/icons/ellipsis-v-solid.svg
+Files: static/shared/icons/ellipsis-v-solid.svg
 Copyright: 2017 Fonticons, Inc.
 License: CC-BY-4.0
 Comment: This icon is picked from Version 5.13.0 of Font Awesome
