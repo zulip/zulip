@@ -167,6 +167,7 @@ from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
+    serve_file_download_backend,
     serve_file_url_backend,
     serve_local_file_unauthed,
     upload_file_backend,
@@ -668,6 +669,10 @@ urls += [
         "user_uploads/temporary/<token>/<filename>",
         serve_local_file_unauthed,
         name="local_file_unauthed",
+    ),
+    rest_path(
+        "user_uploads/download/<realm_id_str>/<path:filename>",
+        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",

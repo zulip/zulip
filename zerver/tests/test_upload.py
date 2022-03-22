@@ -210,6 +210,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # requests; they will be first authenticated and redirected
         self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        result = self.client_get(download_uri)
+        self.assert_streaming_content(result, b"zulip!")
+        self.assertIn("attachment;", result.headers["Content-Disposition"])
+
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
         self.assertEqual(entry.is_claimed(), False)
@@ -815,7 +821,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_serve_local(self) -> None:
         def check_xsend_links(
-            name: str, name_str_for_test: str, content_disposition: str = ""
+            name: str,
+            name_str_for_test: str,
+            content_disposition: str = "",
+            download: bool = False,
         ) -> None:
             with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
                 _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
@@ -826,6 +835,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 uri = result.json()["uri"]
                 fp_path_id = re.sub("/user_uploads/", "", uri)
                 fp_path = os.path.split(fp_path_id)[0]
+                if download:
+                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
                 response = self.client_get(uri)
                 _get_sendfile.cache_clear()
                 assert settings.LOCAL_UPLOADS_DIR is not None
@@ -852,6 +863,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
         check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
         check_xsend_links("zulip.jpeg", "zulip.jpeg")
+        check_xsend_links(
+            "zulip.jpeg", "zulip.jpeg", download=True, content_disposition='filename="zulip.jpeg"'
+        )
         check_xsend_links("áéБД.pdf", "%C3%A1%C3%A9%D0%91%D0%94.pdf")
         check_xsend_links("zulip", "zulip", 'filename="zulip"')
 
@@ -1929,6 +1943,15 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, uri[: len(base)])
 
         response = self.client_get(uri)
+        redirect_url = response["Location"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith("/")
+        key = path[1:]
+        self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
+
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        response = self.client_get(download_uri)
         redirect_url = response["Location"]
         path = urllib.parse.urlparse(redirect_url).path
         assert path.startswith("/")
