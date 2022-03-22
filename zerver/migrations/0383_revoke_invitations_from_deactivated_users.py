@@ -52,7 +52,12 @@ def revoke_invitations(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> 
             is_active=False, realm_id=realm_id
         ).values_list("id", flat=True)
         confirmation_ids = get_valid_invite_confirmations_generated_by_users(deactivated_user_ids)
-        print(f"Revoking Confirmations for realm {realm_id}: {confirmation_ids}")
+
+        if len(confirmation_ids) > 0:
+            print(
+                f"Revoking invitations by deactivated users in realm {realm_id}: {confirmation_ids}"
+            )
+
         Confirmation.objects.filter(id__in=confirmation_ids).update(expiry_date=timezone_now())
 
 
