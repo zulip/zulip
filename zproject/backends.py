@@ -48,6 +48,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
 from onelogin.saml2.response import OneLogin_Saml2_Response
@@ -2466,16 +2467,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         """
         idp = self.get_idp(idp_name)
         auth = self._create_saml_auth(idp)
-        # This setting controls whether LogoutRequests delivered to us
-        # need to be signed. The default of False is not acceptable,
-        # because we don't want anyone to be able to submit a request
-        # to get other users logged out.
-        auth.get_settings().get_security_data()["wantMessagesSigned"] = True
-        # Defensive code to confirm the setting change above is successful,
-        # to catch API changes in python3-saml that would make the change not
-        # be applied to the actual settings of `auth` - e.g. due to us only
-        # receiving a copy of the dict.
-        assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
+
+        # We only want to accept signed LogoutResponses - or potentially anyone
+        # would be able to create a LogoutResponse to get an arbitrary user logged out.
+        patch_saml_auth_require_messages_signed(auth)
 
         # This validates the LogoutRequest and prepares the response
         # (the URL to which to redirect the client to convey the response to the IdP)
@@ -2665,6 +2660,22 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         auto_signup = settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name].get("auto_signup", False)
         assert isinstance(auto_signup, bool)
         return auto_signup
+
+
+def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
+    """
+    wantMessagesSigned controls whether requests processed by this saml auth
+    object need to be signed. The default of False is often not acceptable,
+    because we don't want anyone to be able to submit such a request.
+    Callers should use this to enforce the requirement of signatures.
+    """
+
+    auth.get_settings().get_security_data()["wantMessagesSigned"] = True
+    # Defensive code to confirm the setting change above is successful,
+    # to catch API changes in python3-saml that would make the change not
+    # be applied to the actual settings of `auth` - e.g. due to us only
+    # receiving a copy of the dict.
+    assert auth.get_settings().get_security_data()["wantMessagesSigned"] is True
 
 
 @external_auth_method
