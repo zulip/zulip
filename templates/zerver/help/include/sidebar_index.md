@@ -104,6 +104,8 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another stream](/help/move-content-to-another-stream)
+* [Delete a topic](/help/delete-a-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 
 ## Notifications
@@ -168,8 +170,6 @@
 * [Change a stream's description](/help/change-the-stream-description)
 * [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Delete or archive a stream](/help/archive-a-stream)
-* [Move content to another stream](/help/move-content-to-another-stream)
-* [Delete a topic](/help/delete-a-topic)
 
 ## Organization settings
 * [Custom emoji](/help/custom-emoji)
