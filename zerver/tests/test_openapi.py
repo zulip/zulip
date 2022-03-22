@@ -1,6 +1,7 @@
 import inspect
 import os
 from collections import abc
+from datetime import datetime
 from typing import (
     Any,
     Callable,
@@ -61,6 +62,8 @@ def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
         return schema_type(schema["oneOf"][0])
     elif schema["type"] == "array":
         return (list, schema_type(schema["items"]))
+    elif schema["type"] == "string" and schema.get("format", "") == "date-time":
+        return datetime
     else:
         return VARMAP[schema["type"]]
 
