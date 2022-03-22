@@ -29,7 +29,7 @@ class zulip::profile::base {
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
         # Accurate time is essential
-        'ntp',
+        'chrony',
         # Used for tools like sponge
         'moreutils',
         # Nagios monitoring plugins
@@ -49,7 +49,7 @@ class zulip::profile::base {
         'curl',
         'jq',
         'crudini',
-        'ntp',
+        'chrony',
         'moreutils',
         'nmap-ncat',
         'nagios-plugins',  # there is no dummy package on CentOS 7
@@ -60,6 +60,7 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
+  package { 'ntp': ensure => 'purged', before => Package['chrony'] }
   package { $base_packages: ensure => 'installed' }
 
   group { 'zulip':
