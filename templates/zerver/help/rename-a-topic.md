@@ -19,6 +19,20 @@ for the details on when topic editing is allowed.
 
 ## Rename a topic
 
+### Via the message recipient bar
+
+{start_tabs}
+
+1. Click on the <i class="fa fa-pencil"></i> icon to edit the topic.
+
+1. Edit the topic.
+
+1. Click the **✔** to save your changes.
+
+{end_tabs}
+
+### Via a message (alternate method)
+
 {start_tabs}
 
 {!message-actions-menu.md!}
@@ -29,8 +43,7 @@ for the details on when topic editing is allowed.
 
 1. Edit the topic.
 
-1. Pick **Change previous and following messages to this topic** from the
-   dropdown to the right.
+1. From the dropdown menu, select **Change previous and following messages to this topic**.
 
 1. Click **Save**.
 

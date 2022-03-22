@@ -10,6 +10,13 @@ message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.
 
+When moving content to another stream, you can toggle whether you want automated
+notification messages to be sent to the old  and/or new location of the content.
+These notifications let other users know how many messages were moved or whether
+the whole topic was moved, as well as who moved the messages. Additionally, they
+provide a link to the new and/or old location of the content, helping users follow
+these changes in ongoing topic conversations.
+
 ## Move a topic to another stream
 
 Organizations can configure which roles have permission to [move
@@ -26,12 +33,11 @@ destination streams.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 
-1. (Optional) Change the topic.
+1. (optional) Change the topic.
 
-1. Select whether you want automated notification messages to be sent
-   to the old location for the topic, new location for the topic, or both.
+1. Toggle whether you want automated notification messages to be sent.
 
-1. Click **Move topic**.
+1. Click **Confirm**.
 
 
 !!! warn ""
@@ -47,8 +53,11 @@ destination streams.
 Organizations can configure which roles have permission to [move
 topics between streams][move-permission-setting].
 
-Roles that have permission can also move only a subset of messages
-from a topic to another stream.
+Roles that have permission can also move a subset of messages
+from a topic to another stream. The options for selecting which
+messages to move are:
+
+{!move-content-subset-options.md!}
 
 {start_tabs}
 
@@ -60,15 +69,11 @@ from a topic to another stream.
 
 1. Select the destination stream for the message from the streams dropdown list.
 
-1. (Optional) Change the topic.
+1. (optional) Change the topic.
 
-1. A dropdown with three options will appear to the right:
-**Change only this message topic**, **Change later messages to this topic**, and
-**Change previous and following messages to this topic**. Pick the appropriate
-option.
+1. Toggle whether you want automated notification messages to be sent.
 
-1. Select whether you want automated notification messages to be sent
-   to the old location for the topic, new location for the topic, or both.
+1. From the dropdown menu, select which messages to move.
 
 1. Click **Save**.
 

@@ -10,7 +10,27 @@ message editing entirely. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.
 
-### Move a message to another topic
+## Change topic via the message recipient bar
+
+This will move all messages in a topic.
+
+{start_tabs}
+
+1. Click on the <i class="fa fa-pencil"></i> icon to edit the topic.
+
+1. Set the new topic.
+
+1. Click the **✔** to save your changes.
+
+{end_tabs}
+
+## Move a message to another topic
+
+When changing the topic of a single message, users can also choose to whether
+to move a subset, or all, of the messages in the topic. The options for
+selecting which messages to move are:
+
+{!move-content-subset-options.md!}
 
 {start_tabs}
 
@@ -20,14 +40,11 @@ for the details on when topic editing is allowed.
    or simply **Edit**. If it's called **View source**, then you are not
    allowed to edit the topic of that message.
 
-2. Set the destination topic.
+1. Set the destination topic.
 
-3. A dropdown with three options will appear to the right:
-**Change only this message topic**, **Change later messages to this topic**, and
-**Change previous and following messages to this topic**. Pick the appropriate
-option.
+1. From the dropdown menu, select which messages to move.
 
-4. Click **Save**.
+1. Click **Save**.
 
 {end_tabs}
 
