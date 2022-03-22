@@ -1,22 +1,22 @@
 # Move content to another topic
 
-By default, any user can change the topic of any message. This is useful for
-keeping messages organized even if some users are still learning how to use
-topics effectively.
+Zulip makes it possible to move messages between topics. This is
+useful for keeping messages organized when there is a digression, or
+the discussion shifts from the original topic. You can also [rename a
+topic](/help/rename-a-topic).
 
-Zulip's [permanent links to messages in
+When messages are moved, Zulip's [permanent links to messages in
 context](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
 will automatically redirect to the new location of the message. [Muted
-topics](/help/mute-a-topic) are automatically migrated when all messages
-after a certain point are moved or an entire topic is renamed.
+topics](/help/mute-a-topic) are automatically migrated when all messages after a
+certain point are moved, or an entire topic is moved.
 
-Organization administrators can
-[configure who can edit topics](/help/configure-who-can-edit-topics), or turn off
-message editing entirely. See the
+Organizations can [configure](/help/configure-who-can-edit-topics) which
+[roles](/help/roles-and-permissions) have permission to modify topics. See the
 [guide to message and topic editing](/help/configure-message-editing-and-deletion)
 for the details on when topic editing is allowed.
 
-### Move a message to another topic
+## Move messages to another topic
 
 {start_tabs}
 
@@ -26,14 +26,13 @@ for the details on when topic editing is allowed.
    or simply **Edit**. If it's called **View source**, then you are not
    allowed to edit the topic of that message.
 
-2. Set the destination topic.
+1. Set the destination topic.
 
-3. A dropdown with three options will appear to the right:
-**Change only this message topic**, **Change later messages to this topic**, and
-**Change previous and following messages to this topic**. Pick the appropriate
-option.
+1. From the dropdown menu, select which messages to move:
 
-4. Click **Save**.
+{!move-content-subset-options.md!}
+
+1. Click **Save**.
 
 {end_tabs}
 
@@ -41,3 +40,4 @@ option.
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another stream](/help/move-content-to-another-stream)
+* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
