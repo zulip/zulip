@@ -6,7 +6,7 @@ import pwd
 import signal
 import subprocess
 import sys
-from typing import Any, List, Sequence
+from typing import List, Sequence
 from urllib.parse import urlunparse
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -238,7 +238,7 @@ class BaseHandler(web.RequestHandler):
     def delete(self) -> None:
         pass
 
-    def handle_response(self, response: Any) -> None:
+    def handle_response(self, response: httpclient.HTTPResponse) -> None:
         if response.error and not isinstance(response.error, httpclient.HTTPError):
             self.set_status(500)
             self.write("Internal server error:\n" + str(response.error))
@@ -255,6 +255,8 @@ class BaseHandler(web.RequestHandler):
         self.finish()
 
     async def prepare(self) -> None:
+        assert self.request.method is not None
+        assert self.request.remote_ip is not None
         if "X-REAL-IP" not in self.request.headers:
             self.request.headers["X-REAL-IP"] = self.request.remote_ip
         if "X-FORWARDED_PORT" not in self.request.headers:
@@ -305,15 +307,17 @@ class TornadoHandler(BaseHandler):
 
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
-        handlers = [
-            (r"/json/events.*", TornadoHandler),
-            (r"/api/v1/events.*", TornadoHandler),
-            (r"/webpack.*", WebPackHandler),
-            (r"/.*", DjangoHandler),
-        ]
-        super().__init__(handlers, enable_logging=enable_logging)
+        super().__init__(
+            [
+                (r"/json/events.*", TornadoHandler),
+                (r"/api/v1/events.*", TornadoHandler),
+                (r"/webpack.*", WebPackHandler),
+                (r"/.*", DjangoHandler),
+            ],
+            enable_logging=enable_logging,
+        )
 
-    def log_request(self, handler: BaseHandler) -> None:
+    def log_request(self, handler: web.RequestHandler) -> None:
         if self.settings["enable_logging"]:
             super().log_request(handler)
 
