@@ -435,7 +435,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-function handle_deactivation($tbody, $status_field) {
+function handle_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
@@ -446,19 +446,20 @@ function handle_deactivation($tbody, $status_field) {
         const user_id = $row.data("user-id");
 
         function handle_confirm() {
-            const $row = get_user_info_row(user_id);
-            const $row_deactivate_button = $row.find("button.deactivate");
-            $row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-            const opts = {
-                error_continuation() {
-                    $row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
-                },
-            };
             const url = "/json/users/" + encodeURIComponent(user_id);
-            settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
+            channel.del({
+                url,
+                success() {
+                    dialog_widget.close_modal();
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
         }
 
-        confirm_deactivation(user_id, handle_confirm, false);
+        confirm_deactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -716,7 +717,7 @@ section.active.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
     const $status_field = $("#user-field-status").expectOne();
 
-    handle_deactivation($tbody, $status_field);
+    handle_deactivation($tbody);
     handle_reactivation($tbody, $status_field);
     handle_human_form($tbody, $status_field);
 };
@@ -725,7 +726,7 @@ section.deactivated.handle_events = () => {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
     const $status_field = $("#deactivated-user-field-status").expectOne();
 
-    handle_deactivation($tbody, $status_field);
+    handle_deactivation($tbody);
     handle_reactivation($tbody, $status_field);
     handle_human_form($tbody, $status_field);
 };
