@@ -2365,9 +2365,21 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # here on an invalid regex would spam the logs with every
             # message sent; simply move on.
             continue
-        for m in pattern.finditer(topic_name):
+        pos = 0
+        while pos < len(topic_name):
+            m = pattern.search(topic_name, pos)
+            if m is None:
+                break
+
             match_details = m.groupdict()
             match_text = match_details[OUTER_CAPTURE_GROUP]
+
+            # Adjust the start point of the match for the next
+            # iteration -- we rewind the non-word character at the
+            # end, if there was one, so a potential next match can
+            # also use it.
+            pos = m.end() - len(match_details[AFTER_CAPTURE_GROUP])
+
             # We format the linkifier's url string using the matched text.
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
