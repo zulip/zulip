@@ -6,9 +6,11 @@ customize whether [stream messages](/help/stream-notifications),
 [mentions](/help/pm-mention-alert-notifications#wildcard-mentions)
 trigger desktop notifications.
 
-## Change notification sound
+## Notification sound
 
 You can change the sound Zulip uses for audible desktop notifications.
+
+Alternatively, you can select **None** to completely disable audible desktop notifications in Zulip.
 
 ### Change notification sound
 
@@ -21,7 +23,26 @@ You can change the sound Zulip uses for audible desktop notifications.
 
 {end_tabs}
 
-You can select "None" to completely disable audible desktop notifications in Zulip.
+## Unread count badge
+
+By default, Zulip displays the unread message count in the
+browser tab and in the desktop sidebar.
+
+You can configure if all unread messages are counted, or if
+only unread private messages and mentions are counted.
+Alternatively, you can select **None** to completely disable
+the unread count badge.
+
+### Configure unread count badge
+
+{start_tabs}
+
+{settings_tab|notifications}
+
+1. Under **Desktop message notifications**, configure
+   **Unread count badge**.
+
+{end_tabs}
 
 ## Troubleshooting desktop notifications
 
