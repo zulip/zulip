@@ -1,3 +1,17 @@
+# This file teaches `git log` and friends the canonical names
+# and email addresses to use for our contributors.
+#
+# For details on the format, see:
+#   https://git.github.io/htmldocs/gitmailmap.html
+#
+# Handy commands for examining or adding to this file:
+#
+#     # shows all names/emails after mapping, sorted:
+#   $ git shortlog -es | sort -k2
+#
+#     # shows raw names/emails, filtered by mapped name:
+#   $ git log --format='%an %ae' --author=$NAME | uniq -c
+
 Alex Vandiver <alexmv@zulip.com> <alex@chmrr.net>
 Alex Vandiver <alexmv@zulip.com> <github@chmrr.net>
 Allen Rabinovich <allenrabinovich@yahoo.com> <allenr@humbughq.com>
