@@ -4,6 +4,12 @@ By default, any user can change the topic of any message. This is useful for
 keeping messages organized even if some users are still learning how to use
 topics effectively.
 
+Zulip's [permanent links to messages in
+context](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
+will automatically redirect to the new location of the message. [Muted
+topics](/help/mute-a-topic) are automatically migrated when all messages
+after a certain point are moved or an entire topic is renamed.
+
 Organization administrators can
 [configure who can edit topics](/help/configure-who-can-edit-topics), or turn off
 message editing entirely. See the

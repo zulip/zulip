@@ -79,6 +79,18 @@ option.
 
 {end_tabs}
 
+## Moving content to private streams
+
+Access to messages moved to another stream will immediately be controlled by the
+access policies for the destination stream. Content moved to a private stream will
+thus appear to be deleted to users who are not subscribers of the destination stream.
+
+Content moved to a [private stream with protected history](/help/stream-permissions)
+will only be accessible to users who both:
+
+* Were subscribed to the *original* stream when the content was *sent*.
+* Are subscribed to the *destination* stream when the content is *moved*.
+
 ## Related articles
 
 * [Rename a topic](/help/rename-a-topic)
