@@ -137,6 +137,7 @@ S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
+S3_SKIP_PROXY = True
 LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
