@@ -91,8 +91,7 @@ class OpenGraphTest(ZulipTestCase):
             "/help/disable-message-edit-history",
             "Disable message edit history (Zulip Help Center)",
             [
-                "By default, Zulip displays messages",
-                "users can view the edit history of a message. | To remove the",
+                "In Zulip, users can view the edit history of a message. | To remove the",
                 "best to delete the message entirely. ",
             ],
             [
