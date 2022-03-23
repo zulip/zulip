@@ -1401,7 +1401,7 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 31)
+            self.assert_length(queries, 33)
 
         # Cordelia is not subscribed to the private stream, so
         # Cordelia should have had the topic unmuted, while Desdemona

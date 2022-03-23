@@ -221,6 +221,7 @@ from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions, is_widget_message
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     Client,
     CustomProfileField,
@@ -5195,6 +5196,17 @@ def do_change_stream_permission(
 
         event_time = timezone_now()
         if old_invite_only_value != stream.invite_only:
+            # Reset the Attachment.is_realm_public cache for all
+            # messages in the stream whose permissions were changed.
+            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_realm_public=None
+            )
+            # We need to do the same for ArchivedAttachment to avoid
+            # bugs if deleted attachments are later restored.
+            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_realm_public=None
+            )
+
             RealmAuditLog.objects.create(
                 realm=stream.realm,
                 acting_user=acting_user,
@@ -5227,6 +5239,17 @@ def do_change_stream_permission(
             )
 
         if old_is_web_public_value != stream.is_web_public:
+            # Reset the Attachment.is_realm_public cache for all
+            # messages in the stream whose permissions were changed.
+            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_web_public=None
+            )
+            # We need to do the same for ArchivedAttachment to avoid
+            # bugs if deleted attachments are later restored.
+            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_web_public=None
+            )
+
             RealmAuditLog.objects.create(
                 realm=stream.realm,
                 acting_user=acting_user,
@@ -7045,6 +7068,24 @@ def do_update_message(
             }
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
+
+            # Reset the Attachment.is_*_public caches for all messages
+            # moved to another stream with different access permissions.
+            if new_stream.invite_only != stream_being_edited.invite_only:
+                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_realm_public=None,
+                )
+                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_realm_public=None,
+                )
+
+            if new_stream.is_web_public != stream_being_edited.is_web_public:
+                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_web_public=None,
+                )
+                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_web_public=None,
+                )
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
