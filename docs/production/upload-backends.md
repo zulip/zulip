@@ -28,6 +28,8 @@ backend. To enable this backend, you need to do the following:
 
 1. Set `s3_key` and `s3_secret_key` in /etc/zulip/zulip-secrets.conf
    to be the S3 access and secret keys for the IAM account.
+   Alternately, if your Zulip server runs on an EC2 instance, set the
+   IAM role for the EC2 instance to the role.
 
 1. Set the `S3_AUTH_UPLOADS_BUCKET` and `S3_AVATAR_BUCKET` settings in
    `/etc/zulip/settings.py` to be the names of the S3 buckets you

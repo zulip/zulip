@@ -721,6 +721,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_AVATAR_BUCKET = ""
 # S3_REGION = None
 # S3_ENDPOINT_URL = None
+# S3_SKIP_PROXY = True
 
 ## Maximum allowed size of uploaded files, in megabytes.  This value is
 ## capped at 80MB in the nginx configuration, because the file upload

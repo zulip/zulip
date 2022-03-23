@@ -274,6 +274,19 @@ class, and configure the `[http_proxy]` block as above.
 [smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
+### S3 file storage requests and outgoing proxies
+
+By default, the [S3 file storage backend][s3] bypasses the Smokescreen
+proxy, because when running on EC2 it may require metadata from the
+IMDS metadata endpoint, which resides on the internal IP address
+169.254.169.254 and would thus be blocked by Smokescreen.
+
+If your S3-compatible storage backend requires use of Smokescreen or
+some other proxy, you can override this default by setting
+`S3_SKIP_PROXY = False` in `/etc/zulip/settings.py`.
+
+[s3]: upload-backends.md#s3-backend-configuration
+
 ## Putting the Zulip application behind a reverse proxy
 
 Zulip is designed to support being run behind a reverse proxy server.

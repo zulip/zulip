@@ -85,6 +85,14 @@ INLINE_MIME_TYPES = [
 # through a sanitization function.
 
 
+# https://github.com/boto/botocore/issues/2644 means that the IMDS
+# request _always_ pulls from the environment.  Monkey-patch the
+# `should_bypass_proxies` function if we need to skip them, based
+# on S3_SKIP_PROXY.
+if settings.S3_SKIP_PROXY is True:  # nocoverage
+    botocore.utils.should_bypass_proxies = lambda url: True
+
+
 class RealmUploadQuotaError(JsonableError):
     code = ErrorCode.REALM_UPLOAD_QUOTA
 
