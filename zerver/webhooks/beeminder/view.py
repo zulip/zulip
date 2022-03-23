@@ -6,7 +6,14 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
+from zerver.lib.validator import (
+    WildValue,
+    check_float,
+    check_int,
+    check_string,
+    check_union,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -33,7 +40,7 @@ def api_beeminder_webhook(
 
     goal_name = payload["goal"]["slug"].tame(check_string)
     limsum = payload["goal"]["limsum"].tame(check_string)
-    pledge = payload["goal"]["pledge"].tame(check_int)
+    pledge = payload["goal"]["pledge"].tame(check_union([check_int, check_float]))
     time_remain = get_time(payload)  # time in hours
     # To show user's probable reaction by looking at pledge amount
     if pledge > 0:
