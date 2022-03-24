@@ -13756,6 +13756,40 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+    get:
+      operationId: get-user-group-members
+      summary: Get user group members
+      tags: ["users"]
+      description: |
+        Get the members of a [user group](/help/user-groups).
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - $ref: "#/components/parameters/DirectMemberOnly"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      members:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the user IDs of members of the user group.
+                    example:
+                      {"msg": "", "result": "success", "members": [10, 12]}
   /user_groups/{user_group_id}:
     patch:
       operationId: update-user-group

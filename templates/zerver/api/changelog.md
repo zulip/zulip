@@ -34,6 +34,8 @@ format used by the Zulip server that they are interacting with.
 * [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
   Added new endpoint for checking whether a given user is member of a
   given user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Added new endpoint to get members of a user group.
 
 **Feature level 126**
 
