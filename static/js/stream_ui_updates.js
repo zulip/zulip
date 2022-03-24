@@ -59,16 +59,36 @@ export function update_toggler_for_sub(sub) {
     if (sub.subscribed) {
         stream_edit.toggler.enable_tab("personal_settings");
         stream_edit.toggler.goto(stream_edit.select_tab);
+        update_toggler_for_sub_private_settings(sub);
     } else {
         if (stream_edit.select_tab === "personal_settings") {
             // Go to the general settings tab, if the user is not
             // subscribed. Also preserve the previous selected tab,
             // to render next time a stream row is selected.
             stream_edit.toggler.goto("general_settings");
+            update_toggler_for_sub_private_settings(sub);
         } else {
             stream_edit.toggler.goto(stream_edit.select_tab);
+            update_toggler_for_sub_private_settings(sub);
         }
         stream_edit.toggler.disable_tab("personal_settings");
+        update_toggler_for_sub_private_settings(sub);
+    }
+}
+
+export function update_toggler_for_sub_private_settings(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+    if (sub.invite_only) {
+        if (sub.subscribed) {
+            stream_edit.toggler.enable_tab("subscriber_settings");
+        }
+        if (!sub.subscribed) {
+            stream_edit.toggler.disable_tab("subscriber_settings");
+        }
+    } else {
+        return;
     }
 }
 
