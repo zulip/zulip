@@ -178,25 +178,6 @@ export function insert_local_message(message_request, local_id_float) {
     // NOTE: This will parse synchronously. We're not using the async pipeline
     markdown.apply_markdown(message);
 
-    // TODO: markdown.apply_markdown has a messy interface around
-    // message flags. It mutates the message to set all the message
-    // booleans to false via message_store.init_booleans, and then
-    // proceeds to mutate primarily the mentioned flag during
-    // rendering in a messy way.
-    //
-    // We should clean that up to instead just mutate the flags list
-    // on the message, to match how the Zulip API returns this
-    // information via flags. For now, we translate back to the flags
-    // namespace here, and then message_store.set_message_booleans
-    // will get us to the correct final flags.
-    //
-    // Locally delivered messages cannot be unread (since we sent
-    // them), nor can they alert the user.
-    message.flags = ["read"];
-    if (message.mentioned) {
-        message.flags.push("mentioned");
-    }
-
     message.content_type = "text/html";
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
