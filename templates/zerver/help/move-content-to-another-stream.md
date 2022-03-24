@@ -6,8 +6,8 @@ Organizations can [configure][move-permission-setting] which
 streams.
 
 To help others find moved content, you can have Zulip send automated
-notification messages to the source topic, the destination topic, or both. These
-notifications include:
+notification messages to the source topic, the destination topic, or
+both. These notifications include:
 
 * A link to the source or destination topic.
 * How many messages were moved, or whether the whole topic was moved.
@@ -81,6 +81,24 @@ will only be accessible to users who both:
 
 * Were subscribed to the *original* stream when the content was *sent*.
 * Are subscribed to the *destination* stream when the content is *moved*.
+
+## Moving content out of private streams
+
+In [private streams with protected history](/help/stream-permissions),
+Zulip determines whether to treat the entire topic as moved using the
+access permissions of the user requesting the topic move. This means
+that the automated notifications will report that the entire topic was
+moved if the requesting user moved every message in the topic that
+they can access, regardless of whether older messages exist that
+they cannot access.
+
+Similarly, [muted topics](/help/mute-a-topic) will be migrated to the
+new stream and topic if the requesting user moved every message in the
+topic that they can access.
+
+This model ensures that the topic editing feature cannot be abused to
+determine any information about the existence of messages or topics
+that one does not have permission to access.
 
 ## Related articles
 
