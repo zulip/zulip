@@ -65,16 +65,22 @@ def add_topic_mute(
     recipient_id: int,
     topic_name: str,
     date_muted: Optional[datetime.datetime] = None,
+    ignore_duplicate: bool = False,
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    UserTopic.objects.create(
-        user_profile=user_profile,
-        stream_id=stream_id,
-        recipient_id=recipient_id,
-        topic_name=topic_name,
-        last_updated=date_muted,
-        visibility_policy=UserTopic.MUTED,
+    UserTopic.objects.bulk_create(
+        [
+            UserTopic(
+                user_profile=user_profile,
+                stream_id=stream_id,
+                recipient_id=recipient_id,
+                topic_name=topic_name,
+                last_updated=date_muted,
+                visibility_policy=UserTopic.MUTED,
+            ),
+        ],
+        ignore_conflicts=ignore_duplicate,
     )
 
 

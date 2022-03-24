@@ -8031,10 +8031,18 @@ def do_mute_topic(
     stream: Stream,
     topic: str,
     date_muted: Optional[datetime.datetime] = None,
+    ignore_duplicate: bool = False,
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    add_topic_mute(user_profile, stream.id, stream.recipient_id, topic, date_muted)
+    add_topic_mute(
+        user_profile,
+        stream.id,
+        stream.recipient_id,
+        topic,
+        date_muted,
+        ignore_duplicate=ignore_duplicate,
+    )
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
