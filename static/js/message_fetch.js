@@ -8,7 +8,6 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
@@ -50,10 +49,7 @@ function process_result(data, opts) {
         narrow_banner.show_empty_narrow_message();
     }
 
-    messages = messages.map((message) => {
-        message_store.set_message_booleans(message);
-        return message_helper.process_new_message(message);
-    });
+    messages = messages.map((message) => message_helper.process_new_message(message));
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
