@@ -56,6 +56,8 @@ Standard hosting.
 
 {end_tabs}
 
+{!update-stream-auto-notification.md!}
+
 ## Important details
 
 * Retention policies are processed in a daily job; so changes in the

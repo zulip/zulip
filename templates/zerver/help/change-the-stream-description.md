@@ -25,4 +25,6 @@ previews are disabled.
 
 {end_tabs}
 
+{!update-stream-auto-notification.md!}
+
 [markdown-formatting]: /help/format-your-message-using-markdown
