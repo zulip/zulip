@@ -700,6 +700,14 @@ ul {
             left: 40px;
         }
     }
+
+    #messages_to_move {
+        margin: 5px 0;
+    }
+
+    #moved_from_help {
+        font-size: 0.8rem;
+    }
 }
 
 #language_selection_modal {

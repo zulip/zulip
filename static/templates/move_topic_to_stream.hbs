@@ -1,4 +1,4 @@
-<p>{{#tr}}Move all messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
+<p>{{#tr}}Move messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
 <form class="new-style" id="move_topic_form">
     <div class="topic_stream_edit_header">
         <div class="stream_header_colorblock"></div>
@@ -11,6 +11,19 @@
         <input name="new_topic_name" type="text" class="inline_topic_edit" autocomplete="off" value="{{topic_name}}" />
         <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
         <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
+    </div>
+    <div class="input-group">
+        <label for="messages_to_move">Move messages since</label>
+        <select name="messages_to_move" id="messages_to_move">
+            <option value="all">Start of topic (all)</option>
+            <option value="today">Midnight</option>
+            <option value="1">24 hours ago</option>
+            <option value="3">3 days ago</option>
+            <option value="10">10 days ago</option>
+        </select>
+        <p id="moved_from_help"></p>
+    </div>
+    <div>
         <div class="topic_move_breadcrumb_messages">
             <label class="checkbox">
                 <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
