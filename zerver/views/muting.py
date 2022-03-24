@@ -106,7 +106,11 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
     if get_mute_object(user_profile, muted_user) is not None:
         raise JsonableError(_("User already muted"))
 
-    do_mute_user(user_profile, muted_user, date_muted)
+    try:
+        do_mute_user(user_profile, muted_user, date_muted)
+    except IntegrityError:
+        raise JsonableError(_("User already muted"))
+
     return json_success(request)
 
 
