@@ -1,7 +1,6 @@
 # Invite new users
 
-There are a number of ways to grant access to your Zulip organization;
-the article below describes each in more detail.
+There are a number of ways to grant access to your Zulip organization:
 
 * Allow **anyone to join** without an invitation.
 
@@ -11,65 +10,72 @@ the article below describes each in more detail.
 
 * Share a **reusable invitation link**.
 
-The last two, invite-based, techniques also allow you to control the
-[role (owner, admin, moderator, member, or guest)](/help/roles-and-permissions) that the
-invited people will have.
-
 You can also manage access by
 [controlling how users authenticate](/help/configure-authentication-methods)
 to Zulip.  For example, you could allow anyone to join without an
 invitation, but require them to authenticate via LDAP.
 
+When you invite users, you can:
+
+* Set the [role](/help/roles-and-permissions) that they will have when
+  they join.
+
+* Configure the streams they will automatically be added to.
+
 ## Enable email signup
 
 {start_tabs}
 
-{tab|restrict-by-email-domain}
-
 1. Set [default streams](/help/set-default-streams-for-new-users) for new users.
 
 {settings_tab|organization-permissions}
 
-1. Find the section **Joining the organization**.
+1. Under **Joining the organization**, toggle
+   **Invitations are required for joining this organization**.
 
-1. Toggle **Invitations are required for joining this organization**.
+1. From the **Restrict email domains of new users?** dropdown menu,
+   select between:
+
+     - **No restrictions**, which will
+
+     - **Don't allow disposable emails**, which will
+
+     - **Restrict to a list of domains**, which will
+
+
+{!save-changes.md!}
+
+{end_tabs}
+
+!!! warn ""
+
+    **Note**: Before anyone joins your organization this way, a validation
+    link will be sent to verify their email address.
+
+## Restrict email domains
+
+{start_tabs}
+
+{settings_tab|organization-permissions}
+
+1. Under **Joining the organization**, toggle
+   **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to
    **Restrict to a list of domains**.
 
-1. Enter any number of domains. For each domain, check or uncheck
-   **Allow subdomains**.
+1. Click **Configure** to add any number of domains.
+   For each domain, you can toggle **Allow subdomains**.
+   When you are done adding domains, click **Close**.
 
-1. Click **Save changes**.
-
-{tab|allow-anyone-to-join}
-
-1. Set [default streams](/help/set-default-streams-for-new-users) for new users.
-
-{settings_tab|organization-permissions}
-
-1. Find the section **Joining the organization**.
-
-1. Toggle **Invitations are required for joining this organization**.
-
-1. Set **Restrict email domains of new users?** to either
-   **Don't allow disposable email addresses** (recommended)
-   or **No restrictions**.
-
-1. Click **Save changes**.
+{!save-changes.md!}
 
 {end_tabs}
 
-Before anyone joins your organization this way, we'll send a validation link
-to verify their email address.
-
 ## Send invitations
 
-By default, organization admins and members can send
-invitations. Organization admins can also change who can send invitations.
-
-Note that on most Zulip servers (including Zulip Cloud), email invitations
-and reusable invitation links expire 10 days after they are sent.
+You will only see an **Invite users** option if you have permission to
+invite users to the organization.
 
 {start_tabs}
 
@@ -79,22 +85,21 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Enter a list of email addresses.
 
-1. Decide whether the users should join as [owners, admins, moderators,
-   members, or guests](/help/roles-and-permissions).
+1. Select when the invitation will expire.
 
-1. Select which streams they should join. If you send invitations often, you
-   may want to configure a set of
+1. Select what [role](/help/roles-and-permissions) the users will join as.
+
+1. Configure which streams they will be added to. If you send invitations
+   often, you may want to configure a set of
    [default streams](/help/set-default-streams-for-new-users).
 
 1. Click **Invite**.
 
 !!! warn ""
 
-    * You will only see **Invite users** in the gear menu if you have
-    permission to invite users.
-    * The number of email invites you can send in a day is limited in
-    the free plan. [Contact us](/help/contact-support) if you hit the
-    limit and want to invite more users.
+    **Note**: The number of email invites you can send in a day is
+    limited in the free plan. [Contact us](/help/contact-support)
+    if you hit the limit and want to invite more users.
 
 {tab|share-an-invite-link}
 
@@ -102,11 +107,12 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Click **Generate invite link**.
 
-1. Decide whether users using the link should join as [owners, admins, moderators
-   members, or guests](/help/roles-and-permissions).
+1. Select when the invitation will expire.
 
-1. Select which streams they should join. If you send invitations often, you
-   may want to configure a set of
+1. Select what [role](/help/roles-and-permissions) the users will join as.
+
+1. Configure which streams they will be added to. If you send invitations
+   often, you may want to configure a set of
    [default streams](/help/set-default-streams-for-new-users).
 
 1. Click **Generate invite link**.
@@ -115,10 +121,8 @@ and reusable invitation links expire 10 days after they are sent.
 
 !!! warn ""
 
-    * You will only see **Invite users** in the gear menu if you have
-    permission to invite users.
-    * Only organization administrators can create these reusable invitation links.
-
+    **Note**: Only organization administrators can create these reusable
+    invitation links.
 
 {end_tabs}
 
@@ -126,9 +130,8 @@ and reusable invitation links expire 10 days after they are sent.
 
 {!owner-only.md!}
 
-By default, all members can invite new users to join your Zulip organization.
-However, you can restrict the ability to do so to specific
-[roles](/help/roles-and-permissions).
+You can restrict the ability to invite new users to join your
+Zulip organization to specific [roles](/help/roles-and-permissions).
 
 {start_tabs}
 
@@ -137,22 +140,22 @@ However, you can restrict the ability to do so to specific
 1. Under **Joining the organization**, configure
    **Who can invite users to this organization**.
 
-1. Click **Save changes**.
+{!save-changes.md!}
 
 {end_tabs}
 
 ## Manage pending invitations
 
 Organization owners can revoke or resend any invitation or reusable
-invitation link. Organization administrators can do the same
-except for invitations for the organization owners role.
+invitation link. Organization administrators can do the same except
+for invitations for the organization owners role.
 
 {start_tabs}
 
 {settings_tab|invites-list-admin}
 
-1. From here, you can view pending invitations, **Revoke** email invitations
-   and invitation links, or **Resend** email invitations.
+1. From there, you can view pending invitations, **Revoke** email
+   invitations and invitation links, or **Resend** email invitations.
 
 {end_tabs}
 
