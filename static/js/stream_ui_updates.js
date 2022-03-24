@@ -70,6 +70,23 @@ export function update_toggler_for_sub(sub) {
         }
         stream_edit.toggler.disable_tab("personal_settings");
     }
+    update_toggler_for_sub_private_settings(sub);
+}
+
+export function update_toggler_for_sub_private_settings(sub) {
+    if (!hash_util.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+    if (sub.invite_only) {
+        if (sub.subscribed) {
+            stream_edit.toggler.enable_tab("subscriber_settings");
+        }
+        if (!sub.subscribed) {
+            stream_edit.toggler.disable_tab("subscriber_settings");
+        }
+    } else {
+        return;
+    }
 }
 
 export function update_settings_button_for_sub(sub) {
