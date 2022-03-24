@@ -64,11 +64,13 @@ function maybe_add_narrowed_messages(messages, msg_list, callback) {
             }
 
             // This second call to process_new_message in the
-            // insert_new_messages code path helps in very rare race
+            // insert_new_messages code path is designed to replace
+            // our slightly stale message object with the latest copy
+            // from the message_store. This helps in very rare race
             // conditions, where e.g. the current user's name was
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
-            // message.  Arguably, it's counterproductive complexity.
+            // message.
             new_messages = new_messages.map((message) =>
                 message_helper.process_new_message(message),
             );

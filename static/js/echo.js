@@ -193,7 +193,6 @@ export function insert_local_message(message_request, local_id_float) {
 
     message.display_recipient = build_display_recipient(message);
 
-    message_store.set_message_booleans(message);
     insert_message(message);
     return message;
 }

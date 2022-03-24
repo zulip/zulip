@@ -20,7 +20,6 @@ message_lists.current = {};
 const people = zrequire("people");
 const message_events = zrequire("message_events");
 const message_helper = zrequire("message_helper");
-const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
@@ -70,7 +69,6 @@ run_test("update_messages", () => {
     };
 
     message_helper.process_new_message(original_message);
-    message_store.set_message_booleans(original_message);
 
     assert.equal(original_message.mentioned, true);
     assert.equal(original_message.unread, true);
