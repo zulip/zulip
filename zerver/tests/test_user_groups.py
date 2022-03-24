@@ -941,3 +941,41 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
         )
         self.assertFalse(result_dict["is_user_group_member"])
+
+    def test_get_user_group_members(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        shiva = self.example_user("shiva")
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("iago")
+
+        # Test invalid user group id
+        result = self.client_get("/json/user_groups/25/members")
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
+        )
+        self.assertCountEqual(result_dict["members"], [shiva.id])
+
+        # User not part of a group can also get its members.
+        self.login("hamlet")
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
+        )
+        self.assertCountEqual(result_dict["members"], [shiva.id])

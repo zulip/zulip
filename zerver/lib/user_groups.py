@@ -168,6 +168,17 @@ def is_user_in_group(
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
 
+def get_user_group_member_ids(
+    user_group: UserGroup, *, direct_member_only: bool = False
+) -> List[int]:
+    if direct_member_only:
+        member_ids = get_user_group_direct_members(user_group)
+    else:
+        member_ids = get_recursive_group_members(user_group).values_list("id", flat=True)
+
+    return list(member_ids)
+
+
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,
