@@ -317,16 +317,7 @@ export function initialize_kitchen_sink_stuff() {
         $row.removeClass("sender_name_hovered");
     });
 
-    $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        $(this).addClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseleave", ".youtube-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseenter", ".embed-video a", function () {
-        const $elem = $(this);
+    function handle_video_preview_mouseenter($elem) {
         // Set image height and css vars for play button position, if not done already
         const setPosition = !$elem.data("entered-before");
         if (setPosition) {
@@ -341,6 +332,18 @@ export function initialize_kitchen_sink_stuff() {
             $elem.data("entered-before", true);
         }
         $elem.addClass("fa fa-play");
+    }
+
+    $("#main_div").on("mouseenter", ".youtube-video a", function () {
+        $(this).addClass("fa fa-play");
+    });
+
+    $("#main_div").on("mouseleave", ".youtube-video a", function () {
+        $(this).removeClass("fa fa-play");
+    });
+
+    $("#main_div").on("mouseenter", ".embed-video a", function () {
+        handle_video_preview_mouseenter($(this));
     });
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
