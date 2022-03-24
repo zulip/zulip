@@ -23,3 +23,5 @@ certain users can send messages.
 {!save-changes.md!}
 
 {end_tabs}
+
+{!update-stream-auto-notification.md!}

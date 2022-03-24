@@ -30,6 +30,8 @@ public.
 
 {end_tabs}
 
+{!update-stream-auto-notification.md!}
+
 !!! warn ""
 
     **Warning**: Be careful making a private stream public. All past messages will become
