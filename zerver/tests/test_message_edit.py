@@ -1342,8 +1342,8 @@ class EditMessageTest(EditMessageTestCase):
             send_notification_to_new_thread=False,
             content=None,
         )
-        self.assertFalse(topic_is_muted(hamlet, stream.id, change_one_topic_name))
-        self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_one_topic_name))
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
 
         # Move topic between two public streams.
         desdemona = self.example_user("desdemona")
@@ -1444,6 +1444,30 @@ class EditMessageTest(EditMessageTestCase):
         self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
         self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
         self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+
+        # Moving only half the messages doesn't move MutedTopic records.
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="changed topic name", content="Second message"
+        )
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=second_message_id,
+                stream_id=new_public_stream.id,
+                topic_name="final topic name",
+                propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 25)
+
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(desdemona, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(cordelia, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "final topic name"))
 
     @mock.patch("zerver.lib.actions.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:

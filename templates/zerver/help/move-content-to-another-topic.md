@@ -8,8 +8,8 @@ topic](/help/rename-a-topic).
 When messages are moved, Zulip's [permanent links to messages in
 context](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
 will automatically redirect to the new location of the message. [Muted
-topics](/help/mute-a-topic) are automatically migrated when all messages after a
-certain point are moved, or an entire topic is moved.
+topics](/help/mute-a-topic) are automatically migrated when an entire
+topic is moved.
 
 Organizations can [configure](/help/configure-who-can-edit-topics) which
 [roles](/help/roles-and-permissions) have permission to modify topics. See the

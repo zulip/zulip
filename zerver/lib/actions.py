@@ -7166,64 +7166,12 @@ def do_update_message(
 
             users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
 
-    # Migrate muted topic configuration in the following circumstances:
-    #
-    # * If propagate_mode is change_all, do so unconditionally.
-    #
-    # * If propagate_mode is change_later, it's likely that we want to
-    #   move these only when it appears that the intent is to move
-    #   most of the topic, not just the last 1-2 messages which may
-    #   have been "off topic". At present we do so unconditionally.
-    #
-    # * Never move muted topic configuration with change_one.
-    #
-    # We may want more complex behavior in cases where one appears to
-    # be merging topics (E.g. there are existing messages in the
-    # target topic).
-    #
-    # Moving a topic to another stream is complicated in that we want
-    # to avoid creating a UserTopic row for the user in a stream that
-    # they don't have access to; doing so could leak information about
-    # the existence of a private stream to some users. See the
-    # moved_all_visible_messages below for related details.
-    #
-    # So for now, we require new_stream=None for this feature.
-    if propagate_mode != "change_one" and (topic_name is not None or new_stream is not None):
+    # UserTopic updates and the content of notifications depend on
+    # whether we've moved the entire topic, or just part of it. We
+    # make that determination here.
+    moved_all_visible_messages = False
+    if topic_name is not None or new_stream is not None:
         assert stream_being_edited is not None
-        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
-            # TODO: Ideally, this would be a bulk update operation,
-            # because we are doing database operations in a loop here.
-            #
-            # This loop is only acceptable in production because it is
-            # rare for more than a few users to have muted an
-            # individual topic that is being moved; as of this
-            # writing, no individual topic in Zulip Cloud had been
-            # muted by more than 100 users.
-
-            if new_stream is not None and muting_user.id in delete_event_notify_user_ids:
-                # If the messages are being moved to a stream the user
-                # cannot access, then we treat this as the
-                # messages/topic being deleted for this user. Unmute
-                # the topic for such users.
-                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
-            else:
-                # Otherwise, we move the muted topic record for the user.
-                # We call remove_topic_mute rather than do_unmute_topic to
-                # avoid sending two events with new muted topics in
-                # immediate succession; this is correct only because
-                # muted_topics events always send the full set of topics.
-                remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
-                do_mute_topic(
-                    muting_user,
-                    new_stream if new_stream is not None else stream_being_edited,
-                    topic_name if topic_name is not None else orig_topic_name,
-                )
-
-    send_event(user_profile.realm, event, users_to_be_notified)
-
-    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
-        # Notify users that the topic was moved.
-        changed_messages_count = len(changed_messages)
 
         if propagate_mode == "change_all":
             moved_all_visible_messages = True
@@ -7252,6 +7200,59 @@ def do_update_message(
                 user_profile, unmoved_messages, stream=stream_being_edited
             )
             moved_all_visible_messages = len(visible_unmoved_messages) == 0
+
+    # Migrate muted topic configuration in the following circumstances:
+    #
+    # * If propagate_mode is change_all, do so unconditionally.
+    #
+    # * If propagate_mode is change_later or change_one, do so when
+    #   the acting user has moved the entire topic (as visible to them).
+    #
+    # This rule corresponds to checking moved_all_visible_messages.
+    #
+    # We may want more complex behavior in cases where one appears to
+    # be merging topics (E.g. there are existing messages in the
+    # target topic).
+    if moved_all_visible_messages:
+        assert stream_being_edited is not None
+        assert topic_name is not None or new_stream is not None
+
+        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
+            # TODO: Ideally, this would be a bulk update operation,
+            # because we are doing database operations in a loop here.
+            #
+            # This loop is only acceptable in production because it is
+            # rare for more than a few users to have muted an
+            # individual topic that is being moved; as of this
+            # writing, no individual topic in Zulip Cloud had been
+            # muted by more than 100 users.
+
+            if new_stream is not None and muting_user.id in delete_event_notify_user_ids:
+                # If the messages are being moved to a stream the user
+                # cannot access, then we treat this as the
+                # messages/topic being deleted for this user. This is
+                # important for security reasons; we don't want to
+                # give users a UserTopic row in a stream they cannot
+                # access.  Unmute the topic for such users.
+                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
+            else:
+                # Otherwise, we move the muted topic record for the user.
+                # We call remove_topic_mute rather than do_unmute_topic to
+                # avoid sending two events with new muted topics in
+                # immediate succession; this is correct only because
+                # muted_topics events always send the full set of topics.
+                remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
+                do_mute_topic(
+                    muting_user,
+                    new_stream if new_stream is not None else stream_being_edited,
+                    topic_name if topic_name is not None else orig_topic_name,
+                )
+
+    send_event(user_profile.realm, event, users_to_be_notified)
+
+    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
+        # Notify users that the topic was moved.
+        changed_messages_count = len(changed_messages)
 
         old_thread_notification_string = None
         if send_notification_to_old_thread:
