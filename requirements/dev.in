@@ -21,7 +21,7 @@ coverage<6.3  # https://github.com/nedbat/coveragepy/issues/1310
 fakeldap
 
 # For testing mock http requests
-responses<0.19.0  # https://github.com/getsentry/responses/issues/511
+responses
 
 # For sorting imports
 isort
@@ -68,7 +68,7 @@ cairosvg
 python-debian
 
 # Pattern-based lint tool
-semgrep
+semgrep<0.85.0  # https://github.com/returntocorp/semgrep/issues/4827
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
