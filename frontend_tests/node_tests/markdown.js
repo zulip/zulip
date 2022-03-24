@@ -268,18 +268,15 @@ test("marked_shared", () => {
 test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
-    assert.ok(!message.mentioned);
-    assert.ok(!message.mentioned_me_directly);
+    assert.ok(!message.flags.includes("mentioned"));
 
     message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
-    assert.ok(message.mentioned);
-    assert.ok(message.mentioned_me_directly);
+    assert.ok(message.flags.includes("mentioned"));
 
     message = {raw_content: "@**all**"};
     markdown.apply_markdown(message);
-    assert.ok(message.mentioned);
-    assert.ok(!message.mentioned_me_directly);
+    assert.ok(message.flags.includes("wildcard_mentioned"));
 });
 
 test("marked", () => {
@@ -680,77 +677,87 @@ test("message_flags", () => {
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, true);
-
+    assert.equal(message.flags.includes("mentioned"), true);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
     input = "test @**everyone**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**stream**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @all";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @everyone";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @any";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @alleycat.com";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, true);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), true);
 
     input = "test @*backend*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**invalid_user**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**all**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**all**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 });
 
 test("backend_only_linkifiers", () => {

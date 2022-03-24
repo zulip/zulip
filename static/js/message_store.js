@@ -79,20 +79,6 @@ export function set_message_booleans(message) {
     delete message.flags;
 }
 
-export function init_booleans(message) {
-    // This initializes booleans for the local-echo path where
-    // we don't have flags from the server yet.  (We want to
-    // explicitly set flags to false to be consistent with other
-    // codepaths.)
-    message.unread = false;
-    message.historical = false;
-    message.starred = false;
-    message.mentioned = false;
-    message.mentioned_me_directly = false;
-    message.collapsed = false;
-    message.alerted = false;
-}
-
 export function update_booleans(message, flags) {
     // When we get server flags for local echo or message edits,
     // we are vulnerable to race conditions, so only update flags

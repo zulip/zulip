@@ -8,7 +8,6 @@ import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
 import * as linkifiers from "./linkifiers";
-import * as message_store from "./message_store";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
@@ -96,7 +95,9 @@ export function contains_backend_only_syntax(content) {
 }
 
 export function apply_markdown(message) {
-    message_store.init_booleans(message);
+    let mentioned = false;
+    let mentioned_group = false;
+    let mentioned_wildcard = false;
 
     const options = {
         userMentionHandler(mention, silently) {
@@ -107,7 +108,8 @@ export function apply_markdown(message) {
                     classes = "user-mention silent";
                     display_text = mention;
                 } else {
-                    message.mentioned = true;
+                    // Wildcard mention
+                    mentioned_wildcard = true;
                     display_text = "@" + mention;
                     classes = "user-mention";
                 }
@@ -183,8 +185,8 @@ export function apply_markdown(message) {
                 classes = "user-mention silent";
             } else {
                 if (helpers.my_user_id() === user_id) {
-                    message.mentioned = true;
-                    message.mentioned_me_directly = true;
+                    // Personal mention of current user.
+                    mentioned = true;
                 }
                 classes = "user-mention";
                 display_text = "@" + display_text;
@@ -206,7 +208,8 @@ export function apply_markdown(message) {
                     display_text = "@" + group.name;
                     classes = "user-group-mention";
                     if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
-                        message.mentioned = true;
+                        // Mentioned the current user's group.
+                        mentioned_group = true;
                     }
                 }
 
@@ -233,13 +236,32 @@ export function apply_markdown(message) {
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the
             // only side effect is the lack red flash on immediately sending the message.
-            message.mentioned = false;
-            message.mentioned_me_directly = false;
+            //
+            // A better parser would be able to just ignore mentions
+            // inside; we just set all flags to False and let the
+            // server rendering correct the message flags, to avoid a
+            // flash of mention styling.
+            mentioned = false;
+            mentioned_group = false;
+            mentioned_wildcard = false;
             return quote;
         },
     };
+
     // Our Python-Markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + "\n\n", options).trim();
+
+    // Simulate message flags for our locally rendered
+    // message. Messages the user themselves sent via the browser are
+    // always marked as read.
+    message.flags = ["read"];
+    if (mentioned || mentioned_group) {
+        message.flags.push("mentioned");
+    }
+    if (mentioned_wildcard) {
+        message.flags.push("wildcard_mentioned");
+    }
+
     message.is_me_message = is_status_message(message.raw_content);
 }
 
