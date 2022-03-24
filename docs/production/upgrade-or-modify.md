@@ -757,8 +757,8 @@ Many Zulip servers (including chat.zulip.org and zulip.com) upgrade to
 so, it's important to understand how to happily run a server based on
 `main`.
 
-For background, it's backporting arbitrary patches from `main` to an
-older version requires some care. Common issues include:
+For background, backporting arbitrary patches from `main` to an older
+version requires some care. Common issues include:
 
 - Changes containing database migrations (new files under
   `*/migrations/`), which includes most new features. We
