@@ -335,7 +335,7 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        $(this).addClass("fa fa-play");
+        handle_video_preview_mouseenter($(this));
     });
 
     $("#main_div").on("mouseleave", ".youtube-video a", function () {
