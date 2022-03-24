@@ -1261,9 +1261,11 @@ class EditMessageTest(EditMessageTestCase):
         self.subscribe(aaron, stream_name)
         self.login_user(aaron)
 
+        already_muted_topic = "Already muted topic"
         muted_topics = [
             [stream_name, "Topic1"],
             [stream_name, "Topic2"],
+            [stream_name, already_muted_topic],
         ]
         set_topic_mutes(hamlet, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
@@ -1330,6 +1332,20 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assertFalse(topic_is_muted(hamlet, stream.id, change_all_topic_name))
         self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        # Make sure we safely handle the case of the new topic being already muted.
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=already_muted_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, already_muted_topic))
 
         change_one_topic_name = "Topic 1 edited change_one"
         check_update_message(
