@@ -28,8 +28,11 @@ export function get_server_realm_emoji_data() {
 
 let emoticon_translations = [];
 
-function build_emoticon_translations() {
+function build_emoticon_translations({emoticon_conversions}) {
     /*
+
+    Please keep this as a pure function so that we can
+    eventually share this code with the mobile codebase.
 
     Build a data structure that looks like something
     like this:
@@ -54,7 +57,7 @@ function build_emoticon_translations() {
     */
 
     const translations = [];
-    for (const [emoticon, replacement_text] of Object.entries(emoji_codes.emoticon_conversions)) {
+    for (const [emoticon, replacement_text] of Object.entries(emoticon_conversions)) {
         const regex = new RegExp("(" + _.escapeRegExp(emoticon) + ")", "g");
 
         translations.push({
@@ -63,7 +66,7 @@ function build_emoticon_translations() {
         });
     }
 
-    emoticon_translations = translations;
+    return translations;
 }
 
 const zulip_emoji = {
@@ -247,7 +250,9 @@ export function get_emoji_details_for_rendering(opts) {
 export function initialize(params) {
     emoji_codes = params.emoji_codes;
 
-    build_emoticon_translations();
+    emoticon_translations = build_emoticon_translations({
+        emoticon_conversions: emoji_codes.emoticon_conversions,
+    });
 
     for (const value of emoji_codes.names) {
         const base_name = get_emoji_codepoint(value);
