@@ -2376,7 +2376,7 @@ class Stream(models.Model):
             "policy_name": gettext_lazy("Public, protected history"),
         },
     }
-    invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
+    invite_only: bool = models.BooleanField(default=False)
     history_public_to_subscribers: bool = models.BooleanField(default=False)
 
     # Whether this stream's content should be published by the web-public archive features
