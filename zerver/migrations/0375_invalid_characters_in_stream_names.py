@@ -6,12 +6,12 @@ from django.db.migrations.state import StateApps
 
 # There are 66 Unicode non-characters; see
 # https://www.unicode.org/faq/private_use.html#nonchar4
-unicode_non_chars = set(
+unicode_non_chars = {
     chr(x)
     for x in list(range(0xFDD0, 0xFDF0))  # FDD0 through FDEF, inclusive
     + list(range(0xFFFE, 0x110000, 0x10000))  # 0xFFFE, 0x1FFFE, ... 0x10FFFE inclusive
     + list(range(0xFFFF, 0x110000, 0x10000))  # 0xFFFF, 0x1FFFF, ... 0x10FFFF inclusive
-)
+}
 
 
 def character_is_printable(character: str) -> bool:
@@ -31,7 +31,7 @@ def fix_stream_names(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
     for realm_id in realm_ids:
         print(f"Processing realm {realm_id}")
         realm_stream_dicts = Stream.objects.filter(realm_id=realm_id).values("id", "name")
-        occupied_stream_names = set(stream_dict["name"] for stream_dict in realm_stream_dicts)
+        occupied_stream_names = {stream_dict["name"] for stream_dict in realm_stream_dicts}
 
         for stream_dict in realm_stream_dicts:
             stream_name = stream_dict["name"]
