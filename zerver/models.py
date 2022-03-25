@@ -3505,7 +3505,7 @@ class Subscription(models.Model):
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     # Whether this user had muted this stream.
-    is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
+    is_muted: bool = models.BooleanField(default=False)
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color: str = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
