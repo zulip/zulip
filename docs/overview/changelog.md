@@ -5,7 +5,7 @@ This page the release history for the Zulip server. See also the
 
 ## Zulip 5.x series
 
-### 5.0 -- unreleased
+### 5.0-rc2 -- March 24, 2022
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
