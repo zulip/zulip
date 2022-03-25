@@ -7,17 +7,14 @@
    providers like Google, GitHub, GitLab, and Apple. Users can [log in with any
    allowed authentication method][logging-in], regardless of how they signed up.
 
-2. [Invite users](/help/invite-new-users) by [sending out an email or
-   sharing a reusable invite
-   link](/help/invite-new-users#send-invitations). Note that on most
-   Zulip servers (including Zulip Cloud), email invitations and
-   reusable invitation links expire 10 days after they are sent.
+1. [Invite users](/help/invite-new-users) by [sending out an email or
+   sharing a reusable invite link](/help/invite-new-users#send-invitations).
 
 {tab|allow-anyone-to-join}
 
 1. [Allow anyone to join][allow-anyone-to-join] without an invitation.
 
-2. Share a link to your registration page, which is
+1. Share a link to your registration page, which is
    https://your-domain.zulipchat.com for Zulip Cloud organizations.
 
 {end_tabs}
