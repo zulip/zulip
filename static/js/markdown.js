@@ -2,11 +2,11 @@ import {isValid} from "date-fns";
 import katex from "katex"; // eslint-disable-line import/no-unresolved
 import _ from "lodash";
 
-import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
+import * as emoji from "./emoji";
 import * as linkifiers from "./linkifiers";
 
 // This contains zulip's frontend Markdown implementation; see

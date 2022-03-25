@@ -9,7 +9,7 @@ const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 
 const events = require("./lib/events");
 
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 
 const realm_emoji = events.test_realm_emojis;
 

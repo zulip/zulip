@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
 import generated_pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
@@ -28,6 +27,7 @@ import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";

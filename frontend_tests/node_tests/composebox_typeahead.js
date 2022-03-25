@@ -39,10 +39,10 @@ set_global("setTimeout", (f, time) => {
 });
 set_global("document", "document-stub");
 
-const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
+const emoji = zrequire("emoji");
 const typeahead_helper = zrequire("typeahead_helper");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");

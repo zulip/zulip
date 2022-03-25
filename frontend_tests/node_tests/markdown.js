@@ -35,7 +35,7 @@ set_global("Image", Image);
 
 set_global("document", {compatMode: "CSS1Compat"});
 
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
