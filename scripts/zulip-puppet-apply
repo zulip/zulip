@@ -101,6 +101,12 @@ if not args.noop and not args.force:
         if do_apply == "" or do_apply == "n":
             sys.exit(0)
 
+if args.noop and args.force:
+    if noop_would_change(puppet_cmd):
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
 ret = subprocess.call([*puppet_cmd, "--detailed-exitcodes"], env=puppet_env)
 # ret = 0 => no changes, no errors
 # ret = 2 => changes, no errors
