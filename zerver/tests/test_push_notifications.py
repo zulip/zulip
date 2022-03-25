@@ -2695,6 +2695,29 @@ class PushBouncerSignupTest(ZulipTestCase):
             result, f"Zulip server auth failure: key does not match role {zulip_org_id}"
         )
 
+    def test_push_check_registration(self) -> None:
+        result = self.client_get("/api/v1/remotes/server/bogus")
+        self.assertEqual(result.status_code, 404)
+
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        endpoint = "/api/v1/remotes/server/" + zulip_org_id
+
+        result = self.client_get(endpoint)
+        self.assertEqual(result.status_code, 404)
+
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+
+        result = self.client_get(endpoint)
+        self.assert_json_success(result)
+
 
 class TestUserPushIndentityCompat(ZulipTestCase):
     def test_filter_q(self) -> None:

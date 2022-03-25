@@ -5,6 +5,7 @@ from django.urls import path
 
 from zerver.lib.rest import rest_path
 from zilencer.views import (
+    check_registered_remote_server,
     deactivate_remote_server,
     register_remote_push_device,
     register_remote_server,
@@ -23,7 +24,9 @@ v1_api_and_json_patterns = [
     rest_path("remotes/push/unregister", POST=unregister_remote_push_device),
     rest_path("remotes/push/unregister/all", POST=unregister_all_remote_push_devices),
     rest_path("remotes/push/notify", POST=remote_server_notify_push),
-    # Push signup doesn't use the REST API, since there's no auth.
+    # Checking a server registration and push signup don't use the
+    # REST API, since there's no auth.
+    path("remotes/server/<uuid:uuid>", check_registered_remote_server),
     path("remotes/server/register", register_remote_server),
     rest_path("remotes/server/deactivate", POST=deactivate_remote_server),
     # For receiving table data used in analytics and billing

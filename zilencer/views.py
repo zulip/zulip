@@ -6,7 +6,7 @@ from uuid import UUID
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
 from corporate.lib.stripe import do_deactivate_remote_server
-from zerver.decorator import InvalidZulipServerKeyError, require_post
+from zerver.decorator import InvalidZulipServerKeyError, rate_limit, require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     UserPushIndentityCompat,
@@ -86,6 +86,20 @@ def deactivate_remote_server(
 ) -> HttpResponse:
     do_deactivate_remote_server(remote_server)
     return json_success(request)
+
+
+@rate_limit()
+@csrf_exempt
+@has_request_variables
+def check_registered_remote_server(
+    request: HttpRequest,
+    uuid: UUID,
+) -> HttpResponse:
+    try:
+        RemoteZulipServer.objects.get(uuid=uuid)
+        return json_success(request)
+    except RemoteZulipServer.DoesNotExist:
+        return HttpResponseNotFound()
 
 
 @csrf_exempt
