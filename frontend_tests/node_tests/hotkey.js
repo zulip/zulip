@@ -110,9 +110,9 @@ message_lists.current = {
     },
 };
 
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
-const emoji = zrequire("../shared/js/emoji");
 const activity = zrequire("activity");
+const emoji = zrequire("emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
 
 emoji.initialize({
