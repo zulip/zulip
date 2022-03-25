@@ -12,7 +12,7 @@ export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
 export const deactivated_emoji_name_to_code = new Map();
 
-const default_emoji_aliases = new Map();
+let default_emoji_aliases = new Map();
 
 // For legacy reasons we track server_realm_emoji_data,
 // since our settings code builds off that format.  We
@@ -261,6 +261,26 @@ export function get_emoji_details_for_rendering(opts) {
     };
 }
 
+function build_default_emoji_aliases({names, get_emoji_codepoint}) {
+    // Please keep this as a pure function so that we can
+    // eventually share this code with the mobile codebase.
+
+    // Create a map of codepoint -> names
+    const map = new Map();
+
+    for (const name of names) {
+        const base_name = get_emoji_codepoint(name);
+
+        if (map.has(base_name)) {
+            map.get(base_name).push(name);
+        } else {
+            map.set(base_name, [name]);
+        }
+    }
+
+    return map;
+}
+
 export function initialize(params) {
     emoji_codes = params.emoji_codes;
 
@@ -268,15 +288,10 @@ export function initialize(params) {
         emoticon_conversions: emoji_codes.emoticon_conversions,
     });
 
-    for (const value of emoji_codes.names) {
-        const base_name = get_emoji_codepoint(value);
-
-        if (default_emoji_aliases.has(base_name)) {
-            default_emoji_aliases.get(base_name).push(value);
-        } else {
-            default_emoji_aliases.set(base_name, [value]);
-        }
-    }
+    default_emoji_aliases = build_default_emoji_aliases({
+        names: emoji_codes.names,
+        get_emoji_codepoint,
+    });
 
     update_emojis(params.realm_emoji);
 }
