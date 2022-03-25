@@ -81,7 +81,7 @@
     line-height: 1.25;
 
     /* help_link_widget margin for the fa-circle-o. */
-    a {
+    .help_link_widget {
         margin-left: 5px;
     }
 }
