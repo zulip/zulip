@@ -1609,7 +1609,7 @@ class TestAPNs(PushNotificationTest):
             )
             self.send(devices=self.devices()[0:1])
             self.assertIn(
-                f"WARNING:zerver.lib.push_notifications:APNs: ConnectionError sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}: ConnectionError",
+                f"ERROR:zerver.lib.push_notifications:APNs: ConnectionError sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}; check certificate expiration",
                 logger.output,
             )
 
