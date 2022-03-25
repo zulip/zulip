@@ -633,6 +633,11 @@ i18n_urls = [
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
     path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
     path(
+        "case-studies/asciidoctor/",
+        landing_view,
+        {"template_name": "zerver/asciidoctor-case-study.html"},
+    ),
+    path(
         "for/communities/",
         landing_view,
         {"template_name": "zerver/for-communities.html"},
