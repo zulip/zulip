@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 In large Zulip organizations where
-[anyone can join](/help/allow-anyone-to-join-without-an-invitation), it can
+[anyone can join](/help/restrict-account-creation#set-whether-invitations-are-required-to-join), it can
 be useful to restrict what new members can do, to make it easier to cope
 with spammers and confused users.
 

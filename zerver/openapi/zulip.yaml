@@ -3053,7 +3053,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/allow-anyone-to-join-without-an-invitation)
+                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                 has changed.
                               properties:
                                 id:
@@ -3084,7 +3084,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/allow-anyone-to-join-without-an-invitation)
+                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                 has changed.
                               properties:
                                 id:
@@ -3127,7 +3127,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the set of
-                                [allowed domains for new users](/help/allow-anyone-to-join-without-an-invitation)
+                                [allowed domains for new users](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                 has changed.
                               properties:
                                 id:
@@ -3685,7 +3685,7 @@ paths:
                                     emails_restricted_to_domains:
                                       type: boolean
                                       description: |
-                                        Whether [new users joining](/help/allow-anyone-to-join-without-an-invitation)
+                                        Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                                         this organization are required to have an email
                                         address in one of the `realm_domains` configured for the organization.
                                     enable_spectator_access:
@@ -10841,7 +10841,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
+                          Policy for [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations)
                           to join the organization:
 
                           - 1 = Members only
@@ -10930,7 +10930,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether [new users joining](/help/allow-anyone-to-join-without-an-invitation)
+                          Whether [new users joining](/help/restrict-account-creation#configuring-email-domain-restrictions)
                           this organization are required to have an email
                           address in one of the `realm_domains` configured for the organization.
                       realm_send_welcome_emails:
@@ -11879,10 +11879,12 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user [is allowed to invite others]
-                          (/help/invite-new-users#change-who-can-send-invitations) to the organization.
+                          Whether the current user [is allowed to invite others][who-can-send-invitations]
+                          to the organization.
 
                           **Changes**: New in Zulip 4.0 (feature level 51).
+
+                          [who-can-send-invitations]: /help/restrict-account-creation#change-who-can-send-invitations
                       is_admin:
                         type: boolean
                         description: |
