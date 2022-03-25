@@ -154,6 +154,14 @@ class zulip_ops::profile::base {
       mode   => '0755',
       source => 'puppet:///modules/zulip_ops/zulip-ec2-configure-interfaces_if-up.d.sh',
     }
+
+    file { '/etc/chrony/chrony.conf':
+      ensure  => file,
+      mode    => '0644',
+      source  => 'puppet:///modules/zulip_ops/chrony.conf',
+      require => Package['chrony'],
+      notify  => Service['chrony'],
+    }
   }
 
   group { 'nagios':
