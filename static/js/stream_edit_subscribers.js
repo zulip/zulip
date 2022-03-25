@@ -14,6 +14,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
@@ -119,6 +120,12 @@ function make_list_widget({$parent_container, name, user_ids}) {
 
                 return match;
             },
+        },
+        $parent_container,
+        init_sort: ["alphabetic", "full_name"],
+        sort_fields: {
+            email: settings_users.sort_email,
+            id: settings_users.sort_user_id,
         },
         $simplebar_container,
     });

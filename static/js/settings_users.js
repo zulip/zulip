@@ -44,7 +44,7 @@ function compare_a_b(a, b) {
     return -1;
 }
 
-function sort_email(a, b) {
+export function sort_email(a, b) {
     const email_a = settings_data.email_for_user_settings(a) || "";
     const email_b = settings_data.email_for_user_settings(b) || "";
     return compare_a_b(email_a.toLowerCase(), email_b.toLowerCase());
@@ -77,7 +77,7 @@ function sort_last_active(a, b) {
     );
 }
 
-function sort_user_id(a, b) {
+export function sort_user_id(a, b) {
     return compare_a_b(a.user_id, b.user_id);
 }
 
