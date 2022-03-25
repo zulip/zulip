@@ -10,10 +10,10 @@ class UnixStreamHTTPConnection(HTTPConnection):
         self.sock.connect(self.host)
 
 
-class UnixStreamTransport(client.Transport, object):
+class UnixStreamTransport(client.Transport):
     def __init__(self, socket_path: str) -> None:
         self.socket_path = socket_path
-        super(UnixStreamTransport, self).__init__()
+        super().__init__()
 
     def make_connection(
         self, host: Union[Tuple[str, Dict[str, str]], str]
