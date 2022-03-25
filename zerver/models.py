@@ -3328,7 +3328,9 @@ class ArchivedAttachment(AbstractAttachment):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    messages: Manager = models.ManyToManyField(ArchivedMessage)
+    messages: Manager = models.ManyToManyField(
+        ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
+    )
 
 
 class Attachment(AbstractAttachment):

@@ -60,5 +60,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name="archivedattachment",
+            name="messages",
+            field=models.ManyToManyField(
+                related_name="attachment_set",
+                related_query_name="attachment",
+                to="zerver.ArchivedMessage",
+            ),
+        ),
         migrations.RunPython(fix_attachment_caches, reverse_code=migrations.RunPython.noop),
     ]
