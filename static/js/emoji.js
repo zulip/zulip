@@ -6,7 +6,7 @@ let emoji_codes = {};
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the web app for gathering data for displaying
 // emojis. Emoji picker uses this data to derive data for its own use.
-export const emojis_by_name = new Map();
+export let emojis_by_name = new Map();
 
 export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
@@ -113,8 +113,15 @@ export function get_realm_emoji_url(emoji_name) {
     return data.emoji_url;
 }
 
-export function build_emoji_data(realm_emojis) {
-    emojis_by_name.clear();
+function build_emojis_by_name({
+    realm_emojis,
+    emoji_catalog,
+    get_emoji_name,
+    default_emoji_aliases,
+}) {
+    // Please keep this as a pure function so that we can
+    // eventually share this code with the mobile codebase.
+    const map = new Map();
     for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
         const emoji_dict = {
             name: realm_emoji_name,
@@ -124,13 +131,13 @@ export function build_emoji_data(realm_emojis) {
             url: realm_emoji.emoji_url,
             has_reacted: false,
         };
-        emojis_by_name.set(realm_emoji_name, emoji_dict);
+        map.set(realm_emoji_name, emoji_dict);
     }
 
-    for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
+    for (const codepoints of Object.values(emoji_catalog)) {
         for (const codepoint of codepoints) {
             const emoji_name = get_emoji_name(codepoint);
-            if (emoji_name !== undefined && !emojis_by_name.has(emoji_name)) {
+            if (emoji_name !== undefined && !map.has(emoji_name)) {
                 const emoji_dict = {
                     name: emoji_name,
                     display_name: emoji_name,
@@ -139,10 +146,12 @@ export function build_emoji_data(realm_emojis) {
                     emoji_code: codepoint,
                     has_reacted: false,
                 };
-                emojis_by_name.set(emoji_name, emoji_dict);
+                map.set(emoji_name, emoji_dict);
             }
         }
     }
+
+    return map;
 }
 
 export function update_emojis(realm_emojis) {
@@ -185,7 +194,12 @@ export function update_emojis(realm_emojis) {
     // here "zulip" is an emoji name, which is fine.
     active_realm_emojis.set("zulip", zulip_emoji);
 
-    build_emoji_data(active_realm_emojis);
+    emojis_by_name = build_emojis_by_name({
+        realm_emojis: active_realm_emojis,
+        emoji_catalog: emoji_codes.emoji_catalog,
+        get_emoji_name,
+        default_emoji_aliases,
+    });
 }
 
 // This function will provide required parameters that would
