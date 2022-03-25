@@ -17,18 +17,18 @@ from psycopg2.extensions import connection, cursor
 from psycopg2.sql import Composable
 
 CursorObj = TypeVar("CursorObj", bound=cursor)
-Query = Union[str, Composable]
-Params = Union[Sequence[object], Mapping[str, object]]
+Query = Union[str, bytes, Composable]
+Params = Union[Sequence[object], Mapping[str, object], None]
 ParamsT = TypeVar("ParamsT")
 
 # Similar to the tracking done in Django's CursorDebugWrapper, but done at the
 # psycopg2 cursor level so it works with SQLAlchemy.
 def wrapper_execute(
-    self: CursorObj, action: Callable[[Query, ParamsT], CursorObj], sql: Query, params: ParamsT
-) -> CursorObj:
+    self: CursorObj, action: Callable[[Query, ParamsT], None], sql: Query, params: ParamsT
+) -> None:
     start = time.time()
     try:
-        return action(sql, params)
+        action(sql, params)
     finally:
         stop = time.time()
         duration = stop - start
@@ -42,13 +42,11 @@ def wrapper_execute(
 class TimeTrackingCursor(cursor):
     """A psycopg2 cursor class that tracks the time spent executing queries."""
 
-    def execute(self, query: Query, vars: Optional[Params] = None) -> "TimeTrackingCursor":
-        return wrapper_execute(self, super().execute, query, vars)
+    def execute(self, query: Query, vars: Params = None) -> None:
+        wrapper_execute(self, super().execute, query, vars)
 
-    def executemany(
-        self, query: Query, vars: Iterable[Params]
-    ) -> "TimeTrackingCursor":  # nocoverage
-        return wrapper_execute(self, super().executemany, query, vars)
+    def executemany(self, query: Query, vars: Iterable[Params]) -> None:  # nocoverage
+        wrapper_execute(self, super().executemany, query, vars)
 
 
 CursorT = TypeVar("CursorT", bound=cursor)
