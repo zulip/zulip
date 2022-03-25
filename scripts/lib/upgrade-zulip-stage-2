@@ -334,6 +334,11 @@ if not args.skip_migrations:
         if line_str.startswith("[ ]"):
             migrations_needed = True
 
+# If there are no migrations needed, we can fill the caches now,
+# instead of after they run.
+if not migrations_needed:
+    subprocess.check_call(["./manage.py", "fill_memcached_caches"], preexec_fn=su_to_zulip)
+
 # NOTE: Here begins the most likely critical period, where we may be
 # shutting down the server; we should strive to minimize the number of
 # steps that happen between here and the "Restarting Zulip" line
@@ -374,15 +379,17 @@ if migrations_needed:
     subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
+start_args = []
+if migrations_needed:
+    start_args.append("--fill-cache")
 if IS_SERVER_UP:
-    restart_args = ["--fill-cache"]
     if args.skip_tornado:
-        restart_args.append("--skip-tornado")
+        start_args.append("--skip-tornado")
     if args.less_graceful:
-        restart_args.append("--less-graceful")
-    subprocess.check_call(["./scripts/restart-server", *restart_args], preexec_fn=su_to_zulip)
+        start_args.append("--less-graceful")
+    subprocess.check_call(["./scripts/restart-server", *start_args], preexec_fn=su_to_zulip)
 else:
-    subprocess.check_call(["./scripts/start-server", "--fill-cache"], preexec_fn=su_to_zulip)
+    subprocess.check_call(["./scripts/start-server", *start_args], preexec_fn=su_to_zulip)
 
 logging.info("Upgrade complete!")
 
