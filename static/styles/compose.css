@@ -127,13 +127,13 @@
     #compose-lock-icon,
     #compose-globe-icon {
         position: relative;
-        left: 5px;
+        left: 6px;
         width: 0;
     }
 
     #compose-globe-icon {
         top: 1px;
-        left: 3.5px;
+        left: 4.5px;
 
         .zulip-icon-globe {
             font-size: 12px;
@@ -430,7 +430,7 @@ input.recipient_box {
     }
 
     &.lock-padding {
-        padding-left: 18px;
+        padding-left: 20px;
     }
 }
 
