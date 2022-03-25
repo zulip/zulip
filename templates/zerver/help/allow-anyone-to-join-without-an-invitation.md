@@ -11,13 +11,16 @@ up so that anyone can join without an invitation.
 
 {settings_tab|organization-permissions}
 
-1. Find the section **Joining the organization**.
+1. Under **Joining the organization**, toggle
+   **Invitations are required for joining this organization**.
 
-1. Toggle **Invitations are required for joining this organization**.
+1. From the **Restrict email domains of new users?** dropdown menu,
+   select between:
 
-1. Set **Restrict email domains of new users?** to either
-   **Don't allow disposable email addresses** (recommended) or **No**.
+     - **No restrictions**, which will
 
-1. Click **Save changes**.
+     - **Don't allow disposable emails**, which will
+
+{!save-changes.md!}
 
 {end_tabs}
