@@ -342,6 +342,19 @@ elif not args.skip_migrations:
 if not migrations_needed:
     subprocess.check_call(["./manage.py", "fill_memcached_caches"], preexec_fn=su_to_zulip)
 
+# If we are planning on running puppet, we can pre-run it in --noop
+# mode and see if it will actually make any changes; if not, we can
+# skip it during the upgrade.  We omit this check if the server is
+# already stopped, since it's not better than just pressing on.
+if not args.skip_puppet and IS_SERVER_UP:
+    logging.info("Pre-checking for puppet changes...")
+    try_puppet = subprocess.run(
+        ["./scripts/zulip-puppet-apply", "--noop", "--force"], stdout=subprocess.DEVNULL
+    )
+    if try_puppet.returncode == 0:
+        logging.info("No puppet changes found, skipping!")
+        args.skip_puppet = True
+
 # NOTE: Here begins the most likely critical period, where we may be
 # shutting down the server; we should strive to minimize the number of
 # steps that happen between here and the "Restarting Zulip" line
