@@ -128,11 +128,11 @@
     #compose-globe-icon {
         position: relative;
         left: 6px;
+        top: 0.5px;
         width: 0;
     }
 
     #compose-globe-icon {
-        top: 1px;
         left: 4.5px;
 
         .zulip-icon-globe {

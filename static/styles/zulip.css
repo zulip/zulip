@@ -1733,6 +1733,8 @@ div.focused_table {
 
     .zulip-icon.zulip-icon-globe {
         font-size: 14px;
+        position: relative;
+        top: 1px;
     }
 
     .sub_count,
@@ -1760,6 +1762,11 @@ div.focused_table {
 
         .fa {
             margin: 0 3px 0 5px;
+
+            &.fa-lock {
+                position: relative;
+                top: 0.5px;
+            }
 
             .fa-envelope {
                 font-size: 14px;
