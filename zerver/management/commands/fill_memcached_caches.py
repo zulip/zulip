@@ -8,7 +8,9 @@ from zerver.lib.cache_helpers import cache_fillers, fill_remote_cache
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--cache", help="Populate the memcached cache of messages.")
+        parser.add_argument(
+            "--cache", help="Populate one specific cache", choices=cache_fillers.keys()
+        )
 
     def handle(self, *args: Any, **options: Optional[str]) -> None:
         if options["cache"] is not None:
