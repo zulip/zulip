@@ -687,6 +687,10 @@ body.dark-theme {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    body.night-mode .private-message .messagebox {
+        background-color: #3e4c58;
+    }
+
     .draft-row .draft-info-box,
     .message_header_private_message .message-header-contents {
         box-shadow: none;
@@ -914,7 +918,7 @@ body.dark-theme {
     }
 
     time {
-        background: hsla(0, 0%, 0%, 0.2);
+        background: hsla(0, 0%, 0%, 0.2); /* TODO */
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.4);
     }
 

@@ -417,7 +417,7 @@ p.n-margin {
     .column-left .left-sidebar,
     .column-right .right-sidebar {
         position: fixed;
-        margin-top: $sidebar_top;
+        /* we need margin sometimes but not other times -- TODO */
         z-index: 100;
     }
 
@@ -433,6 +433,10 @@ p.n-margin {
 
     .column-middle {
         min-height: 100%;
+    }
+
+    .column-middle-inner {
+        overflow: visible;
     }
 }
 
@@ -1035,8 +1039,9 @@ td.pointer {
     white-space: nowrap;
     font-weight: 600;
     line-height: 14px;
-    position: relative;
-    z-index: 0;
+    position: sticky;
+    top: 50px;
+    z-index: 1;
 }
 
 .message_list {
@@ -1250,7 +1255,7 @@ td.pointer {
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
+        background-color: hsl(192, 19%, 95%);
         box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
     }
 }
@@ -1315,7 +1320,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        padding-bottom: 1px;
+        padding-bottom: 2px;
     }
 }
 
@@ -1330,9 +1335,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
-            -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
-            -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
+        box-shadow: inset 0px 0px 0px 3px hsl(215, 47%, 50%);
     }
 }
 
@@ -1453,12 +1456,9 @@ div.message_table {
 
 .message_row {
     position: relative;
+    z-index: 0;
     border-left: 1px solid hsla(0, 0%, 0%, 0.1);
     border-right: 1px solid hsla(0, 0%, 0%, 0.1);
-
-    &.selected_message {
-        z-index: 2;
-    }
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
@@ -1648,7 +1648,7 @@ div.focused_table {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    padding: 4px 116px 1px 11px;
 }
 
 .bookend {
@@ -2240,6 +2240,11 @@ div.floating_recipient {
 }
 
 #floating_recipient_bar {
+    top: $sidebar_top;
+    display: none;
+}
+
+.message_header {
     top: $sidebar_top;
 }
 
