@@ -55,8 +55,6 @@ TAB_SECTION_LABELS = {
     "mm-default": "Default installation",
     "mm-docker": "Docker",
     "mm-gitlab-omnibus": "GitLab Omnibus",
-    "send-email-invitations": "Send email invitations",
-    "share-an-invite-link": "Share an invite link",
     "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
