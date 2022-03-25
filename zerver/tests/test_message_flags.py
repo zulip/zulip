@@ -1552,7 +1552,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(
@@ -1625,7 +1625,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(
@@ -1698,7 +1698,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(
@@ -1768,7 +1768,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(
@@ -1838,7 +1838,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(
@@ -1909,7 +1909,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertNotIn("mentioned", event["message_details"][message_id]),
@@ -1975,7 +1975,7 @@ class MarkUnreadTest(ZulipTestCase):
         self.assert_json_success(result)
         event = events[0]["event"]
         self.assertEqual(event["messages"], messages_to_unread)
-        unread_message_ids = set(str(message_id) for message_id in messages_to_unread)
+        unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
             self.assertEqual(event["message_details"][message_id]["mentioned"], True),

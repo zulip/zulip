@@ -124,7 +124,7 @@ rabbitmq_dist_listen = listening_publicly(25672)
 # Check the erlang magic cookie size
 cookie_size: Optional[int] = None
 if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
-    with open("/var/lib/rabbitmq/.erlang.cookie", "r") as cookie_fh:
+    with open("/var/lib/rabbitmq/.erlang.cookie") as cookie_fh:
         cookie_size = len(cookie_fh.readline())
 else:
     logging.info("No RabbitMQ erlang cookie found, not auditing RabbitMQ security.")
