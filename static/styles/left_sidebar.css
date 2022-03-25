@@ -43,6 +43,11 @@ $topic_resolve_width: 13px;
 .stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
     padding-right: 3px;
+
+    &.fa-lock {
+        position: relative;
+        top: 1px;
+    }
 }
 
 .pm_left_col {
