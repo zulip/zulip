@@ -421,7 +421,7 @@ def parse_os_release() -> Dict[str, str]:
     developers, but we avoid using it, as it is not available on
     RHEL-based platforms.
     """
-    distro_info = {}  # type: Dict[str, str]
+    distro_info: Dict[str, str] = {}
     with open("/etc/os-release") as fp:
         for line in fp:
             line = line.strip()
