@@ -322,9 +322,12 @@ else:
 
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves
-# about 1s of downtime in a no-op upgrade.
+# about 1s of downtime in a no-op upgrade.  We omit this check if we
+# already stopped the server above, due to low memory.
 migrations_needed = False
-if not args.skip_migrations:
+if not IS_SERVER_UP:
+    migrations_needed = True
+elif not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(
         ["./manage.py", "showmigrations"], preexec_fn=su_to_zulip, text=True
