@@ -130,6 +130,10 @@
             display: block;
         }
     }
+
+    .hide {
+        display: none;
+    }
 }
 
 .user-avatar-section,
