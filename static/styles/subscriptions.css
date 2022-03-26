@@ -766,7 +766,7 @@ h4.stream_setting_subsection_title {
 #subscription_overlay {
     #stream-creation {
         max-height: calc(100% - 102px);
-        overflow: auto;
+        overflow: hidden;
         outline: none;
         -webkit-overflow-scrolling: touch;
 
@@ -778,6 +778,7 @@ h4.stream_setting_subsection_title {
         }
 
         .stream-creation-body {
+            height: calc(95vh - 160px);
             padding: 15px;
         }
 
