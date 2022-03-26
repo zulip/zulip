@@ -42,7 +42,10 @@ def list_supervisor_processes(
         if filter_names:
             match = False
             for filter_name in filter_names:
-                if filter_name.endswith(":*") and name.startswith(filter_name[:-1]):
+                # zulip-tornado:* matches zulip-tornado:9800 and zulip-tornado
+                if filter_name.endswith(":*") and (
+                    name.startswith(filter_name[:-1]) or name == filter_name[:-2]
+                ):
                     match = True
                     break
                 if name == filter_name:
