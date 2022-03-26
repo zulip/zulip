@@ -238,7 +238,9 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
-    .private-message .alert-msg {
+    .private-message .alert-msg,
+    .private-message .messagebox,
+    .private-message .date-row {
         background-color: hsl(208, 17%, 29%);
     }
 
@@ -400,7 +402,7 @@ body.dark-theme {
 
     .message-header-contents,
     .message_header_private_message .message-header-contents {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: hsl(212, 28%, 14%);
         border-color: transparent;
     }
 
