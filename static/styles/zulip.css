@@ -1315,7 +1315,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        padding-bottom: 1px;
+        padding-bottom: 2px;
     }
 }
 
@@ -1330,9 +1330,7 @@ td.pointer {
     }
 
     .messagebox-content {
-        box-shadow: inset 0 0 0 2px hsl(215, 47%, 50%),
-            -1px -1px 0 0 hsl(215, 47%, 50%), 1px 1px 0 0 hsl(215, 47%, 50%),
-            -1px 1px 0 0 hsl(215, 47%, 50%), 1px -1px 0 0 hsl(215, 47%, 50%);
+        box-shadow: inset 0 0 0 3px hsl(215, 47%, 50%);
     }
 }
 
@@ -1455,10 +1453,6 @@ div.message_table {
     position: relative;
     border-left: 1px solid hsla(0, 0%, 0%, 0.1);
     border-right: 1px solid hsla(0, 0%, 0%, 0.1);
-
-    &.selected_message {
-        z-index: 2;
-    }
 
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
@@ -1648,7 +1642,8 @@ div.focused_table {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    margin: 0 -1px;
+    padding: 4px 116px 1px 11px;
 }
 
 .bookend {
