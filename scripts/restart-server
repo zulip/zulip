@@ -43,7 +43,7 @@ if pwd.getpwuid(os.getuid()).pw_name != "zulip":
 
 if args.fill_cache:
     logging.info("Filling memcached caches")
-    subprocess.check_call(["./manage.py", "fill_memcached_caches"])
+    subprocess.check_call(["./manage.py", "fill_memcached_caches", "--skip-checks"])
 
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
 last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")

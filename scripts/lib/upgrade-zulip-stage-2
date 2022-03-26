@@ -320,6 +320,10 @@ else:
         preexec_fn=su_to_zulip,
     )
 
+# Perform system checks -- including database checks, so we don't need
+# to do them when we do migrations, below.
+subprocess.check_call(["./manage.py", "check", "--database", "default"], preexec_fn=su_to_zulip)
+
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves
 # about 1s of downtime in a no-op upgrade.  We omit this check if we
@@ -330,7 +334,7 @@ if not IS_SERVER_UP:
 elif not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(
-        ["./manage.py", "showmigrations"], preexec_fn=su_to_zulip, text=True
+        ["./manage.py", "showmigrations", "--skip-checks"], preexec_fn=su_to_zulip, text=True
     )
     for ln in migrations_output.split("\n"):
         line_str = ln.strip()
@@ -340,7 +344,9 @@ elif not args.skip_migrations:
 # If there are no migrations needed, we can fill the caches now,
 # instead of after they run.
 if not migrations_needed:
-    subprocess.check_call(["./manage.py", "fill_memcached_caches"], preexec_fn=su_to_zulip)
+    subprocess.check_call(
+        ["./manage.py", "fill_memcached_caches", "--skip-checks"], preexec_fn=su_to_zulip
+    )
 
 # If we are planning on running puppet, we can pre-run it in --noop
 # mode and see if it will actually make any changes; if not, we can
@@ -392,7 +398,9 @@ if migrations_needed:
     # quiesced state.
     shutdown_server()
     logging.info("Applying database migrations...")
-    subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
+    subprocess.check_call(
+        ["./manage.py", "migrate", "--noinput", "--skip-checks"], preexec_fn=su_to_zulip
+    )
 
 logging.info("Restarting Zulip...")
 start_args = []
@@ -412,7 +420,9 @@ logging.info("Upgrade complete!")
 if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")
     logging.info("This may take a while but the server should work while it runs.")
-    subprocess.check_call(["./manage.py", "audit_fts_indexes"], preexec_fn=su_to_zulip)
+    subprocess.check_call(
+        ["./manage.py", "audit_fts_indexes", "--skip-checks"], preexec_fn=su_to_zulip
+    )
 
 if not args.skip_purge_old_deployments:
     logging.info("Purging old deployments...")
