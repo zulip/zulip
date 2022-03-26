@@ -98,6 +98,19 @@ aux_services = list_supervisor_processes(["go-camo", "smokescreen"], only_runnin
 if aux_services:
     subprocess.check_call(["supervisorctl", "start", *aux_services])
 
+# If none of the workers nor the application servers are running, this
+# is actually a "start," not a restart, which means we will defer
+# workers to later.
+if (
+    action == "restart"
+    and len(
+        list_supervisor_processes(workers + ["zulip-django", "zulip-tornado:*"], only_running=True)
+    )
+    == 0
+):
+    action = "start"
+    verbing = "Starting"
+
 
 def restart_or_start(service: str) -> None:
     our_verb = action
