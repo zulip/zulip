@@ -1043,8 +1043,9 @@ td.pointer {
     white-space: nowrap;
     font-weight: 600;
     line-height: 14px;
-    position: relative;
-    z-index: 0;
+    position: sticky;
+    top: $sidebar_top;
+    z-index: 3;
 }
 
 .message_list {
@@ -2244,6 +2245,7 @@ div.floating_recipient {
 
 #floating_recipient_bar {
     top: $sidebar_top;
+    display: none;
 }
 
 #bottom_whitespace {
@@ -3043,6 +3045,10 @@ select.inline_select_topic_edit {
         white-space: nowrap;
         text-overflow: ellipsis;
         line-height: 15px;
+    }
+
+    .message_header {
+        top: 40px;
     }
 
     #floating_recipient_bar {
