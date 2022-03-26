@@ -434,6 +434,15 @@ p.n-margin {
     .column-middle {
         min-height: 100%;
     }
+
+    .column-middle-inner {
+        /* Override Bootstrap's .tab-content { overflow: auto } so we can use
+           position: sticky inside */
+        overflow: visible;
+        /* Disable margin collapsing */
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 .column-middle,
@@ -777,8 +786,7 @@ li.actual-dropdown-menu i {
 }
 
 .message_area_padder {
-    /* The height of the header and the message_view_header plus a small gap */
-    margin-top: 57px;
+    margin-top: 16px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
