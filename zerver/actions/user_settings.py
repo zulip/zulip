@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import orjson
 from django.db import transaction
@@ -29,6 +29,7 @@ from zerver.models import (
     UserProfile,
     active_user_ids,
     bot_owner_user_ids,
+    get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event
 
@@ -244,6 +245,12 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
     queue_json_publish("deferred_work", event)
 
     return new_api_key
+
+
+def bulk_regenerate_api_keys(user_profile_ids: List[int]) -> None:
+    for user_profile_id in user_profile_ids:
+        user_profile = get_user_profile_by_id(user_profile_id)
+        do_regenerate_api_key(user_profile, user_profile)
 
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
