@@ -17,6 +17,7 @@ from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_use
 from zerver.actions.message_send import get_recipient_info
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import bulk_regenerate_api_keys
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -2313,3 +2314,25 @@ class FakeEmailDomainTest(ZulipTestCase):
         with self.assertRaises(InvalidFakeEmailDomain):
             realm = get_realm("zulip")
             get_fake_email_domain(realm)
+
+
+class TestBulkRegenerateAPIKey(ZulipTestCase):
+    def test_bulk_regenerate_api_keys(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        hamlet_old_api_key = hamlet.api_key
+        cordelia_old_api_key = cordelia.api_key
+        othello_old_api_key = othello.api_key
+
+        bulk_regenerate_api_keys([hamlet.id, cordelia.id])
+
+        hamlet.refresh_from_db()
+        cordelia.refresh_from_db()
+        othello.refresh_from_db()
+
+        self.assertNotEqual(hamlet_old_api_key, hamlet.api_key)
+        self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
+
+        self.assertEqual(othello_old_api_key, othello.api_key)
