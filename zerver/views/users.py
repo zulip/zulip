@@ -40,10 +40,12 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingAuthenticationError,
     OrganizationOwnerRequired,
+    RateLimited,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_response_from_error, json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
@@ -251,6 +253,15 @@ def avatar(
         # interact with fake email addresses anyway.
         if is_email:
             raise MissingAuthenticationError()
+
+        if settings.RATE_LIMITING:
+            try:
+                unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
+                rate_limit_spectator_attachment_access_by_file(unique_avatar_key)
+            except RateLimited:
+                return json_response_from_error(
+                    RateLimited(_("Too many attempts, please try after some time."))
+                )
     else:
         realm = maybe_user_profile.realm
 
