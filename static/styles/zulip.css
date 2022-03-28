@@ -2665,6 +2665,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-right: 25px;
 }
 
+.activated_user > td:first-child {
+    padding-right: 21px;
+}
+
 .deactivated_user .deactivated-user-icon {
     color: inherit;
     margin-left: 2px;

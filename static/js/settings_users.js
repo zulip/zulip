@@ -101,11 +101,12 @@ export function update_view_on_deactivate(user_id) {
     $button.empty().append($("<i>", {class: "fa fa-user-plus", ["aria-hidden"]: "true"}));
     $button.attr("title", "Reactivate");
     $row.addClass("deactivated_user");
+    $row.removeClass("activated_user");
 
     if ($user_role) {
         const user_id = $row.data("user-id");
-        $user_role.text(
-            `${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`,
+        $user_role.html(
+            `${$t({defaultMessage: "Deactivated"})}<br/>(${people.get_user_type(user_id)})`,
         );
     }
 }
@@ -120,6 +121,7 @@ function update_view_on_reactivate($row) {
     $button.attr("title", "Deactivate");
     $button.empty().append($("<i>", {class: "fa fa-user-times", ["aria-hidden"]: "true"}));
     $row.removeClass("deactivated_user");
+    $row.addClass("activated_user");
 
     if ($user_role) {
         const user_id = $row.data("user-id");
