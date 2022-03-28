@@ -150,6 +150,15 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[User
     return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
 
 
+def is_user_in_group(
+    user_group: UserGroup, user: UserProfile, *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return UserGroupMembership.objects.filter(user_group=user_group, user_profile=user).exists()
+
+    return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
+
+
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,
