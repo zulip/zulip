@@ -1184,6 +1184,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             status_code=401,
         )
 
+        with self.settings(RATE_LIMITING=True):
+            # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
+            add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+            response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+            self.assertEqual(302, response.status_code)
+            remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+
+            # Deny file access since rate limited
+            add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+            response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+            self.assertEqual(429, response.status_code)
+
     def test_non_valid_user_avatar(self) -> None:
 
         # It's debatable whether we should generate avatars for non-users,
