@@ -17,6 +17,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    is_user_in_group,
     user_groups_in_realm_serialized,
 )
 from zerver.models import (
@@ -173,6 +174,29 @@ class UserGroupTestCase(ZulipTestCase):
                 everyone_on_internet_group,
             ],
         )
+
+    def test_is_user_in_group(self) -> None:
+        realm = get_realm("zulip")
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        administrators_group = UserGroup.objects.get(
+            name="@role:administrators", realm=realm, is_system_group=True
+        )
+
+        self.assertTrue(is_user_in_group(moderators_group, shiva))
+
+        # Iago is member of a subgroup of moderators group.
+        self.assertTrue(is_user_in_group(moderators_group, iago))
+        self.assertFalse(is_user_in_group(moderators_group, iago, direct_member_only=True))
+        self.assertTrue(is_user_in_group(administrators_group, iago, direct_member_only=True))
+
+        self.assertFalse(is_user_in_group(moderators_group, hamlet))
+        self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
 
 
 class UserGroupAPITestCase(UserGroupTestCase):
