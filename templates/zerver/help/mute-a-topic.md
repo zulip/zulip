@@ -32,7 +32,7 @@ They also do not contribute to stream unread counts.
 
 {end_tabs}
 
-## Browse previously muted topics
+## Browse and unmute previously muted topics
 
 {start_tabs}
 
@@ -40,7 +40,7 @@ They also do not contribute to stream unread counts.
 
 {end_tabs}
 
-From there, you can unmute any muted topics.
+From there, you can review and unmute any muted topics.
 
 ## Related articles
 
