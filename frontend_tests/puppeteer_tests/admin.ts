@@ -179,21 +179,15 @@ async function test_organization_permissions(page: Page): Promise<void> {
 }
 
 async function test_add_emoji(page: Page): Promise<void> {
-    await common.fill_form(page, "form.admin-emoji-form", {name: "zulip logo"});
+    await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip logo"});
 
     const emoji_upload_handle = await page.$("#emoji_file_input");
     assert.ok(emoji_upload_handle);
     await (emoji_upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
         "static/images/logo/zulip-icon-128x128.png",
     );
-    await page.click("#admin_emoji_submit");
-
-    const emoji_status = "div#admin-emoji-status";
-    await page.waitForSelector(emoji_status, {visible: true});
-    assert.strictEqual(
-        await common.get_text_from_selector(page, emoji_status),
-        "Custom emoji added!",
-    );
+    await page.click("#add-custom-emoji-modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
     await page.waitForSelector("tr#emoji_zulip_logo", {visible: true});
     assert.strictEqual(
@@ -217,7 +211,8 @@ async function test_delete_emoji(page: Page): Promise<void> {
 
 async function test_custom_realm_emoji(page: Page): Promise<void> {
     await page.click("li[data-section='emoji-settings']");
-    await page.waitForSelector(".admin-emoji-form", {visible: true});
+    await page.click("#add-custom-emoji-button");
+    await common.wait_for_micromodal_to_open(page);
 
     await test_add_emoji(page);
     await test_delete_emoji(page);

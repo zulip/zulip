@@ -622,17 +622,10 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-emoji-box,
-.add-new-export-box {
-    margin-bottom: 20px;
-}
-
-.add-new-emoji-box .new-emoji-form,
 .add-new-export-box {
     margin: 10px 0;
 }
 
-.add-new-emoji-box,
 .add-new-default-stream-box {
     input[type="text"] {
         padding: 6px;
@@ -640,17 +633,30 @@ input[type="checkbox"] {
     margin-bottom: 15px;
 }
 
-.add-new-emoji-box #emoji-file-name {
-    width: 0;
-    top: -19px;
-    left: 3px;
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
+#add-custom-emoji-modal {
+    form {
+        margin: 0;
+    }
 
-    white-space: nowrap;
-    font-style: italic;
-    color: hsl(0, 0%, 67%);
+    input[type="text"] {
+        padding: 6px;
+    }
+
+    .emoji_name_input {
+        margin-top: 10px;
+    }
+
+    #emoji-file-name {
+        font-size: 14px;
+        white-space: nowrap;
+        height: 1rem;
+        font-style: italic;
+        color: hsl(0, 0%, 67%);
+    }
+
+    #emoji_preview_text {
+        margin-top: 6px;
+    }
 }
 
 #emoji_file_input_error {

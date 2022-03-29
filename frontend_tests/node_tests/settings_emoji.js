@@ -9,7 +9,7 @@ const $ = require("../zjsunit/zjquery");
 const upload_widget = mock_esm("../../static/js/upload_widget");
 const settings_emoji = zrequire("settings_emoji");
 
-run_test("build_emoji_upload_widget", () => {
+run_test("add_custom_emoji_post_render", () => {
     let build_widget_stub = false;
     upload_widget.build_widget = (
         get_file_input,
@@ -25,6 +25,6 @@ run_test("build_emoji_upload_widget", () => {
         assert.deepEqual(upload_button, $("#emoji_upload_button"));
         build_widget_stub = true;
     };
-    settings_emoji.build_emoji_upload_widget();
+    settings_emoji.add_custom_emoji_post_render();
     assert.ok(build_widget_stub);
 });
