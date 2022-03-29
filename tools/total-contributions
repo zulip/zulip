@@ -5,7 +5,6 @@ import pathlib
 import subprocess
 import sys
 from collections import defaultdict
-from datetime import datetime
 from typing import Dict, List
 
 
@@ -24,30 +23,19 @@ def retrieve_log(repo: str, lower_version: str, upper_version: str) -> List[str]
     ).splitlines()
 
 
-def find_version(time: str, repository: str) -> str:
+def find_path(repository: str) -> str:
+    return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repository
+
+
+def find_last_commit_before_time(repository: str, time: str) -> str:
     """Find the latest release version for the target repository as of the
     specified time.
     """
-    versions_list = subprocess.check_output(
-        ["git", "tag", "-l", "--sort=creatordate"], cwd=find_path(repository), text=True
-    ).splitlines()
-
-    for version in reversed(versions_list):
-        version_time = subprocess.check_output(
-            ["git", "log", "-1", "--format=%ci", version],
-            cwd=find_path(repository),
-            text=True,
-        ).split()[0]
-        if datetime.strptime(version_time, "%Y-%m-%d") < datetime.strptime(time, "%Y-%m-%d"):
-            return version
-
-    # This is a bug, but this tool doesn't support ranges for the
-    # beginning of a project's history yet.
-    raise AssertionError("Could not find any releases prior to tag.")
-
-
-def find_path(repository: str) -> str:
-    return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repository
+    return subprocess.check_output(
+        ["git", "rev-list", "-1", f"--before={time}", "main", "--"],
+        cwd=find_path(repository),
+        text=True,
+    ).strip()
 
 
 # argparse
@@ -150,10 +138,10 @@ for repository in [
     "zulip-terminal",
 ]:
     subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
-    lower_repo_version = find_version(lower_time, repository)
-    upper_repo_version = find_version(upper_time, repository)
+    lower_repo_version = find_last_commit_before_time(repository, lower_time)
+    upper_repo_version = find_last_commit_before_time(repository, upper_time)
     repo_log = retrieve_log(repository, lower_repo_version, upper_repo_version)
-    print(f"Commit range for {repository} {lower_repo_version}..{upper_repo_version}")
+    print(f"Commit range for {repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}")
     add_log(out_dict, repo_log)
 
 # Sorting based on number of commits
