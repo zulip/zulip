@@ -351,6 +351,8 @@ test("test_recent_topics_show", ({mock_template, override}) => {
     mock_template("recent_topic_row.hbs", false, () => {});
 
     stub_out_filter_buttons();
+    // We don't test the css calls; we just skip over them.
+    $("#mark_as_read_turned_off_banner").toggleClass = () => {};
 
     rt.clear_for_tests();
     rt.process_messages(messages);
