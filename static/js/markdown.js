@@ -23,8 +23,9 @@ import * as linkifiers from "./linkifiers";
 // for example usage.
 let helpers;
 
-// Regexes that match some of our common backend-only Markdown syntax
-const backend_only_markdown_re = [
+// If we see preview-related syntax in our content, we will need the
+// backend to render it.
+const preview_regexes = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
@@ -35,6 +36,10 @@ const backend_only_markdown_re = [
 
     /\S*(?:twitter|youtube).com\/\S*/,
 ];
+
+function contains_preview_link(content) {
+    return preview_regexes.some((re) => re.test(content));
+}
 
 export function translate_emoticons_to_names(text) {
     // Translates emoticons in a string to their colon syntax.
@@ -93,12 +98,7 @@ export function contains_backend_only_syntax(content) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
-    const markedup = backend_only_markdown_re.find((re) => re.test(content));
-    if (markedup !== undefined) {
-        return true;
-    }
-
-    return contains_problematic_linkifier(content);
+    return contains_preview_link(content) || contains_problematic_linkifier(content);
 }
 
 export function parse({raw_content, helper_config}) {
