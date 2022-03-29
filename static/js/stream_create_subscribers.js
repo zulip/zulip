@@ -8,6 +8,7 @@ import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
+import * as settings_users from "./settings_users";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data";
 
 let pill_widget;
@@ -96,6 +97,9 @@ export function build_widgets() {
                 disabled: stream_create_subscribers_data.must_be_subscribed(user_id),
             };
             return render_new_stream_user(item);
+        },
+        sort_fields: {
+            id: settings_users.sort_user_id,
         },
         filter: {
             $element: $("#people_to_add .add-user-list-filter"),
