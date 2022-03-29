@@ -1125,13 +1125,25 @@ td.pointer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 8px 8px 8px 14px;
+    column-gap: 10px;
 
     #mark_as_read_turned_off_content {
         margin: 0;
+        flex-grow: 1;
     }
 
-    .mark_as_read_close {
-        margin-top: 6px;
+    #mark_as_read_controls {
+        display: flex;
+    }
+
+    #mark_as_read_close {
+        align-self: flex-start;
+        margin-top: -5px;
+        /* override bootstrap */
+        top: 0;
+        right: 0;
+        position: static;
     }
 }
 
