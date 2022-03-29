@@ -1,6 +1,6 @@
 # Version history
 
-This page the release history for the Zulip server.  See also the
+This page the release history for the Zulip server. See also the
 [Zulip release lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip 6.x series
@@ -8,7 +8,7 @@ This page the release history for the Zulip server.  See also the
 ### 6.0 -- unreleased
 
 This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally.  See the [commit
+major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of raw changes.
 
 #### Upgrade notes for 6.0
@@ -2590,16 +2590,17 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-* [Draft upgrade notes for 6.0](#upgrade-notes-for-6-0)
-- [Upgrade notes for 5.0](#upgrade-notes-for-50)
-- [Upgrade notes for 4.0](#upgrade-notes-for-40)
-- [Upgrade notes for 3.0](#upgrade-notes-for-30)
-- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
-- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
-- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
-- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
-- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
-- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
+- [Draft upgrade notes for 6.0](#upgrade-notes-for-6-0)
+
+* [Upgrade notes for 5.0](#upgrade-notes-for-50)
+* [Upgrade notes for 4.0](#upgrade-notes-for-40)
+* [Upgrade notes for 3.0](#upgrade-notes-for-30)
+* [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+* [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+* [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+* [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+* [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+* [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main
