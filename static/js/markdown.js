@@ -6,7 +6,6 @@ import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
-import * as linkifiers from "./linkifiers";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
@@ -84,7 +83,7 @@ function contains_problematic_linkifier(content) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    for (const re of linkifiers.get_linkifier_map().keys()) {
+    for (const re of helpers.get_linkifier_map().keys()) {
         const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         if (regex.test(content)) {
@@ -284,7 +283,7 @@ function parse_with_options({raw_content, helper_config, options}) {
     return {content, flags};
 }
 
-export function add_topic_links(message) {
+function do_add_topic_links({message, get_linkifier_map}) {
     if (message.type !== "stream") {
         message.topic_links = [];
         return;
@@ -292,7 +291,7 @@ export function add_topic_links(message) {
     const topic = message.topic;
     const links = [];
 
-    for (const [pattern, url] of linkifiers.get_linkifier_map().entries()) {
+    for (const [pattern, url] of get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -376,8 +375,8 @@ function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
     return alt_text;
 }
 
-function handleLinkifier(pattern, matches) {
-    let url = linkifiers.get_linkifier_map().get(pattern);
+function handleLinkifier({pattern, matches, get_linkifier_map}) {
+    let url = get_linkifier_map().get(pattern);
 
     let current_group = 1;
 
@@ -569,9 +568,17 @@ export function parse({raw_content, helper_config}) {
         });
     }
 
+    function linkifierHandler(pattern, matches) {
+        return handleLinkifier({
+            pattern,
+            matches,
+            get_linkifier_map: helper_config.get_linkifier_map,
+        });
+    }
+
     const options = {
         emojiHandler,
-        linkifierHandler: handleLinkifier,
+        linkifierHandler,
         unicodeEmojiHandler,
         streamHandler,
         streamTopicHandler,
@@ -605,6 +612,10 @@ export function apply_markdown(message) {
     message.content = content;
     message.flags = flags;
     message.is_me_message = is_status_message(raw_content);
+}
+
+export function add_topic_links(message) {
+    return do_add_topic_links({message, get_linkifier_map: webapp_helpers.get_linkifier_map});
 }
 
 export function parse_non_message(raw_content) {

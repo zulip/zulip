@@ -109,6 +109,14 @@ function get_realm_emoji_url(emoji_name) {
     return realm_emoji_map.get(emoji_name);
 }
 
+const regex = /#foo(\d+)(?!\w)/g;
+const linkifier_map = new Map();
+linkifier_map.set(regex, "http://foo.com/\\1");
+
+function get_linkifier_map() {
+    return linkifier_map;
+}
+
 const helper_config = {
     // user stuff
     get_actual_name_from_user_id,
@@ -134,6 +142,9 @@ const helper_config = {
     get_emoji_name,
     get_emoticon_translations,
     get_realm_emoji_url,
+
+    // linkifiers
+    get_linkifier_map,
 };
 
 function assert_parse(raw_content, expected_content) {
@@ -143,6 +154,7 @@ function assert_parse(raw_content, expected_content) {
 
 function test(label, f) {
     markdown.setup();
+    markdown.set_linkifier_regexes([regex]);
     run_test(label, f);
 }
 
@@ -198,5 +210,12 @@ test("emojis", () => {
     assert_parse(
         "Mars Attacks! \uD83D\uDC7D",
         '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
+    );
+});
+
+test("linkifiers", () => {
+    assert_parse(
+        "see #foo12345 for details",
+        '<p>see <a href="http://foo.com/12345" title="http://foo.com/12345">#foo12345</a> for details</p>',
     );
 });
