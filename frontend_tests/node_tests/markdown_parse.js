@@ -154,7 +154,6 @@ function assert_parse(raw_content, expected_content) {
 
 function test(label, f) {
     markdown.setup();
-    markdown.set_linkifier_regexes([regex]);
     run_test(label, f);
 }
 

@@ -1,5 +1,4 @@
 import * as blueslip from "./blueslip";
-import * as markdown from "./markdown";
 
 const linkifier_map = new Map(); // regex -> url
 
@@ -77,9 +76,6 @@ export function update_linkifier_rules(linkifiers) {
 
         linkifier_map.set(regex, final_url);
     }
-
-    // Update our parser with our particular set of linkifiers.
-    markdown.set_linkifier_regexes(Array.from(linkifier_map.keys()));
 }
 
 export function initialize(linkifiers) {

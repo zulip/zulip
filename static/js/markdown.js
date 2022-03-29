@@ -451,10 +451,8 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-export function set_linkifier_regexes(regexes) {
-    // This needs to be called any time we modify our linkifier regexes,
-    // until we find a less clumsy way to handle this.
-    marked.InlineLexer.rules.zulip.linkifiers = regexes;
+export function get_linkifier_regexes() {
+    return Array.from(helpers.get_linkifier_map().keys());
 }
 
 export function setup() {
@@ -577,8 +575,9 @@ export function parse({raw_content, helper_config}) {
     }
 
     const options = {
-        emojiHandler,
+        get_linkifier_regexes,
         linkifierHandler,
+        emojiHandler,
         unicodeEmojiHandler,
         streamHandler,
         streamTopicHandler,
