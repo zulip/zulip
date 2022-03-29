@@ -135,6 +135,7 @@ except subprocess.CalledProcessError:
     sys.exit(0)
 
 out_dict: Dict[str, int] = defaultdict(int)
+subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
 zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
 add_log(out_dict, zulip)
 
