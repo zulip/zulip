@@ -2590,7 +2590,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 6.0](#upgrade-notes-for-6-0)
+- [Draft upgrade notes for 6.0](#upgrade-notes-for-60)
 
 * [Upgrade notes for 5.0](#upgrade-notes-for-50)
 * [Upgrade notes for 4.0](#upgrade-notes-for-40)
