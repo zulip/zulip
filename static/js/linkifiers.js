@@ -2,8 +2,11 @@ import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
 
-const linkifier_map = new Map();
-export let linkifier_list = [];
+const linkifier_map = new Map(); // regex -> url
+
+export function get_linkifier_map() {
+    return linkifier_map;
+}
 
 function handleLinkifier(pattern, matches) {
     let url = linkifier_map.get(pattern);
@@ -80,7 +83,6 @@ function python_to_js_linkifier(pattern, url) {
 export function update_linkifier_rules(linkifiers) {
     // Update the marked parser with our particular set of linkifiers
     linkifier_map.clear();
-    linkifier_list = [];
 
     const marked_rules = [];
 
@@ -92,10 +94,6 @@ export function update_linkifier_rules(linkifiers) {
         }
 
         linkifier_map.set(regex, final_url);
-        linkifier_list.push({
-            pattern: regex,
-            url_format: final_url,
-        });
         marked_rules.push(regex);
     }
 

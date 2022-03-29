@@ -85,13 +85,15 @@ function contains_problematic_linkifier(content) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const linkifier_list = linkifiers.linkifier_list;
-    const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
+    for (const re of linkifiers.get_linkifier_map().keys()) {
+        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
-        return regex.test(content);
-    });
-    return false_linkifier_match !== undefined;
+        if (regex.test(content)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 export function contains_backend_only_syntax(content) {
@@ -286,11 +288,8 @@ export function add_topic_links(message) {
     }
     const topic = message.topic;
     const links = [];
-    const linkifier_list = linkifiers.linkifier_list;
 
-    for (const linkifier of linkifier_list) {
-        const pattern = linkifier.pattern;
-        const url = linkifier.url_format;
+    for (const [pattern, url] of linkifiers.get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
