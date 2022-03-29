@@ -1635,6 +1635,50 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
+            {"description": ""},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.description, "")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            "* **Old description:**\n"
+            "```` quote\n"
+            "Test description\n"
+            "````\n"
+            "* **New description:**\n"
+            "```` quote\n"
+            "*No description.*\n"
+            "````"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "Test description"},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.description, "Test description")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            "* **Old description:**\n"
+            "```` quote\n"
+            "*No description.*\n"
+            "````\n"
+            "* **New description:**\n"
+            "```` quote\n"
+            "Test description\n"
+            "````"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
             {"description": "a\nmulti\nline\ndescription"},
         )
         self.assert_json_success(result)

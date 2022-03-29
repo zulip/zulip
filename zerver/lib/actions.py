@@ -5455,6 +5455,11 @@ def send_change_stream_description_notification(
     user_mention = silent_mention_syntax_for_user(acting_user)
 
     with override_language(stream.realm.default_language):
+        if new_description == "":
+            new_description = "*" + _("No description.") + "*"
+        if old_description == "":
+            old_description = "*" + _("No description.") + "*"
+
         notification_string = (
             _("{user} changed the description for this stream.").format(user=user_mention)
             + "\n\n* **"
