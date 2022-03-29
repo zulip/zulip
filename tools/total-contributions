@@ -7,6 +7,8 @@ import sys
 from collections import defaultdict
 from typing import Dict, List
 
+bot_commits = 0
+
 
 def add_log(committer_dict: Dict[str, int], input: List[str]) -> None:
     for dataset in input:
@@ -15,6 +17,8 @@ def add_log(committer_dict: Dict[str, int], input: List[str]) -> None:
 
         if committer_name.endswith("[bot]"):
             # Exclude dependabot[bot] and other GitHub bots.
+            global bot_commits
+            bot_commits += commit_count
             continue
 
         committer_dict[committer_name] += commit_count
@@ -131,11 +135,21 @@ print(
     f"Commit range {lower_zulip_version}..{upper_zulip_version} corresponds to {lower_time} to {upper_time}"
 )
 
+repository_dict: Dict[str, int] = defaultdict(int)
 out_dict: Dict[str, int] = defaultdict(int)
 subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
-zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
-print(f"Commit range for zulip/zulip: {lower_zulip_version[0:12]}..{upper_zulip_version[0:12]}")
-add_log(out_dict, zulip)
+commit_count = len(
+    subprocess.check_output(
+        ["git", "log", "--pretty=oneline", f"{lower_zulip_version}..{upper_zulip_version}"],
+        cwd=find_path("zulip"),
+        text=True,
+    ).splitlines()
+)
+repo_log = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
+print(
+    f"{commit_count} commits from zulip/zulip: {lower_zulip_version[0:12]}..{upper_zulip_version[0:12]}"
+)
+add_log(out_dict, repo_log)
 
 # TODO: We should migrate the last couple repositories to use the
 # `main` default branch name and then simplify this.
@@ -163,9 +177,16 @@ for (full_repository, branch) in [
     subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
     lower_repo_version = find_last_commit_before_time(repository, branch, lower_time)
     upper_repo_version = find_last_commit_before_time(repository, branch, upper_time)
+    commit_count = len(
+        subprocess.check_output(
+            ["git", "log", "--pretty=oneline", f"{lower_repo_version}..{upper_repo_version}"],
+            cwd=find_path(repository),
+            text=True,
+        ).splitlines()
+    )
     repo_log = retrieve_log(repository, lower_repo_version, upper_repo_version)
     print(
-        f"Commit range for {full_repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}"
+        f"{commit_count} commits from {full_repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}"
     )
     add_log(out_dict, repo_log)
 
@@ -177,7 +198,8 @@ for committer_name, commit_count in sorted(
     print(str(commit_count) + "\t" + committer_name)
     grand_total += commit_count
 
+print(f"Excluded {bot_commits} commits authored by bots.")
 print(
     f"{grand_total} total commits by {len(out_dict)} contributors between "
-    f"{lower_zulip_version} and {upper_repo_version}."
+    f"{lower_zulip_version} and {upper_zulip_version}."
 )
