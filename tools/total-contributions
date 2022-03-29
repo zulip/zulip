@@ -12,6 +12,11 @@ def add_log(committer_dict: Dict[str, int], input: List[str]) -> None:
     for dataset in input:
         committer_name = dataset.split("\t")[1]
         commit_count = int(dataset.split("\t")[0])
+
+        if committer_name.endswith("[bot]"):
+            # Exclude dependabot[bot] and other GitHub bots.
+            continue
+
         committer_dict[committer_name] += commit_count
 
 
