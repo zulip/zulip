@@ -122,6 +122,25 @@ function build_emojis_by_name({
     // Please keep this as a pure function so that we can
     // eventually share this code with the mobile codebase.
     const map = new Map();
+
+    for (const codepoints of Object.values(emoji_catalog)) {
+        for (const codepoint of codepoints) {
+            const emoji_name = get_emoji_name(codepoint);
+            if (emoji_name !== undefined) {
+                const emoji_dict = {
+                    name: emoji_name,
+                    display_name: emoji_name,
+                    aliases: default_emoji_aliases.get(codepoint),
+                    is_realm_emoji: false,
+                    emoji_code: codepoint,
+                    has_reacted: false,
+                };
+                // We may later get overridden by a realm emoji.
+                map.set(emoji_name, emoji_dict);
+            }
+        }
+    }
+
     for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
         const emoji_dict = {
             name: realm_emoji_name,
@@ -131,24 +150,9 @@ function build_emojis_by_name({
             url: realm_emoji.emoji_url,
             has_reacted: false,
         };
-        map.set(realm_emoji_name, emoji_dict);
-    }
 
-    for (const codepoints of Object.values(emoji_catalog)) {
-        for (const codepoint of codepoints) {
-            const emoji_name = get_emoji_name(codepoint);
-            if (emoji_name !== undefined && !map.has(emoji_name)) {
-                const emoji_dict = {
-                    name: emoji_name,
-                    display_name: emoji_name,
-                    aliases: default_emoji_aliases.get(codepoint),
-                    is_realm_emoji: false,
-                    emoji_code: codepoint,
-                    has_reacted: false,
-                };
-                map.set(emoji_name, emoji_dict);
-            }
-        }
+        // We want the realm emoji to overwrite any existing entry in this map.
+        map.set(realm_emoji_name, emoji_dict);
     }
 
     return map;
