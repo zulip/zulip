@@ -154,6 +154,12 @@ for (full_repository, branch) in [
 ]:
     repository = os.path.basename(full_repository)
 
+    if not os.path.exists(find_path(repository)):
+        subprocess.check_call(
+            ["git", "clone", f"git@github.com:{full_repository}.git"],
+            cwd=os.path.dirname(find_path(repository)),
+        )
+
     subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
     lower_repo_version = find_last_commit_before_time(repository, branch, lower_time)
     upper_repo_version = find_last_commit_before_time(repository, branch, upper_time)
