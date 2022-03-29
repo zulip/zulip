@@ -9,10 +9,6 @@ up-to-date list of raw changes.
 
 ### 5.0 -- 2022-03-29
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of raw changes.
-
 #### Highlights
 
 - New [resolve topic](https://zulip.com/help/resolve-a-topic) feature
