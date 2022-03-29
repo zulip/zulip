@@ -1,11 +1,13 @@
 # Version history
 
-This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](release-lifecycle.md).
+This page contains the release history for the Zulip 5.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
-### 5.0 -- unreleased
+### 5.0 -- 2022-03-29
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
@@ -186,6 +188,8 @@ log][commit-log] for an up-to-date list of raw changes.
   software from flagging invitations.
 - Added support for uploading animated PNGs as custom emoji.
 - Renamed "Night mode" to "Dark theme".
+- Added the mobile app's notification sound to desktop sound options,
+  as "Chime".
 - Reworked the `manage.py help` interface to hide Django commands that are
   useless or harmful to run on a production system. Also deleted
   several useless management commands.
@@ -2576,7 +2580,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 5.0](#upgrade-notes-for-50)
+- [Upgrade notes for 5.0](#upgrade-notes-for-50)
 - [Upgrade notes for 4.0](#upgrade-notes-for-40)
 - [Upgrade notes for 3.0](#upgrade-notes-for-30)
 - [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
