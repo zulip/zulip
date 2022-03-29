@@ -34,7 +34,7 @@ const preview_regexes = [
 
     // Twitter and youtube links are given previews
 
-    /\S*(?:twitter|youtube).com\/\S*/,
+    /\S*(?:twitter|youtube)\.com\/\S*/,
 ];
 
 function contains_preview_link(content) {
