@@ -32,12 +32,12 @@ def find_path(repository: str) -> str:
     return os.path.dirname((pathlib.Path().resolve()).parents[0]) + "/" + repository
 
 
-def find_last_commit_before_time(repository: str, time: str) -> str:
+def find_last_commit_before_time(repository: str, branch: str, time: str) -> str:
     """Find the latest release version for the target repository as of the
     specified time.
     """
     return subprocess.check_output(
-        ["git", "rev-list", "-1", f"--before={time}", "main", "--"],
+        ["git", "rev-list", "-1", f"--before={time}", branch, "--"],
         cwd=find_path(repository),
         text=True,
     ).strip()
@@ -127,39 +127,51 @@ except subprocess.CalledProcessError:
     print("Specified version(s) don't exist")
     sys.exit(0)
 
+print(
+    f"Commit range {lower_zulip_version}..{upper_zulip_version} corresponds to {lower_time} to {upper_time}"
+)
+
 out_dict: Dict[str, int] = defaultdict(int)
 subprocess.check_call(["git", "fetch"], cwd=find_path("zulip"))
 zulip = retrieve_log("zulip", lower_zulip_version, upper_zulip_version)
+print(f"Commit range for zulip/zulip: {lower_zulip_version[0:12]}..{upper_zulip_version[0:12]}")
 add_log(out_dict, zulip)
 
-print(f"Commit range corresponds to {lower_time} to {upper_time}")
-
-# TODO: This should probably include more repositories in the zulip organization.
-for repository in [
-    "zulip-mobile",
-    "zulip-desktop",
-    "docker-zulip",
-    "python-zulip-api",
-    "zulip-terminal",
+# TODO: We should migrate the last couple repositories to use the
+# `main` default branch name and then simplify this.
+for (full_repository, branch) in [
+    ("zulip/zulip-mobile", "main"),
+    ("zulip/zulip-desktop", "main"),
+    ("zulip/docker-zulip", "main"),
+    ("zulip/python-zulip-api", "main"),
+    ("zulip/zulip-terminal", "main"),
+    ("zulip/zulint", "main"),
+    ("zulip/github-actions-zulip", "main"),
+    ("zulip/zulip-js", "main"),
+    ("zulip/zulip-archive", "master"),
+    ("zulip/zulipbot", "main"),
+    ("zulip/zulip-zapier", "master"),
 ]:
+    repository = os.path.basename(full_repository)
+
     subprocess.check_call(["git", "fetch"], cwd=find_path(repository))
-    lower_repo_version = find_last_commit_before_time(repository, lower_time)
-    upper_repo_version = find_last_commit_before_time(repository, upper_time)
+    lower_repo_version = find_last_commit_before_time(repository, branch, lower_time)
+    upper_repo_version = find_last_commit_before_time(repository, branch, upper_time)
     repo_log = retrieve_log(repository, lower_repo_version, upper_repo_version)
-    print(f"Commit range for {repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}")
+    print(
+        f"Commit range for {full_repository}: {lower_repo_version[0:12]}..{upper_repo_version[0:12]}"
+    )
     add_log(out_dict, repo_log)
 
 # Sorting based on number of commits
-for commit_count, committer_name in sorted(
+grand_total = 0
+for committer_name, commit_count in sorted(
     out_dict.items(), key=lambda item: item[1], reverse=not args.ascending
 ):
-    print(str(committer_name) + "\t" + commit_count)
+    print(str(commit_count) + "\t" + committer_name)
+    grand_total += commit_count
 
 print(
-    "Total contributors across all Zulip repos within Zulip versions "
-    + lower_zulip_version
-    + " - "
-    + upper_zulip_version
-    + ": "
-    + str(len(out_dict))
+    f"{grand_total} total commits by {len(out_dict)} contributors between "
+    f"{lower_zulip_version} and {upper_repo_version}."
 )
