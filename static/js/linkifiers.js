@@ -8,20 +8,6 @@ export function get_linkifier_map() {
     return linkifier_map;
 }
 
-function handleLinkifier(pattern, matches) {
-    let url = linkifier_map.get(pattern);
-
-    let current_group = 1;
-
-    for (const match of matches) {
-        const back_ref = "\\" + current_group;
-        url = url.replace(back_ref, match);
-        current_group += 1;
-    }
-
-    return url;
-}
-
 function python_to_js_linkifier(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
@@ -102,6 +88,4 @@ export function update_linkifier_rules(linkifiers) {
 
 export function initialize(linkifiers) {
     update_linkifier_rules(linkifiers);
-
-    marked.setOptions({linkifierHandler: handleLinkifier});
 }

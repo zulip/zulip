@@ -373,6 +373,20 @@ function handleEmoji(emoji_name) {
     return alt_text;
 }
 
+function handleLinkifier(pattern, matches) {
+    let url = linkifiers.get_linkifier_map().get(pattern);
+
+    let current_group = 1;
+
+    for (const match of matches) {
+        const back_ref = "\\" + current_group;
+        url = url.replace(back_ref, match);
+        current_group += 1;
+    }
+
+    return url;
+}
+
 function handleTimestamp(time) {
     let timeobject;
     if (Number.isNaN(Number(time))) {
@@ -509,6 +523,7 @@ export function setup() {
         smartypants: false,
         zulip: true,
         emojiHandler: handleEmoji,
+        linkifierHandler: handleLinkifier,
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
