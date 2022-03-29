@@ -8,7 +8,7 @@
 # Filip Vařecha <filip.varecha@fragaria.cz>, 2021
 # Jiří Ryszawy <jiri@ryszawy.com>, 2021
 # Tomáš Hozman, 2021
-# fri, 2021
+# fri, 2022
 # 
 #, fuzzy
 msgid ""
@@ -17,7 +17,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: fri, 2021\n"
+"Last-Translator: fri, 2022\n"
 "Language-Team: Czech (https://www.transifex.com/zulip/teams/53893/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -684,7 +684,7 @@ msgstr "Na schůzce"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "Dojíždění"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"

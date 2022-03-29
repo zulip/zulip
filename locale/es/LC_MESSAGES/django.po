@@ -16,6 +16,7 @@
 # Milagros More <milimore16@gmail.com>, 2021
 # Gonçal Garcés, 2021
 # Yago González, 2021
+# Diego Ortín, 2022
 # 
 #, fuzzy
 msgid ""
@@ -24,7 +25,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-05-26 18:04+0000\n"
 "PO-Revision-Date: 2021-04-02 21:39+0000\n"
-"Last-Translator: Yago González, 2021\n"
+"Last-Translator: Diego Ortín, 2022\n"
 "Language-Team: Spanish (https://www.transifex.com/zulip/teams/53893/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -218,7 +219,7 @@ msgstr "Mensajes enviados por tipo de recipiente"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr ""
+msgstr "Mensajes leídos a lo largo del tiempo"
 
 #: templates/analytics/stats.html:124
 msgid "Last update"
@@ -229,6 +230,8 @@ msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr ""
+"Una actualización completa de todas las gráficas ocurre una vez al día. La "
+"gráfica de “mensajes enviados a lo largo del tiempo” se actualiza cada hora."
 
 #: templates/analytics/stats.html:129
 msgid "Analytics documentation"
@@ -246,10 +249,14 @@ msgid ""
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
 msgstr ""
+"\n"
+"            Esto confirma que la dirección de correo de tu cuenta Zulip ha cambiado\n"
+"            de %(old_email_html_tag)s a %(new_email_html_tag)s\n"
+"            "
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
-msgstr ""
+msgstr "¡Vaya! No hemos encontrado tu enlace de confirmación en el sistema."
 
 #: templates/confirmation/link_does_not_exist.html:11
 #: templates/confirmation/link_malformed.html:12
@@ -259,24 +266,31 @@ msgid ""
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
 msgstr ""
+"\n"
+"                   De todos modos, mándanos un mensaje a %(support_email_html_tag)s y lo resolveremos rápidamente.\n"
+"                    "
 
 #: templates/confirmation/link_expired.html:10
 msgid "Whoops. The confirmation link has expired or been deactivated."
-msgstr ""
+msgstr "¡Vaya! El enlace de confirmación ha caducado o ha sido desactivado."
 
 #: templates/confirmation/link_expired.html:11
 msgid "Please contact your organization administrator for a new link."
 msgstr ""
+"Por favor, pídele un nuevo enlace al administrador de tu organización."
 
 #: templates/confirmation/link_malformed.html:9
 msgid "Whoops. The confirmation link is malformed."
-msgstr ""
+msgstr "¡Vaya! El enlace de confirmación está mal formado."
 
 #: templates/confirmation/link_malformed.html:10
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
+"Asegúrate de haber copiado correctamente el enlace en tu navegador. Si "
+"sigues encontrándote con esta página, probablemente sea culpa nuestra. Lo "
+"sentimos."
 
 #: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
 msgid "Billing"
@@ -653,27 +667,27 @@ msgstr "Escribe tu estado"
 
 #: templates/zerver/app/index.html:153
 msgid "Status message"
-msgstr ""
+msgstr "Mensaje de estado"
 
 #: templates/zerver/app/index.html:160
 msgid "In a meeting"
-msgstr ""
+msgstr "En una reunión"
 
 #: templates/zerver/app/index.html:161
 msgid "Commuting"
-msgstr ""
+msgstr "Viajando"
 
 #: templates/zerver/app/index.html:162
 msgid "Out sick"
-msgstr ""
+msgstr "Enfermo"
 
 #: templates/zerver/app/index.html:163
 msgid "Vacationing"
-msgstr ""
+msgstr "De vacaciones"
 
 #: templates/zerver/app/index.html:164
 msgid "Working remotely"
-msgstr ""
+msgstr "Teletrabajando"
 
 #: templates/zerver/app/index.html:169
 msgid "Save"
@@ -715,7 +729,7 @@ msgstr "Miembros"
 #: templates/zerver/app/invite_user.html:43
 #: templates/zerver/development/dev_login.html:40
 msgid "Moderators"
-msgstr ""
+msgstr "Moderadores"
 
 #: templates/zerver/app/invite_user.html:44
 msgid "Organization administrators"
@@ -802,7 +816,7 @@ msgstr "Mostrar atajos de teclado"
 
 #: templates/zerver/app/keyboard_shortcuts.html:56
 msgid "Go to default view"
-msgstr ""
+msgstr "Ir a la vista por defecto"
 
 #: templates/zerver/app/keyboard_shortcuts.html:65
 msgid "Navigation"
@@ -944,7 +958,7 @@ msgstr "Ver temas recientes"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
 msgid "Filter topics"
-msgstr ""
+msgstr "Filtrar temas"
 
 #: templates/zerver/app/keyboard_shortcuts.html:260
 msgid "Drafts"
@@ -1025,11 +1039,11 @@ msgstr "Suscribir, añadir, o configurar canales"
 
 #: templates/zerver/app/left_sidebar.html:73
 msgid "Back to streams"
-msgstr ""
+msgstr "Volver a canales"
 
 #: templates/zerver/app/left_sidebar.html:80
 msgid "Subscribe to more streams"
-msgstr ""
+msgstr "Suscribir a más canales"
 
 #: templates/zerver/app/lightbox_overlay.html:10
 msgid "Pan &amp; Zoom"
@@ -1092,7 +1106,7 @@ msgstr "Gestionar organización"
 
 #: templates/zerver/app/navbar.html:83
 msgid "Usage statistics"
-msgstr ""
+msgstr "Estadísticas de uso"
 
 #: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
@@ -1129,7 +1143,7 @@ msgstr "Documentación de la API"
 
 #: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
-msgstr ""
+msgstr "Apoyar a Zulip"
 
 #: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
@@ -1211,22 +1225,26 @@ msgid ""
 "You are using an old version of the Zulip desktop app with known security "
 "bugs."
 msgstr ""
+"Estás usando una versión vieja de la aplicación de escritorio Zulip con "
+"problemas de seguridad conocidos."
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid "Download the latest version."
-msgstr ""
+msgstr "Descargar la última versión."
 
 #: templates/zerver/app/navbar_alerts.html:50
 msgid "This Zulip server is running an old version and should be upgraded."
 msgstr ""
+"Este servidor Zulip está ejecutando una versión vieja y debería ser "
+"actualizado."
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "Aprender más"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
-msgstr ""
+msgstr "Descartar durante una semana"
 
 #: templates/zerver/app/navbar_alerts.html:64
 #, python-format
@@ -1422,7 +1440,7 @@ msgstr "Temas silenciados"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
-msgstr ""
+msgstr "Usuarios silenciados"
 
 #: templates/zerver/app/settings_overlay.html:55
 msgid "Organization profile"

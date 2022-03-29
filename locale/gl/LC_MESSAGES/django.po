@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-12 00:27+0000\n"
+"POT-Creation-Date: 2022-03-29 15:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1668,6 +1668,31 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr ""
 
+#: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
+#: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
+#: templates/zerver/emails/compiled/custom_email_556550265caff1cd1fc70d6c7ef85cfc.html:4
+#: templates/zerver/emails/compiled/custom_email_71be297c80227efa5868a945ab2f03d5.html:4
+#: templates/zerver/emails/compiled/custom_email_76050a3fd18b4fc53c74b18de6b3cc57.html:4
+#: templates/zerver/emails/compiled/custom_email_8a64d4c3ba4c8579f83733107016b9b0.html:4
+#: templates/zerver/emails/compiled/custom_email_bb3181f792c96e031e57a0697a9ccba6.html:4
+#: templates/zerver/emails/compiled/custom_email_ebb5a4fe863941c2b7fc04a6f169a4ec.html:4
+#: templates/zerver/emails/compiled/custom_email_ed271a34d10d853722568eb6ada75850.html:4
+#: templates/zerver/emails/compiled/markdown_email.html:4
+msgid "Zulip logo"
+msgstr ""
+
+#: templates/zerver/emails/compiled/deactivate.html:8
+#, python-format
+msgid ""
+"\n"
+"Your Zulip account on %(realm_uri)s has been deactivated, and you will no "
+"longer be able to log in.\n"
+msgstr ""
+
+#: templates/zerver/emails/compiled/deactivate.html:15
+msgid "The administrators provided the following comment:"
+msgstr ""
+
 #: templates/zerver/emails/compiled/digest.html:28
 #: templates/zerver/emails/digest.source.html:27
 msgid "New streams"
@@ -1681,6 +1706,73 @@ msgstr ""
 #: templates/zerver/emails/compiled/digest.html:40
 #: templates/zerver/emails/compiled/followup_day2.html:34
 #: templates/zerver/emails/compiled/notify_new_login.html:48
+#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:69
+#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:29
+#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
+#: templates/zerver/emails/custom/compiled/custom_email_331368edee9787eec5ed7fb84c20ab4b.html:43
+#: templates/zerver/emails/custom/compiled/custom_email_356296598c50c63b992d5a7f5431cab6.html:32
+#: templates/zerver/emails/custom/compiled/custom_email_36e1b42758314f30ebbb0ba2355a2cf6.html:44
+#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
+#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_942c4b4fc3a557b1b719e48a0d7960cb.html:58
+#: templates/zerver/emails/custom/compiled/custom_email_94be55cb880f2e03b135e60e1e896cee.html:43
+#: templates/zerver/emails/custom/compiled/custom_email_9755ecf3f5931c6d7bc26873630a8eda.html:28
+#: templates/zerver/emails/custom/compiled/custom_email_9a13e4f876975188bfe26e27f2005c41.html:28
+#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:19
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_df42e22c3a95ace537f5868ca07da60f.html:43
+#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:19
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_fd18872ad7ede0fd99cdc6c289bc7ec5.html:28
+#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:68
+#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:27
+#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
+#: templates/zerver/emails/custom/custom_email_331368edee9787eec5ed7fb84c20ab4b.source.html:42
+#: templates/zerver/emails/custom/custom_email_356296598c50c63b992d5a7f5431cab6.source.html:31
+#: templates/zerver/emails/custom/custom_email_36e1b42758314f30ebbb0ba2355a2cf6.source.html:43
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
+#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
+#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
+#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
+#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
+#: templates/zerver/emails/custom/custom_email_942c4b4fc3a557b1b719e48a0d7960cb.source.html:57
+#: templates/zerver/emails/custom/custom_email_94be55cb880f2e03b135e60e1e896cee.source.html:42
+#: templates/zerver/emails/custom/custom_email_9755ecf3f5931c6d7bc26873630a8eda.source.html:27
+#: templates/zerver/emails/custom/custom_email_9a13e4f876975188bfe26e27f2005c41.source.html:27
+#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:18
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_df42e22c3a95ace537f5868ca07da60f.source.html:42
+#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
+#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:18
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom/custom_email_fd18872ad7ede0fd99cdc6c289bc7ec5.source.html:27
 #: templates/zerver/emails/custom_email_base.pre.html:15
 #: templates/zerver/emails/digest.source.html:39
 #: templates/zerver/emails/followup_day2.source.html:33
@@ -1695,6 +1787,10 @@ msgstr ""
 
 #: templates/zerver/emails/compiled/email_base_default.html:90
 #: templates/zerver/emails/compiled/email_base_marketing.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.txt:31
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.txt:31
+#: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
+#: templates/zerver/emails/custom/custom_email_b4026e4b7cec0fffdb28e3155fbc7653.txt:31
 #: templates/zerver/emails/email_base_default.source.html:31
 msgid "Swimming fish"
 msgstr ""
@@ -2260,8 +2356,80 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr ""
 
+#: templates/zerver/emails/custom/compiled/custom_email_098e9bd71faa6c36e43c5a0ea2064778.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:69
+#: templates/zerver/emails/custom/compiled/custom_email_1409d92fc85cf3223f04c53f4d968b2e.html:55
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1e4cfd33318438f830e0c3e40787ce19.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:29
+#: templates/zerver/emails/custom/compiled/custom_email_2670cddb12bff952186115b92e0e0001.html:97
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
+#: templates/zerver/emails/custom/compiled/custom_email_356296598c50c63b992d5a7f5431cab6.html:32
+#: templates/zerver/emails/custom/compiled/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.html:57
+#: templates/zerver/emails/custom/compiled/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.html:50
+#: templates/zerver/emails/custom/compiled/custom_email_8c519b0fe604b520d0453d67ff26eece.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_942c4b4fc3a557b1b719e48a0d7960cb.html:58
+#: templates/zerver/emails/custom/compiled/custom_email_9755ecf3f5931c6d7bc26873630a8eda.html:28
+#: templates/zerver/emails/custom/compiled/custom_email_9a13e4f876975188bfe26e27f2005c41.html:28
+#: templates/zerver/emails/custom/compiled/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:19
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_e5e19063fd9915a8b2ec281fa4678a68.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_e5f90f6ce84228d69eb2e871438e0321.html:96
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:19
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_fd18872ad7ede0fd99cdc6c289bc7ec5.html:28
+#: templates/zerver/emails/custom/custom_email_098e9bd71faa6c36e43c5a0ea2064778.source.html:95
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:68
+#: templates/zerver/emails/custom/custom_email_1409d92fc85cf3223f04c53f4d968b2e.source.html:54
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1e4cfd33318438f830e0c3e40787ce19.source.html:95
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:27
+#: templates/zerver/emails/custom/custom_email_2670cddb12bff952186115b92e0e0001.source.html:96
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
+#: templates/zerver/emails/custom/custom_email_356296598c50c63b992d5a7f5431cab6.source.html:31
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_4d6d4d7ca23407002e70eaebadf4a4d0.source.html:49
+#: templates/zerver/emails/custom/custom_email_50cda0b5e48c5a77eb5df74b94d74a9d.source.html:95
+#: templates/zerver/emails/custom/custom_email_5d6651a6bee23fa2ae49f64a1d0aeac0.source.html:65
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_724f2abbf3118920bfe8d10b8c520947.source.html:51
+#: templates/zerver/emails/custom/custom_email_7cdeb0d40275cef453ee0a2e5cbbba9c.source.html:56
+#: templates/zerver/emails/custom/custom_email_838c9c6ac478079cb2935d10c9f1a3c3.source.html:49
+#: templates/zerver/emails/custom/custom_email_8c519b0fe604b520d0453d67ff26eece.source.html:95
+#: templates/zerver/emails/custom/custom_email_942c4b4fc3a557b1b719e48a0d7960cb.source.html:57
+#: templates/zerver/emails/custom/custom_email_9755ecf3f5931c6d7bc26873630a8eda.source.html:27
+#: templates/zerver/emails/custom/custom_email_9a13e4f876975188bfe26e27f2005c41.source.html:27
+#: templates/zerver/emails/custom/custom_email_a9094a7113ecb4fd1472c54dfc1c8725.source.html:95
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.source.html:18
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_e5e19063fd9915a8b2ec281fa4678a68.source.html:95
+#: templates/zerver/emails/custom/custom_email_e5f90f6ce84228d69eb2e871438e0321.source.html:95
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:18
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom/custom_email_fd18872ad7ede0fd99cdc6c289bc7ec5.source.html:27
 #: templates/zerver/emails/custom_email_base.pre.html:15
 msgid "Unsubscribe from marketing emails"
+msgstr ""
+
+#: templates/zerver/emails/custom/compiled/custom_email_331368edee9787eec5ed7fb84c20ab4b.html:42
+#: templates/zerver/emails/custom/compiled/custom_email_36e1b42758314f30ebbb0ba2355a2cf6.html:43
+#: templates/zerver/emails/custom/compiled/custom_email_94be55cb880f2e03b135e60e1e896cee.html:42
+#: templates/zerver/emails/custom/compiled/custom_email_df42e22c3a95ace537f5868ca07da60f.html:42
+#: templates/zerver/emails/custom/custom_email_331368edee9787eec5ed7fb84c20ab4b.source.html:41
+#: templates/zerver/emails/custom/custom_email_36e1b42758314f30ebbb0ba2355a2cf6.source.html:42
+#: templates/zerver/emails/custom/custom_email_94be55cb880f2e03b135e60e1e896cee.source.html:41
+#: templates/zerver/emails/custom/custom_email_df42e22c3a95ace537f5868ca07da60f.source.html:41
+msgid ""
+"You have received this email to update you about important changes to "
+"Zulip's Terms of Service."
 msgstr ""
 
 #: templates/zerver/emails/digest.subject.txt:1
