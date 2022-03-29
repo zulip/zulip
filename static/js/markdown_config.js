@@ -28,6 +28,14 @@ import {user_settings} from "./user_settings";
     when the lookups fail.
 */
 
+function abstract_map(map) {
+    return {
+        keys: () => map.keys(),
+        entries: () => map.entries(),
+        get: (k) => map.get(k),
+    };
+}
+
 export const get_helpers = () => ({
     // user stuff
     get_actual_name_from_user_id: people.get_actual_name_from_user_id,
@@ -55,5 +63,5 @@ export const get_helpers = () => ({
     get_realm_emoji_url: emoji.get_realm_emoji_url,
 
     // linkifiers
-    get_linkifier_map: linkifiers.get_linkifier_map,
+    get_linkifier_map: () => abstract_map(linkifiers.get_linkifier_map()),
 });
