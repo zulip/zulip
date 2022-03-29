@@ -837,6 +837,8 @@ test("missing unicode emojis", ({override_rewire}) => {
         assert.equal(codepoint, "1f6b2");
         // return undefined
     });
+
+    markdown.initialize(markdown_config.get_helpers());
     markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });

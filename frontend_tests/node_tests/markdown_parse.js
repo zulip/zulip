@@ -77,6 +77,38 @@ function stream_topic_hash(stream_id, topic) {
     return `stream-${stream_id}-topic-${topic}`;
 }
 
+function get_emoticon_translations() {
+    return [
+        {regex: /(:\))/g, replacement_text: ":smile:"},
+        {regex: /(<3)/g, replacement_text: ":heart:"},
+    ];
+}
+
+const emoji_map = new Map();
+emoji_map.set("smile", "1f642");
+emoji_map.set("alien", "1f47d");
+
+function get_emoji_codepoint(emoji_name) {
+    return emoji_map.get(emoji_name);
+}
+
+function get_emoji_name(codepoint) {
+    for (const [emoji_name, _codepoint] of emoji_map.entries()) {
+        if (codepoint === _codepoint) {
+            return emoji_name;
+        }
+    }
+
+    return undefined;
+}
+
+const realm_emoji_map = new Map();
+realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
+
+function get_realm_emoji_url(emoji_name) {
+    return realm_emoji_map.get(emoji_name);
+}
+
 const helper_config = {
     // user stuff
     get_actual_name_from_user_id,
@@ -95,7 +127,13 @@ const helper_config = {
     stream_topic_hash,
 
     // settings
-    should_translate_emoticons: () => false,
+    should_translate_emoticons: () => true,
+
+    // emojis
+    get_emoji_codepoint,
+    get_emoji_name,
+    get_emoticon_translations,
+    get_realm_emoji_url,
 };
 
 function assert_parse(raw_content, expected_content) {
@@ -145,5 +183,20 @@ test("stream links", () => {
     assert_parse(
         "#**social>lunch**",
         '<p><a class="stream-topic" data-stream-id="301" href="/stream-301-topic-lunch">#social &gt; lunch</a></p>',
+    );
+});
+
+test("emojis", () => {
+    assert_parse(
+        "yup :)",
+        '<p>yup <span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+    );
+    assert_parse(
+        "I <3 JavaScript",
+        '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
+    );
+    assert_parse(
+        "Mars Attacks! \uD83D\uDC7D",
+        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
     );
 });

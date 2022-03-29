@@ -6,7 +6,6 @@ import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
 import * as blueslip from "./blueslip";
-import * as emoji from "./emoji";
 import * as linkifiers from "./linkifiers";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -69,7 +68,7 @@ export function translate_emoticons_to_names(text) {
         return match;
     };
 
-    for (const translation of emoji.get_emoticon_translations()) {
+    for (const translation of helpers.get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -337,9 +336,9 @@ function make_emoji_span(codepoint, title, alt_text) {
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
-function handleUnicodeEmoji(unicode_emoji) {
+function handleUnicodeEmoji({unicode_emoji, get_emoji_name}) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    const emoji_name = emoji.get_emoji_name(codepoint);
+    const emoji_name = get_emoji_name(codepoint);
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
@@ -350,7 +349,7 @@ function handleUnicodeEmoji(unicode_emoji) {
     return unicode_emoji;
 }
 
-function handleEmoji(emoji_name) {
+function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.replace(/_/g, " ");
 
@@ -361,7 +360,7 @@ function handleEmoji(emoji_name) {
     // Otherwise we'll look at Unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
+    const emoji_url = get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
@@ -369,7 +368,7 @@ function handleEmoji(emoji_name) {
         )}" title="${_.escape(title)}">`;
     }
 
-    const codepoint = emoji.get_emoji_codepoint(emoji_name);
+    const codepoint = get_emoji_codepoint(emoji_name);
     if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
@@ -555,10 +554,25 @@ export function parse({raw_content, helper_config}) {
         });
     }
 
+    function emojiHandler(emoji_name) {
+        return handleEmoji({
+            emoji_name,
+            get_realm_emoji_url: helper_config.get_realm_emoji_url,
+            get_emoji_codepoint: helper_config.get_emoji_codepoint,
+        });
+    }
+
+    function unicodeEmojiHandler(unicode_emoji) {
+        return handleUnicodeEmoji({
+            unicode_emoji,
+            get_emoji_name: helper_config.get_emoji_name,
+        });
+    }
+
     const options = {
-        emojiHandler: handleEmoji,
+        emojiHandler,
         linkifierHandler: handleLinkifier,
-        unicodeEmojiHandler: handleUnicodeEmoji,
+        unicodeEmojiHandler,
         streamHandler,
         streamTopicHandler,
         texHandler: handleTex,

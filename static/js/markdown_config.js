@@ -1,3 +1,4 @@
+import * as emoji from "./emoji";
 import * as hash_util from "./hash_util";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -45,4 +46,10 @@ export const get_helpers = () => ({
 
     // settings
     should_translate_emoticons: () => user_settings.translate_emoticons,
+
+    // emojis
+    get_emoji_name: emoji.get_emoji_name,
+    get_emoji_codepoint: emoji.get_emoji_codepoint,
+    get_emoticon_translations: emoji.get_emoticon_translations,
+    get_realm_emoji_url: emoji.get_realm_emoji_url,
 });
