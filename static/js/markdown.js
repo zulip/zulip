@@ -76,12 +76,7 @@ export function translate_emoticons_to_names(text) {
     return translated;
 }
 
-export function contains_backend_only_syntax(content) {
-    // Try to guess whether or not a message contains syntax that only the
-    // backend Markdown processor can correctly handle.
-    // If it doesn't, we can immediately render it client-side for local echo.
-    const markedup = backend_only_markdown_re.find((re) => re.test(content));
-
+function contains_problematic_linkifier(content) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
@@ -91,7 +86,19 @@ export function contains_backend_only_syntax(content) {
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
-    return markedup !== undefined || false_linkifier_match !== undefined;
+    return false_linkifier_match !== undefined;
+}
+
+export function contains_backend_only_syntax(content) {
+    // Try to guess whether or not a message contains syntax that only the
+    // backend Markdown processor can correctly handle.
+    // If it doesn't, we can immediately render it client-side for local echo.
+    const markedup = backend_only_markdown_re.find((re) => re.test(content));
+    if (markedup !== undefined) {
+        return true;
+    }
+
+    return contains_problematic_linkifier(content);
 }
 
 export function parse({raw_content, helper_config}) {
