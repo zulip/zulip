@@ -1,5 +1,6 @@
 import * as emoji from "./emoji";
 import * as hash_util from "./hash_util";
+import * as linkifiers from "./linkifiers";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
@@ -52,4 +53,7 @@ export const get_helpers = () => ({
     get_emoji_codepoint: emoji.get_emoji_codepoint,
     get_emoticon_translations: emoji.get_emoticon_translations,
     get_realm_emoji_url: emoji.get_realm_emoji_url,
+
+    // linkifiers
+    get_linkifier_map: linkifiers.get_linkifier_map,
 });
