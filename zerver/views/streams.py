@@ -681,6 +681,10 @@ def send_messages_for_new_subscribers(
         sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
         for stream in created_streams:
             with override_language(stream.realm.default_language):
+                if stream.description == "":
+                    stream_description = "*" + _("No description.") + "*"
+                else:
+                    stream_description = stream.description
                 notifications.append(
                     internal_prep_stream_message(
                         sender=sender,
@@ -696,7 +700,7 @@ def send_messages_for_new_subscribers(
                                 is_web_public=stream.is_web_public,
                             ),
                         )
-                        + f"\n```` quote\n{stream.description}\n````",
+                        + f"\n```` quote\n{stream_description}\n````",
                     ),
                 )
 
