@@ -13185,6 +13185,7 @@ paths:
             type: string
           example: "Discuss Italian history and travel destinations."
           required: false
+          allowEmptyValue: true
         - name: new_name
           in: query
           description: |
