@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
@@ -93,6 +94,8 @@ function test_helper() {
     stub(unread_ops, "process_visible");
     stub(compose_closed_ui, "update_buttons_for_stream");
     stub(compose_closed_ui, "update_buttons_for_private");
+    // We don't test the css calls; we just skip over them.
+    $("#mark_as_read_turned_off_banner").toggleClass = () => {};
 
     return {
         clear: () => {
