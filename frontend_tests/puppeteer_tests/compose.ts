@@ -199,7 +199,7 @@ async function test_markdown_rendering(page: Page): Promise<void> {
     await page.click("#compose .markdown_preview");
     await page.waitForSelector("#compose .preview_content", {visible: true});
     const expected_markdown_html =
-        "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
+        "<div><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</div>";
     await page.waitForFunction(() => $("#compose .preview_content").html() !== "");
     markdown_preview_element = await page.$("#compose .preview_content");
     assert.equal(

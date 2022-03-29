@@ -337,10 +337,14 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
             // Handle previews of /me messages
             rendered_preview_html =
-                "<p><strong>" +
+                "<div><strong>" +
                 _.escape(page_params.full_name) +
                 "</strong>" +
-                rendered_content.slice("<p>/me".length);
+                rendered_content.slice("<p>/me".length, -1 * "</p>".length) +
+                "</div>";
+        } else if (rendered_content.startsWith("<p>")) {
+            rendered_preview_html =
+                "<div>" + rendered_content.slice("<p>".length, -1 * "</p>".length) + "</div>";
         } else {
             rendered_preview_html = rendered_content;
         }
