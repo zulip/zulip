@@ -656,6 +656,20 @@ export function initialize() {
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();
 
+    $("body").on("click", "#next_unread_bookmark_topic", (e) => {
+        narrow.narrow_to_next_topic();
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", "#next_unread_bookmark_pm", (e) => {
+        narrow.narrow_to_next_pm_string();
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("body").on("click", ".logout_button", () => {
         $("#logout_form").trigger("submit");
     });

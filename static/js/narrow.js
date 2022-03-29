@@ -115,6 +115,51 @@ export function save_pre_narrow_offset_for_reload() {
     }
 }
 
+export function hide_next_narrow_buttons() {
+    $("#next_unread_bookmark_topic").hide();
+    $("#next_unread_bookmark_pm").hide();
+}
+
+export function update_bottom_whitespace_button() {
+    if (message_lists.current.num_items() === 0) {
+        return;
+    }
+
+    const counts = unread.get_counts();
+    const unread_pms_count = counts.private_message_count;
+    const unread_topics_count = counts.home_unread_messages - unread_pms_count;
+    let show_next_button = false;
+    const is_pm_narrow = narrow_state.narrowed_by_pm_reply();
+
+    if (is_pm_narrow && unread_pms_count) {
+        const current_narrow_unread_count = narrow_state._possible_unread_message_ids().length;
+        // If this is the only unread PM narrow, don't show the next buttons.
+        const is_current_narrow_last_unread = current_narrow_unread_count - unread_pms_count === 0;
+        if (!is_current_narrow_last_unread) {
+            show_next_button = true;
+        }
+    } else if (narrow_state.narrowed_by_topic_reply() && unread_topics_count) {
+        const current_narrow_unread_count = narrow_state._possible_unread_message_ids().length;
+        const is_current_narrow_last_unread =
+            current_narrow_unread_count - unread_topics_count === 0;
+        if (!is_current_narrow_last_unread) {
+            show_next_button = true;
+        }
+    }
+
+    if (show_next_button) {
+        if (is_pm_narrow) {
+            $("#next_unread_bookmark_topic").hide();
+            $("#next_unread_bookmark_pm").css("display", "flex");
+        } else {
+            $("#next_unread_bookmark_topic").css("display", "flex");
+            $("#next_unread_bookmark_pm").hide();
+        }
+    } else {
+        hide_next_narrow_buttons();
+    }
+}
+
 export let narrow_title = "home";
 export let has_shown_message_list_view = false;
 
@@ -529,6 +574,8 @@ export function activate(raw_operators, opts) {
                 }
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
+                // Show next-unread button after the message for the narrow were fetched.
+                update_bottom_whitespace_button();
             },
         });
     }
@@ -569,6 +616,7 @@ export function activate(raw_operators, opts) {
 
     const current_filter = narrow_state.filter();
 
+    update_bottom_whitespace_button();
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
@@ -1034,6 +1082,7 @@ export function deactivate(coming_from_recent_topics = false) {
     $("body").removeClass("narrowed_view");
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
+    update_bottom_whitespace_button();
     message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 

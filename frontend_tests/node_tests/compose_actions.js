@@ -24,6 +24,11 @@ const compose_ui = mock_esm("../../static/js/compose_ui", {
 const hash_util = mock_esm("../../static/js/hash_util");
 const narrow_state = mock_esm("../../static/js/narrow_state", {
     set_compose_defaults: noop,
+    narrowed_by_pm_reply: noop,
+});
+mock_esm("../../static/js/narrow", {
+    update_bottom_whitespace_button: noop,
+    hide_next_narrow_buttons: noop,
 });
 mock_esm("../../static/js/notifications", {
     clear_compose_notifications: noop,

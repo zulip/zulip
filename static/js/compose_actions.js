@@ -16,6 +16,7 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -38,6 +39,7 @@ function hide_box() {
     // This is the main hook for saving drafts when closing the compose box.
     drafts.update_draft();
     blur_compose_inputs();
+    narrow.update_bottom_whitespace_button();
     $("#stream-message").hide();
     $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");
@@ -92,6 +94,7 @@ function show_box(msg_type, opts) {
         $("#private_message_toggle").addClass("active");
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
+    narrow.hide_next_narrow_buttons();
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");

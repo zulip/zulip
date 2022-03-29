@@ -2498,6 +2498,49 @@ div.topic_edit_spinner .loading_indicator_spinner {
     border-bottom: 1px solid hsl(0, 0%, 100%);
 }
 
+#bottom_whitespace #next_unread_bookmark_topic,
+#bottom_whitespace #next_unread_bookmark_pm {
+    display: none;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+
+    span {
+        white-space: nowrap;
+
+        .text {
+            display: inline;
+            color: hsl(200, 100%, 40%);
+        }
+
+        .hotkey {
+            display: inline;
+            background: hsl(200, 100%, 40%);
+            border-radius: 4px;
+            padding: 2px 5px;
+            margin-left: 4px;
+            color: hsl(0, 0%, 100%);
+        }
+
+        &:hover {
+            cursor: pointer;
+
+            .text {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    hr {
+        width: 100%;
+        height: 0;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
+        opacity: 0.5;
+    }
+}
+
 .sub-unsub-message span::before,
 .date_row span::before {
     right: 0.5em;

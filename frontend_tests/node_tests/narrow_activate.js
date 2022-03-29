@@ -26,6 +26,7 @@ const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
     set_current(msg_list) {
         message_lists.current = msg_list;
+        message_lists.current.num_items = () => 0;
     },
 });
 const message_scroll = mock_esm("../../static/js/message_scroll");

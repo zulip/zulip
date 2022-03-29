@@ -147,6 +147,26 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    #bottom_whitespace #next_unread_bookmark_topic,
+    #bottom_whitespace #next_unread_bookmark_pm {
+        span {
+            .text {
+                color: hsl(200, 100%, 40%);
+            }
+
+            .hotkey {
+                background: hsl(215, 52%, 25%);
+                color: hsl(236, 33%, 90%);
+            }
+        }
+
+        hr {
+            border-top: 1px solid hsl(0, 0%, 88%);
+            border-bottom: 1px solid hsl(0, 0%, 100%);
+            opacity: 0.1;
+        }
+    }
+
     #scroll-to-bottom-button-container {
         background: transparent;
 
