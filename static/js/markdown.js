@@ -449,6 +449,12 @@ function handleTex(tex, fullmatch) {
     }
 }
 
+export function set_linkifier_regexes(regexes) {
+    // This needs to be called any time we modify our linkifier regexes,
+    // until we find a less clumsy way to handle this.
+    marked.InlineLexer.rules.zulip.linkifiers = regexes;
+}
+
 export function setup() {
     // Once we focus on supporting other platforms such as mobile,
     // we will export this function.

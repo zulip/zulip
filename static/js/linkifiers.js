@@ -1,6 +1,5 @@
-import marked from "../third/marked/lib/marked";
-
 import * as blueslip from "./blueslip";
+import * as markdown from "./markdown";
 
 const linkifier_map = new Map(); // regex -> url
 
@@ -67,10 +66,7 @@ function python_to_js_linkifier(pattern, url) {
 }
 
 export function update_linkifier_rules(linkifiers) {
-    // Update the marked parser with our particular set of linkifiers
     linkifier_map.clear();
-
-    const marked_rules = [];
 
     for (const linkifier of linkifiers) {
         const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
@@ -80,10 +76,10 @@ export function update_linkifier_rules(linkifiers) {
         }
 
         linkifier_map.set(regex, final_url);
-        marked_rules.push(regex);
     }
 
-    marked.InlineLexer.rules.zulip.linkifiers = marked_rules;
+    // Update our parser with our particular set of linkifiers.
+    markdown.set_linkifier_regexes(Array.from(linkifier_map.keys()));
 }
 
 export function initialize(linkifiers) {
