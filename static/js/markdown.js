@@ -94,7 +94,14 @@ export function contains_backend_only_syntax(content) {
     return markedup !== undefined || false_linkifier_match !== undefined;
 }
 
-export function apply_markdown(message) {
+export function parse({raw_content, helper_config}) {
+    // Given the raw markdown content of a message (raw_content)
+    // we return the HTML content (content) and flags.
+    // Our caller passes a helper_config object that has several
+    // helper functions for getting info about users, streams, etc.
+
+    helpers = helper_config;
+
     let mentioned = false;
     let mentioned_group = false;
     let mentioned_wildcard = false;
@@ -249,20 +256,20 @@ export function apply_markdown(message) {
     };
 
     // Our Python-Markdown processor appends two \n\n to input
-    message.content = marked(message.raw_content + "\n\n", options).trim();
+    const content = marked(raw_content + "\n\n", options).trim();
 
     // Simulate message flags for our locally rendered
     // message. Messages the user themselves sent via the browser are
     // always marked as read.
-    message.flags = ["read"];
+    const flags = ["read"];
     if (mentioned || mentioned_group) {
-        message.flags.push("mentioned");
+        flags.push("mentioned");
     }
     if (mentioned_wildcard) {
-        message.flags.push("wildcard_mentioned");
+        flags.push("wildcard_mentioned");
     }
 
-    message.is_me_message = is_status_message(message.raw_content);
+    return {content, flags};
 }
 
 export function add_topic_links(message) {
@@ -422,8 +429,9 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-export function initialize(helper_config) {
-    helpers = helper_config;
+export function setup() {
+    // Once we focus on supporting other platforms such as mobile,
+    // we will export this function.
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
@@ -503,4 +511,29 @@ export function initialize(helper_config) {
         renderer: r,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     });
+}
+
+// NOTE: Everything below this line is likely to be webapp-specific
+//       and won't be used by future platforms such as mobile.
+//       We may eventually move this code to a new file, but we want
+//       to wait till the dust settles a bit on some other changes first.
+
+let webapp_helpers;
+
+export function initialize(helper_config) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call setup().
+    webapp_helpers = helper_config;
+    helpers = helper_config;
+    setup();
+}
+
+export function apply_markdown(message) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call parse().
+    const raw_content = message.raw_content;
+    const {content, flags} = parse({raw_content, helper_config: webapp_helpers});
+    message.content = content;
+    message.flags = flags;
+    message.is_me_message = is_status_message(raw_content);
 }
