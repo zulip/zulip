@@ -218,13 +218,17 @@ export function initialize() {
         message_flags.toggle_starred_and_update_server(message);
     });
 
-    $("#main_div").on("click", ".message_reaction", function (e) {
+    $("#main_div").on("click", ".message_reaction", async function (e) {
         e.stopPropagation();
+        if($(this).hasClass("update_state"))
+            return;
         emoji_picker.hide_emoji_popover();
+        $(this).addClass("update_state");
         const local_id = $(this).attr("data-reaction-id");
         const message_id = rows.get_message_id(this);
-        reactions.process_reaction_click(message_id, local_id);
+        await reactions.process_reaction_click(message_id, local_id);
         $(".tooltip").remove();
+        $(this).removeClass("update_state");
     });
 
     $("body").on("click", ".reveal_hidden_message", (e) => {

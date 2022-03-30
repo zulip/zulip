@@ -21,6 +21,7 @@
 /tools/conf.ini
 /tools/custom_provision
 /tools/droplets/conf.ini
+/tools/pre-commit
 
 ## Byproducts of setting up and using the dev environment
 *.pyc

@@ -2612,7 +2612,6 @@ def do_add_reaction(
 
     notify_reaction_update(user_profile, message, reaction, "add")
 
-
 def check_add_reaction(
     user_profile: UserProfile,
     message_id: int,
@@ -2632,49 +2631,50 @@ def check_add_reaction(
     if reaction_type is None:
         reaction_type = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[1]
 
-    if Reaction.objects.filter(
-        user_profile=user_profile,
-        message=message,
-        emoji_code=emoji_code,
-        reaction_type=reaction_type,
-    ).exists():
+
+        if Reaction.objects.filter(
+            user_profile=user_profile,
+            message=message,
+            emoji_code=emoji_code,
+            reaction_type=reaction_type,
+        ).exists():
         raise JsonableError(_("Reaction already exists."))
 
-    query = Reaction.objects.filter(
-        message=message, emoji_code=emoji_code, reaction_type=reaction_type
-    )
-    if query.exists():
-        # If another user has already reacted to this message with
-        # same emoji code, we treat the new reaction as a vote for the
-        # existing reaction.  So the emoji name used by that earlier
-        # reaction takes precedence over whatever was passed in this
-        # request.  This is necessary to avoid a message having 2
-        # "different" emoji reactions with the same emoji code (and
-        # thus same image) on the same message, which looks ugly.
-        #
-        # In this "voting for an existing reaction" case, we shouldn't
-        # check whether the emoji code and emoji name match, since
-        # it's possible that the (emoji_type, emoji_name, emoji_code)
-        # triple for this existing reaction may not pass validation
-        # now (e.g. because it is for a realm emoji that has been
-        # since deactivated).  We still want to allow users to add a
-        # vote any old reaction they see in the UI even if that is a
-        # deactivated custom emoji, so we just use the emoji name from
-        # the existing reaction with no further validation.
-        reaction = query.first()
-        assert reaction is not None
-        emoji_name = reaction.emoji_name
-    else:
-        # Otherwise, use the name provided in this request, but verify
-        # it is valid in the user's realm (e.g. not a deactivated
-        # realm emoji).
-        check_emoji_request(user_profile.realm, emoji_name, emoji_code, reaction_type)
+        query = Reaction.objects.filter(
+            message=message, emoji_code=emoji_code, reaction_type=reaction_type
+        )
+        if query.exists():
+            # If another user has already reacted to this message with
+            # same emoji code, we treat the new reaction as a vote for the
+            # existing reaction.  So the emoji name used by that earlier
+            # reaction takes precedence over whatever was passed in this
+            # request.  This is necessary to avoid a message having 2
+            # "different" emoji reactions with the same emoji code (and
+            # thus same image) on the same message, which looks ugly.
+            #
+            # In this "voting for an existing reaction" case, we shouldn't
+            # check whether the emoji code and emoji name match, since
+            # it's possible that the (emoji_type, emoji_name, emoji_code)
+            # triple for this existing reaction may not pass validation
+            # now (e.g. because it is for a realm emoji that has been
+            # since deactivated).  We still want to allow users to add a
+            # vote any old reaction they see in the UI even if that is a
+            # deactivated custom emoji, so we just use the emoji name from
+            # the existing reaction with no further validation.
+            reaction = query.first()
+            assert reaction is not None
+            emoji_name = reaction.emoji_name
+        else:
+            # Otherwise, use the name provided in this request, but verify
+            # it is valid in the user's realm (e.g. not a deactivated
+            # realm emoji).
+            check_emoji_request(user_profile.realm, emoji_name, emoji_code, reaction_type)
 
-    if user_message is None:
-        # See called function for more context.
-        create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
+        if user_message is None:
+            # See called function for more context.
+            create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
 
-    do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
+        do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
 
 
 def do_remove_reaction(

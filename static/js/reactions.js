@@ -64,7 +64,7 @@ function create_reaction(message_id, reaction_info) {
     };
 }
 
-function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
+async function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
     if (page_params.is_spectator) {
         // Spectators can't react, since they don't have accounts.  We
         // stop here to avoid a confusing reaction local echo.
@@ -99,9 +99,9 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
         },
     };
     if (operation === "add") {
-        channel.post(args);
+        await channel.post(args);
     } else if (operation === "remove") {
-        channel.del(args);
+        await channel.del(args);
     }
 }
 
@@ -116,7 +116,7 @@ export function toggle_emoji_reaction(message_id, emoji_name) {
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
 }
 
-export function process_reaction_click(message_id, local_id) {
+export async function process_reaction_click(message_id, local_id) {
     const message = get_message(message_id);
 
     if (!message) {
@@ -139,7 +139,7 @@ export function process_reaction_click(message_id, local_id) {
         emoji_code: r.emoji_code,
     };
 
-    update_ui_and_send_reaction_ajax(message_id, reaction_info);
+    await update_ui_and_send_reaction_ajax(message_id, reaction_info);
 }
 
 function generate_title(emoji_name, user_ids) {
