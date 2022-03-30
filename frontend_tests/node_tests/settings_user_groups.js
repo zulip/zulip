@@ -19,6 +19,7 @@ let create_item_handler;
 
 const channel = mock_esm("../../static/js/channel");
 const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
+const dialog_widget = mock_esm("../../static/js/dialog_widget");
 const input_pill = mock_esm("../../static/js/input_pill");
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
 const user_groups = mock_esm("../../static/js/user_groups", {
@@ -327,10 +328,6 @@ test_ui("populate_user_groups", ({override_rewire, mock_template}) => {
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
-    assert.equal(
-        typeof $(".organization form.admin-user-group-form").get_on_handler("submit"),
-        "function",
-    );
     assert.equal(typeof $("#user-groups").get_on_handler("click", ".delete"), "function");
     assert.equal(
         typeof $("#user-groups").get_on_handler("keypress", ".user-group h4 > span"),
@@ -506,12 +503,12 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
     override_rewire(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
-        const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
+        const handler = settings_user_groups.add_user_group;
         const event = {
             stopPropagation: noop,
             preventDefault: noop,
         };
-        const $fake_this = $.create("fake-form.admin-user-group-form");
+        const $fake_this = $.create("#add-user-group-form");
         const fake_object_array = [
             {
                 name: "fake-name",
@@ -532,39 +529,39 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
             assert.deepEqual(opts.data, data);
 
             (function test_post_success() {
-                $("#admin-user-group-status").show();
-                $("form.admin-user-group-form input[type='text']").val("fake-content");
+                $("#dialog_error").show();
+                $("#add-user-group-form input[type='text']").val("fake-content");
                 ui_report.success = (text, ele) => {
                     assert.equal(text, "translated HTML: User group added!");
-                    assert.equal(ele, $("#admin-user-group-status"));
+                    assert.equal(ele, $("#dialog_error"));
                 };
+                dialog_widget.close_modal = () => {};
 
                 opts.success();
 
-                assert.ok(!$("#admin-user-group-status").visible());
-                assert.equal($("form.admin-user-group-form input[type='text']").val(), "");
+                assert.ok(!$("#dialog_error").visible());
             })();
 
             (function test_post_error() {
-                $("#admin-user-group-status").show();
+                $("#dialog_error").show();
                 ui_report.error = (error_msg, error_obj, ele) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
                     assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
-                    assert.equal(ele, $("#admin-user-group-status"));
+                    assert.equal(ele, $("#dialog_error"));
                 };
                 const xhr = {
                     responseText: '{"msg":"fake-msg", "attrib":"val"}',
                 };
                 opts.error(xhr);
 
-                assert.ok(!$("#admin-user-group-status").visible());
+                assert.ok(!$("#dialog_error").visible());
             })();
         };
 
-        handler.call($fake_this, event);
+        handler(event);
     })();
 
     (function test_user_groups_delete_click_triggered() {
