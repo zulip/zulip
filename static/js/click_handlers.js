@@ -220,8 +220,9 @@ export function initialize() {
 
     $("#main_div").on("click", ".message_reaction", async function (e) {
         e.stopPropagation();
-        if($(this).hasClass("update_state"))
+        if ($(this).hasClass("update_state")) {
             return;
+        }
         emoji_picker.hide_emoji_popover();
         $(this).addClass("update_state");
         const local_id = $(this).attr("data-reaction-id");

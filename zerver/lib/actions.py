@@ -2612,6 +2612,7 @@ def do_add_reaction(
 
     notify_reaction_update(user_profile, message, reaction, "add")
 
+
 def check_add_reaction(
     user_profile: UserProfile,
     message_id: int,
@@ -2676,7 +2677,8 @@ def check_add_reaction(
 
             do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
     except IntegrityError:
-        raise JsonableError(_("Concurency error."))
+        raise JsonableError(_("Concurrency error."))
+
 
 def do_remove_reaction(
     user_profile: UserProfile, message: Message, emoji_code: str, reaction_type: str
