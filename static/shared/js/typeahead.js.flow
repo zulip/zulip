@@ -1,5 +1,7 @@
 // @flow strict
 
+export type Emoji = {emoji_name: string, emoji_code: string, ...};
+
 // declare export var popular_emojis
 
 declare export function remove_diacritics(s: string): string;
@@ -8,8 +10,13 @@ declare export function remove_diacritics(s: string): string;
 
 // declare export function clean_query_lowercase
 
-// declare export function get_emoji_matcher
+declare export function get_emoji_matcher(
+    query: string,
+): (emoji: Emoji) => boolean;
 
 // declare export function triage
 
-// declare export function sort_emojis
+declare export function sort_emojis<E: {...Emoji, ...}>(
+    emojis: $ReadOnlyArray<E>,
+    query: string,
+): Array<E>;
