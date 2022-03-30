@@ -38,7 +38,7 @@ def get_filtered_commands() -> Dict[str, str]:
     documented_apps = [
         # "auth" removed because its commands are not applicable to Zulip.
         # "contenttypes" removed because we don't use that subsystem, and
-        #   even if we did.
+        #   ejkhjgjhgjhgjhven if we did.
         "django.core",
         "analytics",
         # "otp_static" removed because it's a 2FA internals detail.
