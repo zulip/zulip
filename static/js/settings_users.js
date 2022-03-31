@@ -190,10 +190,12 @@ function bot_info(bot_user_id) {
     const info = {};
 
     info.is_bot = true;
+    info.role = people.get_by_user_id(bot_user_id).role;
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
+    info.user_role_text = people.get_user_type(bot_user_id);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
@@ -279,7 +281,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
-            id: sort_user_id,
+            role: sort_role,
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
