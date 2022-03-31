@@ -363,6 +363,9 @@ if not args.skip_puppet:
     logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
     subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
+    # Puppet may have reloaded supervisor, and in so doing started
+    # services; mark as potentially needing to stop the server.
+    IS_SERVER_UP = True
 
 if migrations_needed:
     # Database migrations assume that they run on a database in
@@ -372,10 +375,7 @@ if migrations_needed:
     subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
-if IS_SERVER_UP or not args.skip_puppet:
-    # Even if the server wasn't up previously, puppet might have
-    # started it if there were supervisord configuration changes, so
-    # we need to use restart-server if puppet ran.
+if IS_SERVER_UP:
     restart_args = ["--fill-cache"]
     if args.skip_tornado:
         restart_args.append("--skip-tornado")
