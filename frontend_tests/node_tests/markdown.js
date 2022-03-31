@@ -819,6 +819,10 @@ test("translate_emoticons_to_names", () => {
     }
 });
 
+test("parse_non_message", () => {
+    assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
+});
+
 test("missing unicode emojis", ({override_rewire}) => {
     const message = {raw_content: "\u{1F6B2}"};
 

@@ -564,3 +564,9 @@ export function apply_markdown(message) {
     message.flags = flags;
     message.is_me_message = is_status_message(raw_content);
 }
+
+export function parse_non_message(raw_content) {
+    // Occasionally we get markdown from the server that is not technically
+    // a message, but we want to convert it to HTML.
+    return marked(raw_content).trim();
+}
