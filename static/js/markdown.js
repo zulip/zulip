@@ -162,15 +162,15 @@ function parse_with_options({raw_content, helper_config, options}) {
 
                 if (full_name === undefined) {
                     // For @**|id** syntax
-                    if (!helpers.is_valid_user_id(user_id)) {
+                    if (!helper_config.is_valid_user_id(user_id)) {
                         // silently ignore invalid user id.
                         user_id = undefined;
                     } else {
-                        full_name = helpers.get_actual_name_from_user_id(user_id);
+                        full_name = helper_config.get_actual_name_from_user_id(user_id);
                     }
                 } else {
                     // For @**user|id** syntax
-                    if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                    if (!helper_config.is_valid_full_name_and_user_id(full_name, user_id)) {
                         user_id = undefined;
                         full_name = undefined;
                     }
@@ -180,7 +180,7 @@ function parse_with_options({raw_content, helper_config, options}) {
             if (user_id === undefined) {
                 // Handle normal syntax
                 full_name = mention;
-                user_id = helpers.get_user_id_from_name(full_name);
+                user_id = helper_config.get_user_id_from_name(full_name);
             }
 
             if (user_id === undefined) {
@@ -197,12 +197,12 @@ function parse_with_options({raw_content, helper_config, options}) {
 
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
-            let display_text = helpers.get_actual_name_from_user_id(user_id);
+            let display_text = helper_config.get_actual_name_from_user_id(user_id);
             let classes;
             if (silently) {
                 classes = "user-mention silent";
             } else {
-                if (helpers.my_user_id() === user_id) {
+                if (helper_config.my_user_id() === user_id) {
                     // Personal mention of current user.
                     mentioned = true;
                 }
@@ -215,7 +215,7 @@ function parse_with_options({raw_content, helper_config, options}) {
             )}</span>`;
         },
         groupMentionHandler(name, silently) {
-            const group = helpers.get_user_group_from_name(name);
+            const group = helper_config.get_user_group_from_name(name);
             if (group !== undefined) {
                 let display_text;
                 let classes;
@@ -225,7 +225,9 @@ function parse_with_options({raw_content, helper_config, options}) {
                 } else {
                     display_text = "@" + group.name;
                     classes = "user-group-mention";
-                    if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
+                    if (
+                        helper_config.is_member_of_user_group(group.id, helper_config.my_user_id())
+                    ) {
                         // Mentioned the current user's group.
                         mentioned_group = true;
                     }
@@ -415,23 +417,23 @@ function handleTimestamp(time) {
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
-function handleStream(stream_name) {
-    const stream = helpers.get_stream_by_name(stream_name);
+function handleStream({stream_name, get_stream_by_name, stream_hash}) {
+    const stream = get_stream_by_name(stream_name);
     if (stream === undefined) {
         return undefined;
     }
-    const href = helpers.stream_hash(stream.stream_id);
+    const href = stream_hash(stream.stream_id);
     return `<a class="stream" data-stream-id="${_.escape(stream.stream_id)}" href="/${_.escape(
         href,
     )}">#${_.escape(stream.name)}</a>`;
 }
 
-function handleStreamTopic(stream_name, topic) {
-    const stream = helpers.get_stream_by_name(stream_name);
+function handleStreamTopic({stream_name, topic, get_stream_by_name, stream_topic_hash}) {
+    const stream = get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
         return undefined;
     }
-    const href = helpers.stream_topic_hash(stream.stream_id, topic);
+    const href = stream_topic_hash(stream.stream_id, topic);
     const text = `#${stream.name} > ${topic}`;
     return `<a class="stream-topic" data-stream-id="${_.escape(
         stream.stream_id,
@@ -536,12 +538,29 @@ export function setup() {
 }
 
 export function parse({raw_content, helper_config}) {
+    function streamHandler(stream_name) {
+        return handleStream({
+            stream_name,
+            get_stream_by_name: helper_config.get_stream_by_name,
+            stream_hash: helper_config.stream_hash,
+        });
+    }
+
+    function streamTopicHandler(stream_name, topic) {
+        return handleStreamTopic({
+            stream_name,
+            topic,
+            get_stream_by_name: helper_config.get_stream_by_name,
+            stream_topic_hash: helper_config.stream_topic_hash,
+        });
+    }
+
     const options = {
         emojiHandler: handleEmoji,
         linkifierHandler: handleLinkifier,
         unicodeEmojiHandler: handleUnicodeEmoji,
-        streamHandler: handleStream,
-        streamTopicHandler: handleStreamTopic,
+        streamHandler,
+        streamTopicHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
     };
