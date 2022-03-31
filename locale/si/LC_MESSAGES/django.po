@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-03-31 17:40+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: හෙළබස, 2022\n"
 "Language-Team: Sinhala (http://www.transifex.com/zulip/zulip/language/si/)\n"
@@ -1782,6 +1782,10 @@ msgstr "ඉතිහාසය"
 #: templates/zerver/footer.html:145
 msgid "Jobs"
 msgstr "රැකියා"
+
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"

@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-03-31 17:40+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Web Plankter <web.plankter@protonmail.com>, 2021-2022\n"
 "Language-Team: French (http://www.transifex.com/zulip/zulip/language/fr/)\n"
@@ -1705,7 +1705,7 @@ msgstr "Communauté de prouveurs de théorème Lean"
 
 #: templates/zerver/footer.html:54
 msgid "Asciidoctor open-source community"
-msgstr ""
+msgstr "Communauté open source Asciidoctor"
 
 #: templates/zerver/footer.html:57
 msgid "Rust language community"
@@ -1802,6 +1802,10 @@ msgstr "Historique"
 #: templates/zerver/footer.html:145
 msgid "Jobs"
 msgstr "Emplois"
+
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"

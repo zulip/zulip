@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-03-31 17:40+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Heidi Ahlberg, 2022\n"
 "Language-Team: Finnish (http://www.transifex.com/zulip/zulip/language/fi/)\n"
@@ -448,7 +448,7 @@ msgstr "Lisenssien hallinta"
 
 #: templates/corporate/upgrade.html:91
 msgid "Automatic"
-msgstr "automaattinen"
+msgstr "Automaattinen"
 
 #: templates/corporate/upgrade.html:92
 msgid "Most convenient"
@@ -791,7 +791,7 @@ msgstr "Jollet pyytänyt tätä muutosta itse, ota pikimmiten yhteyttä <%(suppo
 #: templates/zerver/emails/confirm_registration.source.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
 msgid "You have requested a new Zulip organization. Awesome!"
-msgstr "Olet pyytänyt uutta Zulip-organisaatiota. Mahtava! "
+msgstr "Olet pyytänyt uutta Zulip-organisaatiota. Mahtavaa! "
 
 #: templates/zerver/emails/confirm_registration.source.html:12
 #: templates/zerver/emails/confirm_registration.txt:4
@@ -1692,7 +1692,7 @@ msgstr "Lean theorem prover -yhteisö"
 
 #: templates/zerver/footer.html:54
 msgid "Asciidoctor open-source community"
-msgstr ""
+msgstr "Asciidoctor avoimen lähdekoodin yhteisö"
 
 #: templates/zerver/footer.html:57
 msgid "Rust language community"
@@ -1789,6 +1789,10 @@ msgstr "Historia"
 #: templates/zerver/footer.html:145
 msgid "Jobs"
 msgstr "Työpaikat"
+
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
@@ -3307,7 +3311,7 @@ msgstr "Virheellinen viesti(t)"
 
 #: zerver/lib/narrow.py:29
 msgid "Operator {} not supported."
-msgstr "Operaattori {} ei ole tuettu."
+msgstr "Hakuehto {} ei ole tuettu."
 
 #: zerver/lib/onboarding.py:47
 #, python-brace-format
@@ -3933,7 +3937,7 @@ msgstr "Vieras"
 
 #: zerver/models.py:2350
 msgid "Web-public"
-msgstr "Web-julkinen"
+msgstr "Julkinen verkko"
 
 #: zerver/models.py:2356
 msgid "Public"
@@ -4096,7 +4100,7 @@ msgstr "User-Agent-otsikko puuttuu viestistä"
 
 #: zerver/views/custom_profile_fields.py:51
 msgid "Label cannot be blank."
-msgstr "Nimilappu ei voi olla tyhjä."
+msgstr "Kentän nimi ei voi olla tyhjä."
 
 #: zerver/views/custom_profile_fields.py:65
 msgid "Field must have at least one choice."
@@ -4109,7 +4113,7 @@ msgstr "Virheellinen kenttätyyppi."
 #: zerver/views/custom_profile_fields.py:133
 #: zerver/views/custom_profile_fields.py:173
 msgid "A field with that label already exists."
-msgstr "Tällä nimilapulla varustettu kenttä on jo olemassa. "
+msgstr "Samanniminen kenttä on jo olemassa. "
 
 #: zerver/views/custom_profile_fields.py:167
 msgid "Default custom field cannot be updated."
@@ -4172,7 +4176,7 @@ msgstr "Viesti on jo poistettu"
 #: zerver/views/message_fetch.py:95
 #, python-brace-format
 msgid "Invalid narrow operator: {desc}"
-msgstr "Virheellinen supistusoperaattori: {desc}"
+msgstr "Virheellinen hakuehto: {desc}"
 
 #: zerver/views/message_fetch.py:915
 msgid "Missing 'anchor' argument."
@@ -4329,15 +4333,15 @@ msgstr "Raja-arvo ylitetty."
 #: zerver/views/realm_export.py:54
 #, python-brace-format
 msgid "Please request a manual export from {email}."
-msgstr "Pyydä manuaalinen tiedonsiirto osoitteesta {email}."
+msgstr "Pyydä manuaalinen tiedonpoiminta osoitteesta {email}."
 
 #: zerver/views/realm_export.py:92
 msgid "Invalid data export ID"
-msgstr "Virheellinen tiedonsiirtotunnus"
+msgstr "Virheellinen tiedonpoimintatunnus"
 
 #: zerver/views/realm_export.py:96
 msgid "Export already deleted"
-msgstr "Tiedonsiirtotiedot on jo poistettu"
+msgstr "Poimintatiedot on jo poistettu"
 
 #: zerver/views/realm_icon.py:20
 msgid "You must upload exactly one icon."
@@ -4700,7 +4704,7 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr "Tiedonsiirtosi on valmistunut ja se on ladattuna tänne:\n\n{public_url}"
+msgstr "Tiedonpoimintasi on valmistunut ja se on ladattuna tänne:\n\n{public_url}"
 
 #. error
 #: zilencer/views.py:53

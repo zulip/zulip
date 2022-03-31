@@ -86,7 +86,7 @@
   "Add stream": "إضافة غرفة",
   "Add streams": "إضافة غرف",
   "Add subscribers": "إضافة المشتركين",
-  "Add subscribers. Use usergroup or #streamname to bulk add subscribers.": "إضافة المشتركين. استخدم اسم المجموعة أو #streamname لإضافة مشتركين بشكل جماعي.",
+  "Add subscribers. Use usergroup or #streamname to bulk add subscribers.": "إضافة المشتركين. استخدم usergroup أو #streamname لإضافة مشتركين بشكل جماعي.",
   "Add task": "إضافة مهمة",
   "Add video call": "أضف مكالمة فيديو",
   "Added successfully!": "أضيف بنجاح!",
@@ -202,9 +202,9 @@
   "Close modal": "إغلاق مشروط",
   "Close this dialog window": "أغلق نافذة الحوار هذه",
   "Code playgrounds": "مكان تجربة الشِفرة",
-  "Collapse": "انهيار",
-  "Collapse compose": "تصغير إنشاء",
-  "Collapse/show selected message": "تصغير / إظهار الرسالة المختارة",
+  "Collapse": "إغلاق الخانة",
+  "Collapse compose": "إلغاء التأليف",
+  "Collapse/show selected message": "تصغير/ إظهار الرسالة المحددة ",
   "Color scheme": "مخطط الألوان",
   "Commuting": "التنقل",
   "Complete": "اكتمل",
@@ -223,65 +223,65 @@
   "Confirm": "تأكيد",
   "Consider <z-link>searching all public streams</z-link>.": "اعتبر<z-link> البحث في جميع الغرف العامة</z-link> .",
   "Contact support": "اتصل بالدعم",
-  "Convert emoticons before sending (<code>:)</code> becomes \ud83d\ude03)": "تحويل الرموز قبل الإرسال ( <code>:)</code> تصبح 😃)",
+  "Convert emoticons before sending (<code>:)</code> becomes \ud83d\ude03)": "تحويل الرموز قبل الإرسال (<code>:)</code> تصبح 😃)",
   "Cookie Bot": "بوت ملفات تعريف الارتباط",
   "Copied!": "نسخ!",
   "Copy and close": "نسخ وإغلاق",
-  "Copy code": "رمز النسخ",
-  "Copy link": "نسخ الوصلة",
-  "Copy link to message": "انسخ ارتباط الرسالة",
-  "Copy link to topic": "انسخ الرابط للموضوع",
-  "Copy mention syntax": "نسخ ذكر بناء الجملة",
-  "Copy version": "نسخة",
+  "Copy code": "نسخ الشِفرة",
+  "Copy link": "نسخ الرابط",
+  "Copy link to message": "نسخ الرابط للرسالة",
+  "Copy link to topic": "نسخ الرابط للموضوع",
+  "Copy mention syntax": "نسخ سياق الإشارة",
+  "Copy version": "نسخ الإصدار",
   "Copy zuliprc": "نسخ zuliprc",
-  "Create": "خلق",
-  "Create a stream": "إنشاء دفق",
+  "Create": "إنشاء",
+  "Create a stream": "إنشاء غرفة",
   "Create bot": "إنشاء بوت",
   "Create new stream": "إنشاء تيار جديد",
-  "Create stream": "إنشاء دفق",
+  "Create stream": "إنشاء غرفة",
   "Creating bot": "إنشاء البوت",
-  "Creating stream...": "جاري إنشاء الدفق ...",
-  "Current password": "كلمة المرور الحالي",
-  "Custom": "العادة",
+  "Creating stream...": "جاري إنشاء الغرفة...",
+  "Current password": "كلمة المرور الحالية",
+  "Custom": "مخصص",
   "Custom emoji": "الرموز التعبيرية المخصصة",
   "Custom emoji added!": "تمت إضافة رمز تعبيري مخصص!",
   "Custom language: {query}": "لغة مخصصة: {query}",
   "Custom linkifier added!": "تمت إضافة رابط مخصص!",
-  "Custom playground added!": "تمت إضافة ملعب مخصص!",
+  "Custom playground added!": "تمت إضافة مكان تجربة مخصص!",
   "Custom profile fields": "حقول الملف الشخصي المخصصة",
   "Customize profile picture": "تخصيص صورة الملف الشخصي",
-  "Cycle between stream narrows": "دورة بين تيار يضيق",
-  "Dark theme": "مظهر داكن",
+  "Cycle between stream narrows": "حلقة بين تضييقات العرض في الغرفة ",
+  "Dark theme": "الوضع المظلم",
   "Data exports": "تصدير البيانات",
-  "Date muted": "تم تجاهل التاريخ",
+  "Date muted": "تاريخ الوضع الصامت",
   "Date uploaded": "تاريخ الرفع",
   "Day logo": "شعار اليوم",
-  "Day of the week to send digests": "يوم من الأسبوع لإرسال الملخصات",
+  "Day of the week to send digests": "يوم من الأسبوع لإرسال الموجزات",
   "Deactivate": "تعطيل",
   "Deactivate account": "تعطيل الحساب",
-  "Deactivate organization": "قم بإلغاء تنشيط المنظمة",
-  "Deactivate user": "قم بإلغاء تنشيط المستخدم",
-  "Deactivate your account": "الغاء تفعيل حسابك",
-  "Deactivate {name}": "إلغاء التنشيط {name}",
+  "Deactivate organization": "تعطيل المنظمة",
+  "Deactivate user": "تعطيل المستخدم",
+  "Deactivate your account": "تعطيل حسابك",
+  "Deactivate {name}": "تعطيل {name}",
   "Deactivated": "معطل",
   "Deactivated users": "المستخدمون المعطّلون",
-  "December": "ديسمبر",
-  "Default is {language}. Use 'text' to disable highlighting.": "الافتراضي هو {language}. استخدم &quot;نص&quot; لتعطيل التمييز.",
+  "December": "كانون الاول",
+  "Default is {language}. Use 'text' to disable highlighting.": "الافتراضي هو {language}. استخدم \"النص\" لإلغاء التمييز.",
   "Default language": "اللغة الافتراضية",
-  "Default language for code blocks": "اللغة الافتراضية لكتل التعليمات البرمجية",
+  "Default language for code blocks": "اللغة الافتراضية لقطع الشِفرة البرمجية",
   "Default settings for new users joining this organization.": "الإعدادات الافتراضية للمستخدمين الجدد الذين ينضمون إلى هذه المؤسسة.",
-  "Default streams": "التدفقات الافتراضية",
+  "Default streams": "الغرف الافتراضية",
   "Default user settings": "إعدادات المستخدم الافتراضية",
   "Default view": "العرض الافتراضي",
-  "Delay before sending message notification emails": "التأخير قبل إرسال رسائل البريد الإلكتروني لإشعار الرسائل",
+  "Delay before sending message notification emails": "التأخير قبل إرسال إشعارات رسائل البريد الإلكتروني",
   "Delay period (minutes)": "فترة التأخير (بالدقائق)",
   "Delete": "حذف",
   "Delete alert word": "حذف كلمة التنبيه",
-  "Delete all drafts": "احذف كل المسودات",
+  "Delete all drafts": "حذف كل المسودات",
   "Delete bot": "حذف البوت",
   "Delete draft": "حذف المسودة",
-  "Delete file": "حذف ملف",
-  "Delete icon": "رمز الحذف",
+  "Delete file": "حذف الملف",
+  "Delete icon": "حذف الرمز",
   "Delete logo": "حذف الشعار",
   "Delete message": "حذف رسالة",
   "Delete profile picture": "حذف صورة الملف الشخصي",
@@ -290,9 +290,9 @@
   "Delete user group": "حذف مجموعة المستخدمين",
   "Deleted": "تم الحذف",
   "Deleted successfully!": "حذف بنجاح!",
-  "Deleting a message removes it for everyone.": "يؤدي حذف الرسالة إلى إزالتها للجميع.",
-  "Deleting a topic will immediately remove it and its messages for everyone. Other users may find this confusing, especially if they had received an email or push notification related to the deleted messages.": "سيؤدي حذف الموضوع إلى إزالته ورسائله على الفور للجميع. قد يجد المستخدمون الآخرون هذا الأمر محيرًا ، خاصةً إذا كانوا قد تلقوا بريدًا إلكترونيًا أو إشعارًا فوريًا يتعلق بالرسائل المحذوفة.",
-  "Demote inactive streams": "تخفيض التدفقات غير النشطة",
+  "Deleting a message removes it for everyone.": "يؤدي حذف الرسالة إلى حذفها عند الجميع.",
+  "Deleting a topic will immediately remove it and its messages for everyone. Other users may find this confusing, especially if they had received an email or push notification related to the deleted messages.": "سيؤدي حذف الموضوع إلى حذفه وحذف رسائله على الفور للجميع. قد يجد المستخدمون الآخرون هذا الأمر محيرًا ، خاصةً إذا كانوا قد تلقوا بريدًا إلكترونيًا أو إشعارًا فوريًا يتعلق بالرسائل المحذوفة.",
+  "Demote inactive streams": "تخفيض الغرف غير النشطة",
   "Dense mode": "الوضع الكثيف",
   "Depending on the size of your organization, an export can take anywhere from seconds to an hour.": "بناءً على حجم مؤسستك ، يمكن أن يستغرق التصدير من ثانية إلى ساعة.",
   "Deprecation notice": "إشعار الإيقاف",
@@ -300,105 +300,105 @@
   "Desktop": "سطح المكتب",
   "Desktop & mobile apps": "تطبيقات سطح المكتب والأجهزة المحمولة",
   "Desktop message notifications": "إشعارات رسائل سطح المكتب",
-  "Detailed keyboard shortcuts documentation": "وثائق مفصلة عن اختصارات لوحة المفاتيح",
-  "Detailed message formatting documentation": "وثائق تنسيق الرسالة التفصيلية",
-  "Detailed search operators documentation": "وثائق مفصلة لمشغلي البحث",
+  "Detailed keyboard shortcuts documentation": "توثيق مفصل لاختصارات لوحة المفاتيح",
+  "Detailed message formatting documentation": "توثيق مفصل لتنسيق الرسالة",
+  "Detailed search operators documentation": "توثيق مفصل لرموز البحث",
   "Disabled": "معطل",
   "Discard": "تجاهل",
-  "Dismiss for a week": "رفض لمدة أسبوع",
+  "Dismiss for a week": "طرد لمدة أسبوع",
   "Display availability to other users when online": "عرض التوفر للمستخدمين الآخرين عند الاتصال بالإنترنت",
-  "Display my availability to other users when online": "عرض تواجدي للمستخدمين الآخرين عند الاتصال بالإنترنت",
+  "Display my availability to other users when online": "عرض توفري للمستخدمين الآخرين عند الاتصال بالإنترنت",
   "Display settings": "اعدادات العرض",
   "Do you want to add everyone?": "هل تريد إضافة الجميع؟",
-  "Domain": "اختصاص",
-  "Don\u2019t allow disposable email addresses": "لا تسمح بعناوين البريد الإلكتروني التي يمكن التخلص منها",
+  "Domain": "مجال",
+  "Don\u2019t allow disposable email addresses": "لا تسمح بعناوين البريد الإلكتروني المؤقتة",
   "Download": "تحميل",
   "Download .zuliprc": "تحميل .zuliprc",
   "Download botserverrc": "تحميل botserverrc",
-  "Download config of all active outgoing webhook bots in Zulip Botserver format.": "تنزيل تهيئة جميع روبوتات الويب هوك الصادرة النشطة بتنسيق Zulip Botserver.",
+  "Download config of all active outgoing webhook bots in Zulip Botserver format.": "تنزيل التهيئة لجميع روبوتات الويب هوك الصادرة والنشطة بتنسيق Botserver الخاص بـ\"زوليب\".",
   "Download file": "تحميل الملف",
-  "Download the latest version.": "قم بتنزيل أحدث إصدار.",
+  "Download the latest version.": "تنزيل أحدث إصدار.",
   "Download zuliprc": "تنزيل zuliprc",
   "Download {filename}": "تنزيل {filename}",
   "Drafts": "المسودات",
   "Drafts are not synced to other devices and browsers.": "لا تتم مزامنة المسودات مع الأجهزة والمتصفحات الأخرى.",
-  "Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.": "تتم إزالة المسودات الأقدم من <strong>{draft_lifetime}</strong> يوم تلقائيًا.",
+  "Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.": "المسودات الأقدم من <strong>{draft_lifetime}</strong> أيام ستحذف تلقائيًا.",
   "Duration deletion is allowed after posting (minutes)": "يسمح بحذف المدة بعد النشر (بالدقائق)",
   "Duration editing is allowed after posting (minutes)": "يسمح بتعديل المدة بعد النشر (بالدقائق)",
-  "EDITED": "محرر",
+  "EDITED": "تم تعديله",
   "Edit": "تعديل",
-  "Edit #{stream_name}": "تحرير # {stream_name}",
-  "Edit bot": "تحرير البوت",
-  "Edit linkfiers": "تحرير الروابط",
-  "Edit selected draft": "تحرير المسودة المحددة",
-  "Edit selected message": "تحرير الرسالة المحددة",
-  "Edit status": "تحرير الحالة",
-  "Edit topic": "تحرير الموضوع",
-  "Edit user": "تحرير العضو",
-  "Edit your last message": "قم بتحرير رسالتك الأخيرة",
+  "Edit #{stream_name}": "تعديل # {stream_name}",
+  "Edit bot": "تعديل البوت",
+  "Edit linkfiers": "تعديل الروابط",
+  "Edit selected draft": "تعديل المسودة المحددة",
+  "Edit selected message": "تعديل الرسالة المحددة",
+  "Edit status": "تعديل الحالة",
+  "Edit topic": "تعديل الموضوع",
+  "Edit user": "تعديل المستخدم",
+  "Edit your last message": "عدل رسالتك الأخيرة",
   "Edit your profile": "عدل ملفك الشخصي",
   "Edited ({last_edit_timestr})": "تم التعديل ({last_edit_timestr})",
-  "Edited by {full_name}": "حرره {full_name}",
+  "Edited by {full_name}": "عدله {full_name}",
   "Effect": "تأثير",
   "Email": "بريد الالكتروني",
-  "Email address": "عنوان بريد الكتروني",
-  "Email address changes are disabled in this organization.": "تم تعطيل تغييرات عنوان البريد الإلكتروني في هذه المؤسسة.",
+  "Email address": "عنوان البريد الإلكتروني",
+  "Email address changes are disabled in this organization.": "تم تعطيل التغييرات على عنوان البريد الإلكتروني في هذه المنظمة.",
   "Email copied": "تم نسخ البريد الإلكتروني",
-  "Email message notifications": "إخطارات رسائل البريد الإلكتروني",
-  "Email notifications": "اشعارات البريد الالكتروني",
+  "Email message notifications": "إشعارات رسائل البريد الإلكتروني",
+  "Email notifications": "إشعارات البريد الالكتروني",
   "Emails (one on each line or comma-separated)": "رسائل البريد الإلكتروني (واحدة في كل سطر أو مفصولة بفواصل)",
-  "Emoji name": "اسم تعبيري",
+  "Emoji name": "اسم من الرموز التعبيرية",
   "Emoji set changed successfully!": "تم تغيير مجموعة الرموز التعبيرية بنجاح!",
   "Emoji theme": "موضوع الرموز التعبيرية",
-  "Enable message edit history": "تمكين سجل تحرير الرسائل",
-  "Enable notifications": "تمكين الإخطارات",
+  "Enable message edit history": "تفعيل سجل تعديل الرسائل",
+  "Enable notifications": "تفعيل الإشعارات",
   "Enabled": "ممكن",
-  "End of results from your <z-link>history</z-link>.": "نهاية النتائج من الخاص بك<z-link> التاريخ</z-link> .",
+  "End of results from your <z-link>history</z-link>.": "نهاية النتائج من <z-link>سجلك</z-link> .",
   "Endpoint URL": "عنوان URL لنقطة النهاية",
-  "Enter sends when composing a message": "أدخل يرسل عند إنشاء رسالة",
+  "Enter sends when composing a message": "اضغط على ارسال عند إنشاء رسالة",
   "Error": "خطأ",
-  "Error adding alert word!": "خطأ في إضافة كلمة تنبيه!",
+  "Error adding alert word!": "خطأ في إضافة كلمة التنبيه!",
   "Error adding subscription": "خطأ في إضافة الاشتراك",
   "Error checking subscription": "خطأ في التحقق من الاشتراك",
-  "Error creating stream": "خطأ في إنشاء الدفق",
+  "Error creating stream": "خطأ في إنشاء الغرفة",
   "Error deleting message": "خطأ في حذف الرسالة",
-  "Error fetching message edit history": "خطأ في جلب محفوظات تحرير الرسالة",
-  "Error in unsubscribing from #{stream_name}": "خطأ في إلغاء الاشتراك من # {stream_name}",
-  "Error listing invites": "يدعو سرد خطأ",
+  "Error fetching message edit history": "خطأ في جلب سجل تعديلات الرسالة",
+  "Error in unsubscribing from #{stream_name}": "خطأ في إلغاء الاشتراك من #{stream_name}",
+  "Error listing invites": "خطأ في عرض الدعوات",
   "Error moving the topic": "خطأ في نقل الموضوع",
-  "Error moving topic": "خطأ في نقل الموضوع",
+  "Error moving topic": "خطأ في نقل موضوع",
   "Error removing alert word!": "خطأ في إزالة كلمة التنبيه!",
   "Error removing subscription": "خطأ في إزالة الاشتراك",
-  "Error removing user from #{stream_name}": "خطأ في إزالة المستخدم من # {stream_name}",
-  "Error removing user from this stream.": "خطأ في إزالة المستخدم من هذا الدفق.",
+  "Error removing user from #{stream_name}": "خطأ في إزالة المستخدم من #{stream_name}",
+  "Error removing user from this stream.": "خطأ في إزالة المستخدم من هذه الغرفة.",
   "Error saving edit": "خطأ في حفظ التعديل",
-  "Error: Cannot deactivate the only organization owner.": "خطأ: لا يمكن إلغاء تنشيط مالك المؤسسة الوحيد.",
-  "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.": "خطأ: لا يمكن إلغاء تنشيط المستخدم الوحيد. يمكنك إلغاء تنشيط المنظمة بأكملها من خلال ملف<z-link> إعدادات الملف التعريفي للمؤسسة</z-link> .",
-  "Escape key navigates to default view": "ينتقل مفتاح Escape إلى العرض الافتراضي",
+  "Error: Cannot deactivate the only organization owner.": "خطأ: لا يمكن تعطيل مالك المؤسسة الوحيد.",
+  "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.": "خطأ: لا يمكن تعطيل المستخدم الوحيد. يمكنك تعطيل المنظمة بأكملها من خلال <z-link>إعدادات الملف التعريفي لمنظمتك</z-link> .",
+  "Escape key navigates to default view": "ينتقل بك مفتاح Escape إلى العرض الافتراضي",
   "Estimated messages per week": "الرسائل المقدرة في الأسبوع",
   "Everyone": "Everyone",
   "Everyone sees this in their own time zone.": "يرى الجميع هذا في منطقتهم الزمنية.",
-  "Exclude messages with topic <z-value></z-value>.": "استبعاد الرسائل ذات الموضوع<z-value></z-value> .",
+  "Exclude messages with topic <z-value></z-value>.": "استبعاد الرسائل التابعة لموضوع<z-value></z-value> .",
   "Exit search": "الخروج من البحث",
-  "Expand compose": "قم بتوسيع إنشاء",
+  "Expand compose": "توسيع الإنشاء",
   "Expand message (-)": "توسيع الرسالة (-)",
-  "Expires at": "تنتهي في",
+  "Expires at": "تنتهي الصلاحية في",
   "Expires on {date}": "تنتهي الصلاحية في {date}",
   "Export failed": "فشل التصدير",
-  "Export organization": "منظمة التصدير",
-  "Export started. Check back in a few minutes.": "بدأ التصدير. تحقق مرة أخرى في غضون بضع دقائق.",
-  "Exports all users, settings, and all data visible in public streams.": "يصدر جميع المستخدمين والإعدادات وجميع البيانات المرئية في التدفقات العامة.",
+  "Export organization": "تصدير المنظمة",
+  "Export started. Check back in a few minutes.": "بدأ التصدير. عد للتحقق في غضون بضع دقائق.",
+  "Exports all users, settings, and all data visible in public streams.": "يصدر جميع المستخدمين والإعدادات وجميع البيانات المرئية في الغرف العامة.",
   "External account type": "نوع الحساب الخارجي",
   "External link": "رابط خارجي",
   "Failed": "باءت بالفشل",
   "Failed to create video call.": "فشل إنشاء مكالمة فيديو.",
   "Failed to generate preview": "فشل إنشاء المعاينة",
-  "Failed to upload %'{file}'": "فشل تحميل٪ &#39;{file}&#39;",
+  "Failed to upload %'{file}'": "فشل الرفع ٪'{file}';",
   "Failed!": "باءت بالفشل!",
   "Failed: A custom emoji with this name already exists.": "فشل: يوجد بالفعل رمز تعبيري مخصص بهذا الاسم.",
   "Failed: Emoji name is required.": "فشل: اسم الرمز التعبيري مطلوب.",
-  "February": "شهر فبراير",
-  "Field choices": "الخيارات الميدانية",
+  "February": "شباط",
+  "Field choices": "خيارات الحقول",
   "File": "ملف",
   "File and image uploads have been disabled for this organization.": "تم تعطيل تحميل الملفات والصور لهذه المنظمة.",
   "File name: {filename}": "اسم الملف: {filename}",
@@ -406,42 +406,42 @@
   "File type is not supported.": "نوع الملف غير مدعوم.",
   "Filter bots": "تصفية الروبوتات",
   "Filter by category": "تصفية حسب الفئة",
-  "Filter code playgrounds": "تصفية ملاعب كود",
+  "Filter code playgrounds": "تصفية أماكن تجربة الشِفرة",
   "Filter deactivated users": "تصفية المستخدمين المعطلين",
-  "Filter default streams": "تصفية التدفقات الافتراضية",
+  "Filter default streams": "تصفية الغرف الافتراضية",
   "Filter emoji": "تصفية الرموز التعبيرية",
   "Filter exports": "تصفية الصادرات",
-  "Filter invites": "مرشح يدعو",
+  "Filter invites": "تصفية الدعوات",
   "Filter languages": "تصفية اللغات",
   "Filter linkifiers": "وصلات التصفية",
   "Filter muted topics": "تصفية المواضيع المكتومة",
-  "Filter muted users": "تصفية المستخدمين الذين تم كتم صوتهم",
-  "Filter streams": "تصفية تيارات",
+  "Filter muted users": "تصفية المستخدمين المكتومين",
+  "Filter streams": "تصفية الغرف",
   "Filter subscribers": "تصفية المشتركين",
-  "Filter topics": "مواضيع التصفية",
-  "Filter topics (t)": "مواضيع التصفية (ر)",
+  "Filter topics": "تصفية المواضيع",
+  "Filter topics (t)": "تصفية المواضيع (t)",
   "Filter uploaded files": "تصفية الملفات المرفوعة",
-  "Filter uploads": "تصفية التحميلات",
+  "Filter uploads": "تصفية المرفوعات",
   "Filter users": "تصفية المستخدمين",
   "First message": "الرسالة الأولى",
-  "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "اول مرة؟ اقرأ<z-link> القواعد الارشادية</z-link> لإنشاء وتسمية التدفقات.",
-  "Fixed width": "عرض ثابت",
+  "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "أول مرة؟ اقرأ<z-link> قواعدنا الإرشادية</z-link> لإنشاء وتسمية الغرف.",
+  "Fixed width": "العرض الثابت",
   "Fixed width mode": "وضع العرض الثابت",
-  "Fluid width": "عرض السوائل",
-  "Fluid width mode": "وضع عرض السوائل",
-  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "على سبيل المثال ، لتكوين ملاعب التعليمات البرمجية للغات مثل Python أو JavaScript ، يمكنك تحديد حقول <i>اللغة</i> <i>وبادئة URL</i> على النحو التالي:",
+  "Fluid width": "العرض السلس",
+  "Fluid width mode": "وضع العرض السلس",
+  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "على سبيل المثال ، لتكوين أماكن تجربة الشِفرة البرمجية للغات مثل Python أو JavaScript، يمكنك تحديد حقول <i>اللغة</i> و<i>بادئة URL</i> على النحو التالي:",
   "Forgotten it?": "نسيتها؟",
   "Forked from upstream at {zulip_merge_base}": "متشعب من المنبع في {zulip_merge_base}",
-  "Friday": "يوم الجمعة",
+  "Friday": "الجمعة",
   "Full name": "الاسم الكامل",
   "GIPHY attribution": "إسناد GIPHY",
-  "GIPHY integration": "تكامل GIPHY",
+  "GIPHY integration": "دمج GIPHY",
   "General": "عام",
   "Generate invite link": "إنشاء رابط الدعوة",
   "Generate new API key": "إنشاء مفتاح API جديد",
   "Generating link...": "جاري إنشاء الارتباط ...",
   "Generic": "نوعي",
-  "Get API key": "احصل على مفتاح API",
+  "Get API key": "الحصول على مفتاح API",
   "Go to default view": "انتقل إلى العرض الافتراضي",
   "Got it": "فهمتك",
   "Got it!": "فهمتك!",
@@ -449,34 +449,34 @@
   "Guest": "ضيف",
   "Guest users cannot edit custom emoji.": "لا يمكن للمستخدمين الضيوف تعديل الرموز التعبيرية المخصصة.",
   "Guests": "ضيوف",
-  "Guests are not allowed to post to this stream.": "لا يسمح للضيوف بالنشر في هذا التدفق.",
+  "Guests are not allowed to post to this stream.": "لا يسمح للضيوف بالنشر في هذه الغرفة.",
   "Guests cannot edit custom emoji.": "لا يمكن للضيوف تعديل الرموز التعبيرية المخصصة.",
   "Help center": "مركز المساعدة",
   "Hide muted message again": "إخفاء الرسالة المكتومة مرة أخرى",
-  "Hide notice": "إخفاء الإشعار",
+  "Hide notice": "إخفاء التنويه",
   "Hide password": "اخفاء كلمة المرور",
   "Hide starred message count": "إخفاء عدد الرسائل المميزة بنجمة",
   "High contrast mode": "وضع التباين العالي",
-  "Hint": "ملحوظة",
+  "Hint": "تلميح",
   "Hint (up to 80 characters)": "تلميح (ما يصل إلى 80 حرفًا)",
   "Humans": "Humans",
-  "Idle": "عاطل",
+  "Idle": "خامل",
   "Ignored deactivated users:": "المستخدمون المعطّلون الذين تم تجاهلهم:",
   "Image": "صورة",
   "In a meeting": "في اجتماع",
   "Inactive bots": "روبوتات غير نشطة",
-  "Include content of private messages in desktop notifications": "قم بتضمين محتوى الرسائل الخاصة في إشعارات سطح المكتب",
-  "Include message content in message notification emails": "تضمين محتوى الرسالة في رسائل البريد الإلكتروني لإشعار الرسائل",
-  "Include muted": "تضمين صامت",
-  "Include organization name in subject of message notification emails": "قم بتضمين اسم المؤسسة في موضوع رسائل البريد الإلكتروني لإشعار الرسائل",
-  "Incoming webhooks can only send messages.": "يمكن لخطافات الويب الواردة إرسال الرسائل فقط.",
-  "Initiate a search": "ابدأ البحث",
+  "Include content of private messages in desktop notifications": "تضمين محتوى الرسائل الخاصة في إشعارات سطح المكتب",
+  "Include message content in message notification emails": "تضمين محتوى الرسالة في رسائل البريد الإلكتروني للإشعارات",
+  "Include muted": "تضمين الصامتة",
+  "Include organization name in subject of message notification emails": "تضمين اسم المؤسسة في موضوع رسائل البريد الإلكتروني للإشعارات",
+  "Incoming webhooks can only send messages.": "يمكن للويب هوك الواردة إرسال الرسائل فقط.",
+  "Initiate a search": "ابدأ بحث",
   "Insert new line": "أدخل سطر جديد",
-  "Integrations": "تكاملات",
-  "Interface": "واجهه المستخدم",
-  "Invalid URL": "URL غير صالح",
-  "Invalid slash command. Check if you are missing a space after the command.": "أمر مائل غير صالح. تحقق مما إذا كنت تفتقد مسافة بعد الأمر.",
-  "Invalid stream id": "معرف تيار غير صالح",
+  "Integrations": "إدماجات",
+  "Interface": "واجهة المستخدم",
+  "Invalid URL": "عنوان URL غير صالح",
+  "Invalid slash command. Check if you are missing a space after the command.": "أمر slash command غير صالح. تحقق مما إذا كنت تفتقد مسافة بعد الأمر.",
+  "Invalid stream id": "ID الغرفة غير صالح",
   "Invalid time format: {timestamp}": "تنسيق الوقت غير صالح: {timestamp}",
   "Invitation expires after": "تنتهي الدعوة بعد",
   "Invitations": "الدعوات",
@@ -484,11 +484,11 @@
   "Invite": "يدعو",
   "Invite link": "رابط الدعوة",
   "Invite more users": "قم بدعوة المزيد من المستخدمين",
-  "Invite users": "ادعُ المستخدمين",
-  "Invite users to Zulip": "ادعُ المستخدمين إلى Zulip",
-  "Invited as": "تمت دعوته كـ",
+  "Invite users": "دعوة مستخدمين",
+  "Invite users to Zulip": "دعوة مستخدمين إلى \"زوليب\"",
+  "Invited as": " مدعو كـ",
   "Invited at": "مدعو في",
-  "Invited by": "بدعوة من",
+  "Invited by": "مدعو من",
   "Invitee": "المدعو",
   "Invites": "يدعو",
   "Inviting...": "دعوة...",
@@ -496,8 +496,8 @@
   "January": "كانون الثاني",
   "Joined": "انضم",
   "Joining the organization": "الانضمام إلى المنظمة",
-  "July": "يوليو",
-  "June": "يونيه",
+  "July": "تموز",
+  "June": "حزيران",
   "Just now": "الآن",
   "Keyboard shortcuts": "اختصارات لوحة المفاتيح",
   "Label": "ملصق",
@@ -512,36 +512,36 @@
   "Last active: {last_seen}": "آخر نشاط: {last_seen}",
   "Last message": "اخر رسالة",
   "Last modified": "آخر تعديل",
-  "Learn more": "يتعلم أكثر",
-  "Learn more about mentions <z-link>here</z-link>.": "تعلم المزيد عن الإشارات<z-link> هنا</z-link> .",
-  "Learn more about starring messages <z-link>here</z-link>.": "تعرف على المزيد حول تمييز الرسائل بنجمة<z-link> هنا</z-link> .",
-  "Let participants see when I've read messages": "دع المشاركين يرون عندما أقرأ الرسائل",
-  "Let recipients see when I'm typing private messages": "دع المستلمين يرون عندما أكتب رسائل خاصة",
-  "Let subscribers see when I'm typing messages in streams": "دع المشتركين يرون عندما أكتب رسائل في مجموعات البث",
-  "Light theme": "مظهر خفيف",
-  "Link": "وصلة",
-  "Link with Webathena": "الارتباط مع Webathena",
-  "Link:": "وصلة:",
+  "Learn more": "معرفة المزيد",
+  "Learn more about mentions <z-link>here</z-link>.": "معرفة المزيد عن الإشارات <z-link>هنا</z-link>.",
+  "Learn more about starring messages <z-link>here</z-link>.": "معرفة المزيد حول تمييز الرسائل بنجمة <z-link>هنا</z-link>.",
+  "Let participants see when I've read messages": "اسمح للمشاركين أن يرون ما إذا كنت قد قرأت الرسالة",
+  "Let recipients see when I'm typing private messages": "اسمح للمستلمين أن يرون عندما أكتب رسائل خاصة",
+  "Let subscribers see when I'm typing messages in streams": "اسمح للمشتركين أن يرون عندما أكتب رسائل في الغرف",
+  "Light theme": "مظهر فاتح",
+  "Link": "رابط",
+  "Link with Webathena": "رابط مع Webathena",
+  "Link:": "رابط:",
   "Linkifiers": "الروابط",
   "Local time": "الوقت المحلي",
-  "Log in": "يسجل دخول",
+  "Log in": "تسجيل الدخول",
   "Log in to send messages": "تسجيل الدخول لإرسال الرسائل",
-  "Log out": "تسجيل خروج",
+  "Log out": "تسجيل الخروج",
   "Login required": "تسجيل الدخول مطلوب",
-  "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?": "تبحث عن<z-integrations> تكاملات</z-integrations> أو<z-api> API</z-api> توثيق؟",
+  "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?": "تبحث عن توثيق <z-integrations>الإندماجات</z-integrations> أو <z-api>الـ API</z-api> الخاص بنا؟",
   "MOVED": "انتقل",
   "Manage organization": "إدارة المنظمة",
-  "Manage streams": "إدارة التدفقات",
+  "Manage streams": "إدارة الغرف",
   "Manage this user": "إدارة هذا المستخدم",
   "Manage user": "إدارة المستخدم",
-  "Manage user groups": "إدارة مجموعات المستخدمين",
-  "March": "مارس",
-  "Mark all messages as read": "وضع علامة على جميع الرسائل كمقروءة",
-  "Mark as read": "ضع إشارة مقروء",
-  "Mark as resolved": "وضع علامة &quot;تم الحل&quot;",
-  "Mark as unresolved": "وضع علامة لم يتم حلها",
+  "Manage user groups": "إدارة مجموعات المستخدم",
+  "March": "آذار",
+  "Mark all messages as read": "تمييز جميع الرسائل كمقروءة",
+  "Mark as read": "تمييز كمقروء",
+  "Mark as resolved": "تمييز بتم الحل",
+  "Mark as unresolved": "تمييز بلم يتم الحل",
   "Marketing team": "فريق التسويق",
-  "Marking all messages as read\u2026": "وضع علامة على جميع الرسائل كمقروءة ...",
+  "Marking all messages as read\u2026": "تمييز جميع الرسائل كمقروءة ...",
   "May": "يمكن",
   "Me": "Me",
   "Member": "عضو",
@@ -552,76 +552,76 @@
   "Mentions": "الإشارات",
   "Menu": "قائمة",
   "Menus": "القوائم",
-  "Message #{stream_name}": "الرسالة رقم {stream_name}",
-  "Message #{stream_name} > {topic_name}": "الرسالة رقم {stream_name}&gt; {topic_name}",
+  "Message #{stream_name}": "الرسالة {stream_name}",
+  "Message #{stream_name} > {topic_name}": "الرسالة #{stream_name} > {topic_name}",
   "Message actions": "إجراءات الرسائل",
-  "Message edit history": "تاريخ تحرير الرسالة",
-  "Message editing": "تحرير الرسالة",
+  "Message edit history": " سجل تعديل الرسالة",
+  "Message editing": "تعديل الرسالة",
   "Message formatting": "تنسيق الرسالة",
-  "Message length shouldn't be greater than {max_length} characters.": "يجب ألا يزيد طول الرسالة عن {max_length} حرفًا.",
+  "Message length shouldn't be greater than {max_length} characters.": "يجب ألا يزيد طول الرسالة عن {max_length} رمز.",
   "Message retention": "الاحتفاظ بالرسائل",
-  "Message retention for stream": "الاحتفاظ بالرسائل للدفق",
-  "Message retention period": "فترة الاحتفاظ بالرسالة",
+  "Message retention for stream": "الاحتفاظ بالرسائل للغرفة",
+  "Message retention period": "فترة الاحتفاظ بالرسائل",
   "Message scheduled for {deliver_at}": "تمت جدولة الرسالة في {deliver_at}",
   "Message sent when you were not subscribed": "تم إرسال الرسالة عندما لم تكن مشتركًا",
   "Message {recipient_label}": "رسالة {recipient_label}",
   "Message {recipient_names}": "رسالة {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "الرسالة {recipient_name} ({recipient_status})",
   "Messages in this stream will be automatically deleted after {retention_days} days.": "سيتم حذف الرسائل في هذا البث تلقائيًا بعد {retention_days} يوم.",
-  "Messages in this stream will be retained forever.": "سيتم الاحتفاظ بالرسائل في هذا البث إلى الأبد.",
+  "Messages in this stream will be retained forever.": "سيتم الاحتفاظ بالرسائل في هذه الغرفة إلى الأبد.",
   "Method": "طريقة",
-  "Mobile": "متحرك",
+  "Mobile": "جوال",
   "Mobile message notifications": "إشعارات رسائل الجوال",
   "Mobile notifications": "إشعارات الجوال",
-  "Mobile push notifications are not configured on this server.": "لم يتم تكوين إخطارات دفع المحمول على هذا الخادم.",
+  "Mobile push notifications are not configured on this server.": "لم يتم تكوين إرسال الإشعارات للمحمول على هذا الخادم.",
   "Moderator": "الوسيط",
   "Moderators": "الوسطاء",
   "Monday": "الإثنين",
-  "More details are available <z-link>in the Help Center article</z-link>.": "مزيد من التفاصيل متوفرة<z-link> في مقالة مركز المساعدة</z-link> .",
+  "More details are available <z-link>in the Help Center article</z-link>.": "المزيد من التفاصيل متوفرة <z-link>في مقال مركز المساعدة</z-link> .",
   "More than 2 weeks ago": "منذ أكثر من أسبوعين",
-  "Move all messages in <strong>{topic_name}</strong>": "نقل كافة الرسائل في <strong>{topic_name}</strong>",
+  "Move all messages in <strong>{topic_name}</strong>": "نقل كافة الرسائل إلى <strong>{topic_name}</strong>",
   "Move topic": "نقل الموضوع",
   "Moved ({last_edit_timestr})": "تم النقل ({last_edit_timestr})",
   "Moved by {full_name}": "تم النقل بواسطة {full_name}",
-  "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "يجب أن تتم دعوتها من قبل المشترك ؛ يمكن للمشتركين الجدد فقط رؤية الرسائل المرسلة بعد انضمامهم ؛ مخفية عن المستخدمين غير المسؤولين",
-  "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "يجب أن تتم دعوتها من قبل المشترك ؛ يمكن للمشتركين الجدد عرض سجل الرسائل بالكامل ؛ مخفية عن المستخدمين غير المسؤولين",
-  "Mute stream": "دفق كتم الصوت",
-  "Mute the topic <b>{topic}</b>": "تجاهل الموضوع <b>{topic}</b>",
-  "Mute this user": "كتم صوت هذا المستخدم",
-  "Mute topic": "موضوع كتم الصوت",
-  "Mute user": "المستخدم كتم الصوت",
-  "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "التدفقات المكتومة لا تظهر في &quot;كل الرسائل&quot; أو تنشئ إشعارات ما لم يتم ذكرك.",
+  "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "يجب أن تتم الدعوة من قبل المشترك؛ يمكن للمشتركين الجدد فقط رؤية الرسائل المرسلة بعد انضمامهم ؛ مخفية عن المستخدمين غير المسؤولين",
+  "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "يجب أن تتم الدعوة من قبل المشترك؛ يمكن للمشتركين الجدد عرض سجل الرسائل بالكامل؛ مخفية عن المستخدمين غير المسؤولين",
+  "Mute stream": "كتم الغرفة",
+  "Mute the topic <b>{topic}</b>": "كتم الموضوع <b>{topic}</b>",
+  "Mute this user": "كتم هذا المستخدم",
+  "Mute topic": "كتم الموضوع",
+  "Mute user": "كتم المستخدم",
+  "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "الغرف المكتومة لا تظهر في \"كل الرسائل\" أو تنشئ إشعارات إلا أن يتم ذكرك.",
   "Muted topics": "الموضوعات المكتومة",
-  "Muted user": "المستخدم كتم الصوت",
-  "Muted users": "المستخدمين كتم الصوت",
-  "N": "ن",
+  "Muted user": "المستخدم المكتوم",
+  "Muted users": "المستخدمين المكتومين",
+  "N": "N",
   "Name": "اسم",
-  "Name changes are disabled in this organization. Contact an administrator to change your name.": "تم تعطيل تغييرات الاسم في هذه المنظمة. اتصل بالمسؤول لتغيير اسمك.",
-  "Narrow to all private messages": "ضيق لجميع الرسائل الخاصة",
-  "Narrow to all unmuted messages": "ضيق لجميع الرسائل غير المكتومة",
-  "Narrow to current compose box recipient": "ضيق لمستلم مربع الكتابة الحالي",
-  "Narrow to group private messages with <z-value></z-value>.": "ضيق لتجميع الرسائل الخاصة باستخدام<z-value></z-value> .",
-  "Narrow to just message ID <z-value></z-value>.": "ضيق لمعرف الرسالة فقط<z-value></z-value> .",
-  "Narrow to messages containing images.": "ضيق على الرسائل التي تحتوي على صور.",
-  "Narrow to messages containing links.": "ضيق للرسائل التي تحتوي على روابط.",
-  "Narrow to messages containing uploads.": "ضيق للرسائل التي تحتوي على تحميلات.",
-  "Narrow to messages in resolved topics.": "ضيق للرسائل في المواضيع التي تم حلها.",
-  "Narrow to messages on stream <z-value></z-value>.": "ضيق على الرسائل في الدفق<z-value></z-value> .",
-  "Narrow to messages sent by <z-value></z-value>.": "ضيق للرسائل المرسلة بواسطة<z-value></z-value> .",
-  "Narrow to messages sent by you.": "ضيق على الرسائل المرسلة من قبلك.",
-  "Narrow to messages that mention you.": "ضيق للرسائل التي تشير إليك.",
-  "Narrow to messages with alert words.": "ضيق للرسائل مع كلمات التنبيه.",
-  "Narrow to messages with topic <z-value></z-value>.": "ضيق على الرسائل ذات الموضوع<z-value></z-value> .",
-  "Narrow to next unread private message": "ضيق إلى الرسالة الخاصة غير المقروءة التالية",
-  "Narrow to next unread topic": "ضيق إلى الموضوع التالي غير المقروء",
-  "Narrow to private messages with <z-value></z-value>.": "ضيق إلى خاص الرسائل ذات الامتداد<z-value></z-value> .",
-  "Narrow to private messages.": "ضيق للرسائل الخاصة.",
-  "Narrow to starred messages.": "ضيق إلى الرسائل المميزة بنجمة.",
-  "Narrow to stream": "ضيق للدفق",
-  "Narrow to stream &quot;{display_recipient}&quot;": "ضيق للدفق &quot;{display_recipient}&quot;",
-  "Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;": "ضيق للدفق &quot;{display_recipient}&quot; ، الموضوع &quot;{topic}&quot;",
-  "Narrow to topic or PM conversation": "ضيق إلى موضوع أو محادثة بعد الظهر",
-  "Narrow to unread messages.": "ضيق الرسائل غير المقروءة.",
+  "Name changes are disabled in this organization. Contact an administrator to change your name.": "تم تعطيل تغييرات الاسم في هذه المنظمة. اتصل بمسؤول لتغيير اسمك.",
+  "Narrow to all private messages": "تضييق العرض لجميع الرسائل الخاصة",
+  "Narrow to all unmuted messages": "تضييق العرض لجميع الرسائل غير المكتومة",
+  "Narrow to current compose box recipient": "تضييق العرض لمستلم مربع التأليف الحالي",
+  "Narrow to group private messages with <z-value></z-value>.": "تضييق العرض لمجموعة الرسائل الخاصة مع <z-value></z-value>.",
+  "Narrow to just message ID <z-value></z-value>.": "تضييق العرض لـ ID الرسالة فقط<z-value></z-value>.",
+  "Narrow to messages containing images.": "تضييق العرض على الرسائل التي تحتوي على صور.",
+  "Narrow to messages containing links.": "تضييق العرض للرسائل التي تحتوي على روابط.",
+  "Narrow to messages containing uploads.": "تضييق العرض للرسائل التي تحتوي على تحميلات.",
+  "Narrow to messages in resolved topics.": "تضييق العرض للرسائل في المواضيع التي تم حلها.",
+  "Narrow to messages on stream <z-value></z-value>.": "تضييق العرض على الرسائل في الغرفة <z-value></z-value>.",
+  "Narrow to messages sent by <z-value></z-value>.": "تضييق العرض للرسائل المرسلة بواسطة <z-value></z-value>.",
+  "Narrow to messages sent by you.": "تضييق العرض على الرسائل المرسلة من قبلك.",
+  "Narrow to messages that mention you.": "تضييق العرض للرسائل التي تشير إليك.",
+  "Narrow to messages with alert words.": "تضييق العرض للرسائل مع كلمات التنبيه.",
+  "Narrow to messages with topic <z-value></z-value>.": "تضييق العرض على الرسائل ذات الموضوع <z-value></z-value>.",
+  "Narrow to next unread private message": "تضييق العرض إلى الرسالة الخاصة غير المقروءة التالية",
+  "Narrow to next unread topic": "تضييق العرض إلى الموضوع التالي غير المقروء",
+  "Narrow to private messages with <z-value></z-value>.": "تضييق العرض إلى الرسائل الخاصة مع <z-value></z-value>.",
+  "Narrow to private messages.": "تضييق العرض للرسائل الخاصة.",
+  "Narrow to starred messages.": "تضييق العرض إلى الرسائل المميزة بنجمة.",
+  "Narrow to stream": "تضييق العرض للغرفة",
+  "Narrow to stream &quot;{display_recipient}&quot;": "تضييق العرض للغرفة &quot;{display_recipient}&quot;",
+  "Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;": "تضييق العرض للغرفة &quot;{display_recipient}&quot; ، الموضوع &quot;{topic}&quot;",
+  "Narrow to topic or PM conversation": "تضييق العرض إلى موضوع أو محادثة PM",
+  "Narrow to unread messages.": "تضييق العرض إلى الرسائل غير المقروءة.",
   "Narrow to your private messages with {display_reply_to}": "تضييق نطاق رسائلك الخاصة باستخدام {display_reply_to}",
   "Narrow to {message_recipient}": "ضيق إلى {message_recipient}",
   "Narrowing": "تضييق",

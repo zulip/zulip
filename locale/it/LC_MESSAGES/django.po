@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-03-31 17:40+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Andrea, 2020-2022\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
@@ -1015,7 +1015,7 @@ msgid ""
 "on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
 "live on the <a href=\"https://zulip.com/development-community/\">Zulip "
 "community server</a>!"
-msgstr ""
+msgstr "PS: Seguiteci su <a href=\"https://twitter.com/zulip\">Twitter</a>, trovaci su <a href=\"https://github.com/zulip/zulip\">GitHub</a>, o chatta con noi live sul <a href=\"https://zulip.com/development-community/\">server della comunity Zulip</a>!"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -1692,7 +1692,7 @@ msgstr "Comunità di dimostratori di teoremi"
 
 #: templates/zerver/footer.html:54
 msgid "Asciidoctor open-source community"
-msgstr ""
+msgstr "Comunità open source di Asciidoctor"
 
 #: templates/zerver/footer.html:57
 msgid "Rust language community"
@@ -1789,6 +1789,10 @@ msgstr "Storico"
 #: templates/zerver/footer.html:145
 msgid "Jobs"
 msgstr "Lavori"
+
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
@@ -2727,7 +2731,7 @@ msgid ""
 "\n"
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
-msgstr ""
+msgstr "{user} ha modificato le [autorizzazioni di pubblicazione](/help/stream-sending-policy) per questo canale:\n\n* **Vecchie autorizzazioni**: {old_policy}.\n* **Nuove autorizzazioni**: {new_policy}.\n"
 
 #: zerver/lib/actions.py:5440
 #, python-brace-format
@@ -2768,7 +2772,7 @@ msgid ""
 "* **New retention period**: {new_retention_period}\n"
 "\n"
 "{summary_line}"
-msgstr ""
+msgstr "{user} ha modificato il [periodo di conservazione del messaggio](/help/message-retention-policy) per questo canale:\n* **Vecchio periodo di conservazione**: {old_retention_period}\n* **Nuovo periodo di conservazione**: {new_retention_period}\n\n{summary_line}"
 
 #: zerver/lib/actions.py:5748
 msgid "Signups enabled"
@@ -2835,36 +2839,36 @@ msgstr "{user} ha contrassegnato questo argomento come non risolto."
 #: zerver/lib/actions.py:7267
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
-msgstr ""
+msgstr "Questo argomento è stato spostato in {new_location} da {user}."
 
 #: zerver/lib/actions.py:7271
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr ""
+msgstr "Un messaggio è stato spostato da questo argomento a {new_location} da {user}."
 
 #: zerver/lib/actions.py:7275
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
-msgstr ""
+msgstr "{changed_messages_count} messaggi sono stati spostati da questo argomento a {new_location} da {user}."
 
 #: zerver/lib/actions.py:7282
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
-msgstr ""
+msgstr "Questo argomento è stato spostato qui da {old_location} da {user}."
 
 #: zerver/lib/actions.py:7286
 #, python-brace-format
 msgid "A message was moved here from {old_location} by {user}."
-msgstr ""
+msgstr "Un messaggio è stato spostato qui da {old_location} da {user}."
 
 #: zerver/lib/actions.py:7290
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
-msgstr ""
+msgstr "{changed_messages_count} messaggi sono stati spostati qui da {old_location} da {user}."
 
 #: zerver/lib/actions.py:7638
 msgid ""
@@ -3152,7 +3156,7 @@ msgstr "L'organizzazione è stata disattivata"
 msgid ""
 "The mobile push notification service registration for your server has been "
 "deactivated"
-msgstr ""
+msgstr "La registrazione del servizio di notifica push mobile per il tuo server è stata disattivata"
 
 #: zerver/lib/exceptions.py:299
 msgid "Password authentication is disabled in this organization"
@@ -3180,7 +3184,7 @@ msgstr "L'evento '{event_type}' non è attualmente supportato dal webhook {webho
 #: zerver/lib/exceptions.py:384
 #, python-brace-format
 msgid "Unable to parse request: Did {webhook_name} generate this event?"
-msgstr ""
+msgstr "Impossibile analizzare la richiesta: {webhook_name} ha generato questo evento?"
 
 #: zerver/lib/exceptions.py:407 zerver/views/auth.py:644
 #: zerver/views/auth.py:913 zerver/views/auth.py:977
@@ -4428,7 +4432,7 @@ msgstr "nuovi canali"
 #: zerver/views/streams.py:694
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
-msgstr ""
+msgstr "**{policy}** canale creato da {user_name}. **Descrizione:**"
 
 #: zerver/views/streams.py:914
 msgid "Unknown subscription property: {}"

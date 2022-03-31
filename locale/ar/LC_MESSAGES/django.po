@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-03-31 17:40+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: najla seghaier <seghaier.najla95@gmail.com>, 2021\n"
 "Language-Team: Arabic (http://www.transifex.com/zulip/zulip/language/ar/)\n"
@@ -1783,6 +1783,10 @@ msgstr "سجل"
 msgid "Jobs"
 msgstr ""
 
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
+
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr ""
@@ -2027,7 +2031,7 @@ msgstr ""
 #: templates/zerver/login.html:124 templates/zerver/portico-header.html:33
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
-msgstr ""
+msgstr "تسجيل الدخول"
 
 #: templates/zerver/login.html:13
 msgid "Log in to Zulip"
@@ -3578,7 +3582,7 @@ msgstr ""
 #: zerver/lib/streams.py:300 zerver/lib/streams.py:322
 #: zerver/lib/streams.py:392 zerver/lib/streams.py:458
 msgid "Invalid stream id"
-msgstr ""
+msgstr "ID الغرفة غير صالح"
 
 #: zerver/lib/streams.py:434
 msgid "Stream name '{}' is already taken."
@@ -4002,7 +4006,7 @@ msgstr ""
 
 #: zerver/models.py:4369
 msgid "Link"
-msgstr ""
+msgstr "رابط"
 
 #: zerver/models.py:4372
 msgid "External account"
@@ -4491,7 +4495,7 @@ msgstr ""
 
 #: zerver/views/user_settings.py:70 zerver/views/user_settings.py:263
 msgid "Email address changes are disabled in this organization."
-msgstr ""
+msgstr "تم تعطيل التغييرات على عنوان البريد الإلكتروني في هذه المنظمة."
 
 #: zerver/views/user_settings.py:110
 msgid "Invalid default_language"
