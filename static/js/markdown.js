@@ -103,11 +103,12 @@ export function contains_backend_only_syntax(content) {
     return contains_preview_link(content) || contains_problematic_linkifier(content);
 }
 
-export function parse({raw_content, helper_config}) {
+function parse_with_options({raw_content, helper_config, options}) {
     // Given the raw markdown content of a message (raw_content)
     // we return the HTML content (content) and flags.
     // Our caller passes a helper_config object that has several
     // helper functions for getting info about users, streams, etc.
+    // And it also passes in options for the marked processor.
 
     helpers = helper_config;
 
@@ -115,7 +116,8 @@ export function parse({raw_content, helper_config}) {
     let mentioned_group = false;
     let mentioned_wildcard = false;
 
-    const options = {
+    const marked_options = {
+        ...options,
         userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 let classes;
@@ -265,7 +267,7 @@ export function parse({raw_content, helper_config}) {
     };
 
     // Our Python-Markdown processor appends two \n\n to input
-    const content = marked(raw_content + "\n\n", options).trim();
+    const content = marked(raw_content + "\n\n", marked_options).trim();
 
     // Simulate message flags for our locally rendered
     // message. Messages the user themselves sent via the browser are
@@ -528,6 +530,13 @@ export function setup() {
         smartLists: true,
         smartypants: false,
         zulip: true,
+        renderer: r,
+        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
+    });
+}
+
+export function parse({raw_content, helper_config}) {
+    const options = {
         emojiHandler: handleEmoji,
         linkifierHandler: handleLinkifier,
         unicodeEmojiHandler: handleUnicodeEmoji,
@@ -535,9 +544,9 @@ export function setup() {
         streamTopicHandler: handleStreamTopic,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
-        renderer: r,
-        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
-    });
+    };
+
+    return parse_with_options({raw_content, helper_config, options});
 }
 
 // NOTE: Everything below this line is likely to be webapp-specific
