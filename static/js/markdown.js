@@ -567,6 +567,8 @@ export function apply_markdown(message) {
 
 export function parse_non_message(raw_content) {
     // Occasionally we get markdown from the server that is not technically
-    // a message, but we want to convert it to HTML.
-    return marked(raw_content).trim();
+    // a message, but we want to convert it to HTML. Note that we parse
+    // raw_content exactly as if it were a Zulip message, so we will
+    // handle things like mentions, stream links, and linkifiers.
+    return parse({raw_content, helper_config: webapp_helpers}).content;
 }
