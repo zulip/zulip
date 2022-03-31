@@ -57,6 +57,8 @@ function insert_tip_box() {
         .not("#emoji-settings")
         .not("#user-groups-admin")
         .not("#organization-auth-settings")
+        .not("#admin-bot-list")
+        .not("#admin-invites-list")
         .prepend(tip_box);
 }
 
