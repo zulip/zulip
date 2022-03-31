@@ -85,7 +85,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
     to_wild_value,
 )
-from zerver.middleware import parse_client
+from zerver.middleware import LogRequests, parse_client
 from zerver.models import Realm, UserProfile, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:
@@ -128,6 +128,28 @@ class DecoratorTestCase(ZulipTestCase):
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
         self.assertEqual(parse_client(req), ("Mozilla", None))
+
+        post_req_with_client = HostRequestMock()
+        post_req_with_client.POST["client"] = "test_client_1"
+        post_req_with_client.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (iOS 13.3.1)"
+        self.assertEqual(parse_client(post_req_with_client), ("test_client_1", None))
+
+        get_req_with_client = HostRequestMock()
+        get_req_with_client.GET["client"] = "test_client_2"
+        get_req_with_client.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (iOS 13.3.1)"
+        self.assertEqual(parse_client(get_req_with_client), ("test_client_2", None))
+
+    def test_unparsable_user_agent(self) -> None:
+        request = HttpRequest()
+        request.POST["param"] = "test"
+        request.META["HTTP_USER_AGENT"] = "mocked should fail"
+        with mock.patch(
+            "zerver.middleware.parse_client", side_effect=JsonableError("message")
+        ) as m, self.assertLogs(level="ERROR"):
+            LogRequests.process_request(self, request)
+        request_notes = RequestNotes.get_notes(request)
+        self.assertEqual(request_notes.client_name, "Unparsable")
+        m.assert_called_once()
 
     def test_REQ_aliases(self) -> None:
         @has_request_variables
