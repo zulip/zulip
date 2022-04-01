@@ -11,7 +11,7 @@ Consider translating the same thing with the easiest Finnish possible.
 It's not mandatory to follow the English text word by word, as long as the message gets clear.
 
 Eg.
- - Click the button below to create the organization and register your account. -> "Luo organisaatio ja rekisteröi tilisi napsauttamalla alla olevaa painiketta."
+ - Click the button below to create the organization and register your account. -> Luo organisaatio ja rekisteröi tilisi napsauttamalla alla olevaa painiketta.
  - Sent! Your message is outside your current narrow. -> Lähetetty! Viesti on nykyisen näkymäsi ulkopuolella.
 
 ### Grammatical case (Sijamuodot)
@@ -32,7 +32,7 @@ See section [Terms](#terms) for more details.
 
 ### **_Please_**, in error messages
 
-As it might appeal to use correspondence _Ole hyvä ja_"_, it's not commonly used in Finnish. We are strict and used to more direct messaging. Let's not translate _please_ and use instruction format only. No Finn is going to be offended by this.
+As it might appeal to use correspondence _Ole hyvä ja_, it's not commonly used in Finnish. We are strict and used to more direct messaging. Let's not translate _please_ and use instruction format only. No Finn is going to be offended by this.
 
 Eg.
  - Please enter at most 10 emails. -> Lisää korkeintaan 10 sähköpostia. 
@@ -113,5 +113,5 @@ Use commas in whole sentences where it is required. You can use these instructio
 
 ## Other
 
-Some translations can be tricky, so please don't hesitate to ask the community or contribute to this guide! Thanks for your effort!
+Some translations can be tricky, so please don't hesitate to ask the community or to contribute to this guide! Thanks for your effort!
 
