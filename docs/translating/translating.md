@@ -165,6 +165,7 @@ translate words like "stream" to), with reasoning, so that future
 translators can understand and preserve those decisions:
 
 - [Chinese](chinese.md)
+- [Finnish](finnish.md)
 - [French](french.md)
 - [German](german.md)
 - [Hindi](hindi.md)
