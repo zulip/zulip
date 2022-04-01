@@ -299,12 +299,15 @@ ul {
         height: 180px;
         width: 180px;
         background-size: cover;
-        background-position: center;
+        background-position: center center;
         border-radius: 5px;
         margin-right: 10px;
+        background-clip: content-box;
         border: 1px solid hsla(0, 0%, 0%, 0.2);
+        
 
         &.guest-avatar::after {
+        
             outline: 9px solid hsl(0, 0%, 100%);
         }
     }
