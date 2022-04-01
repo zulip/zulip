@@ -8,6 +8,7 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
+const test_url = () => "https://www.example.com";
 
 // We assign this in our test() wrapper.
 let messages;
@@ -79,9 +80,9 @@ mock_esm("../../static/js/compose_closed_ui", {
     update_buttons_for_recent_topics: noop,
 });
 mock_esm("../../static/js/hash_util", {
-    by_stream_url: () => "https://www.example.com",
-
-    by_stream_topic_url: () => "https://www.example.com",
+    by_stream_url: test_url,
+    by_stream_topic_url: test_url,
+    by_conversation_and_time_url: test_url,
 });
 mock_esm("../../static/js/message_list_data", {
     MessageListData: class {},
@@ -277,6 +278,7 @@ function generate_topic_data(topic_info_array) {
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",
+            last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
             senders: [1, 2],
             stream: "stream" + stream_id,
