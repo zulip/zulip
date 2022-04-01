@@ -186,10 +186,6 @@ h3,
     box-sizing: border-box;
 }
 
-.side-padded-container {
-    padding: 0 20px;
-}
-
 .setting_notification_sound,
 .play_notification_sound {
     display: inline;
@@ -657,11 +653,36 @@ input[type="checkbox"] {
     margin: 10px 0;
 }
 
-.add-new-default-stream-box {
-    & input[type="text"] {
-        padding: 6px;
+#add-default-stream-modal {
+    .dropdown-widget-button {
+        width: 116px;
+        display: inline-flex;
     }
-    margin-bottom: 15px;
+
+    .default_stream_choices_table {
+        margin-top: 2px;
+    }
+
+    .choice-row {
+        margin-bottom: 10px;
+
+        &:last-of-type {
+            .delete-choice {
+                display: none;
+            }
+        }
+    }
+}
+
+.add_default_streams_button_container {
+    float: right;
+
+    #show-add-default-streams-modal {
+        padding: 5px 0;
+        min-width: 100px;
+        margin-top: 11px;
+        margin-right: 6px;
+    }
 }
 
 #add-custom-emoji-modal {
