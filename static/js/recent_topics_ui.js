@@ -309,6 +309,7 @@ function format_topic(topic_data) {
         topic_key: get_topic_key(stream_id, topic),
         unread_count,
         last_msg_time,
+        last_msg_url: hash_util.by_conversation_and_time_url(last_msg),
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),
