@@ -317,7 +317,10 @@ export function delete_sub(stream_id) {
 export function get_non_default_stream_names() {
     let subs = [...stream_info.values()];
     subs = subs.filter((sub) => !is_default_stream_id(sub.stream_id) && !sub.invite_only);
-    const names = subs.map((sub) => sub.name);
+    const names = subs.map((sub) => ({
+        name: sub.name,
+        unique_id: sub.stream_id.toString(),
+    }));
     return names;
 }
 

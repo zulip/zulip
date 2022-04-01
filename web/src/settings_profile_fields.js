@@ -156,7 +156,7 @@ function read_external_account_field_data($profile_field_form) {
     return field_data;
 }
 
-function update_choice_delete_btn($container, display_flag) {
+export function update_choice_delete_btn($container, display_flag) {
     const no_of_choice_row = $container.find(".choice-row").length;
 
     // Disable delete button if there only one choice row
@@ -170,7 +170,7 @@ function update_choice_delete_btn($container, display_flag) {
     }
 }
 
-function get_value_for_new_option(container) {
+export function get_value_for_new_option(container) {
     const $choice_rows = $(container).find(".choice-row");
     if ($choice_rows.length === 0) {
         // Value for the first option is 0.
