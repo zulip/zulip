@@ -23,6 +23,9 @@
 
         <div class="general_settings stream_section">
             {{#with sub}}
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip}}
+            </div>
             <div class="stream-header">
                 {{> stream_privacy_icon
                   invite_only=invite_only
@@ -31,7 +34,7 @@
                     <span class="sub-stream-name" title="{{name}}">{{name}}</span>
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
-                <div class="button-group">
+                <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
                     <button id="open_stream_info_modal" class="button rounded small btn-warning" title="{{t 'Change stream info' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>

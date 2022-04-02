@@ -23,8 +23,9 @@ import * as linkifiers from "./linkifiers";
 // for example usage.
 let helpers;
 
-// Regexes that match some of our common backend-only Markdown syntax
-const backend_only_markdown_re = [
+// If we see preview-related syntax in our content, we will need the
+// backend to render it.
+const preview_regexes = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
@@ -33,8 +34,12 @@ const backend_only_markdown_re = [
 
     // Twitter and youtube links are given previews
 
-    /\S*(?:twitter|youtube).com\/\S*/,
+    /\S*(?:twitter|youtube)\.com\/\S*/,
 ];
+
+function contains_preview_link(content) {
+    return preview_regexes.some((re) => re.test(content));
+}
 
 export function translate_emoticons_to_names(text) {
     // Translates emoticons in a string to their colon syntax.
@@ -76,25 +81,36 @@ export function translate_emoticons_to_names(text) {
     return translated;
 }
 
+function contains_problematic_linkifier(content) {
+    // If a linkifier doesn't start with some specified characters
+    // then don't render it locally. It is workaround for the fact that
+    // javascript regex doesn't support lookbehind.
+    for (const re of linkifiers.get_linkifier_map().keys()) {
+        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
+        const regex = new RegExp(pattern);
+        if (regex.test(content)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function contains_backend_only_syntax(content) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
-    const markedup = backend_only_markdown_re.find((re) => re.test(content));
-
-    // If a linkifier doesn't start with some specified characters
-    // then don't render it locally. It is workaround for the fact that
-    // javascript regex doesn't support lookbehind.
-    const linkifier_list = linkifiers.linkifier_list;
-    const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
-        const regex = new RegExp(pattern);
-        return regex.test(content);
-    });
-    return markedup !== undefined || false_linkifier_match !== undefined;
+    return contains_preview_link(content) || contains_problematic_linkifier(content);
 }
 
-export function apply_markdown(message) {
+export function parse({raw_content, helper_config}) {
+    // Given the raw markdown content of a message (raw_content)
+    // we return the HTML content (content) and flags.
+    // Our caller passes a helper_config object that has several
+    // helper functions for getting info about users, streams, etc.
+
+    helpers = helper_config;
+
     let mentioned = false;
     let mentioned_group = false;
     let mentioned_wildcard = false;
@@ -249,20 +265,20 @@ export function apply_markdown(message) {
     };
 
     // Our Python-Markdown processor appends two \n\n to input
-    message.content = marked(message.raw_content + "\n\n", options).trim();
+    const content = marked(raw_content + "\n\n", options).trim();
 
     // Simulate message flags for our locally rendered
     // message. Messages the user themselves sent via the browser are
     // always marked as read.
-    message.flags = ["read"];
+    const flags = ["read"];
     if (mentioned || mentioned_group) {
-        message.flags.push("mentioned");
+        flags.push("mentioned");
     }
     if (mentioned_wildcard) {
-        message.flags.push("wildcard_mentioned");
+        flags.push("wildcard_mentioned");
     }
 
-    message.is_me_message = is_status_message(message.raw_content);
+    return {content, flags};
 }
 
 export function add_topic_links(message) {
@@ -272,11 +288,8 @@ export function add_topic_links(message) {
     }
     const topic = message.topic;
     const links = [];
-    const linkifier_list = linkifiers.linkifier_list;
 
-    for (const linkifier of linkifier_list) {
-        const pattern = linkifier.pattern;
-        const url = linkifier.url_format;
+    for (const [pattern, url] of linkifiers.get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -360,6 +373,20 @@ function handleEmoji(emoji_name) {
     return alt_text;
 }
 
+function handleLinkifier(pattern, matches) {
+    let url = linkifiers.get_linkifier_map().get(pattern);
+
+    let current_group = 1;
+
+    for (const match of matches) {
+        const back_ref = "\\" + current_group;
+        url = url.replace(back_ref, match);
+        current_group += 1;
+    }
+
+    return url;
+}
+
 function handleTimestamp(time) {
     let timeobject;
     if (Number.isNaN(Number(time))) {
@@ -422,8 +449,15 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-export function initialize(helper_config) {
-    helpers = helper_config;
+export function set_linkifier_regexes(regexes) {
+    // This needs to be called any time we modify our linkifier regexes,
+    // until we find a less clumsy way to handle this.
+    marked.InlineLexer.rules.zulip.linkifiers = regexes;
+}
+
+export function setup() {
+    // Once we focus on supporting other platforms such as mobile,
+    // we will export this function.
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
@@ -495,6 +529,7 @@ export function initialize(helper_config) {
         smartypants: false,
         zulip: true,
         emojiHandler: handleEmoji,
+        linkifierHandler: handleLinkifier,
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
@@ -503,4 +538,29 @@ export function initialize(helper_config) {
         renderer: r,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     });
+}
+
+// NOTE: Everything below this line is likely to be webapp-specific
+//       and won't be used by future platforms such as mobile.
+//       We may eventually move this code to a new file, but we want
+//       to wait till the dust settles a bit on some other changes first.
+
+let webapp_helpers;
+
+export function initialize(helper_config) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call setup().
+    webapp_helpers = helper_config;
+    helpers = helper_config;
+    setup();
+}
+
+export function apply_markdown(message) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call parse().
+    const raw_content = message.raw_content;
+    const {content, flags} = parse({raw_content, helper_config: webapp_helpers});
+    message.content = content;
+    message.flags = flags;
+    message.is_me_message = is_status_message(raw_content);
 }

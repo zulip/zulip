@@ -61,7 +61,7 @@ class zulip::profile::base {
     }
   }
   package { 'ntp': ensure => 'purged', before => Package['chrony'] }
-  service { 'chrony': ensure => 'running', require => Package['chrony'] }
+  service { 'chrony': require => Package['chrony'] }
   package { $base_packages: ensure => 'installed' }
 
   group { 'zulip':

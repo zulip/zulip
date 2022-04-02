@@ -978,7 +978,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_realm_public)
 
         params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_private": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
@@ -1000,7 +999,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
 
         params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_private": orjson.dumps(False).decode(),
             "is_web_public": orjson.dumps(True).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),
@@ -1025,7 +1023,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_realm_public)
 
         params = {
-            "stream_name": orjson.dumps("test_stream").decode(),
             "is_private": orjson.dumps(False).decode(),
             "is_web_public": orjson.dumps(False).decode(),
             "history_public_to_subscribers": orjson.dumps(True).decode(),

@@ -362,7 +362,7 @@ export function set_up() {
         $(`[name*='${CSS.escape(selected_bot)}']`).show();
     });
 
-    $("#active_bots_list").on("click", "button.delete_bot", (e) => {
+    $("#active_bots_list").on("click", "button.deactivate_bot", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
 
         channel.del({

@@ -318,6 +318,7 @@ export function update_settings_for_subscribed(slim_sub) {
 
     // Display the swatch and subscription stream_settings
     stream_ui_updates.update_regular_sub_settings(sub);
+    stream_ui_updates.update_permissions_banner(sub);
 }
 
 export function show_active_stream_in_left_panel() {
@@ -350,6 +351,7 @@ export function update_settings_for_unsubscribed(slim_sub) {
 
     // Remove private streams from subscribed streams list.
     stream_ui_updates.update_stream_row_in_settings_tab(sub);
+    stream_ui_updates.update_permissions_banner(sub);
 }
 
 function triage_stream(left_panel_params, sub) {

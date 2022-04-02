@@ -1,22 +1,10 @@
-import marked from "../third/marked/lib/marked";
-
 import * as blueslip from "./blueslip";
+import * as markdown from "./markdown";
 
-const linkifier_map = new Map();
-export let linkifier_list = [];
+const linkifier_map = new Map(); // regex -> url
 
-function handleLinkifier(pattern, matches) {
-    let url = linkifier_map.get(pattern);
-
-    let current_group = 1;
-
-    for (const match of matches) {
-        const back_ref = "\\" + current_group;
-        url = url.replace(back_ref, match);
-        current_group += 1;
-    }
-
-    return url;
+export function get_linkifier_map() {
+    return linkifier_map;
 }
 
 function python_to_js_linkifier(pattern, url) {
@@ -78,11 +66,7 @@ function python_to_js_linkifier(pattern, url) {
 }
 
 export function update_linkifier_rules(linkifiers) {
-    // Update the marked parser with our particular set of linkifiers
     linkifier_map.clear();
-    linkifier_list = [];
-
-    const marked_rules = [];
 
     for (const linkifier of linkifiers) {
         const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
@@ -92,18 +76,12 @@ export function update_linkifier_rules(linkifiers) {
         }
 
         linkifier_map.set(regex, final_url);
-        linkifier_list.push({
-            pattern: regex,
-            url_format: final_url,
-        });
-        marked_rules.push(regex);
     }
 
-    marked.InlineLexer.rules.zulip.linkifiers = marked_rules;
+    // Update our parser with our particular set of linkifiers.
+    markdown.set_linkifier_regexes(Array.from(linkifier_map.keys()));
 }
 
 export function initialize(linkifiers) {
     update_linkifier_rules(linkifiers);
-
-    marked.setOptions({linkifierHandler: handleLinkifier});
 }

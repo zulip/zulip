@@ -309,11 +309,10 @@ if not args.skip_migrations:
         if line_str.startswith("[ ]"):
             migrations_needed = True
 
-if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
-    # By default, we shut down the service to apply migrations and
-    # Puppet changes, to minimize risk of issues due to inconsistent
-    # state.
-    shutdown_server()
+# NOTE: Here begins the most likely critical period, where we may be
+# shutting down the server; we should strive to minimize the number of
+# steps that happen between here and the "Restarting Zulip" line
+# below.
 
 if rabbitmq_dist_listen:
     shutdown_server()
@@ -327,6 +326,7 @@ if cookie_size is not None and cookie_size == 20:
     # characters long by a good randomizer, it would be 96 bits and
     # more than sufficient.  We generate, using good randomness, a
     # 255-character cookie, the max allowed length.
+    shutdown_server()
     logging.info("Generating a secure erlang cookie...")
     subprocess.check_call(["./scripts/setup/generate-rabbitmq-cookie"])
 
@@ -357,19 +357,25 @@ if classes != new_classes:
 
 
 if not args.skip_puppet:
+    # Puppet may adjust random services; to minimize risk of issues
+    # due to inconsistent state, we shut down the server first.
+    shutdown_server()
     logging.info("Applying Puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
     subprocess.check_call(["apt-get", "-y", "--allow-downgrades", "upgrade"])
+    # Puppet may have reloaded supervisor, and in so doing started
+    # services; mark as potentially needing to stop the server.
+    IS_SERVER_UP = True
 
 if migrations_needed:
+    # Database migrations assume that they run on a database in
+    # quiesced state.
+    shutdown_server()
     logging.info("Applying database migrations...")
     subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
-if IS_SERVER_UP or not args.skip_puppet:
-    # Even if the server wasn't up previously, puppet might have
-    # started it if there were supervisord configuration changes, so
-    # we need to use restart-server if puppet ran.
+if IS_SERVER_UP:
     restart_args = ["--fill-cache"]
     if args.skip_tornado:
         restart_args.append("--skip-tornado")

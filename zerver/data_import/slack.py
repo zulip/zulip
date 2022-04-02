@@ -78,14 +78,13 @@ class SlackBotEmail:
         else:
             raise AssertionError("Could not identify bot type")
 
-        email = slack_bot_name.replace("Bot", "").replace(" ", "") + f"-bot@{domain_name}"
+        email = slack_bot_name.replace("Bot", "").replace(" ", "").lower() + f"-bot@{domain_name}"
 
         if email in cls.duplicate_email_count:
-            email_prefix, email_suffix = email.split("@")
-            email_prefix += cls.duplicate_email_count[email]
-            email = "@".join([email_prefix, email_suffix])
-            # Increment the duplicate email count
             cls.duplicate_email_count[email] += 1
+            email_prefix, email_suffix = email.split("@")
+            email_prefix += "-" + str(cls.duplicate_email_count[email])
+            email = "@".join([email_prefix, email_suffix])
         else:
             cls.duplicate_email_count[email] = 1
 
