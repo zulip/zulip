@@ -1,5 +1,5 @@
 """Webhooks for external integrations."""
-from typing import Any, Dict, List
+from typing import Any, List
 
 from django.http import HttpRequest, HttpResponse
 
@@ -7,6 +7,7 @@ from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, WildValueDict, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -29,7 +30,7 @@ TICKET_CREATION_TEMPLATE = """
 """.strip()
 
 
-class TicketDict(Dict[str, Any]):
+class TicketDict(WildValueDict):
     """
     A helper class to turn a dictionary with ticket information into
     an object where each of the keys is an attribute for easy access.
@@ -97,11 +98,11 @@ def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> 
     """There are public (visible to customers) and private note types."""
     note_type = event_info[1]
     content = NOTE_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
+        name=ticket.requester_name.tame(check_string),
+        email=ticket.requester_email.tame(check_string),
         note_type=note_type,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        ticket_id=ticket.id.tame(check_string),
+        ticket_url=ticket.url.tame(check_string),
     )
 
     return content
@@ -113,10 +114,10 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
     and after data for the first one.
     """
     content = PROPERTY_CHANGE_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        name=ticket.requester_name.tame(check_string),
+        email=ticket.requester_email.tame(check_string),
+        ticket_id=ticket.id.tame(check_string),
+        ticket_url=ticket.url.tame(check_string),
         property_name=event_info[0].capitalize(),
         old=event_info[1],
         new=event_info[2],
@@ -127,16 +128,16 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
 
 def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
     """They send us the description as HTML."""
-    cleaned_description = convert_html_to_markdown(ticket.description)
+    cleaned_description = convert_html_to_markdown(ticket.description.tame(check_string))
     content = TICKET_CREATION_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        name=ticket.requester_name.tame(check_string),
+        email=ticket.requester_email.tame(check_string),
+        ticket_id=ticket.id.tame(check_string),
+        ticket_url=ticket.url.tame(check_string),
         description=cleaned_description,
-        type=ticket.type,
-        priority=ticket.priority,
-        status=ticket.status,
+        type=ticket.type.tame(check_string),
+        priority=ticket.priority.tame(check_string),
+        status=ticket.status.tame(check_string),
     )
 
     return content
@@ -147,14 +148,14 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 def api_freshdesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     ticket_data = payload["freshdesk_webhook"]
 
-    ticket = TicketDict(ticket_data)
+    ticket = TicketDict("freshdesk_webhook", ticket_data)
 
-    subject = f"#{ticket.id}: {ticket.subject}"
-    event_info = parse_freshdesk_event(ticket.triggered_event)
+    subject = f"#{ticket.id.tame(check_string)}: {ticket.subject.tame(check_string)}"
+    event_info = parse_freshdesk_event(ticket.triggered_event.tame(check_string))
 
     if event_info[1] == "created":
         content = format_freshdesk_ticket_creation_message(ticket)
