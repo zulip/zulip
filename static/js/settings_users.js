@@ -92,7 +92,6 @@ export function update_view_on_deactivate(user_id) {
     }
 
     const $button = $row.find("button.deactivate");
-    const $user_role = $row.find(".user_role");
     $button.prop("disabled", false);
     $row.find("button.open-user-form").hide();
     $row.find("i.deactivated-user-icon").show();
@@ -100,31 +99,16 @@ export function update_view_on_deactivate(user_id) {
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>", {class: "fa fa-user-plus", ["aria-hidden"]: "true"}));
     $button.attr("title", "Reactivate");
-    $row.addClass("deactivated_user");
-
-    if ($user_role) {
-        const user_id = $row.data("user-id");
-        $user_role.text(
-            `${$t({defaultMessage: "Deactivated"})} (${people.get_user_type(user_id)})`,
-        );
-    }
 }
 
 function update_view_on_reactivate($row) {
     const $button = $row.find("button.reactivate");
-    const $user_role = $row.find(".user_role");
     $row.find("button.open-user-form").show();
     $row.find("i.deactivated-user-icon").hide();
     $button.addClass("btn-danger deactivate");
     $button.removeClass("btn-warning reactivate");
     $button.attr("title", "Deactivate");
     $button.empty().append($("<i>", {class: "fa fa-user-times", ["aria-hidden"]: "true"}));
-    $row.removeClass("deactivated_user");
-
-    if ($user_role) {
-        const user_id = $row.data("user-id");
-        $user_role.text(people.get_user_type(user_id));
-    }
 }
 
 function get_status_field() {
