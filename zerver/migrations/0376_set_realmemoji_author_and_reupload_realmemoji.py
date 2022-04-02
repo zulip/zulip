@@ -1,9 +1,6 @@
-from django.conf import settings
 from django.db import migrations
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-
-from zerver.lib.queue import queue_json_publish
 
 
 def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
@@ -13,7 +10,6 @@ def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
     """
 
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
-    Realm = apps.get_model("zerver", "Realm")
     UserProfile = apps.get_model("zerver", "UserProfile")
     ROLE_REALM_OWNER = 100
 
@@ -32,18 +28,12 @@ def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> No
 
     RealmEmoji.objects.bulk_update(realm_emoji_to_update, ["author_id"])
 
-    if settings.TEST_SUITE:
-        # There are no custom emoji in the test suite data set, and
-        # the below code won't work because RabbitMQ isn't enabled for
-        # the test suite.
-        return
-
-    for realm_id in Realm.objects.order_by("id").values_list("id", flat=True):
-        event = {
-            "type": "reupload_realm_emoji",
-            "realm_id": realm_id,
-        }
-        queue_json_publish("deferred_work", event)
+    # Previously, this also pushed `reupload_realm_emoji` events onto
+    # the `deferred_work` queue; however,
+    # https://github.com/zulip/zulip/issues/21608 made those possibly
+    # run too early, and that work was repeated in migration 0387 to
+    # ensure it ran.  As such, the work has been removed from this
+    # migration, so it does not unnecessarily run twice.
 
 
 class Migration(migrations.Migration):
