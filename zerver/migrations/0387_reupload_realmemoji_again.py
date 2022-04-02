@@ -12,12 +12,14 @@ def reupload_realm_emoji(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
     started up by puppet during the deployment before migrations were
     run on Zulip 5.0.
 
-    This means that the deferred_work events produced by migration
-    0376 might have been processed and discarded without effect.
+    This means that the deferred_work events originally produced by
+    migration 0376 might have been processed and discarded without
+    effect.
 
-    Since it's harmless to reupload a custom emoji a second time, we
-    fix this issue for the slice of servers that have already
-    installed 5.0 by repeating that part of the migration.
+    That code has been removed from the 0376 migration, and we run it
+    here, after the upgrade code has been fixed; servers which already
+    processed that migration might at worst do this work twice, which
+    is harmless aside from being a small waste of resources.
     """
 
     Realm = apps.get_model("zerver", "Realm")
