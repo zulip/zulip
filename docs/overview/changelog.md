@@ -17,11 +17,27 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
-### 5.0 -- 2022-03-29
+### 5.1 -- 2022-04-01
 
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally. See the [commit
-log][commit-log] for an up-to-date list of raw changes.
+- Fixed upgrade bug where preexisting animated emoji would still
+  always animate in statuses.
+- Improved check that prevents servers from accidentally downgrading,
+  to not block upgrading servers that originally installed Zulip
+  Server prior to mid-2017.
+- Fixed email address de-duplication in Slack imports.
+- Prevented an extraneous scrollbar when a notification banner was
+  present across the top.
+- Fixed installation in LXC containers, which failed due to `chrony`
+  not being runnable there.
+- Prevented a "push notifications not configured" warning from
+  appearing in the new user default settings panel even when push
+  notifications were configured.
+- Fixed a bug which, in uncommon configurations, would prevent Tornado
+  from being restarted during upgrades; users would be able to log in,
+  but would immediately be logged out.
+- Updated translations.
+
+### 5.0 -- 2022-03-29
 
 #### Highlights
 
