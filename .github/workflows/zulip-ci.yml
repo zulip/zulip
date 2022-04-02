@@ -23,10 +23,12 @@ jobs:
             name: Ubuntu 20.04 (Python 3.8, backend + frontend)
             os: focal
             include_frontend_tests: true
+            include_documentation_tests: false
           # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
-            name: Debian 11 (Python 3.9, backend)
+            name: Debian 11 (Python 3.9, backend + documentation)
             os: bullseye
+            include_documentation_tests: true
             include_frontend_tests: false
 
     runs-on: ubuntu-latest
@@ -141,6 +143,7 @@ jobs:
           chmod 755 static/generated
 
       - name: Run documentation and api tests
+        if: ${{ matrix.include_documentation_tests }}
         run: |
           source tools/ci/activate-venv
           # In CI, we only test links we control in test-documentation to avoid flakes

@@ -60,7 +60,8 @@ checks are run to confirm the installation worked.
 `zulip-ci.yml` is designed to run our main test suites on all of our
 supported platforms. Out of them, only one of them runs the frontend
 tests, since `puppeteer` is slow and unlikely to catch issues that
-depend on the version of the base OS and/or Python.
+depend on the version of the base OS and/or Python. Similarly, only a
+(different) one runs the documentation tests.
 
 Our code for running the tests in CI lives under `tools/ci`; but that
 logic is mostly thin wrappers around [Zulip's test
