@@ -218,3 +218,18 @@ test("linkifiers", () => {
         '<p>see <a href="http://foo.com/12345" title="http://foo.com/12345">#foo12345</a> for details</p>',
     );
 });
+
+test("topic links", () => {
+    const topic = "progress on #foo101 and #foo102";
+    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
+    assert.deepEqual(topic_links, [
+        {
+            text: "#foo101",
+            url: "http://foo.com/101",
+        },
+        {
+            text: "#foo102",
+            url: "http://foo.com/102",
+        },
+    ]);
+});

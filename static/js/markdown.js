@@ -283,12 +283,9 @@ function parse_with_options({raw_content, helper_config, options}) {
     return {content, flags};
 }
 
-function do_add_topic_links({message, get_linkifier_map}) {
-    if (message.type !== "stream") {
-        message.topic_links = [];
-        return;
-    }
-    const topic = message.topic;
+export function get_topic_links({topic, get_linkifier_map}) {
+    // We export this for testing purposes, and mobile may want to
+    // use this as well in the future.
     const links = [];
 
     for (const [pattern, url] of get_linkifier_map().entries()) {
@@ -322,7 +319,8 @@ function do_add_topic_links({message, get_linkifier_map}) {
     for (const match of links) {
         delete match.index;
     }
-    message.topic_links = links;
+
+    return links;
 }
 
 export function is_status_message(raw_content) {
@@ -614,7 +612,14 @@ export function apply_markdown(message) {
 }
 
 export function add_topic_links(message) {
-    return do_add_topic_links({message, get_linkifier_map: webapp_helpers.get_linkifier_map});
+    if (message.type !== "stream") {
+        message.topic_links = [];
+        return;
+    }
+    message.topic_links = get_topic_links({
+        topic: message.topic,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
+    });
 }
 
 export function parse_non_message(raw_content) {
