@@ -440,9 +440,19 @@ export function initialize() {
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
-        const topic_row_index = $(e.target).closest("tr").index();
-        recent_topics_ui.focus_clicked_element(topic_row_index, recent_topics_ui.COLUMNS.stream);
-        window.location.href = $(e.currentTarget).find("a").attr("href");
+        const $topic_row = $(e.target).closest("tr");
+        const topic_key = $topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_row_index = $topic_row.index();
+        recent_topics_ui.focus_clicked_element(
+            topic_row_index,
+            recent_topics_ui.COLUMNS.topic,
+            topic_key,
+        );
+        window.location.href = $(e.currentTarget)
+            .parent()
+            .find("td.recent_topic_name")
+            .find("a")
+            .attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
