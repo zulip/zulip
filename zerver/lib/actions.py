@@ -2676,7 +2676,7 @@ def check_add_reaction(
                 create_historical_user_messages(user_id=user_profile.id, message_ids=[message.id])
 
             do_add_reaction(user_profile, message, emoji_name, emoji_code, reaction_type)
-    except IntegrityError: # nocoverage
+    except IntegrityError:  # nocoverage
         raise IntegrityError(_("Concurrency error."))
 
 
