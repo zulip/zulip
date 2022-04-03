@@ -215,6 +215,15 @@
             margin-right: 5px;
         }
 
+        tbody {
+            tr {
+                .recent_topic_stream,
+                .recent_topic_name {
+                    cursor: pointer;
+                }
+            }
+        }
+
         thead th {
             background-color: hsl(0, 0%, 100%);
             color: inherit;
