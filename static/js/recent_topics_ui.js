@@ -294,6 +294,7 @@ function format_topic(topic_data) {
     const other_sender_names_html = displayed_other_names
         .map((name) => _.escape(name))
         .join("<br />");
+    const last_msg_url = last_msg.url;
 
     return {
         // stream info
@@ -308,6 +309,7 @@ function format_topic(topic_data) {
         topic_key: get_topic_key(stream_id, topic),
         unread_count,
         last_msg_time,
+        last_msg_url,
         topic_url: hash_util.by_stream_topic_url(stream_id, topic),
         senders: senders_info,
         other_senders_count: Math.max(0, all_senders.length - MAX_AVATAR),

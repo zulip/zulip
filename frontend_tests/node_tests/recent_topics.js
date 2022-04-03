@@ -290,6 +290,7 @@ function generate_topic_data(topic_info_array) {
             invite_only: false,
             is_web_public: true,
             last_msg_time: "Just now",
+            last_msg_url: undefined,
             full_last_msg_date_time: "date at time",
             senders: [1, 2],
             stream: "stream" + stream_id,
