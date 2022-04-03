@@ -217,11 +217,19 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker published release [0.0.1](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1) for tag 0.0.1."
         self.check_webhook("release", TOPIC_REPO, expected_message)
 
+    def test_release_msg_with_name(self) -> None:
+        expected_message = "baxterthehacker published release [0.0.1](https://github.com/baxterthehacker/public-repo/releases/tag/0.0.1) for tag 0.0.1."
+        self.check_webhook("release__with_name", TOPIC_REPO, expected_message)
+
     def test_page_build_msg(self) -> None:
         expected_message = (
             "GitHub Pages build, triggered by baxterthehacker, has finished building."
         )
         self.check_webhook("page_build", TOPIC_REPO, expected_message)
+
+    def test_page_build_errored_msg(self) -> None:
+        expected_message = "GitHub Pages build, triggered by baxterthehacker, has failed: \n~~~ quote\nSomething went wrong.\n~~~."
+        self.check_webhook("page_build__errored", TOPIC_REPO, expected_message)
 
     def test_status_msg(self) -> None:
         expected_message = "[9049f12](https://github.com/baxterthehacker/public-repo/commit/9049f1265b7d61be4a8904a9a27120d2064dab3b) changed its status to success."
