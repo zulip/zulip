@@ -179,6 +179,19 @@ def get_user_group_member_ids(
     return list(member_ids)
 
 
+def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = False) -> List[int]:
+    if direct_subgroup_only:
+        subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
+    else:
+        subgroup_ids = (
+            get_recursive_subgroups(user_group)
+            .exclude(id=user_group.id)
+            .values_list("id", flat=True)
+        )
+
+    return list(subgroup_ids)
+
+
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
     existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,

@@ -21,6 +21,7 @@ from zerver.lib.user_groups import (
     access_user_group_by_id,
     access_user_groups_as_potential_subgroups,
     get_direct_memberships_of_users,
+    get_subgroup_ids,
     get_user_group_direct_members,
     get_user_group_member_ids,
     is_user_in_group,
@@ -258,4 +259,20 @@ def get_user_group_members(
         data={
             "members": get_user_group_member_ids(user_group, direct_member_only=direct_member_only)
         },
+    )
+
+
+@require_member_or_admin
+@has_request_variables
+def get_subgroups_of_user_group(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
+    direct_subgroup_only: bool = REQ(json_validator=check_bool, default=False),
+) -> HttpResponse:
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+
+    return json_success(
+        request,
+        data={"subgroups": get_subgroup_ids(user_group, direct_subgroup_only=direct_subgroup_only)},
     )
