@@ -1,13 +1,13 @@
 import $ from "jquery";
 
 import emoji_codes from "../generated/emoji/emoji_codes.json";
-import * as emoji from "../shared/js/emoji";
 import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as emoji from "./emoji";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";

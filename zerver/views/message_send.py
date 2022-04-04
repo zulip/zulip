@@ -42,19 +42,18 @@ class InvalidMirrorInput(Exception):
 
 
 def create_mirrored_message_users(
-    request: HttpRequest, user_profile: UserProfile, recipients: Iterable[str]
+    client: Client,
+    user_profile: UserProfile,
+    recipients: Iterable[str],
+    sender: str,
+    message_type: str,
 ) -> UserProfile:
-    if "sender" not in request.POST:
-        raise InvalidMirrorInput("No sender")
 
-    sender_email = request.POST["sender"].strip().lower()
+    sender_email = sender.strip().lower()
     referenced_users = {sender_email}
-    if request.POST["type"] == "private":
+    if message_type == "private":
         for email in recipients:
             referenced_users.add(email.lower())
-
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
 
     if client.name == "zephyr_mirror":
         user_check = same_realm_zephyr_user
@@ -188,6 +187,7 @@ def send_message_backend(
     user_profile: UserProfile,
     message_type_name: str = REQ("type"),
     req_to: Optional[str] = REQ("to", default=None),
+    req_sender: Optional[str] = REQ("sender", default=None, documentation_pending=True),
     forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
     topic_name: Optional[str] = REQ_topic(),
     message_content: str = REQ("content"),
@@ -252,7 +252,7 @@ def send_message_backend(
         # The most important security checks are in
         # `create_mirrored_message_users` below, which checks the
         # same-realm constraint.
-        if "sender" not in request.POST:
+        if req_sender is None:
             raise JsonableError(_("Missing sender"))
         if message_type_name != "private" and not can_forge_sender:
             raise JsonableError(_("User not authorized for this query"))
@@ -268,7 +268,9 @@ def send_message_backend(
         message_to = cast(Sequence[str], message_to)
 
         try:
-            mirror_sender = create_mirrored_message_users(request, user_profile, message_to)
+            mirror_sender = create_mirrored_message_users(
+                client, user_profile, message_to, req_sender, message_type_name
+            )
         except InvalidMirrorInput:
             raise JsonableError(_("Invalid mirrored message"))
 
@@ -276,7 +278,7 @@ def send_message_backend(
             raise JsonableError(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
-        if "sender" in request.POST:
+        if req_sender is not None:
             raise JsonableError(_("Invalid mirrored message"))
         sender = user_profile
 

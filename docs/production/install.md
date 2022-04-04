@@ -15,7 +15,7 @@ Zulip's
   you can create a test Zulip Cloud organization at <https://zulip.com/new>.
 
 - If you are deciding between self-hosting Zulip and signing up for [Zulip Cloud](https://zulip.com/plans/),
-  our [self-hosing overview](https://zulip.com/self-hosting/) and [guide to
+  our [self-hosting overview](https://zulip.com/self-hosting/) and [guide to
   choosing between Zulip Cloud and
   self-hosting](https://zulip.com/help/getting-your-organization-started-with-zulip#choosing-between-zulip-cloud-and-self-hosting)
   are great places to start.

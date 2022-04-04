@@ -35,7 +35,7 @@ set_global("Image", Image);
 
 set_global("document", {compatMode: "CSS1Compat"});
 
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -771,10 +771,16 @@ test("backend_only_linkifiers", () => {
 });
 
 test("translate_emoticons_to_names", () => {
+    const get_emoticon_translations = emoji.get_emoticon_translations;
+
+    function translate_emoticons_to_names(src) {
+        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
+    }
+
     // Simple test
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
-    const result = markdown.translate_emoticons_to_names(test_text);
+    const result = translate_emoticons_to_names(test_text);
     assert.equal(result, expected);
 
     // Extensive tests.
@@ -813,10 +819,14 @@ test("translate_emoticons_to_names", () => {
                 expected: `Hello ${full_name}!`,
             },
         ]) {
-            const result = markdown.translate_emoticons_to_names(original);
+            const result = translate_emoticons_to_names(original);
             assert.equal(result, expected);
         }
     }
+});
+
+test("parse_non_message", () => {
+    assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
 });
 
 test("missing unicode emojis", ({override_rewire}) => {
@@ -833,6 +843,8 @@ test("missing unicode emojis", ({override_rewire}) => {
         assert.equal(codepoint, "1f6b2");
         // return undefined
     });
+
+    markdown.initialize(markdown_config.get_helpers());
     markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });

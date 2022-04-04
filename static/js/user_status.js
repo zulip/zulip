@@ -1,7 +1,6 @@
-import * as emoji from "../shared/js/emoji";
-
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as emoji from "./emoji";
 import {user_settings} from "./user_settings";
 
 const away_user_ids = new Set();

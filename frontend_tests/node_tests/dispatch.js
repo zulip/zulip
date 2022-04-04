@@ -87,6 +87,7 @@ page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+const emoji = zrequire("emoji");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
 const message_helper = zrequire("message_helper");
@@ -95,8 +96,6 @@ const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
 const compose_pm_pill = zrequire("compose_pm_pill");
-
-const emoji = zrequire("../shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 

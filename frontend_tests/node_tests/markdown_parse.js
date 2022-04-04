@@ -77,6 +77,46 @@ function stream_topic_hash(stream_id, topic) {
     return `stream-${stream_id}-topic-${topic}`;
 }
 
+function get_emoticon_translations() {
+    return [
+        {regex: /(:\))/g, replacement_text: ":smile:"},
+        {regex: /(<3)/g, replacement_text: ":heart:"},
+    ];
+}
+
+const emoji_map = new Map();
+emoji_map.set("smile", "1f642");
+emoji_map.set("alien", "1f47d");
+
+function get_emoji_codepoint(emoji_name) {
+    return emoji_map.get(emoji_name);
+}
+
+function get_emoji_name(codepoint) {
+    for (const [emoji_name, _codepoint] of emoji_map.entries()) {
+        if (codepoint === _codepoint) {
+            return emoji_name;
+        }
+    }
+
+    return undefined;
+}
+
+const realm_emoji_map = new Map();
+realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
+
+function get_realm_emoji_url(emoji_name) {
+    return realm_emoji_map.get(emoji_name);
+}
+
+const regex = /#foo(\d+)(?!\w)/g;
+const linkifier_map = new Map();
+linkifier_map.set(regex, "http://foo.com/\\1");
+
+function get_linkifier_map() {
+    return linkifier_map;
+}
+
 const helper_config = {
     // user stuff
     get_actual_name_from_user_id,
@@ -95,7 +135,16 @@ const helper_config = {
     stream_topic_hash,
 
     // settings
-    should_translate_emoticons: () => false,
+    should_translate_emoticons: () => true,
+
+    // emojis
+    get_emoji_codepoint,
+    get_emoji_name,
+    get_emoticon_translations,
+    get_realm_emoji_url,
+
+    // linkifiers
+    get_linkifier_map,
 };
 
 function assert_parse(raw_content, expected_content) {
@@ -103,17 +152,12 @@ function assert_parse(raw_content, expected_content) {
     assert.equal(content, expected_content);
 }
 
-function test(label, f) {
-    markdown.setup();
-    run_test(label, f);
-}
-
-test("basics", () => {
+run_test("basics", () => {
     assert_parse("boring", "<p>boring</p>");
     assert_parse("**bold**", "<p><strong>bold</strong></p>");
 });
 
-test("user mentions", () => {
+run_test("user mentions", () => {
     assert_parse("@**greg**", '<p><span class="user-mention" data-user-id="105">@greg</span></p>');
 
     assert_parse("@**|105**", '<p><span class="user-mention" data-user-id="105">@greg</span></p>');
@@ -129,14 +173,14 @@ test("user mentions", () => {
     );
 });
 
-test("user group mentions", () => {
+run_test("user group mentions", () => {
     assert_parse(
         "@*Staff*",
         '<p><span class="user-group-mention" data-user-group-id="201">@Staff</span></p>',
     );
 });
 
-test("stream links", () => {
+run_test("stream links", () => {
     assert_parse(
         "#**social**",
         '<p><a class="stream" data-stream-id="301" href="/stream-301">#social</a></p>',
@@ -146,4 +190,41 @@ test("stream links", () => {
         "#**social>lunch**",
         '<p><a class="stream-topic" data-stream-id="301" href="/stream-301-topic-lunch">#social &gt; lunch</a></p>',
     );
+});
+
+run_test("emojis", () => {
+    assert_parse(
+        "yup :)",
+        '<p>yup <span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
+    );
+    assert_parse(
+        "I <3 JavaScript",
+        '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
+    );
+    assert_parse(
+        "Mars Attacks! \uD83D\uDC7D",
+        '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
+    );
+});
+
+run_test("linkifiers", () => {
+    assert_parse(
+        "see #foo12345 for details",
+        '<p>see <a href="http://foo.com/12345" title="http://foo.com/12345">#foo12345</a> for details</p>',
+    );
+});
+
+run_test("topic links", () => {
+    const topic = "progress on #foo101 and #foo102";
+    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
+    assert.deepEqual(topic_links, [
+        {
+            text: "#foo101",
+            url: "http://foo.com/101",
+        },
+        {
+            text: "#foo102",
+            url: "http://foo.com/102",
+        },
+    ]);
 });

@@ -6,13 +6,13 @@ let emoji_codes = {};
 // `emojis_by_name` is the central data source that is supposed to be
 // used by every widget in the web app for gathering data for displaying
 // emojis. Emoji picker uses this data to derive data for its own use.
-export const emojis_by_name = new Map();
+export let emojis_by_name = new Map();
 
 export const all_realm_emojis = new Map();
 export const active_realm_emojis = new Map();
 export const deactivated_emoji_name_to_code = new Map();
 
-const default_emoji_aliases = new Map();
+let default_emoji_aliases = new Map();
 
 // For legacy reasons we track server_realm_emoji_data,
 // since our settings code builds off that format.  We
@@ -28,8 +28,11 @@ export function get_server_realm_emoji_data() {
 
 let emoticon_translations = [];
 
-function build_emoticon_translations() {
+function build_emoticon_translations({emoticon_conversions}) {
     /*
+
+    Please keep this as a pure function so that we can
+    eventually share this code with the mobile codebase.
 
     Build a data structure that looks like something
     like this:
@@ -54,7 +57,7 @@ function build_emoticon_translations() {
     */
 
     const translations = [];
-    for (const [emoticon, replacement_text] of Object.entries(emoji_codes.emoticon_conversions)) {
+    for (const [emoticon, replacement_text] of Object.entries(emoticon_conversions)) {
         const regex = new RegExp("(" + _.escapeRegExp(emoticon) + ")", "g");
 
         translations.push({
@@ -63,7 +66,7 @@ function build_emoticon_translations() {
         });
     }
 
-    emoticon_translations = translations;
+    return translations;
 }
 
 const zulip_emoji = {
@@ -110,8 +113,34 @@ export function get_realm_emoji_url(emoji_name) {
     return data.emoji_url;
 }
 
-export function build_emoji_data(realm_emojis) {
-    emojis_by_name.clear();
+function build_emojis_by_name({
+    realm_emojis,
+    emoji_catalog,
+    get_emoji_name,
+    default_emoji_aliases,
+}) {
+    // Please keep this as a pure function so that we can
+    // eventually share this code with the mobile codebase.
+    const map = new Map();
+
+    for (const codepoints of Object.values(emoji_catalog)) {
+        for (const codepoint of codepoints) {
+            const emoji_name = get_emoji_name(codepoint);
+            if (emoji_name !== undefined) {
+                const emoji_dict = {
+                    name: emoji_name,
+                    display_name: emoji_name,
+                    aliases: default_emoji_aliases.get(codepoint),
+                    is_realm_emoji: false,
+                    emoji_code: codepoint,
+                    has_reacted: false,
+                };
+                // We may later get overridden by a realm emoji.
+                map.set(emoji_name, emoji_dict);
+            }
+        }
+    }
+
     for (const [realm_emoji_name, realm_emoji] of realm_emojis) {
         const emoji_dict = {
             name: realm_emoji_name,
@@ -121,25 +150,12 @@ export function build_emoji_data(realm_emojis) {
             url: realm_emoji.emoji_url,
             has_reacted: false,
         };
-        emojis_by_name.set(realm_emoji_name, emoji_dict);
+
+        // We want the realm emoji to overwrite any existing entry in this map.
+        map.set(realm_emoji_name, emoji_dict);
     }
 
-    for (const codepoints of Object.values(emoji_codes.emoji_catalog)) {
-        for (const codepoint of codepoints) {
-            const emoji_name = get_emoji_name(codepoint);
-            if (emoji_name !== undefined && !emojis_by_name.has(emoji_name)) {
-                const emoji_dict = {
-                    name: emoji_name,
-                    display_name: emoji_name,
-                    aliases: default_emoji_aliases.get(codepoint),
-                    is_realm_emoji: false,
-                    emoji_code: codepoint,
-                    has_reacted: false,
-                };
-                emojis_by_name.set(emoji_name, emoji_dict);
-            }
-        }
-    }
+    return map;
 }
 
 export function update_emojis(realm_emojis) {
@@ -182,7 +198,12 @@ export function update_emojis(realm_emojis) {
     // here "zulip" is an emoji name, which is fine.
     active_realm_emojis.set("zulip", zulip_emoji);
 
-    build_emoji_data(active_realm_emojis);
+    emojis_by_name = build_emojis_by_name({
+        realm_emojis: active_realm_emojis,
+        emoji_catalog: emoji_codes.emoji_catalog,
+        get_emoji_name,
+        default_emoji_aliases,
+    });
 }
 
 // This function will provide required parameters that would
@@ -244,20 +265,37 @@ export function get_emoji_details_for_rendering(opts) {
     };
 }
 
+function build_default_emoji_aliases({names, get_emoji_codepoint}) {
+    // Please keep this as a pure function so that we can
+    // eventually share this code with the mobile codebase.
+
+    // Create a map of codepoint -> names
+    const map = new Map();
+
+    for (const name of names) {
+        const base_name = get_emoji_codepoint(name);
+
+        if (map.has(base_name)) {
+            map.get(base_name).push(name);
+        } else {
+            map.set(base_name, [name]);
+        }
+    }
+
+    return map;
+}
+
 export function initialize(params) {
     emoji_codes = params.emoji_codes;
 
-    build_emoticon_translations();
+    emoticon_translations = build_emoticon_translations({
+        emoticon_conversions: emoji_codes.emoticon_conversions,
+    });
 
-    for (const value of emoji_codes.names) {
-        const base_name = get_emoji_codepoint(value);
-
-        if (default_emoji_aliases.has(base_name)) {
-            default_emoji_aliases.get(base_name).push(value);
-        } else {
-            default_emoji_aliases.set(base_name, [value]);
-        }
-    }
+    default_emoji_aliases = build_default_emoji_aliases({
+        names: emoji_codes.names,
+        get_emoji_codepoint,
+    });
 
     update_emojis(params.realm_emoji);
 }

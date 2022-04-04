@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
 import * as dialog_widget from "./dialog_widget";
+import * as emoji from "./emoji";
 import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as user_status from "./user_status";
