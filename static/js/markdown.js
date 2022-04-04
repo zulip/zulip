@@ -463,18 +463,19 @@ export function parse({raw_content, helper_config}) {
     }
 
     // Configure the marked Markdown parser for our usage
-    const r = new marked.Renderer();
+    const renderer = new marked.Renderer();
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
-    r.code = (code) => fenced_code.wrap_code(code) + "\n\n";
+    renderer.code = (code) => fenced_code.wrap_code(code) + "\n\n";
 
     // Prohibit empty links for some reason.
-    const old_link = r.link;
-    r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
+    const old_link = renderer.link;
+    renderer.link = (href, title, text) =>
+        old_link.call(renderer, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match Markdown
-    r.br = function () {
+    renderer.br = function () {
         return "<br>\n";
     };
 
@@ -571,7 +572,7 @@ export function parse({raw_content, helper_config}) {
         smartLists: true,
         smartypants: false,
         zulip: true,
-        renderer: r,
+        renderer,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
 
