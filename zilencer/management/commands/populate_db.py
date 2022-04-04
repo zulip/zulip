@@ -198,6 +198,14 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "-o",
+            "--oldest-message-days",
+            type=int,
+            default=5,
+            help="The start of the time range where messages could have been sent.",
+        )
+
+        parser.add_argument(
             "-b",
             "--batch-size",
             type=int,
@@ -1087,7 +1095,9 @@ def generate_and_send_messages(
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data["subject"] = message.subject
 
-        message.date_sent = choose_date_sent(num_messages, tot_messages, options["threads"])
+        message.date_sent = choose_date_sent(
+            num_messages, tot_messages, options["oldest_message_days"], options["threads"]
+        )
         messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
@@ -1174,25 +1184,32 @@ def bulk_create_reactions(all_messages: List[Message]) -> None:
     Reaction.objects.bulk_create(reactions)
 
 
-def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
+def choose_date_sent(
+    num_messages: int, tot_messages: int, oldest_message_days: int, threads: int
+) -> datetime:
     # Spoofing time not supported with threading
     if threads != 1:
         return timezone_now()
 
-    # Distrubutes 80% of messages starting from 5 days ago, over a period
-    # of 3 days. Then, distributes remaining messages over past 24 hours.
+    # We want to ensure that:
+    # (1) some messages are sent in the last 4 hours,
+    # (2) there are some >24hr gaps between adjacent messages, and
+    # (3) a decent bulk of messages in the last day so you see adjacent messages with the same date.
+    # So we distribute 80% of messages starting from oldest_message_days days ago, over a period
+    # of the first min(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
+    # over the past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
+
     if num_messages < amount_in_first_chunk:
-        # Distribute starting from 5 days ago, over a period
-        # of 3 days:
-        spoofed_date = timezone_now() - timezone_timedelta(days=5)
-        interval_size = 3 * 24 * 60 * 60 / amount_in_first_chunk
+        spoofed_date = timezone_now() - timezone_timedelta(days=oldest_message_days)
+        num_days_for_first_chunk = min(oldest_message_days - 2, 1)
+        interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)
 
     else:
-        # We're in the last 20% of messages, distribute them over the last 24 hours:
+        # We're in the last 20% of messages, so distribute them over the last 24 hours:
         spoofed_date = timezone_now() - timezone_timedelta(days=1)
         interval_size = 24 * 60 * 60 / amount_in_second_chunk
         lower_bound = interval_size * (num_messages - amount_in_first_chunk)
