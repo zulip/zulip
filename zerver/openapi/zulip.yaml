@@ -14009,6 +14009,49 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+    get:
+      operationId: get-user-group-subgroups
+      summary: Get subgroups of the user group
+      tags: ["users"]
+      description: |
+        Get the subgroups of a [user group](/help/user-groups).
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - name: direct_subgroup_only
+          in: query
+          description: |
+            Whether to consider only direct subgroups of the user group
+            or subgroups of subgroups also.
+          schema:
+            type: boolean
+            default: false
+          example: true
+          required: false
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      subgroups:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the IDs of subgroups of the user group.
+                    example:
+                      {"msg": "", "result": "success", "subgroups": [2, 3]}
   /user_groups/{user_group_id}/members/{user_id}:
     get:
       operationId: get-is-user-group-member

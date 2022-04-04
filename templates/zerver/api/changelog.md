@@ -36,6 +36,8 @@ format used by the Zulip server that they are interacting with.
   given user group.
 * [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
   Added new endpoint to get members of a user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-subgroups):
+  Added new endpoint to get subgroups of a user group.
 
 **Feature level 126**
 

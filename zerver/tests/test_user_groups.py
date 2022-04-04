@@ -979,3 +979,46 @@ class UserGroupAPITestCase(UserGroupTestCase):
             self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
         )
         self.assertCountEqual(result_dict["members"], [shiva.id])
+
+    def test_get_subgroups_of_user_group(self) -> None:
+        realm = get_realm("zulip")
+        owners_group = UserGroup.objects.get(name="@role:owners", realm=realm, is_system_group=True)
+        admins_group = UserGroup.objects.get(
+            name="@role:administrators", realm=realm, is_system_group=True
+        )
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("iago")
+
+        # Test invalid user group id
+        result = self.client_get("/json/user_groups/25/subgroups")
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
+        )
+        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+
+        params = {"direct_subgroup_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{moderators_group.id}/subgroups", info=params
+            ).content
+        )
+        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+        # User not part of a group can also get its subgroups.
+        self.login("hamlet")
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
+        )
+        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+
+        params = {"direct_subgroup_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{moderators_group.id}/subgroups", info=params
+            ).content
+        )
+        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
