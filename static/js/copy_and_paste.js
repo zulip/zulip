@@ -268,6 +268,29 @@ function get_end_tr_from_endc($endc) {
         return $(".message_row").last();
     }
 
+    // Sometimes (especially when three click selecting in Chrome) the selection
+    // can end in a hidden element in e.g. the next message, a date divider.
+    // We can tell this is the case because the selection isn't inside a
+    // `messagebox-content` div, which is where the message text itself is.
+    // TODO: Ideally make it so that the selection cannot end there.
+    // For now, we find find the message row directly above wherever the
+    // selection ended.
+    if ($endc.closest(".messagebox-content").length === 0) {
+        // If the selection ends within the message following the selected
+        // messages, go back to use the actual last message.
+        if ($endc.parents(".message_row").length > 0) {
+            const $parent_msg = $($endc.parents(".message_row")[0]);
+            return $parent_msg.prev(".message_row");
+        }
+        // If it's not in a .message_row, it's probably in a .message_header and
+        // we can use the last message from the previous recipient_row.
+        if ($endc.parents(".message_header").length > 0) {
+            const $overflow_recipient_row = $($endc.parents(".recipient_row")[0]);
+            return $overflow_recipient_row.prev(".recipient_row").last(".message_row");
+        }
+        // If somehow we get here, do the default return.
+    }
+
     return $($endc.parents(".selectable_row")[0]);
 }
 
