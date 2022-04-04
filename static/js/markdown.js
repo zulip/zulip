@@ -39,9 +39,9 @@ function contains_preview_link(content) {
     return preview_regexes.some((re) => re.test(content));
 }
 
-export function translate_emoticons_to_names(text) {
+export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     // Translates emoticons in a string to their colon syntax.
-    let translated = text;
+    let translated = src;
     let replacement_text;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
@@ -67,7 +67,7 @@ export function translate_emoticons_to_names(text) {
         return match;
     };
 
-    for (const translation of helpers.get_emoticon_translations()) {
+    for (const translation of get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -490,7 +490,10 @@ export function parse({raw_content, helper_config}) {
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return translate_emoticons_to_names(src);
+        return translate_emoticons_to_names({
+            src,
+            get_emoticon_translations: helper_config.get_emoticon_translations,
+        });
     }
 
     // Disable headings

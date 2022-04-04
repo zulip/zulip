@@ -771,10 +771,16 @@ test("backend_only_linkifiers", () => {
 });
 
 test("translate_emoticons_to_names", () => {
+    const get_emoticon_translations = emoji.get_emoticon_translations;
+
+    function translate_emoticons_to_names(src) {
+        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
+    }
+
     // Simple test
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
-    const result = markdown.translate_emoticons_to_names(test_text);
+    const result = translate_emoticons_to_names(test_text);
     assert.equal(result, expected);
 
     // Extensive tests.
@@ -813,7 +819,7 @@ test("translate_emoticons_to_names", () => {
                 expected: `Hello ${full_name}!`,
             },
         ]) {
-            const result = markdown.translate_emoticons_to_names(original);
+            const result = translate_emoticons_to_names(original);
             assert.equal(result, expected);
         }
     }
