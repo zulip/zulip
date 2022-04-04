@@ -477,7 +477,7 @@ export function initialize() {
 
 export function is_visible_and_focused() {
     if (
-        overlays.is_active() ||
+        overlays.is_overlay_or_modal_open() ||
         !notifications.is_window_focused() ||
         !$("#message_feed_container").is(":visible")
     ) {
