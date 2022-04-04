@@ -317,39 +317,6 @@ export function initialize_kitchen_sink_stuff() {
         $row.removeClass("sender_name_hovered");
     });
 
-    function handle_video_preview_mouseenter($elem) {
-        // Set image height and css vars for play button position, if not done already
-        const setPosition = !$elem.data("entered-before");
-        if (setPosition) {
-            const imgW = $elem.find("img")[0].width;
-            const imgH = $elem.find("img")[0].height;
-            // Ensure height doesn't change on mouse enter
-            $elem.css("height", `${imgH}px`);
-            // variables to set play button position
-            const marginLeft = (imgW - 30) / 2;
-            const marginTop = (imgH - 26) / 2;
-            $elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
-            $elem.data("entered-before", true);
-        }
-        $elem.addClass("fa fa-play");
-    }
-
-    $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        handle_video_preview_mouseenter($(this));
-    });
-
-    $("#main_div").on("mouseleave", ".youtube-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseenter", ".embed-video a", function () {
-        handle_video_preview_mouseenter($(this));
-    });
-
-    $("#main_div").on("mouseleave", ".embed-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
     $("#manage_streams_container").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });

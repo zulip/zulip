@@ -76,6 +76,8 @@ const $array = (array) => {
 
 const get_content_element = () => {
     const $content = $.create("content-stub");
+    $content.set_find_results(".youtube-video a", $array([]));
+    $content.set_find_results(".embed-video a", $array([]));
     $content.set_find_results(".user-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
     $content.set_find_results("a.stream", $array([]));
@@ -337,6 +339,26 @@ run_test("emoji", () => {
 
     // Set page parameters back so that test run order is independent
     user_settings.emojiset = "apple";
+});
+
+run_test("youtube_previews", () => {
+    const $content = get_content_element();
+    const $youtube_preview = $.create("youtube_preview-stub");
+    $youtube_preview.length = 1;
+    assert.ok(!$youtube_preview.hasClass("fa fa-play"));
+    $content.set_find_results(".youtube-video a", $youtube_preview);
+    rm.update_elements($content);
+    assert.ok($youtube_preview.hasClass("fa fa-play"));
+});
+
+run_test("embed_video_previews", () => {
+    const $content = get_content_element();
+    const $embed_video_preview = $.create("embed_video_preview-stub");
+    $embed_video_preview.length = 1;
+    assert.ok(!$embed_video_preview.hasClass("fa fa-play"));
+    $content.set_find_results(".embed-video a", $embed_video_preview);
+    rm.update_elements($content);
+    assert.ok($embed_video_preview.hasClass("fa fa-play"));
 });
 
 run_test("spoiler-header", () => {

@@ -242,4 +242,17 @@ export const update_elements = ($content) => {
             return ":" + text + ":";
         });
     }
+
+    // We need to add the .fa.fa-play class to video previews so that our CSS
+    // can show the play icon on hover, it would be better for this to be done
+    // on the backend, but that would not support legacy rendered markdown, so
+    // we just do it here.
+    const $youtube_preview = $content.find(".youtube-video a");
+    if ($youtube_preview.length) {
+        $youtube_preview.addClass("fa fa-play");
+    }
+    const $embed_preview = $content.find(".embed-video a");
+    if ($embed_preview.length) {
+        $embed_preview.addClass("fa fa-play");
+    }
 };

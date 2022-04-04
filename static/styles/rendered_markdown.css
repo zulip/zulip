@@ -410,9 +410,19 @@
         cursor: zoom-in;
     }
 
+    .youtube-video a,
+    .embed-video a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+    }
+
     .youtube-video img,
     .vimeo-video img,
     .embed-video img {
+        display: block;
+        position: absolute;
         cursor: pointer;
     }
 
@@ -430,16 +440,18 @@
 
     .youtube-video .fa-play::before,
     .embed-video .fa-play::before {
-        position: absolute;
-        margin: var(--margin-top, 32px) 0 0 var(--margin-left, 45px);
+        z-index: 1;
         padding: 5px 8px 5px 10px;
         font-size: 12px;
         border-radius: 4px;
         background-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
+        opacity: 0;
+    }
+
+    .youtube-video:hover .fa-play::before,
+    .embed-video:hover .fa-play::before {
         opacity: 0.7;
-        top: 0;
-        left: 0;
     }
 
     .message_embed {
