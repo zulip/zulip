@@ -453,10 +453,7 @@ export function get_linkifier_regexes() {
     return Array.from(helpers.get_linkifier_map().keys());
 }
 
-export function setup() {
-    // Once we focus on supporting other platforms such as mobile,
-    // we will export this function.
-
+export function parse({raw_content, helper_config}) {
     function disable_markdown_regex(rules, name) {
         rules[name] = {
             exec() {
@@ -486,7 +483,7 @@ export function setup() {
     }
 
     function preprocess_translate_emoticons(src) {
-        if (!helpers.should_translate_emoticons()) {
+        if (!helper_config.should_translate_emoticons()) {
             return src;
         }
 
@@ -517,21 +514,6 @@ export function setup() {
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
 
-    marked.setOptions({
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        zulip: true,
-        renderer: r,
-        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
-    });
-}
-
-export function parse({raw_content, helper_config}) {
     function streamHandler(stream_name) {
         return handleStream({
             stream_name,
@@ -581,6 +563,16 @@ export function parse({raw_content, helper_config}) {
         streamTopicHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
+        gfm: true,
+        tables: true,
+        breaks: true,
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false,
+        zulip: true,
+        renderer: r,
+        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
 
     return parse_with_options({raw_content, helper_config, options});
@@ -598,7 +590,6 @@ export function initialize(helper_config) {
     // other platforms should call setup().
     webapp_helpers = helper_config;
     helpers = helper_config;
-    setup();
 }
 
 export function apply_markdown(message) {
