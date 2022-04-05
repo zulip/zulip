@@ -96,7 +96,7 @@ def clear_database() -> None:
     # With `zproject.test_settings`, we aren't using real memcached
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
-    if default_cache["BACKEND"] == "django_bmemcached.memcached.BMemcached":
+    if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
         bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
