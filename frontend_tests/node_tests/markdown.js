@@ -6,7 +6,6 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const example_realm_linkifiers = [
@@ -850,7 +849,6 @@ test("missing unicode emojis", ({override_rewire}) => {
 });
 
 test("katex_throws_unexpected_exceptions", () => {
-    blueslip.expect("error", "Error: some-exception");
     const message = {raw_content: "$$a$$"};
     with_field_rewire(
         markdown,
@@ -861,7 +859,10 @@ test("katex_throws_unexpected_exceptions", () => {
             },
         },
         () => {
-            markdown.apply_markdown(message);
+            assert.throws(() => markdown.apply_markdown(message), {
+                name: "Error",
+                message: "some-exception\nPlease report this to https://github.com/chjj/marked.",
+            });
         },
     );
 });
