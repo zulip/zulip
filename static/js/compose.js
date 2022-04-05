@@ -16,6 +16,7 @@ import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
+import * as markdown_parse from "./markdown_parse";
 import * as message_edit from "./message_edit";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -334,7 +335,7 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         // content is passed to check for status messages ("/me ...")
         // and will be undefined in case of errors
         let rendered_preview_html;
-        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
+        if (raw_content !== undefined && markdown_parse.is_status_message(raw_content)) {
             // Handle previews of /me messages
             rendered_preview_html =
                 "<p><strong>" +

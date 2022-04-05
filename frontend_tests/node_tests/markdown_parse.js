@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const markdown = zrequire("markdown");
+const markdown_parse = zrequire("markdown_parse");
 
 const my_id = 101;
 
@@ -148,7 +148,7 @@ const helper_config = {
 };
 
 function assert_parse(raw_content, expected_content) {
-    const {content} = markdown.parse({raw_content, helper_config});
+    const {content} = markdown_parse.parse({raw_content, helper_config});
     assert.equal(content, expected_content);
 }
 
@@ -216,7 +216,7 @@ run_test("linkifiers", () => {
 
 run_test("topic links", () => {
     const topic = "progress on #foo101 and #foo102";
-    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
+    const topic_links = markdown_parse.get_topic_links({topic, get_linkifier_map});
     assert.deepEqual(topic_links, [
         {
             text: "#foo101",

@@ -782,13 +782,6 @@ test_ui("on_events", ({override, override_rewire}) => {
             });
         }
 
-        function setup_mock_markdown_is_status_message(msg_content, return_val) {
-            override(markdown, "is_status_message", (content) => {
-                assert.equal(content, msg_content);
-                return return_val;
-            });
-        }
-
         function test_post_success(success_callback) {
             const resp = {
                 rendered: "Server: foobarfoobar",
@@ -851,7 +844,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         $("#compose-textarea").val("```foobarfoobar```");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
-        setup_mock_markdown_is_status_message("```foobarfoobar```", false);
 
         override(loading, "make_indicator", ($spinner) => {
             assert.equal($spinner.selector, "#compose .markdown_preview_spinner");
@@ -869,7 +861,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         $("#compose-textarea").val("foobarfoobar");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
-        setup_mock_markdown_is_status_message("foobarfoobar", false);
 
         current_message = "foobarfoobar";
 

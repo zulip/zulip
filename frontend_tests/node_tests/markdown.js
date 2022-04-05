@@ -41,6 +41,7 @@ const pygments_data = zrequire("../generated/pygments_data.json");
 const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
 const markdown = zrequire("markdown");
+const markdown_parse = zrequire("markdown_parse");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
@@ -773,7 +774,7 @@ test("translate_emoticons_to_names", () => {
     const get_emoticon_translations = emoji.get_emoticon_translations;
 
     function translate_emoticons_to_names(src) {
-        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
+        return markdown_parse.translate_emoticons_to_names({src, get_emoticon_translations});
     }
 
     // Simple test
@@ -851,7 +852,7 @@ test("missing unicode emojis", ({override_rewire}) => {
 test("katex_throws_unexpected_exceptions", () => {
     const message = {raw_content: "$$a$$"};
     with_field_rewire(
-        markdown,
+        markdown_parse,
         "katex",
         {
             renderToString: () => {
