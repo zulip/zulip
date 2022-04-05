@@ -598,6 +598,18 @@
     }
 }
 
+.preview_content.rendered_markdown {
+    /* Paragraphs: Ensure that the first paragraph and last paragraph
+    don't have blank area at the top and bottom respectively. */
+    p:first-child {
+        margin-top: 0;
+    }
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+}
+
 /* Inline and block code.
 
 TODO: It is likely that this CSS can and should be moved into the
