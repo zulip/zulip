@@ -3,12 +3,12 @@ import katex from "katex"; // eslint-disable-line import/no-unresolved
 import _ from "lodash";
 
 import * as fenced_code from "../shared/js/fenced_code";
-import marked from "../third/marked/lib/marked";
+import marked from "../shared/third/marked/lib/marked";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering Markdown client-side is
-// static/third/marked/lib/marked.js, which we have significantly
+// static/shared/third/marked/lib/marked.js, which we have significantly
 // modified from the original implementation.
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
@@ -300,8 +300,9 @@ export function get_topic_links({topic, get_linkifier_map}) {
         }
     }
 
-    // Also make raw URLs navigable
-    const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
+    // Also make raw URLs navigable.
+    // Regular expression is slightly modified from upstream marked.js
+    const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g;
     const matches = topic.match(url_re);
     if (matches) {
         for (const match of matches) {

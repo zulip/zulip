@@ -87,7 +87,7 @@ Copyright: 2011-2013 Henrique Boaventura
 License: Expat
 Comment: The software has been modified.
 
-Files: static/third/marked/*
+Files: static/shared/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
