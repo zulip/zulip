@@ -61,6 +61,7 @@ module = [
     "disposable_email_domains.*",
     "django.*",
     "django_auth_ldap.*",
+    "django_bmemcached.*",
     "django_cte.*",
     "django_otp.*",
     "django_scim.*",
