@@ -663,6 +663,7 @@ export function initialize() {
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",
+                    time_24hr: user_settings.twenty_four_hour_time,
                 },
             );
         }
