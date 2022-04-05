@@ -656,6 +656,18 @@
     }
 }
 
+.preview_content.rendered_markdown {
+    /*  Ensure that the first child and last child
+    don't have blank area at the top and bottom respectively. */
+    & :first-child {
+        margin-top: 0;
+    }
+
+    & :last-child {
+        margin-bottom: 0;
+    }
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
