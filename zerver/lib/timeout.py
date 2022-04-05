@@ -59,17 +59,9 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
             # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
             assert self.ident is not None  # Thread should be running; c_long expects int
             tid = ctypes.c_long(self.ident)
-            result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
                 tid, ctypes.py_object(TimeoutExpired)
             )
-            if result > 1:
-                # "if it returns a number greater than one, you're in trouble,
-                # and you should call it again with exc=NULL to revert the effect"
-                #
-                # I was unable to find the actual source of this quote, but it
-                # appears in the many projects across the Internet that have
-                # copy-pasted this recipe.
-                ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
 
     thread = TimeoutThread()
     thread.start()
