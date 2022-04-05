@@ -15,12 +15,6 @@ import * as blueslip from "./blueslip";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-// This should be initialized with a struct
-// similar to markdown_config.get_helpers().
-// See the call to markdown.initialize() in ui_init
-// for example usage.
-let helpers;
-
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
@@ -79,11 +73,11 @@ export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     return translated;
 }
 
-function contains_problematic_linkifier(content) {
+function contains_problematic_linkifier({content, get_linkifier_map}) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    for (const re of helpers.get_linkifier_map().keys()) {
+    for (const re of get_linkifier_map().keys()) {
         const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         if (regex.test(content)) {
@@ -94,11 +88,14 @@ function contains_problematic_linkifier(content) {
     return false;
 }
 
-export function contains_backend_only_syntax(content) {
+function content_contains_backend_only_syntax({content, get_linkifier_map}) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
-    return contains_preview_link(content) || contains_problematic_linkifier(content);
+    return (
+        contains_preview_link(content) ||
+        contains_problematic_linkifier({content, get_linkifier_map})
+    );
 }
 
 function parse_with_options({raw_content, helper_config, options}) {
@@ -107,8 +104,6 @@ function parse_with_options({raw_content, helper_config, options}) {
     // Our caller passes a helper_config object that has several
     // helper functions for getting info about users, streams, etc.
     // And it also passes in options for the marked processor.
-
-    helpers = helper_config;
 
     let mentioned = false;
     let mentioned_group = false;
@@ -593,7 +588,6 @@ export function initialize(helper_config) {
     // This is generally only intended to be called by the webapp. Most
     // other platforms should call setup().
     webapp_helpers = helper_config;
-    helpers = helper_config;
 }
 
 export function apply_markdown(message) {
@@ -613,6 +607,13 @@ export function add_topic_links(message) {
     }
     message.topic_links = get_topic_links({
         topic: message.topic,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
+    });
+}
+
+export function contains_backend_only_syntax(content) {
+    return content_contains_backend_only_syntax({
+        content,
         get_linkifier_map: webapp_helpers.get_linkifier_map,
     });
 }
