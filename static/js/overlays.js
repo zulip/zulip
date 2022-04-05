@@ -4,6 +4,7 @@ import Micromodal from "micromodal";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as popovers from "./popovers";
+import * as scroll_bar from "./scroll_bar";
 
 let $active_overlay;
 let close_handler;
@@ -81,6 +82,7 @@ export function active_modal() {
 }
 
 export function open_overlay(opts) {
+    scroll_bar.disable_scrolling();
     popovers.hide_all();
 
     if (!opts.name || !opts.$overlay || !opts.on_close) {
@@ -155,6 +157,7 @@ export function open_modal(selector, conf) {
     }
 
     blueslip.debug("open modal: " + selector);
+    scroll_bar.disable_scrolling();
 
     // Show a modal using micromodal.
     if (conf && conf.micromodal) {
@@ -249,6 +252,7 @@ export function close_overlay(name) {
     }
 
     close_handler();
+    scroll_bar.enable_scrolling();
 }
 
 export function close_active() {
@@ -285,6 +289,7 @@ export function close_modal(selector, conf) {
     }
 
     blueslip.debug("close modal: " + selector);
+    scroll_bar.disable_scrolling();
 
     if (conf && conf.micromodal) {
         const id_selector = `#${selector}`;

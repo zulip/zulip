@@ -154,7 +154,7 @@
           }
 
           if (this.options.fix_positions) {
-              var win_height = $(window).height();
+              var win_height = $(window).scrollTop() + $(window).height();
               var win_width = $(window).width();
 
               /* Ensure that the popover stays fully onscreen,
@@ -167,8 +167,8 @@
                  If you use this fix_positions option, you want
                  to also use the "no_arrow_popover" template.
               */
-              if (top < 0) {
-                  top = 0;
+              if (top < $(window).scrollTop()) {
+                  top = $(window).scrollTop();
                   $tip.find("div.arrow").hide();
               } else if (top + actualHeight > win_height - 20) {
                   top = win_height - actualHeight - 20;

@@ -213,7 +213,6 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-top: 5px;
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */

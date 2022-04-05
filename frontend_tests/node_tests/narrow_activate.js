@@ -27,6 +27,9 @@ const message_lists = mock_esm("../../static/js/message_lists", {
         message_lists.current = msg_list;
     },
 });
+mock_esm("../../static/js/message_viewport", {
+    scrollTop: () => 0,
+});
 const message_scroll = mock_esm("../../static/js/message_scroll");
 const message_view_header = mock_esm("../../static/js/message_view_header");
 const notifications = mock_esm("../../static/js/notifications");

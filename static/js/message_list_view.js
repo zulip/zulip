@@ -730,7 +730,8 @@ export class MessageListView {
 
         const save_scroll_position = () => {
             if (orig_scrolltop_offset === undefined && this.selected_row().length > 0) {
-                orig_scrolltop_offset = this.selected_row().offset().top;
+                orig_scrolltop_offset =
+                    this.selected_row().offset().top - $message_viewport.scrollTop();
             }
         };
 
@@ -1120,7 +1121,7 @@ export class MessageListView {
         const $selected_row = this.selected_row();
         const selected_in_view = $selected_row.length > 0;
         if (selected_in_view) {
-            old_offset = $selected_row.offset().top;
+            old_offset = $selected_row.offset().top - $message_viewport.scrollTop();
         }
         if (discard_rendering_state) {
             // If we know that the existing render is invalid way
@@ -1134,7 +1135,7 @@ export class MessageListView {
 
     set_message_offset(offset) {
         const $msg = this.selected_row();
-        $message_viewport.scrollTop($message_viewport.scrollTop() + $msg.offset().top - offset);
+        $message_viewport.scrollTop($msg.offset().top - offset);
     }
 
     rerender_with_target_scrolltop(selected_row, target_offset) {

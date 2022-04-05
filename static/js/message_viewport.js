@@ -18,20 +18,20 @@ let in_stoppable_autoscroll = false;
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value() {
-            return dimen_func.call($message_pane);
+            return dimen_func.call($jwindow);
         },
     });
     return function viewport_dimension_wrapper(...args) {
         if (args.length !== 0) {
             dimensions[dimen_name].reset();
-            return dimen_func.apply($message_pane, args);
+            return dimen_func.apply($jwindow, args);
         }
         return dimensions[dimen_name].get();
     };
 }
 
-export const height = make_dimen_wrapper("height", $($message_pane).height);
-export const width = make_dimen_wrapper("width", $($message_pane).width);
+export const height = make_dimen_wrapper("height", $(window).height);
+export const width = make_dimen_wrapper("width", $(window).width);
 
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
@@ -60,9 +60,11 @@ export function message_viewport_info() {
     const $element_just_below_us = $("#compose");
 
     res.visible_top =
-        $element_just_above_us.offset().top + $element_just_above_us.safeOuterHeight();
+        $element_just_above_us.offset().top -
+        $jwindow.scrollTop() +
+        $element_just_above_us.safeOuterHeight();
 
-    res.visible_bottom = $element_just_below_us.position().top;
+    res.visible_bottom = $element_just_below_us.offset().top - $jwindow.scrollTop();
 
     res.visible_height = res.visible_bottom - res.visible_top;
 
@@ -71,7 +73,7 @@ export function message_viewport_info() {
 
 export function at_bottom() {
     const bottom = scrollTop() + height();
-    const full_height = $message_pane.prop("scrollHeight");
+    const full_height = document.scrollingElement.scrollHeight;
 
     // We only know within a pixel or two if we're
     // exactly at the bottom, due to browser quirkiness,
@@ -92,10 +94,6 @@ export function bottom_message_visible() {
     return false;
 }
 
-export function is_below_visible_bottom(offset) {
-    return offset > scrollTop() + height() - $("#compose").height();
-}
-
 export function is_scrolled_up() {
     // Let's determine whether the user was already dealing
     // with messages off the screen, which can guide auto
@@ -114,7 +112,7 @@ export function offset_from_bottom($last_row) {
     // A positive return value here means the last row is
     // below the bottom of the feed (i.e. obscured by the compose
     // box or even further below the bottom).
-    const message_bottom = $last_row.offset().top + $last_row.height();
+    const message_bottom = $last_row.offset().top - scrollTop() + $last_row.height();
     const info = message_viewport_info();
 
     return message_bottom - info.visible_bottom;
@@ -183,7 +181,11 @@ function add_to_visible(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        return $(".floating_recipient").offset().top + $(".floating_recipient").safeOuterHeight();
+        return (
+            $(".floating_recipient").offset().top -
+            scrollTop() +
+            $(".floating_recipient").safeOuterHeight()
+        );
     },
 });
 
@@ -268,13 +270,13 @@ export function visible_messages(require_fully_visible) {
 }
 
 export function scrollTop(target_scrollTop) {
-    const orig_scrollTop = $message_pane.scrollTop();
+    const orig_scrollTop = $jwindow.scrollTop();
     if (target_scrollTop === undefined) {
         return orig_scrollTop;
     }
-    let $ret = $message_pane.scrollTop(target_scrollTop);
-    const new_scrollTop = $message_pane.scrollTop();
-    const space_to_scroll = $("#bottom_whitespace").offset().top - height();
+    let $ret = $jwindow.scrollTop(target_scrollTop);
+    const new_scrollTop = $jwindow.scrollTop();
+    const space_to_scroll = $("#bottom_whitespace").offset().top - scrollTop() - height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (
@@ -292,10 +294,10 @@ export function scrollTop(target_scrollTop) {
             "ScrollTop did nothing when scrolling to " + target_scrollTop + ", fixing...",
         );
         // First scroll to 1 in order to clear the stuck state
-        $message_pane.scrollTop(1);
+        $jwindow.scrollTop(1);
         // And then scroll where we intended to scroll to
-        $ret = $message_pane.scrollTop(target_scrollTop);
-        if ($message_pane.scrollTop() === 0) {
+        $ret = $jwindow.scrollTop(target_scrollTop);
+        if ($jwindow.scrollTop() === 0) {
             blueslip.info(
                 "ScrollTop fix did not work when scrolling to " +
                     target_scrollTop +
@@ -324,7 +326,7 @@ export function system_initiated_animate_scroll(scroll_amount) {
     message_scroll.suppress_selection_update_on_next_scroll();
     const viewport_offset = scrollTop();
     in_stoppable_autoscroll = true;
-    $message_pane.animate({
+    $("html").animate({
         scrollTop: viewport_offset + scroll_amount,
         always() {
             in_stoppable_autoscroll = false;
@@ -338,7 +340,7 @@ export function user_initiated_animate_scroll(scroll_amount) {
 
     const viewport_offset = scrollTop();
 
-    $message_pane.animate({
+    $("html").animate({
         scrollTop: viewport_offset + scroll_amount,
     });
 }
@@ -353,7 +355,7 @@ export function recenter_view($message, {from_scroll = false, force_center = fal
 
     const bottom_threshold = viewport_info.visible_bottom;
 
-    const message_top = $message.offset().top;
+    const message_top = $message.offset().top - scrollTop();
     const message_height = $message.safeOuterHeight(true);
     const message_bottom = message_top + message_height;
 
@@ -404,7 +406,7 @@ export function keep_pointer_in_view() {
             return true;
         }
 
-        const message_top = $next_row.offset().top;
+        const message_top = $next_row.offset().top - scrollTop();
 
         // If the message starts after the very top of the screen, we just
         // leave it alone.  This avoids bugs like #1608, where overzealousness
@@ -425,7 +427,7 @@ export function keep_pointer_in_view() {
     }
 
     function message_is_far_enough_up() {
-        return at_bottom() || $next_row.offset().top <= bottom_threshold;
+        return at_bottom() || $next_row.offset().top - scrollTop() <= bottom_threshold;
     }
 
     function adjust(in_view, get_next_row) {

@@ -10,6 +10,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -176,6 +177,10 @@ function handle_operators_supporting_id_based_api(data) {
 }
 
 export function load_messages(opts) {
+    if (overlays.is_overlay_or_modal_open()) {
+        return;
+    }
+
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.

@@ -9,6 +9,7 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
+import * as overlays from "./overlays";
 import * as recent_topics_util from "./recent_topics_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
@@ -183,6 +184,10 @@ export function scroll_finished() {
     actively_scrolling = false;
     hide_scroll_to_bottom();
 
+    if (overlays.is_overlay_or_modal_open()) {
+        return;
+    }
+
     if (!$("#message_feed_container").hasClass("active")) {
         return;
     }
@@ -223,7 +228,7 @@ function scroll_finish() {
 }
 
 export function initialize() {
-    message_viewport.$message_pane.on(
+    $(window).on(
         "scroll",
         _.throttle(() => {
             unread_ops.process_visible();

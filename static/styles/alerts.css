@@ -29,7 +29,7 @@ $alert-error-red: hsl(0, 80%, 40%);
 
 /* alert box component changes */
 .alert-box {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 900px;

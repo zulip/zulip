@@ -76,6 +76,11 @@ export function changehash(newhash) {
         return;
     }
     maybe_hide_recent_topics();
+    // Some browsers reset scrollTop when changing the hash to "",
+    // so we save and restore it.
+    //
+    // TODO: Remove comment from bf57839e8584ccb224595b5a55c90e4551a7b51e
+    // commit as Recent Topics will have hash "" with scrollTop set to 0.
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
 }

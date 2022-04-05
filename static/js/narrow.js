@@ -20,6 +20,7 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
+import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
@@ -110,7 +111,8 @@ export function save_pre_narrow_offset_for_reload() {
                 render_end: message_lists.current.view._render_win_end,
             });
         }
-        message_lists.current.pre_narrow_offset = message_lists.current.selected_row().offset().top;
+        message_lists.current.pre_narrow_offset =
+            message_lists.current.selected_row().offset().top - message_viewport.scrollTop();
     }
 }
 
@@ -421,7 +423,7 @@ export function activate(raw_operators, opts) {
         if (opts.then_select_offset === undefined) {
             const $row = message_lists.current.get_row(opts.then_select_id);
             if ($row.length > 0) {
-                opts.then_select_offset = $row.offset().top;
+                opts.then_select_offset = $row.offset().top - message_viewport.scrollTop();
             }
         }
     }

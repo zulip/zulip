@@ -12,6 +12,7 @@ import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
@@ -68,7 +69,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         const $row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
             if ($row.length > 0) {
-                url += "+offset=" + $row.offset().top;
+                url += "+offset=" + $row.offset().top - message_viewport.scrollTop();
             }
         } else {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
@@ -79,7 +80,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
             }
             const $narrow_row = message_list.narrowed.selected_row();
             if ($narrow_row.length > 0) {
-                url += "+narrow_offset=" + $narrow_row.offset().top;
+                url += "+narrow_offset=" + $narrow_row.offset().top - message_viewport.scrollTop();
             }
         }
     }

@@ -9,6 +9,7 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
+$(window).on = () => {};
 
 const rows = mock_esm("../../static/js/rows");
 mock_esm("../../static/js/emoji_picker", {

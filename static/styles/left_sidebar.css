@@ -207,6 +207,7 @@ li.show-more-topics {
     text-decoration: none;
     margin: 5px auto 5.5px 10px;
     margin-bottom: 25px;
+    margin-left: 10px;
 
     i {
         min-width: 19px;

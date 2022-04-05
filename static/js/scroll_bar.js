@@ -1,55 +1,24 @@
 import $ from "jquery";
 
+import * as message_viewport from "./message_viewport";
 import {user_settings} from "./user_settings";
 
-// A few of our width properties in Zulip depend on the width of the
-// browser scrollbar that is generated at the far right side of the
-// page, which unfortunately varies depending on the browser and
-// cannot be detected directly using CSS.  As a result, we adjust a
-// number of element widths based on the value detected here.
-//
-// From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
-function getScrollbarWidth() {
-    const outer = document.createElement("div");
-    outer.style.visibility = "hidden";
-    outer.style.width = "100px";
-    outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
-
-    document.body.append(outer);
-
-    const widthNoScroll = outer.offsetWidth;
-    // force scrollbars
-    outer.style.overflow = "scroll";
-
-    // add inner div
-    const inner = document.createElement("div");
-    inner.style.width = "100%";
-    outer.append(inner);
-
-    const widthWithScroll = inner.offsetWidth;
-
-    // remove divs
-    outer.remove();
-
-    return widthNoScroll - widthWithScroll;
-}
-
-let sbWidth;
+let last_scroll_position = 0;
 
 export function initialize() {
-    // Workaround for browsers with fixed scrollbars
-    sbWidth = getScrollbarWidth();
-    if (sbWidth > 0) {
-        // Reduce width of screen-wide parent containers, whose width doesn't vary with scrollbar width, by scrollbar width.
-        $("#navbar-container .header, .fixed-app .app-main, #compose").css(
-            "width",
-            `calc(100% - ${sbWidth}px)`,
-        );
-
-        // Align floating recipient bar with the middle column.
-        $(".fixed-app").css("left", "-" + sbWidth / 2 + "px");
-    }
     set_layout_width();
+}
+
+export function disable_scrolling() {
+    last_scroll_position = message_viewport.scrollTop();
+    $("body").addClass("modal-open");
+    $("#middle-container").css("top", `-${last_scroll_position}px`);
+}
+
+export function enable_scrolling() {
+    $("body").removeClass("modal-open");
+    $("#middle-container").css("top", `0px`);
+    message_viewport.scrollTop(last_scroll_position);
 }
 
 export function set_layout_width() {

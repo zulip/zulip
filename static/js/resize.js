@@ -41,68 +41,42 @@ function size_blocks(blocks, usable_height) {
 
 function get_new_heights() {
     const res = {};
-    const viewport_height = message_viewport.height();
-    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
-    const right_sidebar_shorcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
-
+    const viewport_height = $(window).height();
     res.bottom_whitespace_height = viewport_height * 0.4;
 
-    res.main_div_min_height = viewport_height - top_navbar_height;
-
-    res.stream_filters_max_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true);
-
-    // Don't let us crush the stream sidebar completely out of view
-    res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
+    // LEFT SIDEBAR
+    const $stream_filters_container = $("#stream-filters-container").expectOne();
+    const stream_filters_top = $stream_filters_container.offset().top - $(window).scrollTop();
+    const left_sidebar_shortcuts = $("#add-stream-link").outerHeight();
+    const stream_filters_max_height = viewport_height - stream_filters_top - left_sidebar_shortcuts;
+    res.stream_filters_max_height = Math.max(80, stream_filters_max_height);
 
     // RIGHT SIDEBAR
-
-    const usable_height =
-        viewport_height -
-        Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
-        right_sidebar_shorcuts_height;
-
-    res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
+    const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
+    const buddy_list_wrapper_top = $buddy_list_wrapper.offset().top - $(window).scrollTop();
+    const right_sidebar_shortcuts = $(".right-sidebar-shortcuts").outerHeight();
+    const buddy_list_wrapper_max_height =
+        viewport_height - buddy_list_wrapper_top - right_sidebar_shortcuts;
+    res.buddy_list_wrapper_max_height = Math.max(80, buddy_list_wrapper_max_height);
 
     return res;
 }
 
 function left_userlist_get_new_heights() {
     const res = {};
-    const viewport_height = message_viewport.height();
-    const viewport_width = message_viewport.width();
-    res.viewport_height = viewport_height;
-    res.viewport_width = viewport_width;
-
-    // main div
-    const top_navbar_height = $(".header").safeOuterHeight(true);
-    res.bottom_whitespace_height = viewport_height * 0.4;
-    res.main_div_min_height = viewport_height - top_navbar_height;
-
-    // left sidebar
-    const $stream_filters = $("#stream_filters").expectOne();
+    const viewport_height = $(window).height();
+    const $stream_filters_container = $("#stream-filters-container").expectOne();
     const $buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
 
-    const stream_filters_real_height = $stream_filters.prop("scrollHeight");
+    res.bottom_whitespace_height = viewport_height * 0.4;
+
+    const stream_filters_real_height = ui
+        .get_scroll_element($stream_filters_container)
+        .prop("scrollHeight");
     const user_list_real_height = ui.get_scroll_element($buddy_list_wrapper).prop("scrollHeight");
 
-    res.total_leftlist_height =
-        viewport_height -
-        Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
-        Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true) -
-        $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
-        Number.parseInt($stream_filters.css("marginBottom"), 10);
+    const stream_filters_top = $stream_filters_container.offset().top - $(window).scrollTop();
+    res.total_leftlist_height = viewport_height - stream_filters_top;
 
     const blocks = [
         {

@@ -237,7 +237,7 @@ export function initialize_kitchen_sink_stuff() {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.$message_pane.on("wheel", (e) => {
+    $(window).on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
         if (!overlays.is_overlay_or_modal_open() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.

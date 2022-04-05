@@ -179,6 +179,7 @@
       if (this.dropup) {
         top_pos = pos.top - this.$container.outerHeight()
       }
+      top_pos = top_pos - $(window).scrollTop()
 
       // Zulip patch: Avoid typeahead going off top of screen.
       if (top_pos < 0) {
