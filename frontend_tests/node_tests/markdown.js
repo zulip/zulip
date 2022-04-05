@@ -861,7 +861,8 @@ test("katex_throws_unexpected_exceptions", () => {
         () => {
             assert.throws(() => markdown.apply_markdown(message), {
                 name: "Error",
-                message: "some-exception\nPlease report this to https://github.com/chjj/marked.",
+                message:
+                    "some-exception\nPlease report this to https://zulip.com/development-community/",
             });
         },
     );

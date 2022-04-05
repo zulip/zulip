@@ -1482,7 +1482,7 @@ function marked(src, opt, callback) {
     }
     return Parser.parse(Lexer.lex(src, opt), opt);
   } catch (e) {
-    e.message += '\nPlease report this to https://github.com/chjj/marked.';
+    e.message += "\nPlease report this to https://zulip.com/development-community/";
     if ((opt || marked.defaults).silent) {
       return '<p>An error occurred:</p><pre>'
         + escape(e.message + '', true)
