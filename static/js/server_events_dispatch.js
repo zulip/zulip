@@ -1,7 +1,5 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
-
 import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
@@ -15,6 +13,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";

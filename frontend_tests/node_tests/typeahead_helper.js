@@ -14,7 +14,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
