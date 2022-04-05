@@ -78,11 +78,14 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
             time.sleep(0.1)
             if not thread.is_alive():
                 break
+        if thread.exc_info[1] is not None:
+            # Re-raise the exception we sent, if possible, so the
+            # stacktrace originates in the slow code
+            raise thread.exc_info[1].with_traceback(thread.exc_info[2])
         raise TimeoutExpired
 
     if thread.exc_info[1] is not None:
-        # Raise the original stack trace so our error messages are more useful.
-        # from https://stackoverflow.com/a/4785766/90777
+        # Died with some other exception; re-raise it
         raise thread.exc_info[1].with_traceback(thread.exc_info[2])
     assert thread.result is not None  # assured if above did not reraise
     return thread.result
