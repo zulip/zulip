@@ -56,12 +56,12 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
                 self.exc_info = sys.exc_info()
 
         def raise_async_timeout(self) -> None:
-            # Called from another thread.
-            # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
-            assert self.ident is not None  # Thread should be running; c_long expects int
-            tid = ctypes.c_long(self.ident)
+            # This function is called from another thread; we attempt
+            # to raise a TimeoutExpired in _this_ thread.
+            assert self.ident is not None
             ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                tid, ctypes.py_object(TimeoutExpired)
+                ctypes.c_long(self.ident),
+                ctypes.py_object(TimeoutExpired),
             )
 
     thread = TimeoutThread()
@@ -69,11 +69,8 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     thread.join(timeout)
 
     if thread.is_alive():
-        # Gamely try to kill the thread, following the dodgy approach from
-        # https://stackoverflow.com/a/325528/90777
-        #
-        # We need to retry, because an async exception received while the
-        # thread is in a system call is simply ignored.
+        # We need to retry, because an async exception received while
+        # the thread is in a system call is simply ignored.
         for i in range(10):
             thread.raise_async_timeout()
             time.sleep(0.1)
@@ -94,5 +91,6 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     if thread.exc_info[1] is not None:
         # Died with some other exception; re-raise it
         raise thread.exc_info[1].with_traceback(thread.exc_info[2])
-    assert thread.result is not None  # assured if above did not reraise
+
+    assert thread.result is not None
     return thread.result
