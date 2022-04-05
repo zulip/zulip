@@ -322,6 +322,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "Personal message")
         self.assertEqual(result.json()["message"]["id"], msg_id)
+        self.assertEqual(result.json()["message"]["flags"], [])
 
         # Send message to web public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -335,6 +336,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
         self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+        self.assertEqual(result.json()["message"]["flags"], ["read", "historical"])
 
         # Spectator should be able to fetch message in web public stream.
         self.logout()
@@ -416,6 +418,7 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["flags"], ["read"])
 
         # Verify LIMITED plan type does not allow web-public access.
         do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
