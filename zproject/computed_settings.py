@@ -340,7 +340,7 @@ MEMCACHED_PASSWORD = get_secret("memcached_password")
 
 CACHES = {
     "default": {
-        "BACKEND": "django_bmemcached.memcached.BMemcached",
+        "BACKEND": "zerver.lib.singleton_bmemcached.SingletonBMemcached",
         "LOCATION": MEMCACHED_LOCATION,
         "OPTIONS": {
             "socket_timeout": 3600,
