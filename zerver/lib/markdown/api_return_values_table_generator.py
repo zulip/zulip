@@ -109,7 +109,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         )
 
     def render_table(self, return_values: Dict[str, Any], spacing: int) -> List[str]:
-        IGNORE = ["result", "msg"]
+        IGNORE = ["result", "msg", "ignored_parameters_unsupported"]
         ans = []
         for return_value in return_values:
             if return_value in IGNORE:

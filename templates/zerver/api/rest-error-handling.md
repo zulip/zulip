@@ -41,3 +41,40 @@ and over time. The default configuration currently limits:
 When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
+
+## Ignored Parameters
+
+All Zulip REST API endpoints may return an array of parameters sent
+in the request that are not supported by that specific endpoint.
+
+While this can be expected, e.g. when sending both current and legacy
+names for a parameter to a Zulip server of unknown version, this often
+indicates either a bug in the client implementation or an attempt to
+configure a new feature while connected to an older Zulip server that
+does not support said feature.
+
+**Changes**:
+
+* Added to all API endpoint JSON success responses in Zulip 6.0
+  (feature level TBD)
+
+* Added to `POST /users/me/subscriptions/properties` in Zulip 5.0
+  (feature level 111).
+
+* Added to `PATCH /realm/user_settings_defaults` in Zulip 5.0
+  (feature level 96).
+
+* Introduced in `PATCH /settings` in Zulip 5.0 (feature level 78).
+
+### Example JSON success response with ignored parameters
+
+```json
+{
+  "ignored_parameters_unsupported": [
+      "invalid_param_1",
+      "invalid_param_2"
+    ],
+  "msg": "",
+  "result": "success",
+}
+```

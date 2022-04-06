@@ -24,7 +24,7 @@
 
 {generate_response_description(/mark_all_as_read:post)}
 
-#### Example response
+#### Example response(s)
 
 {generate_code_example|/mark_all_as_read:post|fixture}
 
@@ -54,7 +54,7 @@
 
 {generate_response_description(/mark_all_as_read:post)}
 
-#### Example response
+#### Example response(s)
 
 {generate_code_example|/mark_stream_as_read:post|fixture}
 
@@ -84,6 +84,6 @@
 
 {generate_response_description(/mark_all_as_read:post)}
 
-#### Example response
+#### Example response(s)
 
 {generate_code_example|/mark_topic_as_read:post|fixture}
