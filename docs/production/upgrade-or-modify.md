@@ -292,16 +292,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
 
-5. Ubuntu 20.04 has a different version of the low-level glibc
-   library, which affects how PostgreSQL orders text data (known as
-   "collations"); this corrupts database indexes that rely on
-   collations. Regenerate the affected indexes by running:
-
-   ```bash
-   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
-   ```
-
-6. Finally, we need to reinstall the current version of Zulip, which
+5. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
@@ -316,6 +307,15 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now be
    able to navigate to its URL and confirm everything is working
    correctly.
+
+6. Finally, Ubuntu 20.04 has a different version of the low-level
+   glibc library, which affects how PostgreSQL orders text data (known
+   as "collations"); this corrupts database indexes that rely on
+   collations. Regenerate the affected indexes by running:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   ```
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
