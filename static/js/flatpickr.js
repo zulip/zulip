@@ -4,6 +4,7 @@ import $ from "jquery";
 
 import {get_keydown_hotkey} from "./hotkey";
 import {$t} from "./i18n";
+import {user_settings} from "./user_settings";
 
 function is_numeric_key(key) {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
@@ -28,6 +29,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
         disableMobile: true,
+        time_24hr: user_settings.twenty_four_hour_time,
         onKeyDown: (selectedDates, dateStr, instance, event) => {
             if (is_numeric_key(event.key)) {
                 // Don't attempt to get_keydown_hotkey for numeric inputs
