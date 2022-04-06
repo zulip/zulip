@@ -415,8 +415,18 @@ class S3UploadBackend(ZulipUploadBackend):
 
     @override
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
-        # export_path has a leading /
-        return self.get_public_upload_url(export_path.removeprefix("/"))
+        client = self.avatar_bucket.meta.client
+        signed_url = client.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={
+                "Bucket": self.avatar_bucket.name,
+                # export_path has a leading /
+                "Key": export_path.removeprefix("/"),
+            },
+            ExpiresIn=0,
+        )
+        # Strip off the signing query parameters, since this URL is public
+        return urlsplit(signed_url)._replace(query="").geturl()
 
     @override
     def upload_export_tarball(
