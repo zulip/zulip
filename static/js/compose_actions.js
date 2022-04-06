@@ -43,6 +43,8 @@ function hide_box() {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
+    $("#stream_message_recipient_topic").removeClass("empty");
+    $("#compose_clear_topic_name").show();
     compose.clear_preview_area();
 }
 

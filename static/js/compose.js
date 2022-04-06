@@ -71,6 +71,16 @@ export function update_video_chat_button_display() {
     $(".message-edit-feature-group .video_link").toggle(show_video_chat_button);
 }
 
+export function update_topic_clear_button_display() {
+    if (compose_state.topic()) {
+        $("#stream_message_recipient_topic").removeClass("empty");
+        $("#compose_clear_topic_name").show();
+    } else {
+        $("#stream_message_recipient_topic").addClass("empty");
+        $("#compose_clear_topic_name").hide();
+    }
+}
+
 export function clear_invites() {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
@@ -717,6 +727,16 @@ export function initialize() {
 
     $("#stream_message_recipient_topic").on("focus", () => {
         compose_actions.update_placeholder_text();
+        update_topic_clear_button_display();
+    });
+
+    $("#stream_message_recipient_topic").on("keyup", () => {
+        update_topic_clear_button_display();
+    });
+
+    $("body").on("click", "#compose_clear_topic_name", () => {
+        compose_state.topic("");
+        update_topic_clear_button_display();
     });
 
     $("body").on("click", ".formatting_button", (e) => {

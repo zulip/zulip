@@ -436,6 +436,7 @@ input.recipient_box {
 
 #stream_message_recipient_topic.recipient_box {
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* This width roughly corresponds to how long of a topic can appear in
        the left sidebar with a single digit unread count without being
        cut off. */
@@ -446,6 +447,19 @@ input.recipient_box {
     min-width: 120px;
     max-width: 165px;
 >>>>>>> 015b2cd4b2... compose: Add clear field button for compose topic name.
+=======
+    width: 193px;
+    padding-right: 19px;
+}
+
+#stream_message_recipient_topic.recipient_box.empty {
+    width: 206px;
+    padding-right: 6px;
+}
+
+#compose_clear_topic_name {
+    padding: 4px;
+>>>>>>> 5dfda96f07... Added functionality to automatically hide/show compose topic clear button
 }
 
 #private_message_recipient.recipient_box {
