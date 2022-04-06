@@ -39,13 +39,44 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_pms(user: UserProfile) -> None:
-    organization_setup_text = ""
+def select_getting_started_text(org_type: int) -> str:
+    if (
+        org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+        or org_type == Realm.ORG_TYPES["education"]["id"]
+    ):
+        return (
+            _(
+                "If you are new to Zulip, check out our [Using Zulip for a class guide]({zulip_for_class_url})!"
+            )
+        ).format(zulip_for_class_url="/help/using-zulip-for-a-class")
+    else:
+        return (
+            _(
+                "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+            )
+        ).format(getting_started_url="/help/getting-started-with-zulip")
+
+
+def select_setup_org_text(user: UserProfile) -> str:
     if user.is_realm_admin:
-        help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-        organization_setup_text = (
-            " " + _("We also have a guide for [Setting up your organization]({help_url}).")
-        ).format(help_url=help_url)
+        if (
+            user.realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
+            or user.realm.org_type == Realm.ORG_TYPES["education"]["id"]
+        ):
+            return (
+                " " + _("We also have a guide for [Setting up Zulip for a class]{help_url}")
+            ).format(help_url="/help/setting-up-zulip-for-a-class")
+        else:
+            help_url = "/help/getting-your-organization-started-with-zulip"
+            return (
+                " " + _("We also have a guide for [Setting up your organization]({help_url}).")
+            ).format(help_url=help_url)
+    else:
+        return ""
+
+
+def send_initial_pms(user: UserProfile) -> None:
+    organization_setup_text = select_setup_org_text(user)
 
     welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
     demo_org_warning = ""
@@ -58,13 +89,12 @@ def send_initial_pms(user: UserProfile) -> None:
             + "\n\n"
         )
 
+    getting_started_text = select_getting_started_text(org_type=user.realm.org_type)
     content = "".join(
         [
             welcome_msg + " ",
             _("This is a private message from me, Welcome Bot.") + "\n\n",
-            _(
-                "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-            ),
+            "{getting_started_text}",
             "{organization_setup_text}" + "\n\n",
             "{demo_org_warning}",
             _(
@@ -77,10 +107,10 @@ def send_initial_pms(user: UserProfile) -> None:
     )
 
     content = content.format(
+        getting_started_text=getting_started_text,
         organization_setup_text=organization_setup_text,
         demo_org_warning=demo_org_warning,
         demo_org_help_url="/help/demo-organizations",
-        getting_started_url="/help/getting-started-with-zulip",
     )
 
     internal_send_private_message(
