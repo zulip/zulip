@@ -51,8 +51,7 @@ const apps_events = function () {
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
             show_instructions: false,
             play_store_link: "https://play.google.com/store/apps/details?id=com.zulipmobile",
-            download_link:
-                "https://github.com/zulip/zulip-mobile/releases/latest/download/app-release.apk",
+            download_link: "https://github.com/zulip/zulip-mobile/releases/latest",
             app_type: "mobile",
         },
         ios: {
