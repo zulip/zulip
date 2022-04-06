@@ -1,13 +1,15 @@
 from typing import IO, Dict
 
 import django.db.utils
+import orjson
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
-from zerver.models import EmojiInfo, Realm, RealmEmoji, UserProfile, active_user_ids
+from zerver.models import EmojiInfo, Realm, RealmAuditLog, RealmEmoji, UserProfile, active_user_ids
 from zerver.tornado.django_api import send_event
 
 
@@ -44,7 +46,21 @@ def check_add_realm_emoji(
     realm_emoji.file_name = emoji_file_name
     realm_emoji.is_animated = is_animated
     realm_emoji.save(update_fields=["file_name", "is_animated"])
-    notify_realm_emoji(realm_emoji.realm, realm.get_emoji())
+
+    realm_emoji_dict = realm.get_emoji()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=author,
+        event_type=RealmAuditLog.REALM_EMOJI_ADDED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+                "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
+            }
+        ).decode(),
+    )
+    notify_realm_emoji(realm_emoji.realm, realm_emoji_dict)
     return realm_emoji
 
 

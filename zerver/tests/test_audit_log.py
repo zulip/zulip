@@ -22,6 +22,7 @@ from zerver.actions.realm_domains import (
     do_change_realm_domain,
     do_remove_realm_domain,
 )
+from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
     do_add_linkifier,
@@ -53,13 +54,16 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.emoji import get_emoji_file_name, get_emoji_url
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.types import LinkifierDict, RealmPlaygroundDict
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    EmojiInfo,
     Message,
     Realm,
     RealmAuditLog,
@@ -889,6 +893,44 @@ class TestRealmAuditLog(ZulipTestCase):
             RealmAuditLog.objects.filter(
                 realm=user.realm,
                 event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+    def test_realm_emoji_entries(self) -> None:
+        user = self.example_user("iago")
+        realm_emoji_dict = user.realm.get_emoji()
+        now = timezone_now()
+        with get_test_image_file("img.png") as img_file:
+            # Because we want to verify the IntegrityError handling
+            # logic in check_add_realm_emoji rather than the primary
+            # check in upload_emoji, we need to make this request via
+            # that helper rather than via the API.
+            realm_emoji = check_add_realm_emoji(
+                realm=user.realm, name="test_emoji", author=user, image_file=img_file
+            )
+
+        added_emoji = EmojiInfo(
+            id=str(realm_emoji.id),
+            name="test_emoji",
+            source_url=get_emoji_url(get_emoji_file_name("img.png", realm_emoji.id), user.realm_id),
+            deactivated=False,
+            author_id=user.id,
+            still_url=None,
+        )
+        realm_emoji_dict[str(realm_emoji.id)] = added_emoji
+        expected_extra_data = {
+            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+            "added_emoji": added_emoji,
+        }
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_EMOJI_ADDED,
                 event_time__gte=now,
                 acting_user=user,
                 extra_data=orjson.dumps(expected_extra_data).decode(),
