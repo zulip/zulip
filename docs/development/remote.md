@@ -106,6 +106,9 @@ your terminal:
 ssh -L <PORT>:127.0.0.1:9991 <username>@<remote_server_ip> -N
 ```
 
+and then restart the development server with
+`export EXTERNAL_HOST=127.0.0.1:<PORT>`
+
 Now you can access Zulip by navigating to `http://127.0.0.1:<PORT>` in
 your local computer's browser.
 
