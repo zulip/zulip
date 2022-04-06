@@ -445,8 +445,7 @@ class S3UploadBackend(ZulipUploadBackend):
         else:
             key.upload_file(Filename=tarball_path, Callback=percent_callback)
 
-        public_url = self.get_public_upload_url(key.key)
-        return public_url
+        return self.get_export_tarball_url(realm, key.key)
 
     @override
     def delete_export_tarball(self, export_path: str) -> str | None:
