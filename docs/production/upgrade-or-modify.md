@@ -448,7 +448,7 @@ instructions for other supported platforms.
    ```bash
    rm -rf /srv/zulip-venv-cache/*
    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-       /home/zulip/deployments/current/ --ignore-static-assets
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
 
    This will finish by restarting your Zulip server; you should now
@@ -464,13 +464,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
-7. As root, finish by verifying the contents of the full-text indexes:
-
-   ```bash
-   /home/zulip/deployments/current/manage.py audit_fts_indexes
-   ```
-
-8. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
+7. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
 
 ### Upgrading from Debian 9 to 10
 
