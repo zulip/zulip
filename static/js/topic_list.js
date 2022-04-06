@@ -67,17 +67,17 @@ export function zoom_out() {
     rebuild(parent_widget, stream_id);
 }
 
-export function keyed_topic_li(convo) {
-    const render = () => render_topic_list_item(convo);
+export function keyed_topic_li(conversation) {
+    const render = () => render_topic_list_item(conversation);
 
-    const eq = (other) => _.isEqual(convo, other.convo);
+    const eq = (other) => _.isEqual(conversation, other.conversation);
 
-    const key = "t:" + convo.topic_name;
+    const key = "t:" + conversation.topic_name;
 
     return {
         key,
         render,
-        convo,
+        conversation,
         eq,
     };
 }
@@ -149,7 +149,7 @@ export class TopicListWidget {
 
         const attrs = [["class", "topic-list"]];
 
-        const nodes = list_info.items.map((convo) => keyed_topic_li(convo));
+        const nodes = list_info.items.map((conversation) => keyed_topic_li(conversation));
 
         if (spinner) {
             nodes.push(spinner_li());
