@@ -3979,7 +3979,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, target_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
-            f"**Public** stream created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
+            f"Public stream created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
             "```` quote\n*No description.*\n````"
         )
         self.assertEqual(msg.content, expected_msg)
@@ -4366,7 +4366,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.topic_name(), "stream events")
         self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
         self.assertIn(
-            f"**{policy_name}** stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
+            f"{policy_name} stream created by @_**{self.test_user.full_name}|{self.test_user.id}**. **Description:**\n"
             "```` quote",
             msg.content,
         )

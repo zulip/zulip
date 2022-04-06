@@ -700,7 +700,7 @@ def send_messages_for_new_subscribers(
                         stream=stream,
                         topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
                         content=_(
-                            "**{policy}** stream created by {user_name}. **Description:**"
+                            "{policy} stream created by {user_name}. **Description:**"
                         ).format(
                             user_name=silent_mention_syntax_for_user(user_profile),
                             policy=get_stream_permission_policy_name(
