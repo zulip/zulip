@@ -241,8 +241,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         abs_path = os.path.join(assert_is_not_none(settings.LOCAL_AVATARS_DIR), path)
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
         shutil.copy(tarball_path, abs_path)
-        public_url = realm.url + "/user_avatars/" + path
-        return public_url
+        return self.get_export_tarball_url(realm, "/user_avatars/" + path)
 
     @override
     def delete_export_tarball(self, export_path: str) -> str | None:
