@@ -15,7 +15,9 @@
             </div>
             <div class="edit-bot-name">
                 <label for="edit_bot_name">{{t "Full name" }}</label>
-                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 />
+                
+                <input id="edit_bot_name" type="text" name="bot_name" class="edit_bot_name required" value="{{bot.full_name}}" maxlength=50 required onkeyup="EnableDisable(this)"/>
+                
                 <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
             </div>
             <div id="service_data">
@@ -25,6 +27,7 @@
                 <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
                 <div class="edit_bot_avatar_file"></div>
                 <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+                
                 <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
                 <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
             </div>
