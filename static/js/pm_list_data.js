@@ -24,7 +24,7 @@ export function get_active_user_ids_string() {
 
 export function get_conversations() {
     const private_messages = pm_conversations.recent.get();
-    const display_messages = [];
+    const display_objects = [];
     const active_user_ids_string = get_active_user_ids_string();
 
     for (const private_message_obj of private_messages) {
@@ -54,7 +54,7 @@ export function get_conversations() {
             }
         }
 
-        const display_message = {
+        const display_object = {
             recipients: recipients_string,
             user_ids_string,
             unread: num_unread,
@@ -65,10 +65,10 @@ export function get_conversations() {
             user_circle_class,
             is_group,
         };
-        display_messages.push(display_message);
+        display_objects.push(display_object);
     }
 
-    return display_messages;
+    return display_objects;
 }
 
 export function is_all_privates() {
