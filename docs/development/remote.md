@@ -64,7 +64,7 @@ Droplet infrastructure (which handles `EXTERNAL_HOST` for you), you'll
 need to run `export EXTERNAL_HOST=<REMOTE_IP>:<PORT>` in a shell before
 running `run-dev.py` (and see also the `--interface=''` option
 documented below). The typical port for Zulip is 9991, but for example
-if you wish to port-forward (see below, and *highly* recommended!)
+if you wish to port-forward (see below, and _highly_ recommended!)
 and you have a local Zulip environment, then you'll want to select
 a different port, e.g. 3000.
 
