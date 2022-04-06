@@ -657,14 +657,23 @@ def send_messages_for_new_subscribers(
             with override_language(notifications_stream.realm.default_language):
                 if len(created_streams) > 1:
                     content = _("{user_name} created the following streams: {stream_str}.")
+                    content = content.format(
+                        user_name=silent_mention_syntax_for_user(user_profile),
+                        stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
+                    )
                 else:
-                    content = _("{user_name} created a new stream {stream_str}.")
+                    content = _("{user_name} created a new {policy} stream {stream_str}.").format(
+                        user_name=silent_mention_syntax_for_user(user_profile),
+                        stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
+                        policy=get_stream_permission_policy_name(
+                            invite_only=created_streams[0].invite_only,
+                            history_public_to_subscribers=created_streams[
+                                0
+                            ].history_public_to_subscribers,
+                            is_web_public=created_streams[0].is_web_public,
+                        ).lower(),
+                    )
                 topic = _("new streams")
-
-            content = content.format(
-                user_name=silent_mention_syntax_for_user(user_profile),
-                stream_str=", ".join(f"#**{s.name}**" for s in created_streams),
-            )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT, notifications_stream.realm_id)
 

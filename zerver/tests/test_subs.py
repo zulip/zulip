@@ -3971,9 +3971,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.recipient.type_id, notifications_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new public stream #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
         msg = self.get_last_message()
@@ -4017,7 +4015,14 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type_id, notifications_stream.id)
         self.assertEqual(msg.sender_id, self.notification_bot(realm).id)
         stream_id = Stream.objects.latest("id").id
-        expected_rendered_msg = f'<p><span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span> created a new stream <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>'
+        expected_rendered_msg = "".join(
+            [
+                "<p>",
+                f'<span class="user-mention silent" data-user-id="{user.id}">{user.full_name}</span>',
+                " created a new public stream ",
+                f'<a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-{invite_streams[0]}">#{invite_streams[0]}</a>.</p>',
+            ]
+        )
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:
@@ -4044,9 +4049,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.sender_id, self.notification_bot(notifications_stream.realm).id)
-        expected_msg = (
-            f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
-        )
+        expected_msg = f"@_**{invitee_full_name}|{invitee.id}** created a new public stream #**{invite_streams[0]}**."
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
