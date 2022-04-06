@@ -1,4 +1,4 @@
-from typing import IO
+from typing import IO, Dict
 
 import django.db.utils
 from django.utils.translation import gettext as _
@@ -7,12 +7,12 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
-from zerver.models import Realm, RealmEmoji, UserProfile, active_user_ids
+from zerver.models import EmojiInfo, Realm, RealmEmoji, UserProfile, active_user_ids
 from zerver.tornado.django_api import send_event
 
 
-def notify_realm_emoji(realm: Realm) -> None:
-    event = dict(type="realm_emoji", op="update", realm_emoji=realm.get_emoji())
+def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
+    event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
     send_event(realm, event, active_user_ids(realm.id))
 
 
@@ -44,7 +44,7 @@ def check_add_realm_emoji(
     realm_emoji.file_name = emoji_file_name
     realm_emoji.is_animated = is_animated
     realm_emoji.save(update_fields=["file_name", "is_animated"])
-    notify_realm_emoji(realm_emoji.realm)
+    notify_realm_emoji(realm_emoji.realm, realm.get_emoji())
     return realm_emoji
 
 
@@ -52,4 +52,4 @@ def do_remove_realm_emoji(realm: Realm, name: str) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
-    notify_realm_emoji(realm)
+    notify_realm_emoji(realm, realm.get_emoji())
