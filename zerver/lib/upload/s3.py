@@ -487,12 +487,13 @@ class S3UploadBackend(ZulipUploadBackend):
         return is_animated
 
     def get_export_tarball_url(self, realm: Realm, export_path: str) -> str:
+        if export_path.startswith("/"):
+            export_path = export_path[1:]
         return self.get_boto_client().generate_presigned_url(
             ClientMethod="get_object",
             Params={
                 "Bucket": self.avatar_bucket.name,
-                # export_path has a leading /
-                "Key": export_path[1:],
+                "Key": export_path,
             },
             ExpiresIn=0,
         )
@@ -513,8 +514,7 @@ class S3UploadBackend(ZulipUploadBackend):
         else:
             key.upload_file(Filename=tarball_path, Callback=percent_callback)
 
-        public_url = self.get_public_upload_url(key.key)
-        return public_url
+        return self.get_export_tarball_url(realm, key.key)
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
         assert export_path.startswith("/")
