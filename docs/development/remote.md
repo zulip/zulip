@@ -61,9 +61,12 @@ need to.
 The main difference from the standard instructions is that for a
 remote development environment, and you're not using our Digital Ocean
 Droplet infrastructure (which handles `EXTERNAL_HOST` for you), you'll
-need to run `export EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before
+need to run `export EXTERNAL_HOST=<REMOTE_IP>:<PORT>` in a shell before
 running `run-dev.py` (and see also the `--interface=''` option
-documented below).
+documented below). The typical port for Zulip is 9991, but for example
+if you wish to port-forward (see below, and *highly* recommended!)
+and you have a local Zulip environment, then you'll want to select
+a different port, e.g. 3000.
 
 If your server has a static IP address, we recommend putting this
 command in `~/.bashrc`, so you don't need to remember to run it every
@@ -80,8 +83,8 @@ you cloned Zulip:
 ./tools/run-dev.py --interface=''
 ```
 
-This will start up the Zulip server on port 9991. You can then
-navigate to `http://<REMOTE_IP>:9991` and you should see something like
+This will start up the Zulip server on port <PORT>. You can then
+navigate to `http://<REMOTE_IP>:<PORT>` and you should see something like
 this screenshot of the Zulip development environment:
 
 ![Image of Zulip development environment](../images/zulip-dev.png)
@@ -100,10 +103,10 @@ port-forwarding to access Zulip by running the following command in
 your terminal:
 
 ```bash
-ssh -L 3000:127.0.0.1:9991 <username>@<remote_server_ip> -N
+ssh -L <PORT>:127.0.0.1:9991 <username>@<remote_server_ip> -N
 ```
 
-Now you can access Zulip by navigating to `http://127.0.0.1:3000` in
+Now you can access Zulip by navigating to `http://127.0.0.1:<PORT>` in
 your local computer's browser.
 
 For more information, see [Using the development
