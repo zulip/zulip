@@ -1,7 +1,7 @@
 import re
 from functools import partial
 from inspect import signature
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from django.http import HttpRequest, HttpResponse
 
@@ -9,7 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     validate_extract_webhook_http_header,
@@ -36,25 +36,28 @@ def fixture_to_headers(fixture_name: str) -> Dict[str, Any]:
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
 
 
-def get_push_event_body(payload: Dict[str, Any]) -> str:
-    if payload.get("after") == EMPTY_SHA:
-        return get_remove_branch_event_body(payload)
+def get_push_event_body(payload: WildValue) -> str:
+    after = payload.get("after")
+    if after:
+        stringified_after = after.tame(check_string)
+        if stringified_after == EMPTY_SHA:
+            return get_remove_branch_event_body(payload)
     return get_normal_push_event_body(payload)
 
 
-def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
+def get_normal_push_event_body(payload: WildValue) -> str:
     compare_url = "{}/compare/{}...{}".format(
         get_project_homepage(payload),
-        payload["before"],
-        payload["after"],
+        payload["before"].tame(check_string),
+        payload["after"].tame(check_string),
     )
 
     commits = [
         {
-            "name": commit.get("author").get("name"),
-            "sha": commit.get("id"),
-            "message": commit.get("message"),
-            "url": commit.get("url"),
+            "name": commit.get("author").get("name").tame(check_string),
+            "sha": commit.get("id").tame(check_string),
+            "message": commit.get("message").tame(check_string),
+            "url": commit.get("url").tame(check_string),
         }
         for commit in payload["commits"]
     ]
@@ -67,14 +70,14 @@ def get_normal_push_event_body(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_remove_branch_event_body(payload: Dict[str, Any]) -> str:
+def get_remove_branch_event_body(payload: WildValue) -> str:
     return get_remove_branch_event_message(
         get_user_name(payload),
         get_branch_name(payload),
     )
 
 
-def get_tag_push_event_body(payload: Dict[str, Any]) -> str:
+def get_tag_push_event_body(payload: WildValue) -> str:
     return get_push_tag_event_message(
         get_user_name(payload),
         get_tag_name(payload),
@@ -82,37 +85,42 @@ def get_tag_push_event_body(payload: Dict[str, Any]) -> str:
     )
 
 
-def get_issue_created_event_body(payload: Dict[str, Any], include_title: bool = False) -> str:
+def get_issue_created_event_body(payload: WildValue, include_title: bool = False) -> str:
     description = payload["object_attributes"].get("description")
     # Filter out multiline hidden comments
-    if description is not None:
-        description = re.sub("<!--.*?-->", "", description, 0, re.DOTALL)
-        description = description.rstrip()
+    if description:
+        stringified_description = description.tame(check_string)
+        stringified_description = re.sub("<!--.*?-->", "", stringified_description, 0, re.DOTALL)
+        stringified_description = stringified_description.rstrip()
+    else:
+        stringified_description = None
 
     return get_issue_event_message(
         get_issue_user_name(payload),
         "created",
         get_object_url(payload),
-        payload["object_attributes"].get("iid"),
-        description,
+        payload["object_attributes"].get("iid").tame(check_int),
+        stringified_description,
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
-        title=payload["object_attributes"].get("title") if include_title else None,
+        title=payload["object_attributes"].get("title").tame(check_string)
+        if include_title
+        else None,
     )
 
 
-def get_issue_event_body(payload: Dict[str, Any], action: str, include_title: bool = False) -> str:
+def get_issue_event_body(payload: WildValue, action: str, include_title: bool = False) -> str:
     return get_issue_event_message(
         get_issue_user_name(payload),
         action,
         get_object_url(payload),
-        payload["object_attributes"].get("iid"),
-        title=payload["object_attributes"].get("title") if include_title else None,
+        payload["object_attributes"].get("iid").tame(check_int),
+        title=payload["object_attributes"].get("title").tame(check_string)
+        if include_title
+        else None,
     )
 
 
-def get_merge_request_updated_event_body(
-    payload: Dict[str, Any], include_title: bool = False
-) -> str:
+def get_merge_request_updated_event_body(payload: WildValue, include_title: bool = False) -> str:
     if payload["object_attributes"].get("oldrev"):
         return get_merge_request_event_body(
             payload,
@@ -128,142 +136,150 @@ def get_merge_request_updated_event_body(
 
 
 def get_merge_request_event_body(
-    payload: Dict[str, Any], action: str, include_title: bool = False
+    payload: WildValue, action: str, include_title: bool = False
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
-        pull_request.get("url"),
-        pull_request.get("iid"),
+        pull_request.get("url").tame(check_string),
+        pull_request.get("iid").tame(check_int),
         type="MR",
-        title=payload["object_attributes"].get("title") if include_title else None,
+        title=payload["object_attributes"].get("title").tame(check_string)
+        if include_title
+        else None,
     )
 
 
 def get_merge_request_open_or_updated_body(
-    payload: Dict[str, Any], action: str, include_title: bool = False
+    payload: WildValue, action: str, include_title: bool = False
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
-        pull_request.get("url"),
-        pull_request.get("iid"),
-        pull_request.get("source_branch"),
-        pull_request.get("target_branch"),
-        pull_request.get("description"),
+        pull_request.get("url").tame(check_string),
+        pull_request.get("iid").tame(check_int),
+        pull_request.get("source_branch").tame(check_string),
+        pull_request.get("target_branch").tame(check_string),
+        pull_request.get("description").tame(check_string),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",
-        title=payload["object_attributes"].get("title") if include_title else None,
+        title=payload["object_attributes"].get("title").tame(check_string)
+        if include_title
+        else None,
     )
 
 
-def get_assignees(payload: Dict[str, Any]) -> List[Dict[str, str]]:
+def get_assignees(payload: WildValue) -> Union[List[WildValue], WildValue]:
     assignee_details = payload.get("assignees")
-    if assignee_details is None:
+    if not assignee_details:
         single_assignee_details = payload.get("assignee")
-        if single_assignee_details is None:
-            assignee_details = []
+        if not single_assignee_details:
+            transformed_assignee_details = []
         else:
-            assignee_details = [single_assignee_details]
+            transformed_assignee_details = [single_assignee_details]
+        return transformed_assignee_details
     return assignee_details
 
 
-def replace_assignees_username_with_name(assignees: List[Dict[str, str]]) -> List[Dict[str, str]]:
+def replace_assignees_username_with_name(
+    assignees: Union[List[WildValue], WildValue]
+) -> List[Dict[str, str]]:
     """Replace the username of each assignee with their (full) name.
 
     This is a hack-like adaptor so that when assignees are passed to
     `get_pull_request_event_message` we can use the assignee's name
     and not their username (for more consistency).
     """
+    formatted_assignees = []
     for assignee in assignees:
-        assignee["username"] = assignee["name"]
-    return assignees
+        formatted_assignee = {}
+        formatted_assignee["username"] = assignee["name"].tame(check_string)
+        formatted_assignees.append(formatted_assignee)
+    return formatted_assignees
 
 
-def get_commented_commit_event_body(payload: Dict[str, Any]) -> str:
+def get_commented_commit_event_body(payload: WildValue) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({})".format(comment["url"])
+    action = "[commented]({})".format(comment["url"].tame(check_string))
     return get_commits_comment_action_message(
         get_issue_user_name(payload),
         action,
-        payload["commit"].get("url"),
-        payload["commit"].get("id"),
-        comment["note"],
+        payload["commit"].get("url").tame(check_string),
+        payload["commit"].get("id").tame(check_string),
+        comment["note"].tame(check_string),
     )
 
 
-def get_commented_merge_request_event_body(
-    payload: Dict[str, Any], include_title: bool = False
-) -> str:
+def get_commented_merge_request_event_body(payload: WildValue, include_title: bool = False) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"])
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/merge_requests/{}".format(
-        payload["project"].get("web_url"),
-        payload["merge_request"].get("iid"),
+        payload["project"].get("web_url").tame(check_string),
+        payload["merge_request"].get("iid").tame(check_int),
     )
 
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload["merge_request"].get("iid"),
-        message=comment["note"],
+        payload["merge_request"].get("iid").tame(check_int),
+        message=comment["note"].tame(check_string),
         type="MR",
-        title=payload["merge_request"].get("title") if include_title else None,
+        title=payload["merge_request"].get("title").tame(check_string) if include_title else None,
     )
 
 
-def get_commented_issue_event_body(payload: Dict[str, Any], include_title: bool = False) -> str:
+def get_commented_issue_event_body(payload: WildValue, include_title: bool = False) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"])
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/issues/{}".format(
-        payload["project"].get("web_url"),
-        payload["issue"].get("iid"),
+        payload["project"].get("web_url").tame(check_string),
+        payload["issue"].get("iid").tame(check_int),
     )
 
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload["issue"].get("iid"),
-        message=comment["note"],
+        payload["issue"].get("iid").tame(check_int),
+        message=comment["note"].tame(check_string),
         type="issue",
-        title=payload["issue"].get("title") if include_title else None,
+        title=payload["issue"].get("title").tame(check_string) if include_title else None,
     )
 
 
-def get_commented_snippet_event_body(payload: Dict[str, Any], include_title: bool = False) -> str:
+def get_commented_snippet_event_body(payload: WildValue, include_title: bool = False) -> str:
     comment = payload["object_attributes"]
-    action = "[commented]({}) on".format(comment["url"])
+    action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/snippets/{}".format(
-        payload["project"].get("web_url"),
-        payload["snippet"].get("id"),
+        payload["project"].get("web_url").tame(check_string),
+        payload["snippet"].get("id").tame(check_int),
     )
 
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
         url,
-        payload["snippet"].get("id"),
-        message=comment["note"],
+        payload["snippet"].get("id").tame(check_int),
+        message=comment["note"].tame(check_string),
         type="snippet",
-        title=payload["snippet"].get("title") if include_title else None,
+        title=payload["snippet"].get("title").tame(check_string) if include_title else None,
     )
 
 
-def get_wiki_page_event_body(payload: Dict[str, Any], action: str) -> str:
+def get_wiki_page_event_body(payload: WildValue, action: str) -> str:
     return '{} {} [wiki page "{}"]({}).'.format(
         get_issue_user_name(payload),
         action,
-        payload["object_attributes"].get("title"),
-        payload["object_attributes"].get("url"),
+        payload["object_attributes"].get("title").tame(check_string),
+        payload["object_attributes"].get("url").tame(check_string),
     )
 
 
-def get_build_hook_event_body(payload: Dict[str, Any]) -> str:
-    build_status = payload.get("build_status")
+def get_build_hook_event_body(payload: WildValue) -> str:
+    build_status = payload.get("build_status").tame(check_string)
     if build_status == "created":
         action = "was created"
     elif build_status == "running":
@@ -271,18 +287,18 @@ def get_build_hook_event_body(payload: Dict[str, Any]) -> str:
     else:
         action = f"changed status to {build_status}"
     return "Build {} from {} stage {}.".format(
-        payload.get("build_name"),
-        payload.get("build_stage"),
+        payload.get("build_name").tame(check_string),
+        payload.get("build_stage").tame(check_string),
         action,
     )
 
 
-def get_test_event_body(payload: Dict[str, Any]) -> str:
+def get_test_event_body(payload: WildValue) -> str:
     return f"Webhook for **{get_repo_name(payload)}** has been configured successfully! :tada:"
 
 
-def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
-    pipeline_status = payload["object_attributes"].get("status")
+def get_pipeline_event_body(payload: WildValue) -> str:
+    pipeline_status = payload["object_attributes"].get("status").tame(check_string)
     if pipeline_status == "pending":
         action = "was created"
     elif pipeline_status == "running":
@@ -293,70 +309,70 @@ def get_pipeline_event_body(payload: Dict[str, Any]) -> str:
     project_homepage = get_project_homepage(payload)
     pipeline_url = "{}/pipelines/{}".format(
         project_homepage,
-        payload["object_attributes"].get("id"),
+        payload["object_attributes"].get("id").tame(check_int),
     )
 
     builds_status = ""
     for build in payload["builds"]:
         build_url = "{}/-/jobs/{}".format(
             project_homepage,
-            build.get("id"),
+            build.get("id").tame(check_int),
         )
         artifact_filename = build.get("artifacts_file", {}).get("filename", None)
         if artifact_filename:
             artifact_download_url = f"{build_url}/artifacts/download"
             artifact_browse_url = f"{build_url}/artifacts/browse"
-            artifact_string = f"  * built artifact: *{artifact_filename}* [[Browse]({artifact_browse_url})|[Download]({artifact_download_url})]\n"
+            artifact_string = f"  * built artifact: *{artifact_filename.tame(check_string)}* [[Browse]({artifact_browse_url})|[Download]({artifact_download_url})]\n"
         else:
             artifact_string = ""
         builds_status += "* [{}]({}) - {}\n{}".format(
-            build.get("name"),
+            build.get("name").tame(check_string),
             build_url,
-            build.get("status"),
+            build.get("status").tame(check_string),
             artifact_string,
         )
     return "[Pipeline ({})]({}) {} with build(s):\n{}.".format(
-        payload["object_attributes"].get("id"),
+        payload["object_attributes"].get("id").tame(check_int),
         pipeline_url,
         action,
         builds_status[:-1],
     )
 
 
-def get_repo_name(payload: Dict[str, Any]) -> str:
+def get_repo_name(payload: WildValue) -> str:
     if "project" in payload:
-        return payload["project"]["name"]
+        return payload["project"]["name"].tame(check_string)
 
     # Apparently, Job Hook payloads don't have a `project` section,
     # but the repository name is accessible from the `repository`
     # section.
-    return payload["repository"]["name"]
+    return payload["repository"]["name"].tame(check_string)
 
 
-def get_user_name(payload: Dict[str, Any]) -> str:
-    return payload["user_name"]
+def get_user_name(payload: WildValue) -> str:
+    return payload["user_name"].tame(check_string)
 
 
-def get_issue_user_name(payload: Dict[str, Any]) -> str:
-    return payload["user"]["name"]
+def get_issue_user_name(payload: WildValue) -> str:
+    return payload["user"]["name"].tame(check_string)
 
 
-def get_project_homepage(payload: Dict[str, Any]) -> str:
+def get_project_homepage(payload: WildValue) -> str:
     if "project" in payload:
-        return payload["project"]["web_url"]
-    return payload["repository"]["homepage"]
+        return payload["project"]["web_url"].tame(check_string)
+    return payload["repository"]["homepage"].tame(check_string)
 
 
-def get_branch_name(payload: Dict[str, Any]) -> str:
-    return payload["ref"].replace("refs/heads/", "")
+def get_branch_name(payload: WildValue) -> str:
+    return payload["ref"].tame(check_string).replace("refs/heads/", "")
 
 
-def get_tag_name(payload: Dict[str, Any]) -> str:
-    return payload["ref"].replace("refs/tags/", "")
+def get_tag_name(payload: WildValue) -> str:
+    return payload["ref"].tame(check_string).replace("refs/tags/", "")
 
 
-def get_object_url(payload: Dict[str, Any]) -> str:
-    return payload["object_attributes"]["url"]
+def get_object_url(payload: WildValue) -> str:
+    return payload["object_attributes"]["url"].tame(check_string)
 
 
 EVENT_FUNCTION_MAPPER = {
@@ -398,7 +414,7 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 def api_gitlab_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
     branches: Optional[str] = REQ(default=None),
     use_merge_request_title: bool = REQ(default=True, json_validator=check_bool),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
@@ -429,70 +445,74 @@ def get_body_based_on_event(event: str) -> Any:
 
 
 def get_subject_based_on_event(
-    event: str, payload: Dict[str, Any], use_merge_request_title: bool
+    event: str, payload: WildValue, use_merge_request_title: bool
 ) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
     elif event == "Job Hook" or event == "Build Hook":
-        return "{} / {}".format(payload["repository"].get("name"), get_branch_name(payload))
+        return "{} / {}".format(
+            payload["repository"].get("name").tame(check_string), get_branch_name(payload)
+        )
     elif event == "Pipeline Hook":
         return "{} / {}".format(
             get_repo_name(payload),
-            payload["object_attributes"].get("ref").replace("refs/heads/", ""),
+            payload["object_attributes"].get("ref").tame(check_string).replace("refs/heads/", ""),
         )
     elif event.startswith("Merge Request Hook"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="MR",
-            id=payload["object_attributes"].get("iid"),
-            title=payload["object_attributes"].get("title") if use_merge_request_title else "",
+            id=payload["object_attributes"].get("iid").tame(check_int),
+            title=payload["object_attributes"].get("title").tame(check_string)
+            if use_merge_request_title
+            else "",
         )
     elif event.startswith("Issue Hook") or event.startswith("Confidential Issue Hook"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",
-            id=payload["object_attributes"].get("iid"),
-            title=payload["object_attributes"].get("title"),
+            id=payload["object_attributes"].get("iid").tame(check_int),
+            title=payload["object_attributes"].get("title").tame(check_string),
         )
     elif event == "Note Hook Issue" or event == "Confidential Note Hook Issue":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="issue",
-            id=payload["issue"].get("iid"),
-            title=payload["issue"].get("title"),
+            id=payload["issue"].get("iid").tame(check_int),
+            title=payload["issue"].get("title").tame(check_string),
         )
     elif event == "Note Hook MergeRequest":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="MR",
-            id=payload["merge_request"].get("iid"),
-            title=payload["merge_request"].get("title") if use_merge_request_title else "",
+            id=payload["merge_request"].get("iid").tame(check_int),
+            title=payload["merge_request"].get("title").tame(check_string)
+            if use_merge_request_title
+            else "",
         )
 
     elif event == "Note Hook Snippet":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type="snippet",
-            id=payload["snippet"].get("id"),
-            title=payload["snippet"].get("title"),
+            id=payload["snippet"].get("id").tame(check_int),
+            title=payload["snippet"].get("title").tame(check_string),
         )
     return get_repo_name(payload)
 
 
-def get_event(
-    request: HttpRequest, payload: Dict[str, Any], branches: Optional[str]
-) -> Optional[str]:
+def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event = validate_extract_webhook_http_header(request, "X_GITLAB_EVENT", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title
-        event_name = payload.get("event_name", payload.get("object_kind"))
+        event_name = payload.get("event_name", payload.get("object_kind")).tame(check_string)
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"
     if event in ["Confidential Issue Hook", "Issue Hook", "Merge Request Hook", "Wiki Page Hook"]:
-        action = payload["object_attributes"].get("action", "open")
+        action = payload["object_attributes"].get("action", "open").tame(check_string)
         event = f"{event} {action}"
     elif event in ["Confidential Note Hook", "Note Hook"]:
-        action = payload["object_attributes"].get("noteable_type")
+        action = payload["object_attributes"].get("noteable_type").tame(check_string)
         event = f"{event} {action}"
     elif event == "Push Hook":
         if branches is not None:
