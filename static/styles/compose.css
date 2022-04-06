@@ -235,6 +235,7 @@
 #compose_top_right {
     display: flex;
     align-items: center;
+    margin-bottom: auto;
 
     button {
         background: transparent;
