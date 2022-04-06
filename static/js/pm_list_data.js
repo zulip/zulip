@@ -22,7 +22,7 @@ export function get_active_user_ids_string() {
     return people.emails_strings_to_user_ids_string(emails);
 }
 
-export function get_convos() {
+export function get_conversations() {
     const private_messages = pm_conversations.recent.get();
     const display_messages = [];
     const active_user_ids_string = get_active_user_ids_string();

@@ -55,7 +55,7 @@ function test(label, f) {
     });
 }
 
-test("get_convos", ({override}) => {
+test("get_conversations", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([me.user_id], 2);
     let num_unread_for_person = 1;
@@ -90,23 +90,23 @@ test("get_convos", ({override}) => {
         },
     ];
 
-    let pm_data = pm_list_data.get_convos();
+    let pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 
     num_unread_for_person = 0;
 
-    pm_data = pm_list_data.get_convos();
+    pm_data = pm_list_data.get_conversations();
     expected_data[0].unread = 0;
     expected_data[0].is_zero = true;
     expected_data[1].unread = 0;
     expected_data[1].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
-    pm_data = pm_list_data.get_convos();
+    pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 });
 
-test("get_convos bot", ({override}) => {
+test("get_conversations bot", ({override}) => {
     pm_conversations.recent.insert([alice.user_id, bob.user_id], 1);
     pm_conversations.recent.insert([bot_test.user_id], 2);
 
@@ -139,7 +139,7 @@ test("get_convos bot", ({override}) => {
         },
     ];
 
-    const pm_data = pm_list_data.get_convos();
+    const pm_data = pm_list_data.get_conversations();
     assert.deepEqual(pm_data, expected_data);
 });
 
