@@ -4309,13 +4309,7 @@ paths:
         - $ref: "#/components/parameters/QueueId"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -4388,13 +4382,7 @@ paths:
         `POST {{ api_url }}/v1/mark_all_as_read`
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -4413,13 +4401,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
   /mark_topic_as_read:
     post:
       operationId: mark-topic-as-read
@@ -4446,13 +4428,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
   /attachments:
     get:
       operationId: get-attachments
@@ -4745,13 +4721,7 @@ paths:
           required: True
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "404":
           description: Not Found.
           content:
@@ -4782,13 +4752,7 @@ paths:
           example: 1
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "404":
           description: Not Found.
           content:
@@ -6011,13 +5975,7 @@ paths:
           example: 43
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -6061,13 +6019,7 @@ paths:
         - $ref: "#/components/parameters/MessageId"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -6416,14 +6368,7 @@ paths:
         - $ref: "#/components/parameters/UserId"
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
 
   /users/{user_id_or_email}/presence:
     get:
@@ -6722,14 +6667,7 @@ paths:
         This endpoint is primarily useful to Zulip clients providing a user settings UI.
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -6833,14 +6771,7 @@ paths:
           required: false
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -7497,13 +7428,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -7564,14 +7489,7 @@ paths:
         - $ref: "#/components/parameters/MutedUserId"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -7608,14 +7526,7 @@ paths:
         - $ref: "#/components/parameters/MutedUserId"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -7715,13 +7626,7 @@ paths:
                   example: /path/to/img.png
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
 
   /realm/emoji:
     get:
@@ -7901,13 +7806,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
     post:
       operationId: create-custom-profile-field
       summary: Create a custom profile field
@@ -8790,14 +8689,7 @@ paths:
         - $ref: "#/components/parameters/UserId"
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -8930,13 +8822,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
     patch:
       operationId: update-linkifier
       summary: Update a linkifier
@@ -8962,13 +8848,7 @@ paths:
         - $ref: "#/components/parameters/LinkifierURLFormatString"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
   /realm/playgrounds:
     post:
       operationId: add-code-playground
@@ -9050,13 +8930,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
   /register:
     post:
       operationId: register-queue
@@ -13513,14 +13387,7 @@ paths:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -13629,14 +13496,7 @@ paths:
         - $ref: "#/components/parameters/MessageRetentionDays"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -13677,13 +13537,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -13796,13 +13650,7 @@ paths:
           example: typing notifications
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -13860,14 +13708,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"msg": "", "result": "success"}
+          $ref: "#/components/responses/SimpleSuccess"
         "400":
           description: Bad request.
           content:
@@ -14019,14 +13860,7 @@ paths:
         - $ref: "#/components/parameters/UserGroupId"
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - example: {"result": "success", "msg": ""}
+          $ref: "#/components/responses/SimpleSuccess"
 
         "400":
           description: Bad request.
