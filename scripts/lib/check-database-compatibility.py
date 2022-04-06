@@ -73,8 +73,9 @@ for key, migration in loader.disk_migrations.items():
 if not missing:
     sys.exit(0)
 
-for migration in missing:
-    print(f"Migration {migration} missing in new version.")
+print("Migrations which are currently applied, but missing in the new version:")
+for app, migration_name in sorted(missing):
+    print(f"  {app} - {migration_name}")
 
 current_version = parse_version_from(os.path.join(DEPLOYMENTS_DIR, "current"))
 logging.error(
