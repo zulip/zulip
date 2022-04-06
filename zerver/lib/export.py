@@ -2003,6 +2003,7 @@ def do_export_realm(
 
     do_write_stats_file_for_realm_export(output_dir)
 
+    logging.info("Compressing tarball...")
     tarball_path = output_dir.rstrip("/") + ".tar.gz"
     subprocess.check_call(
         [
