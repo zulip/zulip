@@ -1,5 +1,6 @@
 import os
 from unittest.mock import patch
+from urllib.parse import urlsplit
 
 import botocore.exceptions
 from django.conf import settings
@@ -42,7 +43,7 @@ class RealmExportTest(ZulipTestCase):
     def test_endpoint_s3(self) -> None:
         admin = self.example_user("iago")
         self.login_user(admin)
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
         tarball_path = create_dummy_file("test-export.tar.gz")
 
         # Test the export logic.
@@ -82,9 +83,10 @@ class RealmExportTest(ZulipTestCase):
         # Test that the export we have is the export we created.
         export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
+        parsed_url = urlsplit(export_dict[0]["export_url"])
         self.assertEqual(
-            export_dict[0]["export_url"],
-            "https://test-avatar-bucket.s3.amazonaws.com" + export_path,
+            parsed_url._replace(query="").geturl(),
+            "https://test-export-bucket.s3.amazonaws.com" + export_path,
         )
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)
         self.assert_length(

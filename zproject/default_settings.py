@@ -151,6 +151,7 @@ DEFAULT_AVATAR_URI: str | None = None
 DEFAULT_LOGO_URI: str | None = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
+S3_EXPORT_BUCKET = ""
 S3_REGION: str | None = None
 S3_ENDPOINT_URL: str | None = None
 S3_ADDRESSING_STYLE: Literal["auto", "virtual", "path"] = "auto"

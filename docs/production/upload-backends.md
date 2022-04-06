@@ -241,3 +241,64 @@ lifecycle transition cost][s3-pricing].
 [s3-storage-class]: https://aws.amazon.com/s3/storage-classes/
 [s3-storage-class-constant]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html#AmazonS3-PutObject-request-header-StorageClass
 [s3-pricing]: https://aws.amazon.com/s3/pricing/
+
+## Data export bucket
+
+The [data export process](export-and-import.md#data-export) process, when
+[triggered from the
+UI](https://zulip.com/help/export-your-organization), uploads the
+completed export so it is available to download from the server; this
+is also available [from the command
+line](export-and-import.md#export-your-zulip-data) by passing
+`--upload`. When the S3 backend is used, these uploads are done to S3.
+
+By default, they are uploaded to the bucket with user avatars
+(`S3_AVATAR_BUCKET`), because that bucket is world-readable, allowing
+easy generation of links to download the export.
+
+If you would like to store exports in a dedicated bucket, you can set
+`S3_EXPORT_BUCKET` in your `/etc/zulip/settings.py`. This bucket
+should also be configured like the uploads bucket, only allowing write
+access to the Zulip account, as it will generate links which are valid
+for 1 week at a time:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1468991802322",
+    "Statement": [
+        {
+            "Sid": "Stmt1468991795390",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
+        },
+        {
+            "Sid": "Stmt1468991795391",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "ARN_PRINCIPAL_HERE"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::BUCKET_NAME_HERE"
+        }
+    ]
+}
+```
+
+You should copy existing exports to the new bucket. For instance,
+using the [AWS CLI](https://aws.amazon.com/cli/)'s [`aws s3
+sync`](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html),
+if the old bucket was named `example-zulip-avatars` and the new export
+bucket is named `example-zulip-exports`:
+
+```
+aws s3 sync s3://example-zulip-avatars/exports/ s3://example-zulip-exports/
+```
