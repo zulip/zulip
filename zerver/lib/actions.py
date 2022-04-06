@@ -4525,7 +4525,9 @@ def do_change_subscription_property(
     send_event(user_profile.realm, event, [user_profile.id])
 
 
-def do_change_password(user_profile: UserProfile, password: str, commit: bool = True) -> None:
+def do_change_password(
+    user_profile: UserProfile, password: str, reset_api_key: bool, commit: bool = True
+) -> None:
     user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
@@ -4537,6 +4539,9 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
         event_type=RealmAuditLog.USER_PASSWORD_CHANGED,
         event_time=event_time,
     )
+
+    if reset_api_key:
+        do_regenerate_api_key(user_profile, acting_user=user_profile)
 
 
 def do_change_full_name(

@@ -371,6 +371,7 @@ class PasswordResetTest(ZulipTestCase):
         user = self.example_user("hamlet")
         email = user.delivery_email
         old_password = initial_password(email)
+        old_api_key = user.api_key
         assert old_password is not None
 
         self.login_user(user)
@@ -420,6 +421,10 @@ class PasswordResetTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith("/password/done/"))
 
+            # Verify API key doesn't change
+            user.refresh_from_db()
+            self.assertEqual(user.api_key, old_api_key)
+
             # log back in with new password
             self.login_by_email(email, password="f657gdGGk9")
             user_profile = self.example_user("hamlet")
@@ -427,6 +432,37 @@ class PasswordResetTest(ZulipTestCase):
 
             # make sure old password no longer works
             self.assert_login_failure(email, password=old_password)
+
+    def test_api_key_reset_with_password_reset(self) -> None:
+        user = self.example_user("hamlet")
+        email = user.delivery_email
+        old_api_key = user.api_key
+
+        self.client_post("/accounts/password/reset/", {"email": email})
+        password_reset_url = self.get_confirmation_url_from_outbox(
+            email, url_pattern=settings.EXTERNAL_HOST + r"(\S\S+)"
+        )
+        result = self.client_get(password_reset_url)
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result.url.endswith(f"/{PasswordResetConfirmView.reset_url_token}/"))
+
+        final_reset_url = result.url
+        result = self.client_get(final_reset_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post(
+            final_reset_url,
+            {
+                "new_password1": "f657gdGGk9",
+                "new_password2": "f657gdGGk9",
+                "reset_api_key": True,
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith("/password/done/"))
+
+        user.refresh_from_db()
+        self.assertNotEqual(user.api_key, old_api_key)
 
     @patch("django.http.HttpRequest.get_host")
     def test_password_reset_page_redirects_for_root_alias_when_root_domain_landing_page_is_enabled(

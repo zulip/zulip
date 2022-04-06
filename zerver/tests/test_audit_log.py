@@ -163,7 +163,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = self.example_user("hamlet")
         password = "test1"
-        do_change_password(user, password)
+        do_change_password(user, password, reset_api_key=False)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 event_type=RealmAuditLog.USER_PASSWORD_CHANGED, event_time__gte=now
