@@ -150,6 +150,7 @@ S3_KEY = "test-key"
 S3_SECRET_KEY = "test-secret-key"
 S3_AUTH_UPLOADS_BUCKET = "test-authed-bucket"
 S3_AVATAR_BUCKET = "test-avatar-bucket"
+S3_EXPORT_BUCKET = "test-export-bucket"
 
 INLINE_URL_EMBED_PREVIEW = False
 

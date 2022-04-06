@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import botocore.exceptions
 from django.conf import settings
+from django.test import override_settings
 from PIL import Image
 
 import zerver.lib.upload
@@ -503,7 +504,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_tarball_upload_and_deletion(self) -> None:
-        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        bucket = create_s3_buckets(settings.S3_EXPORT_BUCKET)[0]
 
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
@@ -524,11 +525,18 @@ class S3Test(ZulipTestCase):
         # Verify the percent_callback API works
         self.assertEqual(total_bytes_transferred, 5)
 
-        result = re.search(re.compile(r"([0-9a-fA-F]{32})"), url)
+        parsed_url = urllib.parse.urlparse(url)
+        result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), parsed_url.path)
         if result is not None:
             hex_value = result.group(1)
-        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
-        self.assertEqual(url, expected_url)
+        expected_url = (
+            f"https://{bucket.name}.s3.amazonaws.com/{hex_value}/{os.path.basename(tarball_path)}"
+        )
+        self.assertEqual(parsed_url._replace(query="").geturl(), expected_url)
+        params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(params["AWSAccessKeyId"], ["test-key"])
+        self.assertIn("Signature", params)
+        self.assertIn("Expires", params)
 
         # Delete the tarball.
         with self.assertLogs(level="WARNING") as warn_log:
@@ -537,5 +545,27 @@ class S3Test(ZulipTestCase):
             warn_log.output,
             ["WARNING:root:not_a_file does not exist. Its entry in the database will be removed."],
         )
+        self.assertEqual(delete_export_tarball(parsed_url.path), parsed_url.path)
+
+    @override_settings(S3_EXPORT_BUCKET="")
+    @use_s3_backend
+    def test_tarball_upload_and_deletion_no_export_bucket(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("iago")
+        self.assertTrue(user_profile.is_realm_admin)
+
+        tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
+        with open(tarball_path, "w") as f:
+            f.write("dummy")
+
+        url = upload_export_tarball(user_profile.realm, tarball_path)
+        result = re.search(re.compile(r"/([0-9a-fA-F]{32})/"), url)
+        if result is not None:
+            hex_value = result.group(1)
+        expected_url = f"https://{bucket.name}.s3.amazonaws.com/exports/{hex_value}/{os.path.basename(tarball_path)}"
+        self.assertEqual(url, expected_url)
+
+        # Delete the tarball.
         path_id = urllib.parse.urlparse(url).path
         self.assertEqual(delete_export_tarball(path_id), path_id)

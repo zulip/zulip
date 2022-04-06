@@ -142,6 +142,7 @@ DEFAULT_AVATAR_URI: Optional[str] = None
 DEFAULT_LOGO_URI: Optional[str] = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
+S3_EXPORT_BUCKET = ""
 S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
 S3_SKIP_PROXY = True
