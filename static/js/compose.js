@@ -262,6 +262,7 @@ export function send_message(request = create_message_object()) {
 }
 
 export function enter_with_preview_open() {
+    console.log(user_settings.enter_sends);
     if (user_settings.enter_sends) {
         // If enter_sends is enabled, we attempt to send the message
         finish();
@@ -663,6 +664,7 @@ export function initialize() {
                 {
                     // place the time picker above the icon and center it horizontally
                     position: "above center",
+                    time_24hr: user_settings.twenty_four_hour_time,
                 },
             );
         }
