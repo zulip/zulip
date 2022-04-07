@@ -99,6 +99,8 @@ export function update_view_on_deactivate(user_id) {
     $button.removeClass("deactivate btn-danger");
     $button.empty().append($("<i>", {class: "fa fa-user-plus", ["aria-hidden"]: "true"}));
     $button.attr("title", "Reactivate");
+    $row.addClass("deactivated_user");
+    $row.removeClass("activated_user");
 }
 
 function update_view_on_reactivate($row) {
@@ -109,6 +111,8 @@ function update_view_on_reactivate($row) {
     $button.removeClass("btn-warning reactivate");
     $button.attr("title", "Deactivate");
     $button.empty().append($("<i>", {class: "fa fa-user-times", ["aria-hidden"]: "true"}));
+    $row.removeClass("deactivated_user");
+    $row.addClass("activated_user");
 }
 
 function get_status_field() {

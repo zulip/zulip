@@ -1910,6 +1910,18 @@ input[type="checkbox"] {
     margin-bottom: 20px;
 }
 
+#admin_users_table {
+    .deactivated_user {
+        color: hsl(0, 3%, 52%);
+    }
+}
+
+#admin_deactivated_users_table {
+    .activated_user {
+        color: hsl(0, 3%, 52%);
+    }
+}
+
 @media (width < $lg_min) {
     .user-avatar-section,
     .realm-icon-section {
