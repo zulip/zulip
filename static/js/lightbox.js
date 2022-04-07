@@ -211,7 +211,7 @@ function display_image(payload) {
     $img_container.html(img).show();
 
     // extract the image preview title
-    const preview_title = payload.title.split("\n").pop()
+    const preview_title = payload.title.split("\n").pop();
 
     $(".image-description .title")
         .text(preview_title || "N/A")
