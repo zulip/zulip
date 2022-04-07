@@ -21,7 +21,7 @@ export function show(error_html: string, $bad_input?: JQuery, alert_class = "ale
 
 export function show_not_subscribed(error_html: string, $bad_input?: JQuery): void {
     show(error_html, $bad_input, "home-error-bar");
-    $("#compose-send-status-close").hide();
+    $("#compose-send-status-controls").hide();
 }
 
 export function hide(): void {

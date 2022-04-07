@@ -321,7 +321,7 @@ export function initialize() {
             ui_util.blur_active_element();
         }
     });
-    $(".message_edit_form .send-status-close").on("click", function () {
+    $(".message_edit_form .send-status-cancel-upload").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
         const $send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $($send_status).stop(true).fadeOut(200);
@@ -678,7 +678,7 @@ export function initialize() {
 
     // COMPOSE
 
-    $("body").on("click", "#compose-send-status #compose-send-status-close", () => {
+    $("body").on("click", "#compose-send-status #compose-send-status-cancel-upload", () => {
         compose_error.hide();
     });
 

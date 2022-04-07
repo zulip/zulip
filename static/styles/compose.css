@@ -344,24 +344,10 @@ div[id^="message-edit-send-status"],
     padding-right: 2px;
 }
 
-/* Override right relative positioning inherited from .close */
-.close#compose-send-status-close {
-    right: -10px;
-}
-
-.btn#compose-send-status-cancel-upload {
+.btn#compose-send-status-cancel-upload,
+.btn.send-status-cancel-upload {
     border-radius: 4px;
     border: solid 0.1px hsla(0, 0%, 0%, 0.1);
-}
-
-/* Like .alert .close */
-.send-status-close {
-    font-size: 17px;
-    font-weight: bold;
-    color: hsl(0, 0%, 0%);
-    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
-    opacity: 0.2;
-    float: right;
 }
 
 .send-status-close:hover {

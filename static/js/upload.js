@@ -38,6 +38,8 @@ export function get_item(key, config) {
                 return $("#compose-send-status");
             case "send_status_visual":
                 return "#compose-status-visual";
+            case "send_status_controls":
+                return $("#compose-send-status-controls");
             case "send_status_cancel_button":
                 return $("#compose-send-status-cancel-upload");
             case "send_status_close_button":
@@ -45,7 +47,7 @@ export function get_item(key, config) {
             case "send_status_message":
                 return $("#compose-error-msg");
             case "send_status_upload_count":
-                return $("#compose-upload-count");
+                return $("#compose-send-status .upload-count");
             case "file_input_identifier":
                 return "#compose .file_input";
             case "source":
@@ -73,13 +75,23 @@ export function get_item(key, config) {
             case "send_status":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`);
             case "send_status_visual":
-                return `#message-edit-send-status-${CSS.escape(config.row)}`;
-            case "send_status_close_button":
-                return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(
-                    ".send-status-close",
+                return `#message-edit-send-status-${CSS.escape(config.row)} .status-visual`;
+            case "send_status_controls":
+                return $(
+                    `#message-edit-send-status-${CSS.escape(
+                        config.row,
+                    )} .send-status-cancel-upload`,
+                );
+            case "send_status_cancel_button":
+                return $(
+                    `#message-edit-send-status-${CSS.escape(
+                        config.row,
+                    )} .send-status-cancel-upload`,
                 );
             case "send_status_message":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(".error-msg");
+            case "send_status_upload_count":
+                return $(`#message-edit-send-status-${CSS.escape(config.row)} .upload-count`);
             case "file_input_identifier":
                 return `#edit_form_${CSS.escape(config.row)} .file_input`;
             case "source":
@@ -145,12 +157,16 @@ export function upload_files(uppy, config, files) {
 
     get_item("send_button", config).prop("disabled", true);
     get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
+
+    // Controls may be hidden by other alerts (see `compose_error.ts`)
+    get_item("send_status_controls", config).show();
+
     get_item("send_status_message", config).html(
         $(`
     <p>
         ${$t(
             {defaultMessage: "Uploading {uploadCount} files"},
-            {uploadCount: `<span id="compose-upload-count"> ${uppy.getFiles().length}</span>`},
+            {uploadCount: `<span class="upload-count"> ${uppy.getFiles().length}</span>`},
         )}
     </p>
     `),
@@ -256,6 +272,7 @@ export function setup_upload(config) {
 
     uppy.on("file-removed", (file) => {
         const placeholder = get_translated_status(file);
+        update_upload_count(uppy, config);
 
         compose_ui.replace_syntax(placeholder, "", get_item("textarea", config));
     });

@@ -28,6 +28,7 @@ import * as spectators from "./spectators";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as unread_ops from "./unread_ops";
+import * as upload from "./upload";
 import * as util from "./util";
 
 export function blur_compose_inputs() {
@@ -91,7 +92,15 @@ function show_box(msg_type, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#compose-send-status").removeClass(common.status_classes).hide();
+
+    // We shouldn't be hiding send status an upload is active
+    const upload_count = upload
+        .get_item("send_status_upload_count", {mode: "compose"})
+        .contents()?.[0]?.data;
+    if (upload_count === "0" || upload_count === undefined) {
+        $("#compose-send-status").removeClass(common.status_classes).hide();
+    }
+
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");

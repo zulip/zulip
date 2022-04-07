@@ -656,10 +656,14 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         edit_box_open_callback();
     }
 
-    upload.setup_upload({
+    const config = {
         mode: "edit",
         row: rows.id($row),
-    });
+    };
+
+    upload.setup_upload(config);
+
+    upload.hide_upload_status(config);
 }
 
 export function start($row, edit_box_open_callback) {
