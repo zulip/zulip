@@ -2,6 +2,7 @@ from typing import IO, Dict, Optional
 
 import django.db.utils
 import orjson
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -15,7 +16,7 @@ from zerver.tornado.django_api import send_event
 
 def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
     event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
-    send_event(realm, event, active_user_ids(realm.id))
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
 
 def check_add_realm_emoji(
@@ -64,6 +65,7 @@ def check_add_realm_emoji(
     return realm_emoji
 
 
+@transaction.atomic(durable=True)
 def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[UserProfile]) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
