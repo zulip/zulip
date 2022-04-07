@@ -19,7 +19,6 @@ const _document = {
 };
 
 const channel = mock_esm("../../static/js/channel");
-const compose_state = mock_esm("../../static/js/compose_state");
 const narrow = mock_esm("../../static/js/narrow");
 const padded_widget = mock_esm("../../static/js/padded_widget");
 const pm_list = mock_esm("../../static/js/pm_list");
@@ -32,6 +31,7 @@ set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
+const compose_state = zrequire("compose_state");
 const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
 const presence = zrequire("presence");
@@ -91,6 +91,7 @@ people.initialize_current_user(me.user_id);
 function clear_buddy_list() {
     buddy_list.populate({
         user_keys: [],
+        other_keys: [],
     });
 }
 
@@ -99,7 +100,7 @@ function test(label, f) {
         user_settings.presence_enabled = true;
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
-        // list in one pass.  We will do more refined
+        // list in one pass. We will do more refined
         // testing in the buddy_list node tests.
         helpers.override(buddy_list, "fill_screen_with_content", () => {
             buddy_list.users_render_more({
@@ -207,29 +208,26 @@ test("huddle_data.process_loaded_messages", () => {
     assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
-test("presence_list_full_update", ({override, mock_template}) => {
+test("presence_list_full_update", ({override, override_rewire, mock_template}) => {
     override(padded_widget, "update_padding", () => {});
     mock_template("presence_rows.hbs", false, (data) => {
-        assert.equal(data.presence_rows.length, 7);
+        assert.equal(data.presence_rows.length, 2);
         assert.equal(data.presence_rows[0].user_id, me.user_id);
     });
 
     $(".user-list-filter").trigger("focus");
-    compose_state.private_message_recipient = () => fred.email;
+    override_rewire(compose_state, "composing", () => true);
+    override_rewire(compose_state, "stream_name", () => "");
+    override_rewire(compose_state, "private_message_recipient", () => fred.email);
     compose_fade.set_focused_recipient("private");
 
     const key_groups = activity.build_user_sidebar();
 
     assert.deepEqual(key_groups, {
-        user_keys: [
-            me.user_id,
-            alice.user_id,
-            fred.user_id,
-            jill.user_id,
-            norbert.user_id,
-            zoe.user_id,
-            mark.user_id,
-        ],
+        other_keys: [1, 3, 5, 6, 4],
+        other_keys_title: "translated: All other users",
+        user_keys: [me.user_id, fred.user_id],
+        user_keys_title: "translated: PM recipients",
     });
 });
 
@@ -302,6 +300,7 @@ test("handlers", ({override, mock_template}) => {
         $.clear_all_elements();
         buddy_list.populate({
             user_keys: [me.user_id, alice.user_id, fred.user_id],
+            other_keys: [],
         });
         activity.set_cursor_and_filter();
 

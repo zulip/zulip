@@ -129,13 +129,14 @@ export function build_user_sidebar() {
 
     const filter_text = get_filter_text();
 
-    const key_groups = {user_keys: buddy_data.get_filtered_and_sorted_user_ids(filter_text)};
+    const key_groups_and_titles =
+        buddy_data.get_filtered_and_sorted_key_groups_and_titles(filter_text);
 
     blueslip.measure_time("buddy_list.populate", () => {
-        buddy_list.populate(key_groups);
+        buddy_list.populate(key_groups_and_titles);
     });
 
-    return key_groups; // for testing
+    return key_groups_and_titles; // for testing
 }
 
 function do_update_users_for_search() {

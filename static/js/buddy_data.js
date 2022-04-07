@@ -1,12 +1,15 @@
 import _ from "lodash";
 
 import * as blueslip from "./blueslip";
+import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
+import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
+import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as unread from "./unread";
 import * as user_status from "./user_status";
@@ -259,36 +262,39 @@ function user_is_recently_active(user_id) {
     return level(user_id) <= 2;
 }
 
-function maybe_shrink_list(user_ids, user_filter_text) {
-    if (user_ids.length <= max_size_before_shrinking) {
-        return user_ids;
+function maybe_shrink_list(ids, filter_text) {
+    if (ids.length <= max_size_before_shrinking) {
+        return {ids, is_shrunk: false};
     }
 
-    if (user_filter_text) {
+    if (filter_text) {
         // If the user types something, we want to show all
         // users matching the text, even if they have not been
         // online recently.
         // For super common letters like "s", we may
         // eventually want to filter down to only users that
-        // are in presence.get_user_ids().
-        return user_ids;
+        // are in presence.get_ids().
+        return {ids, is_shrunk: false};
     }
 
-    // We have to partition and can't just directly slice user_ids
-    // here, because we want to make sure we include all recently_active
+    // We have to partition and can't just directly slice ids here
+    // because we want to make sure we include all recently_active
     // users (and no one has guaranteed those are at the start)
-    const [recently_active_users, offline_users] = _.partition(user_ids, user_is_recently_active);
-    if (recently_active_users.length < max_size_before_shrinking) {
-        return [
-            ...recently_active_users,
-            ...offline_users.slice(0, max_size_before_shrinking - recently_active_users.length),
-        ];
+    const [recently_active_ids, offline_ids] = _.partition(ids, user_is_recently_active);
+    if (recently_active_ids.length < max_size_before_shrinking) {
+        return {
+            ids: [
+                ...recently_active_ids,
+                ...offline_ids.slice(0, max_size_before_shrinking - recently_active_ids.length),
+            ],
+            is_shrunk: true,
+        };
     }
     // else
-    return recently_active_users;
+    return {ids: recently_active_ids, is_shrunk: true};
 }
 
-function filter_user_ids(user_filter_text, user_ids) {
+function filter_ids(filter_text, user_ids) {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     user_ids = user_ids.filter((user_id) => {
@@ -314,14 +320,14 @@ function filter_user_ids(user_filter_text, user_ids) {
         return true;
     });
 
-    if (!user_filter_text) {
+    if (!filter_text) {
         return user_ids;
     }
 
     // If a query is present in "Search people", we return matches.
     user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
-    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
+    let search_terms = filter_text.toLowerCase().split(/[,|]+/);
     search_terms = search_terms.map((s) => s.trim());
 
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
@@ -331,10 +337,10 @@ function filter_user_ids(user_filter_text, user_ids) {
     return Array.from(user_id_dict.keys());
 }
 
-function get_filtered_user_id_list(user_filter_text) {
+function get_filtered_all_user_id_list(filter_text) {
     let base_user_id_list;
 
-    if (user_filter_text) {
+    if (filter_text) {
         // If there's a filter, select from all users, not just those
         // recently active.
         base_user_id_list = people.get_active_user_ids();
@@ -351,19 +357,266 @@ function get_filtered_user_id_list(user_filter_text) {
         }
     }
 
-    const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
+    const user_ids = filter_ids(filter_text, base_user_id_list);
     return user_ids;
 }
 
-export function get_filtered_and_sorted_user_ids(user_filter_text) {
-    let user_ids;
-    user_ids = get_filtered_user_id_list(user_filter_text);
-    user_ids = maybe_shrink_list(user_ids, user_filter_text);
-    return sort_users(user_ids);
+function get_user_id_list_and_title_for_narrow_state(narrow_filter) {
+    if (narrow_state.stream()) {
+        if (!narrow_state.stream_sub()) {
+            // eg if we're narrowed to a stream that does not exist.
+            return {
+                user_ids: [],
+                user_title: $t({defaultMessage: "In #Unknown Stream"}),
+            };
+        }
+        // else
+        return {
+            user_ids: get_stream_recipients_list(narrow_state.stream_sub().stream_id),
+            user_title: $t(
+                {defaultMessage: "In #{streamName}"},
+                {streamName: narrow_state.stream_sub().name},
+            ),
+        };
+    } else if (narrow_filter.has_operator("pm-with")) {
+        return {
+            user_ids: get_pm_recipients_list(narrow_filter.operands("pm-with")[0].split(",")),
+            user_title: $t({defaultMessage: "In selected conversation"}),
+        };
+    }
+    // else
+    return {};
 }
 
-export function matches_filter(user_filter_text, user_id) {
+function get_user_id_list_and_title_for_private_message(private_message_recipient) {
+    return {
+        user_ids: get_pm_recipients_list(private_message_recipient.split(",")),
+        user_title: $t({defaultMessage: "PM recipients"}),
+    };
+}
+
+function get_user_id_list_and_title_for_stream_message(stream_name) {
+    const stream = stream_data.get_sub_by_name(stream_name);
+    let user_ids = [];
+    if (stream) {
+        user_ids = get_stream_recipients_list(stream.stream_id);
+    }
+    return {
+        user_ids,
+        user_title: $t({defaultMessage: "In #{streamName}"}, {streamName: stream_name}),
+    };
+}
+
+function get_pm_recipients_list(user_emails) {
+    const user_ids = _.reduce(
+        user_emails,
+        (list, user_email) => {
+            if (people.is_valid_email_for_compose(user_email)) {
+                const user_id = people.get_user_id(user_email);
+                const person = people.get_by_user_id(user_id);
+                // if the user is bot, do not show in right sidebar.
+                if (person && !person.is_bot) {
+                    list.push(user_id);
+                }
+                return list;
+            }
+            return list;
+        },
+        [],
+    );
+
+    // Add current user to buddy list
+    const me = people.my_current_user_id();
+    if (!_.includes(user_ids, me)) {
+        user_ids.push(me);
+    }
+
+    return user_ids;
+}
+
+function get_stream_recipients_list(stream_id) {
+    let user_ids = people.get_active_user_ids();
+    user_ids = _.filter(user_ids, (user_id) => {
+        const person = people.get_by_user_id(user_id);
+        if (
+            person && // if the user is bot, do not show in right sidebar.
+            person.is_bot
+        ) {
+            return false;
+        }
+        if (stream_id && !stream_data.is_user_subscribed(stream_id, person.user_id)) {
+            return false;
+        }
+        return true;
+    });
+    return user_ids;
+}
+
+function get_user_id_list_for_compose() {
+    let users = {};
+    const stream_name = compose_state.stream_name();
+    // if compose stream matches narrow stream, we display title based on narrow.
+    if (stream_name && !(stream_name === narrow_state.stream())) {
+        users = get_user_id_list_and_title_for_stream_message(stream_name);
+    }
+    const private_message_recipient = compose_state.private_message_recipient();
+    if (private_message_recipient) {
+        users = get_user_id_list_and_title_for_private_message(private_message_recipient);
+    }
+    return users;
+}
+
+function filter_and_shrink_and_sort_user_ids(filter_text, users) {
+    users.user_ids = filter_ids(filter_text, users.user_ids);
+    return shrink_and_sort_user_ids(filter_text, users);
+}
+
+function shrink_and_sort_user_ids(filter_text, users) {
+    const maybe_shrunk_list = maybe_shrink_list(users.user_ids, filter_text);
+    if (maybe_shrunk_list.is_shrunk) {
+        return {
+            user_ids: sort_users(maybe_shrunk_list.ids),
+            user_title: users.user_title,
+            unshrunk_user_ids: users.user_ids,
+        };
+    }
+    // else
+    return {user_ids: sort_users(users.user_ids), user_title: users.user_title};
+}
+
+function get_processed_users_section_data(filter_text) {
+    const narrow_filter = narrow_state.filter();
+    if (compose_state.composing()) {
+        const users = get_user_id_list_for_compose();
+        if (users.user_title) {
+            return filter_and_shrink_and_sort_user_ids(filter_text, users);
+        }
+    }
+    if (narrow_filter) {
+        const users = get_user_id_list_and_title_for_narrow_state(narrow_filter);
+        if (users.user_title) {
+            return filter_and_shrink_and_sort_user_ids(filter_text, users);
+        }
+    }
+    // show all users list
+    const users = {
+        user_ids: get_filtered_all_user_id_list(filter_text),
+    };
+    return shrink_and_sort_user_ids(filter_text, users);
+}
+
+function get_processed_others_section_data(filter_text, user_ids) {
+    const all_user_ids = get_filtered_all_user_id_list(filter_text);
+    let other_ids = all_user_ids.filter(
+        (potential_other_id) => !user_ids.includes(potential_other_id),
+    );
+
+    let other_title;
+    if (other_ids.length) {
+        other_title = $t({defaultMessage: "All other users"});
+        other_ids = maybe_shrink_list(other_ids).ids;
+        return {other_ids: sort_users(other_ids), other_title};
+    }
+    // else
+    return {
+        other_ids: [],
+    };
+}
+
+// Please ensure that changes to get_filtered_and_sorted_key_groups_and_titles
+// are consistent with changes to does_belong_to_users_or_others_section
+export function get_filtered_and_sorted_key_groups_and_titles(filter_text) {
+    const users = get_processed_users_section_data(filter_text);
+    let user_ids;
+    if (users.unshrunk_user_ids) {
+        user_ids = users.unshrunk_user_ids;
+    } else {
+        user_ids = users.user_ids;
+    }
+    // if there's no user title, we're looking at the all users list,
+    // so there's no others section.
+    if (users.user_title) {
+        const others = get_processed_others_section_data(filter_text, user_ids);
+        const key_groups_and_titles = {
+            user_keys: users.user_ids,
+            user_keys_title: users.user_title,
+            other_keys: others.other_ids,
+            other_keys_title: others.other_title,
+        };
+        return key_groups_and_titles;
+    }
+    // else
+    return {
+        user_keys: users.user_ids,
+        other_keys: [],
+    };
+}
+
+// this function essentially replicates the logic to answer does user
+// belong to the users section or the others section from
+// get_filtered_and_sorted_key_groups_and_titles but is different in
+// that it is meant for only one user and as such is faster.
+//
+// Please ensure that changes to does_belong_to_users_or_others_section
+// are consistent with changes to get_filtered_and_sorted_key_groups_and_titles
+export function does_belong_to_users_or_others_section(user_id) {
+    if (compose_state.composing()) {
+        const stream_name = compose_state.stream_name();
+        if (stream_name) {
+            const is_subscriber = stream_data
+                .get_subscribed_streams_for_user(user_id)
+                .map((stream) => stream.name.toLowerCase())
+                .includes(stream_name.toLowerCase());
+            if (is_subscriber) {
+                return "users";
+            }
+            return "others";
+        }
+        const private_message_recipient = compose_state.private_message_recipient();
+        if (private_message_recipient) {
+            const is_recipient = private_message_recipient
+                .split(",")
+                .includes(people.get_by_user_id(user_id).email);
+            if (is_recipient) {
+                return "users";
+            }
+            return "others";
+        }
+        blueslip.error("compose_state composing but not stream or private_message");
+        return "users";
+    }
+
+    const filter = narrow_state.filter();
+    if (!filter) {
+        return "users";
+    }
+
+    if (narrow_state.stream()) {
+        const stream_name = narrow_state.stream_sub().name;
+        const is_subscriber = stream_data
+            .get_subscribed_streams_for_user(user_id)
+            .map((stream) => stream.name)
+            .includes(stream_name);
+        if (is_subscriber) {
+            return "users";
+        }
+        return "others";
+    } else if (filter.has_operator("pm-with")) {
+        const is_recipient = filter
+            .operands("pm-with")[0]
+            .split(",")
+            .includes(people.get_by_user_id(user_id).email);
+        if (is_recipient) {
+            return "users";
+        }
+        return "others";
+    }
+
+    return "users";
+}
+
+export function matches_filter(filter_text, user_id) {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
-    return filter_user_ids(user_filter_text, [user_id]).length === 1;
+    return filter_ids(filter_text, [user_id]).length === 1;
 }

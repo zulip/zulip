@@ -42,6 +42,8 @@ function hide_box() {
     $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");
     compose_fade.clear_compose();
+    compose_state.stream_name("");
+    compose_state.private_message_recipient("");
     $(".message_comp").hide();
     $("#compose_controls").show();
     compose.clear_preview_area();

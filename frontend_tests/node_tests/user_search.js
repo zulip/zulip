@@ -77,8 +77,11 @@ function test(label, f) {
 }
 
 test("clear_search", ({override}) => {
-    override(fake_buddy_list, "populate", (user_ids) => {
-        assert.deepEqual(user_ids, {user_keys: ordered_user_ids});
+    override(fake_buddy_list, "populate", (opts) => {
+        assert.deepEqual(
+            {keys: opts.user_keys, other_keys: opts.other_keys},
+            {keys: ordered_user_ids, other_keys: []},
+        );
     });
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
@@ -154,7 +157,7 @@ test("filter_user_ids", ({override}) => {
         $(".user-list-filter").val(search_text);
         const filter_text = activity.get_filter_text();
         assert.deepEqual(
-            buddy_data.get_filtered_and_sorted_user_ids(filter_text),
+            buddy_data.get_filtered_and_sorted_key_groups_and_titles(filter_text).user_keys,
             expected_user_ids,
         );
 
@@ -166,7 +169,7 @@ test("filter_user_ids", ({override}) => {
     }
 
     // Sanity check data setup.
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(), [
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_key_groups_and_titles().user_keys, [
         me.user_id,
         alice.user_id,
         fred.user_id,

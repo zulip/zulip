@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-// const {buddy_list} = require("../../static/js/buddy_list");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
