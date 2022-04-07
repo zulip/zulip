@@ -185,15 +185,11 @@ data includes:
 To restore from a manual backup, the process is basically the reverse of the above:
 
 - Install new server as normal by downloading a Zulip release tarball
-  and then using `scripts/setup/install`. You don't need
-  to run the `initialize-database` second stage which puts default
-  data into the database.
+  and then using `scripts/setup/install`. You should pass
+  `--no-init-db` because we don't need to create a new database.
 
 - Unpack to `/etc/zulip` the `settings.py` and `zulip-secrets.conf` files
   from your backups.
-
-- If you ran `initialize-database` anyway above, you'll want to run
-  `scripts/setup/postgresql-init-db` to drop the initial database first.
 
 - Restore your database from the backup.
 
@@ -343,7 +339,7 @@ cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
-# supervisorctl start all # Starts the Zulip server
+# ./scripts/start-server
 # ./manage.py reactivate_realm -r ''  # Reactivates the organization
 ```
 

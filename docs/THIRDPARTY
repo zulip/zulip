@@ -91,7 +91,7 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/assets/icons/ellipsis-v-solid.svg
+Files: static/shared/icons/ellipsis-v-solid.svg
 Copyright: 2017 Fonticons, Inc.
 License: CC-BY-4.0
 Comment: This icon is picked from Version 5.13.0 of Font Awesome
@@ -112,6 +112,11 @@ License: BSD-3-Clause
 Files: static/audio/notification_sounds/*
 Copyright: 2021 Stefan Mertens
 License: CC0-1.0
+
+Files: static/shared/icons/globe.svg
+Source: https://github.com/ionic-team/ionicons/blob/v5.5.2/src/svg/earth.svg, modified to increase the width of the globe outline.
+Copyright: 2015-present Ionic (http://ionic.io/)
+License: Expat
 
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

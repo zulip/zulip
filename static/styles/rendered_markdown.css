@@ -308,9 +308,48 @@
         position: relative;
         margin-bottom: 5px;
         margin-right: 5px;
+
+        /* Sizing CSS for inline images requires care, because images load
+           asynchronously, and browsers will unfortunately jump your
+           scroll position when elements load above the current
+           position in the message feed in a way that changes the
+           height of elements. (As of March 2022, both Firefox and
+           Chrome exhibit this problem, though in Chrome it is pretty
+           subtle).
+
+           We prevent this by setting a fixed height for inline
+           previews. 100px is chosen because we don't want images to
+           overwhelm conversation in message feeds, as it does in chat
+           tools that show images at half-screen height or larger.
+
+           If there are several images next to each other, we display
+           them in a grid format; the same considerations requires
+           that either use a scrollable region or set a fixed width
+           for images so that the browser statically knows whether
+           it'll need to overflow. We choose fixed width here. */
         height: 100px;
-        display: block !important;
-        border: none !important;
+        width: 150px;
+
+        /* Inline image containers also need an inline-block display in order
+           to implement the desired grid layout. */
+        display: inline-block;
+
+        /* Set a background for the image; the background will be visible for
+           messages whose aspect ratio is different from that of this
+           container. */
+        border: solid 1px transparent;
+        transition: background 0.3s ease;
+        background: hsla(0, 0%, 0%, 0.03);
+
+        &:hover {
+            background: hsla(0, 0%, 0%, 0.15);
+        }
+
+        a {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
     }
 
     &.rtl .twitter-image,
@@ -350,10 +389,21 @@
     .twitter-image img,
     .message_inline_image img,
     .message_inline_ref img {
-        height: auto;
-        max-height: 100%;
+        /* We use `scale-down` so that images smaller than the container are
+           neither scaled up up or cropped to fit. This preserves
+           their aspect ratio, which is often helpful. */
+        object-fit: scale-down;
+
+        /* We need to explicitly specify the image dimensions to have
+           object-fit work; likely because internally object-fit needs
+           to know the frame it is targeting, and images don't default
+           to container dimensions. */
+        height: 100%;
+        width: 100%;
+
         float: left;
         margin-right: 10px;
+        border-radius: inherit;
     }
 
     .message_inline_image img {

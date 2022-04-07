@@ -34,7 +34,7 @@ There are several possible roles in a Zulip organization.
 For details of the access control model, see [Stream
 permissions](/help/stream-permissions).  You can decide what role to
 invite a user as when you [send them an
-invitation](/help/invite-new-users#send-invitations).
+invitation](/help/invite-new-users).
 
 Organization owners can do anything an organization administrator can
 do.  For brevity, we may sometimes refer to "organization

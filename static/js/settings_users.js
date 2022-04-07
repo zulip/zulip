@@ -371,6 +371,14 @@ export function update_user_data(user_id, new_data) {
     }
 }
 
+export function redraw_bots_list() {
+    if (!bot_list_widget) {
+        return;
+    }
+
+    bot_list_widget.hard_redraw();
+}
+
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
     loading.make_indicator($("#admin_page_deactivated_users_loading_indicator"), {
@@ -435,7 +443,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-function handle_deactivation($tbody, $status_field) {
+function handle_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.
@@ -446,19 +454,20 @@ function handle_deactivation($tbody, $status_field) {
         const user_id = $row.data("user-id");
 
         function handle_confirm() {
-            const $row = get_user_info_row(user_id);
-            const $row_deactivate_button = $row.find("button.deactivate");
-            $row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-            const opts = {
-                error_continuation() {
-                    $row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
-                },
-            };
             const url = "/json/users/" + encodeURIComponent(user_id);
-            settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
+            channel.del({
+                url,
+                success() {
+                    dialog_widget.close_modal();
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
         }
 
-        confirm_deactivation(user_id, handle_confirm, false);
+        confirm_deactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -497,7 +506,7 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     });
 }
 
-function handle_reactivation($tbody, $status_field) {
+function handle_reactivation($tbody) {
     $tbody.on("click", ".reactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -505,19 +514,24 @@ function handle_reactivation($tbody, $status_field) {
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
         const user_id = Number.parseInt($row.attr("data-user-id"), 10);
-        const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-        const data = {};
 
-        const opts = {
-            success_continuation() {
-                update_view_on_reactivate($row);
-            },
-            error_continuation(xhr) {
-                ui_report.generic_row_button_error(xhr, $button_elem);
-            },
-        };
+        function handle_confirm() {
+            const $row = get_user_info_row(user_id);
+            const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+            channel.post({
+                url,
+                success() {
+                    dialog_widget.close_modal();
+                    update_view_on_reactivate($row);
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
 
-        settings_ui.do_settings_change(channel.post, url, data, $status_field, opts);
+        confirm_reactivation(user_id, handle_confirm, true);
     });
 }
 
@@ -716,8 +730,8 @@ section.active.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
     const $status_field = $("#user-field-status").expectOne();
 
-    handle_deactivation($tbody, $status_field);
-    handle_reactivation($tbody, $status_field);
+    handle_deactivation($tbody);
+    handle_reactivation($tbody);
     handle_human_form($tbody, $status_field);
 };
 
@@ -725,8 +739,8 @@ section.deactivated.handle_events = () => {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
     const $status_field = $("#deactivated-user-field-status").expectOne();
 
-    handle_deactivation($tbody, $status_field);
-    handle_reactivation($tbody, $status_field);
+    handle_deactivation($tbody);
+    handle_reactivation($tbody);
     handle_human_form($tbody, $status_field);
 };
 
@@ -735,7 +749,7 @@ section.bots.handle_events = () => {
     const $status_field = $("#bot-field-status").expectOne();
 
     handle_bot_deactivation($tbody, $status_field);
-    handle_reactivation($tbody, $status_field);
+    handle_reactivation($tbody);
     handle_bot_form($tbody, $status_field);
 };
 

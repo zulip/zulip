@@ -394,6 +394,9 @@ RATE_LIMITING_RULES = {
     "sends_email_by_ip": [
         (86400, 5),
     ],
+    "spectator_attachment_access_by_file": [
+        (86400, 1000),  # 1000 per day per file
+    ],
 }
 
 # List of domains that, when applied to a request in a Tornado process,

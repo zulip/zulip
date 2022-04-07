@@ -1,7 +1,5 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
-
 import * as activity from "./activity";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
@@ -12,6 +10,7 @@ import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
 import * as deprecated_feature_notice from "./deprecated_feature_notice";
 import * as drafts from "./drafts";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
@@ -738,7 +737,7 @@ export function process_hotkey(e, hotkey) {
     }
 
     // Prevent navigation in the background when the overlays are active.
-    if (overlays.is_active()) {
+    if (overlays.is_overlay_or_modal_open()) {
         if (event_name === "view_selected_stream" && overlays.streams_open()) {
             stream_settings_ui.view_stream();
             return true;

@@ -28,6 +28,8 @@ API](/api/send-message).
 
 1. Select a stream.
 
+{!select-stream-view-general.md!}
+
 1. Copy the stream email address under **Email address**.
 
 1. Send an email to that address.

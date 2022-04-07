@@ -167,6 +167,7 @@ from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
+    serve_file_download_backend,
     serve_file_url_backend,
     serve_local_file_unauthed,
     upload_file_backend,
@@ -632,6 +633,11 @@ i18n_urls = [
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
     path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
     path(
+        "case-studies/asciidoctor/",
+        landing_view,
+        {"template_name": "zerver/asciidoctor-case-study.html"},
+    ),
+    path(
         "for/communities/",
         landing_view,
         {"template_name": "zerver/for-communities.html"},
@@ -670,12 +676,19 @@ urls += [
         name="local_file_unauthed",
     ),
     rest_path(
+        "user_uploads/download/<realm_id_str>/<path:filename>",
+        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
+    ),
+    rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
-        GET=(serve_file_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     # This endpoint redirects to camo; it requires an exception for the
     # same reason.
-    rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
+    rest_path(
+        "thumbnail",
+        GET=(backend_serve_thumbnail, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(

@@ -1,12 +1,15 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
+
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
+import {parse_html} from "./ui_util";
 
 // For tooltips without data-tippy-content, we use the HTML content of
 // a <template> whose id is given by data-tooltip-template-id.
@@ -243,6 +246,60 @@ export function initialize() {
             }
             return true;
         },
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: ".message_inline_image > a > img",
+        appendTo: () => document.body,
+        // Add a short delay so the user can mouseover several inline images without
+        // tooltips showing and hiding rapidly
+        delay: [300, 20],
+        onShow(instance) {
+            // Some message_inline_images aren't actually images with a title,
+            // for example youtube videos, so we default to the actual href
+            const title =
+                $(instance.reference).parent().attr("aria-label") ||
+                $(instance.reference).parent().attr("href");
+            instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".image-info-wrapper > .image-description > .title",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const title = $(instance.reference).attr("aria-label");
+            const filename = $(instance.reference).prop("data-filename");
+            const $markup = $("<span>").text(title);
+            if (title !== filename) {
+                // If the image title is the same as the filename, there's no reason
+                // to show this next line.
+                const second_line = $t({defaultMessage: "File name: {filename}"}, {filename});
+                $markup.append($("<br>"), $("<span>").text(second_line));
+            }
+            instance.setContent($markup[0]);
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        // Configure tooltips for the stream_sorter_toggle buttons.
+
+        // TODO: Ideally, we'd extend this to be a common mechanism for
+        // tab switchers, with the strings living in a more normal configuration
+        // location.
+        target: ".stream_sorter_toggle .ind-tab [data-tippy-content]",
+
+        // Adjust their placement to `bottom`.
+        placement: "bottom",
+
+        // Avoid inheriting `position: relative` CSS on the stream sorter widget.
         appendTo: () => document.body,
     });
 }

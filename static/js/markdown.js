@@ -2,13 +2,8 @@ import {isValid} from "date-fns";
 import katex from "katex"; // eslint-disable-line import/no-unresolved
 import _ from "lodash";
 
-import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
-
-import * as blueslip from "./blueslip";
-import * as linkifiers from "./linkifiers";
-import * as message_store from "./message_store";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
@@ -18,14 +13,9 @@ import * as message_store from "./message_store";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
 
-// This should be initialized with a struct
-// similar to markdown_config.get_helpers().
-// See the call to markdown.initialize() in ui_init
-// for example usage.
-let helpers;
-
-// Regexes that match some of our common backend-only Markdown syntax
-const backend_only_markdown_re = [
+// If we see preview-related syntax in our content, we will need the
+// backend to render it.
+const preview_regexes = [
     // Inline image previews, check for contiguous chars ending in image suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
@@ -34,12 +24,16 @@ const backend_only_markdown_re = [
 
     // Twitter and youtube links are given previews
 
-    /\S*(?:twitter|youtube).com\/\S*/,
+    /\S*(?:twitter|youtube)\.com\/\S*/,
 ];
 
-export function translate_emoticons_to_names(text) {
+function contains_preview_link(content) {
+    return preview_regexes.some((re) => re.test(content));
+}
+
+export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     // Translates emoticons in a string to their colon syntax.
-    let translated = text;
+    let translated = src;
     let replacement_text;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
@@ -65,7 +59,7 @@ export function translate_emoticons_to_names(text) {
         return match;
     };
 
-    for (const translation of emoji.get_emoticon_translations()) {
+    for (const translation of get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -77,28 +71,44 @@ export function translate_emoticons_to_names(text) {
     return translated;
 }
 
-export function contains_backend_only_syntax(content) {
-    // Try to guess whether or not a message contains syntax that only the
-    // backend Markdown processor can correctly handle.
-    // If it doesn't, we can immediately render it client-side for local echo.
-    const markedup = backend_only_markdown_re.find((re) => re.test(content));
-
+function contains_problematic_linkifier({content, get_linkifier_map}) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const linkifier_list = linkifiers.linkifier_list;
-    const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
+    for (const re of get_linkifier_map().keys()) {
+        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
-        return regex.test(content);
-    });
-    return markedup !== undefined || false_linkifier_match !== undefined;
+        if (regex.test(content)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-export function apply_markdown(message) {
-    message_store.init_booleans(message);
+function content_contains_backend_only_syntax({content, get_linkifier_map}) {
+    // Try to guess whether or not a message contains syntax that only the
+    // backend Markdown processor can correctly handle.
+    // If it doesn't, we can immediately render it client-side for local echo.
+    return (
+        contains_preview_link(content) ||
+        contains_problematic_linkifier({content, get_linkifier_map})
+    );
+}
 
-    const options = {
+function parse_with_options({raw_content, helper_config, options}) {
+    // Given the raw markdown content of a message (raw_content)
+    // we return the HTML content (content) and flags.
+    // Our caller passes a helper_config object that has several
+    // helper functions for getting info about users, streams, etc.
+    // And it also passes in options for the marked processor.
+
+    let mentioned = false;
+    let mentioned_group = false;
+    let mentioned_wildcard = false;
+
+    const marked_options = {
+        ...options,
         userMentionHandler(mention, silently) {
             if (mention === "all" || mention === "everyone" || mention === "stream") {
                 let classes;
@@ -107,7 +117,8 @@ export function apply_markdown(message) {
                     classes = "user-mention silent";
                     display_text = mention;
                 } else {
-                    message.mentioned = true;
+                    // Wildcard mention
+                    mentioned_wildcard = true;
                     display_text = "@" + mention;
                     classes = "user-mention";
                 }
@@ -142,15 +153,15 @@ export function apply_markdown(message) {
 
                 if (full_name === undefined) {
                     // For @**|id** syntax
-                    if (!helpers.is_valid_user_id(user_id)) {
+                    if (!helper_config.is_valid_user_id(user_id)) {
                         // silently ignore invalid user id.
                         user_id = undefined;
                     } else {
-                        full_name = helpers.get_actual_name_from_user_id(user_id);
+                        full_name = helper_config.get_actual_name_from_user_id(user_id);
                     }
                 } else {
                     // For @**user|id** syntax
-                    if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                    if (!helper_config.is_valid_full_name_and_user_id(full_name, user_id)) {
                         user_id = undefined;
                         full_name = undefined;
                     }
@@ -160,7 +171,7 @@ export function apply_markdown(message) {
             if (user_id === undefined) {
                 // Handle normal syntax
                 full_name = mention;
-                user_id = helpers.get_user_id_from_name(full_name);
+                user_id = helper_config.get_user_id_from_name(full_name);
             }
 
             if (user_id === undefined) {
@@ -177,14 +188,14 @@ export function apply_markdown(message) {
 
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
-            let display_text = helpers.get_actual_name_from_user_id(user_id);
+            let display_text = helper_config.get_actual_name_from_user_id(user_id);
             let classes;
             if (silently) {
                 classes = "user-mention silent";
             } else {
-                if (helpers.my_user_id() === user_id) {
-                    message.mentioned = true;
-                    message.mentioned_me_directly = true;
+                if (helper_config.my_user_id() === user_id) {
+                    // Personal mention of current user.
+                    mentioned = true;
                 }
                 classes = "user-mention";
                 display_text = "@" + display_text;
@@ -195,7 +206,7 @@ export function apply_markdown(message) {
             )}</span>`;
         },
         groupMentionHandler(name, silently) {
-            const group = helpers.get_user_group_from_name(name);
+            const group = helper_config.get_user_group_from_name(name);
             if (group !== undefined) {
                 let display_text;
                 let classes;
@@ -205,8 +216,11 @@ export function apply_markdown(message) {
                 } else {
                     display_text = "@" + group.name;
                     classes = "user-group-mention";
-                    if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
-                        message.mentioned = true;
+                    if (
+                        helper_config.is_member_of_user_group(group.id, helper_config.my_user_id())
+                    ) {
+                        // Mentioned the current user's group.
+                        mentioned_group = true;
                     }
                 }
 
@@ -233,28 +247,41 @@ export function apply_markdown(message) {
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the
             // only side effect is the lack red flash on immediately sending the message.
-            message.mentioned = false;
-            message.mentioned_me_directly = false;
+            //
+            // A better parser would be able to just ignore mentions
+            // inside; we just set all flags to False and let the
+            // server rendering correct the message flags, to avoid a
+            // flash of mention styling.
+            mentioned = false;
+            mentioned_group = false;
+            mentioned_wildcard = false;
             return quote;
         },
     };
+
     // Our Python-Markdown processor appends two \n\n to input
-    message.content = marked(message.raw_content + "\n\n", options).trim();
-    message.is_me_message = is_status_message(message.raw_content);
+    const content = marked(raw_content + "\n\n", marked_options).trim();
+
+    // Simulate message flags for our locally rendered
+    // message. Messages the user themselves sent via the browser are
+    // always marked as read.
+    const flags = ["read"];
+    if (mentioned || mentioned_group) {
+        flags.push("mentioned");
+    }
+    if (mentioned_wildcard) {
+        flags.push("wildcard_mentioned");
+    }
+
+    return {content, flags};
 }
 
-export function add_topic_links(message) {
-    if (message.type !== "stream") {
-        message.topic_links = [];
-        return;
-    }
-    const topic = message.topic;
+export function get_topic_links({topic, get_linkifier_map}) {
+    // We export this for testing purposes, and mobile may want to
+    // use this as well in the future.
     const links = [];
-    const linkifier_list = linkifiers.linkifier_list;
 
-    for (const linkifier of linkifier_list) {
-        const pattern = linkifier.pattern;
-        const url = linkifier.url_format;
+    for (const [pattern, url] of get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -285,7 +312,8 @@ export function add_topic_links(message) {
     for (const match of links) {
         delete match.index;
     }
-    message.topic_links = links;
+
+    return links;
 }
 
 export function is_status_message(raw_content) {
@@ -298,9 +326,9 @@ function make_emoji_span(codepoint, title, alt_text) {
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
 }
 
-function handleUnicodeEmoji(unicode_emoji) {
+function handleUnicodeEmoji({unicode_emoji, get_emoji_name}) {
     const codepoint = unicode_emoji.codePointAt(0).toString(16);
-    const emoji_name = emoji.get_emoji_name(codepoint);
+    const emoji_name = get_emoji_name(codepoint);
 
     if (emoji_name) {
         const alt_text = ":" + emoji_name + ":";
@@ -311,7 +339,7 @@ function handleUnicodeEmoji(unicode_emoji) {
     return unicode_emoji;
 }
 
-function handleEmoji(emoji_name) {
+function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
     const alt_text = ":" + emoji_name + ":";
     const title = emoji_name.replace(/_/g, " ");
 
@@ -322,7 +350,7 @@ function handleEmoji(emoji_name) {
     // Otherwise we'll look at Unicode emoji to render with an emoji
     // span using the spritesheet; and if it isn't one of those
     // either, we pass through the plain text syntax unmodified.
-    const emoji_url = emoji.get_realm_emoji_url(emoji_name);
+    const emoji_url = get_realm_emoji_url(emoji_name);
 
     if (emoji_url) {
         return `<img alt="${_.escape(alt_text)}" class="emoji" src="${_.escape(
@@ -330,12 +358,26 @@ function handleEmoji(emoji_name) {
         )}" title="${_.escape(title)}">`;
     }
 
-    const codepoint = emoji.get_emoji_codepoint(emoji_name);
+    const codepoint = get_emoji_codepoint(emoji_name);
     if (codepoint) {
         return make_emoji_span(codepoint, title, alt_text);
     }
 
     return alt_text;
+}
+
+function handleLinkifier({pattern, matches, get_linkifier_map}) {
+    let url = get_linkifier_map().get(pattern);
+
+    let current_group = 1;
+
+    for (const match of matches) {
+        const back_ref = "\\" + current_group;
+        url = url.replace(back_ref, match);
+        current_group += 1;
+    }
+
+    return url;
 }
 
 function handleTimestamp(time) {
@@ -364,23 +406,23 @@ function handleTimestamp(time) {
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
-function handleStream(stream_name) {
-    const stream = helpers.get_stream_by_name(stream_name);
+function handleStream({stream_name, get_stream_by_name, stream_hash}) {
+    const stream = get_stream_by_name(stream_name);
     if (stream === undefined) {
         return undefined;
     }
-    const href = helpers.stream_hash(stream.stream_id);
+    const href = stream_hash(stream.stream_id);
     return `<a class="stream" data-stream-id="${_.escape(stream.stream_id)}" href="/${_.escape(
         href,
     )}">#${_.escape(stream.name)}</a>`;
 }
 
-function handleStreamTopic(stream_name, topic) {
-    const stream = helpers.get_stream_by_name(stream_name);
+function handleStreamTopic({stream_name, topic, get_stream_by_name, stream_topic_hash}) {
+    const stream = get_stream_by_name(stream_name);
     if (stream === undefined || !topic) {
         return undefined;
     }
-    const href = helpers.stream_topic_hash(stream.stream_id, topic);
+    const href = stream_topic_hash(stream.stream_id, topic);
     const text = `#${stream.name} > ${topic}`;
     return `<a class="stream-topic" data-stream-id="${_.escape(
         stream.stream_id,
@@ -395,13 +437,14 @@ function handleTex(tex, fullmatch) {
             // TeX syntax error
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        blueslip.error(error);
-        return undefined;
+        throw new Error(error.message);
     }
 }
 
-export function initialize(helper_config) {
-    helpers = helper_config;
+export function parse({raw_content, helper_config}) {
+    function get_linkifier_regexes() {
+        return Array.from(helper_config.get_linkifier_map().keys());
+    }
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
@@ -412,18 +455,19 @@ export function initialize(helper_config) {
     }
 
     // Configure the marked Markdown parser for our usage
-    const r = new marked.Renderer();
+    const renderer = new marked.Renderer();
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
-    r.code = (code) => fenced_code.wrap_code(code) + "\n\n";
+    renderer.code = (code) => fenced_code.wrap_code(code) + "\n\n";
 
     // Prohibit empty links for some reason.
-    const old_link = r.link;
-    r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
+    const old_link = renderer.link;
+    renderer.link = (href, title, text) =>
+        old_link.call(renderer, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match Markdown
-    r.br = function () {
+    renderer.br = function () {
         return "<br>\n";
     };
 
@@ -432,13 +476,16 @@ export function initialize(helper_config) {
     }
 
     function preprocess_translate_emoticons(src) {
-        if (!helpers.should_translate_emoticons()) {
+        if (!helper_config.should_translate_emoticons()) {
             return src;
         }
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return translate_emoticons_to_names(src);
+        return translate_emoticons_to_names({
+            src,
+            get_emoticon_translations: helper_config.get_emoticon_translations,
+        });
     }
 
     // Disable headings
@@ -463,7 +510,55 @@ export function initialize(helper_config) {
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
 
-    marked.setOptions({
+    function streamHandler(stream_name) {
+        return handleStream({
+            stream_name,
+            get_stream_by_name: helper_config.get_stream_by_name,
+            stream_hash: helper_config.stream_hash,
+        });
+    }
+
+    function streamTopicHandler(stream_name, topic) {
+        return handleStreamTopic({
+            stream_name,
+            topic,
+            get_stream_by_name: helper_config.get_stream_by_name,
+            stream_topic_hash: helper_config.stream_topic_hash,
+        });
+    }
+
+    function emojiHandler(emoji_name) {
+        return handleEmoji({
+            emoji_name,
+            get_realm_emoji_url: helper_config.get_realm_emoji_url,
+            get_emoji_codepoint: helper_config.get_emoji_codepoint,
+        });
+    }
+
+    function unicodeEmojiHandler(unicode_emoji) {
+        return handleUnicodeEmoji({
+            unicode_emoji,
+            get_emoji_name: helper_config.get_emoji_name,
+        });
+    }
+
+    function linkifierHandler(pattern, matches) {
+        return handleLinkifier({
+            pattern,
+            matches,
+            get_linkifier_map: helper_config.get_linkifier_map,
+        });
+    }
+
+    const options = {
+        get_linkifier_regexes,
+        linkifierHandler,
+        emojiHandler,
+        unicodeEmojiHandler,
+        streamHandler,
+        streamTopicHandler,
+        texHandler: handleTex,
+        timestampHandler: handleTimestamp,
         gfm: true,
         tables: true,
         breaks: true,
@@ -472,13 +567,58 @@ export function initialize(helper_config) {
         smartLists: true,
         smartypants: false,
         zulip: true,
-        emojiHandler: handleEmoji,
-        unicodeEmojiHandler: handleUnicodeEmoji,
-        streamHandler: handleStream,
-        streamTopicHandler: handleStreamTopic,
-        texHandler: handleTex,
-        timestampHandler: handleTimestamp,
-        renderer: r,
+        renderer,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
+    };
+
+    return parse_with_options({raw_content, helper_config, options});
+}
+
+// NOTE: Everything below this line is likely to be webapp-specific
+//       and won't be used by future platforms such as mobile.
+//       We may eventually move this code to a new file, but we want
+//       to wait till the dust settles a bit on some other changes first.
+
+let webapp_helpers;
+
+export function initialize(helper_config) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call setup().
+    webapp_helpers = helper_config;
+}
+
+export function apply_markdown(message) {
+    // This is generally only intended to be called by the webapp. Most
+    // other platforms should call parse().
+    const raw_content = message.raw_content;
+    const {content, flags} = parse({raw_content, helper_config: webapp_helpers});
+    message.content = content;
+    message.flags = flags;
+    message.is_me_message = is_status_message(raw_content);
+}
+
+export function add_topic_links(message) {
+    if (message.type !== "stream") {
+        message.topic_links = [];
+        return;
+    }
+    message.topic_links = get_topic_links({
+        topic: message.topic,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
     });
+}
+
+export function contains_backend_only_syntax(content) {
+    return content_contains_backend_only_syntax({
+        content,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
+    });
+}
+
+export function parse_non_message(raw_content) {
+    // Occasionally we get markdown from the server that is not technically
+    // a message, but we want to convert it to HTML. Note that we parse
+    // raw_content exactly as if it were a Zulip message, so we will
+    // handle things like mentions, stream links, and linkifiers.
+    return parse({raw_content, helper_config: webapp_helpers}).content;
 }

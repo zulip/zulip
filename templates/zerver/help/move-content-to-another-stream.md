@@ -1,19 +1,19 @@
 # Move content to another stream
 
-Organization administrators can move topics from one
-stream to another, or move a subset of messages to a topic from one
-stream to another.
+Zulip makes it possible to move messages or an entire topic to another stream.
+Organizations can [configure][move-permission-setting] which
+[roles](/help/roles-and-permissions) have permission to move messages between
+streams.
 
-Organization administrators can
-[configure who can edit topics](/help/configure-who-can-edit-topics), or turn off
-message editing entirely. See the
-[guide to message and topic editing](/help/configure-message-editing-and-deletion)
-for the details on when topic editing is allowed.
+To help others find moved content, you can have Zulip send automated
+notification messages to the source topic, the destination topic, or
+both. These notifications include:
+
+* A link to the source or destination topic.
+* How many messages were moved, or whether the whole topic was moved.
+* Who moved the content.
 
 ## Move a topic to another stream
-
-Organizations can configure which roles have permission to [move
-topics between streams][move-permission-setting].
 
 To move a topic, you must have access to both the source and
 destination streams.
@@ -26,12 +26,11 @@ destination streams.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 
-1. (Optional) Change the topic.
+1. (optional) Change the topic.
 
-1. Select whether you want automated notification messages to be sent
-   to the old location for the topic, new location for the topic, or both.
+1. Toggle whether automated notification messages should be sent.
 
-1. Click **Move topic**.
+1. Click **Confirm**.
 
 
 !!! warn ""
@@ -42,13 +41,7 @@ destination streams.
 
 {end_tabs}
 
-## Move message(s) in a topic to another stream
-
-Organizations can configure which roles have permission to [move
-topics between streams][move-permission-setting].
-
-Roles that have permission can also move only a subset of messages
-from a topic to another stream.
+## Move messages to another stream
 
 {start_tabs}
 
@@ -60,15 +53,13 @@ from a topic to another stream.
 
 1. Select the destination stream for the message from the streams dropdown list.
 
-1. (Optional) Change the topic.
+1. (optional) Change the topic.
 
-1. A dropdown with three options will appear to the right:
-**Change only this message topic**, **Change later messages to this topic**, and
-**Change previous and following messages to this topic**. Pick the appropriate
-option.
+1. Toggle whether automated notification messages should be sent.
 
-1. Select whether you want automated notification messages to be sent
-   to the old location for the topic, new location for the topic, or both.
+1. From the dropdown menu, select which messages to move:
+
+{!move-content-subset-options.md!}
 
 1. Click **Save**.
 
@@ -79,9 +70,40 @@ option.
 
 {end_tabs}
 
+## Moving content to private streams
+
+Access to messages moved to another stream will immediately be controlled by the
+access policies for the destination stream. Content moved to a private stream will
+thus appear to be deleted to users who are not subscribers of the destination stream.
+
+Content moved to a [private stream with protected history](/help/stream-permissions)
+will only be accessible to users who both:
+
+* Were subscribed to the *original* stream when the content was *sent*.
+* Are subscribed to the *destination* stream when the content is *moved*.
+
+## Moving content out of private streams
+
+In [private streams with protected history](/help/stream-permissions),
+Zulip determines whether to treat the entire topic as moved using the
+access permissions of the user requesting the topic move. This means
+that the automated notifications will report that the entire topic was
+moved if the requesting user moved every message in the topic that
+they can access, regardless of whether older messages exist that
+they cannot access.
+
+Similarly, [muted topics](/help/mute-a-topic) will be migrated to the
+new stream and topic if the requesting user moved every message in the
+topic that they can access.
+
+This model ensures that the topic editing feature cannot be abused to
+determine any information about the existence of messages or topics
+that one does not have permission to access.
+
 ## Related articles
 
 * [Rename a topic](/help/rename-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
 
 [move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams

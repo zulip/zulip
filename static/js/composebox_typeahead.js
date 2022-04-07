@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 
 import * as compose from "./compose";
@@ -10,6 +9,7 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as emoji from "./emoji";
 import * as flatpickr from "./flatpickr";
 import {$t} from "./i18n";
 import * as message_store from "./message_store";

@@ -216,9 +216,29 @@ function display_image(payload) {
     $(".image-description .title")
         .text(preview_title || "N/A")
         .prop("title", payload.title || "N/A");
+    const filename = payload.url?.split("/").pop();
+    $(".image-description .title")
+        .text(payload.title || "N/A")
+        .attr("aria-label", payload.title || "N/A")
+        .prop("data-filename", filename || "N/A");
     $(".image-description .user").text(payload.user).prop("title", payload.user);
 
-    $(".image-actions .open, .image-actions .download").attr("href", payload.source);
+    $(".image-actions .open").attr("href", payload.source);
+
+    const url = new URL(payload.source, window.location.href);
+    const same_origin = url.origin === window.location.origin;
+    if (same_origin && url.pathname.startsWith("/user_uploads/")) {
+        // Switch to the "download" handler, so S3 URLs set their Content-Disposition
+        url.pathname = "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
+        $(".image-actions .download").attr("href", url.href);
+    } else if (same_origin) {
+        $(".image-actions .download").attr("href", payload.source);
+    } else {
+        // If it's not same-origin, and we don't know how to tell the remote service to put a
+        // content-disposition on it, the download can't possibly download, just show -- so hide the
+        // element.
+        $(".image-actions .download").hide();
+    }
 }
 
 function display_video(payload) {
@@ -414,7 +434,7 @@ export function parse_image_data(image) {
     }
     const payload = {
         user: sender_full_name,
-        title: $parent.attr("title"),
+        title: $parent.attr("aria-label") || $parent.attr("href"),
         type,
         preview: preview_src,
         source,

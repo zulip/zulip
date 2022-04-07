@@ -12,7 +12,7 @@
                     <th colspan="2" width="28%">{{t "Desktop"}}</th>
                     <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
                         {{t "Mobile"}}
-                        {{#if (not page_params.realm_push_notifications_enabled) }}
+                        {{#if (not realm_push_notifications_enabled) }}
                         <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
                         {{/if}}
                     </th>

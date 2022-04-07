@@ -484,7 +484,6 @@ var inline = {
   stream: noop,
   tex: noop,
   timestamp: noop,
-  linkifiers: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -550,7 +549,6 @@ inline.zulip = merge({}, inline.breaks, {
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   timestamp: /^<time:([^>]+)>/,
-  linkifiers: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
           '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
@@ -647,8 +645,10 @@ InlineLexer.prototype.output = function(src) {
 
     // linkifier (Zulip)
     var self = this;
-    this.rules.linkifiers.forEach(function (linkifier) {
-      var ret = self.inlineReplacement(linkifier, src, function(regex, groups, match) {
+
+    const regexes = this.options.get_linkifier_regexes ? this.options.get_linkifier_regexes() : [];
+    regexes.forEach(function (regex) {
+      var ret = self.inlineReplacement(regex, src, function(regex, groups, match) {
         // Insert the created URL
         href = self.linkifier(regex, groups, match);
         if (href !== undefined) {
@@ -1416,9 +1416,6 @@ function marked(src, opt, callback) {
 
     htmlStashCounter = 0;
     htmlStash = [];
-    for (var k = 0; k < opt.preprocessors.length; k++) {
-      src = opt.preprocessors[k](src);
-    }
 
     try {
       tokens = Lexer.lex(src, opt)
@@ -1480,12 +1477,12 @@ function marked(src, opt, callback) {
     if (opt) opt = merge({}, marked.defaults, opt);
     htmlStashCounter = 0;
     htmlStash = [];
-    for (var i = 0; i < marked.defaults.preprocessors.length; i++) {
-      src = marked.defaults.preprocessors[i](src);
+    for (var i = 0; i < opt.preprocessors.length; i++) {
+      src = opt.preprocessors[i](src);
     }
     return Parser.parse(Lexer.lex(src, opt), opt);
   } catch (e) {
-    e.message += '\nPlease report this to https://github.com/chjj/marked.';
+    e.message += "\nPlease report this to https://zulip.com/development-community/";
     if ((opt || marked.defaults).silent) {
       return '<p>An error occurred:</p><pre>'
         + escape(e.message + '', true)

@@ -25,7 +25,12 @@ import re2
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    AnonymousUser,
+    PermissionsMixin,
+    UserManager,
+)
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
@@ -33,7 +38,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models import CASCADE, F, Manager, Q, Sum
+from django.db.models import CASCADE, Exists, F, Manager, OuterRef, Q, Sum
 from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
@@ -74,7 +79,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -3291,18 +3296,23 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size: int = models.IntegerField()
 
-    # The two fields below lets us avoid looking up the corresponding
-    # messages/streams to check permissions before serving these files.
+    # The two fields below serve as caches to let us avoid looking up
+    # the corresponding messages/streams to check permissions before
+    # serving these files.
+    #
+    # For both fields, the `null` state is used when a change in
+    # message permissions mean that we need to determine their proper
+    # value.
 
     # Whether this attachment has been posted to a public stream, and
     # thus should be available to all non-guest users in the
     # organization (even if they weren't a recipient of a message
     # linking to it).
-    is_realm_public: bool = models.BooleanField(default=False)
+    is_realm_public: Optional[bool] = models.BooleanField(default=False, null=True)
     # Whether this attachment has been posted to a web-public stream,
     # and thus should be available to everyone on the internet, even
     # if the person isn't logged in.
-    is_web_public: bool = models.BooleanField(default=False)
+    is_web_public: Optional[bool] = models.BooleanField(default=False, null=True)
 
     class Meta:
         abstract = True
@@ -3318,7 +3328,9 @@ class ArchivedAttachment(AbstractAttachment):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    messages: Manager = models.ManyToManyField(ArchivedMessage)
+    messages: Manager = models.ManyToManyField(
+        ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
+    )
 
 
 class Attachment(AbstractAttachment):
@@ -3351,11 +3363,73 @@ post_save.connect(flush_used_upload_space_cache, sender=Attachment)
 post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
 
 
-def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
+def validate_attachment_request_for_spectator_access(
+    realm: Realm, attachment: Attachment
+) -> Optional[bool]:
+    if attachment.realm != realm:
+        return False
+
+    # Update cached is_web_public property, if necessary.
+    if attachment.is_web_public is None:
+        # Fill the cache in a single query. This is important to avoid
+        # a potential race condition between checking and setting,
+        # where the attachment could have been moved again.
+        Attachment.objects.filter(id=attachment.id, is_web_public__isnull=True).update(
+            is_web_public=Exists(
+                Message.objects.filter(
+                    attachment=OuterRef("id"),
+                    recipient__stream__invite_only=False,
+                    recipient__stream__is_web_public=True,
+                ),
+            ),
+        )
+        attachment.refresh_from_db()
+
+    if not attachment.is_web_public:
+        return False
+
+    if settings.RATE_LIMITING:
+        try:
+            from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
+
+            rate_limit_spectator_attachment_access_by_file(attachment.path_id)
+        except RateLimited:
+            return False
+
+    return True
+
+
+def validate_attachment_request(
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    path_id: str,
+    realm: Optional[Realm] = None,
+) -> Optional[bool]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
         return None
+
+    if isinstance(maybe_user_profile, AnonymousUser):
+        assert realm is not None
+        return validate_attachment_request_for_spectator_access(realm, attachment)
+
+    user_profile = maybe_user_profile
+    assert isinstance(user_profile, UserProfile)
+
+    # Update cached is_realm_public property, if necessary.
+    if attachment.is_realm_public is None:
+        # Fill the cache in a single query. This is important to avoid
+        # a potential race condition between checking and setting,
+        # where the attachment could have been moved again.
+        Attachment.objects.filter(id=attachment.id, is_realm_public__isnull=True).update(
+            is_realm_public=Exists(
+                Message.objects.filter(
+                    attachment=OuterRef("id"),
+                    recipient__stream__invite_only=False,
+                ),
+            ),
+        )
+        attachment.refresh_from_db()
 
     if user_profile == attachment.owner:
         # If you own the file, you can access it.

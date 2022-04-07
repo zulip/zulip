@@ -857,6 +857,7 @@ h4.stream_setting_subsection_title {
 
     .stream-header {
         white-space: nowrap;
+        padding-top: 10px;
 
         .stream-name {
             display: inline-block;

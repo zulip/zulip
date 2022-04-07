@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
 import render_message_reaction from "../templates/message_reaction.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";

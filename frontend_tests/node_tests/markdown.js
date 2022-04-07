@@ -6,7 +6,6 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const example_realm_linkifiers = [
@@ -35,7 +34,7 @@ set_global("Image", Image);
 
 set_global("document", {compatMode: "CSS1Compat"});
 
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -268,18 +267,15 @@ test("marked_shared", () => {
 test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
-    assert.ok(!message.mentioned);
-    assert.ok(!message.mentioned_me_directly);
+    assert.ok(!message.flags.includes("mentioned"));
 
     message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
-    assert.ok(message.mentioned);
-    assert.ok(message.mentioned_me_directly);
+    assert.ok(message.flags.includes("mentioned"));
 
     message = {raw_content: "@**all**"};
     markdown.apply_markdown(message);
-    assert.ok(message.mentioned);
-    assert.ok(!message.mentioned_me_directly);
+    assert.ok(message.flags.includes("wildcard_mentioned"));
 });
 
 test("marked", () => {
@@ -680,77 +676,87 @@ test("message_flags", () => {
     markdown.apply_markdown(message);
 
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, true);
-
+    assert.equal(message.flags.includes("mentioned"), true);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
     input = "test @**everyone**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**stream**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.is_me_message, false);
-    assert.equal(message.mentioned, true);
-    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), true);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @all";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @everyone";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @any";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @alleycat.com";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, true);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), true);
 
     input = "test @*backend*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @**invalid_user**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_**all**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @**all**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "test @_*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 
     input = "> test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
-    assert.equal(message.mentioned, false);
+    assert.equal(message.flags.includes("wildcard_mentioned"), false);
+    assert.equal(message.flags.includes("mentioned"), false);
 });
 
 test("backend_only_linkifiers", () => {
@@ -764,10 +770,16 @@ test("backend_only_linkifiers", () => {
 });
 
 test("translate_emoticons_to_names", () => {
+    const get_emoticon_translations = emoji.get_emoticon_translations;
+
+    function translate_emoticons_to_names(src) {
+        return markdown.translate_emoticons_to_names({src, get_emoticon_translations});
+    }
+
     // Simple test
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
-    const result = markdown.translate_emoticons_to_names(test_text);
+    const result = translate_emoticons_to_names(test_text);
     assert.equal(result, expected);
 
     // Extensive tests.
@@ -806,10 +818,14 @@ test("translate_emoticons_to_names", () => {
                 expected: `Hello ${full_name}!`,
             },
         ]) {
-            const result = markdown.translate_emoticons_to_names(original);
+            const result = translate_emoticons_to_names(original);
             assert.equal(result, expected);
         }
     }
+});
+
+test("parse_non_message", () => {
+    assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
 });
 
 test("missing unicode emojis", ({override_rewire}) => {
@@ -826,12 +842,13 @@ test("missing unicode emojis", ({override_rewire}) => {
         assert.equal(codepoint, "1f6b2");
         // return undefined
     });
+
+    markdown.initialize(markdown_config.get_helpers());
     markdown.apply_markdown(message);
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
 
 test("katex_throws_unexpected_exceptions", () => {
-    blueslip.expect("error", "Error: some-exception");
     const message = {raw_content: "$$a$$"};
     with_field_rewire(
         markdown,
@@ -842,7 +859,11 @@ test("katex_throws_unexpected_exceptions", () => {
             },
         },
         () => {
-            markdown.apply_markdown(message);
+            assert.throws(() => markdown.apply_markdown(message), {
+                name: "Error",
+                message:
+                    "some-exception\nPlease report this to https://zulip.com/development-community/",
+            });
         },
     );
 });

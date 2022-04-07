@@ -31,7 +31,6 @@ mock_esm("../../static/js/ui_report", {
 const channel = mock_esm("../../static/js/channel");
 const message_helper = mock_esm("../../static/js/message_helper");
 const message_lists = mock_esm("../../static/js/message_lists");
-const message_store = mock_esm("../../static/js/message_store");
 const message_util = mock_esm("../../static/js/message_util");
 const pm_list = mock_esm("../../static/js/pm_list");
 const stream_list = mock_esm("../../static/js/stream_list", {
@@ -119,13 +118,12 @@ function config_fake_channel(conf) {
 function config_process_results(messages) {
     const self = {};
 
-    const messages_processed_for_bools = [];
+    const messages_processed_for_new = [];
 
-    message_store.set_message_booleans = (message) => {
-        messages_processed_for_bools.push(message);
+    message_helper.process_new_message = (message) => {
+        messages_processed_for_new.push(message);
+        return message;
     };
-
-    message_helper.process_new_message = (message) => message;
 
     message_util.do_unread_count_updates = (arg) => {
         assert.deepEqual(arg, messages);
@@ -141,7 +139,7 @@ function config_process_results(messages) {
     pm_list.update_private_messages = noop;
 
     self.verify = () => {
-        assert.deepEqual(messages_processed_for_bools, messages);
+        assert.deepEqual(messages_processed_for_new, messages);
     };
 
     return self;

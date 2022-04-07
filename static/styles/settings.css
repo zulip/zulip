@@ -8,14 +8,18 @@ label {
 
 label,
 h4,
-h3 {
+h3,
+/* We need settings-section-title here because some legacy settings
+   widgets use a <div> with this class for their heading. */
+.settings-section-title {
     a {
         color: inherit;
     }
 
     .fa-question-circle-o {
         top: 1px;
-        opacity: 0.4;
+        /* This should match .settings-info-icon. */
+        opacity: 0.6;
         position: relative;
 
         &:hover {
@@ -24,8 +28,32 @@ h3 {
     }
 }
 
-h3 .fa-question-circle-o {
-    left: 5px;
+/* TODO: This should ideally be added to help_link_widget.hbs,
+   allowing us to deduplicate at least the opacity CSS with the
+   fa-question-circle-o logic above. */
+.settings-info-icon {
+    padding-left: 3px;
+    opacity: 0.6;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.email-change-form,
+.user-name-section {
+    .settings-info-icon {
+        position: relative;
+        top: 2px;
+        left: 1px;
+    }
+}
+
+h3,
+.settings-section-title {
+    .fa-question-circle-o {
+        left: 5px;
+    }
 }
 
 .new-style {
@@ -235,20 +263,6 @@ h3 .fa-question-circle-o {
 td .button {
     margin: 2px 0;
     box-shadow: none;
-}
-
-.settings-info-icon {
-    padding-left: 3px;
-    opacity: 0.9;
-}
-
-.email-change-form,
-.user-name-section {
-    .settings-info-icon {
-        position: relative;
-        top: 2px;
-        left: 1px;
-    }
 }
 
 .settings-section {
@@ -697,13 +711,6 @@ input[type="checkbox"] {
 .admin-realm-message-retention-days {
     width: 5ch;
     text-align: right;
-}
-
-#account-settings-status {
-    text-align: center;
-    width: 50%;
-    margin: auto;
-    margin-bottom: 20px;
 }
 
 .add-new-emoji-box,

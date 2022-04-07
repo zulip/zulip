@@ -173,10 +173,6 @@ export function insert_local_message(message_request, local_id_float) {
     // Keep this in sync with changes to compose.create_message_object
     const message = {...message_request};
 
-    // Locally delivered messages cannot be unread (since we sent them), nor
-    // can they alert the user.
-    message.unread = false;
-
     message.raw_content = message.content;
 
     // NOTE: This will parse synchronously. We're not using the async pipeline
@@ -196,6 +192,7 @@ export function insert_local_message(message_request, local_id_float) {
     waiting_for_ack.set(message.local_id, message);
 
     message.display_recipient = build_display_recipient(message);
+
     insert_message(message);
     return message;
 }

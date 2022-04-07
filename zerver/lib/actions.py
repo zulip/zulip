@@ -221,6 +221,7 @@ from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions, is_widget_message
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     Client,
     CustomProfileField,
@@ -753,6 +754,17 @@ def do_create_user(
             default_stream_groups=default_stream_groups,
             realm_creation=realm_creation,
         )
+
+    if realm_creation:
+        assert realm.signup_notifications_stream is not None
+        bulk_add_subscriptions(
+            realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
+        )
+
+        from zerver.lib.onboarding import send_initial_realm_messages
+
+        send_initial_realm_messages(realm)
+
     return user_profile
 
 
@@ -5184,6 +5196,17 @@ def do_change_stream_permission(
 
         event_time = timezone_now()
         if old_invite_only_value != stream.invite_only:
+            # Reset the Attachment.is_realm_public cache for all
+            # messages in the stream whose permissions were changed.
+            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_realm_public=None
+            )
+            # We need to do the same for ArchivedAttachment to avoid
+            # bugs if deleted attachments are later restored.
+            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_realm_public=None
+            )
+
             RealmAuditLog.objects.create(
                 realm=stream.realm,
                 acting_user=acting_user,
@@ -5216,6 +5239,17 @@ def do_change_stream_permission(
             )
 
         if old_is_web_public_value != stream.is_web_public:
+            # Reset the Attachment.is_realm_public cache for all
+            # messages in the stream whose permissions were changed.
+            Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_web_public=None
+            )
+            # We need to do the same for ArchivedAttachment to avoid
+            # bugs if deleted attachments are later restored.
+            ArchivedAttachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
+                is_web_public=None
+            )
+
             RealmAuditLog.objects.create(
                 realm=stream.realm,
                 acting_user=acting_user,
@@ -5421,6 +5455,11 @@ def send_change_stream_description_notification(
     user_mention = silent_mention_syntax_for_user(acting_user)
 
     with override_language(stream.realm.default_language):
+        if new_description == "":
+            new_description = "*" + _("No description.") + "*"
+        if old_description == "":
+            old_description = "*" + _("No description.") + "*"
+
         notification_string = (
             _("{user} changed the description for this stream.").format(user=user_mention)
             + "\n\n* **"
@@ -5593,6 +5632,27 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
 
 
+def setup_realm_internal_bots(realm: Realm) -> None:
+    """Create this realm's internal bots.
+
+    This function is idempotent; it does nothing for a bot that
+    already exists.
+    """
+    internal_bots = [
+        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
+        for bot in settings.REALM_INTERNAL_BOTS
+    ]
+    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
+    bots = UserProfile.objects.filter(
+        realm=realm,
+        email__in=[bot_info[1] for bot_info in internal_bots],
+        bot_owner__isnull=True,
+    )
+    for bot in bots:
+        bot.bot_owner = bot
+        bot.save()
+
+
 def do_create_realm(
     string_id: str,
     name: str,
@@ -5701,6 +5761,8 @@ def do_create_realm(
         # If the signups stream hasn't been created in the admin
         # realm, don't auto-create it to send to it; just do nothing.
         pass
+
+    setup_realm_internal_bots(realm)
     return realm
 
 
@@ -6527,7 +6589,7 @@ def maybe_send_resolve_topic_notifications(
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
     # should be eligible for this message being managed as unread.
-    affected_participant_ids = (set(message.sender_id for message in changed_messages)) | set(
+    affected_participant_ids = {message.sender_id for message in changed_messages} | set(
         Reaction.objects.filter(message__in=changed_messages).values_list(
             "user_profile_id", flat=True
         )
@@ -7012,6 +7074,24 @@ def do_update_message(
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
+            # Reset the Attachment.is_*_public caches for all messages
+            # moved to another stream with different access permissions.
+            if new_stream.invite_only != stream_being_edited.invite_only:
+                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_realm_public=None,
+                )
+                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_realm_public=None,
+                )
+
+            if new_stream.is_web_public != stream_being_edited.is_web_public:
+                Attachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_web_public=None,
+                )
+                ArchivedAttachment.objects.filter(messages__in=changed_message_ids).update(
+                    is_web_public=None,
+                )
+
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=target_message)
 
@@ -7091,52 +7171,12 @@ def do_update_message(
 
             users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
 
-    # Migrate muted topic configuration in the following circumstances:
-    #
-    # * If propagate_mode is change_all, do so unconditionally.
-    #
-    # * If propagate_mode is change_later, it's likely that we want to
-    #   move these only when it appears that the intent is to move
-    #   most of the topic, not just the last 1-2 messages which may
-    #   have been "off topic". At present we do so unconditionally.
-    #
-    # * Never move muted topic configuration with change_one.
-    #
-    # We may want more complex behavior in cases where one appears to
-    # be merging topics (E.g. there are existing messages in the
-    # target topic).
-    #
-    # Moving a topic to another stream is complicated in that we want
-    # to avoid creating a UserTopic row for the user in a stream that
-    # they don't have access to; doing so could leak information about
-    # the existence of a private stream to some users. See the
-    # moved_all_visible_messages below for related details.
-    #
-    # So for now, we require new_stream=None for this feature.
-    if topic_name is not None and propagate_mode != "change_one" and new_stream is None:
+    # UserTopic updates and the content of notifications depend on
+    # whether we've moved the entire topic, or just part of it. We
+    # make that determination here.
+    moved_all_visible_messages = False
+    if topic_name is not None or new_stream is not None:
         assert stream_being_edited is not None
-        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
-            # TODO: Ideally, this would be a bulk update operation,
-            # because we are doing database operations in a loop here.
-            #
-            # This loop is only acceptable in production because it is
-            # rare for more than a few users to have muted an
-            # individual topic that is being moved; as of this
-            # writing, no individual topic in Zulip Cloud had been
-            # muted by more than 100 users.
-
-            # We call remove_topic_mute rather than do_unmute_topic to
-            # avoid sending two events with new muted topics in
-            # immediate succession; this is correct only because
-            # muted_topics events always send the full set of topics.
-            remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
-            do_mute_topic(muting_user, stream_being_edited, topic_name)
-
-    send_event(user_profile.realm, event, users_to_be_notified)
-
-    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
-        # Notify users that the topic was moved.
-        changed_messages_count = len(changed_messages)
 
         if propagate_mode == "change_all":
             moved_all_visible_messages = True
@@ -7165,6 +7205,60 @@ def do_update_message(
                 user_profile, unmoved_messages, stream=stream_being_edited
             )
             moved_all_visible_messages = len(visible_unmoved_messages) == 0
+
+    # Migrate muted topic configuration in the following circumstances:
+    #
+    # * If propagate_mode is change_all, do so unconditionally.
+    #
+    # * If propagate_mode is change_later or change_one, do so when
+    #   the acting user has moved the entire topic (as visible to them).
+    #
+    # This rule corresponds to checking moved_all_visible_messages.
+    #
+    # We may want more complex behavior in cases where one appears to
+    # be merging topics (E.g. there are existing messages in the
+    # target topic).
+    if moved_all_visible_messages:
+        assert stream_being_edited is not None
+        assert topic_name is not None or new_stream is not None
+
+        for muting_user in get_users_muting_topic(stream_being_edited.id, orig_topic_name):
+            # TODO: Ideally, this would be a bulk update operation,
+            # because we are doing database operations in a loop here.
+            #
+            # This loop is only acceptable in production because it is
+            # rare for more than a few users to have muted an
+            # individual topic that is being moved; as of this
+            # writing, no individual topic in Zulip Cloud had been
+            # muted by more than 100 users.
+
+            if new_stream is not None and muting_user.id in delete_event_notify_user_ids:
+                # If the messages are being moved to a stream the user
+                # cannot access, then we treat this as the
+                # messages/topic being deleted for this user. This is
+                # important for security reasons; we don't want to
+                # give users a UserTopic row in a stream they cannot
+                # access.  Unmute the topic for such users.
+                do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
+            else:
+                # Otherwise, we move the muted topic record for the user.
+                # We call remove_topic_mute rather than do_unmute_topic to
+                # avoid sending two events with new muted topics in
+                # immediate succession; this is correct only because
+                # muted_topics events always send the full set of topics.
+                remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
+                do_mute_topic(
+                    muting_user,
+                    new_stream if new_stream is not None else stream_being_edited,
+                    topic_name if topic_name is not None else orig_topic_name,
+                    ignore_duplicate=True,
+                )
+
+    send_event(user_profile.realm, event, users_to_be_notified)
+
+    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
+        # Notify users that the topic was moved.
+        changed_messages_count = len(changed_messages)
 
         old_thread_notification_string = None
         if send_notification_to_old_thread:
@@ -7943,10 +8037,18 @@ def do_mute_topic(
     stream: Stream,
     topic: str,
     date_muted: Optional[datetime.datetime] = None,
+    ignore_duplicate: bool = False,
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
-    add_topic_mute(user_profile, stream.id, stream.recipient_id, topic, date_muted)
+    add_topic_mute(
+        user_profile,
+        stream.id,
+        stream.recipient_id,
+        topic,
+        date_muted,
+        ignore_duplicate=ignore_duplicate,
+    )
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 

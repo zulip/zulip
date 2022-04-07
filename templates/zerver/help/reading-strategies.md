@@ -37,9 +37,9 @@ on.
 
 * Click on a topic to narrow to messages from that topic.
 
-You can also get to a stream with `q` (stream search), by clicking on the
-magnifying glass next to `STREAMS`, or by using the autocomplete in
-[search](/help/search-for-messages).
+You can also search for a stream by clicking on **STREAMS** in the
+left sidebar, or using the `q` [keyboard
+shortcut](/help/keyboard-shortcuts).
 
 ## All messages
 

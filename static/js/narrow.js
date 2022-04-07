@@ -13,6 +13,7 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
+import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
 import * as message_lists from "./message_lists";
@@ -204,13 +205,11 @@ export function activate(raw_operators, opts) {
     */
 
     const start_time = new Date();
-
-    reset_ui_state();
+    const was_narrowed_already = narrow_state.active();
 
     // Since narrow.activate is called directly from various
     // places in our code without passing through hashchange,
     // we need to check if the narrow is allowed for spectator here too.
-
     if (
         page_params.is_spectator &&
         raw_operators.length &&
@@ -222,39 +221,12 @@ export function activate(raw_operators, opts) {
         return;
     }
 
-    if (recent_topics_util.is_visible()) {
-        recent_topics_ui.hide();
-    } else {
-        // If recent topics was not visible, then we are switching
-        // from another message list view. Save the scroll position in
-        // that message list, so that we can restore it if/when we
-        // later navigate back to that view.
-        save_pre_narrow_offset_for_reload();
-    }
-
-    const was_narrowed_already = narrow_state.active();
-    // most users aren't going to send a bunch of a out-of-narrow messages
-    // and expect to visit a list of narrows, so let's get these out of the way.
-    notifications.clear_compose_notifications();
-
-    // Open tooltips are only interesting for current narrow,
-    // so hide them when activating a new one.
-    $(".tooltip").hide();
-
+    // The empty narrow is the home view; so deactivate any narrow if
+    // no operators were specified.
     if (raw_operators.length === 0) {
         deactivate();
         return;
     }
-    const filter = new Filter(raw_operators);
-    const operators = filter.operators();
-
-    update_narrow_title(filter);
-
-    blueslip.debug("Narrowed", {
-        operators: operators.map((e) => e.operator),
-        trigger: opts ? opts.trigger : undefined,
-        previous_id: message_lists.current.selected_id(),
-    });
 
     opts = {
         then_select_id: -1,
@@ -270,6 +242,9 @@ export function activate(raw_operators, opts) {
         final_select_id: undefined,
     };
 
+    const filter = new Filter(raw_operators);
+    const operators = filter.operators();
+
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
@@ -278,6 +253,166 @@ export function activate(raw_operators, opts) {
     if (filter.has_operator("id")) {
         id_info.target_id = Number.parseInt(filter.operands("id")[0], 10);
     }
+
+    // Narrow with near / id operator. There are two possibilities:
+    // * The user is clicking a permanent link to a conversation, in which
+    //   case we want to look up the anchor message and see if it has moved.
+    // * The user did a search for something like stream:foo topic:bar near:1
+    //   (or some other ID that is not an actual message in the topic).
+    //
+    // We attempt the match the stream and topic with that of the
+    // message in case the message was moved after the link was
+    // created. This ensures near / id links work and will redirect
+    // correctly if the topic was moved (including being resolved).
+    if (id_info.target_id && filter.has_operator("stream") && filter.has_operator("topic")) {
+        const target_message = message_store.get(id_info.target_id);
+
+        function adjusted_operators_if_moved(operators, message) {
+            const adjusted_operators = [];
+            let operators_changed = false;
+
+            for (const operator of operators) {
+                const adjusted_operator = {...operator};
+                if (
+                    operator.operator === "stream" &&
+                    !util.lower_same(operator.operand, message.display_recipient)
+                ) {
+                    adjusted_operator.operand = message.display_recipient;
+                    operators_changed = true;
+                }
+
+                if (
+                    operator.operator === "topic" &&
+                    !util.lower_same(operator.operand, message.topic)
+                ) {
+                    adjusted_operator.operand = message.topic;
+                    operators_changed = true;
+                }
+
+                adjusted_operators.push(adjusted_operator);
+            }
+
+            if (!operators_changed) {
+                return null;
+            }
+
+            return adjusted_operators;
+        }
+
+        if (target_message) {
+            // If we have the target message ID for the narrow in our
+            // local cache, and the target message has been moved from
+            // the stream/topic pair that was requested to some other
+            // location, then we should retarget this narrow operation
+            // to where the message is located now.
+            const narrow_topic = filter.operands("topic")[0];
+            const narrow_stream_name = filter.operands("stream")[0];
+            const narrow_stream_id = stream_data.get_sub(narrow_stream_name).stream_id;
+            const narrow_dict = {stream_id: narrow_stream_id, topic: narrow_topic};
+
+            const narrow_exists_in_edit_history =
+                message_edit.stream_and_topic_exist_in_edit_history(
+                    target_message,
+                    narrow_stream_id,
+                    narrow_topic,
+                );
+
+            // It's possible for a message to have moved to another
+            // topic and then moved back to the current topic. In this
+            // situation, narrow_exists_in_edit_history will be true,
+            // but we don't need to redirect the narrow.
+            const narrow_matches_target_message = util.same_stream_and_topic(
+                target_message,
+                narrow_dict,
+            );
+
+            if (
+                !narrow_matches_target_message &&
+                (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
+            ) {
+                const adjusted_operators = adjusted_operators_if_moved(
+                    raw_operators,
+                    target_message,
+                );
+                if (adjusted_operators !== null) {
+                    activate(adjusted_operators, {
+                        ...opts,
+                        // Update the URL fragment to reflect the redirect.
+                        change_hash: true,
+                    });
+                    return;
+                }
+            }
+        } else if (!opts.fetched_target_message) {
+            // If we don't have the target message ID locally and
+            // haven't attempted to fetch it, then we ask the server
+            // for it.
+            channel.get({
+                url: `/json/messages/${id_info.target_id}`,
+                idempotent: true,
+                success(data) {
+                    // After the message is fetched, we make the
+                    // message locally available and then call
+                    // narrow.activate recursively, setting a flag to
+                    // indicate we've already done this.
+                    message_helper.process_new_message(data.message);
+                    activate(raw_operators, {
+                        ...opts,
+                        fetched_target_message: true,
+                    });
+                },
+                error() {
+                    // Message doesn't exist or user doesn't have
+                    // access to the target message ID. This will
+                    // happen, for example, if a user types
+                    // `stream:foo topic:bar near:1` into the search
+                    // box. No special rewriting is required, so call
+                    // narrow.activate recursively.
+                    activate(raw_operators, {
+                        fetched_target_message: true,
+                        ...opts,
+                    });
+                },
+            });
+
+            // The channel.get will call narrow.activate recursively
+            // from a continuation unconditionally; the correct thing
+            // to do here is return.
+            return;
+        }
+    }
+
+    // IMPORTANT: No code that modifies UI state should appear above
+    // this point. This is important to prevent calling such functions
+    // more than once in the event that we call narrow.activate
+    // recursively.
+    reset_ui_state();
+
+    if (recent_topics_util.is_visible()) {
+        recent_topics_ui.hide();
+    } else {
+        // If recent topics was not visible, then we are switching
+        // from another message list view. Save the scroll position in
+        // that message list, so that we can restore it if/when we
+        // later navigate back to that view.
+        save_pre_narrow_offset_for_reload();
+    }
+
+    // most users aren't going to send a bunch of a out-of-narrow messages
+    // and expect to visit a list of narrows, so let's get these out of the way.
+    notifications.clear_compose_notifications();
+
+    // Open tooltips are only interesting for current narrow,
+    // so hide them when activating a new one.
+    $(".tooltip").hide();
+
+    update_narrow_title(filter);
+
+    blueslip.debug("Narrowed", {
+        operators: operators.map((e) => e.operator),
+        trigger: opts ? opts.trigger : undefined,
+        previous_id: message_lists.current.selected_id(),
+    });
 
     if (opts.then_select_id > 0) {
         // We override target_id in this case, since the user could be

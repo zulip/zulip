@@ -20,6 +20,8 @@
         <input class="custom_user_field_value datepicker" data-field-id="{{ field.id }}" type="text"
           value="{{ field_value.value }}" />
         <span class="remove_date"><i class="fa fa-close"></i></span>
+        {{else if is_url_field }}
+        <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="2048" />
         {{else}}
         <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{/if}}

@@ -219,6 +219,61 @@ prefix when you think it's time for someone else to review your work.
 [git-guide]: https://zulip.readthedocs.io/en/latest/git/
 [git-guide-make-pr]: https://zulip.readthedocs.io/en/latest/git/pull-requests.html
 
+### Stages of a pull request
+
+Your pull request will likely go through several stages of review.
+
+1. If your PR makes user-facing changes, the UI and user experience may be
+   reviewed early on, without reference to the code. You will get feedback on
+   any user-facing bugs in the implementation. To minimize the number of review
+   round-trips, make sure to [thoroughly
+   test](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#manual-testing)
+   your own PR prior to asking for review.
+2. There may be choices made in the implementation that the reviewer
+   will ask you to revisit. This process will go more smoothly if you
+   specifically call attention to the decisions you made while
+   drafting the PR and any points about which you are uncertain. The
+   PR description and comments on your own PR are good ways to do this.
+3. Oftentimes, seeing an initial implementation will make it clear that the
+   product design for a feature needs to be revised, or that additional changes
+   are needed. The reviewer may therefore ask you to amend or change the
+   implementation. Some changes may be blockers for getting the PR merged, while
+   others may be improvements that can happen afterwards. Feel free to ask if
+   it's unclear which type of feedback you're getting. (Follow-ups can be a
+   great next issue to work on!)
+4. In addition to any UI/user experience review, all PRs will go through one or
+   more rounds of code review. Your code may initially be [reviewed by other
+   contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
+   This helps us make good use of project maintainers' time, and helps you make
+   progress on the PR by getting more frequent feedback. A project maintainer
+   may leave a comment asking someone with expertise in the area you're working
+   on to review your work.
+5. Final code review and integration for server and webapp PRs is generally done
+   by `@timabbott`.
+
+#### How to help move the review process forward
+
+The key to keeping your review moving through the review process is to:
+
+- Address _all_ the feedback to the best of your ability.
+- Make it clear when the requested changes have been made
+  and you believe it's time for another look.
+- Make it as easy as possible to review the changes you made.
+
+In order to do this, when you believe you have addressed the previous round of
+feedback on your PR as best you can, post an comment asking reviewers to take
+another look. Your comment should make it easy to understand what has been done
+and what remains by:
+
+- Summarizing the changes made since the last review you received.
+- Highlighting remaining questions or decisions, with links to any relevant
+  chat.zulip.org threads.
+- Providing updated screenshots and information on manual testing if
+  appropriate.
+
+The easier it is to review your work, the more likely you are to receive quick
+feedback.
+
 ### Beyond the first issue
 
 To find a second issue to work on, we recommend looking through issues with the same
@@ -252,25 +307,18 @@ labels.
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
-  2. If all the feedback has been addressed, did you leave a comment explaining that
-     you have done so and **requesting another review**? If not, it may not be a
-     clear to project maintainers that your PR is ready for another look.
-  3. It is common for PRs to require **multiple rounds of review**. For example,
-     prior to getting code review from project maintainers, you may receive
-     feedback on the UI (without regard for the implementation), and your code
-     may be [reviewed by other
-     contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
-     This helps us make good use of project maintainers' time, and helps you
-     make progress on the PR by getting more frequent feedback.
+  2. If all the feedback has been addressed, did you [leave a
+     comment](https://zulip.readthedocs.io/en/latest/overview/contributing.html#how-to-help-move-the-review-process-forward)
+     explaining that you have done so and **requesting another review**? If not,
+     it may not be clear to project maintainers or reviewers that your PR is
+     ready for another look.
+  3. There may be a pause between initial rounds of review for your PR and final
+     review by project maintainers. This is normal, and we encourage you to **work
+     on other issues** while you wait.
   4. If you think the PR is ready and haven't seen any updates for a couple
-     of weeks, it can be helpful to post a **comment summarizing your
-     understanding of the state of the review process**. Your comment should
-     make it easy to understand what has been done and what remains by:
-     - Summarizing the changes made since the last review you received.
-     - Highlighting remaining questions or decisions, with links to any
-       relevant chat.zulip.org threads.
-     - Providing updated screenshots and information on manual testing if
-       appropriate.
+     of weeks, it can be helpful to **leave another comment**. Summarize the
+     overall state of the review process and your work, and indicate that you
+     are waiting for a review.
   5. Finally, **Zulip project maintainers are people too**! They may be busy
      with other work, and sometimes they might even take a vacation. ;) It can
      occasionally take a few weeks for a PR in the final stages of the review

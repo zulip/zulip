@@ -233,12 +233,11 @@ def send_apple_push_notification(
             result = apns_context.loop.run_until_complete(
                 apns_context.apns.send_notification(request)
             )
-        except aioapns.exceptions.ConnectionError as e:
-            logger.warning(
-                "APNs: ConnectionError sending for user %s to device %s: %s",
+        except aioapns.exceptions.ConnectionError:
+            logger.error(
+                "APNs: ConnectionError sending for user %s to device %s; check certificate expiration",
                 user_identity,
                 device.token,
-                e.__class__.__name__,
             )
             continue
 

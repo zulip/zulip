@@ -499,29 +499,6 @@ EOF
     fi
 fi
 
-if has_class "zulip::postgresql_common" && [ -z "$NO_INIT_DB" ]; then
-    "$ZULIP_PATH"/scripts/setup/postgresql-init-db
-fi
-
-if has_class "zulip::app_frontend_base"; then
-    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
-    mv "$ZULIP_PATH" "$deploy_path"
-    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
-    ln -nsf "$deploy_path" /home/zulip/deployments/next
-    ln -nsf "$deploy_path" /home/zulip/deployments/current
-    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
-    mkdir -p "$deploy_path"/prod-static/serve
-    cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
-    chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
-
-    if ! [ -e "/home/zulip/prod-static/generated" ]; then
-        # If we're installing from a Git checkout, we need to run
-        # `tools/update-prod-static` in order to build the static
-        # assets.
-        su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
-    fi
-fi
-
 # Set up a basic .gitconfig for the 'zulip' user
 if [ -n "$ZULIP_ADMINISTRATOR" ]; then
     (
@@ -531,21 +508,54 @@ if [ -n "$ZULIP_ADMINISTRATOR" ]; then
     )
 fi
 
+if ! has_class "zulip::app_frontend_base"; then
+    set +x
+    cat <<EOF
+
+Success!
+
+Not configuring PostgreSQL, or /home/zulip/deployments, because this
+is not a front-end install.
+
+EOF
+    exit 0
+fi
+
+# Frontend deploys use /home/zulip/deployments; without this, the
+# install directory is also only readable by root.
+deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+mv "$ZULIP_PATH" "$deploy_path"
+ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
+ln -nsf "$deploy_path" /home/zulip/deployments/next
+ln -nsf "$deploy_path" /home/zulip/deployments/current
+ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
+mkdir -p "$deploy_path"/prod-static/serve
+cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
+chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
+
+if ! [ -e "/home/zulip/prod-static/generated" ]; then
+    # If we're installing from a Git checkout, we need to run
+    # `tools/update-prod-static` in order to build the static
+    # assets.
+    su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
+fi
+
 if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 
- Success!
+Success!
 
- Stopping because --no-init-db was passed.
- To complete the installation, configure PostgreSQL and then run:
+Stopping because --no-init-db was passed.  To complete the
+installation, configure PostgreSQL by creating the database and
+database user, and then run:
 
    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database'
    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 EOF
     exit 0
+else
+    /home/zulip/deployments/current/scripts/setup/create-database
+    su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
+    su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'
 fi
-
-su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
-
-su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

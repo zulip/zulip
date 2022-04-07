@@ -77,6 +77,14 @@ class MutedUsersTests(ZulipTestCase):
         result = self.api_post(hamlet, url)
         self.assert_json_error(result, "User already muted")
 
+        # Verify the error handling for the database level
+        # IntegrityError we'll get with a race between two processes
+        # trying to mute the user.  To do this, we patch the
+        # get_mute_object function to always return None.
+        with mock.patch("zerver.views.muting.get_mute_object", return_value=None):
+            result = self.api_post(hamlet, url)
+            self.assert_json_error(result, "User already muted")
+
     def _test_add_muted_user_valid_data(self, deactivate_user: bool = False) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)

@@ -1733,6 +1733,8 @@ div.focused_table {
 
     .zulip-icon.zulip-icon-globe {
         font-size: 14px;
+        position: relative;
+        top: 1px;
     }
 
     .sub_count,
@@ -1760,6 +1762,11 @@ div.focused_table {
 
         .fa {
             margin: 0 3px 0 5px;
+
+            &.fa-lock {
+                position: relative;
+                top: 0.5px;
+            }
 
             .fa-envelope {
                 font-size: 14px;
@@ -2485,11 +2492,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     emoji's width decreases and causes it to break. */
     min-width: 16px;
     /* In most contexts, status emoji appear immediately after a name
-      field with no margin. Position the status emoji with 2px of left
+      field with no margin. Position the status emoji with 3px of left
       margin to space it from the name, and set no right margin so
       that any components to the right appear equally distant as they
       would be from a name. */
-    margin-left: 2px;
+    margin-left: 3px;
     margin-right: 0;
 }
 
@@ -3119,4 +3126,22 @@ select.inline_select_topic_edit {
     position: relative;
     top: -1px;
     font-weight: 600;
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
 }

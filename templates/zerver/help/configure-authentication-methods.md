@@ -8,8 +8,8 @@ and Apple. You can restrict users to logging in via only a subset of
 these methods.
 
 LDAP and various custom SSO login methods are currently restricted to
-self-hosted Zulips only.  SAML authentication is supported by Zulip
-Cloud but requires contacting support@zulip.com to configure it.
+self-hosted Zulip organizations only. SAML authentication is supported
+by Zulip Cloud but requires contacting support@zulip.com to configure it.
 
 **Note:** If you are running your own server,
 [read this](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)

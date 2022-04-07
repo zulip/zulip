@@ -1,38 +1,44 @@
 # PMs, mentions, and alerts
 
 You can configure desktop, mobile, and email notifications for
-[private messages](/help/private-messages),
+[private messages (PMs)](/help/private-messages),
 [mentions](/help/mention-a-user-or-group), and [alert
 words](#alert-words).
+
+## Configure notifications
+
+These settings will affect notifications for private messages, group
+private messages, mentions, and alert words.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Toggle the notification settings under **Private messages,
-   @-mentions, and alert words**.
+1. In the **Notification triggers** table, toggle the settings for **PMs, mentions, and alerts**.
 
 {end_tabs}
 
-These settings will affect notifications for private messages, group
-private messages, mentions, and alert words.
-
 You can also hide the content of private messages (and group private
 messages) from desktop notifications.
-Under **Other notification settings**, uncheck
+
+{start_tabs}
+
+1. Under **Desktop message notifications**, toggle
 **Include content of private messages in desktop notifications**.
+
+{end_tabs}
 
 ## Wildcard mentions
 
 By default, wildcard mentions (`@**all**`, `@**everyone**`) trigger
 email/push notifications as though they were personal @-mentions.  You
-can toggle whether you receive notifications for wildcard mentions:
+can toggle whether you receive notifications for wildcard mentions.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
-1. Under **Streams**, toggle the **@all** checkbox.
+1.  In the **Notification triggers** table, toggle the **@all** checkbox for **Streams**.
 
 {end_tabs}
 

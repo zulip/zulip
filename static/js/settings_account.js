@@ -170,6 +170,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
+            is_url_field: field.type === all_field_types.URL.id,
             is_select_field,
             field_choices,
         });

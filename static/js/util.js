@@ -36,9 +36,9 @@ export function lower_bound(array, value, less) {
     return first;
 }
 
-function lower_same(a, b) {
+export const lower_same = function lower_same(a, b) {
     return a.toLowerCase() === b.toLowerCase();
-}
+};
 
 export const same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
@@ -290,26 +290,41 @@ export function clean_user_content_links(html) {
             elt.removeAttribute("target");
         }
 
-        // Ensure that the title displays the real URL.
-        let title;
-        let legacy_title;
-        if (url.origin === window.location.origin && url.pathname.startsWith("/user_uploads/")) {
-            // We add the word "download" to make clear what will
-            // happen when clicking the file.  This is particularly
-            // important in the desktop app, where hovering a URL does
-            // not display the URL like it does in the web app.
-            title = legacy_title = $t(
-                {defaultMessage: "Download {filename}"},
-                {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
-            );
+        const is_inline_image =
+            elt.parentElement && elt.parentElement.classList.contains("message_inline_image");
+        if (is_inline_image) {
+            // For inline images we want to handle the tooltips explicitly, and disable
+            // the browser's built in handling of the title attribute.
+            if (elt.getAttribute("title")) {
+                elt.setAttribute("aria-label", elt.getAttribute("title"));
+                elt.removeAttribute("title");
+            }
         } else {
-            title = url;
-            legacy_title = href;
+            // For non-image user uploads, the following block ensures that the title
+            // attribute always displays the filename as a security measure.
+            let title;
+            let legacy_title;
+            if (
+                url.origin === window.location.origin &&
+                url.pathname.startsWith("/user_uploads/")
+            ) {
+                // We add the word "download" to make clear what will
+                // happen when clicking the file.  This is particularly
+                // important in the desktop app, where hovering a URL does
+                // not display the URL like it does in the web app.
+                title = legacy_title = $t(
+                    {defaultMessage: "Download {filename}"},
+                    {filename: url.pathname.slice(url.pathname.lastIndexOf("/") + 1)},
+                );
+            } else {
+                title = url;
+                legacy_title = href;
+            }
+            elt.setAttribute(
+                "title",
+                ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
+            );
         }
-        elt.setAttribute(
-            "title",
-            ["", legacy_title].includes(elt.title) ? title : `${title}\n${elt.title}`,
-        );
     }
     return content.innerHTML;
 }

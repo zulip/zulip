@@ -13,11 +13,15 @@ certain users can send messages.
 
 1. Select a stream.
 
-1. On the right, click **[Change]** next to the description of the stream
-   permissions.
+{!select-stream-view-general.md!}
 
-1. Under "Who can post to the stream?", select the option you prefer.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>)
+   to the right of **Stream permissions**.
 
-1. Click **Save changes**.
+1. Under **Who can post to the stream?**, select the option you prefer.
+
+{!save-changes.md!}
 
 {end_tabs}
+
+{!update-stream-auto-notification.md!}

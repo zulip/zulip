@@ -25,6 +25,7 @@ from zerver.data_import.slack import (
     AddedChannelsT,
     AddedMPIMsT,
     DMMembersT,
+    SlackBotEmail,
     channel_message_to_zerver_message,
     channels_to_zerver_stream,
     convert_slack_workspace_messages,
@@ -1213,3 +1214,38 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(uploads_list[0]["s3_path"], image_path)
         self.assertEqual(uploads_list[0]["realm_id"], realm_id)
         self.assertEqual(uploads_list[0]["user_profile_email"], "alice@example.com")
+
+    def test_bot_duplicates(self) -> None:
+        self.assertEqual(
+            SlackBotEmail.get_email(
+                {"real_name_normalized": "Real Bot", "bot_id": "foo"}, "example.com"
+            ),
+            "real-bot@example.com",
+        )
+
+        # SlackBotEmail keeps state -- doing it again appends a "2", "3", etc
+        self.assertEqual(
+            SlackBotEmail.get_email(
+                {"real_name_normalized": "Real Bot", "bot_id": "bar"}, "example.com"
+            ),
+            "real-bot-2@example.com",
+        )
+        self.assertEqual(
+            SlackBotEmail.get_email(
+                {"real_name_normalized": "Real Bot", "bot_id": "baz"}, "example.com"
+            ),
+            "real-bot-3@example.com",
+        )
+
+        # But caches based on the bot_id
+        self.assertEqual(
+            SlackBotEmail.get_email(
+                {"real_name_normalized": "Real Bot", "bot_id": "foo"}, "example.com"
+            ),
+            "real-bot@example.com",
+        )
+
+        self.assertEqual(
+            SlackBotEmail.get_email({"first_name": "Other Name", "bot_id": "other"}, "example.com"),
+            "othername-bot@example.com",
+        )

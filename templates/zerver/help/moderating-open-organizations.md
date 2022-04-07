@@ -1,7 +1,7 @@
 # Moderating open organizations
 
 An **open organization** is one where
-[anyone can join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
+[anyone can join without an invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join).
 Moderation is a big part of making an open community work.
 
 ## Prevention
@@ -9,7 +9,7 @@ Moderation is a big part of making an open community work.
 Zulip has many features designed to simplify moderation by preventing
 problematic behavior:
 
-* [Disallow disposable email addresses](/help/allow-anyone-to-join-without-an-invitation)
+* [Disallow disposable email addresses](/help/restrict-account-creation#dont-allow-disposable-domains)
   or [require users to log in via GitHub or GitLab](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation), [send private

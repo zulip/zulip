@@ -289,7 +289,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     #
     # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
     #        Requires: perl(IPC::Run)
-    yum_extra_flags = []  # type: List[str]
+    yum_extra_flags: List[str] = []
     if vendor == "rhel":
         exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
         if exitcode == 1:

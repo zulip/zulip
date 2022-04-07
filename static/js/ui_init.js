@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
 import generated_pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
@@ -28,6 +27,7 @@ import * as copy_and_paste from "./copy_and_paste";
 import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
@@ -239,7 +239,7 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_active() && !recent_topics_util.is_visible()) {
+        if (!overlays.is_overlay_or_modal_open() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -317,16 +317,7 @@ export function initialize_kitchen_sink_stuff() {
         $row.removeClass("sender_name_hovered");
     });
 
-    $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        $(this).addClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseleave", ".youtube-video a", function () {
-        $(this).removeClass("fa fa-play");
-    });
-
-    $("#main_div").on("mouseenter", ".embed-video a", function () {
-        const $elem = $(this);
+    function handle_video_preview_mouseenter($elem) {
         // Set image height and css vars for play button position, if not done already
         const setPosition = !$elem.data("entered-before");
         if (setPosition) {
@@ -341,6 +332,18 @@ export function initialize_kitchen_sink_stuff() {
             $elem.data("entered-before", true);
         }
         $elem.addClass("fa fa-play");
+    }
+
+    $("#main_div").on("mouseenter", ".youtube-video a", function () {
+        handle_video_preview_mouseenter($(this));
+    });
+
+    $("#main_div").on("mouseleave", ".youtube-video a", function () {
+        $(this).removeClass("fa fa-play");
+    });
+
+    $("#main_div").on("mouseenter", ".embed-video a", function () {
+        handle_video_preview_mouseenter($(this));
     });
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {

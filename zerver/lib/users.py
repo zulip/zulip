@@ -19,7 +19,11 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key_id,
 )
-from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
+from zerver.lib.exceptions import (
+    JsonableError,
+    OrganizationAdministratorRequired,
+    OrganizationOwnerRequired,
+)
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementValue
 from zerver.models import (
@@ -240,6 +244,16 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         raise JsonableError(_("No such bot"))
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
+
+    if target.can_create_users and not user_profile.is_realm_owner:
+        # Organizations owners are required to administer a bot with
+        # the can_create_users permission. User creation via the API
+        # is a permission not available even to organization owners by
+        # default, because it can be abused to send spam. Requiring an
+        # owner is intended to ensure organizational responsibility
+        # for use of this permission.
+        raise OrganizationOwnerRequired()
+
     return target
 
 

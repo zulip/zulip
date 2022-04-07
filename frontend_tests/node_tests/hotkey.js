@@ -62,6 +62,7 @@ const overlays = mock_esm("../../static/js/overlays", {
     drafts_open: () => false,
     info_overlay_open: () => false,
     is_modal_open: () => false,
+    is_overlay_or_modal_open: () => overlays.is_modal_open() || overlays.is_active(),
 });
 const popovers = mock_esm("../../static/js/popovers", {
     actions_popped: () => false,
@@ -110,9 +111,9 @@ message_lists.current = {
     },
 };
 
-const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
-const emoji = zrequire("../shared/js/emoji");
 const activity = zrequire("activity");
+const emoji = zrequire("emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const hotkey = zrequire("hotkey");
 
 emoji.initialize({

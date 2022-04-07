@@ -47,7 +47,6 @@ When everything is running as expected, you will see something like this:
 ```console
 process-fts-updates                                             RUNNING   pid 11392, uptime 19:40:06
 smokescreen                                                     RUNNING   pid 3113, uptime 29 days, 21:58:32
-teleport_node                                                   RUNNING   pid 15683, uptime 3 days, 13:01:58
 zulip-django                                                    RUNNING   pid 11441, uptime 19:39:57
 zulip-tornado                                                   RUNNING   pid 11397, uptime 19:40:03
 zulip_deliver_scheduled_emails                                  RUNNING   pid 10289, uptime 19:41:04
@@ -77,26 +76,28 @@ isn't running. If you don't see relevant logs in
 `/etc/supervisor/conf.d/zulip.conf` for details. Logs only make it to
 `/var/log/zulip/errors.log` once a service has started fully.
 
-### Restarting services with `supervisorctl restart all`
+### Restarting services with `supervisorctl restart`
 
 After you change configuration in `/etc/zulip/settings.py` or fix a
-misconfiguration, you will often want to restart the Zulip application.
-You can restart Zulip using:
+misconfiguration, you will often want to restart the Zulip
+application. Running `scripts/restart-server` will restart all of
+Zulip's services; if you want to restart just one of them, you can use
+`supervisorctl`:
 
 ```bash
-supervisorctl restart all
+# You can use this for any service found in `supervisorctl list`
+supervisorctl restart zulip-django
 ```
 
-### Stopping services with `supervisorctl stop all`
+### Stopping services with `supervisorctl stop`
 
-Similarly, you can stop Zulip using:
+Similarly, while stopping all of Zulip is best done by running
+`scripts/stop-server`, you can stop individual Zulip services using:
 
 ```bash
-supervisorctl stop all
+# You can use this for any service found in `supervisorctl list`
+supervisorctl stop zulip-django
 ```
-
-If you're looking to shut down the server, it is often better to run
-`./scripts/stop-server`.
 
 ## Troubleshooting services
 

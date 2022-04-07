@@ -13,6 +13,7 @@ import botocore.exceptions
 import orjson
 from django.conf import settings
 from django.http.response import StreamingHttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
@@ -32,6 +33,7 @@ from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
@@ -210,6 +212,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # requests; they will be first authenticated and redirected
         self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        result = self.client_get(download_uri)
+        self.assert_streaming_content(result, b"zulip!")
+        self.assertIn("attachment;", result.headers["Content-Disposition"])
+
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
         self.assertEqual(entry.is_claimed(), False)
@@ -234,7 +242,52 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
         # The original uri shouldn't work when logged out:
         result = self.client_get(uri)
-        self.assertEqual(result.status_code, 401)
+        self.assertEqual(result.status_code, 403)
+
+    @override_settings(RATE_LIMITING=True)
+    def test_serve_file_unauthed(self) -> None:
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip_web_public.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        uri = result.json()["uri"]
+        self.assert_json_success(result)
+
+        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+        # Deny file access for non web public stream
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        host = self.example_user("hamlet").realm.host
+        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+        self.logout()
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 403)
+
+        # Allow file access for web public stream
+        self.login("hamlet")
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("hamlet"), "web-public-stream")
+        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
+        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+
+        self.logout()
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 200)
+        remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+
+        # Deny file access since rate limited
+        add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 403)
+        remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+
+        # Deny random file access
+        response = self.client_get(
+            "/user_uploads/2/71/QYB7LA-ULMYEad-QfLMxmI2e/zulip-non-existent.txt"
+        )
+        self.assertEqual(response.status_code, 404)
 
     def test_serve_local_file_unauthed_invalid_token(self) -> None:
         result = self.client_get("/user_uploads/temporary/badtoken/file.png")
@@ -288,9 +341,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
         response = self.client_get(uri)
-        self.assert_json_error(
-            response, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.assertEqual(response.status_code, 403)
+        self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
 
     def test_removed_file_download(self) -> None:
         """
@@ -607,6 +659,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
 
+        # Verify that cross-realm access to files for spectators is denied.
+        self.logout()
+        response = self.client_get(uri, subdomain=test_subdomain)
+        self.assertEqual(response.status_code, 403)
+
     def test_file_download_authorization_invite_only(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -815,7 +872,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_serve_local(self) -> None:
         def check_xsend_links(
-            name: str, name_str_for_test: str, content_disposition: str = ""
+            name: str,
+            name_str_for_test: str,
+            content_disposition: str = "",
+            download: bool = False,
         ) -> None:
             with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
                 _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
@@ -826,6 +886,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 uri = result.json()["uri"]
                 fp_path_id = re.sub("/user_uploads/", "", uri)
                 fp_path = os.path.split(fp_path_id)[0]
+                if download:
+                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
                 response = self.client_get(uri)
                 _get_sendfile.cache_clear()
                 assert settings.LOCAL_UPLOADS_DIR is not None
@@ -852,6 +914,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
         check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
         check_xsend_links("zulip.jpeg", "zulip.jpeg")
+        check_xsend_links(
+            "zulip.jpeg", "zulip.jpeg", download=True, content_disposition='filename="zulip.jpeg"'
+        )
         check_xsend_links("áéБД.pdf", "%C3%A1%C3%A9%D0%91%D0%94.pdf")
         check_xsend_links("zulip", "zulip", 'filename="zulip"')
 
@@ -1929,6 +1994,15 @@ class S3Test(ZulipTestCase):
         self.assertEqual(base, uri[: len(base)])
 
         response = self.client_get(uri)
+        redirect_url = response["Location"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith("/")
+        key = path[1:]
+        self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
+
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        response = self.client_get(download_uri)
         redirect_url = response["Location"]
         path = urllib.parse.urlparse(redirect_url).path
         assert path.startswith("/")

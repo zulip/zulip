@@ -174,7 +174,7 @@ after resolving an issue. The most common causes of errors are:
   minimal RAM for running Zulip can run into out-of-memory issues
   during the upgrade process (generally `tools/webpack` is the step
   that fails). You can get past this by shutting down the Zulip
-  server with `supervisorctl stop all` to free up RAM before running
+  server with `./scripts/stop-server` to free up RAM before running
   the upgrade process.
 
 Useful logs are available in a few places:
@@ -292,16 +292,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
    ```
 
-5. Ubuntu 20.04 has a different version of the low-level glibc
-   library, which affects how PostgreSQL orders text data (known as
-   "collations"); this corrupts database indexes that rely on
-   collations. Regenerate the affected indexes by running:
-
-   ```bash
-   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
-   ```
-
-6. Finally, we need to reinstall the current version of Zulip, which
+5. Next, we need to reinstall the current version of Zulip, which
    among other things will recompile Zulip's Python module
    dependencies for your new version of Python and rewrite Zulip's
    full-text search indexes to work with the upgraded dictionary
@@ -316,6 +307,15 @@ instructions for other supported platforms.
    This will finish by restarting your Zulip server; you should now be
    able to navigate to its URL and confirm everything is working
    correctly.
+
+6. Finally, Ubuntu 20.04 has a different version of the low-level
+   glibc library, which affects how PostgreSQL orders text data (known
+   as "collations"); this corrupts database indexes that rely on
+   collations. Regenerate the affected indexes by running:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
+   ```
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 
@@ -419,7 +419,7 @@ instructions for other supported platforms.
    to back up the system:
 
    ```bash
-   supervisorctl stop all
+   /home/zulip/deployments/current/scripts/stop-server
    /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
    ```
 
@@ -448,7 +448,7 @@ instructions for other supported platforms.
    ```bash
    rm -rf /srv/zulip-venv-cache/*
    /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
-       /home/zulip/deployments/current/ --ignore-static-assets
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
    ```
 
    This will finish by restarting your Zulip server; you should now
@@ -464,13 +464,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
-7. As root, finish by verifying the contents of the full-text indexes:
-
-   ```bash
-   /home/zulip/deployments/current/manage.py audit_fts_indexes
-   ```
-
-8. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
+7. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
 
 ### Upgrading from Debian 9 to 10
 
@@ -757,8 +751,8 @@ Many Zulip servers (including chat.zulip.org and zulip.com) upgrade to
 so, it's important to understand how to happily run a server based on
 `main`.
 
-For background, it's backporting arbitrary patches from `main` to an
-older version requires some care. Common issues include:
+For background, backporting arbitrary patches from `main` to an older
+version requires some care. Common issues include:
 
 - Changes containing database migrations (new files under
   `*/migrations/`), which includes most new features. We

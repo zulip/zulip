@@ -79,6 +79,11 @@
     margin: 0;
     font-size: 1.375rem;
     line-height: 1.25;
+
+    /* help_link_widget margin for the fa-circle-o. */
+    .help_link_widget {
+        margin-left: 5px;
+    }
 }
 
 .modal__close {

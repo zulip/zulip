@@ -2,8 +2,9 @@
 
 {!admin-only.md!}
 
-Streams can be public or private, and private streams can have shared or
-protected history. See [stream permissions](/help/stream-permissions) for
+Streams can be [web-public](/help/web-public-streams), public or private,
+and private streams can have shared or protected history.
+See [stream permissions](/help/stream-permissions) for
 details on stream privacy settings.
 
 As an organization administrator, you can always make a public stream
@@ -18,14 +19,18 @@ public.
 
 1. Select a stream.
 
-4. Find the privacy description under the stream name and description on the
-   right. Click **[Change]**.
+{!select-stream-view-general.md!}
 
-5. Select a privacy level.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>)
+   to the right of **Stream permissions**.
 
-6. Click **Save changes**.
+1. Under **Who can access the stream?**, select a privacy level.
+
+{!save-changes.md!}
 
 {end_tabs}
+
+{!update-stream-auto-notification.md!}
 
 !!! warn ""
 

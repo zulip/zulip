@@ -19,6 +19,7 @@
 * [API keys](/api/api-keys)
 * [Configuring the Python bindings](/api/configuring-python-bindings)
 * [Error handling](/api/rest-error-handling)
+* [Roles and permissions](/api/roles-and-permissions)
 * [Client libraries](/api/client-libraries)
 * [API changelog](/api/changelog)
 

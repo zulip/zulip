@@ -148,7 +148,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                 allow_webhook_access="allow_incoming_webhooks" in view_flags,
             )(target_function)
         elif (
-            request.path.startswith(("/json", "/avatar"))
+            request.path.startswith(("/json", "/avatar", "/user_uploads", "/thumbnail"))
             and "allow_anonymous_user_web" in view_flags
         ):
             # For endpoints that support anonymous web access, we do that.

@@ -29,6 +29,8 @@ const message_store = mock_esm("../../static/js/message_store", {
     get: () => ({failed_request: true}),
 
     update_booleans: () => {},
+
+    set_message_booleans: () => {},
 });
 
 mock_esm("../../static/js/message_list");

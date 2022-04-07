@@ -10,7 +10,12 @@ from zerver.lib.sessions import (
 
 
 class Command(ZulipBaseCommand):
-    help = "Log out all users."
+    help = """\
+Log out all users from active browser sessions.
+
+Does not disable API keys, and thus will not log users out of the
+mobile apps.
+"""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(

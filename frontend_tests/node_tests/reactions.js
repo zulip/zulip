@@ -61,8 +61,8 @@ message_lists.current = {
 };
 set_global("document", "document-stub");
 
+const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
-const emoji = zrequire("../shared/js/emoji");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
 

@@ -11,5 +11,6 @@ define zulip::sha256_tarball_to(
   exec { $url:
     command => "${::zulip_scripts_path}/setup/sha256-tarball-to ${sha256} ${url} ${install_expanded}",
     creates => $a_file,
+    timeout => 600,
   }
 }

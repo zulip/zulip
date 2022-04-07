@@ -85,6 +85,14 @@ INLINE_MIME_TYPES = [
 # through a sanitization function.
 
 
+# https://github.com/boto/botocore/issues/2644 means that the IMDS
+# request _always_ pulls from the environment.  Monkey-patch the
+# `should_bypass_proxies` function if we need to skip them, based
+# on S3_SKIP_PROXY.
+if settings.S3_SKIP_PROXY is True:  # nocoverage
+    botocore.utils.should_bypass_proxies = lambda url: True
+
+
 class RealmUploadQuotaError(JsonableError):
     code = ErrorCode.REALM_UPLOAD_QUOTA
 
@@ -385,7 +393,7 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
     return uploaded_file_name, uploaded_file_size, content_type
 
 
-def get_signed_upload_url(path: str) -> str:
+def get_signed_upload_url(path: str, download: bool = False) -> str:
     client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_KEY,
@@ -393,9 +401,16 @@ def get_signed_upload_url(path: str) -> str:
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
     )
+    params = {
+        "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
+        "Key": path,
+    }
+    if download:
+        params["ResponseContentDisposition"] = "attachment"
+
     return client.generate_presigned_url(
         ClientMethod="get_object",
-        Params={"Bucket": settings.S3_AUTH_UPLOADS_BUCKET, "Key": path},
+        Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
         HttpMethod="GET",
     )

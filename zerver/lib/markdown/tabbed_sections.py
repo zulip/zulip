@@ -55,8 +55,6 @@ TAB_SECTION_LABELS = {
     "mm-default": "Default installation",
     "mm-docker": "Docker",
     "mm-gitlab-omnibus": "GitLab Omnibus",
-    "send-email-invitations": "Send email invitations",
-    "share-an-invite-link": "Share an invite link",
     "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
@@ -76,8 +74,10 @@ TAB_SECTION_LABELS = {
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",
     "private-streams": "Private streams",
+    "web-public-streams": "Web-public streams",
     "via-user-profile": "Via the user's profile",
     "via-organization-settings": "Via organization settings",
+    "via-browser-address-bar": "Via browser's address bar",
 }
 
 

@@ -1,6 +1,7 @@
 import hashlib
 import random
 from datetime import timedelta
+from io import StringIO
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
 from unittest import mock
 
@@ -75,6 +76,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.types import NeverSubscribedStreamDict, SubscriptionInfo
 from zerver.models import (
+    Attachment,
     DefaultStream,
     DefaultStreamGroup,
     Message,
@@ -92,6 +94,8 @@ from zerver.models import (
     get_stream,
     get_user,
     get_user_profile_by_id_in_realm,
+    validate_attachment_request,
+    validate_attachment_request_for_spectator_access,
 )
 from zerver.views.streams import compose_views
 
@@ -951,6 +955,145 @@ class StreamAdminTest(ZulipTestCase):
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_stream_permission_changes_updates_updates_attachments(self) -> None:
+        self.login("desdemona")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        uri = result.json()["uri"]
+        self.assert_json_success(result)
+
+        owner = self.example_user("desdemona")
+        realm = owner.realm
+        stream = self.make_stream("test_stream", realm=realm)
+        self.subscribe(owner, "test_stream")
+        body = f"First message ...[zulip.txt](http://{realm.host}" + uri + ")"
+        msg_id = self.send_stream_message(owner, "test_stream", body, "test")
+        attachment = Attachment.objects.get(messages__id=msg_id)
+
+        self.assertFalse(stream.is_web_public)
+        self.assertFalse(attachment.is_web_public)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(attachment.is_realm_public)
+
+        params = {
+            "is_private": orjson.dumps(True).decode(),
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        attachment.refresh_from_db()
+        stream.refresh_from_db()
+        self.assertFalse(stream.is_web_public)
+        self.assertFalse(attachment.is_web_public)
+        self.assertTrue(stream.invite_only)
+        self.assertIsNone(attachment.is_realm_public)
+
+        cordelia = self.example_user("cordelia")
+        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
+        self.assertTrue(validate_attachment_request(owner, attachment.path_id))
+        attachment.refresh_from_db()
+        self.assertFalse(attachment.is_realm_public)
+        self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
+
+        params = {
+            "is_private": orjson.dumps(False).decode(),
+            "is_web_public": orjson.dumps(True).decode(),
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        attachment.refresh_from_db()
+        stream.refresh_from_db()
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.is_web_public)
+        self.assertIsNone(attachment.is_realm_public)
+        self.assertIsNone(attachment.is_web_public)
+
+        self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment.refresh_from_db()
+        self.assertTrue(attachment.is_web_public)
+        self.assertIsNone(attachment.is_realm_public)
+
+        self.assertTrue(validate_attachment_request(cordelia, attachment.path_id))
+        attachment.refresh_from_db()
+        self.assertTrue(attachment.is_realm_public)
+
+        params = {
+            "is_private": orjson.dumps(False).decode(),
+            "is_web_public": orjson.dumps(False).decode(),
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream.id}", params)
+        self.assert_json_success(result)
+
+        attachment.refresh_from_db()
+        stream.refresh_from_db()
+        self.assertIsNone(attachment.is_web_public)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(attachment.is_realm_public)
+
+        self.assertFalse(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment.refresh_from_db()
+        stream.refresh_from_db()
+        self.assertFalse(attachment.is_web_public)
+
+        # Verify moving a message to another public stream doesn't reset cache.
+        new_stream = self.make_stream("new_stream", realm=realm)
+        self.subscribe(owner, "new_stream")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        attachment.refresh_from_db()
+        self.assertFalse(attachment.is_web_public)
+        self.assertTrue(attachment.is_realm_public)
+
+        # Verify moving a message to a private stream
+        private_stream = self.make_stream("private_stream", realm=realm, invite_only=True)
+        self.subscribe(owner, "private_stream")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": private_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        attachment.refresh_from_db()
+        self.assertFalse(attachment.is_web_public)
+        self.assertIsNone(attachment.is_realm_public)
+
+        self.assertFalse(validate_attachment_request(cordelia, attachment.path_id))
+        self.assertTrue(validate_attachment_request(owner, attachment.path_id))
+        attachment.refresh_from_db()
+        self.assertFalse(attachment.is_realm_public)
+
+        # Verify moving a message to a web-public stream
+        web_public_stream = self.make_stream("web_public_stream", realm=realm, is_web_public=True)
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "stream_id": web_public_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        attachment.refresh_from_db()
+        self.assertIsNone(attachment.is_web_public)
+        self.assertIsNone(attachment.is_realm_public)
+
+        self.assertTrue(validate_attachment_request_for_spectator_access(realm, attachment))
+        attachment.refresh_from_db()
+        self.assertTrue(attachment.is_web_public)
+
     def test_try_make_stream_public_with_private_history(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1486,6 +1629,50 @@ class StreamAdminTest(ZulipTestCase):
             result,
             f"description is too long (limit: {Stream.MAX_DESCRIPTION_LENGTH} characters)",
         )
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": ""},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.description, "")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            "* **Old description:**\n"
+            "```` quote\n"
+            "Test description\n"
+            "````\n"
+            "* **New description:**\n"
+            "```` quote\n"
+            "*No description.*\n"
+            "````"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        result = self.client_patch(
+            f"/json/streams/{stream_id}",
+            {"description": "Test description"},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("stream_name1", realm)
+        self.assertEqual(stream.description, "Test description")
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        expected_notification = (
+            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
+            "* **Old description:**\n"
+            "```` quote\n"
+            "*No description.*\n"
+            "````\n"
+            "* **New description:**\n"
+            "```` quote\n"
+            "Test description\n"
+            "````"
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
@@ -3778,6 +3965,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 principals=orjson.dumps([self.user_profile.id]).decode(),
             ),
         )
+        target_stream = get_stream(invite_streams[0], self.test_realm)
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
@@ -3785,6 +3973,16 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
         expected_msg = (
             f"@_**{invitee_full_name}|{invitee.id}** created a new stream #**{invite_streams[0]}**."
+        )
+        self.assertEqual(msg.content, expected_msg)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.recipient.type_id, target_stream.id)
+        self.assertEqual(msg.sender_id, self.notification_bot(self.test_realm).id)
+        expected_msg = (
+            f"**Public** stream created by @_**{invitee_full_name}|{invitee.id}**. **Description:**\n"
+            "```` quote\n*No description.*\n````"
         )
         self.assertEqual(msg.content, expected_msg)
 

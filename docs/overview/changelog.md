@@ -1,15 +1,43 @@
 # Version history
 
 This page the release history for the Zulip server. See also the
-[Zulip release lifecycle](release-lifecycle.md).
+[Zulip release lifecycle](../overview/release-lifecycle.md).
 
-## Zulip 5.x series
+## Zulip 6.x series
 
-### 5.0 -- unreleased
+### 6.0 -- unreleased
 
 This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of raw changes.
+
+#### Upgrade notes for 6.0
+
+- None yet.
+
+## Zulip 5.x series
+
+### 5.1 -- 2022-04-01
+
+- Fixed upgrade bug where preexisting animated emoji would still
+  always animate in statuses.
+- Improved check that prevents servers from accidentally downgrading,
+  to not block upgrading servers that originally installed Zulip
+  Server prior to mid-2017.
+- Fixed email address de-duplication in Slack imports.
+- Prevented an extraneous scrollbar when a notification banner was
+  present across the top.
+- Fixed installation in LXC containers, which failed due to `chrony`
+  not being runnable there.
+- Prevented a "push notifications not configured" warning from
+  appearing in the new user default settings panel even when push
+  notifications were configured.
+- Fixed a bug which, in uncommon configurations, would prevent Tornado
+  from being restarted during upgrades; users would be able to log in,
+  but would immediately be logged out.
+- Updated translations.
+
+### 5.0 -- 2022-03-29
 
 #### Highlights
 
@@ -42,8 +70,13 @@ log][commit-log] for an up-to-date list of raw changes.
   preference settings for new users joining the organization.
 - Most permissions settings now support choosing which roles have the
   permission, rather than just allowing administrators or everyone.
+- Permanent links to conversations now correctly redirect if the
+  target message has been moved to a new stream or topic.
 - Added a data import tool for migrating from Rocket.Chat. Mattermost
   data import now supports importing uploaded files.
+- Improved handling of messages containing many images; now up to 20
+  images can be previewed in a single message (up from 5), and a new
+  grid layout will be used.
 - OpenID Connect joins SAML, LDAP, Google, GitHub, Azure Active
   Directory, and more as a supported Single Sign-On provider.
 - SAML authentication now supports syncing custom profile
@@ -87,6 +120,7 @@ log][commit-log] for an up-to-date list of raw changes.
   Sonarr, SonarQube.
 - Message edit notifications now indicate how many messages were
   moved, when only part of a topic was moved.
+- Muted topic records are now moved when an entire topic is moved.
 - Search views that don't mark messages as read now have an
   explanatory notice if any unread messages are present.
 - Added new "Scroll to bottom" widget hovering over the message feed.
@@ -102,7 +136,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned hover behavior for timestamps and time mentions.
 - Messages sent by muted users can now be rehidden after being
   revealed. One can also now mute deactivated users.
-- Rewrote Help Center guides for new organizations and users.
+- Rewrote Help Center guides for new organizations and users, and made
+  hundreds of other improvements to Help Center content and organization.
 - Reimplemented the image lightbox's pan/zoom functionality to be
   nicer, allowing us to enable it be default.
 - Added styled loading page for the web application.
@@ -110,8 +145,9 @@ log][commit-log] for an up-to-date list of raw changes.
 - Notifications now differentiate user group mentions from personal mentions.
 - Added support for configuring how long the server should wait before
   sending email notifications after a mention or PM.
-- Improved integrations: GitHub, Grafana, PagerDuty.
-- Improved various interaction details in Recent Topics.
+- Improved integrations: BigBlueButton, GitHub, Grafana, PagerDuty,
+  and many more.
+- Improved various interaction and performance details in Recent Topics.
 - Improved styling for poll and todo list widgets.
 - Zulip now supports configuring the database name and username when
   using a remote Postgres server. Previously, these were hardcoded to "zulip".
@@ -169,6 +205,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed a bug where different messages in search results would be
   incorrectly shown with a shared recipient bar despite potentially
   not being temporally adjacent.
+- Fixed lightbox download button not working with the S3 upload backend.
 - Increased default retention period before permanently removing
   deleted messages from 7 days to 30 days.
 - Rate limiting now supports treating all Tor exit nodes as a single IP.
@@ -177,9 +214,13 @@ log][commit-log] for an up-to-date list of raw changes.
   software from flagging invitations.
 - Added support for uploading animated PNGs as custom emoji.
 - Renamed "Night mode" to "Dark theme".
+- Added the mobile app's notification sound to desktop sound options,
+  as "Chime".
 - Reworked the `manage.py help` interface to hide Django commands that are
   useless or harmful to run on a production system. Also deleted
   several useless management commands.
+- Improved help and functionality of several management commands. New
+  create_realm management command supports some automation workflows.
 - Added `RealmAuditLog` logging for most administrative actions that
   were previously not tracked.
 - Added automated testing of the upgrade process from previous releases,
@@ -1551,7 +1592,7 @@ Zulip installations; it has minimal changes for existing servers.
   disruption by running this migration first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  running them first manually
   as well as the usual trick of doing an apt upgrade first.
 
 #### Full feature changelog
@@ -1940,7 +1981,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
   minimizes disruption by running these first, before beginning the
   user-facing downtime. However, if you'd like to watch the downtime
   phase of the upgrade closely, we recommend
-  [running them first manually](https://zulip.readthedocs.io/en/1.9.0/production/expensive-migrations.html)
+  running them first manually
   as well as the usual trick of doing an apt upgrade first.
 
 - We've removed support for an uncommon legacy deployment model where
@@ -2565,15 +2606,17 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-- [Draft upgrade notes for 5.0](#upgrade-notes-for-50)
-- [Upgrade notes for 4.0](#upgrade-notes-for-40)
-- [Upgrade notes for 3.0](#upgrade-notes-for-30)
-- [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
-- [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
-- [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
-- [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
-- [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
-- [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
+- [Draft upgrade notes for 6.0](#upgrade-notes-for-60)
+
+* [Upgrade notes for 5.0](#upgrade-notes-for-50)
+* [Upgrade notes for 4.0](#upgrade-notes-for-40)
+* [Upgrade notes for 3.0](#upgrade-notes-for-30)
+* [Upgrade notes for 2.1.5](#upgrade-notes-for-215)
+* [Upgrade notes for 2.1.0](#upgrade-notes-for-210)
+* [Upgrade notes for 2.0.0](#upgrade-notes-for-200)
+* [Upgrade notes for 1.9.0](#upgrade-notes-for-190)
+* [Upgrade notes for 1.8.0](#upgrade-notes-for-180)
+* [Upgrade notes for 1.7.0](#upgrade-notes-for-170)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/main

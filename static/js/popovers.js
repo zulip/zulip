@@ -1020,6 +1020,7 @@ export function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_message_info_popover();
         hide_user_sidebar_popover();
+        hide_user_info_popover();
         e.stopPropagation();
         e.preventDefault();
         muted_users_ui.confirm_mute_user(user_id);
@@ -1029,6 +1030,7 @@ export function register_click_handlers() {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         hide_message_info_popover();
         hide_user_sidebar_popover();
+        hide_user_info_popover();
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();

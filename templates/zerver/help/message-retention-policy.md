@@ -44,14 +44,19 @@ Standard hosting.
 
 1. Select a stream.
 
-1. On the right, click **[Change]** next to the description of the stream
-   permissions.
+{!select-stream-view-general.md!}
 
-1. Under **Message retention for stream**, configure **Message retention period**.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>)
+   to the right of **Stream permissions**.
+
+1. Under **Message retention for stream**, configure
+   **Message retention period**.
 
 {!save-changes.md!}
 
 {end_tabs}
+
+{!update-stream-auto-notification.md!}
 
 ## Important details
 

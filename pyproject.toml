@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 100
-target-version = ["py36"]
+target-version = ["py37"]
 
 [tool.isort]
 src_paths = [".", "tools", "tools/setup/emoji"]

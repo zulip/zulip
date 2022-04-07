@@ -16,7 +16,7 @@ export function update_is_muted(sub, value) {
         let msg_offset;
         let saved_ypos;
         // Save our current scroll position
-        if (overlays.is_active()) {
+        if (overlays.is_active() || overlays.is_modal_open()) {
             saved_ypos = message_viewport.scrollTop();
         } else if (
             message_lists.home === message_lists.current &&
@@ -31,7 +31,7 @@ export function update_is_muted(sub, value) {
         message_util.add_old_messages(all_messages_data.all_messages(), message_lists.home);
 
         // Ensure we're still at the same scroll position
-        if (overlays.is_active()) {
+        if (overlays.is_overlay_or_modal_open()) {
             message_viewport.scrollTop(saved_ypos);
         } else if (message_lists.home === message_lists.current) {
             // We pass use_closest to handle the case where the

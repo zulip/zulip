@@ -27,9 +27,10 @@ content.
 
 !!! warn ""
 
-    **Note:** After you have edited a message, the message is publicly marked as
-    `EDITED`. You can [view](/help/view-a-messages-edit-history) a message's
-    edit history, assuming that feature has not been
+    **Note:** After you have edited a message, the message is publicly
+    marked as **EDITED**. You can
+    [view a message's edit history](/help/view-a-messages-edit-history),
+    assuming that feature has not been
     [disabled by an organization administrator](/help/disable-message-edit-history).
 
 If you don't see the pencil (<i class="fa fa-pencil"></i>) icon, the message content
@@ -41,7 +42,7 @@ icon instead. Clicking the file icon will allow you to view the
 ## Delete a message
 
 Editing a message to delete its content will cause the message to be
-displayed as `(deleted)`.  The original sender and timestamp of the
+displayed as **(deleted)**.  The original sender and timestamp of the
 message will still be displayed, and the original content of the
 message is still accessible via Zulip's [edit
 history](/help/view-a-messages-edit-history) feature.  This can be the
