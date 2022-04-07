@@ -201,6 +201,21 @@ body.dark-theme {
         }
     }
 
+    .sp-choose {
+        border: 1px solid hsl(210, 36%, 4%);
+    }
+
+    .sp-cancel {
+        color: hsl(0, 0%, 100%) !important;
+        background-color: hsl(211, 29%, 14%);
+        border: 1px solid hsl(210, 36%, 4%);
+
+        &:hover,
+        &:focus {
+            background-color: hsl(211, 29%, 14%);
+        }
+    }
+
     .sp-container {
         background-color: hsl(211, 29%, 14%);
         border: solid 1px hsl(210, 36%, 4%);

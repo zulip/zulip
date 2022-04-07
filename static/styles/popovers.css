@@ -43,6 +43,41 @@
 
 .sp-container {
     z-index: 106;
+
+    .sp-choose {
+        color: hsl(0, 0%, 100%);
+        background: hsl(240, 96%, 68%);
+        border-radius: 0.25rem;
+        padding: 0.3rem;
+        text-shadow: none;
+
+        &:hover,
+        &:focus {
+            background: hsl(240, 96%, 68%);
+            transform: scale(1.05);
+            text-shadow: none;
+        }
+    }
+
+    /* Cancel button is originally <a> tag in spectrum colorpicker,
+    to make it look like a button some extra css is used. */
+    .sp-cancel {
+        font-size: 0.875rem;
+        padding: 0.2rem 0.3rem;
+        background-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 0%) !important;
+        text-decoration: none;
+        border-radius: 0.25rem;
+        line-height: 1.25;
+        border: 1px solid hsla(300, 2%, 11%, 0.3);
+        appearance: button;
+
+        &:focus,
+        &:hover {
+            background: hsl(0, 0%, 97%);
+            transform: scale(1.05);
+        }
+    }
 }
 
 .mobile-message-buttons-popover {
@@ -111,6 +146,10 @@
                 }
             }
         }
+    }
+
+    .sp-cancel {
+        display: none;
     }
 
     .popover_sub_unsub_button {

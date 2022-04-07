@@ -58,6 +58,8 @@ const subscriptions_table_colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
     showInput: true,
+    cancelText: $t({defaultMessage: "Cancel"}),
+    chooseText: $t({defaultMessage: "Confirm"}),
     palette: stream_color_palette,
 };
 
