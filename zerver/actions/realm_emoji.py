@@ -1,4 +1,4 @@
-from typing import IO, Dict
+from typing import IO, Dict, Optional
 
 import django.db.utils
 import orjson
@@ -64,8 +64,23 @@ def check_add_realm_emoji(
     return realm_emoji
 
 
-def do_remove_realm_emoji(realm: Realm, name: str) -> None:
+def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[UserProfile]) -> None:
     emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
-    notify_realm_emoji(realm, realm.get_emoji())
+
+    realm_emoji_dict = realm.get_emoji()
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+                "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
+            }
+        ).decode(),
+    )
+
+    notify_realm_emoji(realm, realm_emoji_dict)

@@ -60,5 +60,5 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: st
     ).exists():
         raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
     check_remove_custom_emoji(user_profile, emoji_name)
-    do_remove_realm_emoji(user_profile.realm, emoji_name)
+    do_remove_realm_emoji(user_profile.realm, emoji_name, acting_user=user_profile)
     return json_success(request)

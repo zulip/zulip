@@ -1201,14 +1201,14 @@ class MarkdownTest(ZulipTestCase):
         )
 
         # Deactivate realm emoji.
-        do_remove_realm_emoji(realm, "green_tick")
+        do_remove_realm_emoji(realm, "green_tick", acting_user=None)
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)
         self.assertEqual(converted.rendered_content, "<p>:green_tick:</p>")
 
     def test_deactivated_realm_emoji(self) -> None:
         # Deactivate realm emoji.
         realm = get_realm("zulip")
-        do_remove_realm_emoji(realm, "green_tick")
+        do_remove_realm_emoji(realm, "green_tick", acting_user=None)
 
         msg = Message(sender=self.example_user("hamlet"))
         converted = markdown_convert(":green_tick:", message_realm=realm, message=msg)

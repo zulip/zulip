@@ -1786,7 +1786,9 @@ class NormalActionsTest(BaseAction):
         check_realm_emoji_update("events[0]", events[0])
 
         events = self.verify_action(
-            lambda: do_remove_realm_emoji(self.user_profile.realm, "my_emoji")
+            lambda: do_remove_realm_emoji(
+                self.user_profile.realm, "my_emoji", acting_user=self.user_profile
+            )
         )
         check_realm_emoji_update("events[0]", events[0])
 
