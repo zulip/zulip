@@ -56,10 +56,40 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars(instance);
 }
 
+function post_show_stream_setting_tippy_popover() {
+    left_sidebar_stream_setting_popover_displayed = true;
+    const add_stream_tooltip = $(".tippy-zulip-tooltip.streams_inline_icon_wrapper")[0]._tippy;
+    const filter_stream_tooltip = $(".tippy-zulip-tooltip.streams_filter_icon")[0]._tippy;
+
+    // `add_stream_tooltip` is always defined since tooltip and popover on same icon and
+    // hence the tooltip will always get triggered.
+    add_stream_tooltip.disable();
+    if (filter_stream_tooltip) {
+        // To avoid overlap with the popover place it in opposite direction.
+        filter_stream_tooltip.setProps({placement: "bottom"});
+    } else {
+        $(".tippy-zulip-tooltip.streams_filter_icon").attr("data-tippy-placement", "bottom");
+    }
+}
+
+function post_hide_stream_setting_tippy_popover() {
+    left_sidebar_stream_setting_popover_displayed = false;
+    const add_stream_tooltip = $(".tippy-zulip-tooltip.streams_inline_icon_wrapper")[0]._tippy;
+    const filter_stream_tooltip = $(".tippy-zulip-tooltip.streams_filter_icon")[0]._tippy;
+
+    add_stream_tooltip.enable();
+    if (filter_stream_tooltip) {
+        filter_stream_tooltip.setProps({placement: "top"});
+    } else {
+        $(".tippy-zulip-tooltip.streams_filter_icon").attr("data-tippy-placement", "top");
+    }
+}
+
 export function initialize() {
     delegate("body", {
         ...default_popover_props,
         target: "#streams_inline_icon",
+        placement: "top",
         onShow(instance) {
             const can_create_streams =
                 settings_data.user_can_create_private_streams() ||
@@ -76,12 +106,10 @@ export function initialize() {
             }
 
             instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
-            left_sidebar_stream_setting_popover_displayed = true;
+            post_show_stream_setting_tippy_popover();
             return true;
         },
-        onHidden() {
-            left_sidebar_stream_setting_popover_displayed = false;
-        },
+        onHidden: post_hide_stream_setting_tippy_popover,
     });
 
     // compose box buttons popover shown on mobile widths.
