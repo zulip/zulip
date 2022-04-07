@@ -415,21 +415,21 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         result = self.client_patch(
             "/json/realm/profile_fields/100",
-            info={"name": "Phone number", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "Phone number"},
         )
         self.assert_json_error(result, "Field id 100 not found.")
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": ""},
         )
         self.assert_json_error(result, "Label cannot be blank.")
 
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "New phone number", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "New phone number"},
         )
         self.assert_json_success(result)
         field = CustomProfileField.objects.get(id=field.id, realm=realm)
@@ -440,7 +440,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "*" * 41, "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "*" * 41},
         )
         msg = "name is too long (limit: 40 characters)"
         self.assert_json_error(result, msg)
@@ -450,7 +450,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "*" * 81,
-                "field_type": CustomProfileField.SHORT_TEXT,
             },
         )
         msg = "hint is too long (limit: 80 characters)"
@@ -461,7 +460,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "New contact number",
-                "field_type": CustomProfileField.SHORT_TEXT,
             },
         )
         self.assert_json_success(result)
@@ -474,7 +472,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Name ", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "Name "},
         )
         self.assert_json_success(result)
         field.refresh_from_db()
@@ -525,7 +523,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(self.custom_field_exists_in_realm(field_2.id))
         result = self.client_patch(
             f"/json/realm/profile_fields/{field_2.id}",
-            info={"name": "Phone", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "Phone"},
         )
         self.assert_json_error(result, "A field with that label already exists.")
 
