@@ -522,9 +522,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # Remove tokens
         for endpoint, token, kind in endpoints:
-            result = self.client_delete(
-                endpoint, {"token": token, "token_kind": kind}, subdomain="zulip"
-            )
+            result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
             tokens = list(
                 RemotePushDeviceToken.objects.filter(
@@ -2567,10 +2565,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assertEqual(server.hostname, "example.com")
         self.assertEqual(server.contact_email, "server-admin@example.com")
 
-        request = dict(zulip_org_id=zulip_org_id, zulip_org_key=zulip_org_key)
-        result = self.uuid_post(
-            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
-        )
+        result = self.uuid_post(zulip_org_id, "/api/v1/remotes/server/deactivate", subdomain="")
         self.assert_json_success(result)
 
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
