@@ -3145,3 +3145,9 @@ select.inline_select_topic_edit {
         }
     }
 }
+
+.sp-container button,
+a {
+    font-family: "Source Sans 3", sans-serif;
+    transition: transform 0.25s ease-out;
+}
