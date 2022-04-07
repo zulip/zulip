@@ -79,7 +79,7 @@ run_test("verify wildcard mentions typeahead for stream message", () => {
 
 run_test("verify wildcard mentions typeahead for private message", () => {
     compose_state.set_message_type("private");
-    assert.equal(ct.broadcast_mentions().length, 3);
+    assert.equal(ct.broadcast_mentions().length, 2);
     const mention_all = ct.broadcast_mentions()[0];
     const mention_everyone = ct.broadcast_mentions()[1];
     assert.equal(mention_all.email, "all");
