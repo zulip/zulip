@@ -33,6 +33,6 @@ stream. Changing a stream's color does not change it for anyone else.
 
 1. Select a color from the grid, use the color picker, or enter a hex code.
 
-1. Click **Choose** to save and apply the color change.
+1. Click **Confirm** to save and apply the color change.
 
 {end_tabs}
