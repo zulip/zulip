@@ -1448,7 +1448,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "hambot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://foo.bar.com").decode(),
-            "service_interface": Service.GENERIC,
+            "interface_type": Service.GENERIC,
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
