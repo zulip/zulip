@@ -61,9 +61,35 @@ const ct = composebox_typeahead;
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
 
-const mention_all = ct.broadcast_mentions()[0];
-assert.equal(mention_all.email, "all");
-assert.equal(mention_all.full_name, "all");
+run_test("verify wildcard mentions typeahead for stream message", () => {
+    const mention_all = ct.broadcast_mentions()[0];
+    const mention_everyone = ct.broadcast_mentions()[1];
+    const mention_stream = ct.broadcast_mentions()[2];
+    assert.equal(mention_all.email, "all");
+    assert.equal(mention_all.full_name, "all");
+    assert.equal(mention_everyone.email, "everyone");
+    assert.equal(mention_everyone.full_name, "everyone");
+    assert.equal(mention_stream.email, "stream");
+    assert.equal(mention_stream.full_name, "stream");
+
+    assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
+    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
+    assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+});
+
+run_test("verify wildcard mentions typeahead for private message", () => {
+    compose_state.set_message_type("private");
+    assert.equal(ct.broadcast_mentions().length, 3);
+    const mention_all = ct.broadcast_mentions()[0];
+    const mention_everyone = ct.broadcast_mentions()[1];
+    assert.equal(mention_all.email, "all");
+    assert.equal(mention_all.full_name, "all");
+    assert.equal(mention_everyone.email, "everyone");
+    assert.equal(mention_everyone.full_name, "everyone");
+
+    assert.equal(mention_all.special_item_text, "all (translated: Notify recipients)");
+    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify recipients)");
+});
 
 const emoji_stadium = {
     name: "stadium",
@@ -1464,6 +1490,7 @@ test("filter_and_sort_mentions (normal)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
+    const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
 });
 
@@ -1620,5 +1647,6 @@ test("muted users excluded from results", () => {
     // Make sure our muting logic doesn't break wildcard mentions
     // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
+    const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(results, [mention_all, call_center]);
 });
