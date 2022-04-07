@@ -98,11 +98,18 @@ export function clean_query_lowercase(query) {
     return query;
 }
 
-export const parse_unicode_emoji_code = (code) =>
-    code
-        .split("-")
-        .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
-        .join("");
+export const parse_unicode_emoji_code = (code) => {
+    try {
+        return code
+            .split("-")
+            .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+            .join("");
+    } catch {
+        // Code could not be parsed, but instead of throwing an exception
+        // we return undefined instead of a string.
+        return undefined;
+    }
+};
 
 export function get_emoji_matcher(query) {
     // replaces spaces with underscores for emoji matching
