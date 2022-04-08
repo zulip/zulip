@@ -152,8 +152,6 @@ USE_TZ = True
 
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, "var", "log")
-# Make redirects work properly behind a reverse proxy
-USE_X_FORWARDED_HOST = True
 
 # Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado),
 ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
