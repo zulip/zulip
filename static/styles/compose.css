@@ -444,7 +444,7 @@ input.recipient_box {
 }
 
 #stream_message_recipient_topic.recipient_box.empty {
-    width: 206px;
+    width: 188px;
     padding-right: 6px;
 }
 
