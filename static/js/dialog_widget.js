@@ -40,8 +40,8 @@ import * as overlays from "./overlays";
  *      7) If a caller needs to run code after the modal body is added
  *          to DOM, it can do so by passing a post_render hook.
  */
- export function EnableDisable(txtPassportNumber) {
-                var btnSubmit = document.getElementById("btnSubmit");     
+
+export function EnableDisable(txtPassportNumber) {                 
                  if (txtPassportNumber.value.trim() != "") {
                  btnSubmit.disabled = false;
                  } else {
