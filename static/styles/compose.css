@@ -140,7 +140,8 @@
     }
 
     #compose-lock-icon,
-    #compose-globe-icon {
+    #compose-globe-icon,
+    .hashtag {
         position: relative;
         left: 6px;
         top: 0.5px;
@@ -152,6 +153,14 @@
 
         .zulip-icon-globe {
             font-size: 12px;
+        }
+    }
+
+    #stream-message .hashtag {
+        &:empty {
+            &::after {
+                font-size: 17px;
+            }
         }
     }
 
