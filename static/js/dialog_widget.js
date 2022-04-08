@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_dialog_widget from "../templates/dialog_widget.hbs";
+import render_edit_bot from "../templates/settings/edit_bot.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t_html} from "./i18n";
@@ -40,6 +41,13 @@ import * as overlays from "./overlays";
  *      7) If a caller needs to run code after the modal body is added
  *          to DOM, it can do so by passing a post_render hook.
  */
+
+$(function(){
+    $(".dialog_submit_button span").attr('disabled', true);
+    $('#edit_bot_name :input').on('change', function(){
+        $(".dialog_submit_button span").removeAttr('disabled');
+    });
+});
 
 export function hide_dialog_spinner() {
     $(".dialog_submit_button span").show();
