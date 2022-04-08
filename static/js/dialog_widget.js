@@ -40,6 +40,11 @@ import * as overlays from "./overlays";
  *      7) If a caller needs to run code after the modal body is added
  *          to DOM, it can do so by passing a post_render hook.
  */
+export function manage() {
+        $(".dialog_submit_button span").hide();
+        if (conf.focus_submit_on_open) {
+                $submit_button.trigger("disabled", false);}
+    }
 
 export function hide_dialog_spinner() {
     $(".dialog_submit_button span").show();
