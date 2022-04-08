@@ -73,6 +73,13 @@
           label=settings_label.translate_emoticons
           prefix=prefix}}
 
+        {{#if page_params.development_environment }}
+        {{> settings_checkbox
+          setting_name="display_emoji_reaction_users"
+          is_checked=settings_object.display_emoji_reaction_users
+          label=settings_label.display_emoji_reaction_users
+          prefix=prefix}}
+        {{/if}}
     </div>
 
     <div class="advanced-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">

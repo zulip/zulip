@@ -496,6 +496,12 @@ export const display_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    display_emoji_reaction_users: new Handlebars.SafeString(
+        $t_html({
+            defaultMessage:
+                "Display names of reacting users when few users have reacted to a message.",
+        }),
+    ),
     escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
 };
 

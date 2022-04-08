@@ -341,6 +341,7 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),
