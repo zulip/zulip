@@ -36,6 +36,28 @@ function abstract_map(map) {
     };
 }
 
+function stream(obj) {
+    if (obj === undefined) {
+        return undefined;
+    }
+
+    return {
+        stream_id: obj.stream_id,
+        name: obj.name,
+    };
+}
+
+function user_group(obj) {
+    if (obj === undefined) {
+        return undefined;
+    }
+
+    return {
+        id: obj.id,
+        name: obj.name,
+    };
+}
+
 export const get_helpers = () => ({
     // user stuff
     get_actual_name_from_user_id: people.get_actual_name_from_user_id,
@@ -45,11 +67,11 @@ export const get_helpers = () => ({
     is_valid_user_id: people.is_known_user_id,
 
     // user groups
-    get_user_group_from_name: user_groups.get_user_group_from_name,
+    get_user_group_from_name: (name) => user_group(user_groups.get_user_group_from_name(name)),
     is_member_of_user_group: user_groups.is_member_of,
 
     // stream hashes
-    get_stream_by_name: stream_data.get_sub,
+    get_stream_by_name: (name) => stream(stream_data.get_sub(name)),
     stream_hash: hash_util.by_stream_url,
     stream_topic_hash: hash_util.by_stream_topic_url,
 

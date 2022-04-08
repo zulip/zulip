@@ -34,8 +34,8 @@ export function close() {
 }
 
 export function _build_private_messages_list() {
-    const convos = pm_list_data.get_convos();
-    const dom_ast = pm_list_dom.pm_ul(convos);
+    const conversations = pm_list_data.get_conversations();
+    const dom_ast = pm_list_dom.pm_ul(conversations);
     return dom_ast;
 }
 

@@ -469,7 +469,7 @@ paths:
                                     - type: object
                                       additionalProperties: false
                                       description: |
-                                        When the role of a user changes.
+                                        When the [role](/help/roles-and-permissions) of a user changes.
                                       properties:
                                         user_id:
                                           type: integer
@@ -478,7 +478,7 @@ paths:
                                         role:
                                           type: integer
                                           description: |
-                                            The new role of the user in integer.
+                                            The new [role](/api/roles-and-permissions) of the user.
                                           enum:
                                             - 100
                                             - 200
@@ -1232,18 +1232,14 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
-                            - description: |
+                            - type: object
+                              description: |
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
                                 - $ref: "#/components/schemas/EmojiReactionBase"
                                 - additionalProperties: false
                                   properties:
-                                    emoji_code: {}
-                                    emoji_name: {}
-                                    reaction_type: {}
-                                    user_id: {}
-                                    user: {}
                                     id:
                                       $ref: "#/components/schemas/EventIdSchema"
                                     type:
@@ -1260,6 +1256,11 @@ paths:
                                       description: |
                                         The ID of the message to which a reaction was
                                         added.
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
@@ -1277,18 +1278,14 @@ paths:
                                       "reaction_type": "unicode_emoji",
                                       "id": 0,
                                     }
-                            - description: |
+                            - type: object
+                              description: |
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
                                 - $ref: "#/components/schemas/EmojiReactionBase"
                                 - additionalProperties: false
                                   properties:
-                                    emoji_code: {}
-                                    emoji_name: {}
-                                    reaction_type: {}
-                                    user_id: {}
-                                    user: {}
                                     id:
                                       $ref: "#/components/schemas/EventIdSchema"
                                     type:
@@ -1305,6 +1302,11 @@ paths:
                                       description: |
                                         The ID of the message from which the reaction was
                                         removed.
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                   example:
                                     {
                                       "type": "reaction",
@@ -3573,7 +3575,8 @@ paths:
                                     add_custom_emoji_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can add custom emoji in this organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can add custom emoji in this organization.
                                     allow_edit_history:
                                       type: boolean
                                       description: |
@@ -3598,7 +3601,8 @@ paths:
                                     bot_creation_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can create bot users in this organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can create bot users in this organization.
                                     community_topic_editing_limit_seconds:
                                       type: integer
                                       description: |
@@ -3611,16 +3615,16 @@ paths:
                                     create_public_stream_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can
-                                        create public streams in this organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can create public streams in this organization.
 
                                         **Changes**: Before Zulip 5.0 (feature level 102), permission to
                                         create streams was controlled by the `create_stream_policy` setting.
                                     create_private_stream_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can
-                                        create private streams in this organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can create private streams in this organization.
 
                                         **Changes**: Before Zulip 5.0 (feature level 102), permission to
                                         create streams was controlled by the `create_stream_policy` setting.
@@ -3655,27 +3659,32 @@ paths:
                                     edit_topic_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can edit topics of any message.
+                                        The [policy][permission-level] for which users can edit topics of any message.
 
                                         - 1 = members only
                                         - 2 = admins only
-                                        - 3 = full members only
+                                        - 3 = [full members][calc-full-member] only
                                         - 4 = moderators only
                                         - 5 = everyone
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
                                         previous `allow_community_topic_editing` boolean.
+
+                                        [permission-level]: /api/roles-and-permissions#permission-levels
+                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     email_address_visibility:
                                       type: integer
                                       description: |
-                                        The policy for which users in this organization can see the
-                                        real email addresses of other users.
+                                        The [policy][permission-level] for which users in this organization can see
+                                        the real email addresses of other users.
 
                                         - 1 = everyone
                                         - 2 = members only
                                         - 3 = administrators only
                                         - 4 = nobody (though note that administrators can change this setting).
                                         - 5 = moderators only
+
+                                        [permission-level]: /api/roles-and-permissions#permission-levels
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -3737,16 +3746,16 @@ paths:
                                     invite_to_realm_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can invite other users
-                                        to join the organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can invite other users to join the organization.
 
                                         **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                                         previous `invite_by_admins_only` boolean.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can add other users to streams in this
-                                        organization.
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can add other users to streams in this organization.
                                     logo_source:
                                       type: string
                                       description: |
@@ -3794,14 +3803,18 @@ paths:
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
-                                        The policy for which users can move messages from one stream to another.
+                                        The [policy][permission-level] for which users can move messages from
+                                        one stream to another.
 
                                         - 1 = Members only
                                         - 2 = Administrators only
-                                        - 3 = Full members only
+                                        - 3 = [Full members][calc-full-member] only
                                         - 4 = Moderators only
 
                                         **Changes**: New in Zulip 4.0 (feature level 56)
+
+                                        [permission-level]: /api/roles-and-permissions#permission-levels
+                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     name:
                                       type: string
                                       description: |
@@ -3854,7 +3867,8 @@ paths:
                                     private_message_policy:
                                       type: integer
                                       description: |
-                                        Policy for [who can send private messages](/help/restrict-private-messages)
+                                        [Policy](/api/roles-and-permissions#permission-levels)
+                                        for [who can send private messages](/help/restrict-private-messages)
                                         in this organization.
 
                                         - 1 = Everyone
@@ -3876,15 +3890,17 @@ paths:
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
-                                        The organization's policy for [who can manage user groups
-                                        ][user-group-permissions].
+                                        The organization's [policy][permission-level] for
+                                        [who can manage user groups][user-group-permissions].
 
                                         - 1 = All members can create and edit user groups
                                         - 2 = Only organization administrators can create and edit user groups
-                                        - 3 = Only full members can create and edit user groups
+                                        - 3 = Only [full members][calc-full-member] can create and edit user groups
                                         - 4 = Only organization administrators and moderators can create and edit user groups
 
                                         [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
+                                        [permission-level]: /api/roles-and-permissions#permission-levels
+                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -3893,16 +3909,19 @@ paths:
                                       type: integer
                                       description: |
                                         Members whose accounts have been created at least this many days ago
-                                        will be treated as [full members](/help/restrict-permissions-of-new-members)
+                                        will be treated as [full members][calc-full-member]
                                         for the purpose of settings that restrict access to new members.
+
+                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                     wildcard_mention_policy:
                                       type: integer
                                       description: |
-                                        The policy for who can use wildcard mentions in large streams.
+                                        The [policy][permission-level] for who can use wildcard mentions in
+                                        large streams.
 
                                         - 1 => Any user can use wildcard mentions in large streams.
                                         - 2 => Only members can use wildcard mentions in large streams.
-                                        - 3 => Only full members can use wildcard mentions in large streams.
+                                        - 3 => Only [full members][calc-full-member] can use wildcard mentions in large streams.
                                         - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                                         - 5 => Only organization administrators can use wildcard mentions in large streams.
                                         - 6 => Nobody can use wildcard mentions in large streams.
@@ -3913,6 +3932,9 @@ paths:
 
                                         **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                                         Zulip 4.0 (feature level 62).
+
+                                        [permission-level]: /api/roles-and-permissions#permission-levels
+                                        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                                   additionalProperties: false
                               example:
                                 {
@@ -6445,7 +6467,7 @@ paths:
                           - 400
                           - 600
                         description: |
-                          [Organization-level role](/help/roles-and-permissions) of the user.
+                          [Organization-level role](/api/roles-and-permissions) of the user.
                           Possible values are:
 
                           - Organization owner => 100
@@ -8538,7 +8560,7 @@ paths:
         - name: role
           in: query
           description: |
-            New [role](/help/roles-and-permissions) for the user. Roles are encoded as:
+            New [role](/api/roles-and-permissions) for the user. Roles are encoded as:
 
             - Organization owner: 100
             - Organization administrator: 200
@@ -9737,8 +9759,7 @@ paths:
                           error messages when a search returns limited results because
                           a stop word in the query was ignored.
                       user_status:
-                        allOf:
-                          - $ref: "#/components/schemas/EmojiBase"
+                        type: object
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
@@ -9747,9 +9768,6 @@ paths:
 
                           **Changes**: The emoji parameters are new in Zulip 5.0 (feature level 86).
                           Previously, Zulip did not support emoji associated with statuses.
-
-                          A status that does not have an emoji associated with it is encoded
-                          with `emoji_name=""`.
                         additionalProperties:
                           description: |
                             `{user_id}`: Object containing the status details of a user
@@ -9760,27 +9778,35 @@ paths:
                             away:
                               type: boolean
                               description: |
-                                Whether the user has marked themself "away".
+                                If present, the user has marked themself "away".
                             status_text:
                               type: string
                               description: |
-                                The text content of the status message.
+                                If present, the text content of the user's status message.
                             emoji_name:
                               type: string
                               description: |
-                                The [emoji name](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, the name for the emoji to associate with the user's status.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             emoji_code:
                               type: string
                               description: |
-                                The [emoji code](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, a unique identifier, defining the specific emoji codepoint
+                                requested, within the namespace of the `reaction_type`.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                             reaction_type:
                               type: string
                               description: |
-                                The [emoji type](/api/add-reaction#parameters) for the emoji associated with the new status.
+                                If present, one of the following values:
+
+                                - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
+                                  codepoint).
+                                - `realm_emoji`: [Custom emoji](/help/custom-emoji).
+                                  (`emoji_code` will be its ID).
+                                - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
+                                  namespace the `zulip` emoji.
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                       user_settings:
@@ -10669,16 +10695,19 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can upload new custom emoji in this
-                          organization.
+                          The [policy][permission-level] for which users can upload new custom emoji
+                          in this organization.
 
                           - 1 = Members only
                           - 2 = Administrators only
-                          - 3 = Full members only
+                          - 3 = [Full members][calc-full-member] only
                           - 4 = Moderators only
 
                           **Changes**: New in Zulip 5.0 (feature level 85) replacing the
                           previous `realm_add_emoji_by_admins_only` boolean.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_allow_edit_history:
                         type: boolean
                         description: |
@@ -10691,52 +10720,64 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy defining which users can delete
+                          The [policy][permission-level] defining which users can delete
                           messages that they had sent.
 
                           - 1 = members only
                           - 2 = admins only
-                          - 3 = full members only
+                          - 3 = [full members][calc-full-member] only
                           - 4 = admins and moderators only
                           - 5 = everyone
 
                           **Changes**: New in Zulip 5.0 (feature level 101), replacing the
                           previous `allow_message_deleting` boolean;
                           `true` corresponded to `everyone`, and `false` to `admins only`.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_bot_creation_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can create bot users in this organization.
+                          The [policy](/api/roles-and-permissions#permission-levels)
+                          for which users can create bot users in this organization.
                       realm_create_public_stream_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can create public streams in this organization.
+                          The [policy][permission-level] for which users can create public streams
+                          in this organization.
 
                           - 1 = members only
                           - 2 = admins only
-                          - 3 = full members only
+                          - 3 = [full members][calc-full-member] only
                           - 4 = admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create streams was controlled by the `realm_create_stream_policy` setting.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_private_stream_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can create private streams in this organization.
+                          The [policy][permission-level] for which users can create private streams
+                          in this organization.
 
                           - 1 = members only
                           - 2 = admins only
-                          - 3 = full members only
+                          - 3 = [full members][calc-full-member] only
                           - 4 = admins and moderators only
 
                           **Changes**: Before Zulip 5.0 (feature level 102), permission to
                           create streams was controlled by the `realm_create_stream_policy` setting.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_create_web_public_stream_policy:
                         type: integer
                         description: |
@@ -10747,7 +10788,7 @@ paths:
                           server-level setting enabled and the organization has enabled
                           the `enable_spectator_access` realm setting.
 
-                          The policy for which users can create web
+                          The [policy][permission-level] for which users can create web
                           public streams in this organization. Allowed
                           values are:
 
@@ -10757,23 +10798,26 @@ paths:
                           - 7 = owners only
 
                           **Changes**: Added in Zulip 5.0 (feature level 103).
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_invite_to_stream_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can add other users to streams in this
-                          organization.
+                          The [policy](/api/roles-and-permissions#permission-levels)
+                          for which users can add other users to streams in this organization.
                       realm_wildcard_mention_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for who can use wildcard mentions in large streams.
+                          The [policy][permission-level] for who can use wildcard mentions
+                          in large streams.
 
                           - 1 => Any user can use wildcard mentions in large streams.
                           - 2 => Only members can use wildcard mentions in large streams.
-                          - 3 => Only full members can use wildcard mentions in large streams.
+                          - 3 => Only [full members][calc-full-member] can use wildcard mentions in large streams.
                           - 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                           - 5 => Only organization administrators can use wildcard mentions in large streams.
                           - 6 => Nobody can use wildcard mentions in large streams.
@@ -10784,6 +10828,9 @@ paths:
 
                           **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
                           Zulip 4.0 (feature level 62).
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_language:
                         type: string
                         description: |
@@ -10814,14 +10861,16 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users in this organization can see the
-                          real email addresses of other users.
+                          The [policy][permission-level] for which users in this organization can see
+                          the real email addresses of other users.
 
                           - 1 = everyone
                           - 2 = members only
                           - 3 = administrators only
                           - 4 = nobody (though note that administrators can change this setting).
                           - 5 = moderators only
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
@@ -10841,30 +10890,38 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Policy for [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations)
+                          [Policy][permission-level] for [who can invite new
+                          users](/help/restrict-account-creation#change-who-can-send-invitations)
                           to join the organization:
 
                           - 1 = Members only
                           - 2 = Administrators only
-                          - 3 = Full members only
+                          - 3 = [Full members][calc-full-member] only
                           - 4 = Moderators only
                           - 6 = Nobody
 
                           **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                           previous `realm_invite_by_admins_only` boolean.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_move_messages_between_streams_policy:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can move messages from one stream to another.
+                          The [policy][permission-level] for which users can move messages
+                          from one stream to another.
 
                           - 1 = Members only
                           - 2 = Administrators only
-                          - 3 = Full members only
+                          - 3 = [Full members][calc-full-member] only
                           - 4 = Moderators only
 
                           **Changes**: New in Zulip 4.0 (feature level 56)
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -10982,8 +11039,10 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Members whose accounts have been created at least this many days ago
-                          will be treated as [full members](/help/restrict-permissions-of-new-members)
+                          will be treated as [full members][calc-full-member]
                           for the purpose of settings that restrict access to new members.
+
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_digest_weekday:
                         type: integer
                         description: |
@@ -10996,7 +11055,8 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Policy for [who can send private messages](/help/restrict-private-messages)
+                          [Policy](/api/roles-and-permissions#permission-levels)
+                          for [who can send private messages](/help/restrict-private-messages)
                           in this organization.
 
                           - 1 = Everyone
@@ -11006,15 +11066,17 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The organization's policy for [who can manage user groups
-                          ][user-group-permissions].
+                          The organization's [policy][permission-level] for
+                          [who can manage user groups][user-group-permissions].
 
                           - 1 = All members can create and edit user groups
                           - 2 = Only organization administrators can create and edit user groups
-                          - 3 = Only full members can create and edit user groups.
+                          - 3 = Only [full members][calc-full-member] can create and edit user groups.
                           - 4 = Only organization administrators and moderators can create and edit user groups.
 
                           [user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_default_code_block_language:
                         type: string
                         nullable: true
@@ -11063,16 +11125,19 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The policy for which users can edit topics of any message.
+                          The [policy][permission-level] for which users can edit topics of any message.
 
                           - 1 = members only
                           - 2 = admins only
-                          - 3 = full members only
+                          - 3 = [full members][calc-full-member] only
                           - 4 = moderators only
                           - 5 = everyone
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the
                           previous `allow_community_topic_editing` boolean.
+
+                          [permission-level]: /api/roles-and-permissions#permission-levels
+                          [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         description: |
@@ -11890,13 +11955,13 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is an [organization administrator](/help/roles-and-permissions).
+                          Whether the current user is an [organization administrator](/api/roles-and-permissions).
                       is_owner:
                         type: boolean
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is an [organization owner](/help/roles-and-permissions).
+                          Whether the current user is an [organization owner](/api/roles-and-permissions).
                       is_billing_admin:
                         type: boolean
                         description: |
@@ -11910,7 +11975,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is an [organization moderator](/help/roles-and-permissions).
+                          Whether the current user is an [organization moderator](/api/roles-and-permissions).
 
                           **Changes**: New in Zulip 4.0 (feature level 60).
                       is_guest:
@@ -11918,7 +11983,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          Whether the current user is a [guest user](/help/roles-and-permissions).
+                          Whether the current user is a [guest user](/api/roles-and-permissions).
                       enter_sends:
                         deprecated: true
                         type: boolean
@@ -14074,15 +14139,18 @@ components:
         stream_post_policy:
           type: integer
           description: |
-            Policy for which users can post messages to the stream.
+            [Policy][permission-level] for which users can post messages to the stream.
 
             - 1 => Any user can post.
             - 2 => Only administrators can post.
-            - 3 => Only full members can post.
+            - 3 => Only [full members][calc-full-member] can post.
             - 4 => Only moderators can post.
 
             **Changes**: New in Zulip 3.0, replacing the previous
             `is_announcement_only` boolean.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
           nullable: true
@@ -14687,15 +14755,18 @@ components:
         stream_post_policy:
           type: integer
           description: |
-            Policy for which users can post messages to the stream.
+            [Policy][permission-level] for which users can post messages to the stream.
 
             - 1 => Any user can post.
             - 2 => Only administrators can post.
-            - 3 => Only full members can post.
+            - 3 => Only [full members][calc-full-member] can post.
             - 4 => Only moderators can post.
 
             **Changes**: New in Zulip 3.0, replacing the previous
             `is_announcement_only` boolean.
+
+            [permission-level]: /api/roles-and-permissions#permission-levels
+            [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
         message_retention_days:
           type: integer
           nullable: true
@@ -15303,7 +15374,7 @@ components:
             - 400
             - 600
           description: |
-            [Organization-level role](/help/roles-and-permissions) of the user.
+            [Organization-level role](/api/roles-and-permissions) of the user.
             Possible values are:
 
             - Organization owner => 100
@@ -15850,15 +15921,18 @@ components:
       name: stream_post_policy
       in: query
       description: |
-        Policy for which users can post messages to the stream.
+        [Policy][permission-level] for which users can post messages to the stream.
 
         - 1 => Any user can post.
         - 2 => Only administrators can post.
-        - 3 => Only full members can post.
+        - 3 => Only [full members][calc-full-member] can post.
         - 4 => Only moderators can post.
 
         **Changes**: New in Zulip 3.0, replacing the previous
         `is_announcement_only` boolean.
+
+        [permission-level]: /api/roles-and-permissions#permission-levels
+        [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
       schema:
         type: integer
         default: 1

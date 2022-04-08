@@ -152,17 +152,12 @@ function assert_parse(raw_content, expected_content) {
     assert.equal(content, expected_content);
 }
 
-function test(label, f) {
-    markdown.setup();
-    run_test(label, f);
-}
-
-test("basics", () => {
+run_test("basics", () => {
     assert_parse("boring", "<p>boring</p>");
     assert_parse("**bold**", "<p><strong>bold</strong></p>");
 });
 
-test("user mentions", () => {
+run_test("user mentions", () => {
     assert_parse("@**greg**", '<p><span class="user-mention" data-user-id="105">@greg</span></p>');
 
     assert_parse("@**|105**", '<p><span class="user-mention" data-user-id="105">@greg</span></p>');
@@ -178,14 +173,14 @@ test("user mentions", () => {
     );
 });
 
-test("user group mentions", () => {
+run_test("user group mentions", () => {
     assert_parse(
         "@*Staff*",
         '<p><span class="user-group-mention" data-user-group-id="201">@Staff</span></p>',
     );
 });
 
-test("stream links", () => {
+run_test("stream links", () => {
     assert_parse(
         "#**social**",
         '<p><a class="stream" data-stream-id="301" href="/stream-301">#social</a></p>',
@@ -197,7 +192,7 @@ test("stream links", () => {
     );
 });
 
-test("emojis", () => {
+run_test("emojis", () => {
     assert_parse(
         "yup :)",
         '<p>yup <span aria-label="smile" class="emoji emoji-1f642" role="img" title="smile">:smile:</span></p>',
@@ -212,9 +207,24 @@ test("emojis", () => {
     );
 });
 
-test("linkifiers", () => {
+run_test("linkifiers", () => {
     assert_parse(
         "see #foo12345 for details",
         '<p>see <a href="http://foo.com/12345" title="http://foo.com/12345">#foo12345</a> for details</p>',
     );
+});
+
+run_test("topic links", () => {
+    const topic = "progress on #foo101 and #foo102";
+    const topic_links = markdown.get_topic_links({topic, get_linkifier_map});
+    assert.deepEqual(topic_links, [
+        {
+            text: "#foo101",
+            url: "http://foo.com/101",
+        },
+        {
+            text: "#foo102",
+            url: "http://foo.com/102",
+        },
+    ]);
 });

@@ -52,6 +52,13 @@ run_test("get_emoji_matcher", () => {
 
     assert_matches("japanese_post_", [emoji_japanese_post_office]);
     assert_matches("japanese post ", [emoji_japanese_post_office]);
+
+    assert_matches("🐼", [emoji_panda_face]);
+});
+
+run_test("parse_unicode_emoji_code", () => {
+    assert.equal(typeahead.parse_unicode_emoji_code("1f43c"), "🐼");
+    assert.equal(typeahead.parse_unicode_emoji_code("not_unicode"), undefined);
 });
 
 run_test("triage", () => {

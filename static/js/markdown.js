@@ -5,8 +5,6 @@ import _ from "lodash";
 import * as fenced_code from "../shared/js/fenced_code";
 import marked from "../third/marked/lib/marked";
 
-import * as blueslip from "./blueslip";
-
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
 // main piece in rendering Markdown client-side is
@@ -14,12 +12,6 @@ import * as blueslip from "./blueslip";
 // modified from the original implementation.
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/markdown.html
-
-// This should be initialized with a struct
-// similar to markdown_config.get_helpers().
-// See the call to markdown.initialize() in ui_init
-// for example usage.
-let helpers;
 
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
@@ -39,9 +31,9 @@ function contains_preview_link(content) {
     return preview_regexes.some((re) => re.test(content));
 }
 
-export function translate_emoticons_to_names(text) {
+export function translate_emoticons_to_names({src, get_emoticon_translations}) {
     // Translates emoticons in a string to their colon syntax.
-    let translated = text;
+    let translated = src;
     let replacement_text;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
@@ -67,7 +59,7 @@ export function translate_emoticons_to_names(text) {
         return match;
     };
 
-    for (const translation of helpers.get_emoticon_translations()) {
+    for (const translation of get_emoticon_translations()) {
         // We can't pass replacement_text directly into
         // emoticon_replacer, because emoticon_replacer is
         // a callback for `replace()`.  Instead we just mutate
@@ -79,11 +71,11 @@ export function translate_emoticons_to_names(text) {
     return translated;
 }
 
-function contains_problematic_linkifier(content) {
+function contains_problematic_linkifier({content, get_linkifier_map}) {
     // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    for (const re of helpers.get_linkifier_map().keys()) {
+    for (const re of get_linkifier_map().keys()) {
         const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         if (regex.test(content)) {
@@ -94,11 +86,14 @@ function contains_problematic_linkifier(content) {
     return false;
 }
 
-export function contains_backend_only_syntax(content) {
+function content_contains_backend_only_syntax({content, get_linkifier_map}) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
-    return contains_preview_link(content) || contains_problematic_linkifier(content);
+    return (
+        contains_preview_link(content) ||
+        contains_problematic_linkifier({content, get_linkifier_map})
+    );
 }
 
 function parse_with_options({raw_content, helper_config, options}) {
@@ -107,8 +102,6 @@ function parse_with_options({raw_content, helper_config, options}) {
     // Our caller passes a helper_config object that has several
     // helper functions for getting info about users, streams, etc.
     // And it also passes in options for the marked processor.
-
-    helpers = helper_config;
 
     let mentioned = false;
     let mentioned_group = false;
@@ -283,12 +276,9 @@ function parse_with_options({raw_content, helper_config, options}) {
     return {content, flags};
 }
 
-function do_add_topic_links({message, get_linkifier_map}) {
-    if (message.type !== "stream") {
-        message.topic_links = [];
-        return;
-    }
-    const topic = message.topic;
+export function get_topic_links({topic, get_linkifier_map}) {
+    // We export this for testing purposes, and mobile may want to
+    // use this as well in the future.
     const links = [];
 
     for (const [pattern, url] of get_linkifier_map().entries()) {
@@ -322,7 +312,8 @@ function do_add_topic_links({message, get_linkifier_map}) {
     for (const match of links) {
         delete match.index;
     }
-    message.topic_links = links;
+
+    return links;
 }
 
 export function is_status_message(raw_content) {
@@ -446,18 +437,14 @@ function handleTex(tex, fullmatch) {
             // TeX syntax error
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        blueslip.error(error);
-        return undefined;
+        throw new Error(error.message);
     }
 }
 
-export function get_linkifier_regexes() {
-    return Array.from(helpers.get_linkifier_map().keys());
-}
-
-export function setup() {
-    // Once we focus on supporting other platforms such as mobile,
-    // we will export this function.
+export function parse({raw_content, helper_config}) {
+    function get_linkifier_regexes() {
+        return Array.from(helper_config.get_linkifier_map().keys());
+    }
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {
@@ -468,18 +455,19 @@ export function setup() {
     }
 
     // Configure the marked Markdown parser for our usage
-    const r = new marked.Renderer();
+    const renderer = new marked.Renderer();
 
     // No <code> around our code blocks instead a codehilite <div> and disable
     // class-specific highlighting.
-    r.code = (code) => fenced_code.wrap_code(code) + "\n\n";
+    renderer.code = (code) => fenced_code.wrap_code(code) + "\n\n";
 
     // Prohibit empty links for some reason.
-    const old_link = r.link;
-    r.link = (href, title, text) => old_link.call(r, href, title, text.trim() ? text : href);
+    const old_link = renderer.link;
+    renderer.link = (href, title, text) =>
+        old_link.call(renderer, href, title, text.trim() ? text : href);
 
     // Put a newline after a <br> in the generated HTML to match Markdown
-    r.br = function () {
+    renderer.br = function () {
         return "<br>\n";
     };
 
@@ -488,13 +476,16 @@ export function setup() {
     }
 
     function preprocess_translate_emoticons(src) {
-        if (!helpers.should_translate_emoticons()) {
+        if (!helper_config.should_translate_emoticons()) {
             return src;
         }
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return translate_emoticons_to_names(src);
+        return translate_emoticons_to_names({
+            src,
+            get_emoticon_translations: helper_config.get_emoticon_translations,
+        });
     }
 
     // Disable headings
@@ -519,21 +510,6 @@ export function setup() {
     // HTML into the output. This generated HTML is safe to not escape
     fenced_code.set_stash_func((html) => marked.stashHtml(html, true));
 
-    marked.setOptions({
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        zulip: true,
-        renderer: r,
-        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
-    });
-}
-
-export function parse({raw_content, helper_config}) {
     function streamHandler(stream_name) {
         return handleStream({
             stream_name,
@@ -583,6 +559,16 @@ export function parse({raw_content, helper_config}) {
         streamTopicHandler,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
+        gfm: true,
+        tables: true,
+        breaks: true,
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false,
+        zulip: true,
+        renderer,
+        preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     };
 
     return parse_with_options({raw_content, helper_config, options});
@@ -599,8 +585,6 @@ export function initialize(helper_config) {
     // This is generally only intended to be called by the webapp. Most
     // other platforms should call setup().
     webapp_helpers = helper_config;
-    helpers = helper_config;
-    setup();
 }
 
 export function apply_markdown(message) {
@@ -614,7 +598,21 @@ export function apply_markdown(message) {
 }
 
 export function add_topic_links(message) {
-    return do_add_topic_links({message, get_linkifier_map: webapp_helpers.get_linkifier_map});
+    if (message.type !== "stream") {
+        message.topic_links = [];
+        return;
+    }
+    message.topic_links = get_topic_links({
+        topic: message.topic,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
+    });
+}
+
+export function contains_backend_only_syntax(content) {
+    return content_contains_backend_only_syntax({
+        content,
+        get_linkifier_map: webapp_helpers.get_linkifier_map,
+    });
 }
 
 export function parse_non_message(raw_content) {
