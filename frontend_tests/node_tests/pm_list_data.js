@@ -333,10 +333,10 @@ test("get_list_info", ({override}) => {
         ],
     );
 
-    // After adding one more conversation, there will be 10
+    // After adding two more conversations, there will be 10
     // conversations, which exceeds
     // `max_conversations_to_show_with_unreads`. Verify that the
-    // oldest conversations are not shown and their unreads counted in
+    // oldest conversations are not shown and their unreads are counted in
     // more_conversations_unread_count.
 
     pm_conversations.recent.insert([lago.user_id], 9);
@@ -358,8 +358,8 @@ test("get_list_info", ({override}) => {
         ],
     );
 
-    // If we are narrowed to an older topic, then that one gets
-    // included despite not being among the 8 most recent.
+    // If we are narrowed to an older conversation, then that one gets
+    // included in the list despite not being among the 8 most recent.
 
     set_filter_result(["alice@zulip.com,bob@zulip.com"]);
     list_info = get_list_info(false);
@@ -380,7 +380,7 @@ test("get_list_info", ({override}) => {
         ],
     );
 
-    // Verify that if the list is zoomed, we'll include all 9
+    // Verify that if the list is zoomed, we'll include all 10
     // conversations in the correct order.
 
     list_info = get_list_info(true);
@@ -416,8 +416,8 @@ test("get_list_info", ({override}) => {
     list_info = get_list_info(false);
     assert.deepEqual(list_info.conversations_to_be_shown.length, 5);
 
-    // If we set the oldest conversation as active, it will be
-    // included as well as the 5 most recent.
+    // If we set the oldest conversation as active, it will
+    // also be included in the list with the most recent 5.
 
     set_filter_result(["alice@zulip.com"]);
     assert.equal(pm_list_data.get_active_user_ids_string(), "101");
