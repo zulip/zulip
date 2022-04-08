@@ -70,24 +70,6 @@ saslpasswd2 -p -f /etc/sasl2/memcached-sasldb2 \
     source  => 'puppet:///modules/zulip/sasl2/memcached.conf',
     notify  => Service[memcached],
   }
-  file { '/etc/systemd/system/memcached.service.d':
-    ensure => directory,
-  }
-  file { '/etc/systemd/system/memcached.service.d/zulip-fix-sasl.conf':
-    require => File['/etc/systemd/system/memcached.service.d'],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => "\
-# https://bugs.launchpad.net/ubuntu/+source/memcached/+bug/1878721
-[Service]
-Environment=SASL_CONF_PATH=/etc/sasl2
-",
-    notify  => [
-      Class['zulip::systemd_daemon_reload'],
-      Service['memcached'],
-    ],
-  }
   file { '/etc/memcached.conf':
     ensure  => file,
     require => [
