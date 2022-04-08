@@ -41,6 +41,13 @@ import * as overlays from "./overlays";
  *          to DOM, it can do so by passing a post_render hook.
  */
 
+$(function(){
+    $(".dialog_submit_button span").attr('disabled', true);
+    $('#dialog_widget_modal .modal__btn').on('change', function(){
+        $(".dialog_submit_button span").removeAttr('disabled');
+    });
+});
+
 export function hide_dialog_spinner() {
     $(".dialog_submit_button span").show();
     $("#dialog_widget_modal .modal__btn").prop("disabled", false);
