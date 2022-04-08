@@ -310,13 +310,6 @@ export function show_new_stream_modal() {
     });
 
     update_announce_stream_state();
-    if (stream_data.realm_has_notifications_stream()) {
-        $("#announce-new-stream").show();
-        $("#announce-new-stream input").prop("disabled", false);
-        $("#announce-new-stream input").prop("checked", true);
-    } else {
-        $("#announce-new-stream").hide();
-    }
     clear_error_display();
 }
 
@@ -326,7 +319,7 @@ export function set_up_handlers() {
 
     const $container = $("#stream-creation").expectOne();
 
-    $container.on("change", "#make-invite-only input", update_announce_stream_state);
+    $container.on("change", ".stream-privacy-values input", update_announce_stream_state);
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();
