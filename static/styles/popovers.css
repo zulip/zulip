@@ -355,6 +355,12 @@ ul {
             &[data-type="2"] .value {
                 overflow-wrap: break-word;
             }
+
+            &[data-type="5"] {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 300px;
+            }
         }
     }
 
