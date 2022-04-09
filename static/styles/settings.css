@@ -1332,6 +1332,16 @@ input[type="checkbox"] {
         line-height: 1.2;
     }
 
+    .settings-table-search-section {
+        float: right;
+    }
+
+    .clear_search_button {
+        position: absolute;
+        right: -5px;
+        top: 11px;
+    }
+
     .form-sidebar {
         position: absolute;
         top: 45px;

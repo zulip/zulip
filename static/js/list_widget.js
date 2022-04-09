@@ -337,6 +337,12 @@ export function create($container, list, opts) {
                 widget.set_filter_value(value);
                 widget.hard_redraw();
             });
+
+            opts.filter.$element.siblings(".clear_search_button").on("click", () => {
+                opts.filter.$element.val("");
+                widget.set_filter_value("");
+                widget.clean_redraw();
+            });
         }
     };
 
@@ -349,6 +355,7 @@ export function create($container, list, opts) {
 
         if (opts.filter && opts.filter.$element) {
             opts.filter.$element.off("input.list_widget_filter");
+            opts.filter.$element.siblings(".clear_search_button").off("click");
         }
     };
 
