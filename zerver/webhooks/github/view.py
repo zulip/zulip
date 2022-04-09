@@ -85,7 +85,7 @@ def get_assigned_or_unassigned_pull_request_body(helper: Helper) -> str:
     pull_request = payload["pull_request"]
     assignee = pull_request.get("assignee")
     if assignee:
-        stringified_assignee = assignee.get("login").tame(check_string)
+        stringified_assignee = assignee["login"].tame(check_string)
 
     base_message = get_pull_request_event_message(
         get_sender_name(payload),
@@ -224,7 +224,7 @@ def get_commit_comment_body(helper: Helper) -> str:
         get_sender_name(payload),
         action,
         commit_url,
-        comment.get("commit_id").tame(check_string),
+        comment["commit_id"].tame(check_string),
         comment["body"].tame(check_string),
     )
 
@@ -234,7 +234,7 @@ def get_push_tags_body(helper: Helper) -> str:
     return get_push_tag_event_message(
         get_sender_name(payload),
         get_tag_name_from_ref(payload["ref"].tame(check_string)),
-        action="pushed" if payload.get("created").tame(check_bool) else "removed",
+        action="pushed" if payload["created"].tame(check_bool) else "removed",
     )
 
 
@@ -242,10 +242,10 @@ def get_push_commits_body(helper: Helper) -> str:
     payload = helper.payload
     commits_data = []
     for commit in payload["commits"]:
-        if commit.get("author").get("username"):
-            name = commit.get("author").get("username").tame(check_string)
+        if commit["author"].get("username"):
+            name = commit["author"]["username"].tame(check_string)
         else:
-            name = commit.get("author").get("name").tame(check_string)
+            name = commit["author"]["name"].tame(check_string)
         commits_data.append(
             {
                 "name": name,
@@ -321,7 +321,7 @@ def get_repository_body(helper: Helper) -> str:
     payload = helper.payload
     return "{} {} the repository [{}]({}).".format(
         get_sender_name(payload),
-        payload.get("action").tame(check_string),
+        payload["action"].tame(check_string),
         get_repository_full_name(payload),
         payload["repository"]["html_url"].tame(check_string),
     )
