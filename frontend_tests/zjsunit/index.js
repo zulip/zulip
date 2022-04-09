@@ -1,5 +1,6 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const path = require("path");
 
 require("css.escape");
@@ -39,9 +40,7 @@ function immediate(f) {
 
 // Find the files we need to run.
 const files = process.argv.slice(2);
-if (files.length === 0) {
-    throw new Error("No tests found");
-}
+assert.notEqual(files.length, 0, "No tests found");
 
 // Set up our namespace helpers.
 const window = new Proxy(global, {
@@ -73,6 +72,7 @@ handlebars.hook_require();
 
 const noop = function () {};
 
+/* istanbul ignore next */
 function short_tb(tb) {
     const lines = tb.split("\n");
 
@@ -102,7 +102,6 @@ try {
     for (const file of files) {
         namespace.start();
         namespace.set_global("window", window);
-        namespace.set_global("to_$", () => window);
         namespace.set_global("location", dom.window.location);
         window.location.href = "http://zulip.zulipdev.com/#";
         namespace.set_global("setTimeout", noop);
@@ -132,7 +131,7 @@ try {
 
         namespace.finish();
     }
-} catch (error) {
+} catch (error) /* istanbul ignore next */ {
     if (process.env.USING_INSTRUMENTED_CODE) {
         console.info(`
     TEST FAILED! Before using the --coverage option please make sure that your

@@ -32,6 +32,7 @@ const compose = zrequire("compose");
 function stub_out_video_calls() {
     const $elem = $("#below-compose-content .video_link");
     $elem.toggle = (show) => {
+        /* istanbul ignore if */
         if (show) {
             $elem.show();
         } else {
@@ -77,8 +78,6 @@ test("videos", ({override, override_rewire}) => {
     compose.initialize();
 
     (function test_no_provider_video_link_compose_clicked() {
-        let called = false;
-
         const $textarea = $.create("target-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
@@ -90,15 +89,19 @@ test("videos", ({override, override_rewire}) => {
             },
         };
 
-        override_rewire(compose_ui, "insert_syntax_and_focus", () => {
-            called = true;
-        });
+        override_rewire(
+            compose_ui,
+            "insert_syntax_and_focus",
+            /* istanbul ignore next */
+            () => {
+                throw new Error("unexpected insert_syntax_and_focus call");
+            },
+        );
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
         handler(ev);
-        assert.ok(!called);
     })();
 
     (function test_jitsi_video_link_compose_clicked() {

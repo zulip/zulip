@@ -71,6 +71,7 @@ function make_textbox(s) {
     };
 
     $widget.val = function (new_val) {
+        /* istanbul ignore if */
         if (new_val) {
             $widget.s = new_val;
             return this;
@@ -301,6 +302,7 @@ run_test("quote_and_reply", ({override, override_rewire}) => {
             textarea_caret_pos = arg;
             return this;
         }
+        /* istanbul ignore if */
         if (typeof arg !== "string") {
             console.info(arg);
             throw new Error("We expected the actual code to pass in a string.");

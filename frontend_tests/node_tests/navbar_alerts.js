@@ -56,13 +56,17 @@ test("allow_notification_alert", () => {
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification is already granted.
+    /* istanbul ignore next */
     notifications.permission_state = () => "granted";
     notifications.granted_desktop_notifications_permission = () => "granted";
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Don't ask for permission to spectator.
+    /* istanbul ignore next */
     util.is_mobile = () => false;
+    /* istanbul ignore next */
     notifications.granted_desktop_notifications_permission = () => false;
+    /* istanbul ignore next */
     notifications.permission_state = () => "granted";
     page_params.is_spectator = true;
     assert.equal(navbar_alerts.should_show_notifications(ls), false);

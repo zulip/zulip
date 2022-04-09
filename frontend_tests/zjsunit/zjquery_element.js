@@ -48,6 +48,7 @@ function FakeElement(selector, opts) {
         delay() {
             return $self;
         },
+        /* istanbul ignore next */
         debug() {
             return {
                 value,
@@ -59,9 +60,6 @@ function FakeElement(selector, opts) {
             if (arg === undefined) {
                 find_results.clear();
             }
-            return $self;
-        },
-        eq() {
             return $self;
         },
         expectOne() {
@@ -80,6 +78,7 @@ function FakeElement(selector, opts) {
                 // if ($.find().length) { //success }
                 return [];
             }
+            /* istanbul ignore next */
             throw new Error(`
                 We need you to simulate the results of $(...).find(...)
                 by using set_find_results. You want something like this:
@@ -100,9 +99,7 @@ function FakeElement(selector, opts) {
             return classes.has(class_name);
         },
         height() {
-            if (height === undefined) {
-                throw new Error(`Please call $("${selector}").set_height`);
-            }
+            assert.notEqual(height, undefined, `Please call $("${selector}").set_height`);
             return height;
         },
         hide() {
@@ -117,13 +114,15 @@ function FakeElement(selector, opts) {
             return html;
         },
         is(arg) {
-            if (arg === ":visible") {
-                return shown;
+            switch (arg) {
+                case ":visible":
+                    return shown;
+                case ":focus":
+                    return $self.is_focused();
+                /* istanbul ignore next */
+                default:
+                    throw new Error("zjquery does not support this is() call");
             }
-            if (arg === ":focus") {
-                return $self.is_focused();
-            }
-            return $self;
         },
         is_focused() {
             // is_focused is not a jQuery thing; this is
@@ -144,6 +143,7 @@ function FakeElement(selector, opts) {
             event_store.on(...args);
             return $self;
         },
+        /* istanbul ignore next */
         one(...args) {
             event_store.one(...args);
             return $self;
@@ -181,6 +181,7 @@ function FakeElement(selector, opts) {
             }
             return $self;
         },
+        /* istanbul ignore next */
         remove() {
             throw new Error(`
                 We don't support remove in zjquery.
@@ -192,21 +193,12 @@ function FakeElement(selector, opts) {
             `);
         },
         removeData: noop,
-        replaceWith() {
-            return $self;
-        },
-        scrollTop() {
-            return $self;
-        },
-        serializeArray() {
-            return $self;
-        },
         set_find_results(find_selector, $jquery_object) {
-            if ($jquery_object === undefined) {
-                throw new Error(
-                    "Please make the 'find result' be something like $.create('unused')",
-                );
-            }
+            assert.notEqual(
+                $jquery_object,
+                undefined,
+                "Please make the 'find result' be something like $.create('unused')",
+            );
             find_results.set(find_selector, $jquery_object);
         },
         set_height(fake_height) {
@@ -220,9 +212,6 @@ function FakeElement(selector, opts) {
         },
         show() {
             shown = true;
-            return $self;
-        },
-        slice() {
             return $self;
         },
         stop() {
@@ -240,9 +229,6 @@ function FakeElement(selector, opts) {
         toggle(show) {
             assert.ok([true, false].includes(show));
             shown = show;
-            return $self;
-        },
-        tooltip() {
             return $self;
         },
         trigger(ev) {
@@ -314,9 +300,7 @@ function make_event_store(selector) {
 
             if (child_selector === undefined) {
                 handler = on_functions.get(name);
-                if (!handler) {
-                    throw new Error("no " + name + " handler for " + selector);
-                }
+                assert.ok(handler, `no ${name} handler for ${selector}`);
                 return handler;
             }
 
@@ -325,9 +309,7 @@ function make_event_store(selector) {
                 handler = child_on.get(name);
             }
 
-            if (!handler) {
-                throw new Error("no " + name + " handler for " + selector + " " + child_selector);
-            }
+            assert.ok(handler, `no ${name} handler for ${selector} ${child_selector}`);
 
             return handler;
         },
@@ -342,6 +324,7 @@ function make_event_store(selector) {
             // .off in code that we test: $(...).off('click', child_sel);
             //
             // So we don't support this for now.
+            /* istanbul ignore next */
             throw new Error("zjquery does not support this call sequence");
         },
 
@@ -351,6 +334,7 @@ function make_event_store(selector) {
             //    (event_name, sel, handler)
             if (args.length === 1) {
                 const [handler] = args;
+                /* istanbul ignore if */
                 if (on_functions.has(event_name)) {
                     console.info("\nEither the app or the test can be at fault here..");
                     console.info("(sometimes you just want to call $.clear_all_elements();)\n");
@@ -361,9 +345,7 @@ function make_event_store(selector) {
                 return;
             }
 
-            if (args.length !== 2) {
-                throw new Error("wrong number of arguments passed in");
-            }
+            assert.equal(args.length, 2, "wrong number of arguments passed in");
 
             const [sel, handler] = args;
             assert.equal(typeof sel, "string", "String selectors expected here.");
@@ -375,13 +357,15 @@ function make_event_store(selector) {
 
             const child_on = child_on_functions.get(sel);
 
-            if (child_on.has(event_name)) {
-                throw new Error("dup " + event_name + " handler for " + selector + " " + sel);
-            }
+            assert.ok(
+                !child_on.has(event_name),
+                `dup ${event_name} handler for ${selector} ${sel}`,
+            );
 
             child_on.set(event_name, handler);
         },
 
+        /* istanbul ignore next */
         one(event_name, handler) {
             self.on(event_name, function (ev) {
                 self.off(event_name);

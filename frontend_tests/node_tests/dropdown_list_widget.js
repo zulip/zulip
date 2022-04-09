@@ -78,7 +78,7 @@ run_test("no_default_value", () => {
         widget_name: "my_setting",
         data: ["one", "two", "three"].map((x) => ({name: x, value: x})),
         default_text: $t({defaultMessage: "not set"}),
-        render_text: (text) => `rendered: ${text}`,
+        render_text: /* istanbul ignore next */ (text) => `rendered: ${text}`,
         null_value: "null-value",
     };
 

@@ -60,15 +60,16 @@ run_test("settings", ({override_rewire}) => {
 
     let topic_data_called = 0;
     $topic_tr_html.attr = (opts) => {
-        if (opts === "data-stream-id") {
-            topic_data_called += 1;
-            return frontend.stream_id;
+        topic_data_called += 1;
+        switch (opts) {
+            case "data-stream-id":
+                return frontend.stream_id;
+            case "data-topic":
+                return "js";
+            /* istanbul ignore next */
+            default:
+                throw new Error(`Unknown attribute ${opts}`);
         }
-        if (opts === "data-topic") {
-            topic_data_called += 1;
-            return "js";
-        }
-        throw new Error(`Unknown attribute ${opts}`);
     };
 
     let unmute_topic_called = false;

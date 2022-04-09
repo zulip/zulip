@@ -11,7 +11,7 @@ run_test("test_early_returns", () => {
     const opts = {
         $elem: $stub,
         handlers: {
-            ArrowLeft: () => {
+            ArrowLeft: /* istanbul ignore next */ () => {
                 throw new Error("do not dispatch this with alt key");
             },
         },
