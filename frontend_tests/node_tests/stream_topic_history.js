@@ -81,7 +81,7 @@ test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    message_util.get_messages_in_topic = () => [{id: 102}];
+    delete message_util.get_messages_in_topic;
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,
@@ -162,8 +162,6 @@ test("server_history", () => {
     };
     const stream_id = sub.stream_id;
     stream_data.add_sub(sub);
-
-    all_messages_data.all_messages_data.fetch_status.has_found_newest = () => false;
 
     assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
 
@@ -332,6 +330,7 @@ test("server_history_end_to_end", () => {
 
     // Try getting server history for a second time.
 
+    /* istanbul ignore next */
     channel.get = () => {
         throw new Error("We should not get more data.");
     };

@@ -105,7 +105,6 @@ message_lists.current = {
             flags: ["read", "starred"],
         };
     },
-    selected_row() {},
     get_row() {
         return 101;
     },
@@ -138,7 +137,6 @@ function stubbing_rewire(module, func_name_to_stub, test_function) {
 }
 
 // Set up defaults for most tests.
-hotkey.__Rewire__("in_content_editable_widget", () => false);
 hotkey.__Rewire__("processing_text", () => false);
 
 run_test("mappings", () => {
@@ -228,7 +226,7 @@ function process(s) {
     };
     try {
         return hotkey.process_keypress(e);
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
         // An exception will be thrown here if a different
         // function is called than the one declared.  Try to
         // provide a useful error message.
@@ -292,8 +290,8 @@ run_test("allow normal typing when processing text", ({override_rewire}) => {
 
 run_test("streams", ({override}) => {
     settings_data.user_can_create_private_streams = () => true;
-    settings_data.user_can_create_public_streams = () => true;
-    settings_data.user_can_create_web_public_streams = () => true;
+    delete settings_data.user_can_create_public_streams;
+    delete settings_data.user_can_create_web_public_streams;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
     assert_mapping("S", stream_settings_ui, "keyboard_sub");
@@ -435,7 +433,7 @@ run_test("motion_keys", () => {
 
         try {
             return hotkey.process_keydown(e);
-        } catch (error) {
+        } catch (error) /* istanbul ignore next */ {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
@@ -493,12 +491,12 @@ run_test("motion_keys", () => {
     overlays.streams_open = () => true;
     assert_mapping("up_arrow", stream_settings_ui, "switch_rows");
     assert_mapping("down_arrow", stream_settings_ui, "switch_rows");
-    overlays.streams_open = () => false;
+    delete overlays.streams_open;
 
     overlays.lightbox_open = () => true;
     assert_mapping("left_arrow", lightbox, "prev");
     assert_mapping("right_arrow", lightbox, "next");
-    overlays.lightbox_open = () => false;
+    delete overlays.lightbox_open;
 
     overlays.settings_open = () => true;
     assert_unmapped("end");
@@ -507,12 +505,12 @@ run_test("motion_keys", () => {
     assert_unmapped("page_up");
     assert_unmapped("page_down");
     assert_unmapped("spacebar");
-    overlays.settings_open = () => false;
+    delete overlays.settings_open;
 
-    overlays.is_active = () => true;
+    delete overlays.is_active;
     overlays.drafts_open = () => true;
     assert_mapping("up_arrow", drafts, "drafts_handle_events");
     assert_mapping("down_arrow", drafts, "drafts_handle_events");
-    overlays.is_active = () => false;
-    overlays.drafts_open = () => false;
+    delete overlays.is_active;
+    delete overlays.drafts_open;
 });

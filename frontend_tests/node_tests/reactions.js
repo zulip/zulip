@@ -49,9 +49,6 @@ const spectators = mock_esm("../../static/js/spectators", {
 });
 
 message_lists.current = {
-    selected_message() {
-        return {sent_by_me: true};
-    },
     selected_row() {
         return $(".selected-row");
     },

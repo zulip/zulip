@@ -54,9 +54,6 @@ const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
-// To be eliminated in next commit:
-stream_data.__Rewire__("set_filter_out_inactives", () => false);
-
 const ct = composebox_typeahead;
 
 // Use a slightly larger value than what's user-facing
@@ -143,19 +140,10 @@ const emojis_by_name = new Map(
         headphones: emoji_headphones,
     }),
 );
-const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => {
-    if (emoji_dict.is_realm_emoji === true) {
-        return {
-            emoji_name: emoji_dict.name,
-            emoji_url: emoji_dict.url,
-            is_realm_emoji: true,
-        };
-    }
-    return {
-        emoji_name: emoji_dict.name,
-        emoji_code: emoji_dict.emoji_code,
-    };
-});
+const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => ({
+    emoji_name: emoji_dict.name,
+    emoji_code: emoji_dict.emoji_code,
+}));
 
 const me_slash = {
     name: "me",
@@ -1070,14 +1058,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         stopPropagation: noop,
     };
 
-    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
 
-    const stub_typeahead_hidden = () => ({typeahead: {shown: false}});
-    $("#stream_message_recipient_topic").data = stub_typeahead_hidden;
-    $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
-    $("#private_message_recipient").data = stub_typeahead_hidden;
-    $("#compose-textarea").data = stub_typeahead_hidden;
     $("form#send_message_form").trigger(event);
 
     event.key = "Tab";
@@ -1144,7 +1126,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         preventDefault: noop,
     };
     // We trigger keydown in order to make nextFocus !== false
-    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
     $("#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";

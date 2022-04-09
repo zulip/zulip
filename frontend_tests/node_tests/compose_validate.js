@@ -163,12 +163,10 @@ test_ui("validate", ({override, mock_template}) => {
 
     add_content_to_compose_box();
     let zephyr_checked = false;
-    $("#zephyr-mirror-error").is = () => {
-        if (!zephyr_checked) {
-            zephyr_checked = true;
-            return true;
-        }
-        return false;
+    $("#zephyr-mirror-error").is = (arg) => {
+        assert.equal(arg, ":visible");
+        zephyr_checked = true;
+        return true;
     };
     assert.ok(!compose_validate.validate());
     assert.ok(zephyr_checked);
@@ -740,14 +738,17 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
 
     let looked_for_existing;
     $warning_row.data = (field) => {
-        if (field === "user-id") {
-            looked_for_existing = true;
-            return "34";
+        switch (field) {
+            case "user-id":
+                looked_for_existing = true;
+                return "34";
+            /* istanbul ignore next */
+            case "stream-id":
+                return "111";
+            /* istanbul ignore next */
+            default:
+                throw new Error(`Unknown field ${field}`);
         }
-        if (field === "stream-id") {
-            return "111";
-        }
-        throw new Error(`Unknown field ${field}`);
     };
 
     const $previous_users = $("#compose_invite_users .compose_invite_user");

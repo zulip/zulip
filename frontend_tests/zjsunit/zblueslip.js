@@ -1,5 +1,7 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 function make_zblueslip() {
     const lib = {};
 
@@ -15,6 +17,7 @@ function make_zblueslip() {
     const names = Array.from(Object.keys(opts));
 
     // For fatal messages, we should use assert.throws
+    /* istanbul ignore next */
     lib.fatal = (msg) => {
         throw new Error(msg);
     };
@@ -28,14 +31,13 @@ function make_zblueslip() {
         lib.test_logs[name] = [];
     }
 
-    lib.expect = (name, message, count = 1) => {
-        if (opts[name] === undefined) {
-            throw new Error("unexpected arg for expect: " + name);
-        }
-        if (count <= 0 && Number.isInteger(count)) {
-            throw new Error("expected count should be a positive integer");
-        }
-        const obj = {message, count, expected_count: count};
+    lib.expect = (name, message, expected_count = 1) => {
+        assert.notEqual(opts[name], undefined, `unexpected arg for expect: ${name}`);
+        assert.ok(
+            expected_count > 0 && Number.isInteger(expected_count),
+            "expected count should be a positive integer",
+        );
+        const obj = {message, count: 0, expected_count};
         lib.test_data[name].push(obj);
     };
 
@@ -52,22 +54,16 @@ function make_zblueslip() {
                     }
                     continue;
                 }
-                lib.test_data[name][i].count -= 1;
+                lib.test_data[name][i].count += 1;
             }
 
             for (const obj of lib.test_data[name]) {
                 const message = obj.message;
-                if (obj.count > 0) {
-                    throw new Error(
-                        `We did not see expected ${obj.expected_count} of '${name}': ${message}`,
-                    );
-                } else if (obj.count < 0) {
-                    throw new Error(
-                        `We saw ${obj.expected_count - obj.count} (expected ${
-                            obj.expected_count
-                        }) of '${name}': ${message}`,
-                    );
-                }
+                assert.equal(
+                    obj.count,
+                    obj.expected_count,
+                    `Expected ${obj.expected_count} of '${name}': ${message}`,
+                );
             }
         }
     };
@@ -95,6 +91,7 @@ function make_zblueslip() {
             continue;
         }
         lib[name] = function (message, more_info, stack) {
+            /* istanbul ignore if */
             if (typeof message !== "string") {
                 // We may catch exceptions in blueslip, and if
                 // so our stub should include that.
@@ -121,6 +118,7 @@ function make_zblueslip() {
 
     lib.measure_time = (label, f) => f();
 
+    /* istanbul ignore next */
     lib.preview_node = (node) => "node:" + node;
 
     return lib;

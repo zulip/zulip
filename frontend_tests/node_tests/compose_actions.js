@@ -390,6 +390,7 @@ test("quote_and_reply", ({override, override_rewire}) => {
         raw_content: "Testing.",
     };
 
+    /* istanbul ignore next */
     function whiny_get() {
         assert.fail("channel.get should not be used if raw_content is present");
     }

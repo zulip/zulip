@@ -1,5 +1,6 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const Module = require("module");
 const path = require("path");
 
@@ -24,6 +25,7 @@ let jquery_function;
 
 const template_path = "/static/templates/";
 
+/* istanbul ignore next */
 function need_to_mock_template_error(filename) {
     const i = filename.indexOf(template_path);
 
@@ -100,6 +102,7 @@ function template_stub({filename, actual_render}) {
 
         // Force devs to call mock_template on every top-level template
         // render so they can introspect the data.
+        /* istanbul ignore if */
         if (!template_mocks.has(filename)) {
             throw new Error(need_to_mock_template_error(filename));
         }
@@ -126,9 +129,7 @@ function template_stub({filename, actual_render}) {
 }
 
 exports.start = () => {
-    if (actual_load !== undefined) {
-        throw new Error("namespace.start was called twice in a row.");
-    }
+    assert.equal(actual_load, undefined, "namespace.start was called twice in a row.");
     actual_load = Module._load;
     Module._load = load;
 };
@@ -163,11 +164,11 @@ exports.start = () => {
 // format preferred by Webpack.
 
 exports.mock_cjs = (module_path, obj) => {
-    if (module_path === "jquery") {
-        throw new Error(
-            "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
-        );
-    }
+    assert.notEqual(
+        module_path,
+        "jquery",
+        "We automatically mock jquery to zjquery. Grep for mock_jquery if you want more control.",
+    );
 
     const filename = Module._resolveFilename(
         module_path,
@@ -175,13 +176,12 @@ exports.mock_cjs = (module_path, obj) => {
         false,
     );
 
-    if (module_mocks.has(filename)) {
-        throw new Error(`You already set up a mock for ${filename}`);
-    }
+    assert.ok(!module_mocks.has(filename), `You already set up a mock for ${filename}`);
 
-    if (filename in require.cache) {
-        throw new Error(`It is too late to mock ${filename}; call this earlier.`);
-    }
+    assert.ok(
+        !(filename in require.cache),
+        `It is too late to mock ${filename}; call this earlier.`,
+    );
 
     module_mocks.set(filename, obj);
     return obj;
@@ -199,11 +199,10 @@ exports._start_template_mocking = () => {
 
 exports._finish_template_mocking = () => {
     for (const filename of template_mocks.keys()) {
-        if (!used_templates.has(filename)) {
-            throw new Error(
-                `You called mock_template with ${filename} but we never saw it get used.`,
-            );
-        }
+        assert.ok(
+            used_templates.has(filename),
+            `You called mock_template with ${filename} but we never saw it get used.`,
+        );
     }
     template_mocks.clear();
     used_templates.clear();
@@ -222,9 +221,7 @@ exports._mock_template = (fn, exercise_template, f) => {
 };
 
 exports.mock_esm = (module_path, obj = {}) => {
-    if (typeof obj !== "object") {
-        throw new TypeError("An ES module must be mocked with an object");
-    }
+    assert.equal(typeof obj, "object", "An ES module must be mocked with an object");
     return exports.mock_cjs(module_path, {...obj, __esModule: true});
 };
 
@@ -235,24 +232,19 @@ exports.unmock_module = (module_path) => {
         false,
     );
 
-    if (!module_mocks.has(filename)) {
-        throw new Error(`Cannot unmock ${filename}, which was not mocked`);
-    }
+    assert.ok(module_mocks.has(filename), `Cannot unmock ${filename}, which was not mocked`);
 
-    if (!used_module_mocks.has(filename)) {
-        throw new Error(`You asked to mock ${filename} but we never saw it during compilation.`);
-    }
+    assert.ok(
+        used_module_mocks.has(filename),
+        `You asked to mock ${filename} but we never saw it during compilation.`,
+    );
 
     module_mocks.delete(filename);
     used_module_mocks.delete(filename);
 };
 
 exports.set_global = function (name, val) {
-    if (val === null) {
-        throw new Error(`
-            We try to avoid using null in our codebase.
-        `);
-    }
+    assert.notEqual(val, null, `We try to avoid using null in our codebase.`);
 
     if (!(name in old_globals)) {
         if (!(name in global)) {
@@ -265,14 +257,16 @@ exports.set_global = function (name, val) {
 };
 
 exports.zrequire = function (short_fn) {
-    if (short_fn === "templates") {
-        throw new Error(`
+    assert.notEqual(
+        short_fn,
+        "templates",
+        `
             There is no need to zrequire templates.js.
 
             The test runner automatically registers the
             Handlebar extensions.
-        `);
-    }
+        `,
+    );
 
     return require(`../../static/js/${short_fn}`);
 };
@@ -281,6 +275,7 @@ const staticPath = path.resolve(__dirname, "../../static") + path.sep;
 
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
+        /* istanbul ignore if */
         if (!used_module_mocks.has(filename)) {
             console.error(`You asked to mock ${filename} but we never saw it during compilation.`);
         }
@@ -298,9 +293,7 @@ exports.finish = function () {
     */
     jquery_function = undefined;
 
-    if (actual_load === undefined) {
-        throw new Error("namespace.finish was called without namespace.start.");
-    }
+    assert.notEqual(actual_load, undefined, "namespace.finish was called without namespace.start.");
     Module._load = actual_load;
     actual_load = undefined;
 
@@ -321,11 +314,10 @@ exports.finish = function () {
 };
 
 exports.with_field = function (obj, field, val, f) {
-    if ("__esModule" in obj && "__Rewire__" in obj) {
-        throw new TypeError(
-            "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
-        );
-    }
+    assert.ok(
+        !("__esModule" in obj && "__Rewire__" in obj),
+        "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
+    );
 
     const had_val = Object.hasOwn(obj, field);
     const old_val = obj[field];
@@ -350,9 +342,11 @@ exports.with_field_rewire = function (obj, field, val, f) {
     // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
     const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
 
-    if (typeof old_val === "function") {
-        throw new TypeError("Please try to avoid mocking here, or use override_rewire.");
-    }
+    assert.notEqual(
+        typeof old_val,
+        "function",
+        "Please try to avoid mocking here, or use override_rewire.",
+    );
 
     try {
         obj.__Rewire__(field, val);
@@ -369,14 +363,16 @@ exports.with_function_call_disallowed_rewire = function (obj, field, f) {
     // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
     const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
 
-    if (typeof old_val !== "function") {
-        throw new TypeError(`Expected a function for ${field}`);
-    }
+    assert.equal(typeof old_val, "function", `Expected a function for ${field}`);
 
     try {
-        obj.__Rewire__(field, () => {
-            throw new Error(`unexpected call to ${field}`);
-        });
+        obj.__Rewire__(
+            field,
+            /* istanbul ignore next */
+            () => {
+                throw new Error(`unexpected call to ${field}`);
+            },
+        );
         return f();
     } finally {
         obj.__Rewire__(field, old_val);
@@ -397,28 +393,29 @@ exports.with_overrides = function (test_function) {
         // step.  Generally our code calls `run_test`, which wraps
         // `with_overrides`.
 
-        if ("__esModule" in obj && "__Rewire__" in obj) {
-            throw new TypeError(
-                "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
-            );
-        }
+        assert.ok(
+            !("__esModule" in obj && "__Rewire__" in obj),
+            "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
+        );
 
-        if (typeof f !== "function") {
-            throw new TypeError(
-                "You can only override with a function. Use with_field for non-functions.",
-            );
-        }
+        assert.equal(
+            typeof f,
+            "function",
+            "You can only override with a function. Use with_field for non-functions.",
+        );
 
-        if (typeof obj !== "object" && typeof obj !== "function") {
-            throw new TypeError(`We cannot override a function for ${typeof obj} objects`);
-        }
+        assert.ok(
+            typeof obj === "object" || typeof obj === "function",
+            `We cannot override a function for ${typeof obj} objects`,
+        );
 
-        if (obj[func_name] !== undefined && typeof obj[func_name] !== "function") {
-            throw new TypeError(`
+        assert.ok(
+            obj[func_name] === undefined || typeof obj[func_name] === "function",
+            `
                 You are overriding a non-function with a function.
                 This is almost certainly an error.
-            `);
-        }
+            `,
+        );
 
         if (!unused_funcs.has(obj)) {
             unused_funcs.set(obj, new Map());
@@ -449,22 +446,24 @@ exports.with_overrides = function (test_function) {
         // as exporting a helper function for tests from the module
         // containing the function you need to mock.
 
-        if (typeof f !== "function") {
-            throw new TypeError(
-                "You can only override with a function. Use with_field for non-functions.",
-            );
-        }
+        assert.equal(
+            typeof f,
+            "function",
+            "You can only override with a function. Use with_field for non-functions.",
+        );
 
-        if (typeof obj !== "object" && typeof obj !== "function") {
-            throw new TypeError(`We cannot override a function for ${typeof obj} objects`);
-        }
+        assert.ok(
+            typeof obj === "object" || typeof obj === "function",
+            `We cannot override a function for ${typeof obj} objects`,
+        );
 
-        if (obj[func_name] !== undefined && typeof obj[func_name] !== "function") {
-            throw new TypeError(`
+        assert.ok(
+            obj[func_name] === undefined || typeof obj[func_name] === "function",
+            `
                 You are overriding a non-function with a function.
                 This is almost certainly an error.
-            `);
-        }
+            `,
+        );
 
         if (!unused_funcs.has(obj)) {
             unused_funcs.set(obj, new Map());
@@ -497,6 +496,7 @@ exports.with_overrides = function (test_function) {
 
     for (const module_unused_funcs of unused_funcs.values()) {
         for (const unused_name of module_unused_funcs.keys()) {
+            /* istanbul ignore next */
             throw new Error(unused_name + " never got invoked!");
         }
     }

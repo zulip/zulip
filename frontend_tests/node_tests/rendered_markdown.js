@@ -88,6 +88,7 @@ const get_content_element = () => {
 
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
+    /* istanbul ignore next */
     function security_violation() {
         throw new Error(`
             Be super careful about HTML manipulation.
@@ -401,9 +402,7 @@ function test_code_playground(mock_template, viewing_code) {
     // our case "fake" zjquery objects).
     const prepends = [];
     $pre.prepend = (arg) => {
-        if (!arg.__zjquery) {
-            throw new Error("We should only prepend jQuery objects.");
-        }
+        assert.ok(arg.__zjquery, "We should only prepend jQuery objects.");
         prepends.push(arg);
     };
 
