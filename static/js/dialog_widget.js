@@ -88,6 +88,17 @@ export function launch(conf) {
     // * on_hidden: Callback to run when the modal is hidden.
     // * post_render: Callback to run after the modal body is added to DOM.
 
+    $(document).ready(function() {
+    $('#edit_bot_name').on('input change', function() {
+        if($(this).val() != '') {
+            $('#btnSubmit').prop('disabled', false);
+        } else {
+            $('#btnSubmit').prop('disabled', true);
+        }
+    });
+});
+
+
     for (const f of mandatory_fields) {
         if (conf[f] === undefined) {
             blueslip.error("programmer omitted " + f);
