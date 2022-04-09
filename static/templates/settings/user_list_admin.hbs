@@ -5,7 +5,10 @@
     <div class="settings_panel_list_header">
         <h3>{{t "Users"}}</h3>
         <div class="alert-notification" id="user-field-status"></div>
-        <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+        {{> clear_search_button
+          placeholder=(t 'Filter users')
+          aria-label=(t 'Filter users')
+          }}
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
