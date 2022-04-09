@@ -34,8 +34,10 @@
 
     <div class="settings_panel_list_header">
         <h3>{{t "Custom emoji"}}</h3>
-        <input type="text" class="search" placeholder="{{t 'Filter emoji' }}"
-          aria-label="{{t 'Filter emoji' }}"/>
+        {{> clear_search_button
+          placeholder=(t 'Filter emojis')
+          aria-label=(t 'Filter emojis')
+          }}
     </div>
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
