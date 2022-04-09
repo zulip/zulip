@@ -15,6 +15,7 @@ import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
+import * as copy_and_paste from "./copy_and_paste";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -36,6 +37,11 @@ import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
 import * as util from "./util";
+
+// track the most recent selection because the selection gets lost
+// anytime a user clicks (e.g. menu) but we might want to know this
+// content (e.g. quote_and_reply).
+export let last_message_content_selection = null;
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
@@ -875,6 +881,17 @@ export class MessageListView {
             $table.append($rendered_groups);
             condense.condense_and_collapse($dom_messages);
         }
+
+        // needed because window selection is easily lost, e.g. popups, menus etc.
+        // https://stackoverflow.com/questions/50771169/jquery-on-textarea-selectionchange
+        $dom_messages.off("mouseup", "*").on("mouseup", "*", () => {
+            last_message_content_selection = {
+                selection: window.getSelection(),
+                text: window.getSelection().toString(),
+                analysis: copy_and_paste.analyze_selection(window.getSelection()),
+                swallow_next_blur: false,
+            };
+        });
 
         restore_scroll_position();
 

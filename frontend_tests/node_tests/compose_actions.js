@@ -54,6 +54,7 @@ const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
+const message_list_view = zrequire("message_list_view");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 
@@ -412,6 +413,33 @@ test("quote_and_reply", ({override, override_rewire}) => {
     replaced = false;
     expected_replacement =
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+    quote_and_reply(opts);
+    assert.ok(replaced);
+
+    selected_message = {
+        type: "stream",
+        stream: "devel",
+        topic: "test",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+    };
+
+    override_rewire(compose_ui, "replace_syntax", (syntax, replacement) => {
+        assert.equal(replacement, expected_replacement);
+        replaced = true;
+    });
+    message_list_view.last_message_content_selection = {
+        text: "```ode block\nshoudln't mes```",
+        analysis: {
+            skip_same_td_check: false,
+            start_id: 100,
+            end_id: 100,
+        },
+    };
+    replaced = false;
+    expected_replacement =
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n````quote\n```ode block\nshoudln't mes```\n````";
     quote_and_reply(opts);
     assert.ok(replaced);
 });

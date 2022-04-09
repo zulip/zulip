@@ -14,6 +14,7 @@ import * as compose_validate from "./compose_validate";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as message_list_view from "./message_list_view";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -472,8 +473,8 @@ export function on_topic_narrow() {
 
 export function quote_and_reply(opts) {
     const $textarea = $("#compose-textarea");
-    const message_id = message_lists.current.selected_id();
-    const message = message_lists.current.selected_message();
+    let message_id = message_lists.current.selected_id();
+    let message = message_lists.current.selected_message();
     const quoting_placeholder = $t({defaultMessage: "[Quoting…]"});
 
     if (compose_state.has_message_content()) {
@@ -496,7 +497,7 @@ export function quote_and_reply(opts) {
 
     compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
 
-    function replace_content(message) {
+    function replace_content(message, raw_content) {
         // Final message looks like:
         //     @_**Iago|5** [said](link to message):
         //     ```quote
@@ -511,8 +512,8 @@ export function quote_and_reply(opts) {
             },
         );
         content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        const fence = fenced_code.get_unused_fence(raw_content);
+        content += `${fence}quote\n${raw_content}\n${fence}`;
 
         const placeholder_offset = $($textarea).val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
@@ -535,19 +536,51 @@ export function quote_and_reply(opts) {
         }
     }
 
-    if (message && message.raw_content) {
-        replace_content(message);
+    function fetch_and_replace(message_id, message, raw_content) {
+        if (message && raw_content) {
+            replace_content(message, raw_content);
+            return;
+        }
+
+        if (message_id === undefined) {
+            compose_ui.replace_syntax(quoting_placeholder, "", $textarea);
+            return;
+        }
+
+        channel.get({
+            url: "/json/messages/" + message_id,
+            idempotent: true,
+            success(data) {
+                message.raw_content = data ? data.raw_content : "";
+                replace_content(message, message.raw_content);
+            },
+        });
+    }
+
+    // replace content with quoted text
+    //
+    // note: we can't call window.getSelection() here because it's "too late"
+    // in the case that the user called quote/reply from the dropdown menu
+    // (which un-selects the content). Hence, we save it earlier on-click
+    const selinfo = message_list_view.last_message_content_selection;
+    if (
+        selinfo !== null &&
+        selinfo.text !== "" &&
+        // Quote the selected text iff a single message's text is selected.
+        // Otherwise, just fall through and quote the selected message.
+        selinfo.analysis !== null &&
+        !selinfo.analysis.skip_same_td_check &&
+        selinfo.analysis.start_id === selinfo.analysis.end_id
+    ) {
+        if (selinfo.analysis.start_id !== message_id) {
+            message_id = selinfo.analysis.start_id;
+            message = message_lists.current.get(message_id);
+        }
+        fetch_and_replace(message_id, message, selinfo.text.trim());
         return;
     }
 
-    channel.get({
-        url: "/json/messages/" + message_id,
-        idempotent: true,
-        success(data) {
-            message.raw_content = data.raw_content;
-            replace_content(message);
-        },
-    });
+    fetch_and_replace(message_id, message, message.raw_content);
 }
 
 export function on_narrow(opts) {
