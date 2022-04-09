@@ -6,7 +6,10 @@
             {{> ../help_link_widget link="/help/deactivate-or-reactivate-a-user" }}
         </h3>
         <div class="alert-notification" id="deactivated-user-field-status"></div>
-        <input type="text" class="search" placeholder="{{t 'Filter deactivated users' }}" aria-label="{{t 'Filter deactivated users' }}"/>
+        {{> clear_search_button
+          placeholder=(t 'Filter deactivated users')
+          aria-label=(t 'Filter deactivated users')
+          }}
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
