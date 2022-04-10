@@ -32,24 +32,47 @@
     }
 }
 
-.popover_info {
-    text-align: center;
+.user_full_name_overflow {
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: top;
+    margin-right: -3px;
 }
 
-.popover_info .custom_user_field {
+.mention_user,
+.copy_mention_syntax,
+.user_popover_email {
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+.popover_action_icon {
+    padding-left: 2px;
+}
+
+.user_info_popover_action_buttons {
+    float: right;
+}
+
+.info_popover_actions .custom_user_field {
     text-overflow: ellipsis;
     overflow: hidden;
 
-    a i {
-        /* Hack: This overrides the 3px margin-right for all <i> elements in
-           this component. Ideally, that other logic would restrict
-           the behavior elements with the right CSS class, and we'd
-           delete this. */
-        margin-right: 0;
-    }
+    /* Overriding CSS from bootstrap > nav-list. */
+    .custom_profile_fields_link {
+        padding-top: 0;
+        padding-bottom: 0;
 
-    a:hover {
-        text-decoration: none;
+        &:hover {
+            background-color: transparent;
+        }
+
+        &:focus {
+            background-color: transparent;
+        }
     }
 }
 
@@ -117,14 +140,20 @@ ul {
         display: inline-block;
         width: 14px;
         text-align: center;
-        margin-right: 3px;
+
+        &:not(.popover_action_icon, .custom_user_field i) {
+            margin-right: 3px;
+        }
 
         &.zulip-icon {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
             line-height: 14px;
             position: relative;
-            top: 2px;
+
+            &:not(.zulip-icon-bot) {
+                top: 2px;
+            }
         }
     }
 

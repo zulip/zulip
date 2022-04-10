@@ -1,79 +1,82 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list actions_popover info_popover_actions" data-user-id="{{user_id}}">
-    <div class="popover_info">
-        <li>
-            <b>{{user_full_name}}</b>
-            {{#if is_active }}
-                {{#if is_bot}}
-                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+<ul class="nav nav-list info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
+    <li>
+        <b class="user_full_name" data-tippy-content="{{user_full_name}}">{{user_full_name}}</b>
+        {{#if is_active }}
+            {{#if is_bot}}
+            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+            {{else}}
+            <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+            {{/if}}
+        {{/if}}
+        {{#unless is_me}}
+        <span class="user_info_popover_action_buttons">
+            {{#if has_message_context}}
+            <a role="button" tabindex="0" class="mention_user tippy-zulip-tooltip" data-tippy-content="{{#if is_bot}}{{t 'Reply mentioning bot (@)' }}{{else}}{{t 'Reply mentioning user (@)' }}{{/if}}">
+                <i class="fa fa-at popover_action_icon" aria-hidden="true"></i>
+            </a>
+            {{else}}
+            <a role="button" tabindex="0" class="copy_mention_syntax tippy-zulip-tooltip" data-clipboard-text="{{ user_mention_syntax }}" data-tooltip-template-id="copy-mention-syntax-tooltip" data-tippy-maxWidth="none">
+                <i class="fa fa-at popover_action_icon" aria-hidden="true"></i>
+            </a>
+            {{/if}}
+            {{#if show_email}}
+            <a role="button" tabindex="0" class="user_popover_email tippy-zulip-tooltip" data-clipboard-text="{{ user_email }}" data-tooltip-template-id="copy-email-tooltip" data-tippy-maxWidth="none">
+                <i class="fa fa-envelope popover_action_icon" aria-hidden="true"></i>
+            </a>
+            {{/if}}
+        </span>
+        {{/unless}}
+    </li>
+    {{#unless is_active }}
+    <li class="half-opacity italic">
+        {{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}
+    </li>
+    {{/unless}}
+    {{#if is_bot}}
+        {{#if bot_owner}}
+            <li>{{#tr}}Bot owner{{/tr}}:
+                <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
+                    {{bot_owner.full_name}}
+                </span>
+            </li>
+        {{else if is_system_bot}}
+            <li>{{#tr}}System bot{{/tr}}</li>
+        {{else}}
+            <li>{{#tr}}Bot{{/tr}}</li>
+        {{/if}}
+    {{else}}
+        <li>{{ user_type }}</li>
+    {{/if}}
+    {{!-- Display selected custom profile fields in this popover. --}}
+    {{#each display_profile_fields}}
+        <li data-type="{{this.type}}" class="field-section custom_user_field tippy-zulip-tooltip" data-tippy-content="{{this.name}}" data-field-id="{{this.id}}">
+            {{#if this.is_link}}
+                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link">{{this.value}}</a>
+            {{else if this.is_external_account}}
+                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link">
+                    {{#if (eq this.subtype "github") }}
+                    <i class="fa fa-github" aria-hidden="true"></i>
+                    {{else if (eq this.subtype "twitter") }}
+                    <i class="fa fa-twitter" aria-hidden="true"></i>
+                    {{/if}}
+                    {{this.value}}
+                </a>
+            {{else}}
+                {{#if this.rendered_value}}
+                <span class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</span>
                 {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
+                <span class="value">{{this.value}}</span>
                 {{/if}}
             {{/if}}
         </li>
+    {{/each}}
 
+    {{#if (and user_time is_active)}}
+        <li class="hidden-for-spectators" >{{ user_time }} {{#tr}}local time{{/tr}}</li>
+    {{/if}}
 
-        {{#if is_active }}
-            {{#if show_email}}
-            {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
-            <div>
-                <li class="user_popover_email">
-                    <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                    {{ user_email }}
-                </li>
-            </div>
-            {{/if}}
-        {{else}}
-            <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
-        {{/if}}
-
-
-        {{#if is_bot}}
-            {{#if bot_owner}}
-                <li>{{#tr}}Bot owner{{/tr}}:
-                    <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
-                        {{bot_owner.full_name}}
-                    </span>
-                </li>
-            {{else if is_system_bot}}
-                <li>{{#tr}}System bot{{/tr}}</li>
-            {{else}}
-                <li>{{#tr}}Bot{{/tr}}</li>
-            {{/if}}
-        {{else}}
-            <li>{{ user_type }}</li>
-        {{/if}}
-        {{!-- Display selected custom profile fields in this popover. --}}
-        {{#each display_profile_fields}}
-            <li data-type="{{this.type}}" class="field-section custom_user_field tippy-zulip-tooltip" data-tippy-content="{{this.name}}" data-field-id="{{this.id}}">
-                {{#if this.is_link}}
-                    <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                {{else if this.is_external_account}}
-                    <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">
-                        {{#if (eq this.subtype "github") }}
-                        <i class="fa fa-github" aria-hidden="true"></i>
-                        {{else if (eq this.subtype "twitter") }}
-                        <i class="fa fa-twitter" aria-hidden="true"></i>
-                        {{/if}}
-                        {{this.value}}
-                    </a>
-                {{else}}
-                    {{#if this.rendered_value}}
-                    <span class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</span>
-                    {{else}}
-                    <span class="value">{{this.value}}</span>
-                    {{/if}}
-                {{/if}}
-            </li>
-        {{/each}}
-
-        {{#if user_time}}
-            <li class="hidden-for-spectators">{{ user_time }} {{#tr}}Local time{{/tr}}</li>
-        {{/if}}
-
-        <li class="only-visible-for-spectators">Joined {{date_joined}}</li>
-    </div>
-
+    <li class="only-visible-for-spectators">Joined {{date_joined}}</li>
     {{#if is_me}}
         <hr />
         {{#if can_set_away}}
@@ -137,27 +140,10 @@
         {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
-                    <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
         {{/if}}
-        {{#unless is_me}}
-        <li>
-            {{#if has_message_context}}
-            <a tabindex="0" class="mention_user">
-                <i class="fa fa-at" aria-hidden="true"></i>
-                {{#if is_bot}}{{#tr}}Reply mentioning bot{{/tr}}{{else}}{{#tr}}Reply mentioning user{{/tr}}{{/if}}
-                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
-            </a>
-            {{else}}
-            <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
-                <i class="fa fa-at" aria-hidden="true"></i>
-                {{#tr}}Copy mention syntax{{/tr}}
-                {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
-            </a>
-            {{/if}}
-        </li>
-        {{/unless}}
         {{#if is_me}}
         <li>
             <a href="/#settings/profile">
@@ -215,3 +201,6 @@
         {{/if}}
     {{/if}}
 </ul>
+
+<template id="copy-mention-syntax-tooltip">{{#tr}}Copy @-mention:<br/>{{/tr}} {{user_mention_syntax}}</template>
+<template id="copy-email-tooltip">{{#tr}}Copy email:<br/>{{/tr}} {{user_email}}</template>

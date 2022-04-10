@@ -100,68 +100,6 @@ $.fn.popover = Object.assign(function (...args) {
     }
 }, old_popover);
 
-function copy_email_handler(e) {
-    const $email_el = $(e.trigger.parentElement);
-    const $copy_icon = $email_el.find("i");
-
-    // only change the parent element's text back to email
-    // and not overwrite the tooltip.
-    const email_textnode = $email_el[0].childNodes[2];
-
-    $email_el.addClass("email_copied");
-    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
-
-    setTimeout(() => {
-        $email_el.removeClass("email_copied");
-        email_textnode.nodeValue = $copy_icon.attr("data-clipboard-text");
-    }, 1500);
-    e.clearSelection();
-}
-
-function init_email_clipboard() {
-    /*
-        This shows (and enables) the copy-text icon for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
-    $(".user_popover_email").each(function () {
-        if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this);
-            const $copy_email_icon = $email_el.find("i");
-
-            /*
-                For deactivated users, the copy-email icon will
-                not even be present in the HTML, so we don't do
-                anything.  We don't reveal emails for deactivated
-                users.
-            */
-            if ($copy_email_icon[0]) {
-                $copy_email_icon.removeClass("hide_copy_icon");
-                const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
-                copy_email_clipboard.on("success", copy_email_handler);
-            }
-        }
-    });
-}
-
-function init_email_tooltip(user) {
-    /*
-        This displays the email tooltip for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
-
-    $(".user_popover_email").each(function () {
-        if (this.clientWidth < this.scrollWidth) {
-            tippy(this, {
-                placement: "bottom",
-                content: people.get_visible_email(user),
-                interactive: true,
-            });
-        }
-    });
-}
-
 function load_medium_avatar(user, $elt) {
     const user_avatar_url = people.medium_avatar_url_for_person(user);
     const sender_avatar_medium = new Image();
@@ -294,8 +232,32 @@ function render_user_info_popover(
     });
     popover_element.popover("show");
 
-    init_email_clipboard();
-    init_email_tooltip(user);
+    // Adding text-overflow CSS and showing full name in tooltip if user full name can't
+    // fit in one horizontal line of user profile popover with present icons from the right side.
+    const $user_full_name_elem = $("#user_info_popover .user_full_name");
+    $user_full_name_elem.width("auto");
+    const user_info_popover_width = $("#user_info_popover").width();
+    let popover_action_buttons_width = $(
+        "#user_info_popover .user_info_popover_action_buttons",
+    ).width();
+    if (!popover_action_buttons_width) {
+        popover_action_buttons_width = 0;
+    }
+    let available_width_for_user_full_name = user_info_popover_width - popover_action_buttons_width;
+    if (is_active) {
+        // If user is active then we need to spare width for presence circle which is 20px.
+        // and in case of bot for bot icon width of that is 16px.
+        if (user.is_bot) {
+            available_width_for_user_full_name -= 16;
+        } else {
+            available_width_for_user_full_name -= 20;
+        }
+    }
+
+    if ($user_full_name_elem.width() >= available_width_for_user_full_name) {
+        $user_full_name_elem.width(available_width_for_user_full_name);
+        $user_full_name_elem.addClass("user_full_name_overflow tippy-zulip-tooltip");
+    }
 
     // Note: We pass the normal-size avatar in initial rendering, and
     // then query the server to replace it with the medium-size
@@ -1280,13 +1242,28 @@ export function register_click_handlers() {
             $(":focus").trigger("blur");
         }, 0);
     });
+    function user_info_copy_tooltip(element, notify_msg) {
+        const instance = tippy(element, {
+            content: $t({defaultMessage: "{notify_msg}"}, {notify_msg}),
+            arrow: true,
+            placement: "top",
+        })[0];
+        instance.show();
+        function remove_instance() {
+            instance.destroy();
+        }
+        setTimeout(remove_instance, 1000);
+    }
+    clipboard_enable(".copy_mention_syntax").on("success", () => {
+        // e.trigger returns the DOM element triggering the copy action
+        const element = "#user_info_popover .copy_mention_syntax";
+        user_info_copy_tooltip(element, "Copied!");
+    });
 
-    clipboard_enable(".copy_mention_syntax");
-
-    $("body").on("click", ".copy_mention_syntax", (e) => {
-        hide_all();
-        e.stopPropagation();
-        e.preventDefault();
+    clipboard_enable(".user_popover_email").on("success", () => {
+        // e.trigger returns the DOM element triggering the copy action
+        const element = "#user_info_popover .user_popover_email";
+        user_info_copy_tooltip(element, "Copied!");
     });
 
     {

@@ -206,7 +206,9 @@ test_ui("sender_hover", ({override, mock_template}) => {
         return "content-html";
     });
 
-    $.create(".user_popover_email", {children: []});
+    $("#user_info_popover").width = () => {};
+    $("#user_info_popover .user_full_name").width = () => {};
+    $("#user_info_popover .user_info_popover_action_buttons").width = () => {};
     const image_stubber = make_image_stubber();
     handler.call($target, e);
 

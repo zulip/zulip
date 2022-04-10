@@ -1417,7 +1417,7 @@ td.pointer {
     }
 }
 
-.popover_info i.zulip-icon.zulip-icon-bot {
+i.zulip-icon.zulip-icon-bot {
     margin-top: 3px;
 }
 
@@ -2680,30 +2680,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .no-drag {
     -webkit-user-drag: none;
     user-select: none;
-}
-
-.user_popover_email {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transition: all 0.4s ease;
-
-    i {
-        cursor: pointer;
-
-        &.hide_copy_icon {
-            display: none;
-        }
-    }
-}
-
-.email_copied,
-.user_popover_email i:hover {
-    color: hsl(170, 48%, 54%);
-}
-
-.email_copied i {
-    display: none !important;
 }
 
 .hotkey-hint {
