@@ -236,8 +236,7 @@ body.dark-theme {
     textarea:read-only,
     .sidebar-title,
     .recipient_row_date {
-        color: inherit;
-        opacity: 0.5;
+        color: hsla(0, 0%, 70%, 1);
     }
 
     .rendered_markdown button,
@@ -363,7 +362,8 @@ body.dark-theme {
 
     /* Disable blue link styling for the message timestamp link. */
     .message_time {
-        color: hsl(236, 33%, 90%);
+        color: hsla(0, 0%, 50%, 1);
+        top: -2px;
     }
 
     .emoji-popover .reaction:focus {

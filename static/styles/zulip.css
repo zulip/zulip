@@ -798,7 +798,7 @@ td.pointer {
     }
 
     .message_time {
-        top: -4px;
+        top: -2px;
     }
 
     .alert-msg {
@@ -854,16 +854,16 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 12px;
-    opacity: 0.4;
     padding: 1px;
     font-weight: 400;
     position: absolute;
     right: -105px;
-    line-height: 20px;
-    text-align: right;
     /* Disable blue link styling for the message timestamp link. */
-    color: hsl(0, 0%, 20%);
+    color: hsla(0, 0%, 50%, 1);
+    font-size: 14px;
+    line-height: 1;
+    text-align: right;
+    font-variant: all-small-caps;
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 
     a& {
@@ -1108,12 +1108,14 @@ td.pointer {
 }
 
 .recipient_row_date {
-    color: hsl(0, 0%, 53%);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 3px 11px 2px 10px;
+    color: hsla(0, 0%, 37%, 1);
+    padding: 2px 11px 3px 10px;
     height: 17px;
-    line-height: 17px;
+    font-size: 15px;
+    line-height: 18px;
+    text-align: right;
+    font-variant: all-small-caps;
+    font-weight: 400;
 
     &.hide-date {
         display: none;
