@@ -51,6 +51,23 @@ const window = new Proxy(global, {
     },
 });
 
+const ls_container = new Map();
+const localStorage = {
+    getItem(key) {
+        return ls_container.get(key);
+    },
+    setItem(key, val) {
+        ls_container.set(key, val);
+    },
+    /* istanbul ignore next */
+    removeItem(key) {
+        ls_container.delete(key);
+    },
+    clear() {
+        ls_container.clear();
+    },
+};
+
 // Set up Handlebars
 handlebars.hook_require();
 
@@ -90,6 +107,8 @@ try {
         window.location.href = "http://zulip.zulipdev.com/#";
         namespace.set_global("setTimeout", noop);
         namespace.set_global("setInterval", noop);
+        namespace.set_global("localStorage", localStorage);
+        ls_container.clear();
         _.throttle = immediate;
         _.debounce = immediate;
         zpage_params.reset();
