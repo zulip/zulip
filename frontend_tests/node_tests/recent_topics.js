@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -143,22 +143,6 @@ mock_esm("../../static/js/unread", {
             return 0;
         }
         return 1;
-    },
-});
-
-const ls_container = new Map();
-set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
     },
 });
 
