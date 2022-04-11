@@ -3929,6 +3929,26 @@ paths:
 
                                         Since these notifications are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
+                                    org_type:
+                                      type: integer
+                                      description: |
+                                        The type of the organization.
+
+                                        - 0 = Unspecified
+                                        - 10 = Business
+                                        - 20 = Open-source project
+                                        - 30 = Education (non-profit)
+                                        - 35 = Education (for-profit)
+                                        - 40 = Research
+                                        - 50 = Event or conference
+                                        - 60 = Non-profit (registered)
+                                        - 70 = Government
+                                        - 80 = Political group
+                                        - 90 = Community
+                                        - 100 = Personal
+                                        - 1000 = Other
+
+                                        **Changes**: New in Zulip 6.0 (feature level 128).
                                     plan_type:
                                       type: integer
                                       description: |
@@ -11463,6 +11483,28 @@ paths:
 
                           **Changes**: New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_org_type:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The type of the organization.
+
+                          - 0 = Unspecified
+                          - 10 = Business
+                          - 20 = Open-source project
+                          - 30 = Education (non-profit)
+                          - 35 = Education (for-profit)
+                          - 40 = Research
+                          - 50 = Event or conference
+                          - 60 = Non-profit (registered)
+                          - 70 = Government
+                          - 80 = Political group
+                          - 90 = Community
+                          - 100 = Personal
+                          - 1000 = Other
+
+                          **Changes**: New in Zulip 6.0 (feature level 128).
                       realm_plan_type:
                         type: integer
                         description: |

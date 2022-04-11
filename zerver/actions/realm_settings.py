@@ -403,6 +403,9 @@ def do_change_realm_org_type(
         extra_data={"old_value": old_value, "new_value": org_type},
     )
 
+    event = dict(type="realm", op="update", property="org_type", value=org_type)
+    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+
 
 @transaction.atomic(savepoint=False)
 def do_change_realm_plan_type(

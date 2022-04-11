@@ -1120,6 +1120,26 @@ class RealmAPITest(ZulipTestCase):
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
 
+    # Not in Realm.property_types because org_type has
+    # a unique RealmAuditLog event_type.
+    def test_update_realm_org_type(self) -> None:
+        vals = [t["id"] for t in Realm.ORG_TYPES.values()]
+
+        self.set_up_db("org_type", vals[0])
+
+        for val in vals[1:]:
+            realm = self.update_with_api("org_type", val)
+            self.assertEqual(getattr(realm, "org_type"), val)
+
+        realm = self.update_with_api("org_type", vals[0])
+        self.assertEqual(getattr(realm, "org_type"), vals[0])
+
+        # Now we test an invalid org_type id.
+        invalid_org_type = 1
+        assert invalid_org_type not in vals
+        result = self.client_patch("/json/realm", {"org_type": invalid_org_type})
+        self.assert_json_error(result, "Invalid org_type")
+
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):
             val = orjson.dumps(val).decode()

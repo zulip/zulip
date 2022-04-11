@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 128**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), `PATCH /realm`: Added
+  `org_type` realm setting.
+
 **Feature level 127**
 
 * [`GET /user_groups`](/api/get-user-groups),[`POST
