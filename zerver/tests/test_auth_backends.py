@@ -42,6 +42,7 @@ from social_django.strategy import DjangoStrategy
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
     change_user_is_active,
+    do_change_password,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -673,6 +674,11 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                     # But the third attempt goes over the limit:
                     with self.assertRaises(RateLimited):
                         attempt_authentication(username, wrong_password)
+
+                    # Resetting the password also clears the rate-limit
+                    do_change_password(expected_user_profile, correct_password)
+                    self.assertIsNone(attempt_authentication(username, wrong_password))
+
             finally:
                 # Clean up to avoid affecting other tests.
                 RateLimitedAuthenticationByUsername(username).clear_history()

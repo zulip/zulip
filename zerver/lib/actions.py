@@ -4529,6 +4529,11 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool = 
     user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
+
+    # Imported here to prevent import cycles
+    from zproject.backends import RateLimitedAuthenticationByUsername
+
+    RateLimitedAuthenticationByUsername(user_profile.delivery_email).clear_history()
     event_time = timezone_now()
     RealmAuditLog.objects.create(
         realm=user_profile.realm,
