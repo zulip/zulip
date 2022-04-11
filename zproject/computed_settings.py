@@ -381,7 +381,7 @@ RATE_LIMITING_RULES = {
         (60, 1000),
     ],
     "authenticate_by_username": [
-        (1800, 5),  # 5 login attempts within 30 minutes
+        (1800, 5),  # 5 failed login attempts within 30 minutes
     ],
     "email_change_by_user": [
         (3600, 2),  # 2 per hour
