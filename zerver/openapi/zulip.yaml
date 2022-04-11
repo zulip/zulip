@@ -1513,36 +1513,39 @@ paths:
                                   type: string
                                   description: |
                                     The text content of the status message.
+
+                                    This will be `""` for users who set a status without selecting
+                                    or writing a message.
                                 emoji_name:
                                   type: string
                                   description: |
-                                    The [emoji name](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
+                                    The [emoji name](/api/update-status#parameter-emoji_name) for
+                                    the emoji the user selected for their new status.
 
-                                    This will be "" for users who set a status without selecting
+                                    This will be `""` for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 emoji_code:
                                   type: string
                                   description: |
-                                    The [emoji code](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
+                                    The [emoji code](/api/update-status#parameter-emoji_code) for
+                                    the emoji the user selected for their new status.
 
-                                    This will be "" for users who set a status without selecting
+                                    This will be `""` for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 reaction_type:
                                   type: string
                                   description: |
-                                    The [emoji type](/api/add-reaction#parameters) for the emoji
-                                    the user selected for their new status.
+                                    The [emoji type](/api/update-status#parameter-reaction_type) for
+                                    the emoji the user selected for their new status.
 
-                                    This will be "" for users who set a status without selecting
+                                    This will be `""` for users who set a status without selecting
                                     an emoji.
 
-                                    **Changes**; New in Zulip 5.0 (feature level 86).
+                                    **Changes**: New in Zulip 5.0 (feature level 86).
                                 user_id:
                                   type: integer
                                   description: |
@@ -5467,7 +5470,6 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
-
         "400":
           description: Bad request.
           content:
@@ -6635,6 +6637,9 @@ paths:
 
         Clients that wish to set the user's status to a specific value should
         pass all supported parameters.
+
+        **Changes**: In Zulip 5.0 (feature level 86), added support for
+        `emoji_name`, `emoji_code`, and `reaction_type` parameters.
       parameters:
         - name: status_text
           schema:
@@ -6663,6 +6668,8 @@ paths:
           in: query
           description: |
             The name for the emoji to associate with this status.
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
           example: car
           required: false
         - name: emoji_code
@@ -6673,8 +6680,7 @@ paths:
             A unique identifier, defining the specific emoji codepoint requested,
             within the namespace of the `reaction_type`.
 
-            For example, for `unicode_emoji`, this will be an encoding of the
-            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
+            **Changes**: New in Zulip 5.0 (feature level 86).
           example: 1f697
           required: false
         - name: reaction_type
@@ -6682,14 +6688,23 @@ paths:
             type: string
           in: query
           description: |
-            One of the following values:
+            A string indicating the type of emoji. Each emoji `reaction_type`
+            has an independent namespace for values of `emoji_code`.
 
-            - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
-              codepoint).
-            - `realm_emoji`: [Custom emoji](/help/custom-emoji).
-              (`emoji_code` will be its ID).
-            - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
-              namespace the `zulip` emoji.
+            Must be one of the following values:
+
+            - `unicode_emoji` : In this namespace, `emoji_code` will be a
+              dash-separated hex encoding of the sequence of Unicode codepoints
+              that define this emoji in the Unicode specification.
+
+            - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+              the uploaded [custom emoji](/help/custom-emoji).
+
+            - `zulip_extra_emoji` : These are special emoji included with Zulip.
+              In this namespace, `emoji_code` will be the name of the emoji (e.g.
+              "zulip").
+
+            **Changes**: New in Zulip 5.0 (feature level 86).
           example: unicode_emoji
           required: false
       responses:
@@ -9799,14 +9814,21 @@ paths:
                             reaction_type:
                               type: string
                               description: |
-                                If present, one of the following values:
+                                If present, a string indicating the type of emoji. Each emoji
+                                `reaction_type` has an independent namespace for values of `emoji_code`.
 
-                                - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
-                                  codepoint).
-                                - `realm_emoji`: [Custom emoji](/help/custom-emoji).
-                                  (`emoji_code` will be its ID).
-                                - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
-                                  namespace the `zulip` emoji.
+                                Must be one of the following values:
+
+                                - `unicode_emoji` : In this namespace, `emoji_code` will be a
+                                  dash-separated hex encoding of the sequence of Unicode codepoints
+                                  that define this emoji in the Unicode specification.
+
+                                - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+                                  the uploaded [custom emoji](/help/custom-emoji).
+
+                                - `zulip_extra_emoji` : These are special emoji included with Zulip.
+                                  In this namespace, `emoji_code` will be the name of the emoji (e.g.
+                                  "zulip").
 
                                 **Changes**: New in Zulip 5.0 (feature level 86).
                       user_settings:
@@ -14847,29 +14869,33 @@ components:
     EmojiBase:
       type: object
       properties:
+        emoji_name:
+          type: string
+          description: |
+            Name of the emoji.
         emoji_code:
           type: string
           description: |
             A unique identifier, defining the specific emoji codepoint requested,
             within the namespace of the `reaction_type`.
-
-            For example, for `unicode_emoji`, this will be an encoding of the
-            Unicode codepoint; for `realm_emoji`, it'll be the ID of the realm emoji.
-        emoji_name:
-          type: string
-          description: |
-            Name of the emoji.
         reaction_type:
           type: string
           description: |
-            One of the following values:
+            A string indicating the type of emoji. Each emoji `reaction_type`
+            has an independent namespace for values of `emoji_code`.
 
-            - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
-              codepoint).
-            - `realm_emoji`: [Custom emoji](/help/custom-emoji).
-              (`emoji_code` will be its ID).
-            - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
-              namespace the `zulip` emoji.
+            Must be one of the following values:
+
+            - `unicode_emoji` : In this namespace, `emoji_code` will be a
+              dash-separated hex encoding of the sequence of Unicode codepoints
+              that define this emoji in the Unicode specification.
+
+            - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+              the uploaded [custom emoji](/help/custom-emoji).
+
+            - `zulip_extra_emoji` : These are special emoji included with Zulip.
+              In this namespace, `emoji_code` will be the name of the emoji (e.g.
+              "zulip").
     EmojiReactionBase:
       allOf:
         - $ref: "#/components/schemas/EmojiBase"
@@ -16006,14 +16032,23 @@ components:
       name: reaction_type
       in: query
       description: |
-        If an app is adding/removing a vote on an existing reaction,
+        A string indicating the type of emoji. Each emoji `reaction_type`
+        has an independent namespace for values of `emoji_code`.
+
+        If an API client is adding/removing a vote on an existing reaction,
         it should pass this parameter using the value the server provided
         for the existing reaction for specificity. Supported values:
 
-        - `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode codepoint).
-        - `realm_emoji`: Custom emoji. (`emoji_code` will be its ID).
-        - `zulip_extra_emoji`: Special emoji included with Zulip. Exists to
-          namespace the `zulip` emoji.
+        - `unicode_emoji` : In this namespace, `emoji_code` will be a
+          dash-separated hex encoding of the sequence of Unicode codepoints
+          that define this emoji in the Unicode specification.
+
+        - `realm_emoji` : In this namespace, `emoji_code` will be the ID of
+          the uploaded [custom emoji](/help/custom-emoji).
+
+        - `zulip_extra_emoji` : These are special emoji included with Zulip.
+          In this namespace, `emoji_code` will be the name of the emoji (e.g.
+          "zulip").
 
         **Changes**: In Zulip 3.0 (feature level 2), this become
         optional for [custom emoji](/help/custom-emoji);
