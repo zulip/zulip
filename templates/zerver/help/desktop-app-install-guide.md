@@ -135,3 +135,4 @@ sudo apt install zulip
 
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
+* [View Zulip version](/help/view-zulip-version)
