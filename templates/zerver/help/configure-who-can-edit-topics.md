@@ -21,7 +21,7 @@ of this setting.
 
 {settings_tab|organization-permissions}
 
-2. Under **Message editing**, configure **Who can edit the topic of any message**.
+2. Under **Message and topic editing**, configure **Who can edit the topic of any message**.
 
 {!save-changes.md!}
 
