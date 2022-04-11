@@ -56,7 +56,7 @@ settings.
 
 {settings_tab|organization-permissions}
 
-1. Under **Message editing**, configure:
+1. Under **Message and topic editing**, configure:
 
     - **Allow message editing**
     - **Who can edit topic of any message**
@@ -76,7 +76,7 @@ have permission to move topics between streams.
 
 {settings_tab|organization-permissions}
 
-1. Under **Message editing**, configure
+1. Under **Message and topic editing**, configure
    **Who can move messages between streams**.
 
 {!save-changes.md!}

@@ -14,7 +14,7 @@ also disable viewing of message edit history more generally.
 
 {settings_tab|organization-permissions}
 
-1. Under **Message editing**, uncheck **Enable message edit history**.
+1. Under **Message and topic editing**, uncheck **Enable message edit history**.
 
 {!save-changes.md!}
 
