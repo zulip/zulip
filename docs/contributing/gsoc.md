@@ -424,9 +424,11 @@ CSS](https://github.com/zulip/zulip/).
   settings/administration/streams overlays in a development
   environment. You can get experience working on the subsystem by
   working on some of [our open settings/admin
-  issues](https://github.com/zulip/zulip/labels/area%3A%20admin). 175
+  issues][all-settings-issues]. 175
   to 350 hours; easy to medium. **Skills recommended**: JavaScript,
   HTML, CSS, and an eye for visual design. Expert: Sahil Batra.
+
+  [all-settings-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22area%3A+settings+%28admin%2Forg%29%22%2C%22area%3A+settings+%28user%29%22%2C%22area%3A+stream+settings%22%2C%22area%3A+settings+UI%22
 
 - Build out the administration pages for Zulip to add new permissions
   and other settings more features that will make Zulip better for
