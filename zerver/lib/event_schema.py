@@ -883,7 +883,7 @@ def check_realm_update(
 
     assert "extra_data" not in event.keys()
 
-    if prop in ["notifications_stream_id", "signup_notifications_stream_id"]:
+    if prop in ["notifications_stream_id", "signup_notifications_stream_id", "org_type"]:
         assert isinstance(value, int)
         return
 

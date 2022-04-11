@@ -69,6 +69,7 @@ from zerver.actions.realm_linkifiers import (
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_set_realm_authentication_methods,
@@ -1738,6 +1739,22 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 1)
+
+    def test_realm_update_org_type(self) -> None:
+        realm = self.user_profile.realm
+
+        state_data = fetch_initial_state_data(self.user_profile)
+        self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["business"]["id"])
+
+        events = self.verify_action(
+            lambda: do_change_realm_org_type(
+                realm, Realm.ORG_TYPES["government"]["id"], acting_user=self.user_profile
+            )
+        )
+        check_realm_update("events[0]", events[0], "org_type")
+
+        state_data = fetch_initial_state_data(self.user_profile)
+        self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["government"]["id"])
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm
