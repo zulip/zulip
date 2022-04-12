@@ -374,7 +374,7 @@ python_rules = RuleList(
         },
         {
             "pattern": "get_stream[(]",
-            "include_only": {"zerver/views/", "zerver/lib/actions.py"},
+            "include_only": {"zerver/views/", "zerver/actions/", "zerver/lib/actions.py"},
             "exclude_line": {
                 # This one in check_message is kinda terrible, since it's
                 # how most instances are written, but better to exclude something than nothing
