@@ -631,7 +631,7 @@ class TestMapArrays(ZulipTestCase):
                 "Old iOS app": [1, 2, 3],
                 "Desktop app": [2, 5, 7],
                 "Mobile app": [1, 5, 7],
-                "Website": [1, 2, 3],
+                "Web app": [1, 2, 3],
                 "Python API": [2, 4, 6],
                 "SomethingRandom": [4, 5, 6],
                 "GitHub webhook": [7, 7, 9],
