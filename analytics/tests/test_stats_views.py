@@ -621,6 +621,7 @@ class TestMapArrays(ZulipTestCase):
             "SomethingRandom": [4, 5, 6],
             "ZulipGitHubWebhook": [7, 7, 9],
             "ZulipAndroid": [64, 63, 65],
+            "ZulipTerminal": [9, 10, 11],
         }
         result = rewrite_client_arrays(a)
         self.assertEqual(
@@ -635,5 +636,6 @@ class TestMapArrays(ZulipTestCase):
                 "SomethingRandom": [4, 5, 6],
                 "GitHub webhook": [7, 7, 9],
                 "Old Android app": [64, 63, 65],
+                "Terminal app": [9, 10, 11],
             },
         )
