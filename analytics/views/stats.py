@@ -455,7 +455,7 @@ def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
 
 def client_label_map(name: str) -> str:
     if name == "website":
-        return "Website"
+        return "Web app"
     if name.startswith("desktop app"):
         return "Old desktop app"
     if name == "ZulipElectron":
