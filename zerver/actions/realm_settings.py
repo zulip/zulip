@@ -138,7 +138,7 @@ def do_set_realm_authentication_methods(
 def do_set_realm_message_editing(
     realm: Realm,
     allow_message_editing: bool,
-    message_content_edit_limit_seconds: int,
+    message_content_edit_limit_seconds: Optional[int],
     edit_topic_policy: int,
     *,
     acting_user: Optional[UserProfile],

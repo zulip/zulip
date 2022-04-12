@@ -457,7 +457,7 @@ class Realm(models.Model):
     DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
+    MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
     message_content_delete_limit_seconds: Optional[int] = models.PositiveIntegerField(
@@ -468,8 +468,8 @@ class Realm(models.Model):
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = (
         600  # if changed, also change in admin.js, setting_org.js
     )
-    message_content_edit_limit_seconds: int = models.IntegerField(
-        default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS,
+    message_content_edit_limit_seconds: Optional[int] = models.PositiveIntegerField(
+        default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS, null=True
     )
 
     # Whether users have access to message edit history

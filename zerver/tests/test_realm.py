@@ -1283,7 +1283,7 @@ class RealmAPITest(ZulipTestCase):
     def test_update_realm_allow_message_editing(self) -> None:
         """Tests updating the realm property 'allow_message_editing'."""
         self.set_up_db("allow_message_editing", False)
-        self.set_up_db("message_content_edit_limit_seconds", 0)
+        self.set_up_db("message_content_edit_limit_seconds", None)
         self.set_up_db("edit_topic_policy", Realm.POLICY_ADMINS_ONLY)
         realm = self.update_with_api("allow_message_editing", True)
         realm = self.update_with_api("message_content_edit_limit_seconds", 100)
@@ -1324,6 +1324,16 @@ class RealmAPITest(ZulipTestCase):
         req = {"edit_topic_policy": orjson.dumps(invalid_edit_topic_policy_value).decode()}
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid edit_topic_policy")
+
+        # Test 0 is invalid value of message_content_edit_limit_seconds
+        invalid_message_content_edit_limit_seconds_value = 0
+        req = {
+            "message_content_edit_limit_seconds": orjson.dumps(
+                invalid_message_content_edit_limit_seconds_value
+            ).decode()
+        }
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Bad value for 'message_content_edit_limit_seconds': 0")
 
     def test_update_realm_delete_own_message_policy(self) -> None:
         """Tests updating the realm property 'delete_own_message_policy'."""

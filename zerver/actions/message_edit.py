@@ -930,7 +930,7 @@ def check_update_message(
     # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
     # you change this value also change those two parameters in message_edit.js.
     edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
+    if content is not None and user_profile.realm.message_content_edit_limit_seconds is not None:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))

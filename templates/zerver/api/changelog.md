@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 138**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events): `message_content_edit_limit_seconds`
+  now represents no limit using `null`, instead of the integer 0.
+* `PATCH /realm`: One now sets `message_content_edit_limit_seconds`
+  to no limit by passing the string `unlimited`, rather than the
+  integer 0.
+
 **Feature level 137**
 
 * [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):

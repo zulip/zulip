@@ -275,7 +275,7 @@ const time_limit_dropdown_values = new Map([
         "any_time",
         {
             text: $t({defaultMessage: "Any time"}),
-            seconds: 0,
+            seconds: null,
         },
     ],
     [

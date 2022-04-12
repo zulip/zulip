@@ -3993,10 +3993,14 @@ paths:
                                         special value `0` before Zulip 5.0 (feature level 100).
                                     message_content_edit_limit_seconds:
                                       type: integer
+                                      nullable: true
                                       description: |
                                         Messages sent more than this many seconds ago cannot be edited
                                         with this organization's
                                         [message edit policy](/help/configure-message-editing-and-deletion).
+
+                                        **Changes**: No limit was represented using the
+                                        special value `0` before Zulip 6.0 (feature level 138).
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -4197,7 +4201,7 @@ paths:
                                   "data":
                                     {
                                       "allow_message_editing": false,
-                                      "message_content_edit_limit_seconds": 0,
+                                      "message_content_edit_limit_seconds": 600,
                                       "edit_topic_policy": 2,
                                     },
                                   "id": 0,
@@ -11555,12 +11559,19 @@ paths:
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
                       realm_message_content_edit_limit_seconds:
                         type: integer
+                        nullable: true
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Messages sent more than this many seconds ago cannot be edited
                           with this organization's
                           [message edit policy](/help/configure-message-editing-and-deletion).
+
+                          Will not be 0. A 'null' value means no limit: messages can be edited
+                          regardless of how long ago they were sent.
+
+                          **Changes**: No limit was represented using the
+                          special value `0` before Zulip 6.0 (feature level 138).
                       realm_community_topic_editing_limit_seconds:
                         type: integer
                         description: |
