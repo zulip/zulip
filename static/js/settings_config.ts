@@ -441,6 +441,71 @@ export const user_role_values = {
     },
 };
 
+export const all_org_type_values = {
+    // When org_type was added to the database model, 'unspecified'
+    // was the default for existing organizations. To discourage
+    // organizations keeping (or selecting) it as an option, we
+    // use an empty string for its description.
+    unspecified: {
+        code: 0,
+        description: "",
+    },
+    business: {
+        code: 10,
+        description: $t({defaultMessage: "Business"}),
+    },
+    opensource: {
+        code: 20,
+        description: $t({defaultMessage: "Open-source project"}),
+    },
+    education_nonprofit: {
+        code: 30,
+        description: $t({defaultMessage: "Education (non-profit)"}),
+    },
+    education: {
+        code: 35,
+        description: $t({defaultMessage: "Education (for-profit)"}),
+    },
+    research: {
+        code: 40,
+        description: $t({defaultMessage: "Research"}),
+    },
+    event: {
+        code: 50,
+        description: $t({defaultMessage: "Event or conference"}),
+    },
+    nonprofit: {
+        code: 60,
+        description: $t({defaultMessage: "Non-profit (registered)"}),
+    },
+    government: {
+        code: 70,
+        description: $t({defaultMessage: "Government"}),
+    },
+    political_group: {
+        code: 80,
+        description: $t({defaultMessage: "Political group"}),
+    },
+    community: {
+        code: 90,
+        description: $t({defaultMessage: "Community"}),
+    },
+    personal: {
+        code: 100,
+        description: $t({defaultMessage: "Personal"}),
+    },
+    other: {
+        code: 1000,
+        description: $t({defaultMessage: "Other"}),
+    },
+};
+
+// Remove the 'unspecified' org_type for dropdown menu options
+// when an org_type other than 'unspecified' has been selected.
+export const defined_org_type_values = Object.fromEntries(
+    Object.entries(all_org_type_values).slice(1),
+);
+
 export const expires_in_values = {
     // Backend support for this configuration is not available yet.
     // hour: {

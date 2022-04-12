@@ -392,6 +392,10 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(page_params.realm_name, "new_realm_name");
 
+    event = event_fixtures.realm__update__org_type;
+    dispatch(event);
+    assert_same(page_params.realm_org_type, 50);
+
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
 

@@ -116,6 +116,14 @@ export function get_organization_settings_options() {
     return options;
 }
 
+export function get_org_type_dropdown_options() {
+    const current_org_type = page_params.realm_org_type;
+    if (current_org_type !== 0) {
+        return settings_config.defined_org_type_values;
+    }
+    return settings_config.all_org_type_values;
+}
+
 export function get_realm_time_limits_in_minutes(property) {
     let val = (page_params[property] / 60).toFixed(1);
     if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
@@ -238,6 +246,7 @@ const simple_dropdown_properties = [
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
     "realm_edit_topic_policy",
+    "realm_org_type",
 ];
 
 function set_property_dropdown_value(property_name) {
@@ -506,6 +515,15 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
                 $("#realm-user-default-settings"),
                 realm_user_settings_defaults.email_notifications_batching_period_seconds,
             );
+            break;
+        case "realm_org_type":
+            set_input_element_value($elem, property_value);
+            // Remove 'unspecified' option (value=0) from realm_org_type
+            // dropdown menu options whenever page_params.realm_org_type
+            // returns another value.
+            if (property_value !== 0) {
+                $("#id_realm_org_type option[value=0]").remove();
+            }
             break;
         default:
             if (property_value !== undefined) {
