@@ -3932,7 +3932,8 @@ paths:
                                     org_type:
                                       type: integer
                                       description: |
-                                        The type of the organization.
+                                        The [organization type](/help/organization-type)
+                                        for the realm.
 
                                         - 0 = Unspecified
                                         - 10 = Business
@@ -11488,7 +11489,10 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The type of the organization.
+                          The [organization type](/help/organization-type) for the realm.
+                          Useful only to clients supporting changing this setting for the
+                          organization, or clients implementing onboarding content or
+                          other features that varies with organization type.
 
                           - 0 = Unspecified
                           - 10 = Business
