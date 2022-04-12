@@ -244,7 +244,7 @@ test_ui("actions_popover", ({override, mock_template}) => {
     };
 
     override(page_params, "realm_allow_message_editing", true);
-    override(page_params, "realm_message_content_edit_limit_seconds", 0);
+    override(page_params, "realm_message_content_edit_limit_seconds", null);
     assert.equal(message_edit.get_editability(message), message_edit.editability_types.FULL);
 
     $target.closest = (sel) => {

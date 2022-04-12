@@ -964,14 +964,16 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
-            message_content_edit_limit_seconds: int,
+            message_content_edit_limit_seconds: Union[int, str],
             edit_topic_policy: int,
         ) -> None:
             result = self.client_patch(
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
-                    "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
+                    "message_content_edit_limit_seconds": orjson.dumps(
+                        message_content_edit_limit_seconds
+                    ).decode(),
                     "edit_topic_policy": edit_topic_policy,
                 },
             )
@@ -1031,7 +1033,7 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_error(id_, "C", "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
         # without allow_message_editing, nothing is allowed
@@ -1043,7 +1045,7 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_error(
             id_, "F", "Your organization has turned off message editing", True
         )
-        set_message_editing_params(False, 0, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(False, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "G", "Your organization has turned off message editing", True
         )
@@ -1051,7 +1053,7 @@ class EditMessageTest(EditMessageTestCase):
     def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
             allow_message_editing: bool,
-            message_content_edit_limit_seconds: int,
+            message_content_edit_limit_seconds: Union[int, str],
             edit_topic_policy: int,
         ) -> None:
             self.login("iago")
@@ -1059,7 +1061,9 @@ class EditMessageTest(EditMessageTestCase):
                 "/json/realm",
                 {
                     "allow_message_editing": orjson.dumps(allow_message_editing).decode(),
-                    "message_content_edit_limit_seconds": message_content_edit_limit_seconds,
+                    "message_content_edit_limit_seconds": orjson.dumps(
+                        message_content_edit_limit_seconds
+                    ).decode(),
                     "edit_topic_policy": edit_topic_policy,
                 },
             )
@@ -1102,18 +1106,18 @@ class EditMessageTest(EditMessageTestCase):
         self.subscribe(polonius, "Denmark")
 
         # any user can edit the topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "A", "polonius")
 
         # only members can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_MEMBERS_ONLY)
         do_edit_message_assert_error(
             id_, "B", "You don't have permission to edit this message", "polonius"
         )
         do_edit_message_assert_success(id_, "B", "cordelia")
 
         # only full members can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_FULL_MEMBERS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_FULL_MEMBERS_ONLY)
 
         cordelia = self.example_user("cordelia")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
@@ -1129,21 +1133,21 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_success(id_, "C", "cordelia")
 
         # only moderators can edit topic of a message
-        set_message_editing_params(True, 0, Realm.POLICY_MODERATORS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_MODERATORS_ONLY)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
         )
         do_edit_message_assert_success(id_, "D", "shiva")
 
         # only admins can edit the topics of messages
-        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_error(
             id_, "E", "You don't have permission to edit this message", "shiva"
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
         # users cannot edit topics if allow_message_editing is False
-        set_message_editing_params(False, 0, Realm.POLICY_EVERYONE)
+        set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_error(
             id_, "D", "Your organization has turned off message editing", "cordelia"
         )
@@ -1151,7 +1155,7 @@ class EditMessageTest(EditMessageTestCase):
         # non-admin users cannot edit topics sent > 72 hrs ago
         message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
         message.save()
-        set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
+        set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(

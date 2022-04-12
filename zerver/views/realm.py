@@ -23,7 +23,7 @@ from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.message import parse_message_content_delete_limit
+from zerver.lib.message import parse_message_content_edit_or_delete_limit
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -82,8 +82,8 @@ def update_realm(
         json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
     ),
     mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    message_content_edit_limit_seconds: Optional[int] = REQ(
-        converter=to_non_negative_int, default=None
+    message_content_edit_limit_seconds_raw: Optional[Union[int, str]] = REQ(
+        "message_content_edit_limit_seconds", json_validator=check_string_or_int, default=None
     ),
     allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_language: Optional[str] = REQ(default=None),
@@ -187,9 +187,10 @@ def update_realm(
 
     message_content_delete_limit_seconds: Optional[int] = None
     if message_content_delete_limit_seconds_raw is not None:
-        message_content_delete_limit_seconds = parse_message_content_delete_limit(
+        message_content_delete_limit_seconds = parse_message_content_edit_or_delete_limit(
             message_content_delete_limit_seconds_raw,
-            Realm.MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+            setting_name="message_content_delete_limit_seconds",
         )
         if (
             message_content_delete_limit_seconds is None
@@ -232,18 +233,25 @@ def update_realm(
         data["authentication_methods"] = authentication_methods
     # The message_editing settings are coupled to each other, and thus don't fit
     # into the do_set_realm_property framework.
+
+    message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
+    if message_content_edit_limit_seconds_raw is not None:
+        message_content_edit_limit_seconds = parse_message_content_edit_or_delete_limit(
+            message_content_edit_limit_seconds_raw,
+            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+            setting_name="message_content_edit_limit_seconds",
+        )
+
     if (
         (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing)
         or (
-            message_content_edit_limit_seconds is not None
-            and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds
+            message_content_edit_limit_seconds_raw is not None
+            and message_content_edit_limit_seconds != realm.message_content_edit_limit_seconds
         )
         or (edit_topic_policy is not None and realm.edit_topic_policy != edit_topic_policy)
     ):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
-        if message_content_edit_limit_seconds is None:
-            message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
         if edit_topic_policy is None:
             edit_topic_policy = realm.edit_topic_policy
         do_set_realm_message_editing(

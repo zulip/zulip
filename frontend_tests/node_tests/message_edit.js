@@ -59,7 +59,7 @@ run_test("get_editability", ({override}) => {
 
     page_params.realm_allow_message_editing = true;
     // Limit of 0 means no time limit on editing messages
-    page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_message_content_edit_limit_seconds = null;
     assert.equal(get_editability(message), editability_types.FULL);
 
     page_params.realm_message_content_edit_limit_seconds = 10;
@@ -88,7 +88,7 @@ run_test("get_editability", ({override}) => {
     page_params.realm_edit_topic_policy =
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
-    page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_message_content_edit_limit_seconds = null;
     page_params.realm_community_topic_editing_limit_seconds = 259200;
     page_params.is_admin = false;
     message.timestamp = current_timestamp - 60;

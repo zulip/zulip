@@ -127,7 +127,7 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     }
 
     if (
-        page_params.realm_message_content_edit_limit_seconds === 0 &&
+        page_params.realm_message_content_edit_limit_seconds === null &&
         message.sent_by_me &&
         !is_widget_message(message)
     ) {

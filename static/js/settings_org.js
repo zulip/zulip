@@ -169,6 +169,11 @@ function get_property_value(property_name, for_realm_default_settings) {
         if (!page_params.realm_allow_message_editing) {
             return "never";
         }
+
+        if (page_params.realm_message_content_edit_limit_seconds === null) {
+            return "any_time";
+        }
+
         for (const [value, elem] of settings_config.msg_edit_limit_dropdown_values) {
             if (elem.seconds === page_params.realm_message_content_edit_limit_seconds) {
                 return value;
@@ -899,20 +904,33 @@ export function register_save_discard_widget_handlers(
         switch (subsection) {
             case "msg_editing": {
                 const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
-                if (edit_limit_setting_value === "never") {
-                    data.allow_message_editing = false;
-                } else if (edit_limit_setting_value === "custom_limit") {
-                    data.message_content_edit_limit_seconds = parse_time_limit(
-                        $("#id_realm_message_content_edit_limit_minutes"),
-                    );
-                    // Disable editing if the parsed time limit is 0 seconds
-                    data.allow_message_editing = Boolean(data.message_content_edit_limit_seconds);
-                } else {
-                    data.allow_message_editing = true;
-                    data.message_content_edit_limit_seconds =
-                        settings_config.msg_edit_limit_dropdown_values.get(
-                            edit_limit_setting_value,
-                        ).seconds;
+                switch (edit_limit_setting_value) {
+                    case "never": {
+                        data.allow_message_editing = false;
+
+                        break;
+                    }
+                    case "custom_limit": {
+                        data.message_content_edit_limit_seconds = parse_time_limit(
+                            $("#id_realm_message_content_edit_limit_minutes"),
+                        );
+                        data.allow_message_editing = true;
+
+                        break;
+                    }
+                    case "any_time": {
+                        data.allow_message_editing = true;
+                        data.message_content_edit_limit_seconds = JSON.stringify("unlimited");
+
+                        break;
+                    }
+                    default: {
+                        data.allow_message_editing = true;
+                        data.message_content_edit_limit_seconds =
+                            settings_config.msg_edit_limit_dropdown_values.get(
+                                edit_limit_setting_value,
+                            ).seconds;
+                    }
                 }
                 const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
                 switch (delete_limit_setting_value) {
