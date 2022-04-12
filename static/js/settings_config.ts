@@ -279,12 +279,6 @@ const time_limit_dropdown_values = new Map([
         },
     ],
     [
-        "never",
-        {
-            text: $t({defaultMessage: "Never"}),
-        },
-    ],
-    [
         "upto_two_min",
         {
             text: $t(
