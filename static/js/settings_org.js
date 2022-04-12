@@ -166,10 +166,6 @@ function get_property_value(property_name, for_realm_default_settings) {
     }
 
     if (property_name === "realm_msg_edit_limit_setting") {
-        if (!page_params.realm_allow_message_editing) {
-            return "never";
-        }
-
         if (page_params.realm_message_content_edit_limit_seconds === null) {
             return "any_time";
         }
@@ -297,6 +293,16 @@ function set_giphy_rating_dropdown() {
     $("#id_realm_giphy_rating").val(rating_id);
 }
 
+function update_message_edit_sub_settings(is_checked) {
+    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_msg_edit_limit_setting", true);
+    settings_ui.disable_sub_setting_onchange(
+        is_checked,
+        "id_realm_message_content_edit_limit_minutes",
+        true,
+    );
+    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
+}
+
 function set_msg_edit_limit_dropdown() {
     const value = get_property_value("realm_msg_edit_limit_setting");
     $("#id_realm_msg_edit_limit_setting").val(value);
@@ -304,7 +310,6 @@ function set_msg_edit_limit_dropdown() {
         "id_realm_message_content_edit_limit_minutes",
         value === "custom_limit",
     );
-    settings_ui.disable_sub_setting_onchange(value !== "never", "id_realm_edit_topic_policy", true);
 }
 
 function message_delete_limit_setting_enabled() {
@@ -458,6 +463,9 @@ function update_dependent_subsettings(property_name) {
         case "realm_video_chat_provider":
             set_video_chat_provider_dropdown();
             break;
+        case "realm_allow_message_editing":
+            update_message_edit_sub_settings(page_params.realm_allow_message_editing);
+            break;
         case "realm_msg_edit_limit_setting":
         case "realm_message_content_edit_limit_minutes":
             set_msg_edit_limit_dropdown();
@@ -580,9 +588,6 @@ export function sync_realm_settings(property) {
     switch (property) {
         case "message_content_edit_limit_seconds":
             property = "message_content_edit_limit_minutes";
-            break;
-        case "allow_message_editing":
-            property = "msg_edit_limit_setting";
             break;
         case "emails_restricted_to_domains":
         case "disallow_disposable_email_addresses":
@@ -904,28 +909,21 @@ export function register_save_discard_widget_handlers(
         switch (subsection) {
             case "msg_editing": {
                 const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
+                data.allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
                 switch (edit_limit_setting_value) {
-                    case "never": {
-                        data.allow_message_editing = false;
-
-                        break;
-                    }
                     case "custom_limit": {
                         data.message_content_edit_limit_seconds = parse_time_limit(
                             $("#id_realm_message_content_edit_limit_minutes"),
                         );
-                        data.allow_message_editing = true;
 
                         break;
                     }
                     case "any_time": {
-                        data.allow_message_editing = true;
                         data.message_content_edit_limit_seconds = JSON.stringify("unlimited");
 
                         break;
                     }
                     default: {
-                        data.allow_message_editing = true;
                         data.message_content_edit_limit_seconds =
                             settings_config.msg_edit_limit_dropdown_values.get(
                                 edit_limit_setting_value,
@@ -1192,6 +1190,11 @@ export function build_page() {
         } else {
             $node.hide();
         }
+    });
+
+    $("#id_realm_allow_message_editing").on("change", (e) => {
+        const is_checked = $(e.target).prop("checked");
+        update_message_edit_sub_settings(is_checked);
     });
 
     $("#id_realm_org_join_restrictions").on("click", (e) => {

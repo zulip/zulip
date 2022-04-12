@@ -52,6 +52,7 @@ const admin_settings_label = {
     realm_default_language: $t({
         defaultMessage: "Language for automated messages and invitation emails",
     }),
+    realm_allow_message_editing: $t({defaultMessage: "Allow message editing"}),
 };
 
 function insert_tip_box() {
@@ -113,6 +114,7 @@ export function build_page() {
         ),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
+        realm_allow_message_editing: page_params.realm_allow_message_editing,
         language_list,
         realm_default_language_name: get_language_name(page_params.realm_default_language),
         realm_default_language_code: page_params.realm_default_language,

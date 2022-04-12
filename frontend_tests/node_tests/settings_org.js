@@ -374,19 +374,12 @@ function test_sync_realm_settings() {
         $property_elem.length = 1;
         $property_elem.attr("id", "id_realm_msg_edit_limit_setting");
 
-        page_params.realm_allow_message_editing = false;
         page_params.realm_message_content_edit_limit_seconds = 120;
-        settings_org.sync_realm_settings("allow_message_editing");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "never");
-
-        page_params.realm_allow_message_editing = true;
-
-        page_params.realm_message_content_edit_limit_seconds = 120;
-        settings_org.sync_realm_settings("allow_message_editing");
+        settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_msg_edit_limit_setting").val(), "upto_two_min");
 
         page_params.realm_message_content_edit_limit_seconds = 130;
-        settings_org.sync_realm_settings("allow_message_editing");
+        settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_limit");
     }
 
