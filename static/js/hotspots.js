@@ -222,7 +222,7 @@ function insert_hotspot_into_DOM(hotspot) {
         }
 
         // reposition on any event that might update the UI
-        for (const event_name of ["resize", "scroll", "onkeydown", "click"]) {
+        for (const event_name of ["resize", "onkeydown", "click"]) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
