@@ -309,7 +309,7 @@ export function tokenize_compose_str(s) {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s()[\]{}]/.test(s[i - 1])) {
+                } else if (/[\s"'(/<[{]/.test(s[i - 1])) {
                     return s.slice(i);
                 }
                 break;
