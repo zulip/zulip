@@ -81,6 +81,10 @@ function place_icon(hotspot) {
         $icon.css("display", "none");
         return false;
     }
+    
+    if ( $element.offset().top <= $("#streams_header").offset().top ) {
+      return false;
+    }
 
     const offset = {
         top: $element.outerHeight() * hotspot.location.offset_y,
@@ -93,6 +97,7 @@ function place_icon(hotspot) {
     };
     $icon.css("display", "block");
     $icon.css(placement);
+
     return true;
 }
 
@@ -222,7 +227,7 @@ function insert_hotspot_into_DOM(hotspot) {
         }
 
         // reposition on any event that might update the UI
-        for (const event_name of ["resize", "onkeydown", "click"]) {
+        for (const event_name of ["resize", "scroll", "onkeydown", "click"]) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
