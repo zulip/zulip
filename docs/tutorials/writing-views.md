@@ -242,7 +242,7 @@ change the server more than once or cause unwanted side effects.
 ### Making changes to the database
 
 If the view does any modification to the database, that change is done
-in a helper function in `zerver/lib/actions.py`. Those functions are
+in a helper function in `zerver/actions/*.py`. Those functions are
 responsible for doing a complete update to the state of the server,
 which often entails both updating the database and sending any events
 to notify clients about the state change. When possible, we prefer to
