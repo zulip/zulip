@@ -272,6 +272,13 @@ function display_video(payload) {
 
     $("#lightbox_overlay .player-container").html($iframe).show();
     $(".image-actions .open").attr("href", payload.url);
+    
+    // checks to ensure the focus is not in the video
+    setInterval(() => {
+        if (document.activeElement.tagName === "IFRAME") {
+            document.activeElement.blur();
+        }
+    }, 500);
 }
 
 export function build_open_image_function(on_close) {
