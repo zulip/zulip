@@ -46,6 +46,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_user_default_setting,
     get_default_streams_for_realm,
+    process_new_human_user,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
@@ -2155,7 +2156,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
         self.assert_length(invites, 4)
 
-        do_create_user(
+        created_user = do_create_user(
             "foo@zulip.com",
             "password",
             self.user_profile.realm,
@@ -2174,6 +2175,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # the others must be canceled.
         self.assert_length(accepted_invite, 1)
         self.assertEqual(accepted_invite[0].id, prereg_user.id)
+        self.assertEqual(accepted_invite[0].created_user, created_user)
 
         expected_revoked_invites = set(invites.exclude(id=prereg_user.id).exclude(realm=lear))
         self.assertEqual(set(revoked_invites), expected_revoked_invites)
@@ -2181,6 +2183,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(
             PreregistrationUser.objects.get(email__iexact="foo@zulip.com", realm=lear).status, 0
         )
+
+        with self.assertRaises(AssertionError):
+            process_new_human_user(created_user, prereg_user)
 
     def test_confirmation_obj_not_exist_error(self) -> None:
         """Since the key is a param input by the user to the registration endpoint,
