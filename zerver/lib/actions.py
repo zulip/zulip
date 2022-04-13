@@ -487,6 +487,9 @@ def process_new_human_user(
     if prereg_user is not None:
         streams: List[Stream] = list(prereg_user.streams.all())
         acting_user: Optional[UserProfile] = prereg_user.referred_by
+
+        # A PregistrationUser should not be used for another UserProfile
+        assert prereg_user.created_user is None, "PregistrationUser should not be reused"
     else:
         streams = []
         acting_user = None
@@ -529,12 +532,15 @@ def process_new_human_user(
                 ),
             )
 
+    # Revoke all preregistration users except prereg_user, and link prereg_user to
+    # the created user
     if prereg_user is None:
         assert not realm_creation, "realm_creation should only happen with a PreregistrationUser"
 
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_ACTIVE
-        prereg_user.save(update_fields=["status"])
+        prereg_user.created_user = user_profile
+        prereg_user.save(update_fields=["status", "created_user"])
 
     # In the special case of realm creation, there can be no additional PreregistrationUser
     # for us to want to modify - because other realm_creation PreregistrationUsers should be

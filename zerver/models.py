@@ -2226,6 +2226,12 @@ class PreregistrationUser(models.Model):
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationUser
+    created_user: Optional[UserProfile] = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_preregistration_email_idx"),
