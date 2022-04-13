@@ -191,13 +191,20 @@ def update_realm(
             message_content_delete_limit_seconds_raw,
             Realm.MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP,
         )
-        do_set_realm_property(
-            realm,
-            "message_content_delete_limit_seconds",
-            message_content_delete_limit_seconds,
-            acting_user=user_profile,
-        )
-        data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
+        if (
+            message_content_delete_limit_seconds is None
+            and realm.message_content_delete_limit_seconds is not None
+        ):
+            # We handle 'None' here separately, since in the loop below,
+            # do_set_realm_property is called only if setting value is
+            # not None.
+            do_set_realm_property(
+                realm,
+                "message_content_delete_limit_seconds",
+                message_content_delete_limit_seconds,
+                acting_user=user_profile,
+            )
+            data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
