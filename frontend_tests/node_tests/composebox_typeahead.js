@@ -1422,6 +1422,12 @@ test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
     assert.equal(ct.tokenize_compose_str("foo#@:bar"), "");
     assert.equal(ct.tokenize_compose_str("foo bar [#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar (#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar {#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar /#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar <#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar '#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str('foo bar "#alic'), "#alic");
     assert.equal(ct.tokenize_compose_str("#foo @bar [#alic"), "#alic");
     assert.equal(ct.tokenize_compose_str("foo bar #alic"), "#alic");
     assert.equal(ct.tokenize_compose_str("foo bar @alic"), "@alic");
