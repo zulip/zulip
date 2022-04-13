@@ -774,13 +774,15 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"<Realm: {self.string_id} {self.id}>"
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_realm_emoji_uncached(self)
+    def get_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_realm_emoji_uncached(realm)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_active_realm_emoji_uncached(self)
+    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_active_realm_emoji_uncached(realm)
 
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
@@ -880,9 +882,11 @@ class Realm(models.Model):
         # it as gibibytes (GiB) to be a bit more generous in case of confusion.
         return self.upload_quota_gb << 30
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
-    def currently_used_upload_space_bytes(self) -> int:
-        used_space = Attachment.objects.filter(realm=self).aggregate(Sum("size"))["size__sum"]
+    def currently_used_upload_space_bytes(realm) -> int:
+        used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
             return 0
         return used_space
@@ -3565,8 +3569,8 @@ class Subscription(models.Model):
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
-def get_user_profile_by_id(uid: int) -> UserProfile:
-    return UserProfile.objects.select_related().get(id=uid)
+def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+    return UserProfile.objects.select_related().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:

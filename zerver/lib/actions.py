@@ -1634,8 +1634,14 @@ def compute_jabber_user_fullname(email: str) -> str:
     return email.split("@")[0] + " (XMPP)"
 
 
+def get_user_profile_delivery_email_cache_key(
+    realm: Realm, email: str, email_to_fullname: Callable[[str], str]
+) -> str:
+    return user_profile_delivery_email_cache_key(email, realm)
+
+
 @cache_with_key(
-    lambda realm, email, f: user_profile_delivery_email_cache_key(email, realm),
+    get_user_profile_delivery_email_cache_key,
     timeout=3600 * 24 * 7,
 )
 def create_mirror_user_if_needed(
