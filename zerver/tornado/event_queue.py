@@ -11,6 +11,7 @@ import time
 import traceback
 from collections import deque
 from dataclasses import asdict
+from functools import lru_cache
 from typing import (
     AbstractSet,
     Any,
@@ -38,7 +39,6 @@ from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.decorator import cachify
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
@@ -938,7 +938,7 @@ def process_message_event(
     message_type: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
-    @cachify
+    @lru_cache(maxsize=None)
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,

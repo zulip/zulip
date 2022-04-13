@@ -3,6 +3,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
+from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock, skipUnless
 
@@ -18,7 +19,6 @@ from zerver.decorator import (
     authenticated_json_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
-    cachify,
     internal_notify_view,
     is_local_addr,
     rate_limit,
@@ -1948,7 +1948,7 @@ class RestAPITest(ZulipTestCase):
 
 class CacheTestCase(ZulipTestCase):
     def test_cachify_basics(self) -> None:
-        @cachify
+        @lru_cache(maxsize=None)
         def add(w: Any, x: Any, y: Any, z: Any) -> Any:
             return w + x + y + z
 
@@ -1962,7 +1962,7 @@ class CacheTestCase(ZulipTestCase):
             result_log: List[str] = []
             work_log: List[str] = []
 
-            @cachify
+            @lru_cache(maxsize=None)
             def greet(first_name: str, last_name: str) -> str:
                 msg = f"{greeting} {first_name} {last_name}"
                 work_log.append(msg)

@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Sequence, Set, Tuple, TypeVar, Union, cast, overload
+from typing import Callable, Dict, Optional, Sequence, Set, TypeVar, Union, cast, overload
 
 import django_otp
 import orjson
@@ -68,20 +68,6 @@ webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.uns
 webhook_anomalous_payloads_logger = logging.getLogger("zulip.zerver.webhooks.anomalous")
 
 FuncT = TypeVar("FuncT", bound=Callable[..., object])
-
-
-def cachify(method: FuncT) -> FuncT:
-    dct: Dict[Tuple[object, ...], object] = {}
-
-    def cache_wrapper(*args: object) -> object:
-        tup = tuple(args)
-        if tup in dct:
-            return dct[tup]
-        result = method(*args)
-        dct[tup] = result
-        return result
-
-    return cast(FuncT, cache_wrapper)  # https://github.com/python/mypy/issues/1927
 
 
 def update_user_activity(
