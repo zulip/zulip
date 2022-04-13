@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
 
 import orjson
 import stripe
@@ -17,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
+from typing_extensions import ParamSpec
 
 from corporate.models import (
     Customer,
@@ -45,7 +46,8 @@ billing_logger = logging.getLogger("corporate.stripe")
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger("stripe"), BILLING_LOG_PATH)
 
-CallableT = TypeVar("CallableT", bound=Callable[..., object])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
@@ -243,9 +245,9 @@ class InvalidTier(Exception):
         super().__init__(self.message)
 
 
-def catch_stripe_errors(func: CallableT) -> CallableT:
+def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
     @wraps(func)
-    def wrapped(*args: object, **kwargs: object) -> object:
+    def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
         try:
             return func(*args, **kwargs)
         # See https://stripe.com/docs/api/python#error_handling, though
@@ -279,7 +281,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                 )
             raise BillingError("other stripe error")
 
-    return cast(CallableT, wrapped)
+    return wrapped
 
 
 @catch_stripe_errors
