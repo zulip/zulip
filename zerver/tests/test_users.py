@@ -15,7 +15,6 @@ from confirmation.models import Confirmation
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.lib.actions import (
     change_user_is_active,
-    create_users,
     do_change_can_create_users,
     do_change_user_role,
     do_create_user,
@@ -27,6 +26,7 @@ from zerver.lib.actions import (
     get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
