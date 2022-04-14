@@ -37,8 +37,8 @@ from corporate.models import (
     get_customer_by_realm,
 )
 from corporate.views.billing_page import billing_home
+from zerver.actions.users import do_make_user_billing_admin
 from zerver.decorator import require_organization_member, zulip_login_required
-from zerver.lib.actions import do_make_user_billing_admin
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email

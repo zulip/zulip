@@ -2,9 +2,9 @@ import orjson
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
+from zerver.actions.users import do_change_user_role
 from zerver.lib.actions import (
     do_change_realm_domain,
-    do_change_user_role,
     do_create_realm,
     do_remove_realm_domain,
     do_set_realm_property,

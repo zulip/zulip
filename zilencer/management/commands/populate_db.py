@@ -24,12 +24,8 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_default_custom_profile_field,
 )
 from zerver.actions.realm_emoji import check_add_realm_emoji
-from zerver.lib.actions import (
-    build_message_send_dict,
-    do_change_user_role,
-    do_create_realm,
-    do_send_messages,
-)
+from zerver.actions.users import do_change_user_role
+from zerver.lib.actions import build_message_send_dict, do_create_realm, do_send_messages
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics

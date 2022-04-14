@@ -11,9 +11,9 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.actions import (
     do_deactivate_realm,
-    do_deactivate_user,
     do_set_realm_property,
     do_start_email_change_process,
 )

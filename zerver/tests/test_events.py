@@ -59,6 +59,12 @@ from zerver.actions.user_groups import (
     remove_members_from_user_group,
 )
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.users import (
+    do_change_user_role,
+    do_deactivate_user,
+    do_make_user_billing_admin,
+    do_update_outgoing_webhook_service,
+)
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
     bulk_add_subscriptions,
@@ -79,14 +85,11 @@ from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_change_user_delivery_email,
-    do_change_user_role,
     do_change_user_setting,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
-    do_deactivate_user,
     do_delete_messages,
-    do_make_user_billing_admin,
     do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
@@ -103,7 +106,6 @@ from zerver.lib.actions import (
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
-    do_update_outgoing_webhook_service,
 )
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
