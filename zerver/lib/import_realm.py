@@ -16,7 +16,8 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import do_change_avatar_fields, do_change_realm_plan_type
+from zerver.actions.user_settings import do_change_avatar_fields
+from zerver.lib.actions import do_change_realm_plan_type
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
