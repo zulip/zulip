@@ -23,6 +23,7 @@ from zerver.actions.default_streams import (
     get_default_streams_for_realm,
     lookup_default_stream_groups,
 )
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -31,12 +32,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
-from zerver.lib.actions import (
-    do_change_realm_plan_type,
-    do_create_realm,
-    do_set_realm_property,
-    get_topic_messages,
-)
+from zerver.lib.actions import do_create_realm, get_topic_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success

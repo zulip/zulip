@@ -48,9 +48,9 @@ from two_factor.models import PhoneDevice
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
-from zerver.lib.actions import do_set_realm_property
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
 from zerver.lib.notification_data import UserMessageNotificationsData
