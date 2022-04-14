@@ -6,7 +6,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_deactivate_realm
+from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.lib.export import export_realm_wrapper
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Message, Reaction, UserProfile

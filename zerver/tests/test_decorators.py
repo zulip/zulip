@@ -15,6 +15,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import do_reactivate_user
+from zerver.actions.realm_settings import (
+    do_deactivate_realm,
+    do_reactivate_realm,
+    do_set_realm_property,
+)
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
     authenticate_notify,
@@ -30,12 +35,7 @@ from zerver.decorator import (
     zulip_login_required,
 )
 from zerver.forms import OurAuthenticationForm
-from zerver.lib.actions import (
-    do_create_realm,
-    do_deactivate_realm,
-    do_reactivate_realm,
-    do_set_realm_property,
-)
+from zerver.lib.actions import do_create_realm
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 from zerver.lib.exceptions import (
     AccessDeniedError,

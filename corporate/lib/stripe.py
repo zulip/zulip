@@ -748,7 +748,7 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.lib.actions import do_change_realm_plan_type
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
@@ -972,7 +972,7 @@ def update_sponsorship_status(
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     from zerver.actions.message_send import internal_send_private_message
-    from zerver.lib.actions import do_change_realm_plan_type
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
@@ -1021,7 +1021,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_realm_plan_type
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     assert plan.customer.realm is not None
     do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
