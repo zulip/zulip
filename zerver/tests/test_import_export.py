@@ -11,12 +11,12 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.lib import upload
 from zerver.lib.actions import (
     check_add_reaction,
-    check_add_realm_emoji,
     do_add_reaction,
     do_change_realm_plan_type,
     do_create_user,
