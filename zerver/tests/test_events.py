@@ -13,6 +13,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
@@ -26,7 +27,6 @@ from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
-    check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
     do_add_linkifier,
@@ -82,7 +82,6 @@ from zerver.lib.actions import (
     do_rename_stream,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
-    do_send_stream_typing_notification,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
