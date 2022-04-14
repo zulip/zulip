@@ -723,6 +723,12 @@ export function hide_user_sidebar_popover() {
     }
 }
 
+function hide_all_user_info_popovers() {
+    hide_message_info_popover();
+    hide_user_sidebar_popover();
+    hide_user_info_popover();
+}
+
 function focus_user_info_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
@@ -1012,9 +1018,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-mute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        hide_message_info_popover();
-        hide_user_sidebar_popover();
-        hide_user_info_popover();
+        hide_all_user_info_popovers();
         e.stopPropagation();
         e.preventDefault();
         muted_users_ui.confirm_mute_user(user_id);
@@ -1022,9 +1026,7 @@ export function register_click_handlers() {
 
     $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        hide_message_info_popover();
-        hide_user_sidebar_popover();
-        hide_user_info_popover();
+        hide_all_user_info_popovers();
         muted_users_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
@@ -1323,7 +1325,6 @@ export function hide_all_except_sidebars(opts) {
         hideAll({exclude: opts.exclude_tippy_instance});
     }
     hide_actions_popover();
-    hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
     giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
@@ -1331,8 +1332,7 @@ export function hide_all_except_sidebars(opts) {
     stream_popover.hide_all_messages_popover();
     stream_popover.hide_starred_messages_popover();
     stream_popover.hide_drafts_popover();
-    hide_user_sidebar_popover();
-    hide_user_info_popover();
+    hide_all_user_info_popovers();
     hide_playground_links_popover();
 
     // look through all the popovers that have been added and removed.
