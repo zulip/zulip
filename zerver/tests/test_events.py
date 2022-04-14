@@ -45,6 +45,11 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
+from zerver.actions.message_edit import (
+    do_delete_messages,
+    do_update_embedded_data,
+    do_update_message,
+)
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
@@ -99,7 +104,6 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_change_realm_plan_type,
     do_deactivate_realm,
-    do_delete_messages,
     do_remove_realm_domain,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
@@ -107,8 +111,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
-    do_update_embedded_data,
-    do_update_message,
 )
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
