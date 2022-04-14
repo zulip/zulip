@@ -25,17 +25,20 @@ from confirmation.models import (
     one_click_unsubscribe_link,
 )
 from corporate.lib.stripe import get_latest_seat_count
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_create_default_stream_group,
+    get_default_streams_for_realm,
+)
 from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.lib.actions import (
     add_new_user_history,
     change_user_is_active,
-    do_add_default_stream,
     do_change_full_name,
     do_change_realm_subdomain,
     do_change_user_role,
-    do_create_default_stream_group,
     do_create_multiuse_invite_link,
     do_create_realm,
     do_create_user,
@@ -45,7 +48,6 @@ from zerver.lib.actions import (
     do_invite_users,
     do_set_realm_property,
     do_set_realm_user_default_setting,
-    get_default_streams_for_realm,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
