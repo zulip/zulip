@@ -33,7 +33,6 @@ from zerver.actions.streams import (
     do_deactivate_stream,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
-from zerver.lib.actions import get_topic_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -66,7 +65,7 @@ from zerver.lib.subscription_info import (
     gather_subscriptions_helper,
     validate_user_access_to_subscribers_helper,
 )
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import (
     HostRequestMock,
     cache_tries_captured,
