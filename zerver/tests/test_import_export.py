@@ -10,11 +10,11 @@ from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
+from zerver.actions.alert_words import do_add_alert_words
 from zerver.lib import upload
 from zerver.lib.actions import (
     check_add_reaction,
     check_add_realm_emoji,
-    do_add_alert_words,
     do_add_reaction,
     do_change_icon_source,
     do_change_logo_source,

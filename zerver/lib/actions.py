@@ -60,11 +60,7 @@ from zerver.actions.user_groups import (
 from zerver.decorator import statsd_increment
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
-from zerver.lib.alert_words import (
-    add_user_alert_words,
-    get_alert_word_automaton,
-    remove_user_alert_words,
-)
+from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.bulk_create import bulk_create_users
@@ -7446,21 +7442,6 @@ def do_remove_realm_emoji(realm: Realm, name: str) -> None:
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
     notify_realm_emoji(realm)
-
-
-def notify_alert_words(user_profile: UserProfile, words: Sequence[str]) -> None:
-    event = dict(type="alert_words", alert_words=words)
-    send_event(user_profile.realm, event, [user_profile.id])
-
-
-def do_add_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
-    words = add_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile, words)
-
-
-def do_remove_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) -> None:
-    words = remove_user_alert_words(user_profile, alert_words)
-    notify_alert_words(user_profile, words)
 
 
 def do_mute_topic(

@@ -10,9 +10,9 @@ from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
 
+from zerver.actions.alert_words import do_add_alert_words
 from zerver.lib.actions import (
     change_user_is_active,
-    do_add_alert_words,
     do_change_user_setting,
     do_create_realm,
     do_remove_realm_emoji,
