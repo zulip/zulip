@@ -13,6 +13,11 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_linkifiers import (
+    do_add_linkifier,
+    do_remove_linkifier,
+    do_update_linkifier,
+)
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
@@ -31,7 +36,6 @@ from zerver.lib.actions import (
     check_add_realm_emoji,
     do_add_alert_words,
     do_add_default_stream,
-    do_add_linkifier,
     do_add_reaction,
     do_add_realm_domain,
     do_add_streams_to_default_stream_group,
@@ -72,7 +76,6 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
-    do_remove_linkifier,
     do_remove_reaction,
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
@@ -90,7 +93,6 @@ from zerver.lib.actions import (
     do_unmute_topic,
     do_unmute_user,
     do_update_embedded_data,
-    do_update_linkifier,
     do_update_message,
     do_update_message_flags,
     do_update_outgoing_webhook_service,
