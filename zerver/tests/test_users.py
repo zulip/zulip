@@ -12,16 +12,15 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
+from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.lib.actions import (
     change_user_is_active,
     create_users,
     do_change_can_create_users,
     do_change_user_role,
-    do_create_multiuse_invite_link,
     do_create_user,
     do_deactivate_user,
     do_delete_user,
-    do_invite_users,
     do_mute_user,
     do_reactivate_user,
     do_set_realm_property,

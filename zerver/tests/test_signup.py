@@ -30,6 +30,11 @@ from zerver.actions.default_streams import (
     do_create_default_stream_group,
     get_default_streams_for_realm,
 )
+from zerver.actions.invites import (
+    do_create_multiuse_invite_link,
+    do_get_invites_controlled_by_user,
+    do_invite_users,
+)
 from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
@@ -39,13 +44,10 @@ from zerver.lib.actions import (
     do_change_full_name,
     do_change_realm_subdomain,
     do_change_user_role,
-    do_create_multiuse_invite_link,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
-    do_get_invites_controlled_by_user,
-    do_invite_users,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
