@@ -14,7 +14,8 @@ from sqlalchemy.types import Integer
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.actions.uploads import do_claim_attachments
-from zerver.lib.actions import do_deactivate_user, do_set_realm_property, do_update_message
+from zerver.actions.users import do_deactivate_user
+from zerver.lib.actions import do_set_realm_property, do_update_message
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, MentionData

@@ -9,11 +9,11 @@ from django.http import HttpRequest
 from django_scim.adapters import SCIMUser
 from scim2_filter_parser.attr_paths import AttrPath
 
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.actions import (
     check_change_full_name,
     do_change_user_delivery_email,
     do_create_user,
-    do_deactivate_user,
     do_reactivate_user,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm

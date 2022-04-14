@@ -12,12 +12,8 @@ from markdown import Markdown
 
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.realm_emoji import do_remove_realm_emoji
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_change_user_setting,
-    do_create_realm,
-    do_set_realm_property,
-)
+from zerver.actions.users import change_user_is_active
+from zerver.lib.actions import do_change_user_setting, do_create_realm, do_set_realm_property
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user

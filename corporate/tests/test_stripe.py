@@ -80,12 +80,12 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
-    do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
 )

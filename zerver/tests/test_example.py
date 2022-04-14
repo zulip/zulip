@@ -5,7 +5,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_can_create_users, do_change_user_role
+from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase

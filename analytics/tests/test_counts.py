@@ -38,11 +38,11 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.actions.user_activity import update_user_activity_interval
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_create_realm,
     do_create_user,
-    do_deactivate_user,
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
     do_reactivate_user,

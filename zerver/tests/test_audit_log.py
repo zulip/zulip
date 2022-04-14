@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from analytics.models import StreamCount
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -23,12 +24,10 @@ from zerver.lib.actions import (
     do_change_subscription_property,
     do_change_tos_version,
     do_change_user_delivery_email,
-    do_change_user_role,
     do_change_user_setting,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
-    do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
     do_regenerate_api_key,

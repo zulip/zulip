@@ -31,8 +31,8 @@ with test_server_running(
 ):
     # zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
+    from zerver.actions.users import change_user_is_active
     from zerver.lib.actions import (
-        change_user_is_active,
         do_create_user,
         do_deactivate_realm,
         do_reactivate_realm,
