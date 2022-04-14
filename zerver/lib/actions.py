@@ -187,6 +187,7 @@ from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,
     format_user_row,
+    get_active_bots_owned_by_user,
     get_api_key,
     user_profile_to_user_row,
 )
@@ -1237,10 +1238,6 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
         user_profile.is_active = value
         user_profile.save(update_fields=["is_active"])
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
-
-
-def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
-    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
 
 
 def do_deactivate_user(
