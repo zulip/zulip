@@ -428,19 +428,43 @@ function get_human_profile_data(fields_user_pills) {
 }
 
 export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
-    const user = people.get_by_user_id(user_id);
-    const opts = {
-        username: user.full_name,
-        email: settings_data.email_for_user_settings(user),
-    };
-    const html_body = render_settings_deactivation_user_modal(opts);
+    // Knowing the number of invites requires making this request. If the request fails,
+    // we won't have the accurate number of invites. So, we don't show the modal if the
+    // request fails.
+    channel.get({
+        url: "/json/invites",
+        idempotent: true,
+        timeout: 10 * 1000,
+        success(data) {
+            let number_of_invites_by_user = 0;
+            for (const invite of data.invites) {
+                if (invite.invited_by_user_id === user_id) {
+                    number_of_invites_by_user = number_of_invites_by_user + 1;
+                }
+            }
 
-    confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: user.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
-        html_body,
-        on_click: handle_confirm,
-        loading_spinner,
+            const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
+            const user = people.get_by_user_id(user_id);
+            const opts = {
+                username: user.full_name,
+                email: settings_data.email_for_user_settings(user),
+                bots_owned_by_user,
+                number_of_invites_by_user,
+            };
+            const html_body = render_settings_deactivation_user_modal(opts);
+
+            confirm_dialog.launch({
+                html_heading: $t_html(
+                    {defaultMessage: "Deactivate {name}"},
+                    {name: user.full_name},
+                ),
+                help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
+                html_body,
+                id: "deactivate-user-modal",
+                on_click: handle_confirm,
+                loading_spinner,
+            });
+        },
     });
 }
 

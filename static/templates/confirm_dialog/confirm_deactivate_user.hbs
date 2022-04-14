@@ -5,3 +5,16 @@
     {{/tr}}
 </p>
 <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
+<p>
+    {{#tr}}
+        <strong>{username}</strong> has {number_of_invites_by_user} unexpired invitations.
+    {{/tr}}
+    {{#if bots_owned_by_user}}
+        {{t "They administer the following bots:"}}
+        <ul>
+            {{#each bots_owned_by_user}}
+                <li>{{this.full_name}}</li>
+            {{/each}}
+        </ul>
+    {{/if}}
+</p>
