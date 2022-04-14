@@ -63,6 +63,16 @@ from zerver.actions.realm_linkifiers import (
 )
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_settings import (
+    do_change_realm_plan_type,
+    do_deactivate_realm,
+    do_set_realm_authentication_methods,
+    do_set_realm_message_editing,
+    do_set_realm_notifications_stream,
+    do_set_realm_property,
+    do_set_realm_signup_notifications_stream,
+    do_set_realm_user_default_setting,
+)
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
@@ -99,19 +109,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
-from zerver.lib.actions import (
-    do_add_realm_domain,
-    do_change_realm_domain,
-    do_change_realm_plan_type,
-    do_deactivate_realm,
-    do_remove_realm_domain,
-    do_set_realm_authentication_methods,
-    do_set_realm_message_editing,
-    do_set_realm_notifications_stream,
-    do_set_realm_property,
-    do_set_realm_signup_notifications_stream,
-    do_set_realm_user_default_setting,
-)
+from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, do_remove_realm_domain
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,

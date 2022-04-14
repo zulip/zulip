@@ -9,19 +9,18 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.actions.streams import do_deactivate_stream
-from zerver.lib.actions import (
+from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
     do_change_realm_plan_type,
-    do_change_realm_subdomain,
-    do_create_realm,
     do_deactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
+from zerver.actions.streams import do_deactivate_stream
+from zerver.lib.actions import do_change_realm_subdomain, do_create_realm
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed

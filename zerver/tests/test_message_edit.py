@@ -15,9 +15,10 @@ from zerver.actions.message_edit import (
     get_user_info_for_message_updates,
 )
 from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.users import do_change_user_role
-from zerver.lib.actions import do_change_realm_plan_type, do_set_realm_property, get_topic_messages
+from zerver.lib.actions import get_topic_messages
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured

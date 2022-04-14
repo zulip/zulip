@@ -22,9 +22,10 @@ import zerver.lib.upload
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.actions.user_settings import do_delete_avatar_image
-from zerver.lib.actions import do_change_realm_plan_type, do_create_realm, do_set_realm_property
+from zerver.lib.actions import do_create_realm
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
