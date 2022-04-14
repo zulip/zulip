@@ -14,6 +14,12 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.bots import (
+    do_change_bot_owner,
+    do_change_default_all_public_streams,
+    do_change_default_events_register_stream,
+    do_change_default_sending_stream,
+)
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
@@ -89,10 +95,6 @@ from zerver.actions.users import (
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
     do_add_realm_domain,
-    do_change_bot_owner,
-    do_change_default_all_public_streams,
-    do_change_default_events_register_stream,
-    do_change_default_sending_stream,
     do_change_realm_domain,
     do_change_realm_plan_type,
     do_deactivate_realm,

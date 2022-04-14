@@ -257,7 +257,7 @@ python_rules = RuleList(
             "description": "Always pass update_fields when saving user_profile objects",
             "exclude_line": {
                 (
-                    "zerver/lib/actions.py",
+                    "zerver/actions/bots.py",
                     "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
                 ),
             },
