@@ -25,6 +25,7 @@ from confirmation.models import (
     one_click_unsubscribe_link,
 )
 from corporate.lib.stripe import get_latest_seat_count
+from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.default_streams import (
     do_add_default_stream,
     do_create_default_stream_group,
@@ -41,10 +42,8 @@ from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.lib.actions import (
-    add_new_user_history,
     do_change_realm_subdomain,
     do_create_realm,
-    do_create_user,
     do_deactivate_realm,
     do_set_realm_property,
     do_set_realm_user_default_setting,
@@ -252,7 +251,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), stream.name, "test 2")
         self.send_stream_message(self.example_user("hamlet"), stream.name, "test 3")
 
-        with patch("zerver.lib.actions.add_new_user_history"):
+        with patch("zerver.actions.create_user.add_new_user_history"):
             self.register(self.nonreg_email("test"), "test")
         user_profile = self.nonreg_user("test")
         subs = Subscription.objects.select_related("recipient").filter(
@@ -268,7 +267,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
         ONBOARDING_UNREAD_MESSAGES = 2
-        with patch("zerver.lib.actions.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES):
+        with patch(
+            "zerver.actions.create_user.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES
+        ):
             add_new_user_history(user_profile, streams)
 
         # Our first message is in the user's history

@@ -6,8 +6,8 @@ import orjson
 from django.conf import settings
 from django.test import override_settings
 
+from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
-from zerver.lib.actions import do_create_user
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError

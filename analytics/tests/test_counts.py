@@ -32,6 +32,11 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
+from zerver.actions.create_user import (
+    do_activate_mirror_dummy_user,
+    do_create_user,
+    do_reactivate_user,
+)
 from zerver.actions.invites import (
     do_invite_users,
     do_resend_user_invite_email,
@@ -40,12 +45,9 @@ from zerver.actions.invites import (
 from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.actions import (
-    do_activate_mirror_dummy_user,
     do_create_realm,
-    do_create_user,
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
-    do_reactivate_user,
     do_update_message_flags,
 )
 from zerver.lib.create_user import create_user

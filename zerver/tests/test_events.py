@@ -14,6 +14,7 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
     do_update_user_custom_profile_data_if_changed,
@@ -93,11 +94,9 @@ from zerver.lib.actions import (
     do_change_default_sending_stream,
     do_change_realm_domain,
     do_change_realm_plan_type,
-    do_create_user,
     do_deactivate_realm,
     do_delete_messages,
     do_mute_user,
-    do_reactivate_user,
     do_remove_reaction,
     do_remove_realm_domain,
     do_set_realm_authentication_methods,

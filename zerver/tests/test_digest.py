@@ -7,7 +7,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.actions import do_create_user
+from zerver.actions.create_user import do_create_user
 from zerver.lib.digest import (
     DigestTopic,
     _enqueue_emails_for_realm,
