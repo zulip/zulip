@@ -26,6 +26,12 @@ from zerver.actions.default_streams import (
     lookup_default_stream_groups,
 )
 from zerver.actions.hotspots import do_mark_hotspot_as_read
+from zerver.actions.invites import (
+    do_create_multiuse_invite_link,
+    do_invite_users,
+    do_revoke_multi_use_invite,
+    do_revoke_user_invite,
+)
 from zerver.actions.realm_linkifiers import (
     do_add_linkifier,
     do_remove_linkifier,
@@ -67,13 +73,11 @@ from zerver.lib.actions import (
     do_change_user_delivery_email,
     do_change_user_role,
     do_change_user_setting,
-    do_create_multiuse_invite_link,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
-    do_invite_users,
     do_make_user_billing_admin,
     do_mute_topic,
     do_mute_user,
@@ -84,8 +88,6 @@ from zerver.lib.actions import (
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_rename_stream,
-    do_revoke_multi_use_invite,
-    do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,

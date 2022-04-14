@@ -32,17 +32,19 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
+from zerver.actions.invites import (
+    do_invite_users,
+    do_resend_user_invite_email,
+    do_revoke_user_invite,
+)
 from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_create_realm,
     do_create_user,
     do_deactivate_user,
-    do_invite_users,
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
     do_reactivate_user,
-    do_resend_user_invite_email,
-    do_revoke_user_invite,
     do_update_message_flags,
     update_user_activity_interval,
 )

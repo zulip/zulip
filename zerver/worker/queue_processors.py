@@ -46,10 +46,10 @@ from django.utils.translation import override as override_language
 from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
+from zerver.actions.invites import do_send_confirmation_email
 from zerver.context_processors import common_context
 from zerver.lib.actions import (
     do_mark_stream_messages_as_read,
-    do_send_confirmation_email,
     do_update_embedded_data,
     do_update_user_activity,
     do_update_user_activity_interval,

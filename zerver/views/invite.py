@@ -5,8 +5,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import require_member_or_admin, require_realm_admin
-from zerver.lib.actions import (
+from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
@@ -14,6 +13,7 @@ from zerver.lib.actions import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
+from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
