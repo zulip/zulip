@@ -39,6 +39,7 @@ from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -899,6 +900,7 @@ def render_markdown(
     content: str,
     realm: Optional[Realm] = None,
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
@@ -920,6 +922,7 @@ def render_markdown(
         message_realm=realm,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
+        url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
