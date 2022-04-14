@@ -378,7 +378,7 @@ python_rules = RuleList(
             "exclude_line": {
                 # This one in check_message is kinda terrible, since it's
                 # how most instances are written, but better to exclude something than nothing
-                ("zerver/lib/actions.py", "stream = get_stream(stream_name, realm)"),
+                ("zerver/actions/message_send.py", "stream = get_stream(stream_name, realm)"),
             },
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },

@@ -254,7 +254,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")
-        from zerver.lib.actions import filter_presence_idle_user_ids
+        from zerver.actions.message_send import filter_presence_idle_user_ids
 
         self.login("hamlet")
 

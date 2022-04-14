@@ -23,7 +23,7 @@ def zerver.lib.avatar_hash.user_avatar_path_from_ids(user_profile_id, realm_id) 
 # This function creates a list of 'UserMessageLite' objects, which contain only
 # integral IDs and flags. These should safe for use with SQL and other
 # operations.
-def zerver.lib.actions.create_user_messages(
+def zerver.actions.message_send.create_user_messages(
     message,
     um_eligible_user_ids,
     long_term_idle_user_ids,

@@ -7,7 +7,7 @@ from urllib.parse import unquote
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
     check_send_stream_message_by_id,

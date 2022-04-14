@@ -13,6 +13,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
+from zerver.actions.message_send import get_recipient_info
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -25,7 +26,6 @@ from zerver.lib.actions import (
     do_mute_user,
     do_reactivate_user,
     do_set_realm_property,
-    get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bulk_create import create_users

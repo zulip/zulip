@@ -5,8 +5,8 @@ from typing import Any, Dict
 from django.conf import settings
 from django.core.mail import mail_admins
 
+from zerver.actions.message_send import internal_send_stream_message
 from zerver.filters import clean_data_from_query_parameters
-from zerver.lib.actions import internal_send_stream_message
 from zerver.models import get_realm, get_stream, get_system_bot
 
 
