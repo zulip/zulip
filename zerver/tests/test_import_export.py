@@ -16,6 +16,7 @@ from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
 )
+from zerver.actions.muted_users import do_mute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
@@ -25,7 +26,7 @@ from zerver.actions.user_activity import do_update_user_activity, do_update_user
 from zerver.actions.user_topics import do_mute_topic
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
-from zerver.lib.actions import do_change_realm_plan_type, do_mute_user
+from zerver.lib.actions import do_change_realm_plan_type
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler

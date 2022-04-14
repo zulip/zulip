@@ -46,6 +46,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
@@ -99,7 +100,6 @@ from zerver.lib.actions import (
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_delete_messages,
-    do_mute_user,
     do_remove_realm_domain,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
@@ -107,7 +107,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
-    do_unmute_user,
     do_update_embedded_data,
     do_update_message,
 )

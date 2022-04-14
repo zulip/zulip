@@ -153,7 +153,7 @@ class MutedUsersTests(ZulipTestCase):
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
-        with mock.patch("zerver.lib.actions.timezone_now", return_value=mute_time):
+        with mock.patch("zerver.actions.muted_users.timezone_now", return_value=mute_time):
             # To test that `RealmAuditLog` entry has correct `event_time`.
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_delete(hamlet, url)
