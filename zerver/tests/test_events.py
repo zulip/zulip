@@ -40,6 +40,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
 )
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
@@ -86,7 +87,6 @@ from zerver.actions.users import (
 )
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
-    do_add_reaction,
     do_add_realm_domain,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -97,7 +97,6 @@ from zerver.lib.actions import (
     do_deactivate_realm,
     do_delete_messages,
     do_mute_user,
-    do_remove_reaction,
     do_remove_realm_domain,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,

@@ -8,11 +8,11 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.reactions import do_add_reaction
 from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
 from zerver.actions.users import do_change_user_role
 from zerver.lib.actions import (
     check_update_message,
-    do_add_reaction,
     do_change_realm_plan_type,
     do_delete_messages,
     do_set_realm_property,
