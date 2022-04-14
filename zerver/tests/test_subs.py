@@ -25,7 +25,6 @@ from zerver.actions.default_streams import (
 )
 from zerver.lib.actions import (
     bulk_add_subscriptions,
-    bulk_get_subscriber_user_ids,
     bulk_remove_subscriptions,
     do_change_realm_plan_type,
     do_change_stream_post_policy,
@@ -35,10 +34,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_set_realm_property,
-    gather_subscriptions,
-    gather_subscriptions_helper,
     get_topic_messages,
-    validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -65,6 +61,12 @@ from zerver.lib.streams import (
     ensure_stream,
     filter_stream_authorization,
     list_to_streams,
+)
+from zerver.lib.subscription_info import (
+    bulk_get_subscriber_user_ids,
+    gather_subscriptions,
+    gather_subscriptions_helper,
+    validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (

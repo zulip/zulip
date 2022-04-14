@@ -54,7 +54,6 @@ from zerver.lib.actions import (
     check_send_message,
     check_send_stream_message,
     do_set_realm_property,
-    gather_subscriptions,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
@@ -66,6 +65,7 @@ from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
 )
+from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
     ExtraConsoleOutputInTestException,
