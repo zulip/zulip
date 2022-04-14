@@ -18,9 +18,9 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.lib.actions import (
     build_message_send_dict,
-    check_add_realm_emoji,
     do_change_user_role,
     do_create_realm,
     do_send_messages,

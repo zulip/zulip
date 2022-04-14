@@ -7,7 +7,6 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from operator import itemgetter
 from typing import (
-    IO,
     AbstractSet,
     Any,
     Callable,
@@ -23,7 +22,6 @@ from typing import (
     Union,
 )
 
-import django.db.utils
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -77,7 +75,7 @@ from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.email_validation import email_reserved_for_system_bots_error
-from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code, get_emoji_file_name
+from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.exceptions import (
     JsonableError,
     MarkdownRenderingException,
@@ -105,7 +103,6 @@ from zerver.lib.message import (
     wildcard_mention_allowed,
 )
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
-from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.retention import move_messages_to_archive
@@ -173,12 +170,7 @@ from zerver.lib.types import (
     SubscriptionInfo,
     SubscriptionStreamDict,
 )
-from zerver.lib.upload import (
-    claim_attachment,
-    delete_avatar_image,
-    delete_message_image,
-    upload_emoji_image,
-)
+from zerver.lib.upload import claim_attachment, delete_avatar_image, delete_message_image
 from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
 from zerver.lib.user_groups import (
     create_system_user_groups_for_realm,
@@ -220,7 +212,6 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
-    RealmEmoji,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
@@ -6929,50 +6920,6 @@ def email_not_system_bot(email: str) -> None:
             code=code,
             params=dict(deactivated=False),
         )
-
-
-def notify_realm_emoji(realm: Realm) -> None:
-    event = dict(type="realm_emoji", op="update", realm_emoji=realm.get_emoji())
-    send_event(realm, event, active_user_ids(realm.id))
-
-
-def check_add_realm_emoji(
-    realm: Realm, name: str, author: UserProfile, image_file: IO[bytes]
-) -> RealmEmoji:
-    try:
-        realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
-        realm_emoji.full_clean()
-        realm_emoji.save()
-    except django.db.utils.IntegrityError:
-        # Match the string in upload_emoji.
-        raise JsonableError(_("A custom emoji with this name already exists."))
-
-    emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
-
-    # The only user-controlled portion of 'emoji_file_name' is an extension,
-    # which can not contain '..' or '/' or '\', making it difficult to exploit
-    emoji_file_name = mark_sanitized(emoji_file_name)
-
-    emoji_uploaded_successfully = False
-    is_animated = False
-    try:
-        is_animated = upload_emoji_image(image_file, emoji_file_name, author)
-        emoji_uploaded_successfully = True
-    finally:
-        if not emoji_uploaded_successfully:
-            realm_emoji.delete()
-    realm_emoji.file_name = emoji_file_name
-    realm_emoji.is_animated = is_animated
-    realm_emoji.save(update_fields=["file_name", "is_animated"])
-    notify_realm_emoji(realm_emoji.realm)
-    return realm_emoji
-
-
-def do_remove_realm_emoji(realm: Realm, name: str) -> None:
-    emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
-    emoji.deactivated = True
-    emoji.save(update_fields=["deactivated"])
-    notify_realm_emoji(realm)
 
 
 def do_mute_topic(
