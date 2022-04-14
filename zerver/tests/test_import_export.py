@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -25,8 +26,6 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_mute_user,
     do_update_user_custom_profile_data_if_changed,
-    do_update_user_presence,
-    do_update_user_status,
     try_add_realm_custom_profile_field,
 )
 from zerver.lib.avatar_hash import user_avatar_path

@@ -32,6 +32,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
+from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
@@ -99,8 +100,6 @@ from zerver.lib.actions import (
     do_update_message_flags,
     do_update_outgoing_webhook_service,
     do_update_user_custom_profile_data_if_changed,
-    do_update_user_presence,
-    do_update_user_status,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )

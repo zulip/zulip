@@ -8,12 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
-    check_send_message,
-    do_change_user_role,
-    do_set_realm_property,
-    do_update_user_presence,
-)
+from zerver.actions.presence import do_update_user_presence
+from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
