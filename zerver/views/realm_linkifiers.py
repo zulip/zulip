@@ -2,8 +2,12 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.realm_linkifiers import (
+    do_add_linkifier,
+    do_remove_linkifier,
+    do_update_linkifier,
+)
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_add_linkifier, do_remove_linkifier, do_update_linkifier
 from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
