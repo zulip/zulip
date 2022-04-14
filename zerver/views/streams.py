@@ -21,6 +21,11 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     get_default_streams_for_realm,
 )
+from zerver.actions.message_send import (
+    do_send_messages,
+    internal_prep_private_message,
+    internal_prep_stream_message,
+)
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
     authenticated_json_view,
@@ -39,10 +44,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_delete_messages,
     do_rename_stream,
-    do_send_messages,
     get_subscriber_ids,
-    internal_prep_private_message,
-    internal_prep_stream_message,
 )
 from zerver.lib.exceptions import (
     ErrorCode,

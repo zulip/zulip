@@ -47,12 +47,11 @@ from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
+from zerver.actions.message_send import check_send_message, check_send_stream_message
 from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    check_send_message,
-    check_send_stream_message,
     do_set_realm_property,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing

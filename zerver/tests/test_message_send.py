@@ -10,17 +10,11 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     build_message_send_dict,
     check_message,
     check_send_stream_message,
-    do_add_realm_domain,
-    do_change_stream_post_policy,
-    do_create_realm,
-    do_create_user,
     do_send_messages,
-    do_set_realm_property,
     extract_private_recipients,
     extract_stream_indicator,
     internal_prep_private_message,
@@ -30,6 +24,14 @@ from zerver.lib.actions import (
     internal_send_stream_message,
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
+)
+from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
+from zerver.lib.actions import (
+    do_add_realm_domain,
+    do_change_stream_post_policy,
+    do_create_realm,
+    do_create_user,
+    do_set_realm_property,
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key

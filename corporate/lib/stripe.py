@@ -971,7 +971,8 @@ def update_sponsorship_status(
 
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    from zerver.lib.actions import do_change_realm_plan_type, internal_send_private_message
+    from zerver.actions.message_send import internal_send_private_message
+    from zerver.lib.actions import do_change_realm_plan_type
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)

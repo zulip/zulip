@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     check_schedule_message,
     check_send_message,
     compute_irc_user_fullname,
