@@ -13,6 +13,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.actions.default_streams import (
     do_add_default_stream,
     do_add_streams_to_default_stream_group,
@@ -46,7 +47,6 @@ from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
-    do_add_alert_words,
     do_add_reaction,
     do_add_realm_domain,
     do_change_avatar_fields,
@@ -79,7 +79,6 @@ from zerver.lib.actions import (
     do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
-    do_remove_alert_words,
     do_remove_reaction,
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
