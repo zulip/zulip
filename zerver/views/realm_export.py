@@ -7,8 +7,8 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from analytics.models import RealmCount
+from zerver.actions.realm_export import do_delete_realm_export, notify_realm_export
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_delete_realm_export, notify_realm_export
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.queue import queue_json_publish
