@@ -177,6 +177,24 @@ export function set_up(initialize_event_handlers = true) {
     });
 }
 
+export function get_number_of_invites_by_user(user_id) {
+    let number_of_invites_by_user = 0;
+    channel.get({
+        url: "/json/invites",
+        idempotent: true,
+        timeout: 10 * 1000,
+        success(data) {
+            for (const invite of data.invites) {
+                if (invite.invited_by_user_id === user_id) {
+                    number_of_invites_by_user = number_of_invites_by_user + 1;
+                }
+            }
+        },
+        error: failed_listing_invites,
+    });
+    return number_of_invites_by_user;
+}
+
 export function on_load_success(invites_data, initialize_event_handlers) {
     meta.loaded = true;
     populate_invites(invites_data);

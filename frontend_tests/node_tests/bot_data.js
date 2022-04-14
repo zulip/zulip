@@ -169,4 +169,10 @@ test("test_basics", () => {
         assert.equal(bots[0].email, "bot1@zulip.com");
         assert.equal(bots[1].email, "bot2@zulip.com");
     })();
+
+    (function test_get_number_of_bots_owned_by_user() {
+        const number_of_bots = bot_data.get_number_of_bots_owned_by_user(3);
+
+        assert.equal(number_of_bots, 1);
+    })();
 });

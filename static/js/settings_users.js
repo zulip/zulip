@@ -22,6 +22,7 @@ import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
+import * as settings_invites from "./settings_invites";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
@@ -431,6 +432,13 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     const opts = {
         username: user.full_name,
         email: settings_data.email_for_user_settings(user),
+        number_of_bots: bot_data.get_number_of_bots_owned_by_user(user_id),
+        bot_text: bot_data.get_number_of_bots_owned_by_user(user_id) > 1 ? "bots" : "bot",
+        number_of_invitations: settings_invites.get_number_of_invites_by_user(user_id),
+        invitation_text:
+            settings_invites.get_number_of_invites_by_user(user_id) > 1
+                ? "invitations"
+                : "invitation",
     };
     const html_body = render_settings_deactivation_user_modal(opts);
 

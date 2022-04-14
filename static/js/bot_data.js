@@ -63,6 +63,16 @@ export function get_all_bots_for_current_user() {
     return ret;
 }
 
+export function get_number_of_bots_owned_by_user(user_id) {
+    let number_of_bots_owned_by_user = 0;
+    for (const bot of bots.values()) {
+        if (bot.owner_id === user_id) {
+            number_of_bots_owned_by_user = number_of_bots_owned_by_user + 1;
+        }
+    }
+    return number_of_bots_owned_by_user;
+}
+
 export function get_editable() {
     const ret = [];
     for (const bot of bots.values()) {
