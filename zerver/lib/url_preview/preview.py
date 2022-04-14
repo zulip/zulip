@@ -15,10 +15,8 @@ from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
-# FIXME: Should we use a database cache or a memcached in production? What if
-# OpenGraph data is changed for a site?
 # Use an in-memory cache for development, to make it easy to develop this code
-CACHE_NAME = "database" if not settings.DEVELOPMENT else "in-memory"
+CACHE_NAME = "default" if not settings.DEVELOPMENT else "in-memory"
 # Based on django.core.validators.URLValidator, with ftp support removed.
 link_regex = re.compile(
     r"^(?:http)s?://"  # http:// or https://
