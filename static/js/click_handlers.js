@@ -432,6 +432,11 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        if (page_params.is_spectator) {
+            // Filter buttons are disabled for spectator.
+            return;
+        }
+
         recent_topics_ui.change_focused_element($(e.target), "click");
         recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
         recent_topics_ui.update_filters_view();
