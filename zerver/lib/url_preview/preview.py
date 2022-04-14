@@ -15,8 +15,6 @@ from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
-# Use an in-memory cache for development, to make it easy to develop this code
-CACHE_NAME = "default" if not settings.DEVELOPMENT else "in-memory"
 # Based on django.core.validators.URLValidator, with ftp support removed.
 link_regex = re.compile(
     r"^(?:http)s?://"  # http:// or https://
@@ -83,7 +81,7 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @catch_network_errors
-@cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
+@cache_with_key(preview_url_cache_key, with_statsd_key="urlpreview_data")
 def get_link_embed_data(
     url: str, maxwidth: int = 640, maxheight: int = 480
 ) -> Optional[UrlEmbedData]:

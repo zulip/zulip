@@ -361,9 +361,6 @@ CACHES = {
             "CULL_FREQUENCY": 10,
         },
     },
-    "in-memory": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    },
 }
 
 ########################################################################

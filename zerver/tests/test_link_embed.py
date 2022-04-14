@@ -31,10 +31,6 @@ TEST_CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "url-preview",
     },
-    "in-memory": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "url-preview",
-    },
 }
 
 
@@ -653,7 +649,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: "
                 in info_logs.output[0]
@@ -687,7 +683,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
@@ -726,7 +722,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
@@ -763,7 +759,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
@@ -796,7 +792,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
                 in info_logs.output[0]
@@ -844,7 +840,7 @@ class PreviewTestCase(ZulipTestCase):
                     )
 
                     # This did not get cached -- hence the lack of [0] on the cache_get
-                    cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")
+                    cached_data = cache_get(preview_url_cache_key(url))
                     self.assertIsNone(cached_data)
 
         msg.refresh_from_db()
@@ -881,7 +877,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
             # FIXME: Should we really cache this, especially without cache invalidation?
-            cached_data = cache_get(preview_url_cache_key(error_url), cache_name="in-memory")[0]
+            cached_data = cache_get(preview_url_cache_key(error_url))[0]
 
         self.assertIsNone(cached_data)
         msg.refresh_from_db()
@@ -921,7 +917,7 @@ class PreviewTestCase(ZulipTestCase):
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
-                    cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
+                    cached_data = cache_get(preview_url_cache_key(url))[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
                 in info_logs.output[0]
