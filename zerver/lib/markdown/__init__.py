@@ -628,7 +628,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def add_a(
         self,
         root: Element,
-        url: str,
+        image_url: str,
         link: str,
         title: Optional[str] = None,
         desc: Optional[str] = None,
@@ -660,17 +660,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if (
             settings.THUMBNAIL_IMAGES
             and (not already_thumbnailed)
-            and user_uploads_or_external(url)
+            and user_uploads_or_external(image_url)
         ):
             # See docs/thumbnailing.md for some high-level documentation.
             #
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
-            url = url.lstrip("/")
-            img.set("src", "/thumbnail?" + urlencode({"url": url, "size": "thumbnail"}))
-            img.set("data-src-fullsize", "/thumbnail?" + urlencode({"url": url, "size": "full"}))
+            image_url = image_url.lstrip("/")
+            img.set("src", "/thumbnail?" + urlencode({"url": image_url, "size": "thumbnail"}))
+            img.set(
+                "data-src-fullsize", "/thumbnail?" + urlencode({"url": image_url, "size": "full"})
+            )
         else:
-            img.set("src", url)
+            img.set("src", image_url)
 
         if class_attr == "message_inline_ref":
             summary_div = SubElement(div, "div")
