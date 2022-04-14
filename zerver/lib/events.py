@@ -8,14 +8,16 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
+from zerver.actions.default_streams import (
     default_stream_groups_to_dicts_sorted,
+    get_default_streams_for_realm,
+    streams_to_dicts_sorted,
+)
+from zerver.lib.actions import (
     do_get_streams,
     gather_subscriptions_helper,
-    get_default_streams_for_realm,
     get_owned_bot_dicts,
     get_web_public_streams,
-    streams_to_dicts_sorted,
 )
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
