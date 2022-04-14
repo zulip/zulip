@@ -13,14 +13,19 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_group,
+    check_add_user_group,
+    check_delete_user_group,
+    do_update_user_group_description,
+    do_update_user_group_name,
+    remove_members_from_user_group,
+)
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
-    bulk_add_members_to_user_group,
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
-    check_add_user_group,
-    check_delete_user_group,
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
@@ -92,12 +97,9 @@ from zerver.lib.actions import (
     do_update_message_flags,
     do_update_outgoing_webhook_service,
     do_update_user_custom_profile_data_if_changed,
-    do_update_user_group_description,
-    do_update_user_group_name,
     do_update_user_presence,
     do_update_user_status,
     lookup_default_stream_groups,
-    remove_members_from_user_group,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
