@@ -48,7 +48,7 @@ from tlds import tld_set
 from typing_extensions import TypedDict
 
 from zerver.lib import mention as mention
-from zerver.lib.cache import NotFoundInCache, cache_with_key
+from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.exceptions import MarkdownRenderingException
@@ -63,7 +63,6 @@ from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
-from zerver.lib.url_preview import preview as link_preview
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
 
@@ -1333,29 +1332,32 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not self.md.url_embed_preview_enabled:
                 continue
 
-            try:
-                extracted_data = link_preview.link_embed_data_from_cache(url)
-            except NotFoundInCache:
+            if self.md.url_embed_data is None or url not in self.md.url_embed_data:
                 self.md.zulip_rendering_result.links_for_preview.add(url)
                 continue
 
-            if extracted_data:
-                if youtube is not None:
-                    title = self.youtube_title(extracted_data)
-                    if title is not None:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
-                    continue
-                self.add_embed(root, url, extracted_data)
-                if self.vimeo_id(url):
-                    title = self.vimeo_title(extracted_data)
-                    if title:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
+            # Existing but being None means that we did process the
+            # URL, but it was not valid to preview.
+            extracted_data = self.md.url_embed_data[url]
+            if extracted_data is None:
+                continue
+
+            if youtube is not None:
+                title = self.youtube_title(extracted_data)
+                if title is not None:
+                    if url == text:
+                        found_url.family.child.text = title
+                    else:
+                        found_url.family.child.text = text
+                continue
+            self.add_embed(root, url, extracted_data)
+            if self.vimeo_id(url):
+                title = self.vimeo_title(extracted_data)
+                if title:
+                    if url == text:
+                        found_url.family.child.text = title
+                    else:
+                        found_url.family.child.text = text
 
 
 class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -2110,6 +2112,7 @@ class Markdown(markdown.Markdown):
     zulip_rendering_result: Optional[MessageRenderingResult]
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]]
 
     def __init__(
         self,
@@ -2448,6 +2451,7 @@ def do_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2503,6 +2507,7 @@ def do_convert(
     _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews
     )
+    _md_engine.url_embed_data = url_embed_data
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     if message_realm is not None:
@@ -2606,6 +2611,7 @@ def markdown_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2618,6 +2624,7 @@ def markdown_convert(
         message_realm,
         sent_by_bot,
         translate_emoticons,
+        url_embed_data,
         mention_data,
         email_gateway,
         no_previews=no_previews,

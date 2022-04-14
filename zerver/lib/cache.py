@@ -129,36 +129,6 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     return caches[cache_name]
 
 
-def get_cache_with_key(
-    keyfunc: Callable[ParamT, str],
-    cache_name: Optional[str] = None,
-) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
-    """
-    The main goal of this function getting value from the cache like in the "cache_with_key".
-    A cache value can contain any data including the "None", so
-    here used exception for case if value isn't found in the cache.
-    """
-
-    def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
-        @wraps(func)
-        def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
-            key = keyfunc(*args, **kwargs)
-            try:
-                val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
-                stack_trace = traceback.format_exc()
-                log_invalid_cache_keys(stack_trace, [key])
-                val = None
-
-            if val is not None:
-                return val[0]
-            raise NotFoundInCache()
-
-        return func_with_caching
-
-    return decorator
-
-
 def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: Optional[str] = None,

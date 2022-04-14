@@ -8,7 +8,7 @@ from django.conf import settings
 from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
-from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
+from zerver.lib.cache import cache_with_key, preview_url_cache_key
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
@@ -117,10 +117,3 @@ def get_link_embed_data(
     if data.image:
         data.image = urljoin(response.url, data.image)
     return data
-
-
-@get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(
-    url: str, maxwidth: int = 640, maxheight: int = 480
-) -> Optional[UrlEmbedData]:
-    return None

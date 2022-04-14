@@ -10,14 +10,14 @@ from django.utils.html import escape
 from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 
-from zerver.lib.cache import NotFoundInCache, cache_set, preview_url_cache_key
+from zerver.lib.cache import cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
-from zerver.lib.url_preview.preview import get_link_embed_data, link_embed_data_from_cache
+from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.worker.queue_processors import FetchLinksEmbedData
@@ -634,18 +634,6 @@ class PreviewTestCase(ZulipTestCase):
             self.assertIsNone(get_link_embed_data("com.notvalidlink"))
             self.assertIsNone(get_link_embed_data("μένει.com.notvalidlink"))
 
-    def test_link_embed_data_from_cache(self) -> None:
-        url = "http://test.org/"
-        link_embed_data = "test data"
-
-        with self.assertRaises(NotFoundInCache):
-            link_embed_data_from_cache(url)
-
-        with self.settings(CACHES=TEST_CACHES):
-            key = preview_url_cache_key(url)
-            cache_set(key, link_embed_data, "database")
-            self.assertEqual(link_embed_data, link_embed_data_from_cache(url))
-
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_link_preview_non_html_data(self) -> None:
@@ -665,7 +653,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = link_embed_data_from_cache(url)
+                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/audio.mp3: "
                 in info_logs.output[0]
@@ -699,13 +687,13 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = link_embed_data_from_cache(url)
+                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
             )
 
-        assert cached_data
+        assert cached_data is not None
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -738,13 +726,13 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = link_embed_data_from_cache(url)
+                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
             )
 
-        assert cached_data
+        assert cached_data is not None
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -775,13 +763,13 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                cached_data = link_embed_data_from_cache(url)
+                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/foo.html: "
                 in info_logs.output[0]
             )
 
-        assert cached_data
+        assert cached_data is not None
         self.assertIsNotNone(cached_data.title)
         self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -808,17 +796,17 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 FetchLinksEmbedData().consume(event)
-                data = link_embed_data_from_cache(url)
+                cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
                 in info_logs.output[0]
             )
 
-        assert data is not None
+        assert cached_data is not None
         msg = Message.objects.select_related("sender").get(id=msg_id)
-        self.assertIn(data.title, msg.rendered_content)
-        assert data.image is not None
-        self.assertIn(re.sub(r"([^\w-])", r"\\\1", data.image), msg.rendered_content)
+        self.assertIn(cached_data.title, msg.rendered_content)
+        assert cached_data.image is not None
+        self.assertIn(re.sub(r"([^\w-])", r"\\\1", cached_data.image), msg.rendered_content)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -855,8 +843,9 @@ class PreviewTestCase(ZulipTestCase):
                         in info_logs.output[0]
                     )
 
-                    with self.assertRaises(NotFoundInCache):
-                        link_embed_data_from_cache(url)
+                    # This did not get cached -- hence the lack of [0] on the cache_get
+                    cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")
+                    self.assertIsNone(cached_data)
 
         msg.refresh_from_db()
         self.assertEqual(
@@ -890,9 +879,10 @@ class PreviewTestCase(ZulipTestCase):
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/x: "
                 in info_logs.output[0]
             )
-            cached_data = link_embed_data_from_cache(error_url)
 
-        # FIXME: Should we really cache this, especially without cache invalidation?
+            # FIXME: Should we really cache this, especially without cache invalidation?
+            cached_data = cache_get(preview_url_cache_key(error_url), cache_name="in-memory")[0]
+
         self.assertIsNone(cached_data)
         msg.refresh_from_db()
         self.assertEqual(
@@ -931,13 +921,13 @@ class PreviewTestCase(ZulipTestCase):
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
-                    data = link_embed_data_from_cache(url)
+                    cached_data = cache_get(preview_url_cache_key(url), cache_name="in-memory")[0]
             self.assertTrue(
                 "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
                 in info_logs.output[0]
             )
 
-        self.assertEqual(data, mocked_data)
+        self.assertEqual(cached_data, mocked_data)
         msg.refresh_from_db()
         self.assertIn('a data-id="{}"'.format(escape(mocked_data.html)), msg.rendered_content)
 
@@ -966,7 +956,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.lib.markdown.link_preview.link_embed_data_from_cache",
+                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
@@ -1004,7 +994,7 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
                 with mock.patch(
-                    "zerver.lib.markdown.link_preview.link_embed_data_from_cache",
+                    "zerver.worker.queue_processors.url_preview.get_link_embed_data",
                     lambda *args, **kwargs: mocked_data,
                 ):
                     FetchLinksEmbedData().consume(event)
