@@ -3,8 +3,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.actions.realm_logo import do_change_logo_source
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_change_logo_source
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.request import REQ, has_request_variables
