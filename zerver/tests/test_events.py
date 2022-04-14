@@ -39,6 +39,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
+from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
@@ -107,7 +108,6 @@ from zerver.lib.actions import (
     do_unmute_user,
     do_update_embedded_data,
     do_update_message,
-    do_update_message_flags,
 )
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (

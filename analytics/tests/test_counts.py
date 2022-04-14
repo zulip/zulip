@@ -42,14 +42,14 @@ from zerver.actions.invites import (
     do_resend_user_invite_email,
     do_revoke_user_invite,
 )
-from zerver.actions.user_activity import update_user_activity_interval
-from zerver.actions.users import do_deactivate_user
-from zerver.lib.actions import (
-    do_create_realm,
+from zerver.actions.message_flags import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
     do_update_message_flags,
 )
+from zerver.actions.user_activity import update_user_activity_interval
+from zerver.actions.users import do_deactivate_user
+from zerver.lib.actions import do_create_realm
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
