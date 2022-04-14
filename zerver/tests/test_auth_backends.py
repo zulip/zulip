@@ -51,7 +51,6 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_set_realm_property,
-    ensure_stream,
 )
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
@@ -66,6 +65,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.storage import static_path
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_s3_buckets,
