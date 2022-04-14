@@ -85,7 +85,6 @@ from zerver.lib.exceptions import (
     StreamWithIDDoesNotExistError,
     ZephyrMessageAlreadySentException,
 )
-from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MessageRenderingResult, topic_links
@@ -177,7 +176,6 @@ from zerver.lib.types import (
 from zerver.lib.upload import (
     claim_attachment,
     delete_avatar_image,
-    delete_export_tarball,
     delete_message_image,
     upload_emoji_image,
 )
@@ -7665,30 +7663,6 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
         language=language,
         context=context,
     )
-
-
-def notify_realm_export(user_profile: UserProfile) -> None:
-    # In the future, we may want to send this event to all realm admins.
-    event = dict(type="realm_export", exports=get_realm_exports_serialized(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
-
-
-def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> None:
-    # Give mypy a hint so it knows `orjson.loads`
-    # isn't being passed an `Optional[str]`.
-    export_extra_data = export.extra_data
-    assert export_extra_data is not None
-    export_data = orjson.loads(export_extra_data)
-    export_path = export_data.get("export_path")
-
-    if export_path:
-        # Allow removal even if the export failed.
-        delete_export_tarball(export_path)
-
-    export_data.update(deleted_timestamp=timezone_now().timestamp())
-    export.extra_data = orjson.dumps(export_data).decode()
-    export.save(update_fields=["extra_data"])
-    notify_realm_export(user_profile)
 
 
 def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> List[Message]:

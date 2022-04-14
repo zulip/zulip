@@ -47,6 +47,7 @@ from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
 from zerver.actions.invites import do_send_confirmation_email
+from zerver.actions.realm_export import notify_realm_export
 from zerver.context_processors import common_context
 from zerver.lib.actions import (
     do_mark_stream_messages_as_read,
@@ -55,7 +56,6 @@ from zerver.lib.actions import (
     do_update_user_activity_interval,
     do_update_user_presence,
     internal_send_private_message,
-    notify_realm_export,
     render_incoming_message,
 )
 from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
