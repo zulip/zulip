@@ -26,14 +26,7 @@ from zerver.actions.message_send import (
     internal_prep_private_message,
     internal_prep_stream_message,
 )
-from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import (
-    authenticated_json_view,
-    require_non_guest_user,
-    require_post,
-    require_realm_admin,
-)
-from zerver.lib.actions import (
+from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
@@ -42,10 +35,17 @@ from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_subscription_property,
     do_deactivate_stream,
-    do_delete_messages,
     do_rename_stream,
     get_subscriber_ids,
 )
+from zerver.context_processors import get_valid_realm_from_request
+from zerver.decorator import (
+    authenticated_json_view,
+    require_non_guest_user,
+    require_post,
+    require_realm_admin,
+)
+from zerver.lib.actions import do_delete_messages
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,

@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any, List
 
-from zerver.lib.actions import (
+from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_deactivate_stream,

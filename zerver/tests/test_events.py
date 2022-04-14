@@ -48,6 +48,17 @@ from zerver.actions.realm_linkifiers import (
 )
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_stream_description,
+    do_change_stream_message_retention_days,
+    do_change_stream_permission,
+    do_change_stream_post_policy,
+    do_change_subscription_property,
+    do_deactivate_stream,
+    do_rename_stream,
+)
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
@@ -74,8 +85,6 @@ from zerver.actions.users import (
 )
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
     do_add_reaction,
     do_add_realm_domain,
     do_change_bot_owner,
@@ -84,20 +93,13 @@ from zerver.lib.actions import (
     do_change_default_sending_stream,
     do_change_realm_domain,
     do_change_realm_plan_type,
-    do_change_stream_description,
-    do_change_stream_message_retention_days,
-    do_change_stream_permission,
-    do_change_stream_post_policy,
-    do_change_subscription_property,
     do_create_user,
     do_deactivate_realm,
-    do_deactivate_stream,
     do_delete_messages,
     do_mute_user,
     do_reactivate_user,
     do_remove_reaction,
     do_remove_realm_domain,
-    do_rename_stream,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
