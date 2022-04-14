@@ -53,6 +53,9 @@
     }
 
     label.checkbox {
+        display: flex;
+        position: relative;
+        vertical-align: top;
         input[type="checkbox"] {
             ~ span {
                 height: 12px;
