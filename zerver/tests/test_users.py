@@ -15,6 +15,7 @@ from confirmation.models import Confirmation
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import get_recipient_info
+from zerver.actions.muted_users import do_mute_user
 from zerver.actions.users import (
     change_user_is_active,
     do_change_can_create_users,
@@ -22,7 +23,7 @@ from zerver.actions.users import (
     do_deactivate_user,
     do_delete_user,
 )
-from zerver.lib.actions import do_mute_user, do_set_realm_property
+from zerver.lib.actions import do_set_realm_property
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings

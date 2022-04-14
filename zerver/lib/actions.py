@@ -14,10 +14,7 @@ from typing_extensions import TypedDict
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
-from zerver.actions.message_flags import (
-    do_mark_muted_user_messages_as_read,
-    do_update_mobile_push_notification,
-)
+from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
     get_recipient_info,
@@ -76,7 +73,6 @@ from zerver.lib.types import EditHistoryEvent
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes
 from zerver.lib.user_topics import get_users_muting_topic, remove_topic_mute
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
@@ -84,7 +80,6 @@ from zerver.models import (
     Attachment,
     DefaultStream,
     Message,
-    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -1773,45 +1768,6 @@ def email_not_system_bot(email: str) -> None:
             code=code,
             params=dict(deactivated=False),
         )
-
-
-def do_mute_user(
-    user_profile: UserProfile,
-    muted_user: UserProfile,
-    date_muted: Optional[datetime.datetime] = None,
-) -> None:
-    if date_muted is None:
-        date_muted = timezone_now()
-    add_user_mute(user_profile, muted_user, date_muted)
-    do_mark_muted_user_messages_as_read(user_profile, muted_user)
-    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
-
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=user_profile,
-        modified_user=user_profile,
-        event_type=RealmAuditLog.USER_MUTED,
-        event_time=date_muted,
-        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
-    )
-
-
-def do_unmute_user(mute_object: MutedUser) -> None:
-    user_profile = mute_object.user_profile
-    muted_user = mute_object.muted_user
-    mute_object.delete()
-    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
-
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=user_profile,
-        modified_user=user_profile,
-        event_type=RealmAuditLog.USER_UNMUTED,
-        event_time=timezone_now(),
-        extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
-    )
 
 
 @transaction.atomic(durable=True)
