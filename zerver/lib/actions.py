@@ -36,7 +36,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
-from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
@@ -200,6 +199,7 @@ from zerver.lib.user_groups import (
     create_user_group,
     get_system_user_group_for_user,
 )
+from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.user_topics import (
@@ -2350,22 +2350,6 @@ def do_send_messages(
     return [send_request.message.id for send_request in send_message_requests]
 
 
-class UserMessageLite:
-    """
-    The Django ORM is too slow for bulk operations.  This class
-    is optimized for the simple use case of inserting a bunch of
-    rows into zerver_usermessage.
-    """
-
-    def __init__(self, user_profile_id: int, message_id: int, flags: int) -> None:
-        self.user_profile_id = user_profile_id
-        self.message_id = message_id
-        self.flags = flags
-
-    def flags_list(self) -> List[str]:
-        return UserMessage.flags_list_for_flags(self.flags)
-
-
 def create_user_messages(
     message: Message,
     rendering_result: MessageRenderingResult,
@@ -2439,29 +2423,6 @@ def create_user_messages(
         user_messages.append(um)
 
     return user_messages
-
-
-def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
-    """
-    Doing bulk inserts this way is much faster than using Django,
-    since we don't have any ORM overhead.  Profiling with 1000
-    users shows a speedup of 0.436 -> 0.027 seconds, so we're
-    talking about a 15x speedup.
-    """
-    if not ums:
-        return
-
-    vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
-    query = SQL(
-        """
-        INSERT into
-            zerver_usermessage (user_profile_id, message_id, flags)
-        VALUES %s
-    """
-    )
-
-    with connection.cursor() as cursor:
-        execute_values(cursor.cursor, query, vals)
 
 
 def verify_submessage_sender(
