@@ -21,6 +21,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     get_default_streams_for_realm,
 )
+from zerver.actions.message_edit import do_delete_messages
 from zerver.actions.message_send import (
     do_send_messages,
     internal_prep_private_message,
@@ -45,7 +46,6 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
-from zerver.lib.actions import do_delete_messages
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
