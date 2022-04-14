@@ -6,6 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import StreamCount
+from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.lib.actions import (
     bulk_add_subscriptions,
@@ -17,7 +18,6 @@ from zerver.lib.actions import (
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_change_icon_source,
     do_change_password,
     do_change_realm_domain,
     do_change_subscription_property,
