@@ -4,7 +4,7 @@ from typing import Any
 from django.core.management.base import CommandError
 from django.db.utils import IntegrityError
 
-from zerver.lib.actions import do_create_user
+from zerver.actions.create_user import do_create_user
 from zerver.lib.management import ZulipBaseCommand
 
 

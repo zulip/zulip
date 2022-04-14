@@ -11,6 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.create_user import do_create_user
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -27,7 +28,6 @@ from zerver.lib.actions import (
     check_add_reaction,
     do_add_reaction,
     do_change_realm_plan_type,
-    do_create_user,
     do_mute_user,
 )
 from zerver.lib.avatar_hash import user_avatar_path

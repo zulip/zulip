@@ -81,15 +81,13 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
-from zerver.actions.users import do_deactivate_user
-from zerver.lib.actions import (
+from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
-    do_create_realm,
     do_create_user,
-    do_deactivate_realm,
-    do_reactivate_realm,
     do_reactivate_user,
 )
+from zerver.actions.users import do_deactivate_user
+from zerver.lib.actions import do_create_realm, do_deactivate_realm, do_reactivate_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
