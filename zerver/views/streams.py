@@ -40,7 +40,6 @@ from zerver.lib.actions import (
     do_delete_messages,
     do_rename_stream,
     do_send_messages,
-    gather_subscriptions,
     get_subscriber_ids,
     internal_prep_private_message,
     internal_prep_stream_message,
@@ -69,6 +68,7 @@ from zerver.lib.streams import (
     list_to_streams,
 )
 from zerver.lib.string_validation import check_stream_name
+from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
