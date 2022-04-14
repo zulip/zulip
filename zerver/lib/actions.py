@@ -8736,16 +8736,6 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[User
     )
 
 
-def do_set_zoom_token(user: UserProfile, token: Optional[Dict[str, object]]) -> None:
-    user.zoom_token = token
-    user.save(update_fields=["zoom_token"])
-    send_event(
-        user.realm,
-        dict(type="has_zoom_token", value=token is not None),
-        [user.id],
-    )
-
-
 def notify_realm_export(user_profile: UserProfile) -> None:
     # In the future, we may want to send this event to all realm admins.
     event = dict(type="realm_export", exports=get_realm_exports_serialized(user_profile))
