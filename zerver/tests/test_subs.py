@@ -23,15 +23,17 @@ from zerver.actions.default_streams import (
     get_default_streams_for_realm,
     lookup_default_stream_groups,
 )
-from zerver.actions.users import do_change_user_role, do_deactivate_user
-from zerver.lib.actions import (
+from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_change_realm_plan_type,
     do_change_stream_post_policy,
     do_change_subscription_property,
-    do_create_realm,
     do_deactivate_stream,
+)
+from zerver.actions.users import do_change_user_role, do_deactivate_user
+from zerver.lib.actions import (
+    do_change_realm_plan_type,
+    do_create_realm,
     do_set_realm_property,
     get_topic_messages,
 )
