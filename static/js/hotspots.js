@@ -81,9 +81,9 @@ function place_icon(hotspot) {
         $icon.css("display", "none");
         return false;
     }
-    
-    if ( $element.offset().top <= $("#streams_header").offset().top ) {
-      return false;
+
+    if ($element.offset().top <= $("#streams_header").offset().top) {
+        return false;
     }
 
     const offset = {
@@ -97,7 +97,6 @@ function place_icon(hotspot) {
     };
     $icon.css("display", "block");
     $icon.css(placement);
-
     return true;
 }
 
