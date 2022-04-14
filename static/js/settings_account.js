@@ -512,6 +512,9 @@ export function set_up() {
         const data = {
             old_password: $("#old_password").val(),
             new_password: $("#new_password").val(),
+            reset_api_key_on_password_change: $("#reset_api_key_on_password_change").prop(
+                "checked",
+            ),
         };
 
         const $new_pw_field = $("#new_password");

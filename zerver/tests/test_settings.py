@@ -45,6 +45,7 @@ class ChangeSettingsTest(ZulipTestCase):
         settings correctly and returns correct values.
         """
         user = self.example_user("hamlet")
+        old_api_key = user.api_key
         self.login_user(user)
         json_result = self.client_patch(
             "/json/settings",
@@ -52,12 +53,14 @@ class ChangeSettingsTest(ZulipTestCase):
                 full_name="Foo Bar",
                 old_password=initial_password(user.delivery_email),
                 new_password="foobar1",
+                reset_api_key_on_password_change=orjson.dumps(False),
             ),
         )
         self.assert_json_success(json_result)
 
         user.refresh_from_db()
         self.assertEqual(user.full_name, "Foo Bar")
+        self.assertEqual(user.api_key, old_api_key)
         self.logout()
 
         # This is one of the few places we log in directly
@@ -84,6 +87,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     full_name="Foo Bar",
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="easy",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_error(json_result, "New password is too weak!")
@@ -94,9 +98,40 @@ class ChangeSettingsTest(ZulipTestCase):
                     full_name="Foo Bar",
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="f657gdGGk9",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_success(json_result)
+
+    def test_reset_api_key_with_password_change(self) -> None:
+        user = self.example_user("hamlet")
+        old_api_key = user.api_key
+        self.login_user(user)
+        result = self.client_patch(
+            "/json/settings",
+            dict(
+                old_password=initial_password(user.delivery_email),
+                new_password="foobar1",
+                reset_api_key_on_password_change=orjson.dumps(True),
+            ),
+        )
+        self.assert_json_success(result)
+
+        user.refresh_from_db()
+        self.assertNotEqual(old_api_key, user.api_key)
+
+    def test_reset_api_key_on_password_change_arg_missing(self) -> None:
+        self.login("aaron")
+        json_result = self.client_patch(
+            "/json/settings",
+            dict(
+                old_password=initial_password(self.example_email("aaron")), new_password="foobar1"
+            ),
+        )
+        self.assert_json_error(
+            json_result,
+            "Missing 'reset_api_key_on_password_change' argument during password change.",
+        )
 
     def test_illegal_name_changes(self) -> None:
         user = self.example_user("hamlet")
@@ -230,6 +265,7 @@ class ChangeSettingsTest(ZulipTestCase):
             dict(
                 old_password="bad_password",
                 new_password="ignored",
+                reset_api_key_on_password_change=orjson.dumps(False),
             ),
         )
         self.assert_json_error(result, "Wrong password!")
@@ -245,6 +281,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password="bad_password",
                         new_password="ignored",
+                        reset_api_key_on_password_change=orjson.dumps(False),
                     ),
                 )
                 self.assert_json_error(result, "Wrong password!")
@@ -253,6 +290,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password="bad_password",
                         new_password="ignored",
+                        reset_api_key_on_password_change=orjson.dumps(False),
                     ),
                 )
                 self.assert_json_error(result, "Wrong password!")
@@ -263,6 +301,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password=initial_password(self.example_email("hamlet")),
                         new_password="ignored",
+                        reset_api_key_on_password_change=orjson.dumps(False),
                     ),
                 )
                 self.assert_json_error(
@@ -276,6 +315,7 @@ class ChangeSettingsTest(ZulipTestCase):
                     dict(
                         old_password=initial_password(self.example_email("hamlet")),
                         new_password="foobar1",
+                        reset_api_key_on_password_change=orjson.dumps(False),
                     ),
                 )
                 self.assert_json_success(json_result)
@@ -303,6 +343,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
@@ -312,6 +353,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 dict(
                     old_password=self.ldap_password("hamlet"),  # hamlet's password in LDAP
                     new_password="ignored",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")
@@ -324,6 +366,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_success(result)
@@ -340,6 +383,7 @@ class ChangeSettingsTest(ZulipTestCase):
                 dict(
                     old_password=initial_password(self.example_email("hamlet")),
                     new_password="ignored",
+                    reset_api_key_on_password_change=orjson.dumps(False),
                 ),
             )
             self.assert_json_error(result, "Your Zulip password is managed in LDAP")

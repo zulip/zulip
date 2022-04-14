@@ -1072,6 +1072,10 @@ input[type="checkbox"] {
             }
         }
     }
+
+    .reset_api_key_label {
+        display: inline;
+    }
 }
 
 .emojiset_choices {

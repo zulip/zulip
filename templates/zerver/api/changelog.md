@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 125**
+[`PATCH /settings`](/api/update-settings):
+Support `reset_api_key_on_password_change` to reset user's
+API key on changing password.
+
 Feature levels 123-124 are reserved for future use in 5.x maintenance
 releases.
 

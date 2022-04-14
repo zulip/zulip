@@ -246,6 +246,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         max_length=RegistrationForm.MAX_PASSWORD_LENGTH,
     )
+    reset_api_key = forms.BooleanField(required=False)
 
     def clean_new_password1(self) -> str:
         new_password = self.cleaned_data["new_password1"]
@@ -257,7 +258,12 @@ class LoggingSetPasswordForm(SetPasswordForm):
         return new_password
 
     def save(self, commit: bool = True) -> UserProfile:
-        do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
+        do_change_password(
+            self.user,
+            self.cleaned_data["new_password1"],
+            self.cleaned_data["reset_api_key"],
+            commit=commit,
+        )
         return self.user
 
 

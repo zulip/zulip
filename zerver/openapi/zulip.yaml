@@ -12492,6 +12492,17 @@ paths:
           schema:
             type: string
           example: new12345
+        - name: reset_api_key_on_password_change
+          in: query
+          description: |
+            Whether to reset user API key on changing password.
+
+            Required when sending `old_password` and `new_password` parameters.
+
+            **Changes**: New in Zulip 6.0 (feature level 125).
+          schema:
+            type: boolean
+          example: true
         - name: twenty_four_hour_time
           in: query
           description: |

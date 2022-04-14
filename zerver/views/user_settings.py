@@ -137,6 +137,7 @@ def json_change_settings(
     email: str = REQ(default=""),
     old_password: str = REQ(default=""),
     new_password: str = REQ(default=""),
+    reset_api_key_on_password_change: Optional[bool] = REQ(json_validator=check_bool, default=None),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -216,6 +217,12 @@ def json_change_settings(
 
     if new_password != "":
         return_data: Dict[str, Any] = {}
+
+        if reset_api_key_on_password_change is None:
+            raise JsonableError(
+                _("Missing 'reset_api_key_on_password_change' argument during password change.")
+            )
+
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             raise JsonableError(_("Your Zulip password is managed in LDAP"))
 
@@ -240,7 +247,7 @@ def json_change_settings(
         if not check_password_strength(new_password):
             raise JsonableError(_("New password is too weak!"))
 
-        do_change_password(user_profile, new_password)
+        do_change_password(user_profile, new_password, reset_api_key_on_password_change)
         # Password changes invalidates sessions, see
         # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
         # for details. To avoid this logging the user out of their own
