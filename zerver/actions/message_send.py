@@ -61,6 +61,7 @@ from zerver.lib.streams import access_stream_for_send_message, ensure_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import filter_by_exact_message_topic
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_mutes import get_muting_users
 from zerver.lib.validator import check_widget_content
@@ -124,6 +125,7 @@ def render_incoming_message(
     user_ids: Set[int],
     realm: Realm,
     mention_data: Optional[MentionData] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
     realm_alert_words_automaton = get_alert_word_automaton(realm)
@@ -134,6 +136,7 @@ def render_incoming_message(
             realm=realm,
             realm_alert_words_automaton=realm_alert_words_automaton,
             mention_data=mention_data,
+            url_embed_data=url_embed_data,
             email_gateway=email_gateway,
         )
     except MarkdownRenderingException:

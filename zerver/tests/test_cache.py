@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from unittest.mock import Mock, patch
 
 from django.conf import settings
@@ -7,7 +7,6 @@ from zerver.apps import flush_cache
 from zerver.lib.cache import (
     MEMCACHED_MAX_KEY_LENGTH,
     InvalidCacheKeyException,
-    NotFoundInCache,
     bulk_cached_fetch,
     cache_delete,
     cache_delete_many,
@@ -16,7 +15,6 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
-    get_cache_with_key,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
@@ -164,43 +162,6 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         self.assertEqual(result_two, None)
         self.assert_length(queries, 0)
-
-
-class GetCacheWithKeyDecoratorTest(ZulipTestCase):
-    def test_get_cache_with_good_key(self) -> None:
-        # Test with a good cache key function, but a get_user function
-        # that always returns None just to make it convenient to tell
-        # whether the cache was used (whatever we put in the cache) or
-        # we got the result from calling the function (None)
-
-        def good_cache_key_function(user_id: int) -> str:
-            return f"CacheWithKeyDecoratorTest:good_cache_key:{user_id}"
-
-        @get_cache_with_key(good_cache_key_function)
-        def get_user_function_with_good_cache_keys(user_id: int) -> Any:  # nocoverage
-            return
-
-        hamlet = self.example_user("hamlet")
-        with self.assertRaises(NotFoundInCache):
-            get_user_function_with_good_cache_keys(hamlet.id)
-
-        cache_set(good_cache_key_function(hamlet.id), hamlet)
-        result = get_user_function_with_good_cache_keys(hamlet.id)
-        self.assertEqual(result, hamlet)
-
-    def test_get_cache_with_bad_key(self) -> None:
-        def bad_cache_key_function(user_id: int) -> str:
-            return f"CacheWithKeyDecoratorTest:invalid_character:ą:{user_id}"
-
-        @get_cache_with_key(bad_cache_key_function)
-        def get_user_function_with_bad_cache_keys(user_id: int) -> Any:  # nocoverage
-            return
-
-        hamlet = self.example_user("hamlet")
-        with self.assertLogs(level="WARNING") as m:
-            with self.assertRaises(NotFoundInCache):
-                get_user_function_with_bad_cache_keys(hamlet.id)
-            self.assert_length(m.output, 1)
 
 
 class SafeCacheFunctionsTest(ZulipTestCase):
