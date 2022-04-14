@@ -37,6 +37,7 @@ from zerver.actions.realm_linkifiers import (
     do_remove_linkifier,
     do_update_linkifier,
 )
+from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
@@ -62,7 +63,6 @@ from zerver.lib.actions import (
     do_change_default_sending_stream,
     do_change_full_name,
     do_change_icon_source,
-    do_change_logo_source,
     do_change_realm_domain,
     do_change_realm_plan_type,
     do_change_stream_description,
