@@ -3734,6 +3734,21 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 
+def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
+    is_private_bot = (
+        user_profile.default_sending_stream
+        and user_profile.default_sending_stream.invite_only
+        or user_profile.default_events_register_stream
+        and user_profile.default_events_register_stream.invite_only
+    )
+    if is_private_bot:
+        return {user_profile.bot_owner_id}
+    else:
+        users = {user.id for user in user_profile.realm.get_human_admin_users()}
+        users.add(user_profile.bot_owner_id)
+        return users
+
+
 def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
     try:
         return get_user_by_delivery_email(email, get_realm_by_id(realm_id))
