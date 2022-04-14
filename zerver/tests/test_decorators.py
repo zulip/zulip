@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.decorator import (
     authenticate_notify,
     authenticated_json_view,
@@ -29,10 +30,8 @@ from zerver.decorator import (
 )
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.actions import (
-    change_user_is_active,
     do_create_realm,
     do_deactivate_realm,
-    do_deactivate_user,
     do_reactivate_realm,
     do_reactivate_user,
     do_set_realm_property,

@@ -3,7 +3,7 @@ from unittest import mock
 
 import orjson
 
-from zerver.lib.actions import do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp

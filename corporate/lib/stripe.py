@@ -323,7 +323,7 @@ def do_create_stripe_customer(user: UserProfile, payment_method: Optional[str] =
         customer, created = Customer.objects.update_or_create(
             realm=realm, defaults={"stripe_customer_id": stripe_customer.id}
         )
-        from zerver.lib.actions import do_make_user_billing_admin
+        from zerver.actions.users import do_make_user_billing_admin
 
         do_make_user_billing_admin(user)
     return customer

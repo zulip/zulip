@@ -13,7 +13,7 @@ from zerver.actions.default_streams import (
     get_default_streams_for_realm,
     streams_to_dicts_sorted,
 )
-from zerver.lib.actions import get_owned_bot_dicts
+from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
