@@ -25,6 +25,7 @@ from confirmation.models import (
     one_click_unsubscribe_link,
 )
 from corporate.lib.stripe import get_latest_seat_count
+from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.create_user import add_new_user_history, do_create_user, process_new_human_user
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -46,7 +47,6 @@ from zerver.actions.users import change_user_is_active, do_change_user_role, do_
 from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.lib.actions import do_change_realm_subdomain, do_create_realm
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import (

@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import (
     do_add_default_stream,
     do_add_streams_to_default_stream_group,
@@ -32,7 +33,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
-from zerver.lib.actions import do_create_realm, get_topic_messages
+from zerver.lib.actions import get_topic_messages
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
