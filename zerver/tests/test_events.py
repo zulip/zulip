@@ -13,6 +13,17 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
+    do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
+    do_create_default_stream_group,
+    do_remove_default_stream,
+    do_remove_default_stream_group,
+    do_remove_streams_from_default_stream_group,
+    lookup_default_stream_groups,
+)
 from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.actions.realm_linkifiers import (
     do_add_linkifier,
@@ -36,17 +47,13 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_add_realm_emoji,
     do_add_alert_words,
-    do_add_default_stream,
     do_add_reaction,
     do_add_realm_domain,
-    do_add_streams_to_default_stream_group,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_change_default_stream_group_description,
-    do_change_default_stream_group_name,
     do_change_full_name,
     do_change_icon_source,
     do_change_logo_source,
@@ -60,7 +67,6 @@ from zerver.lib.actions import (
     do_change_user_delivery_email,
     do_change_user_role,
     do_change_user_setting,
-    do_create_default_stream_group,
     do_create_multiuse_invite_link,
     do_create_user,
     do_deactivate_realm,
@@ -74,13 +80,10 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
-    do_remove_default_stream,
-    do_remove_default_stream_group,
     do_remove_reaction,
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
-    do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
@@ -99,7 +102,6 @@ from zerver.lib.actions import (
     do_update_user_custom_profile_data_if_changed,
     do_update_user_presence,
     do_update_user_status,
-    lookup_default_stream_groups,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )

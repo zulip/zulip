@@ -10,6 +10,17 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
+    do_change_default_stream_group_description,
+    do_change_default_stream_group_name,
+    do_create_default_stream_group,
+    do_remove_default_stream,
+    do_remove_default_stream_group,
+    do_remove_streams_from_default_stream_group,
+    get_default_streams_for_realm,
+)
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import (
     authenticated_json_view,
@@ -20,26 +31,17 @@ from zerver.decorator import (
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
-    do_add_default_stream,
-    do_add_streams_to_default_stream_group,
-    do_change_default_stream_group_description,
-    do_change_default_stream_group_name,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
     do_change_stream_post_policy,
     do_change_subscription_property,
-    do_create_default_stream_group,
     do_deactivate_stream,
     do_delete_messages,
     do_get_streams,
-    do_remove_default_stream,
-    do_remove_default_stream_group,
-    do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_send_messages,
     gather_subscriptions,
-    get_default_streams_for_realm,
     get_subscriber_ids,
     internal_prep_private_message,
     internal_prep_stream_message,
