@@ -40,6 +40,7 @@ from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
+from zerver.actions.invites import do_invite_users
 from zerver.lib.actions import (
     change_user_is_active,
     do_change_password,
@@ -47,7 +48,6 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_realm,
     do_deactivate_user,
-    do_invite_users,
     do_reactivate_realm,
     do_reactivate_user,
     do_set_realm_property,
