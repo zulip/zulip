@@ -23,7 +23,6 @@ from typing import (
 )
 
 from django.conf import settings
-from django.core.cache import cache as djcache
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
@@ -125,7 +124,7 @@ def bounce_key_prefix_for_testing(test_name: str) -> None:
 
 def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     if cache_name is None:
-        return djcache
+        cache_name = "default"
     return caches[cache_name]
 
 
