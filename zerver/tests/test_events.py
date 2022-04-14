@@ -13,6 +13,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.actions.realm_linkifiers import (
     do_add_linkifier,
     do_remove_linkifier,
@@ -68,7 +69,6 @@ from zerver.lib.actions import (
     do_delete_messages,
     do_invite_users,
     do_make_user_billing_admin,
-    do_mark_hotspot_as_read,
     do_mute_topic,
     do_mute_user,
     do_reactivate_user,

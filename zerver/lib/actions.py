@@ -98,7 +98,6 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
-from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.i18n import get_language_name
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -251,7 +250,6 @@ from zerver.models import (
     UserActivityInterval,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -7707,12 +7705,6 @@ def do_unmute_user(mute_object: MutedUser) -> None:
         event_time=timezone_now(),
         extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
     )
-
-
-def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
-    UserHotspot.objects.get_or_create(user=user, hotspot=hotspot)
-    event = dict(type="hotspots", hotspots=get_next_hotspots(user))
-    send_event(user.realm, event, [user.id])
 
 
 @transaction.atomic(durable=True)
