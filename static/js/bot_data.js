@@ -73,6 +73,16 @@ export function get_editable() {
     return ret;
 }
 
+export function get_all_bots_owned_by_user(user_id) {
+    const ret = [];
+    for (const bot of bots.values()) {
+        if (bot.owner_id === user_id && bot.is_active) {
+            ret.push(bot);
+        }
+    }
+    return ret;
+}
+
 export function get(bot_id) {
     return bots.get(bot_id);
 }
