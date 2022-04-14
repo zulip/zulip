@@ -4,7 +4,8 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_permission, notify_reaction_update
+from zerver.actions.streams import do_change_stream_permission
+from zerver.lib.actions import notify_reaction_update
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError

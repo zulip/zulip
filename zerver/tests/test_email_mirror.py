@@ -11,8 +11,9 @@ import orjson
 from django.conf import settings
 from django.http import HttpResponse
 
+from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.users import do_deactivate_user
-from zerver.lib.actions import do_change_stream_post_policy, do_deactivate_realm
+from zerver.lib.actions import do_deactivate_realm
 from zerver.lib.email_mirror import (
     create_missed_message_address,
     filter_footer,

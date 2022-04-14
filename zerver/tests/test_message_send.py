@@ -25,10 +25,10 @@ from zerver.actions.message_send import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
+from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.actions import (
     do_add_realm_domain,
-    do_change_stream_post_policy,
     do_create_realm,
     do_create_user,
     do_set_realm_property,
