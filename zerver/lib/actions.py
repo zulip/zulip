@@ -57,7 +57,6 @@ from zerver.lib.cache import (
     cache_delete,
     cache_delete_many,
     cache_set,
-    cache_set_many,
     cache_with_key,
     delete_user_profile_caches,
     display_recipient_cache_key,
@@ -96,6 +95,7 @@ from zerver.lib.message import (
     render_markdown,
     truncate_topic,
     update_first_visible_message_id,
+    update_to_dict_cache,
     wildcard_mention_allowed,
 )
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
@@ -5631,23 +5631,6 @@ def update_user_message_flags(
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
-
-
-def update_to_dict_cache(
-    changed_messages: List[Message], realm_id: Optional[int] = None
-) -> List[int]:
-    """Updates the message as stored in the to_dict cache (for serving
-    messages)."""
-    items_for_remote_cache = {}
-    message_ids = []
-    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
-    for msg_id, msg in changed_messages_to_dict.items():
-        message_ids.append(msg_id)
-        key = to_dict_cache_key_id(msg_id)
-        items_for_remote_cache[key] = (msg,)
-
-    cache_set_many(items_for_remote_cache)
-    return message_ids
 
 
 def do_update_embedded_data(
