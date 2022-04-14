@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import orjson
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -18,7 +17,6 @@ from zerver.actions.user_settings import do_delete_avatar_image, send_user_email
 from zerver.lib.bulk_create import create_users
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.create_user import get_display_email_address
-from zerver.lib.email_validation import email_reserved_for_system_bots_error
 from zerver.lib.message import update_first_visible_message_id
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
@@ -43,7 +41,6 @@ from zerver.models import (
     get_realm,
     get_realm_domains,
     get_system_bot,
-    is_cross_realm_bot_email,
 )
 from zerver.tornado.django_api import send_event
 
@@ -678,17 +675,6 @@ def do_create_realm(
 
     setup_realm_internal_bots(realm)
     return realm
-
-
-def email_not_system_bot(email: str) -> None:
-    if is_cross_realm_bot_email(email):
-        msg = email_reserved_for_system_bots_error(email)
-        code = msg
-        raise ValidationError(
-            msg,
-            code=code,
-            params=dict(deactivated=False),
-        )
 
 
 @transaction.atomic(durable=True)
