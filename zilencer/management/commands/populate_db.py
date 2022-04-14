@@ -18,15 +18,17 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.actions.custom_profile_fields import (
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_add_realm_default_custom_profile_field,
+)
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.lib.actions import (
     build_message_send_dict,
     do_change_user_role,
     do_create_realm,
     do_send_messages,
-    do_update_user_custom_profile_data_if_changed,
-    try_add_realm_custom_profile_field,
-    try_add_realm_default_custom_profile_field,
 )
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set

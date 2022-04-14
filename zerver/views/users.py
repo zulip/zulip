@@ -6,13 +6,16 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.actions.custom_profile_fields import (
+    check_remove_custom_profile_field_value,
+    do_update_user_custom_profile_data_if_changed,
+)
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
     check_change_bot_full_name,
     check_change_full_name,
-    check_remove_custom_profile_field_value,
     do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -25,7 +28,6 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_update_bot_config_data,
     do_update_outgoing_webhook_service,
-    do_update_user_custom_profile_data_if_changed,
     notify_created_bot,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url

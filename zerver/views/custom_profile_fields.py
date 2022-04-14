@@ -6,8 +6,7 @@ from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import human_users_only, require_realm_admin
-from zerver.lib.actions import (
+from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_remove_realm_custom_profile_field,
     do_update_user_custom_profile_data_if_changed,
@@ -16,6 +15,7 @@ from zerver.lib.actions import (
     try_reorder_realm_custom_profile_fields,
     try_update_realm_custom_profile_field,
 )
+from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.request import REQ, has_request_variables

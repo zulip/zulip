@@ -14,6 +14,12 @@ import orjson
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.custom_profile_fields import (
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_update_realm_custom_profile_field,
+)
 from zerver.actions.default_streams import (
     do_add_default_stream,
     do_add_streams_to_default_stream_group,
@@ -85,7 +91,6 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_reaction,
-    do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_rename_stream,
     do_set_realm_authentication_methods,
@@ -99,9 +104,6 @@ from zerver.lib.actions import (
     do_update_message,
     do_update_message_flags,
     do_update_outgoing_webhook_service,
-    do_update_user_custom_profile_data_if_changed,
-    try_add_realm_custom_profile_field,
-    try_update_realm_custom_profile_field,
 )
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
