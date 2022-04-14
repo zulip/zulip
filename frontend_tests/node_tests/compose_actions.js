@@ -96,6 +96,7 @@ function test(label, f) {
         // We don't test the css calls; we just skip over them.
         $("#compose").css = () => {};
         $(".new_message_textarea").css = () => {};
+        $("#compose-send-status .upload-count").contents = () => "";
 
         people.init();
         compose_state.set_message_type(false);

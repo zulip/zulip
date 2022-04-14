@@ -32,8 +32,6 @@ export function get_item(key, config) {
                 return $("#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
-            case "send_status_identifier":
-                return "#compose-send-status";
             case "send_status":
                 return $("#compose-send-status");
             case "send_status_visual":
@@ -42,8 +40,6 @@ export function get_item(key, config) {
                 return $("#compose-send-status-controls");
             case "send_status_cancel_button":
                 return $("#compose-send-status-cancel-upload");
-            case "send_status_close_button":
-                return $("#compose-send-status-close");
             case "send_status_message":
                 return $("#compose-error-msg");
             case "send_status_upload_count":
@@ -70,8 +66,6 @@ export function get_item(key, config) {
                 return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
                     .closest(".message_edit_form")
                     .find(".message_edit_save");
-            case "send_status_identifier":
-                return `#message-edit-send-status-${CSS.escape(config.row)}`;
             case "send_status":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`);
             case "send_status_visual":
@@ -162,14 +156,12 @@ export function upload_files(uppy, config, files) {
     get_item("send_status_controls", config).show();
 
     get_item("send_status_message", config).html(
-        $(`
-    <p>
-        ${$t(
-            {defaultMessage: "Uploading {uploadCount} files"},
-            {uploadCount: `<span class="upload-count"> ${uppy.getFiles().length}</span>`},
-        )}
-    </p>
-    `),
+        `<p>
+    ${$t(
+        {defaultMessage: "Uploading {uploadCount} files"},
+        {uploadCount: `<span class="upload-count">${uppy.getFiles().length}</span>`},
+    )}
+</p>`,
     );
 
     for (const file of files) {
