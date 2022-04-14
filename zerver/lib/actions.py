@@ -26,7 +26,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, connection, transaction
-from django.db.models import Exists, F, OuterRef, Q
+from django.db.models import F
 from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -125,7 +125,6 @@ from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     get_bulk_stream_subscriber_info,
     get_stream_subscriptions_for_user,
-    get_subscribed_stream_ids_for_user,
     get_subscriptions_for_send_message,
     get_used_colors_for_user_ids,
     num_subscribers_for_stream_id,
@@ -138,10 +137,11 @@ from zerver.lib.streams import (
     access_stream_for_send_message,
     can_access_stream_user_ids,
     check_stream_access_based_on_stream_post_policy,
-    create_stream_if_needed,
+    ensure_stream,
     get_default_value_for_history_public_to_subscribers,
+    get_occupied_streams,
+    get_signups_stream,
     get_stream_permission_policy_name,
-    get_web_public_streams_queryset,
     render_stream_description,
     send_stream_creation_event,
     subscribed_to_stream,
@@ -277,11 +277,6 @@ def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
-
-
-def get_signups_stream(realm: Realm) -> Stream:
-    # This one-liner helps us work around a lint rule.
-    return get_stream("signups", realm)
 
 
 def send_message_to_signup_notification_stream(
@@ -2439,23 +2434,6 @@ def do_remove_reaction(
     reaction.delete()
 
     notify_reaction_update(user_profile, message, reaction, "remove")
-
-
-def ensure_stream(
-    realm: Realm,
-    stream_name: str,
-    invite_only: bool = False,
-    stream_description: str = "",
-    *,
-    acting_user: Optional[UserProfile],
-) -> Stream:
-    return create_stream_if_needed(
-        realm,
-        stream_name,
-        invite_only=invite_only,
-        stream_description=stream_description,
-        acting_user=acting_user,
-    )[0]
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
@@ -7007,107 +6985,6 @@ def do_remove_realm_domain(
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
-
-
-def get_occupied_streams(realm: Realm) -> QuerySet:
-    # TODO: Make a generic stub for QuerySet
-    """Get streams with subscribers"""
-    exists_expression = Exists(
-        Subscription.objects.filter(
-            active=True,
-            is_user_active=True,
-            user_profile__realm=realm,
-            recipient_id=OuterRef("recipient_id"),
-        ),
-    )
-    occupied_streams = (
-        Stream.objects.filter(realm=realm, deactivated=False)
-        .annotate(occupied=exists_expression)
-        .filter(occupied=True)
-    )
-    return occupied_streams
-
-
-def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:  # nocoverage
-    query = get_web_public_streams_queryset(realm)
-    streams = Stream.get_client_data(query)
-    return streams
-
-
-def do_get_streams(
-    user_profile: UserProfile,
-    include_public: bool = True,
-    include_web_public: bool = False,
-    include_subscribed: bool = True,
-    include_all_active: bool = False,
-    include_default: bool = False,
-    include_owner_subscribed: bool = False,
-) -> List[Dict[str, Any]]:
-    # This function is only used by API clients now.
-
-    if include_all_active and not user_profile.is_realm_admin:
-        raise JsonableError(_("User not authorized for this query"))
-
-    include_public = include_public and user_profile.can_access_public_streams()
-
-    # Start out with all active streams in the realm.
-    query = Stream.objects.filter(realm=user_profile.realm, deactivated=False)
-
-    if include_all_active:
-        streams = Stream.get_client_data(query)
-    else:
-        # We construct a query as the or (|) of the various sources
-        # this user requested streams from.
-        query_filter: Optional[Q] = None
-
-        def add_filter_option(option: Q) -> None:
-            nonlocal query_filter
-            if query_filter is None:
-                query_filter = option
-            else:
-                query_filter |= option
-
-        if include_subscribed:
-            subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
-            recipient_check = Q(id__in=set(subscribed_stream_ids))
-            add_filter_option(recipient_check)
-        if include_public:
-            invite_only_check = Q(invite_only=False)
-            add_filter_option(invite_only_check)
-        if include_web_public:
-            # This should match get_web_public_streams_queryset
-            web_public_check = Q(
-                is_web_public=True,
-                invite_only=False,
-                history_public_to_subscribers=True,
-                deactivated=False,
-            )
-            add_filter_option(web_public_check)
-        if include_owner_subscribed and user_profile.is_bot:
-            bot_owner = user_profile.bot_owner
-            assert bot_owner is not None
-            owner_stream_ids = get_subscribed_stream_ids_for_user(bot_owner)
-            owner_subscribed_check = Q(id__in=set(owner_stream_ids))
-            add_filter_option(owner_subscribed_check)
-
-        if query_filter is not None:
-            query = query.filter(query_filter)
-            streams = Stream.get_client_data(query)
-        else:
-            # Don't bother going to the database with no valid sources
-            streams = []
-
-    streams.sort(key=lambda elt: elt["name"])
-
-    if include_default:
-        is_default = {}
-        default_streams = get_default_streams_for_realm(user_profile.realm_id)
-        for default_stream in default_streams:
-            is_default[default_stream.id] = True
-        for stream in streams:
-            stream["is_default"] = is_default.get(stream["stream_id"], False)
-
-    return streams
 
 
 def notify_attachment_update(
