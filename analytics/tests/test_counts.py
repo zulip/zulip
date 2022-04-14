@@ -37,6 +37,7 @@ from zerver.actions.invites import (
     do_resend_user_invite_email,
     do_revoke_user_invite,
 )
+from zerver.actions.user_activity import update_user_activity_interval
 from zerver.lib.actions import (
     do_activate_mirror_dummy_user,
     do_create_realm,
@@ -46,7 +47,6 @@ from zerver.lib.actions import (
     do_mark_stream_messages_as_read,
     do_reactivate_user,
     do_update_message_flags,
-    update_user_activity_interval,
 )
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError

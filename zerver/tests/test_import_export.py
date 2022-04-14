@@ -14,6 +14,7 @@ from zerver.actions.alert_words import do_add_alert_words
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_topics import do_mute_topic
 from zerver.lib import upload
 from zerver.lib.actions import (
@@ -23,8 +24,6 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_user,
     do_mute_user,
-    do_update_user_activity,
-    do_update_user_activity_interval,
     do_update_user_custom_profile_data_if_changed,
     do_update_user_presence,
     do_update_user_status,
