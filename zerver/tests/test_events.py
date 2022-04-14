@@ -51,6 +51,7 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_members_from_user_group,
 )
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
     bulk_add_subscriptions,
@@ -79,7 +80,6 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_messages,
     do_make_user_billing_admin,
-    do_mute_topic,
     do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
@@ -93,7 +93,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
-    do_unmute_topic,
     do_unmute_user,
     do_update_embedded_data,
     do_update_message,

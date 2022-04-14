@@ -49,6 +49,7 @@ from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.decorator import statsd_increment
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
@@ -179,12 +180,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
-from zerver.lib.user_topics import (
-    add_topic_mute,
-    get_topic_mutes,
-    get_users_muting_topic,
-    remove_topic_mute,
-)
+from zerver.lib.user_topics import get_users_muting_topic, remove_topic_mute
 from zerver.lib.users import (
     check_bot_name_available,
     check_full_name,
@@ -228,7 +224,6 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     UserStatus,
-    UserTopic,
     active_non_guest_user_ids,
     active_user_ids,
     bot_owner_user_ids,
@@ -6926,39 +6921,6 @@ def email_not_system_bot(email: str) -> None:
             code=code,
             params=dict(deactivated=False),
         )
-
-
-def do_mute_topic(
-    user_profile: UserProfile,
-    stream: Stream,
-    topic: str,
-    date_muted: Optional[datetime.datetime] = None,
-    ignore_duplicate: bool = False,
-) -> None:
-    if date_muted is None:
-        date_muted = timezone_now()
-    add_topic_mute(
-        user_profile,
-        stream.id,
-        stream.recipient_id,
-        topic,
-        date_muted,
-        ignore_duplicate=ignore_duplicate,
-    )
-    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
-
-
-def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
-    # Note: If you add any new code to this function, the
-    # remove_topic_mute call in do_update_message will need to be
-    # updated for correctness.
-    try:
-        remove_topic_mute(user_profile, stream.id, topic)
-    except UserTopic.DoesNotExist:
-        raise JsonableError(_("Topic is not muted"))
-    event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
-    send_event(user_profile.realm, event, [user_profile.id])
 
 
 def do_mute_user(
