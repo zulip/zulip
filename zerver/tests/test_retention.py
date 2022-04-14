@@ -5,8 +5,8 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.submessage import do_add_submessage
 from zerver.lib.actions import (
-    do_add_submessage,
     do_create_realm,
     do_delete_messages,
     do_set_realm_property,
