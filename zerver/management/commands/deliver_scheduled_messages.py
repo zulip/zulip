@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import build_message_send_dict, do_send_messages
+from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
