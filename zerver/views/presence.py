@@ -6,8 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.actions.presence import do_update_user_status, update_user_presence
 from zerver.decorator import human_users_only
-from zerver.lib.actions import do_update_user_status, update_user_presence
 from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.presence import get_presence_for_user, get_presence_response
