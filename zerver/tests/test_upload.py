@@ -21,10 +21,10 @@ from PIL import Image
 import zerver.lib.upload
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.actions import (
     do_change_realm_plan_type,
     do_create_realm,
-    do_delete_old_unclaimed_attachments,
     do_set_realm_property,
     internal_send_private_message,
 )
