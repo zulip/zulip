@@ -8,10 +8,10 @@ from zerver.lib.actions import (
     do_change_avatar_fields,
     do_create_user,
     do_send_messages,
-    ensure_stream,
     internal_prep_stream_message,
 )
 from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.streams import ensure_stream
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import Message, UserProfile, get_realm
 

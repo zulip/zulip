@@ -34,9 +34,7 @@ from zerver.lib.actions import (
     do_create_realm,
     do_deactivate_stream,
     do_deactivate_user,
-    do_get_streams,
     do_set_realm_property,
-    ensure_stream,
     gather_subscriptions,
     gather_subscriptions_helper,
     get_topic_messages,
@@ -63,6 +61,8 @@ from zerver.lib.streams import (
     can_access_stream_user_ids,
     create_stream_if_needed,
     create_streams_if_needed,
+    do_get_streams,
+    ensure_stream,
     filter_stream_authorization,
     list_to_streams,
 )
