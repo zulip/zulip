@@ -69,6 +69,7 @@ from zerver.lib.test_console_output import (
     tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
@@ -1816,3 +1817,11 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         pass  # nocoverage
+
+
+def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> List[Message]:
+    query = UserMessage.objects.filter(
+        user_profile=user_profile,
+        message__recipient=stream.recipient,
+    ).order_by("id")
+    return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]
