@@ -47,7 +47,7 @@ def copy_default_settings(
     target_profile.save()
 
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
-        from zerver.lib.actions import do_change_avatar_fields
+        from zerver.actions.user_settings import do_change_avatar_fields
 
         do_change_avatar_fields(
             target_profile,

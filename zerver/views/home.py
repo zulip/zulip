@@ -7,10 +7,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
+from zerver.actions.user_settings import do_change_tos_version
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.actions import do_change_tos_version
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.request import RequestNotes

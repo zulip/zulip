@@ -17,8 +17,7 @@ from confirmation.models import (
     get_object_from_key,
     render_confirmation_key_error,
 )
-from zerver.decorator import human_users_only
-from zerver.lib.actions import (
+from zerver.actions.user_settings import (
     check_change_full_name,
     do_change_avatar_fields,
     do_change_password,
@@ -27,6 +26,7 @@ from zerver.lib.actions import (
     do_regenerate_api_key,
     do_start_email_change_process,
 )
+from zerver.decorator import human_users_only
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,

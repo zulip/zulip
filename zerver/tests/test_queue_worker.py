@@ -639,7 +639,7 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = queue_processors.ConfirmationEmailWorker()
             worker.setup()
-            with patch("zerver.lib.actions.send_email"), patch(
+            with patch("zerver.actions.user_settings.send_email"), patch(
                 "zerver.worker.queue_processors.send_future_email"
             ) as send_mock:
                 worker.start()
