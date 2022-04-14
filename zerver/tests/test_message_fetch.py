@@ -13,12 +13,8 @@ from sqlalchemy.types import Integer
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.lib.actions import (
-    do_claim_attachments,
-    do_deactivate_user,
-    do_set_realm_property,
-    do_update_message,
-)
+from zerver.actions.uploads import do_claim_attachments
+from zerver.lib.actions import do_deactivate_user, do_set_realm_property, do_update_message
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, MentionData
@@ -3860,7 +3856,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
         msg = Message.objects.get(id=msg_id)
 
-        with mock.patch("zerver.lib.actions.do_claim_attachments", wraps=do_claim_attachments) as m:
+        with mock.patch(
+            "zerver.actions.uploads.do_claim_attachments", wraps=do_claim_attachments
+        ) as m:
             self.update_message(
                 msg, f"[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})"
             )

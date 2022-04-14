@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 
-from zerver.lib.actions import do_delete_old_unclaimed_attachments
+from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.models import get_old_unclaimed_attachments
 
 
