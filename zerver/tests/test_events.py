@@ -54,6 +54,11 @@ from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
+from zerver.actions.realm_domains import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
 from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
@@ -109,7 +114,6 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_zoom_token
-from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, do_remove_realm_domain
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,

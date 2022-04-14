@@ -17,6 +17,11 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.realm_domains import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import (
@@ -43,7 +48,6 @@ from zerver.actions.user_settings import (
     do_regenerate_api_key,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
-from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, do_remove_realm_domain
 from zerver.lib.message import get_last_message_id
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
