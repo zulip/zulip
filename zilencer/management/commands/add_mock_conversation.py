@@ -2,10 +2,11 @@ from typing import Any, Dict, List
 
 from django.core.management.base import BaseCommand
 
+from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import do_send_messages, internal_prep_stream_message
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_settings import do_change_avatar_fields
-from zerver.lib.actions import do_add_reaction, do_create_user
+from zerver.lib.actions import do_add_reaction
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.streams import ensure_stream
 from zerver.lib.upload import upload_avatar_image

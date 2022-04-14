@@ -25,6 +25,7 @@ from confirmation.models import (
     render_confirmation_key_error,
     validate_key,
 )
+from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
 from zerver.actions.default_streams import lookup_default_stream_groups
 from zerver.actions.user_settings import (
     do_change_full_name,
@@ -40,7 +41,7 @@ from zerver.forms import (
     RealmRedirectForm,
     RegistrationForm,
 )
-from zerver.lib.actions import do_activate_mirror_dummy_user, do_create_realm, do_create_user
+from zerver.lib.actions import do_create_realm
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.pysa import mark_sanitized

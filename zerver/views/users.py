@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
+from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot
 from zerver.actions.custom_profile_fields import (
     check_remove_custom_profile_field_value,
     do_update_user_custom_profile_data_if_changed,
@@ -30,9 +31,6 @@ from zerver.lib.actions import (
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_create_user,
-    do_reactivate_user,
-    notify_created_bot,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config

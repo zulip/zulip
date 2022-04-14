@@ -6,6 +6,11 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import StreamCount
+from zerver.actions.create_user import (
+    do_activate_mirror_dummy_user,
+    do_create_user,
+    do_reactivate_user,
+)
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.streams import (
@@ -25,17 +30,14 @@ from zerver.actions.user_settings import (
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.actions import (
-    do_activate_mirror_dummy_user,
     do_add_realm_domain,
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_realm_domain,
-    do_create_user,
     do_deactivate_realm,
     do_reactivate_realm,
-    do_reactivate_user,
     do_remove_realm_domain,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,

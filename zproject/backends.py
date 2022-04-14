@@ -58,11 +58,11 @@ from social_core.pipeline.partial import partial
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
+from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import do_deactivate_user
 from zerver.decorator import client_is_exempt_from_rate_limiting
-from zerver.lib.actions import do_create_user, do_reactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
