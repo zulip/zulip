@@ -3,10 +3,13 @@ import json
 from typing import Any, Callable, Dict, Optional
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from zulip_bots.lib import BotIdentity, RateLimit
 
 from zerver.lib.actions import (
+    check_update_message,
+    do_add_reaction,
     internal_send_huddle_message,
     internal_send_private_message,
     internal_send_stream_message_by_name,
@@ -18,9 +21,11 @@ from zerver.lib.bot_storage import (
     remove_bot_storage,
     set_bot_storage,
 )
+from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.models import UserProfile, get_active_user
+from zerver.lib.validator import check_bool, check_dict, check_string, check_string_or_int
+from zerver.models import Message, UserProfile, get_active_user
 
 
 def get_bot_handler(service_name: str) -> Any:
@@ -66,6 +71,10 @@ class EmbeddedBotEmptyRecipientsList(Exception):
     pass
 
 
+class EmbeddedBotValueError(Exception):
+    pass
+
+
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
@@ -80,7 +89,24 @@ class EmbeddedBotHandler:
         return BotIdentity(self.full_name, self.email)
 
     def react(self, message: Dict[str, Any], emoji_name: str) -> Dict[str, Any]:
-        return {}  # Not implemented
+        try:
+            check_dict(required_keys=[("id", check_string_or_int)])("message", message)
+        except ValidationError as error:
+            raise EmbeddedBotValueError(error.message)
+
+        emoji_code, reaction_type = emoji_name_to_emoji_code(self.user_profile.realm, emoji_name)
+
+        try:
+            do_add_reaction(
+                self.user_profile,
+                Message.objects.get(id=int(message["id"])),
+                emoji_name,
+                emoji_code,
+                reaction_type,
+            )
+        except Message.DoesNotExist:
+            raise EmbeddedBotValueError("Message with the given ID does not exist")
+        return {"msg": "", "result": "success"}
 
     def send_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
         if not self._rate_limit.is_legal():
@@ -138,8 +164,37 @@ class EmbeddedBotHandler:
             )
         return {"id": result["id"]}
 
-    def update_message(self, message: Dict[str, Any]) -> None:
-        pass  # Not implemented
+    def update_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+        if not self._rate_limit.is_legal():
+            self._rate_limit.show_error_and_exit()
+
+        # update_message receives "message_id" instead of "id" for the message to be updated.
+        # This can be confused with react which uses "id" as the key.
+        try:
+            check_dict(
+                required_keys=[("message_id", check_string_or_int)],
+                optional_keys=[
+                    ("topic", check_string),
+                    ("propagate_mode", check_string),
+                    ("send_notification_to_old_thread", check_bool),
+                    ("send_notification_to_new_thread", check_bool),
+                    ("content", check_string),
+                ],
+            )("message", message)
+        except ValidationError as error:
+            raise EmbeddedBotValueError(error.message)
+
+        check_update_message(
+            user_profile=self.user_profile,
+            message_id=int(message["message_id"]),
+            stream_id=None,
+            topic_name=message.get("topic", None),
+            propagate_mode=message.get("propagate_mode", "change_one"),
+            send_notification_to_old_thread=message.get("send_notification_to_old_thread", False),
+            send_notification_to_new_thread=message.get("send_notification_to_new_thread", False),
+            content=message.get("content", None),
+        )
+        return {"msg": "", "result": "success"}
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
     def get_config_info(self, bot_name: str, optional: bool = False) -> Dict[str, str]:
