@@ -89,9 +89,37 @@ you would like to send a response message:
 
 The `content` field should contain Zulip-format Markdown.
 
+Here's an example of the JSON your server should respond with if
+you would like to add emoji reactions to the message that triggered the
+outgoing webhook:
+```
+{
+    "reactions": [
+        {"emoji_name": "wave"},
+        {"emoji_name": "smile"},
+    ]
+}
+```
+
+You can also specify `emoji_code` and `reaction_type` for each emoji,
+but they are not required. The API documentation for [adding an emoji
+reaction](/api/add-reaction#parameters) has more details about
+supported parameters.
+
+Here's an example of the JSON your server should respond with if
+you would like to send a response message and add reactions:
+```
+{
+    "content": "Hey, we just received **something** from Zulip!"
+    "reactions": [
+        {"emoji_name": "wave"}
+    ]
+}
+```
+
 Note that an outgoing webhook bot can use the [Zulip REST
 API](/api/rest) with its API key in case your bot needs to do
-something else, like add an emoji reaction or upload a file.
+something else, like editing a message or uploading a file.
 
 ## Slack-format webhook format
 
