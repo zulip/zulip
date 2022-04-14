@@ -611,3 +611,7 @@ def get_raw_user_data(
             custom_profile_field_data=custom_profile_field_data,
         )
     return result
+
+
+def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
+    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
