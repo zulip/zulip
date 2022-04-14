@@ -5,8 +5,8 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.context_processors import common_context
-from zerver.lib.actions import do_change_user_setting
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.models import ScheduledEmail, UserProfile
 

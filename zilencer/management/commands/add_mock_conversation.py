@@ -2,10 +2,10 @@ from typing import Any, Dict, List
 
 from django.core.management.base import BaseCommand
 
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     do_add_reaction,
-    do_change_avatar_fields,
     do_create_user,
     do_send_messages,
     internal_prep_stream_message,

@@ -22,6 +22,7 @@ import zerver.lib.upload
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
+from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.actions import (
     do_change_realm_plan_type,
     do_create_realm,
@@ -1287,7 +1288,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(avatar_original_path_id))
         self.assertTrue(os.path.isfile(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertFalse(os.path.isfile(avatar_path_id))
@@ -2124,7 +2125,7 @@ class S3Test(ZulipTestCase):
         self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
         self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 

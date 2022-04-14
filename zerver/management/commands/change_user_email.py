@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_change_user_delivery_email
+from zerver.actions.user_settings import do_change_user_delivery_email
 from zerver.lib.management import ZulipBaseCommand
 
 

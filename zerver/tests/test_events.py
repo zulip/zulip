@@ -58,6 +58,13 @@ from zerver.actions.user_groups import (
     do_update_user_group_name,
     remove_members_from_user_group,
 )
+from zerver.actions.user_settings import (
+    do_change_avatar_fields,
+    do_change_full_name,
+    do_change_user_delivery_email,
+    do_change_user_setting,
+    do_regenerate_api_key,
+)
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.actions.users import (
     do_change_user_role,
@@ -71,12 +78,10 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     do_add_reaction,
     do_add_realm_domain,
-    do_change_avatar_fields,
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_change_full_name,
     do_change_realm_domain,
     do_change_realm_plan_type,
     do_change_stream_description,
@@ -84,15 +89,12 @@ from zerver.lib.actions import (
     do_change_stream_permission,
     do_change_stream_post_policy,
     do_change_subscription_property,
-    do_change_user_delivery_email,
-    do_change_user_setting,
     do_create_user,
     do_deactivate_realm,
     do_deactivate_stream,
     do_delete_messages,
     do_mute_user,
     do_reactivate_user,
-    do_regenerate_api_key,
     do_remove_reaction,
     do_remove_realm_domain,
     do_rename_stream,

@@ -41,9 +41,9 @@ from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.invites import do_invite_users
+from zerver.actions.user_settings import do_change_password
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.actions import (
-    do_change_password,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -6122,7 +6122,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertEqual(hamlet.full_name, "Full Name")
 
     def test_same_full_name(self) -> None:
-        with mock.patch("zerver.lib.actions.do_change_full_name") as fn:
+        with mock.patch("zerver.actions.user_settings.do_change_full_name") as fn:
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
@@ -6239,7 +6239,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.change_ldap_user_attr("hamlet", "cn", "Second Hamlet")
         expected_call_args = [hamlet2, "Second Hamlet", None]
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
-            with mock.patch("zerver.lib.actions.do_change_full_name") as f:
+            with mock.patch("zerver.actions.user_settings.do_change_full_name") as f:
                 self.perform_ldap_sync(hamlet2)
                 f.assert_called_once_with(*expected_call_args)
 
