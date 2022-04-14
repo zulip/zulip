@@ -13,6 +13,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.actions import (
     bulk_add_members_to_user_group,
     bulk_add_subscriptions,
@@ -83,7 +84,6 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
-    do_set_zoom_token,
     do_unmute_topic,
     do_unmute_user,
     do_update_embedded_data,
