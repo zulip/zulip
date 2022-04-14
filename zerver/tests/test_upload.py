@@ -19,9 +19,9 @@ from django_sendfile.utils import _get_sendfile
 from PIL import Image
 
 import zerver.lib.upload
+from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.lib.actions import (
-    do_change_icon_source,
     do_change_realm_plan_type,
     do_create_realm,
     do_delete_old_unclaimed_attachments,

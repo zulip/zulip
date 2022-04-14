@@ -32,6 +32,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
+from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_linkifiers import (
     do_add_linkifier,
     do_remove_linkifier,
@@ -62,7 +63,6 @@ from zerver.lib.actions import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_full_name,
-    do_change_icon_source,
     do_change_realm_domain,
     do_change_realm_plan_type,
     do_change_stream_description,

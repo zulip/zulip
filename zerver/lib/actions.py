@@ -108,7 +108,6 @@ from zerver.lib.message import (
 from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import (
@@ -4360,38 +4359,6 @@ def do_change_avatar_fields(
 def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
-
-
-@transaction.atomic(durable=True)
-def do_change_icon_source(
-    realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
-) -> None:
-    realm.icon_source = icon_source
-    realm.icon_version += 1
-    realm.save(update_fields=["icon_source", "icon_version"])
-
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=realm,
-        event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
-        extra_data={"icon_source": icon_source, "icon_version": realm.icon_version},
-        event_time=event_time,
-        acting_user=acting_user,
-    )
-
-    event = dict(
-        type="realm",
-        op="update_dict",
-        property="icon",
-        data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
-    )
-    transaction.on_commit(
-        lambda: send_event(
-            realm,
-            event,
-            active_user_ids(realm.id),
-        )
-    )
 
 
 @transaction.atomic(durable=True)
