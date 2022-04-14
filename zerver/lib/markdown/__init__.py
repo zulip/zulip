@@ -689,7 +689,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if oembed_resource_type == "photo":
             image = extracted_data.get("image")
             if image:
-                self.add_a(root, image, link, title=title)
+                self.add_a(
+                    root,
+                    image_url=image,
+                    link=link,
+                    title=title,
+                )
                 return True
 
         elif oembed_resource_type == "video":
@@ -699,12 +704,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             description = extracted_data.get("description")
             self.add_a(
                 root,
-                image,
-                link,
-                title,
-                description,
-                "embed-video message_inline_image",
-                html,
+                image_url=image,
+                link=link,
+                title=title,
+                desc=description,
+                class_attr="embed-video message_inline_image",
+                data_id=html,
                 already_thumbnailed=True,
             )
             return True
@@ -1150,7 +1155,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         (url, text) = found_url.result
         actual_url = self.get_actual_image_url(url)
         self.add_a(
-            info["parent"], actual_url, url, title=info["title"], insertion_index=info["index"]
+            info["parent"],
+            image_url=actual_url,
+            link=url,
+            title=info["title"],
+            insertion_index=info["index"],
         )
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
@@ -1183,12 +1192,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_id = self.youtube_id(url)
         self.add_a(
             info["parent"],
-            yt_image,
-            url,
-            None,
-            None,
-            "youtube-video message_inline_image",
-            yt_id,
+            image_url=yt_image,
+            link=url,
+            class_attr="youtube-video message_inline_image",
+            data_id=yt_id,
             insertion_index=info["index"],
             already_thumbnailed=True,
         )
@@ -1293,8 +1300,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     # Not making use of title and description of images
                 self.add_a(
                     root,
-                    dropbox_image["image"],
-                    url,
+                    image_url=dropbox_image["image"],
+                    link=url,
                     title=dropbox_image.get("title"),
                     desc=dropbox_image.get("desc", ""),
                     class_attr=class_attr,
