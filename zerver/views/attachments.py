@@ -1,6 +1,6 @@
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import notify_attachment_update
+from zerver.actions.uploads import notify_attachment_update
 from zerver.lib.attachments import access_attachment_by_id, remove_attachment, user_attachments
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
