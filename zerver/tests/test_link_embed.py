@@ -18,6 +18,7 @@ from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data, link_embed_data_from_cache
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.worker.queue_processors import FetchLinksEmbedData
 
@@ -77,10 +78,9 @@ class OembedTestCase(ZulipTestCase):
         )
 
         data = get_oembed_data(url)
-        self.assertIsInstance(data, dict)
-        self.assertIn("title", data)
-        assert data is not None  # allow mypy to infer data is indexable
-        self.assertEqual(data["title"], response_data["title"])
+        assert data is not None
+        self.assertIsInstance(data, UrlEmbedData)
+        self.assertEqual(data.title, response_data["title"])
 
     @responses.activate
     def test_photo_provider(self) -> None:
@@ -107,11 +107,9 @@ class OembedTestCase(ZulipTestCase):
         )
 
         data = get_oembed_data(url)
-        self.assertIsInstance(data, dict)
-        self.assertIn("title", data)
-        assert data is not None  # allow mypy to infer data is indexable
-        self.assertEqual(data["title"], response_data["title"])
-        self.assertTrue(data["oembed"])
+        assert data is not None
+        self.assertIsInstance(data, UrlOEmbedData)
+        self.assertEqual(data.title, response_data["title"])
 
     @responses.activate
     def test_video_provider(self) -> None:
@@ -136,10 +134,9 @@ class OembedTestCase(ZulipTestCase):
         )
 
         data = get_oembed_data(url)
-        self.assertIsInstance(data, dict)
-        self.assertIn("title", data)
-        assert data is not None  # allow mypy to infer data is indexable
-        self.assertEqual(data["title"], response_data["title"])
+        assert data is not None
+        self.assertIsInstance(data, UrlOEmbedData)
+        self.assertEqual(data.title, response_data["title"])
 
     @responses.activate
     def test_connect_error_request(self) -> None:
@@ -204,30 +201,8 @@ class OpenGraphParserTestCase(ZulipTestCase):
 
         parser = OpenGraphParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertIn("title", result)
-        self.assertEqual(result["title"], "The Rock")
-        self.assertEqual(result.get("description"), "The Rock film")
-
-    def test_page_with_evil_og_tags(self) -> None:
-        html = b"""<html>
-          <head>
-          <meta property="og:title" content="The Rock" />
-          <meta property="og:type" content="video.movie" />
-          <meta property="og:url" content="http://www.imdb.com/title/tt0117500/" />
-          <meta property="og:image" content="http://ia.media-imdb.com/images/rock.jpg" />
-          <meta property="og:description" content="The Rock film" />
-          <meta property="og:html" content="<script>alert(window.location)</script>" />
-          <meta property="og:oembed" content="True" />
-          </head>
-        </html>"""
-
-        parser = OpenGraphParser(html, "text/html; charset=UTF-8")
-        result = parser.extract_data()
-        self.assertIn("title", result)
-        self.assertEqual(result["title"], "The Rock")
-        self.assertEqual(result.get("description"), "The Rock film")
-        self.assertEqual(result.get("oembed"), None)
-        self.assertEqual(result.get("html"), None)
+        self.assertEqual(result.title, "The Rock")
+        self.assertEqual(result.description, "The Rock film")
 
     def test_charset_in_header(self) -> None:
         html = """<html>
@@ -239,7 +214,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
         )
         parser = OpenGraphParser(html, "text/html; charset=Big5")
         result = parser.extract_data()
-        self.assertEqual(result["title"], "中文")
+        self.assertEqual(result.title, "中文")
 
     def test_charset_in_meta(self) -> None:
         html = """<html>
@@ -252,7 +227,7 @@ class OpenGraphParserTestCase(ZulipTestCase):
         )
         parser = OpenGraphParser(html, "text/html")
         result = parser.extract_data()
-        self.assertEqual(result["title"], "中文")
+        self.assertEqual(result.title, "中文")
 
 
 class GenericParserTestCase(ZulipTestCase):
@@ -268,8 +243,8 @@ class GenericParserTestCase(ZulipTestCase):
         """
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertEqual(result.get("title"), "Test title")
-        self.assertEqual(result.get("description"), "Description text")
+        self.assertEqual(result.title, "Test title")
+        self.assertEqual(result.description, "Description text")
 
     def test_extract_image(self) -> None:
         html = b"""
@@ -286,9 +261,9 @@ class GenericParserTestCase(ZulipTestCase):
         """
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertEqual(result.get("title"), "Main header")
-        self.assertEqual(result.get("description"), "Description text")
-        self.assertEqual(result.get("image"), "http://test.com/test.jpg")
+        self.assertEqual(result.title, "Main header")
+        self.assertEqual(result.description, "Description text")
+        self.assertEqual(result.image, "http://test.com/test.jpg")
 
     def test_extract_bad_image(self) -> None:
         html = b"""
@@ -305,9 +280,9 @@ class GenericParserTestCase(ZulipTestCase):
         """
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertEqual(result.get("title"), "Main header")
-        self.assertEqual(result.get("description"), "Description text")
-        self.assertIsNone(result.get("image"))
+        self.assertEqual(result.title, "Main header")
+        self.assertEqual(result.description, "Description text")
+        self.assertIsNone(result.image)
 
     def test_extract_description(self) -> None:
         html = b"""
@@ -323,7 +298,7 @@ class GenericParserTestCase(ZulipTestCase):
         """
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertEqual(result.get("description"), "Description text")
+        self.assertEqual(result.description, "Description text")
 
         html = b"""
           <html>
@@ -333,12 +308,12 @@ class GenericParserTestCase(ZulipTestCase):
         """
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertEqual(result.get("description"), "description 123")
+        self.assertEqual(result.description, "description 123")
 
         html = b"<html><body></body></html>"
         parser = GenericParser(html, "text/html; charset=UTF-8")
         result = parser.extract_data()
-        self.assertIsNone(result.get("description"))
+        self.assertIsNone(result.description)
 
 
 class PreviewTestCase(ZulipTestCase):
@@ -730,8 +705,9 @@ class PreviewTestCase(ZulipTestCase):
                 in info_logs.output[0]
             )
 
-        self.assertIn("title", cached_data)
-        self.assertNotIn("image", cached_data)
+        assert cached_data
+        self.assertIsNotNone(cached_data.title)
+        self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
             ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
@@ -768,8 +744,9 @@ class PreviewTestCase(ZulipTestCase):
                 in info_logs.output[0]
             )
 
-        self.assertIn("title", cached_data)
-        self.assertNotIn("image", cached_data)
+        assert cached_data
+        self.assertIsNotNone(cached_data.title)
+        self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
             ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
@@ -804,8 +781,9 @@ class PreviewTestCase(ZulipTestCase):
                 in info_logs.output[0]
             )
 
-        self.assertIn("title", cached_data)
-        self.assertNotIn("image", cached_data)
+        assert cached_data
+        self.assertIsNotNone(cached_data.title)
+        self.assertIsNone(cached_data.image)
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertEqual(
             ('<p><a href="http://test.org/foo.html">' "http://test.org/foo.html</a></p>"),
@@ -836,12 +814,11 @@ class PreviewTestCase(ZulipTestCase):
                 in info_logs.output[0]
             )
 
-        self.assertIn("title", data)
-        self.assertIn("image", data)
-
+        assert data is not None
         msg = Message.objects.select_related("sender").get(id=msg_id)
-        self.assertIn(data["title"], msg.rendered_content)
-        self.assertIn(re.sub(r"([^\w-])", r"\\\1", data["image"]), msg.rendered_content)
+        self.assertIn(data.title, msg.rendered_content)
+        assert data.image is not None
+        self.assertIn(re.sub(r"([^\w-])", r"\\\1", data.image), msg.rendered_content)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -941,12 +918,11 @@ class PreviewTestCase(ZulipTestCase):
             "message_content": url,
         }
 
-        mocked_data = {
-            "html": f'<iframe src="{url}"></iframe>',
-            "oembed": True,
-            "type": "video",
-            "image": f"{url}/image.png",
-        }
+        mocked_data = UrlOEmbedData(
+            html=f'<iframe src="{url}"></iframe>',
+            type="video",
+            image=f"{url}/image.png",
+        )
         self.create_mock_response(url)
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
@@ -963,7 +939,7 @@ class PreviewTestCase(ZulipTestCase):
 
         self.assertEqual(data, mocked_data)
         msg.refresh_from_db()
-        self.assertIn('a data-id="{}"'.format(escape(mocked_data["html"])), msg.rendered_content)
+        self.assertIn('a data-id="{}"'.format(escape(mocked_data.html)), msg.rendered_content)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -983,7 +959,9 @@ class PreviewTestCase(ZulipTestCase):
             "message_content": url,
         }
 
-        mocked_data = {"title": "Clearer Code at Scale - Static Types at Zulip and Dropbox"}
+        mocked_data = UrlEmbedData(
+            title="Clearer Code at Scale - Static Types at Zulip and Dropbox"
+        )
         self.create_mock_response(url)
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:
@@ -1019,7 +997,9 @@ class PreviewTestCase(ZulipTestCase):
             "message_content": url,
         }
 
-        mocked_data = {"title": "Clearer Code at Scale - Static Types at Zulip and Dropbox"}
+        mocked_data = UrlEmbedData(
+            title="Clearer Code at Scale - Static Types at Zulip and Dropbox"
+        )
         self.create_mock_response(url)
         with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with self.assertLogs(level="INFO") as info_logs:

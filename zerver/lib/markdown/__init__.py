@@ -64,6 +64,7 @@ from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
@@ -682,54 +683,44 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             desc_div = SubElement(summary_div, "desc")
             desc_div.set("class", "message_inline_image_desc")
 
-    def add_oembed_data(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
-        oembed_resource_type = extracted_data.get("type", "")
-        title = extracted_data.get("title")
-
-        if oembed_resource_type == "photo":
-            image = extracted_data.get("image")
-            if image:
-                self.add_a(
-                    root,
-                    image_url=image,
-                    link=link,
-                    title=title,
-                )
-                return True
-
-        elif oembed_resource_type == "video":
-            html = extracted_data["html"]
-            image = extracted_data["image"]
-            title = extracted_data.get("title")
-            description = extracted_data.get("description")
-            self.add_a(
-                root,
-                image_url=image,
-                link=link,
-                title=title,
-                desc=description,
-                class_attr="embed-video message_inline_image",
-                data_id=html,
-                already_thumbnailed=True,
-            )
-            return True
-
-        return False
-
-    def add_embed(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
-        oembed = extracted_data.get("oembed", False)
-        if oembed and self.add_oembed_data(root, link, extracted_data):
+    def add_oembed_data(self, root: Element, link: str, extracted_data: UrlOEmbedData) -> None:
+        if extracted_data.image is None:
+            # Don't add an embed if an image is not found
             return
 
-        img_link = extracted_data.get("image")
-        if not img_link:
+        if extracted_data.type == "photo":
+            self.add_a(
+                root,
+                image_url=extracted_data.image,
+                link=link,
+                title=extracted_data.title,
+            )
+
+        elif extracted_data.type == "video":
+            self.add_a(
+                root,
+                image_url=extracted_data.image,
+                link=link,
+                title=extracted_data.title,
+                desc=extracted_data.description,
+                class_attr="embed-video message_inline_image",
+                data_id=extracted_data.html,
+                already_thumbnailed=True,
+            )
+
+    def add_embed(self, root: Element, link: str, extracted_data: UrlEmbedData) -> None:
+        if isinstance(extracted_data, UrlOEmbedData):
+            self.add_oembed_data(root, link, extracted_data)
+            return
+
+        if extracted_data.image is None:
             # Don't add an embed if an image is not found
             return
 
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        img_link = get_camo_url(img_link)
+        img_link = get_camo_url(extracted_data.image)
         img = SubElement(container, "a")
         img.set("style", "background-image: url(" + css_escape(img_link) + ")")
         img.set("href", link)
@@ -738,19 +729,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
 
-        title = extracted_data.get("title")
-        if title:
+        if extracted_data.title:
             title_elm = SubElement(data_container, "div")
             title_elm.set("class", "message_embed_title")
             a = SubElement(title_elm, "a")
             a.set("href", link)
-            a.set("title", title)
-            a.text = title
-        description = extracted_data.get("description")
-        if description:
+            a.set("title", extracted_data.title)
+            a.text = extracted_data.title
+        if extracted_data.description:
             description_elm = SubElement(data_container, "div")
             description_elm.set("class", "message_embed_description")
-            description_elm.text = description
+            description_elm.text = extracted_data.description
 
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
@@ -868,10 +857,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(2)
 
-    def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
-        title = extracted_data.get("title")
-        if title is not None:
-            return f"YouTube - {title}"
+    def youtube_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
+        if extracted_data.title is not None:
+            return f"YouTube - {extracted_data.title}"
         return None
 
     def youtube_image(self, url: str) -> Optional[str]:
@@ -897,10 +885,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(5)
 
-    def vimeo_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
-        title = extracted_data.get("title")
-        if title is not None:
-            return f"Vimeo - {title}"
+    def vimeo_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
+        if extracted_data.title is not None:
+            return f"Vimeo - {extracted_data.title}"
         return None
 
     def twitter_text(

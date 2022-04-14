@@ -1,5 +1,5 @@
 import re
-from typing import Any, Callable, Dict, Match, Optional
+from typing import Any, Callable, Match, Optional
 from urllib.parse import urljoin
 
 import magic
@@ -13,6 +13,7 @@ from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
 # FIXME: Should we use a database cache or a memcached in production? What if
 # OpenGraph data is changed for a site?
@@ -87,41 +88,39 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 @cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(
     url: str, maxwidth: int = 640, maxheight: int = 480
-) -> Optional[Dict[str, Any]]:
+) -> Optional[UrlEmbedData]:
     if not is_link(url):
         return None
 
     if not valid_content_type(url):
         return None
 
-    # We are using two different mechanisms to get the embed data
-    # 1. Use oEmbed data, if found, for photo and video "type" sites
-    # 2. Otherwise, use a combination of Open Graph tags and Meta tags
-    data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight) or {}
-    if data.get("oembed"):
+    # The oembed data from pyoembed may be complete enough to return
+    # as-is; if so, we use it.  Otherwise, we use it as a _base_ for
+    # the other, less sophisticated techniques which we apply as
+    # successive fallbacks.
+    data = get_oembed_data(url, maxwidth=maxwidth, maxheight=maxheight)
+    if data is not None and isinstance(data, UrlOEmbedData):
         return data
 
     response = PreviewSession().get(mark_sanitized(url), stream=True)
-    if response.ok:
-        og_data = OpenGraphParser(
-            response.content, response.headers.get("Content-Type")
-        ).extract_data()
-        for key in ["title", "description", "image"]:
-            if not data.get(key) and og_data.get(key):
-                data[key] = og_data[key]
+    if not response.ok:
+        return None
 
-        generic_data = (
-            GenericParser(response.content, response.headers.get("Content-Type")).extract_data()
-            or {}
-        )
-        for key in ["title", "description", "image"]:
-            if not data.get(key) and generic_data.get(key):
-                data[key] = generic_data[key]
-    if "image" in data:
-        data["image"] = urljoin(response.url, data["image"])
+    if data is None:
+        data = UrlEmbedData()
+
+    for parser_class in (OpenGraphParser, GenericParser):
+        parser = parser_class(response.content, response.headers.get("Content-Type"))
+        data.merge(parser.extract_data())
+
+    if data.image:
+        data.image = urljoin(response.url, data.image)
     return data
 
 
 @get_cache_with_key(preview_url_cache_key, cache_name=CACHE_NAME)
-def link_embed_data_from_cache(url: str, maxwidth: int = 640, maxheight: int = 480) -> Any:
-    return
+def link_embed_data_from_cache(
+    url: str, maxwidth: int = 640, maxheight: int = 480
+) -> Optional[UrlEmbedData]:
+    return None
