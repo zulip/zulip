@@ -13,6 +13,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.actions.submessage import do_add_submessage
 from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
 from zerver.actions.user_groups import (
@@ -33,7 +34,6 @@ from zerver.lib.actions import (
     do_add_linkifier,
     do_add_reaction,
     do_add_realm_domain,
-    do_add_realm_playground,
     do_add_streams_to_default_stream_group,
     do_change_avatar_fields,
     do_change_bot_owner,
@@ -77,7 +77,6 @@ from zerver.lib.actions import (
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
-    do_remove_realm_playground,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_revoke_multi_use_invite,
