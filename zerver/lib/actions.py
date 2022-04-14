@@ -260,6 +260,7 @@ from zerver.models import (
     UserTopic,
     active_non_guest_user_ids,
     active_user_ids,
+    bot_owner_user_ids,
     custom_profile_fields_for_realm,
     filter_to_valid_prereg_users,
     get_active_streams,
@@ -318,21 +319,6 @@ def create_historical_user_messages(*, user_id: int, message_ids: List[int]) -> 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
-
-
-def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
-    is_private_bot = (
-        user_profile.default_sending_stream
-        and user_profile.default_sending_stream.invite_only
-        or user_profile.default_events_register_stream
-        and user_profile.default_events_register_stream.invite_only
-    )
-    if is_private_bot:
-        return {user_profile.bot_owner_id}
-    else:
-        users = {user.id for user in user_profile.realm.get_human_admin_users()}
-        users.add(user_profile.bot_owner_id)
-        return users
 
 
 def realm_user_count(realm: Realm) -> int:
