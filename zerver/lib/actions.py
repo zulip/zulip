@@ -51,7 +51,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
-from zerver.lib.bulk_create import bulk_create_users
+from zerver.lib.bulk_create import create_users
 from zerver.lib.cache import (
     bot_dict_fields,
     cache_delete,
@@ -522,15 +522,6 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
     send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-
-
-def create_users(
-    realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int] = None
-) -> None:
-    user_set = set()
-    for full_name, email in name_list:
-        user_set.add((email, full_name, True))
-    bulk_create_users(realm, user_set, bot_type)
 
 
 def do_create_user(
