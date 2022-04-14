@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
+from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
@@ -19,7 +20,6 @@ from zerver.actions.realm_settings import (
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.actions import do_change_realm_subdomain
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.message import parse_message_content_delete_limit

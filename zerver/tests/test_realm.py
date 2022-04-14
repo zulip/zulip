@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
@@ -20,7 +21,6 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_deactivate_stream
-from zerver.lib.actions import do_change_realm_subdomain, do_create_realm
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -51,9 +51,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
-        with mock.patch("zerver.lib.actions.server_initialized", return_value=False):
+        with mock.patch("zerver.actions.create_realm.server_initialized", return_value=False):
             with mock.patch(
-                "zerver.lib.actions.create_internal_realm"
+                "zerver.actions.create_realm.create_internal_realm"
             ) as mock_create_internal, self.assertLogs(level="INFO") as info_logs:
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()

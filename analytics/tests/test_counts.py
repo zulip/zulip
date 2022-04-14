@@ -32,6 +32,7 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
     do_create_user,
@@ -49,7 +50,6 @@ from zerver.actions.message_flags import (
 )
 from zerver.actions.user_activity import update_user_activity_interval
 from zerver.actions.users import do_deactivate_user
-from zerver.lib.actions import do_create_realm
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase

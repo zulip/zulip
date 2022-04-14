@@ -18,6 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -26,7 +27,6 @@ from zerver.actions.custom_profile_fields import (
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.users import do_change_user_role
-from zerver.lib.actions import do_create_realm
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -302,7 +302,7 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our three default realms
-            # Could in theory be done via zerver.lib.actions.do_create_realm, but
+            # Could in theory be done via zerver.actions.create_realm.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             create_internal_realm()
             zulip_realm = do_create_realm(
