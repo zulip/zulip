@@ -10,7 +10,8 @@ from zerver.actions.message_send import (
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
-from zerver.lib.actions import do_add_reaction, setup_realm_internal_bots
+from zerver.actions.reactions import do_add_reaction
+from zerver.lib.actions import setup_realm_internal_bots
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot

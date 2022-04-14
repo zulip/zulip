@@ -12,9 +12,9 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.presence import update_user_presence
+from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import do_add_realm_playground
-from zerver.lib.actions import do_add_reaction
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
