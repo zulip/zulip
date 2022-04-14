@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import (
     build_message_send_dict,
@@ -30,7 +31,6 @@ from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_post_policy
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
-from zerver.lib.actions import do_create_realm
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError

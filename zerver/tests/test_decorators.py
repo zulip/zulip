@@ -13,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_reactivate_user
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -35,7 +36,6 @@ from zerver.decorator import (
     zulip_login_required,
 )
 from zerver.forms import OurAuthenticationForm
-from zerver.lib.actions import do_create_realm
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
 from zerver.lib.exceptions import (
     AccessDeniedError,
