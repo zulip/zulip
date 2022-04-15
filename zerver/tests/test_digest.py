@@ -57,7 +57,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         senders = ["hamlet", "cordelia", "iago", "prospero", "ZOE"]
         self.simulate_stream_conversation("Verona", senders)
 
-        # Remove RealmAuditoLog rows, so we don't exclude polonius.
+        # Remove RealmAuditLog rows, so we don't exclude polonius.
         RealmAuditLog.objects.all().delete()
 
         flush_per_request_caches()
