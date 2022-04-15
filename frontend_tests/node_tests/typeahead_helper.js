@@ -453,6 +453,7 @@ test("sort_recipients pm counts", () => {
         "zman@test.net",
     ]);
 
+    /* istanbul ignore next */
     function compare() {
         throw new Error("We do not expect to need a tiebreaker here.");
     }

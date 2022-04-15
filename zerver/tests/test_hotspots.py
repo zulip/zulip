@@ -1,4 +1,5 @@
-from zerver.lib.actions import do_create_user, do_mark_hotspot_as_read
+from zerver.actions.create_user import do_create_user
+from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm

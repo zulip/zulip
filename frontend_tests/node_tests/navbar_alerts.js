@@ -10,22 +10,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.is_spectator = false;
 
-const ls_container = new Map();
-
-const localStorage = set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
-    },
-});
 // Dependencies
 set_global("document", {
     hasFocus() {
@@ -40,7 +24,7 @@ const util = zrequire("util");
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        localStorage.clear();
+        window.localStorage.clear();
         f({override});
     });
 }
@@ -72,13 +56,17 @@ test("allow_notification_alert", () => {
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification is already granted.
+    /* istanbul ignore next */
     notifications.permission_state = () => "granted";
     notifications.granted_desktop_notifications_permission = () => "granted";
     assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Don't ask for permission to spectator.
+    /* istanbul ignore next */
     util.is_mobile = () => false;
+    /* istanbul ignore next */
     notifications.granted_desktop_notifications_permission = () => false;
+    /* istanbul ignore next */
     notifications.permission_state = () => "granted";
     page_params.is_spectator = true;
     assert.equal(navbar_alerts.should_show_notifications(ls), false);

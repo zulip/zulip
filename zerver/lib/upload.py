@@ -1142,7 +1142,7 @@ def create_attachment(
         realm=realm,
         size=file_size,
     )
-    from zerver.lib.actions import notify_attachment_update
+    from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
     return True

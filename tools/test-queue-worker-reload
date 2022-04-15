@@ -88,7 +88,7 @@ if __name__ == "__main__":
     time.sleep(1.3)
 
     print("Attempting to modify a file")
-    os.utime("zerver/lib/actions.py")
+    os.utime("zerver/models.py")
     failed = check_worker_launch(run_dev)
 
     run_dev.send_signal(signal.SIGINT)

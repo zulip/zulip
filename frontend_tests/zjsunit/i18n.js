@@ -12,6 +12,7 @@ exports.intl = createIntl(
         defaultRichTextElements: Object.fromEntries(
             ["b", "code", "em", "i", "kbd", "p", "strong"].map((tag) => [
                 tag,
+                /* istanbul ignore next */
                 (content_html) => `<${tag}>${content_html}</${tag}>`,
             ]),
         ),

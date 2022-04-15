@@ -18,6 +18,7 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
+    cache_set_many,
     cache_with_key,
     generic_bulk_cached_fetch,
     to_dict_cache_key,
@@ -1609,3 +1610,20 @@ def parse_message_content_delete_limit(
         raise RequestVariableConversionError("message_content_delete_limit_seconds", value)
     assert isinstance(value, int)
     return value
+
+
+def update_to_dict_cache(
+    changed_messages: List[Message], realm_id: Optional[int] = None
+) -> List[int]:
+    """Updates the message as stored in the to_dict cache (for serving
+    messages)."""
+    items_for_remote_cache = {}
+    message_ids = []
+    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
+    for msg_id, msg in changed_messages_to_dict.items():
+        message_ids.append(msg_id)
+        key = to_dict_cache_key_id(msg_id)
+        items_for_remote_cache[key] = (msg,)
+
+    cache_set_many(items_for_remote_cache)
+    return message_ids

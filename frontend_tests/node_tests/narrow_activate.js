@@ -160,13 +160,6 @@ run_test("basics", () => {
 
     all_messages_data.all_messages_data = {
         all_messages: () => messages,
-        get: (msg_id) => {
-            assert.equal(msg_id, selected_id);
-            return selected_message;
-        },
-        fetch_status: {
-            has_found_newest: () => true,
-        },
         empty: () => false,
         first: () => ({id: 900}),
         last: () => ({id: 1100}),

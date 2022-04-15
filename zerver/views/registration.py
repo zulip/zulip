@@ -25,6 +25,14 @@ from confirmation.models import (
     render_confirmation_key_error,
     validate_key,
 )
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_activate_mirror_dummy_user, do_create_user
+from zerver.actions.default_streams import lookup_default_stream_groups
+from zerver.actions.user_settings import (
+    do_change_full_name,
+    do_change_password,
+    do_change_user_setting,
+)
 from zerver.context_processors import get_realm_from_request, login_context
 from zerver.decorator import do_login, rate_limit_request_by_ip, require_post
 from zerver.forms import (
@@ -33,15 +41,6 @@ from zerver.forms import (
     RealmCreationForm,
     RealmRedirectForm,
     RegistrationForm,
-)
-from zerver.lib.actions import (
-    do_activate_mirror_dummy_user,
-    do_change_full_name,
-    do_change_password,
-    do_change_user_setting,
-    do_create_realm,
-    do_create_user,
-    lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimited

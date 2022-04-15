@@ -313,7 +313,7 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
     else:
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
-elif get_config("postgresql", "database_user") != "zulip":
+elif get_config("postgresql", "database_user", "zulip") != "zulip":
     if get_secret("postgres_password") is not None:
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
@@ -381,7 +381,7 @@ RATE_LIMITING_RULES = {
         (60, 1000),
     ],
     "authenticate_by_username": [
-        (1800, 5),  # 5 login attempts within 30 minutes
+        (1800, 5),  # 5 failed login attempts within 30 minutes
     ],
     "email_change_by_user": [
         (3600, 2),  # 2 per hour

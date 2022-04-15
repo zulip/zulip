@@ -6,13 +6,10 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {user_settings} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
-
-user_settings.twenty_four_hour_time = false;
 
 mock_esm("../../static/js/message_lists", {home: "stub"});
 
@@ -25,9 +22,6 @@ mock_esm("../../static/js/timerender", {
         return [{outerHTML: String(time1.getTime()) + " - " + String(time2.getTime())}];
     },
     stringify_time(time) {
-        if (user_settings.twenty_four_hour_time) {
-            return time.toString("HH:mm");
-        }
         return time.toString("h:mm TT");
     },
 });

@@ -11,35 +11,28 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    bulk_get_subscriber_user_ids,
-    bulk_remove_subscriptions,
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.default_streams import (
     do_add_default_stream,
     do_add_streams_to_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    do_change_realm_plan_type,
-    do_change_stream_post_policy,
-    do_change_subscription_property,
-    do_change_user_role,
     do_create_default_stream_group,
-    do_create_realm,
-    do_deactivate_stream,
-    do_deactivate_user,
-    do_get_streams,
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    do_set_realm_property,
-    ensure_stream,
-    gather_subscriptions,
-    gather_subscriptions_helper,
     get_default_streams_for_realm,
-    get_topic_messages,
     lookup_default_stream_groups,
-    validate_user_access_to_subscribers_helper,
 )
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_stream_post_policy,
+    do_change_subscription_property,
+    do_deactivate_stream,
+)
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
 from zerver.lib.response import json_success
@@ -61,10 +54,18 @@ from zerver.lib.streams import (
     can_access_stream_user_ids,
     create_stream_if_needed,
     create_streams_if_needed,
+    do_get_streams,
+    ensure_stream,
     filter_stream_authorization,
     list_to_streams,
 )
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.subscription_info import (
+    bulk_get_subscriber_user_ids,
+    gather_subscriptions,
+    gather_subscriptions_helper,
+    validate_user_access_to_subscribers_helper,
+)
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import (
     HostRequestMock,
     cache_tries_captured,

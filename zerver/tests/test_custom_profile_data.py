@@ -3,7 +3,7 @@ from unittest import mock
 
 import orjson
 
-from zerver.lib.actions import (
+from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -709,7 +709,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         ]
         do_update_user_custom_profile_data_if_changed(iago, data)
 
-        with mock.patch("zerver.lib.actions.notify_user_update_custom_profile_data") as mock_notify:
+        with mock.patch(
+            "zerver.actions.custom_profile_fields.notify_user_update_custom_profile_data"
+        ) as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
             # shouldn't trigger notify.
             do_update_user_custom_profile_data_if_changed(iago, data)

@@ -644,7 +644,7 @@ run_test("appendValue/clear", ({mock_template}) => {
     const config = {
         $container,
         create_item_from_text: (s) => ({type: "color", display_value: s}),
-        get_text_from_item: (s) => s.display_value,
+        get_text_from_item: /* istanbul ignore next */ (s) => s.display_value,
     };
 
     $pill_input.before = () => {};

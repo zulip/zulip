@@ -343,12 +343,16 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
-    return ["all", "everyone", "stream"].map((mention, idx) => ({
-        special_item_text: $t(
-            {defaultMessage: "{wildcard_mention_token} (Notify stream)"},
-            {wildcard_mention_token: mention},
-        ),
-
+    const wildcard_mention_array = ["all", "everyone"];
+    let wildcard_string = "";
+    if (compose_state.get_message_type() === "private") {
+        wildcard_string = $t({defaultMessage: "Notify recipients"});
+    } else {
+        wildcard_string = $t({defaultMessage: "Notify stream"});
+        wildcard_mention_array.push("stream");
+    }
+    return wildcard_mention_array.map((mention, idx) => ({
+        special_item_text: `${mention} (${wildcard_string})`,
         email: mention,
 
         // Always sort above, under the assumption that names will

@@ -16,16 +16,16 @@ from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
-from zerver.decorator import require_server_admin
-from zerver.forms import check_subdomain_available
-from zerver.lib.actions import (
+from zerver.actions.create_realm import do_change_realm_subdomain
+from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
-    do_change_realm_subdomain,
     do_deactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
 )
+from zerver.decorator import require_server_admin
+from zerver.forms import check_subdomain_available
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import REQ, has_request_variables

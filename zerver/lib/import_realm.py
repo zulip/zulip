@@ -16,12 +16,8 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import (
-    UserMessageLite,
-    bulk_insert_ums,
-    do_change_avatar_fields,
-    do_change_realm_plan_type,
-)
+from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
@@ -33,6 +29,7 @@ from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
 from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,

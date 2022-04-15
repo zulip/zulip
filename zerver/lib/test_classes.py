@@ -47,15 +47,10 @@ from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
+from zerver.actions.message_send import check_send_message, check_send_stream_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.decorator import do_two_factor_login
-from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
-    check_send_message,
-    check_send_stream_message,
-    do_set_realm_property,
-    gather_subscriptions,
-)
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
 from zerver.lib.notification_data import UserMessageNotificationsData
@@ -66,6 +61,7 @@ from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
 )
+from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.test_console_output import (
     ExtraConsoleOutputFinder,
     ExtraConsoleOutputInTestException,
@@ -73,6 +69,7 @@ from zerver.lib.test_console_output import (
     tee_stdout_and_find_extra_console_output,
 )
 from zerver.lib.test_helpers import find_key_by_email, instrument_url
+from zerver.lib.topic import filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_string
@@ -1820,3 +1817,11 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         pass  # nocoverage
+
+
+def get_topic_messages(user_profile: UserProfile, stream: Stream, topic_name: str) -> List[Message]:
+    query = UserMessage.objects.filter(
+        user_profile=user_profile,
+        message__recipient=stream.recipient,
+    ).order_by("id")
+    return [um.message for um in filter_by_topic_name_via_message(query, topic_name)]

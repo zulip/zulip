@@ -25,7 +25,13 @@ class TinyStreamResult(TypedDict):
     name: str
 
 
-@cache_with_key(lambda *args: display_recipient_cache_key(args[0]), timeout=3600 * 24 * 7)
+def get_display_recipient_cache_key(
+    recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
+) -> str:
+    return display_recipient_cache_key(recipient_id)
+
+
+@cache_with_key(get_display_recipient_cache_key, timeout=3600 * 24 * 7)
 def get_display_recipient_remote_cache(
     recipient_id: int, recipient_type: int, recipient_type_id: Optional[int]
 ) -> DisplayRecipientT:

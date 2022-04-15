@@ -8,16 +8,12 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
+from zerver.actions.default_streams import (
     default_stream_groups_to_dicts_sorted,
-    do_get_streams,
-    gather_subscriptions_helper,
-    get_available_notification_sounds,
     get_default_streams_for_realm,
-    get_owned_bot_dicts,
-    get_web_public_streams,
     streams_to_dicts_sorted,
 )
+from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
@@ -43,8 +39,10 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
-from zerver.lib.subscription_info import get_web_public_subs
+from zerver.lib.streams import do_get_streams, get_web_public_streams
+from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME

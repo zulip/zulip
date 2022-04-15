@@ -40,18 +40,16 @@ from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_create_realm,
-    do_create_user,
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_invite_users
+from zerver.actions.realm_settings import (
     do_deactivate_realm,
-    do_deactivate_user,
-    do_invite_users,
     do_reactivate_realm,
-    do_reactivate_user,
     do_set_realm_property,
-    ensure_stream,
 )
+from zerver.actions.user_settings import do_change_password
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
@@ -65,6 +63,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.storage import static_path
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_s3_buckets,
@@ -673,6 +672,11 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                     # But the third attempt goes over the limit:
                     with self.assertRaises(RateLimited):
                         attempt_authentication(username, wrong_password)
+
+                    # Resetting the password also clears the rate-limit
+                    do_change_password(expected_user_profile, correct_password)
+                    self.assertIsNone(attempt_authentication(username, wrong_password))
+
             finally:
                 # Clean up to avoid affecting other tests.
                 RateLimitedAuthenticationByUsername(username).clear_history()
@@ -6117,7 +6121,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertEqual(hamlet.full_name, "Full Name")
 
     def test_same_full_name(self) -> None:
-        with mock.patch("zerver.lib.actions.do_change_full_name") as fn:
+        with mock.patch("zerver.actions.user_settings.do_change_full_name") as fn:
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
@@ -6234,7 +6238,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.change_ldap_user_attr("hamlet", "cn", "Second Hamlet")
         expected_call_args = [hamlet2, "Second Hamlet", None]
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
-            with mock.patch("zerver.lib.actions.do_change_full_name") as f:
+            with mock.patch("zerver.actions.user_settings.do_change_full_name") as f:
                 self.perform_ldap_sync(hamlet2)
                 f.assert_called_once_with(*expected_call_args)
 

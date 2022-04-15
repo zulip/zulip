@@ -250,10 +250,8 @@ test("num_unread_for_topic", ({override_rewire}) => {
     const stream_id = 301;
 
     override_rewire(sub_store, "get", (arg) => {
-        if (arg === stream_id) {
-            return {name: "Some stream"};
-        }
-        throw new Error(`Unknown stream ${arg}`);
+        assert.equal(arg, stream_id);
+        return {name: "Some stream"};
     });
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");

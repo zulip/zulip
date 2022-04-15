@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -63,9 +63,11 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
     replace_list_data: (data) => {
-        if (expected_data_to_replace_in_list_widget === undefined) {
-            throw new Error("You must set expected_data_to_replace_in_list_widget");
-        }
+        assert.notEqual(
+            expected_data_to_replace_in_list_widget,
+            undefined,
+            "You must set expected_data_to_replace_in_list_widget",
+        );
         assert.deepEqual(data, expected_data_to_replace_in_list_widget);
         expected_data_to_replace_in_list_widget = undefined;
     },
@@ -110,7 +112,6 @@ mock_esm("../../static/js/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
-    is_subscribed: () => true,
 });
 mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
@@ -143,22 +144,6 @@ mock_esm("../../static/js/unread", {
             return 0;
         }
         return 1;
-    },
-});
-
-const ls_container = new Map();
-set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
     },
 });
 

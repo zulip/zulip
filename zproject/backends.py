@@ -58,14 +58,11 @@ from social_core.pipeline.partial import partial
 from typing_extensions import TypedDict
 from zxcvbn import zxcvbn
 
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
+from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.users import do_deactivate_user
 from zerver.decorator import client_is_exempt_from_rate_limiting
-from zerver.lib.actions import (
-    do_create_user,
-    do_deactivate_user,
-    do_reactivate_user,
-    do_regenerate_api_key,
-    do_update_user_custom_profile_data_if_changed,
-)
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
@@ -708,7 +705,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             # We do local imports here to avoid import loops
             from io import BytesIO
 
-            from zerver.lib.actions import do_change_avatar_fields
+            from zerver.actions.user_settings import do_change_avatar_fields
             from zerver.lib.upload import upload_avatar_image
 
             avatar_attr_name = settings.AUTH_LDAP_USER_ATTR_MAP["avatar"]
@@ -822,7 +819,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return full_name
 
     def sync_full_name_from_ldap(self, user_profile: UserProfile, ldap_user: _LDAPUser) -> None:
-        from zerver.lib.actions import do_change_full_name
+        from zerver.actions.user_settings import do_change_full_name
 
         full_name = self.get_mapped_name(ldap_user)
         if full_name != user_profile.full_name:

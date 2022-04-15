@@ -676,8 +676,9 @@ test("topic_suggestions", ({override, override_rewire}) => {
                 return office_id;
             case "devel":
                 return devel_id;
+            /* istanbul ignore next */
             default:
-                return undefined;
+                throw new Error(`unknown stream ${stream_name}`);
         }
     });
 

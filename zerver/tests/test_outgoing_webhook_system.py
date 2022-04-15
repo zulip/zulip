@@ -6,7 +6,7 @@ import requests
 import responses
 
 from version import ZULIP_VERSION
-from zerver.lib.actions import do_create_user
+from zerver.actions.create_user import do_create_user
 from zerver.lib.outgoing_webhook import (
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,

@@ -10,7 +10,6 @@ const denmark_stream_id = 101;
 
 const ui = mock_esm("../../static/js/ui", {
     get_content_element: ($element) => $element,
-    get_scroll_element: ($element) => $element,
 });
 
 mock_esm("../../static/js/hash_util", {

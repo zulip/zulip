@@ -7,7 +7,7 @@ import orjson
 from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_full_name
+from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import SCIMClient, UserProfile, get_realm
 

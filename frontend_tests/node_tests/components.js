@@ -106,6 +106,7 @@ function make_switcher() {
         switch (sel) {
             case ".ind-tab":
                 return ind_tab;
+            /* istanbul ignore next */
             default:
                 throw new Error("unknown selector: " + sel);
         }
@@ -151,6 +152,7 @@ mock_jquery((sel, attributes) => {
             );
             return make_tab(tab_id);
         }
+        /* istanbul ignore next */
         default:
             throw new Error("unknown selector: " + sel);
     }

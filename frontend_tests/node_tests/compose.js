@@ -145,10 +145,6 @@ test_ui("send_message", ({override, override_rewire}) => {
         return stub_state;
     }
 
-    set_global("setTimeout", (func) => {
-        func();
-    });
-
     override(server_events, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
     });
@@ -635,13 +631,15 @@ test_ui("on_events", ({override, override_rewire}) => {
         );
 
         helper.$container.data = (field) => {
-            if (field === "user-id") {
-                return "34";
+            switch (field) {
+                case "user-id":
+                    return "34";
+                case "stream-id":
+                    return "102";
+                /* istanbul ignore next */
+                default:
+                    throw new Error(`Unknown field ${field}`);
             }
-            if (field === "stream-id") {
-                return "102";
-            }
-            throw new Error(`Unknown field ${field}`);
         };
         helper.$target.prop("disabled", false);
 
@@ -737,9 +735,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
-        $("#compose .file_input").clone = (param) => {
-            assert.ok(param);
-        };
         let compose_file_input_clicked = false;
         $("#compose .file_input").on("click", () => {
             compose_file_input_clicked = true;

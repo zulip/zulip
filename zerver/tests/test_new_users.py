@@ -8,7 +8,8 @@ from django.core import mail
 from django.test import override_settings
 
 from corporate.lib.stripe import get_latest_seat_count
-from zerver.lib.actions import do_change_user_setting, notify_new_user
+from zerver.actions.create_user import notify_new_user
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase

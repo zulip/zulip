@@ -1,6 +1,6 @@
 from typing import Any
 
-from zerver.lib.actions import promote_new_full_members
+from zerver.actions.user_groups import promote_new_full_members
 from zerver.lib.management import ZulipBaseCommand
 
 

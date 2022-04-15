@@ -8,12 +8,9 @@ from django.core import mail
 from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.lib.actions import (
-    do_change_can_create_users,
-    do_change_stream_permission,
-    do_deactivate_user,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.users import do_change_can_create_users, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration

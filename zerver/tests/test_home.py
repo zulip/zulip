@@ -13,7 +13,9 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import change_user_is_active, do_change_realm_plan_type, do_create_user
+from zerver.actions.create_user import do_create_user
+from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.home import (
     get_billing_info,

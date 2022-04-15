@@ -3,7 +3,7 @@ from typing import List, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import (
+from zerver.actions.message_flags import (
     do_mark_all_as_read,
     do_mark_stream_messages_as_read,
     do_update_message_flags,

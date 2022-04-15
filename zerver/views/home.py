@@ -7,15 +7,16 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.cache import patch_cache_control
 
+from zerver.actions.user_settings import do_change_tos_version
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
-from zerver.lib.actions import do_change_tos_version, realm_user_count
 from zerver.lib.compatibility import is_outdated_desktop_app, is_unsupported_browser
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
+from zerver.lib.user_counts import realm_user_count
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
 from zerver.views.auth import get_safe_redirect_to

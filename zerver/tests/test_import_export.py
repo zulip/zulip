@@ -10,26 +10,23 @@ from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
-from zerver.lib import upload
-from zerver.lib.actions import (
-    check_add_reaction,
-    check_add_realm_emoji,
-    do_add_alert_words,
-    do_add_reaction,
-    do_change_icon_source,
-    do_change_logo_source,
-    do_change_realm_plan_type,
-    do_create_user,
-    do_deactivate_user,
-    do_mute_topic,
-    do_mute_user,
-    do_update_user_activity,
-    do_update_user_activity_interval,
+from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.create_user import do_create_user
+from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
-    do_update_user_presence,
-    do_update_user_status,
     try_add_realm_custom_profile_field,
 )
+from zerver.actions.muted_users import do_mute_user
+from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.reactions import check_add_reaction, do_add_reaction
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
+from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.users import do_deactivate_user
+from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.bot_lib import StateHandler

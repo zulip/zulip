@@ -43,13 +43,6 @@ const ListWidget = zrequire("list_widget");
 function make_container() {
     const $container = {};
 
-    $container.length = () => 1;
-    $container.is = () => false;
-    $container.css = (prop) => {
-        assert.equal(prop, "max-height");
-        return "none";
-    };
-
     // Make our append function just set a field we can
     // check in our tests.
     $container.append = ($data) => {
@@ -123,6 +116,7 @@ function make_search_input() {
 
     // Allow ourselves to be wrapped by $(...) and
     // return ourselves.
+    /* istanbul ignore next */
     $element.to_jquery = () => $element;
 
     $element.on = (event_name, f) => {
@@ -322,6 +316,7 @@ function sort_button(opts) {
                 return opts.sort_type;
             case "sort-prop":
                 return opts.prop_name;
+            /* istanbul ignore next */
             default:
                 throw new Error("unknown selector: " + sel);
         }
@@ -549,7 +544,7 @@ run_test("clear_event_handlers", () => {
         modifier: () => {},
         filter: {
             $element: $filter_element,
-            predicate: () => true,
+            predicate: /* istanbul ignore next */ () => true,
         },
         $simplebar_container: $scroll_container,
     };
@@ -602,8 +597,8 @@ run_test("errors", () => {
     blueslip.expect("error", "Filterer and predicate are mutually exclusive.");
     ListWidget.create($container, list, {
         filter: {
-            filterer: () => true,
-            predicate: () => true,
+            filterer: /* istanbul ignore next */ () => true,
+            predicate: /* istanbul ignore next */ () => true,
         },
         $simplebar_container: $scroll_container,
     });
@@ -795,7 +790,8 @@ run_test("render item", () => {
     blueslip.expect("error", "html_selector should be a function.");
     ListWidget.create($container, list, {
         name: "replace-list",
-        modifier: (item) => `<tr data-item=${item.value}>${item.text}</tr>\n`,
+        modifier: /* istanbul ignore next */ (item) =>
+            `<tr data-item=${item.value}>${item.text}</tr>\n`,
         get_item,
         html_selector: "hello world",
         $simplebar_container: $scroll_container,
@@ -855,6 +851,7 @@ run_test("Multiselect dropdown retain_selected_items", () => {
             if (element) {
                 return true;
             }
+            /* istanbul ignore next */
             return false;
         }
 

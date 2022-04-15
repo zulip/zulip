@@ -558,7 +558,7 @@ to the root and `engineering` subdomains:
    should be
    `https://keycloak.example.com/auth/realms/master/protocol/saml`
 3. Your Keycloak public certificate must be saved on the Zulip server
-   as `{idp_name}.crt` in `/etc/zulip/idps/`. You can obtain the
+   as `{idp_name}.crt` in `/etc/zulip/saml/idps/`. You can obtain the
    certificate from the Keycloak UI in the `Keys` tab. Click on the
    button `Certificate` and copy the content.
 

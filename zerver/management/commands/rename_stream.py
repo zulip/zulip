@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_rename_stream
+from zerver.actions.streams import do_rename_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_stream
 

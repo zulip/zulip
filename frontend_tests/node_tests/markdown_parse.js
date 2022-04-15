@@ -24,7 +24,8 @@ function get_user_id_from_name(name) {
         }
     }
 
-    return undefined;
+    /* istanbul ignore next */
+    throw new Error(`unexpected name ${name}`);
 }
 
 function is_valid_full_name_and_user_id(name, user_id) {
@@ -99,7 +100,8 @@ function get_emoji_name(codepoint) {
         }
     }
 
-    return undefined;
+    /* istanbul ignore next */
+    throw new Error(`unexpected codepoint ${codepoint}`);
 }
 
 const realm_emoji_map = new Map();

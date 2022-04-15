@@ -168,3 +168,13 @@ class TestSendEmail(ZulipTestCase):
                 "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD)."
             ],
         )
+
+        # Empty string is OK
+        with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=""):
+            send_email(
+                "zerver/emails/password_reset",
+                to_emails=[hamlet],
+                from_name="From Name",
+                from_address=FromAddress.NOREPLY,
+                language="en",
+            )

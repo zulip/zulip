@@ -36,6 +36,7 @@ class MarkdownComparer {
     constructor(output_formatter) {
         this._output_formatter =
             output_formatter ||
+            /* istanbul ignore next */
             function (actual, expected) {
                 return ["Actual and expected output do not match.", actual, "!=", expected].join(
                     "\n",
@@ -44,6 +45,7 @@ class MarkdownComparer {
         this._document = new JSDOM().window.document;
     }
 
+    /* istanbul ignore next */
     setFormatter(output_formatter) {
         this._output_formatter = output_formatter || this._output_formatter;
     }
@@ -88,6 +90,7 @@ class MarkdownComparer {
             } else if (name_a > name_b) {
                 return 1;
             }
+            /* istanbul ignore next */
             return 0;
         });
 
@@ -139,6 +142,7 @@ class MarkdownComparer {
         message = message || "";
         message += "\n";
 
+        /* istanbul ignore if */
         if (comparison_results.are_equivalent === false) {
             throw new assert.AssertionError({
                 message:
@@ -157,6 +161,7 @@ class MarkdownComparer {
         message = message || "";
         message += "\n";
 
+        /* istanbul ignore if */
         if (comparison_results.are_equivalent) {
             throw new assert.AssertionError({
                 message:
@@ -174,11 +179,13 @@ class MarkdownComparer {
 
 function returnComparer() {
     if (!_markdownComparerInstance) {
-        _markdownComparerInstance = new MarkdownComparer((actual, expected) =>
-            [
-                "Actual and expected output do not match.  Showing diff",
-                mdiff.diff_strings(actual, expected),
-            ].join("\n"),
+        _markdownComparerInstance = new MarkdownComparer(
+            /* istanbul ignore next */
+            (actual, expected) =>
+                [
+                    "Actual and expected output do not match.  Showing diff",
+                    mdiff.diff_strings(actual, expected),
+                ].join("\n"),
         );
     }
     return _markdownComparerInstance;
@@ -193,6 +200,7 @@ module.exports = {
         returnComparer().assertNotEqual(actual, expected, message);
     },
 
+    /* istanbul ignore next */
     setFormatter(output_formatter) {
         returnComparer().setFormatter(output_formatter);
     },

@@ -175,6 +175,7 @@ run_test("partial updates", () => {
 
     assert.equal(rendered_html, "<ul>\n<li>foo1</li>\n<li>foo2</li>\n<li>foo3</li>\n</ul>");
 
+    /* istanbul ignore next */
     replace_content = () => {
         throw new Error("should not replace entire html");
     };
@@ -209,6 +210,7 @@ run_test("partial updates", () => {
 });
 
 run_test("eq_array easy cases", () => {
+    /* istanbul ignore next */
     const bogus_eq = () => {
         throw new Error("we should not be comparing elements");
     };

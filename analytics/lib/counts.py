@@ -288,7 +288,7 @@ def do_aggregate_to_summary_table(
 
 ## Utility functions called from outside counts.py ##
 
-# called from zerver/lib/actions.py; should not throw any errors
+# called from zerver.actions; should not throw any errors
 def do_increment_logging_stat(
     zerver_object: Union[Realm, UserProfile, Stream],
     stat: CountStat,

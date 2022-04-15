@@ -19,6 +19,7 @@ exports.set_verbose = (value) => {
 exports.run_test = (label, f, opts) => {
     const {sloppy_$} = opts || {};
 
+    /* istanbul ignore if */
     if (verbose) {
         console.info("        test: " + label);
     }
@@ -34,7 +35,7 @@ exports.run_test = (label, f, opts) => {
             f({override, override_rewire, mock_template: namespace._mock_template});
         });
         namespace._finish_template_mocking();
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
         console.info("-".repeat(50));
         console.info(`test failed: ${current_file_name} > ${label}`);
         console.info();
