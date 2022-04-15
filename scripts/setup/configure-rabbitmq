@@ -4,15 +4,9 @@
 # with a real password
 set -eu
 
-if [ "$EUID" -eq 0 ]; then
-    sudo=()
-else
-    sudo=(sudo)
-fi
-
 # If the RabbitMQ distribution cookie is insecure, reset it and
 # restart RabbitMQ.
-"${sudo[@]}" "$(dirname "$0")/generate-rabbitmq-cookie"
+"$(dirname "$0")/generate-rabbitmq-cookie"
 
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
@@ -20,20 +14,20 @@ RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
 # Wait for RabbitMQ to start up
 retries=29
 # Could use rabbitmqctl await_startup when we upgrade to 3.7.11.
-while ! "${sudo[@]}" rabbitmqctl -q await_online_nodes 1 2>/dev/null; do
+while ! rabbitmqctl -q await_online_nodes 1 2>/dev/null; do
     if ((retries == 29)); then
         echo "Waiting for RabbitMQ to start up..."
     fi
     sleep 1
     if ! ((retries -= 1)); then
-        "${sudo[@]}" rabbitmqctl -q await_online_nodes 1
+        rabbitmqctl -q await_online_nodes 1
         break
     fi
 done
 
-"${sudo[@]}" rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
-"${sudo[@]}" rabbitmqctl delete_user zulip || true
-"${sudo[@]}" rabbitmqctl delete_user guest || true
-"${sudo[@]}" rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
-"${sudo[@]}" rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
-"${sudo[@]}" rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
+rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
+rabbitmqctl delete_user zulip || true
+rabbitmqctl delete_user guest || true
+rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
+rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
+rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'

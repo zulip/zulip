@@ -19,6 +19,7 @@ from scripts.lib.zulip_tools import (
     get_dev_uuid_var_path,
     is_digest_obsolete,
     run,
+    run_as_root,
     write_new_digest,
 )
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
@@ -270,7 +271,7 @@ def main(options: argparse.Namespace) -> int:
         )
 
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
-            run(["scripts/setup/configure-rabbitmq"])
+            run_as_root(["scripts/setup/configure-rabbitmq"])
             write_new_digest(
                 "last_configure_rabbitmq_hash",
                 configure_rabbitmq_paths(),
