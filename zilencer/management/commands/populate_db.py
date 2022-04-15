@@ -28,7 +28,6 @@ from zerver.actions.message_send import build_message_send_dict, do_send_message
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
-from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
@@ -36,7 +35,6 @@ from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
@@ -809,15 +807,6 @@ class Command(BaseCommand):
 
         # Generate a new set of test data.
         create_test_data()
-
-        # prepopulate the URL preview/embed data for the links present
-        # in the config.generate_data.json data set.  This makes it
-        # possible for populate_db to run happily without Internet
-        # access.
-        with open("zerver/tests/fixtures/docs_url_preview_data.json", "rb") as f:
-            urls_with_preview_data = orjson.loads(f.read())
-            for url in urls_with_preview_data:
-                cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
 
         if options["delete"]:
             if options["test_suite"]:
