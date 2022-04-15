@@ -2218,7 +2218,7 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
-        do_delete_user(hamlet)
+        do_delete_user(hamlet, acting_user=None)
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 
