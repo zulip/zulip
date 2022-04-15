@@ -56,6 +56,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
+from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
@@ -1523,6 +1524,24 @@ Output:
         self.assertTrue(
             UserGroupMembership.objects.filter(user_profile=user, user_group=user_group).exists()
         )
+
+    @contextmanager
+    def soft_deactivate_and_check_long_term_idle(
+        self, user: UserProfile, expected: bool
+    ) -> Iterator[None]:
+        """
+        Ensure that the user is soft deactivated (long term idle), and check if the user
+        has been reactivated when exiting the context with an assertion
+        """
+        if not user.long_term_idle:
+            do_soft_deactivate_users([user])
+            self.assertTrue(user.long_term_idle)
+        try:
+            yield
+        finally:
+            # Prevent from using the old user object
+            user.refresh_from_db()
+            self.assertEqual(user.long_term_idle, expected)
 
 
 class WebhookTestCase(ZulipTestCase):

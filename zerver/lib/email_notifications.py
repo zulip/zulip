@@ -25,6 +25,7 @@ from zerver.lib.message import bulk_access_messages
 from zerver.lib.notification_data import get_mentioned_user_group_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, send_future_email
+from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.url_encoding import (
     huddle_narrow_url,
@@ -487,6 +488,11 @@ def do_send_missedmessage_events_reply_in_zulip(
             realm_str=user_profile.realm.name,
             show_message_content=True,
         )
+
+    # Soft reactivate the long_term_idle user personally mentioned
+    soft_reactivate_if_personal_notification(
+        user_profile, unique_triggers, mentioned_user_group_name
+    )
 
     with override_language(user_profile.default_language):
         from_name: str = _("Zulip notifications")
