@@ -180,7 +180,12 @@ def do_create_realm(
         realm.save()
 
         RealmAuditLog.objects.create(
-            realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+            # acting_user will be set as the initial realm owner inside
+            # do_create_user(..., realm_creation=True).
+            acting_user=None,
+            realm=realm,
+            event_type=RealmAuditLog.REALM_CREATED,
+            event_time=realm.date_created,
         )
 
         RealmUserDefault.objects.create(realm=realm)
@@ -212,6 +217,7 @@ def do_create_realm(
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
     if plan_type is None and settings.BILLING_ENABLED:
+        # We use acting_user=None for setting the initial plan type.
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
     admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
