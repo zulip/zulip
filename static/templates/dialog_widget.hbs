@@ -18,7 +18,7 @@
                 {{#unless single_footer_button}}
                 <button class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
                 {{/unless}}
-                <button class="modal__btn dialog_submit_button"{{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}}>
+                <button id="btnSubmit" class="modal__btn dialog_submit_button" {{#if single_footer_button}} aria-label="{{t 'Close this dialog window' }}" data-micromodal-close{{/if}} disabled="disabled">
                     <span>{{{ html_submit_button }}}</span>
                     <div class="modal__spinner"></div>
                 </button>
