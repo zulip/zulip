@@ -64,5 +64,5 @@ This will:
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
         for user_profile in user_profiles:
-            do_delete_user(user_profile)
+            do_delete_user(user_profile, acting_user=None)
             print(f"Successfully deleted user {user_profile.delivery_email}.")
