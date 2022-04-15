@@ -1483,6 +1483,58 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(user_identity, android_devices, {"gcm": True}, {})
             mock_push_notifications.assert_called_once()
 
+    @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
+    def test_user_push_soft_reactivate_soft_deactivated_user(
+        self, mock_push_notifications: mock.MagicMock
+    ) -> None:
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        large_user_group = create_user_group(
+            "large_user_group", [self.user_profile, othello, cordelia], get_realm("zulip")
+        )
+
+        # Personal mention in a stream message should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            mention = f"@**{self.user_profile.full_name}**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {"message_id": stream_mentioned_message_id, "trigger": "mentioned"},
+            )
+
+        # Private message should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+            # Soft reactivate the user by sending a personal message
+            personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")
+            handle_push_notification(
+                self.user_profile.id,
+                {"message_id": personal_message_id, "trigger": "private_message"},
+            )
+
+        # Wild card mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
+            # Soft reactivate the user by sending a personal message
+            mention = "@**all**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {"message_id": stream_mentioned_message_id, "trigger": "wildcard_mentioned"},
+            )
+
+        # Group mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
+            # Soft reactivate the user by sending a personal message
+            mention = "@*large_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": "mentioned",
+                    "mentioned_user_group_id": large_user_group.id,
+                },
+            )
+
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
     def test_user_push_notification_already_active(
