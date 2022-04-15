@@ -154,4 +154,14 @@ export function launch(conf) {
         on_shown: conf?.on_shown,
         on_hidden: conf?.on_hidden,
     });
+
+    $(() => {
+        $("#edit_bot_name").on("input change", function () {
+            if ($(this).val() !== "") {
+                $("#btnSubmit").prop("disabled", false);
+            } else {
+                $("#btnSubmit").prop("disabled", true);
+            }
+        });
+    });
 }
