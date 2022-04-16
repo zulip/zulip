@@ -38,9 +38,14 @@
 
         .pill-value {
             margin: 0 5px;
+            margin: 0 5px;
+            white-space: nowrap;
+            width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        .exit {
+        
+       .exit {
             opacity: 0.5;
             font-size: 1.3em;
             margin-right: 3px;
