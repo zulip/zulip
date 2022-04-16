@@ -37,7 +37,10 @@
         }
 
         .pill-value {
-            margin: 0 5px;
+            white-space: nowrap;
+            width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .exit {
