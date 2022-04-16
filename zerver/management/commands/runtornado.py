@@ -21,7 +21,7 @@ from zerver.tornado.event_queue import (
 from zerver.tornado.sharding import notify_tornado_queue_name
 
 if settings.USING_RABBITMQ:
-    from zerver.lib.queue import TornadoQueueClient, get_queue_client
+    from zerver.lib.queue import TornadoQueueClient, set_queue_client
 
 
 class Command(BaseCommand):
@@ -67,8 +67,8 @@ class Command(BaseCommand):
             print(f"Tornado server (re)started on port {port}")
 
             if settings.USING_RABBITMQ:
-                queue_client = get_queue_client()
-                assert isinstance(queue_client, TornadoQueueClient)
+                queue_client = TornadoQueueClient()
+                set_queue_client(queue_client)
                 # Process notifications received via RabbitMQ
                 queue_name = notify_tornado_queue_name(port)
                 queue_client.start_json_consumer(
@@ -88,7 +88,8 @@ class Command(BaseCommand):
                 logging_data["port"] = str(port)
                 setup_event_queue(http_server, port)
                 add_client_gc_hook(missedmessage_hook)
-                setup_tornado_rabbitmq()
+                if settings.USING_RABBITMQ:
+                    setup_tornado_rabbitmq(queue_client)
 
                 instance = ioloop.IOLoop.instance()
 
