@@ -1,6 +1,6 @@
 import random
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import List, Optional, Sequence
 from unittest import mock
@@ -21,6 +21,7 @@ from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
     fix_spoilers_in_html,
+    followup_day2_email_delay,
     handle_missedmessage_emails,
     relative_to_full_url,
 )
@@ -1447,3 +1448,14 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
         )
+
+
+class TestFollowupEmailDelay(ZulipTestCase):
+    def test_followup_day2_email_delay(self) -> None:
+        user_profile = self.example_user("hamlet")
+        # Test date_joined == Thursday
+        user_profile.date_joined = datetime(2018, 1, 4, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=1, hours=-1))
+        # Test date_joined == Friday
+        user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))
