@@ -4,16 +4,14 @@ import tornado.web
 from django.conf import settings
 from tornado import autoreload
 
-from zerver.lib.queue import get_queue_client
+from zerver.lib.queue import TornadoQueueClient
 from zerver.tornado.handlers import AsyncDjangoHandler
 
 
-def setup_tornado_rabbitmq() -> None:  # nocoverage
+def setup_tornado_rabbitmq(queue_client: TornadoQueueClient) -> None:  # nocoverage
     # When tornado is shut down, disconnect cleanly from RabbitMQ
-    if settings.USING_RABBITMQ:
-        queue_client = get_queue_client()
-        atexit.register(lambda: queue_client.close())
-        autoreload.add_reload_hook(lambda: queue_client.close())
+    atexit.register(lambda: queue_client.close())
+    autoreload.add_reload_hook(lambda: queue_client.close())
 
 
 def create_tornado_application() -> tornado.web.Application:
