@@ -36,14 +36,14 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
             for (let i = curr_topic_index + 1; i < filtered_topics_in_stream.length; i += 1) {
                 const topic = filtered_topics_in_stream[i].topic_name;
                 if (has_unread_messages(stream, topic)) {
-                    return { stream, topic };
+                    return {stream, topic};
                 }
             }
 
             for (let i = 0; i < curr_topic_index; i += 1) {
                 const topic = filtered_topics_in_stream[i].topic_name;
                 if (has_unread_messages(stream, topic)) {
-                    return { stream, topic };
+                    return {stream, topic};
                 }
             }
         }
@@ -55,14 +55,14 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
             for (let i = curr_topic_index + 1; i < all_topics_in_stream.length; i += 1) {
                 const topic = all_topics_in_stream[i];
                 if (has_unread_messages(stream, topic)) {
-                    return { stream, topic };
+                    return {stream, topic};
                 }
             }
 
             for (let i = 0; i < curr_topic_index; i += 1) {
                 const topic = all_topics_in_stream[i];
                 if (has_unread_messages(stream, topic)) {
-                    return { stream, topic };
+                    return {stream, topic};
                 }
             }
         }
@@ -74,7 +74,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
         const stream = streams[i];
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
-                return { stream, topic };
+                return {stream, topic};
             }
         }
     }
@@ -83,7 +83,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
         const stream = streams[i];
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
-                return { stream, topic };
+                return {stream, topic};
             }
         }
     }
