@@ -86,6 +86,7 @@ from zerver.lib.send_email import (
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload import handle_reupload_emojis_event
 from zerver.lib.url_preview import preview as url_preview
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.models import (
     Message,
     PreregistrationUser,
@@ -856,9 +857,10 @@ class FetchLinksEmbedData(QueueProcessingWorker):
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
     def consume(self, event: Mapping[str, Any]) -> None:
+        url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
         for url in event["urls"]:
             start_time = time.time()
-            url_preview.get_link_embed_data(url)
+            url_embed_data[url] = url_preview.get_link_embed_data(url)
             logging.info(
                 "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
             )
@@ -879,7 +881,11 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
             # If rendering fails, the called code will raise a JsonableError.
             rendering_result = render_incoming_message(
-                message, message.content, message_user_ids, realm
+                message,
+                message.content,
+                message_user_ids,
+                realm,
+                url_embed_data=url_embed_data,
             )
             do_update_embedded_data(message.sender, message, message.content, rendering_result)
 

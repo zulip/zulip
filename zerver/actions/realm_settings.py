@@ -340,6 +340,10 @@ def do_reactivate_realm(realm: Realm) -> None:
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
+            # We hardcode acting_user=None, since realm reactivation
+            # uses an email authentication mechanism that will never
+            # know which user initiated the change.
+            acting_user=None,
             realm=realm,
             event_type=RealmAuditLog.REALM_REACTIVATED,
             event_time=event_time,

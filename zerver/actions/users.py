@@ -42,11 +42,11 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import update_license_ledger_if_needed
 
 
-def do_delete_user(user_profile: UserProfile) -> None:
+def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
-    do_deactivate_user(user_profile, acting_user=None)
+    do_deactivate_user(user_profile, acting_user=acting_user)
 
     subscribed_huddle_recipient_ids = set(
         Subscription.objects.filter(
@@ -88,7 +88,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
         RealmAuditLog.objects.create(
             realm=replacement_user.realm,
             modified_user=replacement_user,
-            acting_user=None,
+            acting_user=acting_user,
             event_type=RealmAuditLog.USER_DELETED,
             event_time=timezone_now(),
         )

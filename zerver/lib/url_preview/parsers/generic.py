@@ -1,18 +1,19 @@
-from typing import Dict, Optional
+from typing import Optional
 from urllib.parse import urlparse
 
 from bs4.element import Tag
 
 from zerver.lib.url_preview.parsers.base import BaseParser
+from zerver.lib.url_preview.types import UrlEmbedData
 
 
 class GenericParser(BaseParser):
-    def extract_data(self) -> Dict[str, Optional[str]]:
-        return {
-            "title": self._get_title(),
-            "description": self._get_description(),
-            "image": self._get_image(),
-        }
+    def extract_data(self) -> UrlEmbedData:
+        return UrlEmbedData(
+            title=self._get_title(),
+            description=self._get_description(),
+            image=self._get_image(),
+        )
 
     def _get_title(self) -> Optional[str]:
         soup = self._soup
