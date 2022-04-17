@@ -42,7 +42,9 @@ dependencies than the version you provisioned last. This may
 be ok, but it's likely that you either want to rebase your
 branch on top of upstream/main or re-provision your machine.
 
-Do this: `./tools/provision`
+Don't worry we are running provision for you `./tools/provision`
+
+If you wish to ignore auto provision use `--skip-provision-check`.
 """
 
 NEED_TO_UPGRADE = """
@@ -50,7 +52,9 @@ The branch you are currently on has added dependencies beyond
 what you last provisioned. Your command is likely to fail
 until you add dependencies by provisioning.
 
-Do this: `./tools/provision`
+Don't worry we are running provision for you `./tools/provision`
+
+If you wish to ignore auto provision use `--skip-provision-check`.
 """
 
 
@@ -86,10 +90,16 @@ def assert_provisioning_status_ok(skip_provision_check: bool) -> None:
         ok, msg = get_provisioning_status()
         if not ok:
             print(msg)
-            print(
-                "If you really know what you are doing, use --skip-provision-check to run anyway."
+            p = subprocess.Popen(
+                ["./tools/provision"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
             )
-            sys.exit(1)
+            output, _ = p.communicate()
+            if p.returncode != 0:
+                print(f"Running provision failed, here are the details \nOutput: {output}")
+                sys.exit(1)
 
 
 def add_provision_check_override_param(parser: ArgumentParser) -> None:
