@@ -417,9 +417,12 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     function update_submit_button_disabled_state(select_stream_id) {
         const {current_stream_id, new_topic_name, old_topic_name} = get_params_from_form();
 
+        // Unlike most topic comparisons in Zulip, we intentionally do
+        // a case-sensitive comparison, since adjusting the
+        // capitalization of a topic is a valid operation.
         $("#move_topic_modal .dialog_submit_button")[0].disabled =
             Number.parseInt(current_stream_id, 10) === Number.parseInt(select_stream_id, 10) &&
-            new_topic_name.trim().toLowerCase() === old_topic_name.trim().toLowerCase();
+            new_topic_name.trim() === old_topic_name.trim();
     }
 
     function move_topic() {
