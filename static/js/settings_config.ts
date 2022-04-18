@@ -336,71 +336,8 @@ const time_limit_dropdown_values = new Map([
     ],
 ]);
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
-export const msg_delete_limit_dropdown_values = new Map([
-    [
-        "any_time",
-        {
-            text: $t({defaultMessage: "Any time"}),
-            seconds: 0,
-        },
-    ],
-    [
-        "upto_two_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "2 minutes"})},
-            ),
-            seconds: 2 * 60,
-        },
-    ],
-    [
-        "upto_ten_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "10 minutes"})},
-            ),
-            seconds: 10 * 60,
-        },
-    ],
-    [
-        "upto_one_hour",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 hour"})},
-            ),
-            seconds: 60 * 60,
-        },
-    ],
-    [
-        "upto_one_day",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 day"})},
-            ),
-            seconds: 24 * 60 * 60,
-        },
-    ],
-    [
-        "upto_one_week",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 week"})},
-            ),
-            seconds: 7 * 24 * 60 * 60,
-        },
-    ],
-    [
-        "custom_limit",
-        {
-            text: $t({defaultMessage: "Custom"}),
-        },
-    ],
-]);
+export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+
 export const retain_message_forever = -1;
 
 export const user_role_values = {
