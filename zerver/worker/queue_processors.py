@@ -868,12 +868,16 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
             )
 
-        message = Message.objects.get(id=event["message_id"])
-        # If the message changed, we will run this task after updating the message
-        # in zerver.actions.message_edit.check_update_message
-        if message.content != event["message_content"]:
-            return
-        if message.content is not None:
+        with transaction.atomic():
+            message = Message.objects.select_for_update().get(id=event["message_id"])
+            # If the message changed, we will run this task after updating the message
+            # in zerver.actions.message_edit.check_update_message
+            if message.content != event["message_content"]:
+                return
+
+            if message.content is None:
+                return
+
             query = UserMessage.objects.filter(
                 message=message.id,
             )
