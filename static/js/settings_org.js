@@ -633,6 +633,9 @@ export function change_save_button_state($element, state) {
     }
 
     if (state === "discarded") {
+        if ($saveBtn.prop("disabled")) {
+            $saveBtn.prop("disabled", false);
+        }
         show_hide_element($element, false, 0);
         return;
     }
@@ -1156,6 +1159,15 @@ export function build_page() {
             "id_realm_message_content_edit_limit_minutes",
             msg_edit_limit_dropdown_value === "custom_limit",
         );
+        if (msg_edit_limit_dropdown_value === "custom_limit") {
+            const val = get_property_value("realm_message_content_edit_limit_minutes");
+            if (val === null) {
+                $("#id_realm_message_content_edit_limit_minutes")
+                    .closest(".org-subsection-parent")
+                    .find(".subsection-changes-save button")
+                    .prop("disabled", true);
+            }
+        }
     });
 
     $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
@@ -1164,6 +1176,16 @@ export function build_page() {
             "id_realm_message_content_delete_limit_minutes",
             msg_delete_limit_dropdown_value === "custom_limit",
         );
+
+        if (msg_delete_limit_dropdown_value === "custom_limit") {
+            const val = get_property_value("realm_message_content_delete_limit_minutes");
+            if (val === null) {
+                $("#id_realm_message_content_delete_limit_minutes")
+                    .closest(".org-subsection-parent")
+                    .find(".subsection-changes-save button")
+                    .prop("disabled", true);
+            }
+        }
     });
 
     $("#id_realm_message_retention_setting").on("change", (e) => {
@@ -1229,6 +1251,27 @@ export function build_page() {
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
         e.stopPropagation();
+    });
+
+    $("#org-msg-editing").on("input", ".admin-realm-time-limit-input", (e) => {
+        const edit_limit_value = Number.parseInt(
+            $("#id_realm_message_content_edit_limit_minutes").val(),
+            10,
+        );
+        const delete_limit_value = Number.parseInt(
+            $("#id_realm_message_content_delete_limit_minutes").val(),
+            10,
+        );
+
+        const disable_save_btn =
+            edit_limit_value <= 0 ||
+            delete_limit_value <= 0 ||
+            Number.isNaN(edit_limit_value) ||
+            Number.isNaN(delete_limit_value);
+        $(e.target)
+            .closest(".org-subsection-parent")
+            .find(".subsection-changes-save button")
+            .prop("disabled", disable_save_btn);
     });
 
     $("#show_realm_domains_modal").on("click", (e) => {
