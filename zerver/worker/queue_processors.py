@@ -883,11 +883,6 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             if message.content is None:
                 return
 
-            query = UserMessage.objects.filter(
-                message=message.id,
-            )
-            message_user_ids = set(query.values_list("user_profile_id", flat=True))
-
             # Fetch the realm whose settings we're using for rendering
             realm = Realm.objects.get(id=event["message_realm_id"])
 
@@ -895,7 +890,6 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             rendering_result = render_incoming_message(
                 message,
                 message.content,
-                message_user_ids,
                 realm,
                 url_embed_data=url_embed_data,
             )

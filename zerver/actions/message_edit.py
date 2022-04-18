@@ -984,7 +984,6 @@ def check_update_message(
         rendering_result = render_incoming_message(
             message,
             content,
-            user_info["message_user_ids"],
             user_profile.realm,
             mention_data=mention_data,
         )
