@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -136,11 +137,6 @@ def can_edit_content_or_topic(
     return False
 
 
-class MessageUpdateUserInfoResult(TypedDict):
-    message_user_ids: Set[int]
-    mention_user_ids: Set[int]
-
-
 def maybe_send_resolve_topic_notifications(
     *,
     user_profile: UserProfile,
@@ -256,29 +252,23 @@ def send_message_moved_breadcrumbs(
             )
 
 
-def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoResult:
-
+def get_mentions_for_message_updates(message_id: int) -> Set[int]:
     # We exclude UserMessage.flags.historical rows since those
     # users did not receive the message originally, and thus
     # probably are not relevant for reprocessed alert_words,
     # mentions and similar rendering features.  This may be a
     # decision we change in the future.
-    query = UserMessage.objects.filter(
-        message=message_id,
-        flags=~UserMessage.flags.historical,
-    ).values("user_profile_id", "flags")
-    rows = list(query)
-
-    message_user_ids = {row["user_profile_id"] for row in rows}
-
-    mask = UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned
-
-    mention_user_ids = {row["user_profile_id"] for row in rows if int(row["flags"]) & mask}
-
-    return dict(
-        message_user_ids=message_user_ids,
-        mention_user_ids=mention_user_ids,
+    mentioned_user_ids = (
+        UserMessage.objects.filter(
+            message=message_id,
+            flags=~UserMessage.flags.historical,
+        )
+        .filter(
+            Q(flags__andnz=(UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned))
+        )
+        .values_list("user_profile_id", flat=True)
     )
+    return {user_profile_id for user_profile_id in mentioned_user_ids}
 
 
 def update_user_message_flags(
@@ -974,8 +964,7 @@ def check_update_message(
             mention_backend=mention_backend,
             content=content,
         )
-        user_info = get_user_info_for_message_updates(message.id)
-        prior_mention_user_ids = user_info["mention_user_ids"]
+        prior_mention_user_ids = get_mentions_for_message_updates(message.id)
 
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
