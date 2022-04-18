@@ -869,7 +869,12 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             )
 
         with transaction.atomic():
-            message = Message.objects.select_for_update().get(id=event["message_id"])
+            try:
+                message = Message.objects.select_for_update().get(id=event["message_id"])
+            except Message.DoesNotExist:
+                # Message may have been deleted
+                return
+
             # If the message changed, we will run this task after updating the message
             # in zerver.actions.message_edit.check_update_message
             if message.content != event["message_content"]:

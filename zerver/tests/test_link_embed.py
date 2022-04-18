@@ -10,6 +10,7 @@ from django.utils.html import escape
 from pyoembed.providers import get_provider
 from requests.exceptions import ConnectionError
 
+from zerver.actions.message_edit import do_delete_messages
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish
@@ -480,6 +481,35 @@ class PreviewTestCase(ZulipTestCase):
                 },
             )
             self.assert_json_success(result)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_message_deleted(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        with mock_queue_publish("zerver.actions.message_send.queue_json_publish") as patched:
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="foo", content=url)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        do_delete_messages(msg.sender.realm, [msg])
+
+        # We do still fetch the URL, as we don't want to incur the
+        # cost of locking the row while we do the HTTP fetches.
+        self.create_mock_response(url)
+        with self.settings(TEST_SUITE=False):
+            with self.assertLogs(level="INFO") as info_logs:
+                # Run the queue processor. This will simulate the event for original_url being
+                # processed after the message has been deleted.
+                FetchLinksEmbedData().consume(event)
+        self.assertTrue(
+            "INFO:root:Time spent on get_link_embed_data for http://test.org/: "
+            in info_logs.output[0]
+        )
 
     def test_get_link_embed_data(self) -> None:
         url = "http://test.org/"
