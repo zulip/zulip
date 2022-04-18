@@ -135,6 +135,7 @@
   "April": "Nisan",
   "Archive stream": "Faal Kanal",
   "Archive stream {stream}": "Arşiv kanalı {stream}",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "Bu kanalı arşivlemek istediğinizden emin misiniz?",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "''''{stream_name}'''' kanalını oluşturmak ve ona {count} kullanıcı abone etmek istediğinizden emin misiniz?",
   "Are you sure you want to deactivate this organization?": "Bu organizasyonu devre dışı bırakmak istediğinizden emin misiniz?",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Özetin gönderileceği haftanın günü",
   "Deactivate": "Devreden çıkar",
   "Deactivate account": "Hesabı devreden çıkar",
+  "Deactivate bot": "",
   "Deactivate organization": "Organizasyonu devre dışı yap",
   "Deactivate user": "",
   "Deactivate your account": "Kendi hesabını devreden çıkar",
@@ -278,7 +280,6 @@
   "Delete": "Sil",
   "Delete alert word": "Uyarı kelimesini sil",
   "Delete all drafts": "Tüm taslakları sil",
-  "Delete bot": "Bot sil",
   "Delete draft": "Taslak sil",
   "Delete file": "Dosya sil",
   "Delete icon": "Ikon sil",
@@ -685,6 +686,8 @@
   "Notification triggers": "Bildirim tetikleri",
   "Notifications": "Bildirimler",
   "Notifications for @all/@everyone mentions": "@all/@everyone için bildirimler",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Kasım",
   "October": "Eki",
   "Offline": "Çevrim dışı",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "Bu ayarı yalnızca sahipler değiştirebilir.",
   "Only owners can deactivate the organization.": "Sadece sahipler organizasyonu devre dışı yapabilir.",
   "Only stream members can add users to a private stream": "Sadece kanal üyeleri özel kanallara kullanıcı ekleyebilir",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Aç",
   "Open message menu": "İleti menüsünü aç",
   "Open reactions menu": "Tepkiler menüsünü aç",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} bu ileti",
   "{starred_status} this message (Ctrl + s)": "{starred_status} bu ileti (Ctrl + s)",
   "{username} [said]({link_to_message}):": "{username} [dedi]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username}, {emoji_name} ile reaksiyona girdi",
-  "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (Kanala bildir)"
+  "{username} reacted with {emoji_name}": "{username}, {emoji_name} ile reaksiyona girdi"
 }

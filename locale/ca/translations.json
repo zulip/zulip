@@ -135,6 +135,7 @@
   "April": "Abril",
   "Archive stream": "",
   "Archive stream {stream}": "",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "",
   "Are you sure you want to deactivate this organization?": "",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "",
   "Deactivate": "Desactiva",
   "Deactivate account": "Desactiva el compte",
+  "Deactivate bot": "",
   "Deactivate organization": "Desactiva l'organització",
   "Deactivate user": "",
   "Deactivate your account": "Desactiva el meu compte",
@@ -278,7 +280,6 @@
   "Delete": "Elimina",
   "Delete alert word": "",
   "Delete all drafts": "",
-  "Delete bot": "Elimina el bot",
   "Delete draft": "Elimina l'esborrany",
   "Delete file": "Elimina el fitxer",
   "Delete icon": "",
@@ -685,6 +686,8 @@
   "Notification triggers": "",
   "Notifications": "Notificacions",
   "Notifications for @all/@everyone mentions": "",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Novembre",
   "October": "Octubre",
   "Offline": "Fora de línia",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "",
   "Only owners can deactivate the organization.": "",
   "Only stream members can add users to a private stream": "",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "",
   "Open message menu": "Obre el menú de missatges",
   "Open reactions menu": "Obre el menú de reaccions",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "",
   "{starred_status} this message (Ctrl + s)": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": "",
-  "{wildcard_mention_token} (Notify stream)": ""
+  "{username} reacted with {emoji_name}": ""
 }

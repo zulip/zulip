@@ -135,6 +135,7 @@
   "April": "Abril",
   "Archive stream": "",
   "Archive stream {stream}": "",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "",
   "Are you sure you want to deactivate this organization?": "",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Día de la semana para enviar resumenes",
   "Deactivate": "Desactivar",
   "Deactivate account": "Desactivar cuenta",
+  "Deactivate bot": "",
   "Deactivate organization": "Desactivar organización",
   "Deactivate user": "",
   "Deactivate your account": "Desactivar tu cuenta",
@@ -278,7 +280,6 @@
   "Delete": "Eliminar",
   "Delete alert word": "Eliminar alerta",
   "Delete all drafts": "",
-  "Delete bot": "Eliminar bot",
   "Delete draft": "Eliminar borrador",
   "Delete file": "Eliminar archivo",
   "Delete icon": "Eliminar icono",
@@ -685,6 +686,8 @@
   "Notification triggers": "Saltos de notificaciones ",
   "Notifications": "Notificaciones",
   "Notifications for @all/@everyone mentions": "Notificaciones para menciones con @all/@everyone",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Noviembre",
   "October": "Octubre",
   "Offline": "Desconectado",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "",
   "Only owners can deactivate the organization.": "Solo los propietarios pueden desactivar la organización ",
   "Only stream members can add users to a private stream": "Solo miembros del canal pueden añadir usuarios al canal privado",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Abrir",
   "Open message menu": "Abrir el menú de mensajes",
   "Open reactions menu": "Abrir el menu de reacciones",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} este mensaje",
   "{starred_status} this message (Ctrl + s)": "{starred_status} este mensaje (Ctrl + s)",
   "{username} [said]({link_to_message}):": "{username} [ha dicho]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "",
-  "{wildcard_mention_token} (Notify stream)": ""
+  "{username} reacted with {emoji_name}": ""
 }
