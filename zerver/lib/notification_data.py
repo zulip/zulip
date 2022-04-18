@@ -1,8 +1,10 @@
+import math
 from dataclasses import dataclass
-from typing import Collection, Dict, List, Optional, Set
+from typing import Any, Collection, Dict, List, Optional, Set
 
 from zerver.lib.mention import MentionData
-from zerver.models import NotificationTriggers
+from zerver.lib.user_groups import get_user_group_direct_member_ids
+from zerver.models import NotificationTriggers, UserGroup, UserProfile
 
 
 @dataclass
@@ -187,3 +189,42 @@ def get_user_group_mentions_data(
                 mentioned_user_groups_map[member_id] = group_id
 
     return mentioned_user_groups_map
+
+
+def get_mentioned_user_group_name(
+    messages: List[Dict[str, Any]], user_profile: UserProfile
+) -> Optional[str]:
+    """Returns the user group name to display in the email notification
+    if user group(s) are mentioned.
+
+    This implements the same algorithm as get_user_group_mentions_data
+    in zerver/lib/notification_data.py, but we're passed a list of
+    messages instead.
+    """
+    for message in messages:
+        if message["mentioned_user_group_id"] is None and message["trigger"] == "mentioned":
+            # The user has also been personally mentioned, so that gets prioritized.
+            return None
+
+    # These IDs are those of the smallest user groups mentioned in each message.
+    mentioned_user_group_ids = [
+        message["mentioned_user_group_id"]
+        for message in messages
+        if message["mentioned_user_group_id"] is not None
+    ]
+
+    # We now want to calculate the name of the smallest user group mentioned among
+    # all these messages.
+    smallest_user_group_size = math.inf
+    smallest_user_group_name = None
+    for user_group_id in mentioned_user_group_ids:
+        current_user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        current_user_group_size = len(get_user_group_direct_member_ids(current_user_group))
+
+        if current_user_group_size < smallest_user_group_size:
+            # If multiple user groups are mentioned, we prefer the
+            # user group with the least members.
+            smallest_user_group_size = current_user_group_size
+            smallest_user_group_name = current_user_group.name
+
+    return smallest_user_group_name
