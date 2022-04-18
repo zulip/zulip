@@ -128,7 +128,6 @@ def create_mirror_user_if_needed(
 def render_incoming_message(
     message: Message,
     content: str,
-    user_ids: Set[int],
     realm: Realm,
     mention_data: Optional[MentionData] = None,
     url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
@@ -528,7 +527,6 @@ def build_message_send_dict(
     rendering_result = render_incoming_message(
         message,
         message.content,
-        info["active_user_ids"],
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
