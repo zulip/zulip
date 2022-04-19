@@ -83,10 +83,47 @@
     text-overflow: ellipsis;
 }
 
+#compose_left {
+    #compose_message_type_icon {
+        border: none;
+        padding: 4px;
+        background: none;
+        color: inherit;
+
+        &::before {
+            opacity: 0.7;
+            padding-bottom: 1px;
+        }
+
+        &.composing_private_message {
+            background-color: hsla(0, 0%, 0%, 0.05);
+            border-radius: 4px;
+
+            &::before {
+                opacity: 1;
+            }
+        }
+    }
+
+    #compose_message_type_icon:hover {
+        &::before {
+            opacity: 1;
+        }
+
+        &.composing_private_message {
+            &::before {
+                opacity: 0.7;
+            }
+        }
+    }
+}
+
 .compose_table {
     height: 100%;
     display: flex;
     flex-flow: column;
+    flex-grow: 1;
+    margin-left: 10px;
 
     .stream-selection-header-colorblock {
         &.message_header_private_message {
@@ -135,7 +172,11 @@
 
     #private-message .to_text {
         vertical-align: middle;
-
+        /* The To text is aligned to the top (from the parent div's flex)
+         * so that it moves up when the recipient box grows vertically with
+         * many recipients. This margin keeps it vertically centered with
+         * a one-line recipient box. */
+        margin-top: 1.5px;
         font-weight: 600;
     }
 
@@ -171,6 +212,7 @@
 #send_message_form {
     margin: 0;
     height: 100%;
+    display: flex;
 
     .messagebox-wrapper {
         flex: 1;
@@ -245,6 +287,7 @@
     display: flex;
     justify-content: space-between;
     padding-bottom: 5px;
+    min-height: 31px;
 }
 
 #compose_top_right {
@@ -544,10 +587,11 @@ input.recipient_box {
 #stream-message,
 #private-message {
     display: flex;
+    height: fit-content;
 }
 
 #private-message {
-    align-items: center;
+    align-items: top;
     width: 100%;
 }
 

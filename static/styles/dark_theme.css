@@ -491,6 +491,7 @@ body.dark-theme {
     }
 
     .narrow_to_compose_recipients,
+    #compose_message_type_icon,
     .expand_composebox_button,
     .collapse_composebox_button,
     #message_edit_tooltip,
@@ -516,6 +517,10 @@ body.dark-theme {
     .clear_search_button:hover,
     .close:hover {
         color: hsl(0, 0%, 100%);
+    }
+
+    #compose_left #compose_message_type_icon.composing_private_message {
+        background-color: hsla(0, 0%, 100%, 0.05);
     }
 
     #user_presences li .user-list-sidebar-menu-icon:hover,

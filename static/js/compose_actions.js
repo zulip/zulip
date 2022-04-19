@@ -72,30 +72,74 @@ export const _get_focus_area = get_focus_area;
 
 export function set_focus(msg_type, opts) {
     const focus_area = get_focus_area(msg_type, opts);
-    if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+    if (focus_area === "#compose-textarea" && opts.trigger === "toggle message") {
+        // When the message type is toggled, the cursor could go to a variety of places,
+        // which are mostly handled in `get_focus_area`. When the `focus_area` is the
+        // the compose box, we don't do the standard focus and select (below). Instead,
+        // we (1) preserve the cursor position if the focus was already there, and
+        // (2) put the cursor at the end of the input if we're moving focus there from
+        // somewhere else.
+        const $textarea = $("#compose-textarea");
+        if (document.activeElement.id !== "compose-textarea") {
+            // Multiply by 2 to ensure the cursor always ends up at the end because
+            // Opera sometimes sees a carriage return as 2 characters.
+            const strLength = $textarea.val().length * 2;
+            $textarea.trigger("focus");
+            $textarea[0].setSelectionRange(strLength, strLength);
+        }
+    } else if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
         const $elt = $(focus_area);
         $elt.trigger("focus").trigger("select");
     }
 }
 
+export const switch_to_private_message_string = $t({defaultMessage: "Switch to private message"});
+export const switch_to_stream_message_string = $t({defaultMessage: "Switch to stream message"});
+
 function show_compose_box(msg_type, opts) {
     if (msg_type === "stream") {
         $("#private-message").hide();
+        $("#compose_message_type_icon").removeClass("composing_private_message");
+        $("#compose_message_type_icon").attr("aria-label", switch_to_private_message_string);
         $("#stream-message").show();
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
     } else {
         $("#private-message").show();
+        $("#compose_message_type_icon").addClass("composing_private_message");
+        $("#compose_message_type_icon").attr("aria-label", switch_to_stream_message_string);
         $("#stream-message").hide();
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
-    $("#compose-send-status").removeClass(common.status_classes).hide();
-    $("#compose").css({visibility: "visible"});
-    // When changing this, edit the 42px in _maybe_autoscroll
-    $(".new_message_textarea").css("min-height", "3em");
+
+    if (opts.trigger === "toggle message") {
+        update_placeholder_text();
+    } else {
+        // If the recipient is being toggled, then the compose box is already open.
+        $("#compose-send-status").removeClass(common.status_classes).hide();
+        $("#compose").css({visibility: "visible"});
+        // When changing this, edit the 42px in _maybe_autoscroll
+        $(".new_message_textarea").css("min-height", "3em");
+    }
 
     set_focus(msg_type, opts);
+}
+
+let togglable_message_type;
+
+export function toggle_message_type() {
+    togglable_message_type = togglable_message_type === "private" ? "stream" : "private";
+    compose_state.set_message_type(togglable_message_type);
+    $("#compose-content .alert").hide();
+    const opts = {
+        message_type: togglable_message_type,
+        trigger: "toggle message",
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
+        private_message_recipient: compose_state.private_message_recipient(),
+    };
+    show_compose_box(togglable_message_type, opts);
 }
 
 export function clear_textarea() {
@@ -313,6 +357,8 @@ export function start(msg_type, opts) {
 
     // Show either stream/topic fields or "You and" field.
     show_compose_box(msg_type, opts);
+
+    togglable_message_type = msg_type;
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);

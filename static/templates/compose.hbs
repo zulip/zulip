@@ -59,6 +59,9 @@
         <div class="composition-area">
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
+                <div id="compose_left">
+                    <button type="button" id="compose_message_type_icon" class="fa fa-envelope"></button>
+                </div>
                 <div class="compose_table">
                     <div id="compose_top">
                         <div id="compose_top_right" class="order-2">

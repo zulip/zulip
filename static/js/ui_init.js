@@ -21,6 +21,7 @@ import * as channel from "./channel";
 import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -362,6 +363,14 @@ export function initialize_kitchen_sink_stuff() {
 
     $("#stream_message_recipient_stream").on("change", function () {
         stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
+    });
+
+    $("#compose_message_type_icon").on("mousedown", (e) => {
+        e.preventDefault();
+    });
+
+    $("#compose_message_type_icon").on("click", () => {
+        compose_actions.toggle_message_type();
     });
 
     $(window).on("blur", () => {

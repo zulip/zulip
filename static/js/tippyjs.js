@@ -6,6 +6,7 @@ import render_message_inline_image_tooltip from "../templates/message_inline_ima
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
 import * as common from "./common";
+import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -185,6 +186,22 @@ export function initialize() {
         // If user tabs slowly, tooltips are displayed otherwise they are
         // destroyed before they can be displayed.
         e.currentTarget._tippy.destroy();
+    });
+
+    delegate("body", {
+        target: "#compose_message_type_icon",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const $elem = $(instance.reference)[0];
+            if ($elem.classList.contains("composing_private_message")) {
+                instance.setContent(compose_actions.switch_to_stream_message_string);
+            } else {
+                instance.setContent(compose_actions.switch_to_private_message_string);
+            }
+        },
+        onHidden(instance) {
+            instance.destroy();
+        },
     });
 
     delegate("body", {
