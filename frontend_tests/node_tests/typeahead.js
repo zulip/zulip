@@ -7,13 +7,10 @@ const {run_test} = require("../zjsunit/test");
 
 const typeahead = zrequire("../shared/js/typeahead");
 
-// The data structures here may be different for
-// different apps; the only key thing is we look
-// at emoji_name and we'll return the entire structures.
 const emojis = [
     {emoji_name: "japanese_post_office", url: "TBD"},
     {emoji_name: "panda_face", emoji_code: "1f43c"},
-    {emoji_name: "smile"},
+    {emoji_name: "smile", emoji_code: "1f642"},
     {emoji_name: "tada", random_field: "whatever"},
 ];
 
