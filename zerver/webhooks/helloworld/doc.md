@@ -17,7 +17,7 @@ integration](/api/incoming-webhooks-walkthrough).
     `send_webhook_fixture_message` from a [Zulip development
     environment](https://zulip.readthedocs.io/en/latest/development/overview.html):
 
-        (zulip-py3-venv) vagrant@debian-10:/srv/zulip$
+        (zulip-py3-venv) vagrant@vagrant:/srv/zulip$
         ./manage.py send_webhook_fixture_message \
         > --fixture=zerver/tests/fixtures/helloworld/hello.json \
         > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'

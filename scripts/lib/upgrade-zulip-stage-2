@@ -64,6 +64,7 @@ UNSUPPORTED_DISTROS = [
     ("ubuntu", "16.04"),
     ("ubuntu", "18.04"),
     ("debian", "9"),
+    ("debian", "10"),
 ]
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
@@ -165,7 +166,6 @@ if os.path.exists("/etc/init.d/postgresql"):
     postgresql_version = get_config(config_file, "postgresql", "version")
     if not postgresql_version:
         default_postgresql_version = {
-            ("debian", "10"): "11",
             ("debian", "11"): "13",
             ("ubuntu", "20.04"): "12",
             ("ubuntu", "22.04"): "14",
