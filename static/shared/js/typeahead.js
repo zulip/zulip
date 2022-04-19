@@ -37,34 +37,34 @@ export function remove_diacritics(s) {
 function query_matches_string(query, source_str, split_char) {
     source_str = remove_diacritics(source_str);
 
-    // If query doesn't contain a separator, we just want an exact
-    // match where query is a substring of one of the target characters.
-    if (query.indexOf(split_char) > 0) {
-        // If there's a whitespace character in the query, then we
-        // require a perfect prefix match (e.g. for 'ab cd ef',
-        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-        // ef', etc.).
-        const queries = query.split(split_char);
-        const sources = source_str.split(split_char);
-        let i;
-
-        for (i = 0; i < queries.length - 1; i += 1) {
-            if (sources[i] !== queries[i]) {
-                return false;
-            }
-        }
-
-        // This block is effectively a final iteration of the last
-        // loop.  What differs is that for the last word, a
-        // partial match at the beginning of the word is OK.
-        if (sources[i] === undefined) {
-            return false;
-        }
-        return sources[i].startsWith(queries[i]);
+    if (!query.includes(split_char)) {
+        // If query is a single token (doesn't contain a separator),
+        // the match can be anywhere in the string.
+        return source_str.includes(query);
     }
 
-    // For a single token, the match can be anywhere in the string.
-    return source_str.includes(query);
+    // If there is a separator character in the query, then we
+    // require a perfect prefix match (e.g. for 'ab cd ef',
+    // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
+    // ef', etc.).
+
+    const queries = query.split(split_char);
+    const sources = source_str.split(split_char);
+    let i;
+
+    for (i = 0; i < queries.length - 1; i += 1) {
+        if (sources[i] !== queries[i]) {
+            return false;
+        }
+    }
+
+    // This block is effectively a final iteration of the last
+    // loop.  What differs is that for the last word, a
+    // partial match at the beginning of the word is OK.
+    if (sources[i] === undefined) {
+        return false;
+    }
+    return sources[i].startsWith(queries[i]);
 }
 
 // This function attempts to match a query with source's attributes.
