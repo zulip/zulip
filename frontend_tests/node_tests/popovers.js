@@ -77,19 +77,21 @@ initialize_people();
 function make_image_stubber() {
     const images = [];
 
-    function stub_image() {
-        const image = {};
-        image.to_$ = () => ({
-            on: (name, f) => {
-                assert.equal(name, "load");
-                image.load_f = f;
-            },
-        });
-        images.push(image);
-        return image;
+    class Image {
+        constructor() {
+            images.push(this);
+        }
+        to_$() {
+            return {
+                on: (name, f) => {
+                    assert.equal(name, "load");
+                    this.load_f = f;
+                },
+            };
+        }
     }
 
-    set_global("Image", stub_image);
+    set_global("Image", Image);
 
     return {
         get: (i) => images[i],

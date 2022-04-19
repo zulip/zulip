@@ -18,12 +18,12 @@ set_global("document", {
     querySelector: () => {},
 });
 set_global("navigator", {});
-// eslint-disable-next-line prefer-arrow-callback
-set_global("ResizeObserver", function () {
-    return {
-        observe: () => {},
-    };
-});
+set_global(
+    "ResizeObserver",
+    class ResizeObserver {
+        observe() {}
+    },
+);
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");

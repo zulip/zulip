@@ -107,29 +107,28 @@ function test_helper() {
 }
 
 function stub_message_list() {
-    message_list.MessageList = function (opts) {
-        this.data = opts.data;
-        this.view = {
+    message_list.MessageList = class MessageList {
+        constructor(opts) {
+            this.data = opts.data;
+        }
+
+        view = {
             set_message_offset(offset) {
                 this.offset = offset;
             },
         };
 
-        return this;
-    };
-
-    message_list.MessageList.prototype = {
         get(msg_id) {
             return this.data.get(msg_id);
-        },
+        }
 
         empty() {
             return this.data.empty();
-        },
+        }
 
         select_id(msg_id) {
             this.selected_id = msg_id;
-        },
+        }
     };
 }
 

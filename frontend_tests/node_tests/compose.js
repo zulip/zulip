@@ -17,12 +17,12 @@ set_global("document", {
     querySelector: () => {},
 });
 set_global("navigator", {});
-// eslint-disable-next-line prefer-arrow-callback
-set_global("ResizeObserver", function () {
-    return {
-        observe: () => {},
-    };
-});
+set_global(
+    "ResizeObserver",
+    class ResizeObserver {
+        observe() {}
+    },
+);
 
 const fake_now = 555;
 
@@ -425,10 +425,15 @@ test_ui("initialize", ({override, override_rewire}) => {
     });
 
     let xmlhttprequest_checked = false;
-    set_global("XMLHttpRequest", function () {
-        this.upload = true;
-        xmlhttprequest_checked = true;
-    });
+    set_global(
+        "XMLHttpRequest",
+        class XMLHTTPRequest {
+            upload = true;
+            constructor() {
+                xmlhttprequest_checked = true;
+            }
+        },
+    );
     $("#compose .compose_upload_file").addClass("notdisplayed");
 
     page_params.max_file_upload_size_mib = 512;

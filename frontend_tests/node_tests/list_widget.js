@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, mock_jquery, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, mock_jquery, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -11,7 +11,6 @@ const blueslip = require("../zjsunit/zblueslip");
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
 const ui = mock_esm("../../static/js/ui");
-set_global("Element", () => {});
 
 // We only need very simple jQuery wrappers for when the
 

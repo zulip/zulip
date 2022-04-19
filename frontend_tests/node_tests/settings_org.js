@@ -11,12 +11,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-let form_data;
-
-const _FormData = function () {
-    return form_data;
-};
-
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
 const channel = mock_esm("../../static/js/channel");
@@ -40,7 +34,14 @@ mock_esm("../../static/js/ui_report", {
     },
 });
 
-set_global("FormData", _FormData);
+set_global(
+    "FormData",
+    class FormData {
+        append(field, val) {
+            this[field] = val;
+        }
+    },
+);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
@@ -332,12 +333,6 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    form_data = {
-        append(field, val) {
-            form_data[field] = val;
-        },
-    };
-
     const file_input = [{files: ["image1.png", "image2.png"]}];
 
     let posted;
