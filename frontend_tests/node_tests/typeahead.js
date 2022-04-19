@@ -7,18 +7,28 @@ const {run_test} = require("../zjsunit/test");
 
 const typeahead = zrequire("../shared/js/typeahead");
 
+const unicode_emojis = [
+    ["1f43c", "panda_face"],
+    ["1f642", "smile"],
+];
+
 const emojis = [
     {emoji_name: "japanese_post_office", url: "TBD"},
-    {emoji_name: "panda_face", emoji_code: "1f43c"},
-    {emoji_name: "smile", emoji_code: "1f642"},
     {emoji_name: "tada", random_field: "whatever"},
+    ...unicode_emojis.map(([emoji_code, emoji_name]) => ({
+        emoji_name,
+        emoji_code,
+    })),
 ];
 
 run_test("get_emoji_matcher", () => {
     function assert_matches(query, expected) {
         const matcher = typeahead.get_emoji_matcher(query);
         assert.deepEqual(
-            emojis.filter((emoji) => matcher(emoji)).map((emoji) => emoji.emoji_name),
+            emojis
+                .filter((emoji) => matcher(emoji))
+                .map((emoji) => emoji.emoji_name)
+                .sort(),
             expected,
         );
     }
