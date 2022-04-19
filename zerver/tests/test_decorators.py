@@ -2170,7 +2170,7 @@ class TestRequestNotes(ZulipTestCase):
         # no realm can be set on the request notes.
         with mock.patch("zerver.views.home.zulip_login_required", lambda f: mock_home(None)):
             result = self.client_get("/", subdomain="")
-            self.assertEqual(result.status_code, 200)
+            self.assertEqual(result.status_code, 404)
 
         root_subdomain_realm = do_create_realm("", "Root Domain")
         # Now test that that realm does get set, if it exists, for requests

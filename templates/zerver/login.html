@@ -34,7 +34,6 @@ page can be easily identified in it's respective JavaScript file. -->
                     <div class="login-social">
                         <form class="anonymous_access_form form-inline" action="/" method="post">
                             {{ csrf_input }}
-                            <input type="hidden" name="prefers_web_public_view" value="true" />
                             <input type="hidden" name="next" value="{{ next }}" />
                             <button class="full-width">
                                 {{ _('Access without an account') }}

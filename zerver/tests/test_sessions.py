@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import change_user_is_active
 from zerver.lib.sessions import (
     delete_all_deactivated_user_sessions,
@@ -28,8 +29,8 @@ class TestSessions(ZulipTestCase):
         action()
         if expected_result:
             result = self.client_get("/", subdomain=realm.subdomain)
-            self.assertEqual(302, result.status_code)
-            self.assertEqual("/login/", result.url)
+            self.assertEqual(200, result.status_code)
+            self.assertTrue('is_spectator":true' in str(result.content))
         else:
             self.assertIn("_auth_user_id", self.client.session)
 
@@ -40,8 +41,8 @@ class TestSessions(ZulipTestCase):
         for session in user_sessions(user_profile):
             delete_session(session)
         result = self.client_get("/")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue('is_spectator":true' in str(result.content))
 
     def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -77,8 +78,19 @@ class TestSessions(ZulipTestCase):
             get_realm("zulip"),
             True,
         )
+
+        lear_realm = get_realm("lear")
+        do_set_realm_property(lear_realm, "enable_spectator_access", True, acting_user=None)
+        self.make_stream(
+            "web_public_stream",
+            realm=lear_realm,
+            is_web_public=True,
+        )
         self.do_test_session(
-            self.mit_user("sipbtest"), lambda: delete_all_user_sessions(), get_realm("zephyr"), True
+            self.lear_user("cordelia"),
+            lambda: delete_all_user_sessions(),
+            lear_realm,
+            True,
         )
 
     def test_delete_all_deactivated_user_sessions(self) -> None:
@@ -89,8 +101,8 @@ class TestSessions(ZulipTestCase):
         self.client_post("/accounts/logout/")
         delete_all_deactivated_user_sessions()
         result = self.client_get("/")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue('is_spectator":true' in str(result.content))
 
         # Test nothing happens to an active user's session
         self.login("othello")
@@ -110,8 +122,8 @@ class TestSessions(ZulipTestCase):
             [f"INFO:root:Deactivating session for deactivated user {user_profile_3.id}"],
         )
         result = self.client_get("/")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result.status_code, 200)
+        self.assertTrue('is_spectator":true' in str(result.content))
 
 
 class TestExpirableSessionVars(ZulipTestCase):
