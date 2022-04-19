@@ -50,6 +50,12 @@ run_test("get_emoji_matcher: misc matches", () => {
     assert_emoji_matches("japanese post ", ["japanese_post_office"]);
 });
 
+run_test("matches starting at non-first word, too", () => {
+    assert_emoji_matches("ice_cream", ["ice_cream", "soft_ice_cream"]);
+    assert_emoji_matches("blue_dia", ["large_blue_diamond", "small_blue_diamond"]);
+    assert_emoji_matches("traffic_", ["horizontal_traffic_light", "traffic_light"]);
+});
+
 run_test("triage", () => {
     const alice = {name: "alice"};
     const alicia = {name: "Alicia"};

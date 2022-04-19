@@ -44,27 +44,10 @@ function query_matches_string(query, source_str, split_char) {
     }
 
     // If there is a separator character in the query, then we
-    // require a perfect prefix match (e.g. for 'ab cd ef',
-    // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-    // ef', etc.).
-
-    const queries = query.split(split_char);
-    const sources = source_str.split(split_char);
-    let i;
-
-    for (i = 0; i < queries.length - 1; i += 1) {
-        if (sources[i] !== queries[i]) {
-            return false;
-        }
-    }
-
-    // This block is effectively a final iteration of the last
-    // loop.  What differs is that for the last word, a
-    // partial match at the beginning of the word is OK.
-    if (sources[i] === undefined) {
-        return false;
-    }
-    return sources[i].startsWith(queries[i]);
+    // require the match to start at the start of a token.
+    // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
+    // but not 'b cd ef'.)
+    return source_str.startsWith(query) || source_str.includes(split_char + query);
 }
 
 // This function attempts to match a query with source's attributes.
