@@ -36,7 +36,7 @@ run_test("get_emoji_matcher", () => {
     function assert_matches(query, expected) {
         const matcher = typeahead.get_emoji_matcher(query);
         assert.deepEqual(
-            emojis.filter((emoji) => matcher(emoji)),
+            emojis.filter((emoji) => matcher(emoji)).map((emoji) => emoji.emoji_name),
             expected,
         );
     }
@@ -45,13 +45,13 @@ run_test("get_emoji_matcher", () => {
     assert_matches("da_", []);
     assert_matches("da ", []);
 
-    assert_matches("da", [emoji_panda_face, emoji_tada]);
-    assert_matches("panda ", [emoji_panda_face]);
-    assert_matches("smil", [emoji_smile]);
-    assert_matches("mile", [emoji_smile]);
+    assert_matches("da", ["panda_face", "tada"]);
+    assert_matches("panda ", ["panda_face"]);
+    assert_matches("smil", ["smile"]);
+    assert_matches("mile", ["smile"]);
 
-    assert_matches("japanese_post_", [emoji_japanese_post_office]);
-    assert_matches("japanese post ", [emoji_japanese_post_office]);
+    assert_matches("japanese_post_", ["japanese_post_office"]);
+    assert_matches("japanese post ", ["japanese_post_office"]);
 });
 
 run_test("triage", () => {
