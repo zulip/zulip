@@ -6460,6 +6460,11 @@ paths:
         **Note**: See [configuring message editing][config-message-editing]
         for detailed documentation on when users are allowed to edit topics.
 
+        **Changes**: Before Zulip 7.0 (feature level 159), editing
+        streams and topics of messages was forbidden if
+        `allow_message_editing` was `false`, regardless of the
+        `edit_topic_policy` or `move_messages_between_streams_policy`.
+
         [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:

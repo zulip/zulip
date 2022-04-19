@@ -918,7 +918,7 @@ def check_update_message(
     """
     message, ignored_user_message = access_message(user_profile, message_id)
 
-    if not user_profile.realm.allow_message_editing:
+    if content is not None and not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
 
     # The zerver/views/message_edit.py call point already strips this

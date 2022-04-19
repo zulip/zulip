@@ -1043,19 +1043,18 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, "unlimited", Realm.POLICY_ADMINS_ONLY)
         do_edit_message_assert_success(id_, "D")
 
-        # without allow_message_editing, nothing is allowed
+        # without allow_message_editing, editing content is not allowed but
+        # editing topic is allowed if topic-edit time limit has not passed
+        # irrespective of content-edit time limit.
         set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "E", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "B", True)
+
+        set_message_editing_params(False, 240, Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_success(id_, "E", True)
         set_message_editing_params(False, 120, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "F", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "F", True)
         set_message_editing_params(False, "unlimited", Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_error(
-            id_, "G", "Your organization has turned off message editing", True
-        )
+        do_edit_message_assert_success(id_, "G", True)
 
     def test_edit_topic_policy(self) -> None:
         def set_message_editing_params(
@@ -1162,11 +1161,9 @@ class EditMessageTest(EditMessageTestCase):
             id_, "H", "You don't have permission to edit this message", "iago"
         )
 
-        # users cannot edit topics if allow_message_editing is False
+        # users can edit topics even if allow_message_editing is False
         set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
-        do_edit_message_assert_error(
-            id_, "D", "Your organization has turned off message editing", "cordelia"
-        )
+        do_edit_message_assert_success(id_, "D", "cordelia")
 
         # non-admin users cannot edit topics sent > 72 hrs ago
         message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
