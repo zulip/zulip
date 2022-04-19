@@ -10,27 +10,12 @@ const typeahead = zrequire("../shared/js/typeahead");
 // The data structures here may be different for
 // different apps; the only key thing is we look
 // at emoji_name and we'll return the entire structures.
-
-const emoji_japanese_post_office = {
-    emoji_name: "japanese_post_office",
-    url: "TBD",
-};
-
-const emoji_panda_face = {
-    emoji_name: "panda_face",
-    emoji_code: "1f43c",
-};
-
-const emoji_smile = {
-    emoji_name: "smile",
-};
-
-const emoji_tada = {
-    emoji_name: "tada",
-    random_field: "whatever",
-};
-
-const emojis = [emoji_japanese_post_office, emoji_panda_face, emoji_smile, emoji_tada];
+const emojis = [
+    {emoji_name: "japanese_post_office", url: "TBD"},
+    {emoji_name: "panda_face", emoji_code: "1f43c"},
+    {emoji_name: "smile"},
+    {emoji_name: "tada", random_field: "whatever"},
+];
 
 run_test("get_emoji_matcher", () => {
     function assert_matches(query, expected) {
