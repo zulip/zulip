@@ -30,4 +30,13 @@
             </button>
         </div>
     </form>
+    {{#if require_modal_footer}}
+        <div class="modal__footer">
+            <button type="button" class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+            <button type="button" class="modal__btn dialog_submit_button">
+                <span>{{{ html_submit_button }}}</span>
+                <div class="modal__spinner"></div>
+            </button>
+        </div>
+    {{/if }}
 </div>

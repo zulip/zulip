@@ -317,9 +317,20 @@ ul {
         text-align: center;
         line-height: 30px;
 
-        #edit-button {
+        #edit-button,
+        .full-profile-edit-user-button {
             font-size: 18px;
             margin-left: 10px;
+        }
+
+        .full-profile-edit-user-button {
+            background: transparent;
+            border: none;
+            color: hsl(200, 100%, 40%);
+
+            &:hover {
+                color: hsl(200, 79%, 66%);
+            }
         }
     }
 

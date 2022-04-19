@@ -6,9 +6,13 @@
                 <div id="name">
                     {{full_name}}
                     {{#if is_me}}
-                    <a href="/#settings/profile">
-                        <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
+                    <a href="/#settings/profile" aria-label="{{t 'Edit your profile' }}" >
+                        <i class="fa fa-edit" id="edit-button"></i>
                     </a>
+                    {{else if can_manage_user}}
+                    <button data-tippy-content="{{t 'Edit profile' }}" aria-label="{{t 'Edit profile'}}" type="button" class="full-profile-edit-user-button">
+                        <i class="fa fa-edit"></i>
+                    </button>
                     {{/if}}
                 </div>
                 <div id="tab-toggle" class="center"></div>
@@ -89,6 +93,7 @@
                             <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
                         </div>
                     </div>
+                    <div class="tabcontent" id="user-profile-manage-user-tab"></div>
                 </div>
             </main>
         </div>
