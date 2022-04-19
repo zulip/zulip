@@ -85,6 +85,9 @@
                             <table class="user-group-list" data-empty="{{t 'No user group subscriptions.'}}"></table>
                         </div>
                     </div>
+                    {{#if can_manage_user}}
+                        <div class="tabcontent" id="user-profile-manage-user-tab"></div>
+                    {{/if}}
                 </div>
             </main>
         </div>
