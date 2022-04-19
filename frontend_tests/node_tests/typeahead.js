@@ -28,32 +28,46 @@ const emojis = [
     })),
 ];
 
-function assert_emoji_matches(query, expected) {
+function emoji_matches(query) {
     const matcher = typeahead.get_emoji_matcher(query);
-    const matches = emojis.filter((emoji) => matcher(emoji));
-    assert.deepEqual(matches.map((emoji) => emoji.emoji_name).sort(), expected);
+    return emojis.filter((emoji) => matcher(emoji));
+}
+
+function assert_emoji_matches(query, expected) {
+    const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
+    assert.deepEqual(names.sort(), expected);
 }
 
 run_test("get_emoji_matcher: nonmatches", () => {
     assert_emoji_matches("notaemoji", []);
     assert_emoji_matches("da_", []);
-    assert_emoji_matches("da ", []);
 });
 
 run_test("get_emoji_matcher: misc matches", () => {
     assert_emoji_matches("da", ["panda_face", "tada"]);
-    assert_emoji_matches("panda ", ["panda_face"]);
     assert_emoji_matches("smil", ["big_smile", "smile"]);
     assert_emoji_matches("mile", ["big_smile", "smile"]);
-
     assert_emoji_matches("japanese_post_", ["japanese_post_office"]);
-    assert_emoji_matches("japanese post ", ["japanese_post_office"]);
 });
 
 run_test("matches starting at non-first word, too", () => {
     assert_emoji_matches("ice_cream", ["ice_cream", "soft_ice_cream"]);
     assert_emoji_matches("blue_dia", ["large_blue_diamond", "small_blue_diamond"]);
     assert_emoji_matches("traffic_", ["horizontal_traffic_light", "traffic_light"]);
+});
+
+run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
+    function assert_equivalent(query) {
+        assert.deepEqual(emoji_matches(query), emoji_matches(query.replace(" ", "_")));
+    }
+    assert_equivalent("da ");
+    assert_equivalent("panda ");
+    assert_equivalent("japanese post ");
+    assert_equivalent("ice ");
+    assert_equivalent("ice cream");
+    assert_equivalent("blue dia");
+    assert_equivalent("traffic ");
+    assert_equivalent("traffic l");
 });
 
 run_test("triage", () => {
