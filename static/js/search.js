@@ -224,6 +224,7 @@ export function initiate_search() {
         $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
     }
+    clear_search_form();
 }
 
 export function clear_search_form() {
