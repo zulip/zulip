@@ -413,7 +413,9 @@ instructions for other supported platforms.
 
 ### Upgrading from Debian 10 to 11
 
-1. Upgrade your server to the latest Zulip `4.x` release.
+1. Upgrade your server to the latest `5.x` release. You can only
+   upgrade to Zulip Server 6.0 and newer after completing this
+   process, since newer releases don't support Debian 10.
 
 2. As the Zulip user, stop the Zulip server and run the following
    to back up the system:
@@ -464,7 +466,7 @@ instructions for other supported platforms.
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
 
-7. As an additional step, you can also [upgrade the postgresql version](#upgrading-postgresql).
+7. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
 
 ### Upgrading from Debian 9 to 10
 
@@ -519,7 +521,7 @@ instructions for other supported platforms.
    be able to navigate to its URL and confirm everything is working
    correctly.
 
-6. [Upgrade to the latest Zulip release](#upgrading-to-a-release), now
+6. [Upgrade to the latest `5.x` release](#upgrading-to-a-release), now
    that your server is running a supported operating system.
 
 7. Debian 10 has a different version of the low-level glibc
@@ -536,6 +538,9 @@ instructions for other supported platforms.
    ```bash
    /home/zulip/deployments/current/manage.py audit_fts_indexes
    ```
+
+9. [Upgrading from Debian 10 to 11](#upgrading-from-debian-10-to-11),
+   so that you are running a supported operating system.
 
 ## Upgrading PostgreSQL
 

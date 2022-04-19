@@ -422,12 +422,7 @@ importlib-metadata==4.11.3 ; python_version < "3.10" \
     --hash=sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539
     # via
     #   -r requirements/common.in
-    #   click
-    #   cssutils
-    #   jsonschema
     #   markdown
-    #   redis
-    #   sqlalchemy
     #   zulip-bots
 importlib-resources==5.4.0 ; python_version < "3.9" \
     --hash=sha256:33a95faed5fc19b4bc16b29a6eeae248a3fe69dd55d4d229d2b480e23eeaad45 \
@@ -1308,10 +1303,6 @@ typing-extensions==4.1.1 \
     --hash=sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2
     # via
     #   -r requirements/common.in
-    #   argon2-cffi
-    #   asgiref
-    #   async-timeout
-    #   importlib-metadata
     #   mypy-boto3-s3
     #   redis
     #   zulip

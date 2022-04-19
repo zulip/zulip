@@ -212,7 +212,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id $os_version_id" in
-    'debian 10' | 'debian 11' | 'ubuntu 20.04') ;;
+    'debian 11' | 'ubuntu 20.04') ;;
     *)
         set +x
         cat <<EOF
@@ -220,9 +220,8 @@ case "$os_id $os_version_id" in
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
- - Debian 10 "buster"
- - Debian 11 "bullseye"
- - Ubuntu 20.04 LTS "focal"
+ - Debian 11
+ - Ubuntu 20.04 LTS
 
 For more information, see:
   https://zulip.readthedocs.io/en/latest/production/requirements.html

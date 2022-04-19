@@ -78,9 +78,7 @@ greenlet==1.1.2 \
 importlib-metadata==4.11.3 ; python_version < "3.10" \
     --hash=sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6 \
     --hash=sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539
-    # via
-    #   -r requirements/mypy.in
-    #   sqlalchemy
+    # via -r requirements/mypy.in
 lxml-stubs==0.4.0 \
     --hash=sha256:184877b42127256abc2b932ba8bd0ab5ea80bd0b0fee618d16daa40e0b71abee \
     --hash=sha256:3b381e9e82397c64ea3cc4d6f79d1255d015f7b114806d4826218805c10ec003
@@ -164,32 +162,6 @@ sqlalchemy2-stubs==0.0.2a21 \
 tomli==2.0.1 \
     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc \
     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f
-    # via mypy
-typed-ast==1.5.2 \
-    --hash=sha256:0eb77764ea470f14fcbb89d51bc6bbf5e7623446ac4ed06cbd9ca9495b62e36e \
-    --hash=sha256:1098df9a0592dd4c8c0ccfc2e98931278a6c6c53cb3a3e2cf7e9ee3b06153344 \
-    --hash=sha256:183b183b7771a508395d2cbffd6db67d6ad52958a5fdc99f450d954003900266 \
-    --hash=sha256:18fe320f354d6f9ad3147859b6e16649a0781425268c4dde596093177660e71a \
-    --hash=sha256:26a432dc219c6b6f38be20a958cbe1abffcc5492821d7e27f08606ef99e0dffd \
-    --hash=sha256:294a6903a4d087db805a7656989f613371915fc45c8cc0ddc5c5a0a8ad9bea4d \
-    --hash=sha256:31d8c6b2df19a777bc8826770b872a45a1f30cfefcfd729491baa5237faae837 \
-    --hash=sha256:33b4a19ddc9fc551ebabca9765d54d04600c4a50eda13893dadf67ed81d9a098 \
-    --hash=sha256:42c47c3b43fe3a39ddf8de1d40dbbfca60ac8530a36c9b198ea5b9efac75c09e \
-    --hash=sha256:525a2d4088e70a9f75b08b3f87a51acc9cde640e19cc523c7e41aa355564ae27 \
-    --hash=sha256:58ae097a325e9bb7a684572d20eb3e1809802c5c9ec7108e85da1eb6c1a3331b \
-    --hash=sha256:676d051b1da67a852c0447621fdd11c4e104827417bf216092ec3e286f7da596 \
-    --hash=sha256:74cac86cc586db8dfda0ce65d8bcd2bf17b58668dfcc3652762f3ef0e6677e76 \
-    --hash=sha256:8c08d6625bb258179b6e512f55ad20f9dfef019bbfbe3095247401e053a3ea30 \
-    --hash=sha256:90904d889ab8e81a956f2c0935a523cc4e077c7847a836abee832f868d5c26a4 \
-    --hash=sha256:963a0ccc9a4188524e6e6d39b12c9ca24cc2d45a71cfdd04a26d883c922b4b78 \
-    --hash=sha256:bbebc31bf11762b63bf61aaae232becb41c5bf6b3461b80a4df7e791fabb3aca \
-    --hash=sha256:bc2542e83ac8399752bc16e0b35e038bdb659ba237f4222616b4e83fb9654985 \
-    --hash=sha256:c29dd9a3a9d259c9fa19d19738d021632d673f6ed9b35a739f48e5f807f264fb \
-    --hash=sha256:c7407cfcad702f0b6c0e0f3e7ab876cd1d2c13b14ce770e412c0c4b9728a0f88 \
-    --hash=sha256:da0a98d458010bf4fe535f2d1e367a2e2060e105978873c04c04212fb20543f7 \
-    --hash=sha256:df05aa5b241e2e8045f5f4367a9f6187b09c4cdf8578bb219861c4e27c443db5 \
-    --hash=sha256:f290617f74a610849bd8f5514e34ae3d09eafd521dceaa6cf68b3f4414266d4e \
-    --hash=sha256:f30ddd110634c2d7534b2d4e0e22967e88366b0d356b24de87419cc4410c41b7
     # via mypy
 types-beautifulsoup4==4.10.16 \
     --hash=sha256:903d20430df659e98ea5063c013b9219d91861ecef145a0ac63061f0aad63d7b \
@@ -299,7 +271,6 @@ typing-extensions==4.1.1 \
     # via
     #   boto3-stubs
     #   botocore-stubs
-    #   importlib-metadata
     #   mypy
     #   mypy-boto3-s3
     #   sqlalchemy2-stubs
