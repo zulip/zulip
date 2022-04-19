@@ -28,29 +28,26 @@ const emojis = [
     })),
 ];
 
-run_test("get_emoji_matcher", () => {
-    function assert_matches(query, expected) {
-        const matcher = typeahead.get_emoji_matcher(query);
-        assert.deepEqual(
-            emojis
-                .filter((emoji) => matcher(emoji))
-                .map((emoji) => emoji.emoji_name)
-                .sort(),
-            expected,
-        );
-    }
+function assert_emoji_matches(query, expected) {
+    const matcher = typeahead.get_emoji_matcher(query);
+    const matches = emojis.filter((emoji) => matcher(emoji));
+    assert.deepEqual(matches.map((emoji) => emoji.emoji_name).sort(), expected);
+}
 
-    assert_matches("notaemoji", []);
-    assert_matches("da_", []);
-    assert_matches("da ", []);
+run_test("get_emoji_matcher: nonmatches", () => {
+    assert_emoji_matches("notaemoji", []);
+    assert_emoji_matches("da_", []);
+    assert_emoji_matches("da ", []);
+});
 
-    assert_matches("da", ["panda_face", "tada"]);
-    assert_matches("panda ", ["panda_face"]);
-    assert_matches("smil", ["big_smile", "smile"]);
-    assert_matches("mile", ["big_smile", "smile"]);
+run_test("get_emoji_matcher: misc matches", () => {
+    assert_emoji_matches("da", ["panda_face", "tada"]);
+    assert_emoji_matches("panda ", ["panda_face"]);
+    assert_emoji_matches("smil", ["big_smile", "smile"]);
+    assert_emoji_matches("mile", ["big_smile", "smile"]);
 
-    assert_matches("japanese_post_", ["japanese_post_office"]);
-    assert_matches("japanese post ", ["japanese_post_office"]);
+    assert_emoji_matches("japanese_post_", ["japanese_post_office"]);
+    assert_emoji_matches("japanese post ", ["japanese_post_office"]);
 });
 
 run_test("triage", () => {
