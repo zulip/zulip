@@ -719,6 +719,10 @@ export function initialize() {
         compose_actions.update_placeholder_text();
     });
 
+    $("#stream_message_recipient_topic").on("keyup", () => {
+        compose_actions.update_placeholder_text();
+    });
+
     $("body").on("click", ".formatting_button", (e) => {
         const $compose_click_target = $(compose_ui.get_compose_click_target(e));
         const $textarea = $compose_click_target.closest("form").find("textarea");
