@@ -104,25 +104,14 @@ def validate_message_edit_payload(
         raise JsonableError(_("Widgets cannot be edited."))
 
 
-def can_edit_content_or_topic(
+def can_edit_topic(
     message: Message,
     user_profile: UserProfile,
     is_no_topic_msg: bool,
-    content: Optional[str] = None,
-    topic_name: Optional[str] = None,
 ) -> bool:
-    # You have permission to edit the message (both content and topic) if you sent it.
+    # You have permission to edit the message topic if you sent it.
     if message.sender_id == user_profile.id:
         return True
-
-    # You cannot edit the content of message sent by someone else.
-    if content is not None:
-        return False
-
-    assert topic_name is not None
-
-    # The following cases are the various reasons a user might be
-    # allowed to edit topics.
 
     # We allow anyone to edit (no topic) messages to help tend them.
     if is_no_topic_msg:
@@ -918,13 +907,15 @@ def check_update_message(
 
     validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
+    if content is not None:
+        # You cannot edit the content of message sent by someone else.
+        if message.sender_id != user_profile.id:
+            raise JsonableError(_("You don't have permission to edit this message"))
+
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    if content is not None or topic_name is not None:
-        if not can_edit_content_or_topic(
-            message, user_profile, is_no_topic_msg, content, topic_name
-        ):
-            raise JsonableError(_("You don't have permission to edit this message"))
+    if topic_name is not None and not can_edit_topic(message, user_profile, is_no_topic_msg):
+        raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
