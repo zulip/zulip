@@ -28,6 +28,8 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: Nobody added as an option for the realm setting
   `move_messages_between_streams_policy`.
+* [`PATCH /messages/{message_id}`](/api/update-message): Permission to edit stream
+  and topic of messages do not depend on `allow_message_editing` setting now.
 
 Feature levels 157-158 are reserved for future use in 6.x maintenance
 releases.
