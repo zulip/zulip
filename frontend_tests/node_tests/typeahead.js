@@ -10,6 +10,13 @@ const typeahead = zrequire("../shared/js/typeahead");
 const unicode_emojis = [
     ["1f43c", "panda_face"],
     ["1f642", "smile"],
+    ["1f604", "big_smile"],
+    ["1f368", "ice_cream"],
+    ["1f366", "soft_ice_cream"],
+    ["1f6a5", "horizontal_traffic_light"],
+    ["1f6a6", "traffic_light"],
+    ["1f537", "large_blue_diamond"],
+    ["1f539", "small_blue_diamond"],
 ];
 
 const emojis = [
@@ -39,8 +46,8 @@ run_test("get_emoji_matcher", () => {
 
     assert_matches("da", ["panda_face", "tada"]);
     assert_matches("panda ", ["panda_face"]);
-    assert_matches("smil", ["smile"]);
-    assert_matches("mile", ["smile"]);
+    assert_matches("smil", ["big_smile", "smile"]);
+    assert_matches("mile", ["big_smile", "smile"]);
 
     assert_matches("japanese_post_", ["japanese_post_office"]);
     assert_matches("japanese post ", ["japanese_post_office"]);
