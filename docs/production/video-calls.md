@@ -27,11 +27,10 @@ installation, you'll need to register a custom Zoom app as follows:
      OAuth** to
      `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
-     
-   - On the **OAuth allow list** tab, add the set URL 
+   - On the **OAuth allow list** tab, add the set URL
      `https://zulip.example.com/calls/zoom/complete` to the **Add allow lists**
-    
-   - On the **Scopes** tab, add the `meeting:write` scope 
+
+   - On the **Scopes** tab, add the `meeting:write` scope
      by clicking on **+Add Scope** then **meeting** then **View and manage your meetings**.
 
 You can then configure your Zulip server to use that Zoom app as
