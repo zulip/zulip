@@ -176,3 +176,16 @@ run_test("sort_emojis: sm", () => {
         "big_smile",
     ]);
 });
+
+run_test("sort_emojis: SM", () => {
+    const emoji_list = [
+        {emoji_name: "big_smile"},
+        {emoji_name: "slight_smile", emoji_code: "1f642"},
+        {emoji_name: "small_airplane"},
+    ];
+    assert.deepEqual(sort_emojis(emoji_list, "SM"), [
+        "slight_smile",
+        "small_airplane",
+        "big_smile",
+    ]);
+});
