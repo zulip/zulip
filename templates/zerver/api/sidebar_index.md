@@ -15,6 +15,7 @@
 ## REST API
 
 * [Overview](/api/rest)
+* [OpenAPI](/api/openapi)
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
 * [Configuring the Python bindings](/api/configuring-python-bindings)
