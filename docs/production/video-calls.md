@@ -10,7 +10,8 @@ server.
 To use the [Zoom](https://zoom.us) integration on a self-hosted
 installation, you'll need to register a custom Zoom app as follows:
 
-1. Select [**Build App**](https://marketplace.zoom.us/develop/create)
+1. Click on **Develop's** drop-down list (Found at the top right corner of Zoom App Marketplace)
+   and Select [**Build App**](https://marketplace.zoom.us/develop/create)
    at the Zoom Marketplace.
 
 1. Create an app with the **OAuth** type.
@@ -22,11 +23,16 @@ installation, you'll need to register a custom Zoom app as follows:
 
 1. Inside the Zoom app management page:
 
-   - On the **App Credentials** tab, set both the **Redirect URL for
-     OAuth** and the **Whitelist URL** to
+   - On the **App Credentials** tab, set the **Redirect URL for
+     OAuth** to
      `https://zulip.example.com/calls/zoom/complete` (replacing
      `zulip.example.com` by your main Zulip hostname).
-   - On the **Scopes** tab, add the `meeting:write` scope.
+     
+   - On the **OAuth allow list** tab, add the set URL 
+     `https://zulip.example.com/calls/zoom/complete` to the **Add allow lists**
+    
+   - On the **Scopes** tab, add the `meeting:write` scope 
+     by clicking on **+Add Scope** then **meeting** then **View and manage your meetings**.
 
 You can then configure your Zulip server to use that Zoom app as
 follows:
