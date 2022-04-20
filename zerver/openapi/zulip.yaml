@@ -38,7 +38,103 @@ security:
 #######################
 # Endpoint definitions
 #######################
+
 paths:
+  /realm/icon:
+    post:
+      operationId: upload-realm-icon
+      summary: Upload Realm Icon
+      tags: ["server_and_organizations"]
+      description: |
+        upload Realm Icon
+        `POST {{ api_url }}/v1/realm/icon/post_realm_icon
+      x-parameter-description: |
+                As described above, the image file to upload must be provided in the
+                request's body.
+
+                ## Maximum file size
+
+                The maximum file size for uploads can be configured by the
+                administrator of the Zulip server by setting `MAX_ICON_FILE_SIZE_MIB`
+                in the [server's settings][1]. `MAX_ICON_FILE_SIZE_MIB` defaults
+                to 5MB.
+
+                [1]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  format: binary
+                  example: /path/to/icon.png
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+    delete:
+      operationId: delete-icon-backend
+      summary: Delete icon backend
+      tags: ["server_and_organizations"]
+      description: |
+        Delete an uploaded icon
+        `DELETE {{ api_url }}/v1/realm/icon/delete_icon_backend
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - example: { "msg": "", "result": "success" }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {
+                        "msg": "Cannot deactivate the only organization owner",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON error response when attempting to deactivate the only
+                      organization owner in an organization:
+    get:
+      operationId: get-icon-backend
+      summary: Get icon backend
+      tags: ["server_and_organizations"]
+      description: |
+        Get all icon backend
+        `GET {{ api_url }}/v1/realm/icon/get_icon_backend
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: { }
+                      msg: { }
+                      custom_fields:
+                        type: string
+                        description: |
+                          get all realm icons
   /fetch_api_key:
     post:
       operationId: fetch-api-key
