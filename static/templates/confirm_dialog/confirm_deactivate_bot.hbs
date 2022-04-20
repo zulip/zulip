@@ -1,0 +1,7 @@
+<p>
+    {{#tr}}
+        When you deactivate <z-user></z-user>.
+        {{#*inline "z-user"}}<strong>{{username}}</strong>{{#if email}} &lt;{{email}}&gt;{{/if}}{{/inline}}
+    {{/tr}}
+</p>
+<p>{{t "They will not send messages or take any other actions." }}</p>

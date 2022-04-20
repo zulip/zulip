@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
@@ -26,7 +27,6 @@ import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
-import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 
 const section = {
@@ -462,7 +462,24 @@ function handle_deactivation($tbody) {
     });
 }
 
-function handle_bot_deactivation($tbody, $status_field) {
+function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
+    const bot = people.get_by_user_id(bot_id);
+    const opts = {
+        username: bot.full_name,
+        email: settings_data.email_for_user_settings(bot),
+    };
+    const html_body = render_settings_deactivation_bot_modal(opts);
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: bot.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-bot",
+        html_body,
+        on_click: handle_confirm,
+        loading_spinner,
+    });
+}
+
+function handle_bot_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -470,14 +487,13 @@ function handle_bot_deactivation($tbody, $status_field) {
         const $button_elem = $(e.target);
         const $row = $button_elem.closest(".user_row");
         const bot_id = Number.parseInt($row.attr("data-user-id"), 10);
-        const url = "/json/bots/" + encodeURIComponent(bot_id);
 
-        const opts = {
-            error_continuation(xhr) {
-                ui_report.generic_row_button_error(xhr, $button_elem);
-            },
-        };
-        settings_ui.do_settings_change(channel.del, url, {}, $status_field, opts);
+        function handle_confirm() {
+            const url = "/json/bots/" + encodeURIComponent(bot_id);
+            dialog_widget.submit_api_request(channel.del, url);
+        }
+
+        confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 }
 
@@ -695,7 +711,7 @@ section.bots.handle_events = () => {
     const $tbody = $("#admin_bots_table").expectOne();
     const $status_field = $("#bot-field-status").expectOne();
 
-    handle_bot_deactivation($tbody, $status_field);
+    handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
     handle_bot_form($tbody, $status_field);
 };
