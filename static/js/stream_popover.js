@@ -406,12 +406,27 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
 
     hide_topic_popover();
 
-    function move_topic() {
-        const params = Object.fromEntries(
+    function get_params_from_form() {
+        return Object.fromEntries(
             $("#move_topic_form")
                 .serializeArray()
                 .map(({name, value}) => [name, value]),
         );
+    }
+
+    function update_submit_button_disabled_state(select_stream_id) {
+        const {current_stream_id, new_topic_name, old_topic_name} = get_params_from_form();
+
+        // Unlike most topic comparisons in Zulip, we intentionally do
+        // a case-sensitive comparison, since adjusting the
+        // capitalization of a topic is a valid operation.
+        $("#move_topic_modal .dialog_submit_button")[0].disabled =
+            Number.parseInt(current_stream_id, 10) === Number.parseInt(select_stream_id, 10) &&
+            new_topic_name.trim() === old_topic_name.trim();
+    }
+
+    function move_topic() {
+        const params = get_params_from_form();
 
         const {old_topic_name} = params;
         const select_stream_id = stream_widget.value();
@@ -426,18 +441,6 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
-
-        if (
-            current_stream_id === Number.parseInt(select_stream_id, 10) &&
-            new_topic_name.toLowerCase() === old_topic_name.toLowerCase()
-        ) {
-            dialog_widget.hide_dialog_spinner();
-            ui_report.client_error(
-                $t_html({defaultMessage: "Please select a different stream or change topic name."}),
-                $("#move_topic_modal #dialog_error"),
-            );
-            return;
-        }
 
         dialog_widget.show_dialog_spinner();
         message_edit.with_first_message_id(
@@ -486,8 +489,14 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             default_text: $t({defaultMessage: "No streams"}),
             include_current_item: false,
             value: current_stream_id,
+            on_update: update_submit_button_disabled_state,
         };
         stream_widget = new DropdownListWidget(opts);
+
+        update_submit_button_disabled_state(stream_widget.value());
+        $("#move_topic_modal .inline_topic_edit").on("input", () => {
+            update_submit_button_disabled_state(stream_widget.value());
+        });
     }
 
     dialog_widget.launch({

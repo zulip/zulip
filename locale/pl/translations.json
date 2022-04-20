@@ -135,6 +135,7 @@
   "April": "Kwiecień",
   "Archive stream": "",
   "Archive stream {stream}": "",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "",
   "Are you sure you want to deactivate this organization?": "",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "",
   "Deactivate": "Dezaktywuj",
   "Deactivate account": "Dezaktywuj konto",
+  "Deactivate bot": "",
   "Deactivate organization": "Dezaktywuj organizację",
   "Deactivate user": "",
   "Deactivate your account": "Dezaktywuj konto",
@@ -278,7 +280,6 @@
   "Delete": "Skasuj",
   "Delete alert word": "Usuń słowo ostrzegawcze",
   "Delete all drafts": "",
-  "Delete bot": "Skasuj bota",
   "Delete draft": "Usuń wersję roboczą",
   "Delete file": "Usuń plik",
   "Delete icon": "Usuń ikonę",
@@ -685,6 +686,8 @@
   "Notification triggers": "Wyzwalacze powiadomień",
   "Notifications": "Powiadomienia",
   "Notifications for @all/@everyone mentions": "Włącz powiadomienia dla @all/@everyone",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Listopad",
   "October": "Październik",
   "Offline": "Offline",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "Tylko właściciele mogą zmiać te ustawienia.",
   "Only owners can deactivate the organization.": "",
   "Only stream members can add users to a private stream": "",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Otwórz",
   "Open message menu": "Otwórz menu wiadomości",
   "Open reactions menu": "Otwórz menu reakcji",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "",
   "{starred_status} this message (Ctrl + s)": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": "",
-  "{wildcard_mention_token} (Notify stream)": ""
+  "{username} reacted with {emoji_name}": ""
 }

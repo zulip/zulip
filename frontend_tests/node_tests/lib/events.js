@@ -811,6 +811,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__display_emoji_reaction_users: {
+        type: "user_settings",
+        op: "update",
+        property: "display_emoji_reaction_users",
+        value: true,
+    },
+
     user_settings__emojiset: {
         type: "user_settings",
         op: "update",

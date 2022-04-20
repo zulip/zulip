@@ -135,6 +135,7 @@
   "April": "4월",
   "Archive stream": "아카이브 스트림",
   "Archive stream {stream}": "아카이브 스트림 {stream}",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "당신은 이 스트림을 아카이브에 저장하길 원합니까?",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "당신은 ''''{stream_name}'''' 이름을 가진 스트림 만들고  {count} 유저들을 그것에 구독하도록 하기를 원합니까?",
   "Are you sure you want to deactivate this organization?": "당신은 이 조직이 비활성되도록 하시겠습니까?",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "주간 요약문 전송",
   "Deactivate": "비활성화",
   "Deactivate account": "계정 비활성화 ",
+  "Deactivate bot": "",
   "Deactivate organization": "조직 비활성화 ",
   "Deactivate user": "",
   "Deactivate your account": "계정 비활성화",
@@ -278,7 +280,6 @@
   "Delete": "삭제",
   "Delete alert word": "경고문 삭제",
   "Delete all drafts": "",
-  "Delete bot": "봇 삭제",
   "Delete draft": "임시 보관한 내용 삭제",
   "Delete file": "파일 삭제",
   "Delete icon": "아이콘 삭제",
@@ -685,6 +686,8 @@
   "Notification triggers": "알림 트리거",
   "Notifications": "알림",
   "Notifications for @all/@everyone mentions": " @all/@everyone 알림",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "11월",
   "October": "10월",
   "Offline": "오프라인",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "오직 조직 주인만 이 설정을 변경할 수 있습니다.",
   "Only owners can deactivate the organization.": "오직 조직 주인만 이 조직을 비활성화할 수 있습니다.",
   "Only stream members can add users to a private stream": "오직 스트림 멤버들만 개인 스트림에 사용자들을 추가할 수 있습니다.",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "열기",
   "Open message menu": "메시지 메뉴 열기",
   "Open reactions menu": "반응 메뉴 열기",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} 이 메세지",
   "{starred_status} this message (Ctrl + s)": "{starred_status} 이 메세지(Ctrl+s를 누르십시오)",
   "{username} [said]({link_to_message}):": "{username} [말함]({link_to_message}):",
-  "{username} reacted with {emoji_name}": " {emoji_name}에 반응한 {username}",
-  "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (스트림 알림) "
+  "{username} reacted with {emoji_name}": " {emoji_name}에 반응한 {username}"
 }

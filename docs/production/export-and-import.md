@@ -317,7 +317,7 @@ archive of all the organization's uploaded files.
      during the logical export/import process.
    - If you copy the `rabbitmq_password` secret from
      `zulip-secrets.conf`, you'll need to run
-     `scripts/setup/configure-rabbitmq` to update your local RabbitMQ
+     `scripts/setup/configure-rabbitmq` as root to update your local RabbitMQ
      installation to use the password in your Zulip secrets file.
    - You will likely want to copy `camo_key` (required to avoid
      breaking certain links) and any settings you added related to

@@ -742,6 +742,11 @@ run_test("user_settings", ({override, override_rewire}) => {
     dispatch(event);
     assert_same(user_settings.translate_emoticons, true);
 
+    event = event_fixtures.user_settings__display_emoji_reaction_users;
+    user_settings.display_emoji_reaction_users = false;
+    dispatch(event);
+    assert_same(user_settings.display_emoji_reaction_users, true);
+
     event = event_fixtures.user_settings__high_contrast_mode;
     user_settings.high_contrast_mode = false;
     toggled = [];

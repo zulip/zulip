@@ -32,6 +32,7 @@ export type UserSettingsType = {
     realm_name_in_notifications: boolean;
     starred_message_counts: boolean;
     translate_emoticons: boolean;
+    display_emoji_reaction_users: boolean;
     twenty_four_hour_time: boolean;
     wildcard_mentions_notify: boolean;
     send_stream_typing_notifications: boolean;

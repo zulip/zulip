@@ -506,7 +506,6 @@ bash_rules = RuleList(
             "include_only": {"scripts/"},
             "exclude": {
                 "scripts/lib/install",
-                "scripts/setup/configure-rabbitmq",
             },
         },
         *whitespace_rules[0:1],
