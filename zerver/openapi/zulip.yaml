@@ -7972,7 +7972,7 @@ paths:
             the space available for displaying reactions; the official web application
             displays names when <=3 total reactions are present with this setting enabled.
 
-            **Changes**: New in Zulip 5.0 (feature level 125).
+            **Changes**: New in Zulip 6.0 (feature level 125).
           schema:
             type: boolean
           example: false
@@ -9910,7 +9910,7 @@ paths:
                               application displays names when <=3 total reactions are
                               present with this setting enabled.
 
-                              **Changes**: New in Zulip 5.0 (feature level 125).
+                              **Changes**: New in Zulip 6.0 (feature level 125).
                           default_language:
                             type: string
                             description: |
@@ -11687,7 +11687,7 @@ paths:
                               application displays names when <=3 total reactions are
                               present with this setting enabled.
 
-                              **Changes**: New in Zulip 5.0 (feature level 125).
+                              **Changes**: New in Zulip 6.0 (feature level 125).
                           default_language:
                             type: string
                             description: |
@@ -12641,7 +12641,7 @@ paths:
             the space available for displaying reactions; the official web application
             displays names when <=3 total reactions are present with this setting enabled.
 
-            **Changes**: New in Zulip 5.0 (feature level 125).
+            **Changes**: New in Zulip 6.0 (feature level 125).
           schema:
             type: boolean
           example: false
