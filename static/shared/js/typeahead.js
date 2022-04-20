@@ -131,11 +131,11 @@ export function triage(query, objs, get_item = (x) => x) {
 }
 
 export function sort_emojis(objs, query) {
-    const lowerQuery = query.toLowerCase();
+    query = query.toLowerCase();
 
     function decent_match(name) {
         const pieces = name.toLowerCase().split("_");
-        return pieces.some((piece) => piece.startsWith(lowerQuery));
+        return pieces.some((piece) => piece.startsWith(query));
     }
 
     const popular_set = new Set(popular_emojis);
