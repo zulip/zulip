@@ -3,8 +3,7 @@ from typing import Sequence
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
-from zerver.lib.actions import (
+from zerver.actions.user_groups import (
     bulk_add_members_to_user_group,
     check_add_user_group,
     check_delete_user_group,
@@ -12,6 +11,7 @@ from zerver.lib.actions import (
     do_update_user_group_name,
     remove_members_from_user_group,
 )
+from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success

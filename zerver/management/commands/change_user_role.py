@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import (
+from zerver.actions.users import (
     do_change_can_create_users,
     do_change_can_forge_sender,
     do_change_user_role,

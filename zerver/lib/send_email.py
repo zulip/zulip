@@ -597,7 +597,7 @@ def log_email_config_errors() -> None:
     The purpose of this function is to log (potential) config errors,
     but without raising an exception.
     """
-    if settings.EMAIL_HOST_USER and not settings.EMAIL_HOST_PASSWORD:
+    if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD is None:
         logger.error(
             "An SMTP username was set (EMAIL_HOST_USER), but password is unset (EMAIL_HOST_PASSWORD)."
         )

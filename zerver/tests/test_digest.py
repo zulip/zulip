@@ -7,7 +7,8 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.actions import do_create_user
+from zerver.actions.create_user import do_create_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.digest import (
     DigestTopic,
     _enqueue_emails_for_realm,
@@ -57,7 +58,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         senders = ["hamlet", "cordelia", "iago", "prospero", "ZOE"]
         self.simulate_stream_conversation("Verona", senders)
 
-        # Remove RealmAuditoLog rows, so we don't exclude polonius.
+        # Remove RealmAuditLog rows, so we don't exclude polonius.
         RealmAuditLog.objects.all().delete()
 
         flush_per_request_caches()
@@ -85,6 +86,32 @@ class TestDigestEmailMessages(ZulipTestCase):
         teaser_messages = hot_convo["first_few_messages"][0]["senders"]
         self.assertIn("some content", teaser_messages[0]["content"][0]["plain"])
         self.assertIn(teaser_messages[0]["sender"], expected_participants)
+
+    def test_bulk_handle_digest_email_skips_deactivated_users(self) -> None:
+        """
+        A user id may be added to the queue before the user is deactivated. In such a case,
+        the function responsible for sending the email should correctly skip them.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        user_ids = list(
+            UserProfile.objects.filter(is_bot=False, realm=realm).values_list("id", flat=True)
+        )
+
+        do_deactivate_user(hamlet, acting_user=None)
+
+        with mock.patch("zerver.lib.digest.enough_traffic", return_value=True), mock.patch(
+            "zerver.lib.digest.send_future_email"
+        ) as mock_send_email:
+            bulk_handle_digest_email(user_ids, 1)
+
+        emailed_user_ids = [
+            call_args[1]["to_user_ids"][0] for call_args in mock_send_email.call_args_list
+        ]
+
+        self.assertEqual(
+            set(emailed_user_ids), set(user_id for user_id in user_ids if user_id != hamlet.id)
+        )
 
     @mock.patch("zerver.lib.digest.enough_traffic")
     @mock.patch("zerver.lib.digest.send_future_email")

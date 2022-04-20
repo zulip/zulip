@@ -5,13 +5,13 @@ from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import (
-    do_add_reaction,
+from zerver.actions.create_realm import setup_realm_internal_bots
+from zerver.actions.message_send import (
     do_send_messages,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
-    setup_realm_internal_bots,
 )
+from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot

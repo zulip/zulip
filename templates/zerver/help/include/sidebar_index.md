@@ -196,4 +196,5 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Support
+* [View Zulip version](/help/view-zulip-version)
 * [Contact support](/help/contact-support)

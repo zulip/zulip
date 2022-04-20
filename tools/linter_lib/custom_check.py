@@ -257,7 +257,7 @@ python_rules = RuleList(
             "description": "Always pass update_fields when saving user_profile objects",
             "exclude_line": {
                 (
-                    "zerver/lib/actions.py",
+                    "zerver/actions/bots.py",
                     "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
                 ),
             },
@@ -374,12 +374,11 @@ python_rules = RuleList(
         },
         {
             "pattern": "get_stream[(]",
-            "include_only": {"zerver/views/", "zerver/lib/actions.py"},
+            "include_only": {"zerver/views/", "zerver/actions/"},
             "exclude_line": {
                 # This one in check_message is kinda terrible, since it's
                 # how most instances are written, but better to exclude something than nothing
-                ("zerver/lib/actions.py", "stream = get_stream(stream_name, realm)"),
-                ("zerver/lib/actions.py", 'return get_stream("signups", realm)'),
+                ("zerver/actions/message_send.py", "stream = get_stream(stream_name, realm)"),
             },
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
@@ -507,7 +506,6 @@ bash_rules = RuleList(
             "include_only": {"scripts/"},
             "exclude": {
                 "scripts/lib/install",
-                "scripts/setup/configure-rabbitmq",
             },
         },
         *whitespace_rules[0:1],

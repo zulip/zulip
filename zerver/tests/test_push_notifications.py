@@ -23,12 +23,9 @@ from requests.models import PreparedRequest
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
-from zerver.lib.actions import (
-    do_delete_messages,
-    do_mark_stream_messages_as_read,
-    do_regenerate_api_key,
-    do_update_message_flags,
-)
+from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
+from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -522,9 +519,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         # Remove tokens
         for endpoint, token, kind in endpoints:
-            result = self.client_delete(
-                endpoint, {"token": token, "token_kind": kind}, subdomain="zulip"
-            )
+            result = self.client_delete(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
             tokens = list(
                 RemotePushDeviceToken.objects.filter(
@@ -2501,7 +2496,7 @@ class TestClearOnRead(ZulipTestCase):
             message_id__in=message_ids,
         ).update(flags=F("flags").bitor(UserMessage.flags.active_mobile_push_notification))
 
-        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as mock_publish:
+        with mock_queue_publish("zerver.actions.message_flags.queue_json_publish") as mock_publish:
             assert stream.recipient_id is not None
             do_mark_stream_messages_as_read(hamlet, stream.recipient_id)
             queue_items = [c[0][1] for c in mock_publish.call_args_list]
@@ -2567,10 +2562,7 @@ class PushBouncerSignupTest(ZulipTestCase):
         self.assertEqual(server.hostname, "example.com")
         self.assertEqual(server.contact_email, "server-admin@example.com")
 
-        request = dict(zulip_org_id=zulip_org_id, zulip_org_key=zulip_org_key)
-        result = self.uuid_post(
-            zulip_org_id, "/api/v1/remotes/server/deactivate", request, subdomain=""
-        )
+        result = self.uuid_post(zulip_org_id, "/api/v1/remotes/server/deactivate", subdomain="")
         self.assert_json_success(result)
 
         server = RemoteZulipServer.objects.get(uuid=zulip_org_id)

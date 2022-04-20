@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     check_send_message,
     internal_send_huddle_message,
     internal_send_private_message,

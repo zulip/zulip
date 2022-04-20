@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 125**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `display_emoji_reaction_users` display setting,
+  controlling whether to display the names of users with emoji reactions.
+
 Feature levels 123-124 are reserved for future use in 5.x maintenance
 releases.
 
@@ -333,8 +341,8 @@ No changes; feature level used for Zulip 5.0 release.
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
 * [`POST /register`](/api/register-queue): Added `emoji_name`,
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
-* `POST /users/me/status`: Added support for new `emoji_name`,
-  `emoji_code`, and `reaction_type` parameters.
+* [`POST /users/me/status`](/api/update-status): Added support for new
+  `emoji_name`, `emoji_code`, and `reaction_type` parameters.
 
 **Feature level 85**
 

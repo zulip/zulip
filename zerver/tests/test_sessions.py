@@ -4,7 +4,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import change_user_is_active
+from zerver.actions.users import change_user_is_active
 from zerver.lib.sessions import (
     delete_all_deactivated_user_sessions,
     delete_all_user_sessions,

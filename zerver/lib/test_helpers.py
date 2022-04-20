@@ -39,8 +39,8 @@ from moto import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
 import zerver.lib.upload
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib import cache
-from zerver.lib.actions import do_set_realm_property
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor

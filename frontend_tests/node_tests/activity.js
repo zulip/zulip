@@ -381,36 +381,40 @@ test("first/prev/next", ({override, mock_template}) => {
     let rendered_fred;
 
     mock_template("user_presence_row.hbs", false, (data) => {
-        if (data.user_id === alice.user_id) {
-            rendered_alice = true;
-            assert.deepEqual(data, {
-                faded: true,
-                href: "#narrow/pm-with/1-alice",
-                is_current_user: false,
-                my_user_status: undefined,
-                name: "Alice Smith",
-                num_unread: 0,
-                user_circle_class: "user_circle_green",
-                user_circle_status: "translated: Active",
-                user_id: alice.user_id,
-                status_emoji_info: undefined,
-            });
-        } else if (data.user_id === fred.user_id) {
-            rendered_fred = true;
-            assert.deepEqual(data, {
-                href: "#narrow/pm-with/2-fred",
-                name: "Fred Flintstone",
-                user_id: fred.user_id,
-                my_user_status: undefined,
-                is_current_user: false,
-                num_unread: 0,
-                user_circle_class: "user_circle_green",
-                user_circle_status: "translated: Active",
-                faded: false,
-                status_emoji_info: undefined,
-            });
-        } else {
-            throw new Error(`we did not expect to have to render a row for  ${data.name}`);
+        switch (data.user_id) {
+            case alice.user_id:
+                rendered_alice = true;
+                assert.deepEqual(data, {
+                    faded: true,
+                    href: "#narrow/pm-with/1-alice",
+                    is_current_user: false,
+                    my_user_status: undefined,
+                    name: "Alice Smith",
+                    num_unread: 0,
+                    user_circle_class: "user_circle_green",
+                    user_circle_status: "translated: Active",
+                    user_id: alice.user_id,
+                    status_emoji_info: undefined,
+                });
+                break;
+            case fred.user_id:
+                rendered_fred = true;
+                assert.deepEqual(data, {
+                    href: "#narrow/pm-with/2-fred",
+                    name: "Fred Flintstone",
+                    user_id: fred.user_id,
+                    my_user_status: undefined,
+                    is_current_user: false,
+                    num_unread: 0,
+                    user_circle_class: "user_circle_green",
+                    user_circle_status: "translated: Active",
+                    faded: false,
+                    status_emoji_info: undefined,
+                });
+                break;
+            /* istanbul ignore next */
+            default:
+                throw new Error(`we did not expect to have to render a row for  ${data.name}`);
         }
     });
 
@@ -555,13 +559,8 @@ test("realm_presence_disabled", () => {
 
 test("redraw_muted_user", () => {
     muted_users.add_muted_user(mark.user_id);
-    let appended_html;
-    $("#user_presences").append = function (html) {
-        appended_html = html;
-    };
-
     activity.redraw_user(mark.user_id);
-    assert.equal(appended_html, undefined);
+    assert.equal($("#user_presences").html(), "never-been-set");
 });
 
 test("update_presence_info", ({override, override_rewire}) => {

@@ -19,15 +19,14 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
-    cast,
 )
 
 from django.conf import settings
-from django.core.cache import cache as djcache
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
 from django.http import HttpRequest
+from typing_extensions import ParamSpec
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
 
@@ -38,7 +37,8 @@ if TYPE_CHECKING:
 
 MEMCACHED_MAX_KEY_LENGTH = 250
 
-FuncT = TypeVar("FuncT", bound=Callable[..., object])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 logger = logging.getLogger()
 
@@ -125,46 +125,16 @@ def bounce_key_prefix_for_testing(test_name: str) -> None:
 
 def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     if cache_name is None:
-        return djcache
+        cache_name = "default"
     return caches[cache_name]
 
 
-def get_cache_with_key(
-    keyfunc: Callable[..., str],
-    cache_name: Optional[str] = None,
-) -> Callable[[FuncT], FuncT]:
-    """
-    The main goal of this function getting value from the cache like in the "cache_with_key".
-    A cache value can contain any data including the "None", so
-    here used exception for case if value isn't found in the cache.
-    """
-
-    def decorator(func: FuncT) -> FuncT:
-        @wraps(func)
-        def func_with_caching(*args: object, **kwargs: object) -> object:
-            key = keyfunc(*args, **kwargs)
-            try:
-                val = cache_get(key, cache_name=cache_name)
-            except InvalidCacheKeyException:
-                stack_trace = traceback.format_exc()
-                log_invalid_cache_keys(stack_trace, [key])
-                val = None
-
-            if val is not None:
-                return val[0]
-            raise NotFoundInCache()
-
-        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
-
-    return decorator
-
-
 def cache_with_key(
-    keyfunc: Callable[..., str],
+    keyfunc: Callable[ParamT, str],
     cache_name: Optional[str] = None,
     timeout: Optional[int] = None,
     with_statsd_key: Optional[str] = None,
-) -> Callable[[FuncT], FuncT]:
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
     Decorator argument is a function which computes a cache key
@@ -172,9 +142,9 @@ def cache_with_key(
     for avoiding collisions with other uses of this decorator or
     other uses of caching."""
 
-    def decorator(func: FuncT) -> FuncT:
+    def decorator(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(func)
-        def func_with_caching(*args: object, **kwargs: object) -> object:
+        def func_with_caching(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             key = keyfunc(*args, **kwargs)
 
             try:
@@ -207,7 +177,7 @@ def cache_with_key(
 
             return val
 
-        return cast(FuncT, func_with_caching)  # https://github.com/python/mypy/issues/1927
+        return func_with_caching
 
     return decorator
 
@@ -499,7 +469,7 @@ def user_profile_delivery_email_cache_key(delivery_email: str, realm: "Realm") -
     return f"user_profile_by_delivery_email:{make_safe_digest(delivery_email.strip())}:{realm.id}"
 
 
-def bot_profile_cache_key(email: str, realm_id: Optional[int] = None) -> str:
+def bot_profile_cache_key(email: str, realm_id: int) -> str:
     return f"bot_profile:{make_safe_digest(email.strip())}"
 
 
@@ -592,7 +562,7 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
         )
         if user_profile.is_bot and is_cross_realm_bot_email(user_profile.email):
             # Handle clearing system bots from their special cache.
-            keys.append(bot_profile_cache_key(user_profile.email))
+            keys.append(bot_profile_cache_key(user_profile.email, user_profile.realm_id))
 
     cache_delete_many(keys)
 
@@ -769,7 +739,7 @@ def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
 
 def ignore_unhashable_lru_cache(
     maxsize: int = 128, typed: bool = False
-) -> Callable[[FuncT], FuncT]:
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """
     This is a wrapper over lru_cache function. It adds following features on
     top of lru_cache:
@@ -779,7 +749,7 @@ def ignore_unhashable_lru_cache(
     """
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
-    def decorator(user_function: FuncT) -> FuncT:
+    def decorator(user_function: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
             # In the development environment, we want every file
             # change to refresh the source files from disk.
@@ -788,7 +758,7 @@ def ignore_unhashable_lru_cache(
         # Casting to Any since we're about to monkey-patch this.
         cache_enabled_user_function: Any = internal_decorator(user_function)
 
-        def wrapper(*args: object, **kwargs: object) -> object:
+        def wrapper(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             if not hasattr(cache_enabled_user_function, "key_prefix"):
                 cache_enabled_user_function.key_prefix = KEY_PREFIX
 
@@ -813,7 +783,7 @@ def ignore_unhashable_lru_cache(
 
         setattr(wrapper, "cache_info", cache_enabled_user_function.cache_info)
         setattr(wrapper, "cache_clear", cache_enabled_user_function.cache_clear)
-        return cast(FuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+        return wrapper
 
     return decorator
 

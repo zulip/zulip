@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_add_deactivated_redirect, do_deactivate_realm
+from zerver.actions.realm_settings import do_add_deactivated_redirect, do_deactivate_realm
 from zerver.lib.management import ZulipBaseCommand
 
 

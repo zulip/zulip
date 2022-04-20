@@ -5,7 +5,7 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_change_can_create_users, do_change_user_role
+from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
@@ -494,7 +494,7 @@ class TestMocking(ZulipTestCase):
         # that is beyond the limit.
         #
         # Notice how mock.patch() is used here to do exactly the above mentioned.
-        # mock.patch() here makes any calls to `timezone_now` in `zerver.lib.actions`
+        # mock.patch() here makes any calls to `timezone_now` in `zerver.actions.message_edit`
         # to return the value passed to `return_value` in the its context.
         # You can also use mock.patch() as a decorator depending on the
         # requirements. Read more at the documentation link provided above.
@@ -504,7 +504,7 @@ class TestMocking(ZulipTestCase):
         )  # There's a buffer time applied to the limit, hence the extra 100s.
 
         with mock.patch(
-            "zerver.lib.actions.timezone_now",
+            "zerver.actions.message_edit.timezone_now",
             return_value=time_beyond_edit_limit,
         ):
             result = self.client_patch(

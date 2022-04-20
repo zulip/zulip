@@ -18,6 +18,7 @@ from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
 from zerver.lib.avatar import get_avatar_field
 from zerver.lib.cache import (
+    cache_set_many,
     cache_with_key,
     generic_bulk_cached_fetch,
     to_dict_cache_key,
@@ -38,6 +39,7 @@ from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_topics import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -898,6 +900,7 @@ def render_markdown(
     content: str,
     realm: Optional[Realm] = None,
     realm_alert_words_automaton: Optional[ahocorasick.Automaton] = None,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
 ) -> MessageRenderingResult:
@@ -919,6 +922,7 @@ def render_markdown(
         message_realm=realm,
         sent_by_bot=sent_by_bot,
         translate_emoticons=translate_emoticons,
+        url_embed_data=url_embed_data,
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
@@ -1609,3 +1613,20 @@ def parse_message_content_delete_limit(
         raise RequestVariableConversionError("message_content_delete_limit_seconds", value)
     assert isinstance(value, int)
     return value
+
+
+def update_to_dict_cache(
+    changed_messages: List[Message], realm_id: Optional[int] = None
+) -> List[int]:
+    """Updates the message as stored in the to_dict cache (for serving
+    messages)."""
+    items_for_remote_cache = {}
+    message_ids = []
+    changed_messages_to_dict = MessageDict.to_dict_uncached(changed_messages, realm_id)
+    for msg_id, msg in changed_messages_to_dict.items():
+        message_ids.append(msg_id)
+        key = to_dict_cache_key_id(msg_id)
+        items_for_remote_cache[key] = (msg,)
+
+    cache_set_many(items_for_remote_cache)
+    return message_ids

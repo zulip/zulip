@@ -135,6 +135,7 @@
   "April": "",
   "Archive stream": "",
   "Archive stream {stream}": "",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "",
   "Are you sure you want to deactivate this organization?": "",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "روزی از هفته که خلاصه ها ارسال شوند",
   "Deactivate": "غیرفعال کردن",
   "Deactivate account": "غیرفعال کردن حساب کاربری",
+  "Deactivate bot": "",
   "Deactivate organization": "غیرفعال کردن سازمان",
   "Deactivate user": "",
   "Deactivate your account": "غیرفعال کردن حساب کاربری شما",
@@ -278,7 +280,6 @@
   "Delete": "حذف",
   "Delete alert word": "حذف کلمه هشداردهنده",
   "Delete all drafts": "",
-  "Delete bot": "حذف ربات",
   "Delete draft": "حذف ذخیره موقت",
   "Delete file": "حذف فایل",
   "Delete icon": "",
@@ -685,6 +686,8 @@
   "Notification triggers": "",
   "Notifications": "اطلاع رسانی ها",
   "Notifications for @all/@everyone mentions": "",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "",
   "October": "",
   "Offline": "آفلاین",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "",
   "Only owners can deactivate the organization.": "",
   "Only stream members can add users to a private stream": "تنها اعضای جریان می توانند کابران را به جریان خصوصی اضافه کنند.",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "باز کردن",
   "Open message menu": "باز کردن منوی پیام",
   "Open reactions menu": "باز کردن منوی واکنش ها",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "",
   "{starred_status} this message (Ctrl + s)": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": "",
-  "{wildcard_mention_token} (Notify stream)": ""
+  "{username} reacted with {emoji_name}": ""
 }

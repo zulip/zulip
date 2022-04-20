@@ -19,15 +19,13 @@ from django_sendfile.utils import _get_sendfile
 from PIL import Image
 
 import zerver.lib.upload
-from zerver.lib.actions import (
-    do_change_icon_source,
-    do_change_logo_source,
-    do_change_realm_plan_type,
-    do_create_realm,
-    do_delete_old_unclaimed_attachments,
-    do_set_realm_property,
-    internal_send_private_message,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.uploads import do_delete_old_unclaimed_attachments
+from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
@@ -1287,7 +1285,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(avatar_original_path_id))
         self.assertTrue(os.path.isfile(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertFalse(os.path.isfile(avatar_path_id))
@@ -2124,7 +2122,7 @@ class S3Test(ZulipTestCase):
         self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
         self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 

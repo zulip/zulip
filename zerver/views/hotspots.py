@@ -1,8 +1,8 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.hotspots import do_mark_hotspot_as_read
 from zerver.decorator import human_users_only
-from zerver.lib.actions import do_mark_hotspot_as_read
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.hotspots import ALL_HOTSPOTS
 from zerver.lib.request import REQ, has_request_variables

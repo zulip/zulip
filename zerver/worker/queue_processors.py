@@ -46,18 +46,14 @@ from django.utils.translation import override as override_language
 from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
+from zerver.actions.invites import do_send_confirmation_email
+from zerver.actions.message_edit import do_update_embedded_data
+from zerver.actions.message_flags import do_mark_stream_messages_as_read
+from zerver.actions.message_send import internal_send_private_message, render_incoming_message
+from zerver.actions.presence import do_update_user_presence
+from zerver.actions.realm_export import notify_realm_export
+from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.context_processors import common_context
-from zerver.lib.actions import (
-    do_mark_stream_messages_as_read,
-    do_send_confirmation_email,
-    do_update_embedded_data,
-    do_update_user_activity,
-    do_update_user_activity_interval,
-    do_update_user_presence,
-    internal_send_private_message,
-    notify_realm_export,
-    render_incoming_message,
-)
 from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, get_bot_handler
 from zerver.lib.context_managers import lockfile
 from zerver.lib.db import reset_queries
@@ -90,6 +86,7 @@ from zerver.lib.send_email import (
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.upload import handle_reupload_emojis_event
 from zerver.lib.url_preview import preview as url_preview
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.models import (
     Message,
     PreregistrationUser,
@@ -860,16 +857,17 @@ class FetchLinksEmbedData(QueueProcessingWorker):
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
     def consume(self, event: Mapping[str, Any]) -> None:
+        url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
         for url in event["urls"]:
             start_time = time.time()
-            url_preview.get_link_embed_data(url)
+            url_embed_data[url] = url_preview.get_link_embed_data(url)
             logging.info(
                 "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
             )
 
         message = Message.objects.get(id=event["message_id"])
         # If the message changed, we will run this task after updating the message
-        # in zerver.lib.actions.check_update_message
+        # in zerver.actions.message_edit.check_update_message
         if message.content != event["message_content"]:
             return
         if message.content is not None:
@@ -883,7 +881,11 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
             # If rendering fails, the called code will raise a JsonableError.
             rendering_result = render_incoming_message(
-                message, message.content, message_user_ids, realm
+                message,
+                message.content,
+                message_user_ids,
+                realm,
+                url_embed_data=url_embed_data,
             )
             do_update_embedded_data(message.sender, message, message.content, rendering_result)
 

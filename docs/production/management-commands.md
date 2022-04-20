@@ -91,12 +91,12 @@ database, for most objects, in addition to saving the changes to the
 database, one may also need to flush caches, notify the apps and open
 browser windows, and record the change in Zulip's `RealmAuditLog`
 audit history table. For almost any data change you want to do, there
-is already a function in `zerver.lib.actions.py` with a name like
+is already a function in `zerver.actions` with a name like
 `do_change_full_name` that updates that field and notifies clients
 correctly.
 
-For convenience, Zulip automatically import `zerver/models.py` and
-`zerver/lib/actions.py` into every management shell; if you need to
+For convenience, Zulip automatically imports `zerver/models.py`
+into every management shell; if you need to
 access other functions, you'll need to import them yourself.
 
 ## Other useful manage.py commands

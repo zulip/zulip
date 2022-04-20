@@ -6,7 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_mute_topic, do_mute_user, do_unmute_topic, do_unmute_user
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success

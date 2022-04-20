@@ -63,6 +63,7 @@ run_test("initialize", ({override_rewire}) => {
                     };
                     success_callback();
                     break;
+                /* istanbul ignore next */
                 default:
                     throw new Error("Unhandled case");
             }
@@ -84,9 +85,6 @@ run_test("initialize", ({override_rewire}) => {
 
     $("input[type=radio][name=schedule]:checked").val = () =>
         document.querySelector("input[type=radio][name=schedule]:checked").value;
-
-    $("#autopay-form").data = (key) =>
-        document.querySelector("#autopay-form").getAttribute("data-" + key);
 
     const initialize_function = $.get_initialize_function();
     initialize_function();

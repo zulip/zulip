@@ -7,10 +7,8 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
-from zerver.decorator import require_realm_admin, require_realm_owner
-from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.actions import (
-    do_change_realm_subdomain,
+from zerver.actions.create_realm import do_change_realm_subdomain
+from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -20,6 +18,8 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
 )
+from zerver.decorator import require_realm_admin, require_realm_owner
+from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.message import parse_message_content_delete_limit
@@ -341,6 +341,7 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),

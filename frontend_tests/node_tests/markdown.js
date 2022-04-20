@@ -27,11 +27,6 @@ const example_realm_linkifiers = [
 ];
 user_settings.translate_emoticons = false;
 
-function Image() {
-    return {};
-}
-set_global("Image", Image);
-
 set_global("document", {compatMode: "CSS1Compat"});
 
 const emoji = zrequire("emoji");
@@ -244,6 +239,7 @@ test("marked_shared", () => {
 
     for (const test of tests) {
         // Ignore tests if specified
+        /* istanbul ignore if */
         if (test.ignore === true) {
             continue;
         }

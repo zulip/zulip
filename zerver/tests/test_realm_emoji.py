@@ -1,12 +1,10 @@
 from unittest import mock
 
-from zerver.lib.actions import (
-    check_add_realm_emoji,
-    do_change_user_role,
-    do_create_realm,
-    do_create_user,
-    do_set_realm_property,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file

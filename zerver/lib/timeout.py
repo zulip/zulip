@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import sys
 import threading
 import time
@@ -55,42 +56,41 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
                 self.exc_info = sys.exc_info()
 
         def raise_async_timeout(self) -> None:
-            # Called from another thread.
-            # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
-            assert self.ident is not None  # Thread should be running; c_long expects int
-            tid = ctypes.c_long(self.ident)
-            result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                tid, ctypes.py_object(TimeoutExpired)
+            # This function is called from another thread; we attempt
+            # to raise a TimeoutExpired in _this_ thread.
+            assert self.ident is not None
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(self.ident),
+                ctypes.py_object(TimeoutExpired),
             )
-            if result > 1:
-                # "if it returns a number greater than one, you're in trouble,
-                # and you should call it again with exc=NULL to revert the effect"
-                #
-                # I was unable to find the actual source of this quote, but it
-                # appears in the many projects across the Internet that have
-                # copy-pasted this recipe.
-                ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
 
     thread = TimeoutThread()
     thread.start()
     thread.join(timeout)
 
     if thread.is_alive():
-        # Gamely try to kill the thread, following the dodgy approach from
-        # https://stackoverflow.com/a/325528/90777
-        #
-        # We need to retry, because an async exception received while the
-        # thread is in a system call is simply ignored.
+        # We need to retry, because an async exception received while
+        # the thread is in a system call is simply ignored.
         for i in range(10):
             thread.raise_async_timeout()
             time.sleep(0.1)
             if not thread.is_alive():
                 break
+        if thread.exc_info[1] is not None:
+            # Re-raise the exception we sent, if possible, so the
+            # stacktrace originates in the slow code
+            raise thread.exc_info[1].with_traceback(thread.exc_info[2])
+        # If we don't have that for some reason (e.g. we failed to
+        # kill it), just raise from here; the thread _may still be
+        # running_ because it failed to see any of our exceptions, and
+        # we just ignore it.
+        if thread.is_alive():
+            logging.warning("Failed to time out backend thread")
         raise TimeoutExpired
 
     if thread.exc_info[1] is not None:
-        # Raise the original stack trace so our error messages are more useful.
-        # from https://stackoverflow.com/a/4785766/90777
+        # Died with some other exception; re-raise it
         raise thread.exc_info[1].with_traceback(thread.exc_info[2])
-    assert thread.result is not None  # assured if above did not reraise
+
+    assert thread.result is not None
     return thread.result

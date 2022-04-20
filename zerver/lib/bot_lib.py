@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from zulip_bots.lib import BotIdentity, RateLimit
 
-from zerver.lib.actions import (
+from zerver.actions.message_send import (
     internal_send_huddle_message,
     internal_send_private_message,
     internal_send_stream_message_by_name,

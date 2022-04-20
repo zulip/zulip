@@ -8,5 +8,8 @@ from a GitHub issue, a social media post, or a forum thread, and
 anyone will be able to click the link and view the discussion in the
 Zulip web application without needing to create an account.
 
+To see this feature in action, you can [view web-public streams in the Zulip
+development community](https://chat.zulip.org/) without logging in.
+
 Users who wish to post content will need to create an account in order
 to do so.

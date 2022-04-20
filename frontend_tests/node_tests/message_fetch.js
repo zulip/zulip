@@ -93,17 +93,13 @@ function config_fake_channel(conf) {
         // There's a separate call with anchor="newest" that happens
         // unconditionally; do basic verification of that call.
         if (opts.data.anchor === "newest") {
-            if (!called_with_newest_flag) {
-                called_with_newest_flag = true;
-                assert.equal(opts.data.num_after, 0);
-                return;
-            }
-            throw new Error("Only one 'newest' call allowed");
+            assert.ok(!called_with_newest_flag, "Only one 'newest' call allowed");
+            called_with_newest_flag = true;
+            assert.equal(opts.data.num_after, 0);
+            return;
         }
 
-        if (called && !conf.can_call_again) {
-            throw new Error("only use this for one call");
-        }
+        assert.ok(!called || conf.can_call_again, "only use this for one call");
         if (!conf.can_call_again) {
             assert.equal(self.success, undefined);
         }

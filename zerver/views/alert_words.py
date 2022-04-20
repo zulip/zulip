@@ -2,7 +2,7 @@ from typing import List
 
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success

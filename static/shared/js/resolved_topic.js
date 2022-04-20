@@ -8,7 +8,7 @@ export const RESOLVED_TOPIC_PREFIX = "✔ ";
  */
 // The class has the same characters as RESOLVED_TOPIC_PREFIX.
 // It's designed to remove a weird "✔ ✔✔ " prefix, if present.
-// Compare maybe_send_resolve_topic_notifications in zerver/lib/actions.py.
+// Compare maybe_send_resolve_topic_notifications in zerver/actions/message_edit.py.
 const RESOLVED_TOPIC_PREFIX_RE = /^✔ [ ✔]*/;
 
 export function is_resolved(topic_name) {

@@ -5,7 +5,7 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.presence import get_status_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
@@ -254,7 +254,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")
-        from zerver.lib.actions import filter_presence_idle_user_ids
+        from zerver.actions.message_send import filter_presence_idle_user_ids
 
         self.login("hamlet")
 

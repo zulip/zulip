@@ -1,5 +1,7 @@
 import cgi
-from typing import Any, Optional
+from typing import Optional
+
+from zerver.lib.url_preview.types import UrlEmbedData
 
 
 class BaseParser:
@@ -14,5 +16,5 @@ class BaseParser:
             charset = cgi.parse_header(content_type)[1].get("charset")
         self._soup = BeautifulSoup(html_source, "lxml", from_encoding=charset)
 
-    def extract_data(self) -> Any:
+    def extract_data(self) -> UrlEmbedData:
         raise NotImplementedError()

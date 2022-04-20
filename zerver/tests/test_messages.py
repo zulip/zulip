@@ -3,7 +3,7 @@ from typing import List
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_active_presence_idle_user_ids
+from zerver.actions.message_send import get_active_presence_idle_user_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,

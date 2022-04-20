@@ -40,9 +40,6 @@ mock_esm("../../static/js/ui_report", {
     hide_error() {
         return false;
     },
-    show_error() {
-        return false;
-    },
 });
 
 mock_esm("../../static/js/stream_events", {

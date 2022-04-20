@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-29 15:06+0000\n"
+"POT-Creation-Date: 2022-04-18 20:14+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2022\n"
 "Language-Team: Welsh (http://www.transifex.com/zulip/zulip/language/cy/)\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Language: cy\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n==2) ? 1 : (n != 8 && n != 11) ? 2 : 3;\n"
 
-#: analytics/views/stats.py:88 zerver/decorator.py:584 zerver/decorator.py:596
+#: analytics/views/stats.py:88 zerver/decorator.py:572 zerver/decorator.py:584
 msgid "Not allowed for guest users"
 msgstr "Ni chaniateir i ddefnyddwyr gwadd"
 
@@ -56,7 +56,7 @@ msgstr "Mae'r amser cychwyn yn hwyrach na'r amser gorffen. Dechreuwch: {start}, 
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Nid oes data dadansoddeg ar gael. Cysylltwch â gweinyddwr eich gweinydd."
 
-#: analytics/views/support.py:166 zerver/views/streams.py:325
+#: analytics/views/support.py:166 zerver/views/streams.py:329
 msgid "Invalid parameters"
 msgstr "Paramedrau annilys"
 
@@ -116,30 +116,30 @@ msgid ""
 "{num_invites} users."
 msgstr "Nid oes gan eich sefydliad ddigon o drwyddedau Zulip nas defnyddiwyd i wahodd defnyddwyr {num_invites}."
 
-#: corporate/lib/stripe.py:90
+#: corporate/lib/stripe.py:92
 msgid "You must invoice for at least {} users."
 msgstr "Rhaid i chi anfonebu am o leiaf {} defnyddiwr."
 
-#: corporate/lib/stripe.py:95
+#: corporate/lib/stripe.py:97
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
 msgstr "Ni ellir prosesu anfonebau â mwy na {} trwydded o'r dudalen hon. I gwblhau'r uwchraddiad, cysylltwch â {}."
 
-#: corporate/lib/stripe.py:203
+#: corporate/lib/stripe.py:205
 #, python-brace-format
 msgid "Something went wrong. Please contact {email}."
 msgstr "Aeth rhywbeth o'i le. Cysylltwch â {email}."
 
-#: corporate/lib/stripe.py:204
+#: corporate/lib/stripe.py:206
 msgid "Something went wrong. Please reload the page."
 msgstr "Aeth rhywbeth o'i le. Ail-lwythwch y dudalen."
 
-#: corporate/lib/stripe.py:278
+#: corporate/lib/stripe.py:280
 msgid "Something went wrong. Please wait a few seconds and try again."
 msgstr "Aeth rhywbeth o'i le. Arhoswch ychydig eiliadau a rhoi cynnig arall arni."
 
-#: corporate/lib/stripe.py:992
+#: corporate/lib/stripe.py:995
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! "
@@ -205,7 +205,7 @@ msgstr "Dim cwsmer i'r sefydliad hwn!"
 msgid "Session not found"
 msgstr "Ni ddaethpwyd o hyd i sesiwn"
 
-#: corporate/views/event_status.py:37 zerver/decorator.py:178
+#: corporate/views/event_status.py:37 zerver/decorator.py:166
 msgid "Must be a billing administrator or an organization owner"
 msgstr "Rhaid bod yn weinyddwr biliau neu'n berchennog sefydliad"
 
@@ -1783,6 +1783,10 @@ msgstr "Hanes"
 msgid "Jobs"
 msgstr "Swyddi"
 
+#: templates/zerver/footer.html:146
+msgid "Website attributions"
+msgstr ""
+
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr "Noddwr Zulip"
@@ -2378,342 +2382,297 @@ msgid ""
 "                        "
 msgstr "\nGallwch hefyd ddefnyddio'r <a href=\"%(apps_page_link)s\">app bwrdd gwaith Zulip</a> ."
 
-#: zerver/decorator.py:255
-msgid "Invalid subdomain for push notifications bouncer"
-msgstr "Subdomain annilys ar gyfer hysbysiadau gwthio bouncer"
+#: zerver/actions/create_realm.py:226
+msgid "Signups enabled"
+msgstr "Cofrestriadau wedi'i alluogi"
 
-#: zerver/decorator.py:264
-msgid "This API is not available to incoming webhook bots."
-msgstr "Nid yw'r API hwn ar gael i bots webhook sy'n dod i mewn."
-
-#: zerver/decorator.py:291
-msgid "Account is not associated with this subdomain"
-msgstr "Nid yw cyfrif yn gysylltiedig â'r is-barth hwn"
-
-#: zerver/decorator.py:491 zerver/decorator.py:598
-msgid "This endpoint does not accept bot requests."
-msgstr "Nid yw'r pwynt terfyn hwn yn derbyn ceisiadau bot."
-
-#: zerver/decorator.py:572
-msgid "Must be an server administrator"
-msgstr "Rhaid bod yn weinyddwr gweinydd"
-
-#: zerver/decorator.py:611 zerver/lib/streams.py:688 zerver/lib/streams.py:690
-#: zerver/lib/streams.py:705 zerver/lib/user_groups.py:16
-#: zerver/lib/user_groups.py:23 zerver/lib/users.py:246
-#: zerver/lib/users.py:275 zerver/views/invite.py:49
-#: zerver/views/realm_emoji.py:31 zerver/views/streams.py:322
-#: zerver/views/streams.py:546
-msgid "Insufficient permission"
-msgstr "Caniatâd annigonol"
-
-#: zerver/decorator.py:669
-msgid "This endpoint requires HTTP basic authentication."
-msgstr "Mae'r terfynbwynt hwn yn gofyn am ddilysiad sylfaenol HTTP."
-
-#: zerver/decorator.py:672
-msgid "Invalid authorization header for basic auth"
-msgstr "Pennawd awdurdodi annilys ar gyfer awdur sylfaenol"
-
-#: zerver/decorator.py:674
-msgid "Missing authorization header for basic auth"
-msgstr "Pennawd awdurdodiad coll ar gyfer awdur sylfaenol"
-
-#: zerver/decorator.py:774
-msgid "Webhook bots can only access webhooks"
-msgstr "Dim ond bachyngwe y gall bots bachyngwe eu cyrchu"
-
-#: zerver/forms.py:57
-#, python-brace-format
-msgid ""
-"Your account {username} has been deactivated. Please contact your "
-"organization administrator to reactivate it."
-msgstr ""
-
-#: zerver/forms.py:60
-msgid "The password is too weak."
-msgstr ""
-
-#: zerver/forms.py:81
-msgid "Subdomain needs to have length 3 or greater."
-msgstr "Mae angen i subdomain fod â hyd 3 neu fwy."
-
-#: zerver/forms.py:82
-msgid "Subdomain cannot start or end with a '-'."
-msgstr "Ni all subdomain ddechrau na gorffen gyda &#39;-&#39;."
-
-#: zerver/forms.py:83
-msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
-msgstr "Dim ond llythrennau bach, rhifau ac '-'au y gall is-barth eu cael."
-
-#: zerver/forms.py:84
-msgid "Subdomain unavailable. Please choose a different one."
-msgstr "Isbarth ddim ar gael. Dewiswch un gwahanol."
-
-#: zerver/forms.py:178
-#, python-brace-format
-msgid "The organization you are trying to join using {email} does not exist."
-msgstr "Nid yw&#39;r sefydliad rydych chi&#39;n ceisio ymuno ag ef gan ddefnyddio {email} yn bodoli."
-
-#: zerver/forms.py:186
-#, python-brace-format
-msgid ""
-"Please request an invite for {email} from the organization administrator."
-msgstr "Gofynnwch am wahoddwr am {email} gan weinyddwr y sefydliad."
-
-#: zerver/forms.py:197
-#, python-brace-format
-msgid ""
-"Your email address, {email}, is not in one of the domains that are allowed "
-"to register for accounts in this organization."
-msgstr "Nid yw eich cyfeiriad e-bost, {email}, yn un o'r parthau y caniateir iddynt gofrestru ar gyfer cyfrifon yn y sefydliad hwn."
-
-#: zerver/forms.py:202 zerver/forms.py:227 zerver/lib/email_validation.py:108
-msgid "Please use your real email address."
-msgstr "Defnyddiwch eich cyfeiriad e-bost go iawn."
-
-#: zerver/forms.py:205
-msgid "Email addresses containing + are not allowed in this organization."
-msgstr "Ni chaniateir cyfeiriadau e-bost sy'n cynnwys + yn y sefydliad hwn."
-
-#: zerver/forms.py:217
-msgid ""
-"New members cannot join this organization because all Zulip licenses are in "
-"use. Please contact the person who invited you and ask them to increase the "
-"number of licenses, then try again."
-msgstr "Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
-
-#: zerver/forms.py:237
-msgid "New password"
-msgstr "Cyfrinair newydd"
-
-#: zerver/forms.py:244
-msgid "New password confirmation"
-msgstr "Cadarnhad cyfrinair newydd"
-
-#: zerver/forms.py:422
-msgid ""
-"You're making too many attempts to sign in. Try again in {} seconds or "
-"contact your organization administrator for help."
-msgstr ""
-
-#: zerver/forms.py:434
-msgid ""
-"Your password has been disabled because it is too weak. Reset your password "
-"to create a new one."
-msgstr ""
-
-#: zerver/forms.py:451
-#, python-brace-format
-msgid ""
-"Your Zulip account {username} is not a member of the organization associated"
-" with this subdomain.  Please contact your organization administrator with "
-"any questions."
-msgstr ""
-
-#: zerver/forms.py:485
-msgid "Token"
-msgstr "Tocyn"
-
-#: zerver/forms.py:505
-msgid "Add up to 10 comma-separated email addresses."
-msgstr "Ychwanegwch hyd at 10 cyfeiriad e-bost wedi'u gwahanu gan goma."
-
-#: zerver/forms.py:510
-msgid "Please enter at most 10 emails."
-msgstr "Rhowch 10 e-bost ar y mwyaf."
-
-#: zerver/forms.py:523
-msgid "We couldn't find that Zulip organization."
-msgstr "Ni allem ddod o hyd i'r sefydliad Zulip hwnnw."
-
-#: zerver/lib/actions.py:371
+#: zerver/actions/create_user.py:76
 msgid "signups"
 msgstr "cofrestriadau"
 
-#: zerver/lib/actions.py:388 zerver/lib/actions.py:411
+#: zerver/actions/create_user.py:93 zerver/actions/create_user.py:116
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} newydd gofrestru ar gyfer Zulip. (cyfanswm: {user_count})"
 
-#: zerver/lib/actions.py:527
+#: zerver/actions/create_user.py:229
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "Derbyniodd {user} eich gwahoddiad i ymuno â Zulip!"
 
-#: zerver/lib/actions.py:1680
-msgid "Unable to render message"
-msgstr "Methu rhoi neges"
+#: zerver/actions/custom_profile_fields.py:104
+msgid "Invalid order mapping."
+msgstr "Mapio archeb annilys."
 
-#: zerver/lib/actions.py:2504
-msgid "You cannot attach a submessage to this message."
-msgstr "Ni allwch atodi is-asesiad i'r neges hon."
-
-#: zerver/lib/actions.py:2641
-msgid "Reaction already exists."
-msgstr "Mae adwaith eisoes yn bodoli."
-
-#: zerver/lib/actions.py:2743 zerver/lib/addressee.py:33
-msgid "Invalid user ID {}"
-msgstr "ID defnyddiwr annilys {}"
-
-#: zerver/lib/actions.py:2812 zerver/lib/actions.py:8367
-#: zerver/lib/streams.py:253 zerver/lib/streams.py:261
-#: zerver/tornado/views.py:111 zerver/views/events_register.py:75
-#: zerver/views/message_send.py:233 zerver/views/message_send.py:239
-#: zerver/views/message_send.py:258 zerver/views/users.py:611
-msgid "User not authorized for this query"
-msgstr "Nid yw'r defnyddiwr wedi'i awdurdodi ar gyfer yr ymholiad hwn"
-
-#: zerver/lib/actions.py:2853
+#: zerver/actions/custom_profile_fields.py:183 zerver/lib/users.py:388
+#: zerver/views/custom_profile_fields.py:143
+#: zerver/views/custom_profile_fields.py:163
 #, python-brace-format
-msgid "'{email}' is no longer using Zulip."
-msgstr "Nid yw '{email}' bellach yn defnyddio Zulip."
+msgid "Field id {id} not found."
+msgstr "Id maes {id} heb ei ddarganfod."
 
-#: zerver/lib/actions.py:2860
-msgid "You can't send private messages outside of your organization."
-msgstr "Ni allwch anfon negeseuon preifat y tu allan i'ch sefydliad."
+#: zerver/actions/default_streams.py:20
+msgid "Invalid default stream group name '{}'"
+msgstr "Enw grŵp ffrwd diofyn annilys '{}'"
 
-#: zerver/lib/actions.py:2926
-msgid "Expected exactly one stream"
-msgstr "Disgwylir yn union un ffrwd"
+#: zerver/actions/default_streams.py:23
+msgid "Default stream group name too long (limit: {} characters)"
+msgstr "Enw grŵp ffrwd diofyn yn rhy hir (terfyn: {} nod)"
 
-#: zerver/lib/actions.py:2937
-msgid "Invalid data type for stream"
-msgstr "Math o ddata annilys ar gyfer ffrwd"
+#: zerver/actions/default_streams.py:30
+msgid "Default stream group name '{}' contains NULL (0x00) characters."
+msgstr "Mae enw grŵp nant diofyn '{}' yn cynnwys nodau NULL (0x00)."
 
-#: zerver/lib/actions.py:2953 zerver/lib/actions.py:2963
-msgid "Invalid data type for recipients"
-msgstr "Math data annilys ar gyfer derbynwyr"
+#: zerver/actions/default_streams.py:44
+msgid "Invalid default stream group {}"
+msgstr "Grŵp ffrwd diofyn annilys {}"
 
-#: zerver/lib/actions.py:2971 zerver/lib/actions.py:2979
-msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "Gall rhestrau derbynwyr gynnwys e-byst neu IDau defnyddiwr, ond nid y ddau."
+#: zerver/actions/default_streams.py:91 zerver/actions/default_streams.py:118
+#, python-brace-format
+msgid ""
+"'{stream_name}' is a default stream and cannot be added to '{group_name}'"
+msgstr "Mae '{stream_name}' yn ffrwd ddiofyn ac ni ellir ei ychwanegu at '{group_name}'"
 
-#: zerver/lib/actions.py:3091
-msgid "Reminders can only be set for streams."
-msgstr "Dim ond ar gyfer ffrydiau y gellir gosod nodiadau atgoffa."
+#: zerver/actions/default_streams.py:102
+#, python-brace-format
+msgid "Default stream group '{group_name}' already exists"
+msgstr "Mae grŵp llif diofyn '{group_name}' eisoes yn bodoli"
 
-#: zerver/lib/actions.py:3107
+#: zerver/actions/default_streams.py:124
+#, python-brace-format
+msgid ""
+"Stream '{stream_name}' is already present in default stream group "
+"'{group_name}'"
+msgstr "Mae ffrwd '{stream_name}' eisoes yn bresennol yn y grŵp llif diofyn '{group_name}'"
+
+#: zerver/actions/default_streams.py:140
+#, python-brace-format
+msgid ""
+"Stream '{stream_name}' is not present in default stream group '{group_name}'"
+msgstr "Nid yw ffrwd '{stream_name}&#39; yn bresennol yn y grŵp llif diofyn &#39;{group_name}&#39;"
+
+#: zerver/actions/default_streams.py:154
+msgid "This default stream group is already named '{}'"
+msgstr "Mae'r grŵp ffrwd diofyn hwn eisoes wedi'i enwi '{}'"
+
+#: zerver/actions/default_streams.py:158
+msgid "Default stream group '{}' already exists"
+msgstr "Mae grŵp llif diofyn'{}' eisoes yn bodoli"
+
+#: zerver/actions/invites.py:84
+msgid ""
+"To protect users, Zulip limits the number of invitations you can send in one"
+" day. Because you have reached the limit, no invitations were sent."
+msgstr "Er mwyn amddiffyn defnyddwyr, mae Zulip yn cyfyngu ar nifer y gwahoddiadau y gallwch eu hanfon mewn un diwrnod. Oherwydd eich bod wedi cyrraedd y terfyn, ni anfonwyd unrhyw wahoddiadau."
+
+#: zerver/actions/invites.py:150
+msgid ""
+"Your account is too new to send invites for this organization. Ask an "
+"organization admin, or a more experienced user."
+msgstr "Mae eich cyfrif yn rhy newydd i anfon gwahoddiadau ar gyfer y sefydliad hwn. Gofynnwch i weinyddwr sefydliad, neu ddefnyddiwr mwy profiadol."
+
+#: zerver/actions/invites.py:190
+msgid "Some emails did not validate, so we didn't send any invitations."
+msgstr "Ni ddilysodd rhai e-byst, felly ni wnaethom anfon unrhyw wahoddiadau."
+
+#: zerver/actions/invites.py:198
+msgid "We weren't able to invite anyone."
+msgstr "Nid oeddem yn gallu gwahodd unrhyw un."
+
+#: zerver/actions/invites.py:234
+msgid ""
+"Some of those addresses are already using Zulip, so we didn't send them an "
+"invitation. We did send invitations to everyone else!"
+msgstr "Mae rhai o'r cyfeiriadau hynny eisoes yn defnyddio Zulip, felly ni wnaethom anfon gwahoddiad atynt. Fe wnaethon ni anfon gwahoddiadau at bawb arall!"
+
+#: zerver/actions/message_edit.py:85
 msgid "Nothing to change"
 msgstr "Dim byd i newid"
 
-#: zerver/lib/actions.py:3111
+#: zerver/actions/message_edit.py:89
 msgid "Private messages cannot be moved to streams."
 msgstr "Ni ellir symud negeseuon preifat i ffrydiau."
 
-#: zerver/lib/actions.py:3113
+#: zerver/actions/message_edit.py:91
 msgid "Private messages cannot have topics."
 msgstr "Ni all negeseuon preifat fod â phynciau."
 
-#: zerver/lib/actions.py:3116
+#: zerver/actions/message_edit.py:94
 msgid "Invalid propagate_mode without topic edit"
 msgstr "Propagate_mode annilys heb olygu pwnc"
 
-#: zerver/lib/actions.py:3122
+#: zerver/actions/message_edit.py:100
 msgid "Cannot change message content while changing stream"
 msgstr "Methu newid cynnwys neges wrth newid nant"
 
-#: zerver/lib/actions.py:3126
+#: zerver/actions/message_edit.py:104
 msgid "Widgets cannot be edited."
 msgstr "Ni ellir golygu widgets."
 
-#: zerver/lib/actions.py:3179
+#: zerver/actions/message_edit.py:194
+#, python-brace-format
+msgid "{user} has marked this topic as resolved."
+msgstr "Mae {user} wedi nodi'r pwnc hwn fel y'i datryswyd."
+
+#: zerver/actions/message_edit.py:196
+#, python-brace-format
+msgid "{user} has marked this topic as unresolved."
+msgstr "Mae {user} wedi nodi'r pwnc hwn fel un heb ei ddatrys."
+
+#: zerver/actions/message_edit.py:843
+#, python-brace-format
+msgid "This topic was moved to {new_location} by {user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:847
+#, python-brace-format
+msgid "A message was moved from this topic to {new_location} by {user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:851
+#, python-brace-format
+msgid ""
+"{changed_messages_count} messages were moved from this topic to "
+"{new_location} by {user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:858
+#, python-brace-format
+msgid "This topic was moved here from {old_location} by {user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:862
+#, python-brace-format
+msgid "A message was moved here from {old_location} by {user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:866
+#, python-brace-format
+msgid ""
+"{changed_messages_count} messages were moved here from {old_location} by "
+"{user}."
+msgstr ""
+
+#: zerver/actions/message_edit.py:916
 msgid "Your organization has turned off message editing"
 msgstr "Mae eich sefydliad wedi diffodd golygu negeseuon"
 
-#: zerver/lib/actions.py:3198
+#: zerver/actions/message_edit.py:935
 msgid "You don't have permission to edit this message"
 msgstr "Nid oes gennych ganiatâd i olygu'r neges hon"
 
-#: zerver/lib/actions.py:3209
+#: zerver/actions/message_edit.py:946
 msgid "The time limit for editing this message has passed"
 msgstr "Mae'r terfyn amser ar gyfer golygu'r neges hon wedi mynd heibio"
 
-#: zerver/lib/actions.py:3224
+#: zerver/actions/message_edit.py:961
 msgid "The time limit for editing this message's topic has passed"
 msgstr "Mae'r terfyn amser ar gyfer golygu pwnc y neges hon wedi mynd heibio"
 
-#: zerver/lib/actions.py:3260 zerver/lib/actions.py:3609
+#: zerver/actions/message_edit.py:997 zerver/actions/message_send.py:1478
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr "Nid oes gennych ganiatâd i ddefnyddio cyfeiriadau cardiau gwyllt yn y ffrwd hon."
 
-#: zerver/lib/actions.py:3269
+#: zerver/actions/message_edit.py:1006
 msgid "You don't have permission to move this message"
 msgstr "Nid oes gennych ganiatâd i symud y neges hon"
 
-#: zerver/lib/actions.py:3275
+#: zerver/actions/message_edit.py:1012
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
 msgstr "Nid oes gennych ganiatâd i symud y neges hon oherwydd colli mynediad i'w nant"
 
-#: zerver/lib/actions.py:3313
-msgid "Invalid default stream group name '{}'"
-msgstr "Enw grŵp ffrwd diofyn annilys '{}'"
+#: zerver/actions/message_flags.py:229
+msgid "Invalid flag: '{}'"
+msgstr "Baner annilys: '{}'"
 
-#: zerver/lib/actions.py:3316
-msgid "Default stream group name too long (limit: {} characters)"
-msgstr "Enw grŵp ffrwd diofyn yn rhy hir (terfyn: {} nod)"
+#: zerver/actions/message_flags.py:231
+msgid "Flag not editable: '{}'"
+msgstr "Baner ddim yn olygadwy:  '{}'"
 
-#: zerver/lib/actions.py:3323
-msgid "Default stream group name '{}' contains NULL (0x00) characters."
-msgstr "Mae enw grŵp nant diofyn '{}' yn cynnwys nodau NULL (0x00)."
+#: zerver/actions/message_flags.py:233
+msgid "Invalid message flag operation: '{}'"
+msgstr "Gweithrediad baner neges annilys:  '{}'"
 
-#: zerver/lib/actions.py:3391
+#: zerver/actions/message_send.py:149
+msgid "Unable to render message"
+msgstr "Methu rhoi neges"
+
+#: zerver/actions/message_send.py:1028
+msgid "Expected exactly one stream"
+msgstr "Disgwylir yn union un ffrwd"
+
+#: zerver/actions/message_send.py:1039
+msgid "Invalid data type for stream"
+msgstr "Math o ddata annilys ar gyfer ffrwd"
+
+#: zerver/actions/message_send.py:1055 zerver/actions/message_send.py:1065
+msgid "Invalid data type for recipients"
+msgstr "Math data annilys ar gyfer derbynwyr"
+
+#: zerver/actions/message_send.py:1073 zerver/actions/message_send.py:1081
+msgid "Recipient lists may contain emails or user IDs, but not both."
+msgstr "Gall rhestrau derbynwyr gynnwys e-byst neu IDau defnyddiwr, ond nid y ddau."
+
+#: zerver/actions/message_send.py:1193
+msgid "Reminders can only be set for streams."
+msgstr "Dim ond ar gyfer ffrydiau y gellir gosod nodiadau atgoffa."
+
+#: zerver/actions/message_send.py:1260
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio ID {stream_id}, ond nid oes ffrwd gyda'r ID hwnnw."
 
-#: zerver/lib/actions.py:3397
+#: zerver/actions/message_send.py:1266
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}, ond nid yw'r ffrwd honno'n bodoli. Cliciwch [yma] ({new_stream_link}) i'w greu."
 
-#: zerver/lib/actions.py:3405
+#: zerver/actions/message_send.py:1274
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}. Mae'r ffrwd yn bodoli ond nid oes ganddo unrhyw danysgrifwyr."
 
-#: zerver/lib/actions.py:3452
+#: zerver/actions/message_send.py:1321
 msgid "Private messages are disabled in this organization."
 msgstr "Mae negeseuon preifat yn analluogi yn y sefydliad hwn."
 
-#: zerver/lib/actions.py:3528
+#: zerver/actions/message_send.py:1397
 msgid "Topics are required in this organization"
 msgstr ""
 
-#: zerver/lib/actions.py:3583
+#: zerver/actions/message_send.py:1452
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Anfonodd rhaglennydd API gynnwys JSON annilys"
 
-#: zerver/lib/actions.py:3589
+#: zerver/actions/message_send.py:1458
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
 
-#: zerver/lib/actions.py:3866
-msgid "Subscriber data is not available for this stream"
-msgstr "Nid oes data tanysgrifiwr ar gael ar gyfer y llif hwn"
+#: zerver/actions/reactions.py:116
+msgid "Reaction already exists."
+msgstr "Mae adwaith eisoes yn bodoli."
 
-#: zerver/lib/actions.py:3873
-msgid "Unable to retrieve subscribers for private stream"
-msgstr "Methu adfer tanysgrifwyr ar gyfer nant preifat"
+#: zerver/actions/realm_emoji.py:28 zerver/views/realm_emoji.py:36
+msgid "A custom emoji with this name already exists."
+msgstr "Mae emoji personol gyda'r enw hwn eisoes yn bodoli."
 
-#: zerver/lib/actions.py:5143
+#: zerver/actions/streams.py:700
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr ""
 
-#: zerver/lib/actions.py:5306
+#: zerver/actions/streams.py:863
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions](/help/stream-sending-policy) for this stream:\n"
@@ -2722,38 +2681,38 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
 
-#: zerver/lib/actions.py:5440
+#: zerver/actions/streams.py:997
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} ailenwyd yn ffrwd {old_stream_name} i {new_stream_name}."
 
-#: zerver/lib/actions.py:5459 zerver/lib/actions.py:5461
-#: zerver/views/streams.py:685
+#: zerver/actions/streams.py:1016 zerver/actions/streams.py:1018
+#: zerver/views/streams.py:689
 msgid "No description."
 msgstr "Dim disgrifiad."
 
-#: zerver/lib/actions.py:5464
+#: zerver/actions/streams.py:1021
 #, python-brace-format
 msgid "{user} changed the description for this stream."
 msgstr ""
 
-#: zerver/lib/actions.py:5466
+#: zerver/actions/streams.py:1023
 msgid "Old description"
 msgstr ""
 
-#: zerver/lib/actions.py:5470
+#: zerver/actions/streams.py:1027
 msgid "New description"
 msgstr ""
 
-#: zerver/lib/actions.py:5538 zerver/lib/actions.py:5543
+#: zerver/actions/streams.py:1095 zerver/actions/streams.py:1100
 msgid "Forever"
 msgstr ""
 
-#: zerver/lib/actions.py:5544
+#: zerver/actions/streams.py:1101
 msgid "Messages in this stream will now be retained forever."
 msgstr ""
 
-#: zerver/lib/actions.py:5550
+#: zerver/actions/streams.py:1107
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
@@ -2763,150 +2722,170 @@ msgid ""
 "{summary_line}"
 msgstr ""
 
-#: zerver/lib/actions.py:5748
-msgid "Signups enabled"
-msgstr "Cofrestriadau wedi'i alluogi"
+#: zerver/actions/submessage.py:30
+msgid "You cannot attach a submessage to this message."
+msgstr "Ni allwch atodi is-asesiad i'r neges hon."
 
-#: zerver/lib/actions.py:5912
-msgid "Invalid default stream group {}"
-msgstr "Grŵp ffrwd diofyn annilys {}"
+#: zerver/actions/typing.py:56 zerver/lib/addressee.py:33
+msgid "Invalid user ID {}"
+msgstr "ID defnyddiwr annilys {}"
 
-#: zerver/lib/actions.py:5959 zerver/lib/actions.py:5986
-#, python-brace-format
-msgid ""
-"'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "Mae '{stream_name}' yn ffrwd ddiofyn ac ni ellir ei ychwanegu at '{group_name}'"
+#: zerver/actions/user_groups.py:106 zerver/actions/user_groups.py:119
+msgid "User group '{}' already exists."
+msgstr "Mae grŵp defnyddwyr  '{}' eisoes yn bodoli."
 
-#: zerver/lib/actions.py:5970
-#, python-brace-format
-msgid "Default stream group '{group_name}' already exists"
-msgstr "Mae grŵp llif diofyn '{group_name}' eisoes yn bodoli"
-
-#: zerver/lib/actions.py:5992
-#, python-brace-format
-msgid ""
-"Stream '{stream_name}' is already present in default stream group "
-"'{group_name}'"
-msgstr "Mae ffrwd '{stream_name}' eisoes yn bresennol yn y grŵp llif diofyn '{group_name}'"
-
-#: zerver/lib/actions.py:6008
-#, python-brace-format
-msgid ""
-"Stream '{stream_name}' is not present in default stream group '{group_name}'"
-msgstr "Nid yw ffrwd '{stream_name}&#39; yn bresennol yn y grŵp llif diofyn &#39;{group_name}&#39;"
-
-#: zerver/lib/actions.py:6022
-msgid "This default stream group is already named '{}'"
-msgstr "Mae'r grŵp ffrwd diofyn hwn eisoes wedi'i enwi '{}'"
-
-#: zerver/lib/actions.py:6026
-msgid "Default stream group '{}' already exists"
-msgstr "Mae grŵp llif diofyn'{}' eisoes yn bodoli"
-
-#: zerver/lib/actions.py:6485
-msgid "Invalid flag: '{}'"
-msgstr "Baner annilys: '{}'"
-
-#: zerver/lib/actions.py:6487
-msgid "Flag not editable: '{}'"
-msgstr "Baner ddim yn olygadwy:  '{}'"
-
-#: zerver/lib/actions.py:6489
-msgid "Invalid message flag operation: '{}'"
-msgstr "Gweithrediad baner neges annilys:  '{}'"
-
-#: zerver/lib/actions.py:6601
-#, python-brace-format
-msgid "{user} has marked this topic as resolved."
-msgstr "Mae {user} wedi nodi'r pwnc hwn fel y'i datryswyd."
-
-#: zerver/lib/actions.py:6603
-#, python-brace-format
-msgid "{user} has marked this topic as unresolved."
-msgstr "Mae {user} wedi nodi'r pwnc hwn fel un heb ei ddatrys."
-
-#: zerver/lib/actions.py:7267
-#, python-brace-format
-msgid "This topic was moved to {new_location} by {user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7271
-#, python-brace-format
-msgid "A message was moved from this topic to {new_location} by {user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7275
-#, python-brace-format
-msgid ""
-"{changed_messages_count} messages were moved from this topic to "
-"{new_location} by {user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7282
-#, python-brace-format
-msgid "This topic was moved here from {old_location} by {user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7286
-#, python-brace-format
-msgid "A message was moved here from {old_location} by {user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7290
-#, python-brace-format
-msgid ""
-"{changed_messages_count} messages were moved here from {old_location} by "
-"{user}."
-msgstr ""
-
-#: zerver/lib/actions.py:7638
-msgid ""
-"To protect users, Zulip limits the number of invitations you can send in one"
-" day. Because you have reached the limit, no invitations were sent."
-msgstr "Er mwyn amddiffyn defnyddwyr, mae Zulip yn cyfyngu ar nifer y gwahoddiadau y gallwch eu hanfon mewn un diwrnod. Oherwydd eich bod wedi cyrraedd y terfyn, ni anfonwyd unrhyw wahoddiadau."
-
-#: zerver/lib/actions.py:7704
-msgid ""
-"Your account is too new to send invites for this organization. Ask an "
-"organization admin, or a more experienced user."
-msgstr "Mae eich cyfrif yn rhy newydd i anfon gwahoddiadau ar gyfer y sefydliad hwn. Gofynnwch i weinyddwr sefydliad, neu ddefnyddiwr mwy profiadol."
-
-#: zerver/lib/actions.py:7744
-msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Ni ddilysodd rhai e-byst, felly ni wnaethom anfon unrhyw wahoddiadau."
-
-#: zerver/lib/actions.py:7752
-msgid "We weren't able to invite anyone."
-msgstr "Nid oeddem yn gallu gwahodd unrhyw un."
-
-#: zerver/lib/actions.py:7788
-msgid ""
-"Some of those addresses are already using Zulip, so we didn't send them an "
-"invitation. We did send invitations to everyone else!"
-msgstr "Mae rhai o'r cyfeiriadau hynny eisoes yn defnyddio Zulip, felly ni wnaethom anfon gwahoddiad atynt. Fe wnaethon ni anfon gwahoddiadau at bawb arall!"
-
-#: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
-msgid "A custom emoji with this name already exists."
-msgstr "Mae emoji personol gyda'r enw hwn eisoes yn bodoli."
-
-#: zerver/lib/actions.py:8063 zerver/views/muting.py:55
+#: zerver/actions/user_topics.py:41 zerver/views/muting.py:56
 msgid "Topic is not muted"
 msgstr "Nid yw'r pwnc yn cael ei dawelu"
 
-#: zerver/lib/actions.py:8594
-msgid "Invalid order mapping."
-msgstr "Mapio archeb annilys."
+#: zerver/decorator.py:243
+msgid "Invalid subdomain for push notifications bouncer"
+msgstr "Subdomain annilys ar gyfer hysbysiadau gwthio bouncer"
 
-#: zerver/lib/actions.py:8673 zerver/lib/users.py:388
-#: zerver/views/custom_profile_fields.py:143
-#: zerver/views/custom_profile_fields.py:163
+#: zerver/decorator.py:252
+msgid "This API is not available to incoming webhook bots."
+msgstr "Nid yw'r API hwn ar gael i bots webhook sy'n dod i mewn."
+
+#: zerver/decorator.py:279
+msgid "Account is not associated with this subdomain"
+msgstr "Nid yw cyfrif yn gysylltiedig â'r is-barth hwn"
+
+#: zerver/decorator.py:479 zerver/decorator.py:586
+msgid "This endpoint does not accept bot requests."
+msgstr "Nid yw'r pwynt terfyn hwn yn derbyn ceisiadau bot."
+
+#: zerver/decorator.py:560
+msgid "Must be an server administrator"
+msgstr "Rhaid bod yn weinyddwr gweinydd"
+
+#: zerver/decorator.py:599 zerver/lib/streams.py:693 zerver/lib/streams.py:695
+#: zerver/lib/streams.py:710 zerver/lib/user_groups.py:16
+#: zerver/lib/user_groups.py:23 zerver/lib/users.py:246
+#: zerver/lib/users.py:275 zerver/views/invite.py:49
+#: zerver/views/realm_emoji.py:31 zerver/views/streams.py:326
+#: zerver/views/streams.py:550
+msgid "Insufficient permission"
+msgstr "Caniatâd annigonol"
+
+#: zerver/decorator.py:657
+msgid "This endpoint requires HTTP basic authentication."
+msgstr "Mae'r terfynbwynt hwn yn gofyn am ddilysiad sylfaenol HTTP."
+
+#: zerver/decorator.py:660
+msgid "Invalid authorization header for basic auth"
+msgstr "Pennawd awdurdodi annilys ar gyfer awdur sylfaenol"
+
+#: zerver/decorator.py:662
+msgid "Missing authorization header for basic auth"
+msgstr "Pennawd awdurdodiad coll ar gyfer awdur sylfaenol"
+
+#: zerver/decorator.py:762
+msgid "Webhook bots can only access webhooks"
+msgstr "Dim ond bachyngwe y gall bots bachyngwe eu cyrchu"
+
+#: zerver/forms.py:61
 #, python-brace-format
-msgid "Field id {id} not found."
-msgstr "Id maes {id} heb ei ddarganfod."
+msgid ""
+"Your account {username} has been deactivated. Please contact your "
+"organization administrator to reactivate it."
+msgstr ""
 
-#: zerver/lib/actions.py:8700 zerver/lib/actions.py:8713
-msgid "User group '{}' already exists."
-msgstr "Mae grŵp defnyddwyr  '{}' eisoes yn bodoli."
+#: zerver/forms.py:64
+msgid "The password is too weak."
+msgstr ""
+
+#: zerver/forms.py:85
+msgid "Subdomain needs to have length 3 or greater."
+msgstr "Mae angen i subdomain fod â hyd 3 neu fwy."
+
+#: zerver/forms.py:86
+msgid "Subdomain cannot start or end with a '-'."
+msgstr "Ni all subdomain ddechrau na gorffen gyda &#39;-&#39;."
+
+#: zerver/forms.py:87
+msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
+msgstr "Dim ond llythrennau bach, rhifau ac '-'au y gall is-barth eu cael."
+
+#: zerver/forms.py:88
+msgid "Subdomain unavailable. Please choose a different one."
+msgstr "Isbarth ddim ar gael. Dewiswch un gwahanol."
+
+#: zerver/forms.py:182
+#, python-brace-format
+msgid "The organization you are trying to join using {email} does not exist."
+msgstr "Nid yw&#39;r sefydliad rydych chi&#39;n ceisio ymuno ag ef gan ddefnyddio {email} yn bodoli."
+
+#: zerver/forms.py:190
+#, python-brace-format
+msgid ""
+"Please request an invite for {email} from the organization administrator."
+msgstr "Gofynnwch am wahoddwr am {email} gan weinyddwr y sefydliad."
+
+#: zerver/forms.py:201
+#, python-brace-format
+msgid ""
+"Your email address, {email}, is not in one of the domains that are allowed "
+"to register for accounts in this organization."
+msgstr "Nid yw eich cyfeiriad e-bost, {email}, yn un o'r parthau y caniateir iddynt gofrestru ar gyfer cyfrifon yn y sefydliad hwn."
+
+#: zerver/forms.py:206 zerver/forms.py:242 zerver/lib/email_validation.py:108
+msgid "Please use your real email address."
+msgstr "Defnyddiwch eich cyfeiriad e-bost go iawn."
+
+#: zerver/forms.py:209
+msgid "Email addresses containing + are not allowed in this organization."
+msgstr "Ni chaniateir cyfeiriadau e-bost sy'n cynnwys + yn y sefydliad hwn."
+
+#: zerver/forms.py:221
+msgid ""
+"New members cannot join this organization because all Zulip licenses are in "
+"use. Please contact the person who invited you and ask them to increase the "
+"number of licenses, then try again."
+msgstr "Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
+
+#: zerver/forms.py:252
+msgid "New password"
+msgstr "Cyfrinair newydd"
+
+#: zerver/forms.py:259
+msgid "New password confirmation"
+msgstr "Cadarnhad cyfrinair newydd"
+
+#: zerver/forms.py:437
+msgid ""
+"You're making too many attempts to sign in. Try again in {} seconds or "
+"contact your organization administrator for help."
+msgstr ""
+
+#: zerver/forms.py:449
+msgid ""
+"Your password has been disabled because it is too weak. Reset your password "
+"to create a new one."
+msgstr ""
+
+#: zerver/forms.py:466
+#, python-brace-format
+msgid ""
+"Your Zulip account {username} is not a member of the organization associated"
+" with this subdomain.  Please contact your organization administrator with "
+"any questions."
+msgstr ""
+
+#: zerver/forms.py:500
+msgid "Token"
+msgstr "Tocyn"
+
+#: zerver/forms.py:520
+msgid "Add up to 10 comma-separated email addresses."
+msgstr "Ychwanegwch hyd at 10 cyfeiriad e-bost wedi'u gwahanu gan goma."
+
+#: zerver/forms.py:525
+msgid "Please enter at most 10 emails."
+msgstr "Rhowch 10 e-bost ar y mwyaf."
+
+#: zerver/forms.py:538
+msgid "We couldn't find that Zulip organization."
+msgstr "Ni allem ddod o hyd i'r sefydliad Zulip hwnnw."
 
 #: zerver/lib/addressee.py:22
 msgid "Invalid email '{}'"
@@ -3010,7 +2989,7 @@ msgstr "Cyfeiriad annilys."
 msgid "Outside your domain."
 msgstr "Y tu allan i'ch parth."
 
-#: zerver/lib/email_validation.py:110 zerver/views/users.py:633
+#: zerver/lib/email_validation.py:110 zerver/views/users.py:637
 msgid "Email addresses containing + are not allowed."
 msgstr "Ni chaniateir cyfeiriadau e-bost sy'n cynnwys +."
 
@@ -3063,7 +3042,7 @@ msgstr "Math emoji annilys."
 msgid "Must be an organization administrator or emoji author"
 msgstr "Rhaid bod yn weinyddwr sefydliad neu'n awdur emoji"
 
-#: zerver/lib/emoji.py:106 zerver/models.py:1090
+#: zerver/lib/emoji.py:106 zerver/models.py:1094
 msgid "Invalid characters in emoji name"
 msgstr "Cymeriadau annilys mewn enw emoji"
 
@@ -3071,7 +3050,7 @@ msgstr "Cymeriadau annilys mewn enw emoji"
 msgid "Emoji name is missing"
 msgstr "Mae enw Emoji ar goll"
 
-#: zerver/lib/events.py:1370
+#: zerver/lib/events.py:1368
 msgid "Could not allocate event queue"
 msgstr "Methu dyrannu ciw digwyddiad"
 
@@ -3286,15 +3265,15 @@ msgstr "Cynhyrchedd"
 msgid "Version control"
 msgstr "Rheoli fersiwn"
 
-#: zerver/lib/message.py:175
+#: zerver/lib/message.py:177
 msgid "Message must not be empty"
 msgstr "Rhaid i'r neges beidio â bod yn wag"
 
-#: zerver/lib/message.py:177
+#: zerver/lib/message.py:179
 msgid "Message must not contain null bytes"
 msgstr "Rhaid i'r neges beidio â chynnwys bytes nwl"
 
-#: zerver/lib/message.py:735 zerver/lib/message.py:741
+#: zerver/lib/message.py:737 zerver/lib/message.py:743
 msgid "Invalid message(s)"
 msgstr "Neges(au) annilys"
 
@@ -3511,6 +3490,23 @@ msgstr "Soniodd {full_name} amdanoch chi:"
 msgid "{full_name} mentioned everyone:"
 msgstr "Soniodd {full_name} am bawb:"
 
+#: zerver/lib/recipient_users.py:30 zerver/lib/streams.py:258
+#: zerver/lib/streams.py:266 zerver/lib/streams.py:807
+#: zerver/tornado/views.py:111 zerver/views/events_register.py:75
+#: zerver/views/message_send.py:233 zerver/views/message_send.py:239
+#: zerver/views/message_send.py:258 zerver/views/users.py:615
+msgid "User not authorized for this query"
+msgstr "Nid yw'r defnyddiwr wedi'i awdurdodi ar gyfer yr ymholiad hwn"
+
+#: zerver/lib/recipient_users.py:71
+#, python-brace-format
+msgid "'{email}' is no longer using Zulip."
+msgstr "Nid yw '{email}' bellach yn defnyddio Zulip."
+
+#: zerver/lib/recipient_users.py:78
+msgid "You can't send private messages outside of your organization."
+msgstr "Ni allwch anfon negeseuon preifat y tu allan i'ch sefydliad."
+
 #: zerver/lib/remote_server.py:91
 msgid "Push notifications bouncer error: {}"
 msgstr "Gwthio hysbysiadau bownsar gwall: {}"
@@ -3546,57 +3542,57 @@ msgstr "Heb fewngofnodi: Angen dilysu API neu sesiwn defnyddiwr"
 msgid "Zulip Account Security"
 msgstr "Diogelwch Cyfrif Zulip"
 
-#: zerver/lib/streams.py:212
+#: zerver/lib/streams.py:217
 msgid "Only organization administrators can send to this stream."
 msgstr "Dim ond gweinyddwyr sefydliadau all anfon at y ffrwd hwn."
 
-#: zerver/lib/streams.py:218
+#: zerver/lib/streams.py:223
 msgid ""
 "Only organization administrators and moderators can send to this stream."
 msgstr "Dim ond gweinyddwyr a chymedrolwyr sefydliadau all anfon at y ffrwd hwn."
 
-#: zerver/lib/streams.py:221
+#: zerver/lib/streams.py:226
 msgid "Guests cannot send to this stream."
 msgstr "Ni all gwesteion anfon i'r ffrwd hon."
 
-#: zerver/lib/streams.py:226
+#: zerver/lib/streams.py:231
 msgid "New members cannot send to this stream."
 msgstr "Ni all aelodau newydd anfon at y ffrwd hon."
 
-#: zerver/lib/streams.py:286
+#: zerver/lib/streams.py:291
 msgid "Not authorized to send to stream '{}'"
 msgstr "Heb awdurdod i anfon i ffrwd '{}'"
 
-#: zerver/lib/streams.py:291
+#: zerver/lib/streams.py:296
 msgid "Please supply 'stream'."
 msgstr "Cyflenwi 'ffrwd' os gwelwch yn dda."
 
-#: zerver/lib/streams.py:294
+#: zerver/lib/streams.py:299
 msgid "Please choose one: 'stream' or 'stream_id'."
 msgstr "Dewiswch un: 'stream' neu 'stream_id'"
 
-#: zerver/lib/streams.py:300 zerver/lib/streams.py:322
-#: zerver/lib/streams.py:392 zerver/lib/streams.py:458
+#: zerver/lib/streams.py:305 zerver/lib/streams.py:327
+#: zerver/lib/streams.py:397 zerver/lib/streams.py:463
 msgid "Invalid stream id"
 msgstr "Id ffrwd annilys"
 
-#: zerver/lib/streams.py:434
+#: zerver/lib/streams.py:439
 msgid "Stream name '{}' is already taken."
 msgstr "Cymerir enw ffrwd '{}' eisoes."
 
-#: zerver/lib/streams.py:442 zerver/lib/streams.py:562
+#: zerver/lib/streams.py:447 zerver/lib/streams.py:567
 msgid "Invalid stream name '{}'"
 msgstr "Enw ffrwd annilys '{}'"
 
-#: zerver/lib/streams.py:694
+#: zerver/lib/streams.py:699
 msgid "Stream(s) ({}) do not exist"
 msgstr "Nid yw ffrwd(iau) ({}) yn bodoli"
 
-#: zerver/lib/streams.py:701 zerver/views/streams.py:320
+#: zerver/lib/streams.py:706 zerver/views/streams.py:324
 msgid "Web-public streams are not enabled."
 msgstr ""
 
-#: zerver/lib/streams.py:730
+#: zerver/lib/streams.py:735
 msgid "Default stream group with id '{}' does not exist."
 msgstr "Nid yw grŵp nant diofyn gydag id '{}' yn bodoli."
 
@@ -3619,6 +3615,14 @@ msgstr ""
 #: zerver/lib/string_validation.py:52
 msgid "Invalid character in topic, at position {}!"
 msgstr ""
+
+#: zerver/lib/subscription_info.py:294
+msgid "Subscriber data is not available for this stream"
+msgstr "Nid oes data tanysgrifiwr ar gael ar gyfer y llif hwn"
+
+#: zerver/lib/subscription_info.py:301
+msgid "Unable to retrieve subscribers for private stream"
+msgstr "Methu adfer tanysgrifwyr ar gyfer nant preifat"
 
 #: zerver/lib/upload.py:129 zerver/lib/upload.py:145 zerver/lib/upload.py:239
 msgid "Could not decode image; did you upload an image file?"
@@ -3664,7 +3668,7 @@ msgstr "Fformat annilys!"
 msgid "Name is already in use!"
 msgstr "Mae'r enw eisoes yn cael ei ddefnyddio!"
 
-#: zerver/lib/users.py:77 zerver/views/users.py:430 zerver/views/users.py:616
+#: zerver/lib/users.py:77 zerver/views/users.py:434 zerver/views/users.py:620
 msgid "Bad name or username"
 msgstr "Enw, neu enw defnyddiwr, ddrwg"
 
@@ -3692,7 +3696,7 @@ msgstr "Math bot annilys"
 msgid "Invalid interface type"
 msgstr "Math rhyngwyneb annilys"
 
-#: zerver/lib/users.py:229 zerver/lib/users.py:234 zerver/models.py:4311
+#: zerver/lib/users.py:229 zerver/lib/users.py:234 zerver/models.py:4337
 msgid "Invalid user ID: {}"
 msgstr "ID defnyddiwr annilys: {}"
 
@@ -3859,11 +3863,11 @@ msgstr "Dylai fod slaes blaenllaw yn y zcommand."
 msgid "No such command: {}"
 msgstr "Dim gorchymyn o'r fath: {}"
 
-#: zerver/middleware.py:464
+#: zerver/middleware.py:477
 msgid "Internal server error"
 msgstr "Gwall gweinydd mewnol"
 
-#: zerver/middleware.py:491
+#: zerver/middleware.py:504
 #, python-brace-format
 msgid "CSRF error: {reason}"
 msgstr "Gwall CSRF: {reason}"
@@ -3876,135 +3880,135 @@ msgstr "digwyddiadau ffrwd"
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr ""
 
-#: zerver/models.py:1193 zerver/models.py:1195
+#: zerver/models.py:1197 zerver/models.py:1199
 msgid "Bad regular expression: {}"
 msgstr "Mynegiant rheolaidd drwg: {}"
 
-#: zerver/models.py:1196
+#: zerver/models.py:1200
 msgid "Unknown regular expression error"
 msgstr "Gwall mynegiant rheolaidd anhysbys"
 
-#: zerver/models.py:1231
+#: zerver/models.py:1235
 msgid "Invalid format string in URL."
 msgstr "Llinyn fformat annilys yn URL."
 
-#: zerver/models.py:1273
+#: zerver/models.py:1277
 #, python-format
 msgid ""
 "Group %(name)r in URL format string is not present in linkifier pattern."
 msgstr "Nid yw grŵp %(name)r yn llinyn fformat URL yn bresennol ym mhatrwm y cysylltydd."
 
-#: zerver/models.py:1285
+#: zerver/models.py:1289
 #, python-format
 msgid ""
 "Group %(name)r in linkifier pattern is not present in URL format string."
 msgstr "Nid yw grŵp %(name)r mewn patrwm cysylltydd yn bresennol yn llinyn fformat URL."
 
-#: zerver/models.py:1380 zerver/views/realm_playgrounds.py:25
+#: zerver/models.py:1384 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
 msgstr "Cymeriadau annilys mewn iaith pygments"
 
-#: zerver/models.py:1834
+#: zerver/models.py:1838
 msgid "Organization owner"
 msgstr "Perchennog y sefydliad"
 
-#: zerver/models.py:1835
+#: zerver/models.py:1839
 msgid "Organization administrator"
 msgstr "Gweinyddwr sefydliad"
 
-#: zerver/models.py:1836
+#: zerver/models.py:1840
 msgid "Moderator"
 msgstr "Cymedrolwr"
 
-#: zerver/models.py:1837
+#: zerver/models.py:1841
 msgid "Member"
 msgstr "Aelod"
 
-#: zerver/models.py:1838
+#: zerver/models.py:1842
 msgid "Guest"
 msgstr "Gwadd"
 
-#: zerver/models.py:2350
+#: zerver/models.py:2360
 msgid "Web-public"
 msgstr ""
 
-#: zerver/models.py:2356
+#: zerver/models.py:2366
 msgid "Public"
 msgstr "Cyhoeddus"
 
-#: zerver/models.py:2362
+#: zerver/models.py:2372
 msgid "Private, shared history"
 msgstr "Hanes preifat, a rennir"
 
-#: zerver/models.py:2368
+#: zerver/models.py:2378
 msgid "Private, protected history"
 msgstr "Hanes preifat, gwarchodedig"
 
-#: zerver/models.py:2376
+#: zerver/models.py:2386
 msgid "Public, protected history"
 msgstr ""
 
-#: zerver/models.py:2396
+#: zerver/models.py:2406
 msgid "All stream members can post"
 msgstr "Gall holl aelodau'r ffrwd bostio"
 
-#: zerver/models.py:2397
+#: zerver/models.py:2407
 msgid "Only organization administrators can post"
 msgstr "Dim ond gweinyddwyr sefydliad all bostio"
 
-#: zerver/models.py:2399
+#: zerver/models.py:2409
 msgid "Only organization administrators and moderators can post"
 msgstr "Dim ond gweinyddwyr a chymedrolwyr sefydliadau all bostio"
 
-#: zerver/models.py:2402
+#: zerver/models.py:2412
 msgid "Only organization full members can post"
 msgstr "Dim ond aelodau llawn y sefydliad all bostio"
 
-#: zerver/models.py:3013
+#: zerver/models.py:3023
 msgid "Unicode emoji"
 msgstr "Emoji Unicode"
 
-#: zerver/models.py:3014
+#: zerver/models.py:3024
 msgid "Custom emoji"
 msgstr "Emoji personol"
 
-#: zerver/models.py:3015
+#: zerver/models.py:3025
 msgid "Zulip extra emoji"
 msgstr "Emoji ychwanegol Zulip"
 
-#: zerver/models.py:4315
+#: zerver/models.py:4341
 msgid "User with ID {} is deactivated"
 msgstr "Mae defnyddiwr ag ID {} wedi'i ddadactifadu"
 
-#: zerver/models.py:4318
+#: zerver/models.py:4344
 msgid "User with ID {} is a bot"
 msgstr "Mae defnyddiwr ag ID {} yn bot"
 
-#: zerver/models.py:4351
+#: zerver/models.py:4377
 msgid "List of options"
 msgstr "Rhestr o opsiynau"
 
-#: zerver/models.py:4354
+#: zerver/models.py:4380
 msgid "Person picker"
 msgstr "Codwr person"
 
-#: zerver/models.py:4366
+#: zerver/models.py:4392
 msgid "Short text"
 msgstr "Testun byr"
 
-#: zerver/models.py:4367
+#: zerver/models.py:4393
 msgid "Long text"
 msgstr "Testun hir"
 
-#: zerver/models.py:4368
+#: zerver/models.py:4394
 msgid "Date picker"
 msgstr "Codwr dyddiad"
 
-#: zerver/models.py:4369
+#: zerver/models.py:4395
 msgid "Link"
 msgstr "Dolen"
 
-#: zerver/models.py:4372
+#: zerver/models.py:4398
 msgid "External account"
 msgstr "Cyfrif allanol"
 
@@ -4183,11 +4187,11 @@ msgstr "Gofynnwyd am ormod o negeseuon (uchafswm {})."
 msgid "No such topic '{}'"
 msgstr "Dim pwnc o'r fath '{}'"
 
-#: zerver/views/message_send.py:159
+#: zerver/views/message_send.py:158
 msgid "Invalid time format"
 msgstr "Fformat amser annilys"
 
-#: zerver/views/message_send.py:168
+#: zerver/views/message_send.py:167
 msgid "Time must be in the future."
 msgstr "Rhaid i amser fod yn y dyfodol."
 
@@ -4199,31 +4203,31 @@ msgstr "Anfonwr ar goll"
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr "Ni chaniateir adlewyrchu gydag IDau defnyddiwr sy'n eu derbyn"
 
-#: zerver/views/message_send.py:273 zerver/views/message_send.py:280
+#: zerver/views/message_send.py:275 zerver/views/message_send.py:282
 msgid "Invalid mirrored message"
 msgstr "Neges annilys wedi'i adlewyrchu"
 
-#: zerver/views/message_send.py:276
+#: zerver/views/message_send.py:278
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr "Ni chaniateir adlewyrchu Zephyr yn y sefydliad hwn"
 
-#: zerver/views/message_send.py:284
+#: zerver/views/message_send.py:286
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr "Ar goll deliver_at mewn cais am oedi wrth gyflwyno neges"
 
-#: zerver/views/muting.py:41 zerver/views/muting.py:46
+#: zerver/views/muting.py:42 zerver/views/muting.py:47
 msgid "Topic already muted"
 msgstr "Pwnc wedi'i dawelu eisoes"
 
-#: zerver/views/muting.py:99
+#: zerver/views/muting.py:100
 msgid "Cannot mute self"
 msgstr "Ni all fudo'ch hun"
 
-#: zerver/views/muting.py:107 zerver/views/muting.py:112
+#: zerver/views/muting.py:108 zerver/views/muting.py:113
 msgid "User already muted"
 msgstr "Defnyddiwr eisoes wedi'i dawelu"
 
-#: zerver/views/muting.py:126
+#: zerver/views/muting.py:127
 msgid "User is not muted"
 msgstr "Nid yw'r defnyddiwr yn dawel"
 
@@ -4287,16 +4291,16 @@ msgstr "Giphy_rating annilys {}"
 msgid "Must be a demo organization."
 msgstr "Rhaid bod yn sefydliad demo."
 
-#: zerver/views/realm_domains.py:32
+#: zerver/views/realm_domains.py:36
 msgid "Invalid domain: {}"
 msgstr "Parth annilys: {}"
 
-#: zerver/views/realm_domains.py:35
+#: zerver/views/realm_domains.py:39
 #, python-brace-format
 msgid "The domain {domain} is already a part of your organization."
 msgstr "Mae'r parth {domain} eisoes yn rhan o'ch sefydliad."
 
-#: zerver/views/realm_domains.py:55 zerver/views/realm_domains.py:68
+#: zerver/views/realm_domains.py:59 zerver/views/realm_domains.py:72
 #, python-brace-format
 msgid "No entry found for domain {domain}."
 msgstr "Ni ddarganfuwyd cofnod ar gyfer parth {domain}."
@@ -4336,7 +4340,7 @@ msgstr "Allforio wedi'i ddileu eisoes"
 msgid "You must upload exactly one icon."
 msgstr "Rhaid i chi uwchlwytho un eicon yn union."
 
-#: zerver/views/realm_linkifiers.py:45 zerver/views/realm_linkifiers.py:67
+#: zerver/views/realm_linkifiers.py:49 zerver/views/realm_linkifiers.py:71
 msgid "Linkifier not found."
 msgstr "Ni chafwyd hyd i gysylltydd."
 
@@ -4348,86 +4352,86 @@ msgstr "Rhaid i chi uwchlwytho un logo yn union."
 msgid "Invalid playground"
 msgstr "Maes chwarae annilys"
 
-#: zerver/views/registration.py:601
+#: zerver/views/registration.py:600
 msgid "The organization creation link has expired or is not valid."
 msgstr "Mae'r cyswllt creu sefydliad wedi dod i ben neu nid yw'n ddilys."
 
-#: zerver/views/registration.py:609
+#: zerver/views/registration.py:608
 msgid "New organization creation disabled"
 msgstr "Creu sefydliad newydd yn anabl"
 
-#: zerver/views/streams.py:112
+#: zerver/views/streams.py:116
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr "Defnyddiwr heb awdurdod i gyflawni ymholiadau ar ran '{principal}'"
 
-#: zerver/views/streams.py:159
+#: zerver/views/streams.py:163
 msgid "Private streams cannot be made default."
 msgstr "Ni ellir gwneud ffrydiau preifat yn ddiofyn."
 
-#: zerver/views/streams.py:191
+#: zerver/views/streams.py:195
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr "Rhaid i chi basio \"new_description\" neu \"new_group_name\""
 
-#: zerver/views/streams.py:221
+#: zerver/views/streams.py:225
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "Gwerth annilys ar gyfer \"op\". Nodwch un o \"ychwanegu\" neu \"tynnu\"."
 
-#: zerver/views/streams.py:292
+#: zerver/views/streams.py:296
 msgid "Stream already has that name!"
 msgstr "Mae gan Ffrwd yr enw hwnnw eisoes!"
 
-#: zerver/views/streams.py:315
+#: zerver/views/streams.py:319
 msgid "Default streams cannot be made private."
 msgstr "Ni ellir gwneud ffrydiau diofyn yn breifat."
 
-#: zerver/views/streams.py:372 zerver/views/user_groups.py:96
+#: zerver/views/streams.py:376 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Dim byd i wneud. Nodwch o leiaf un o 'ychwanegu' neu 'dileu'."
 
-#: zerver/views/streams.py:452
+#: zerver/views/streams.py:456
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
 msgstr "tanysgrifiodd {user_full_name} chi i'r ffrwd {stream_name}."
 
-#: zerver/views/streams.py:458
+#: zerver/views/streams.py:462
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
 msgstr "tanysgrifiodd {user_full_name} chi i'r ffrydiau canlynol:"
 
-#: zerver/views/streams.py:531
+#: zerver/views/streams.py:535
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
 msgstr "Methu cyrchu ffrwd ({stream_name})."
 
-#: zerver/views/streams.py:541
+#: zerver/views/streams.py:545
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr "Dim ond i ffrydiau preifat y gallwch chi wahodd defnyddwyr eraill sy'n adlewyrchu Zephyr."
 
-#: zerver/views/streams.py:659
+#: zerver/views/streams.py:663
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
 msgstr "Creodd {user_name} y ffrydiau canlynol: {stream_str}."
 
-#: zerver/views/streams.py:661
+#: zerver/views/streams.py:665
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
 msgstr "Creodd {user_name} nant newydd {stream_str}."
 
-#: zerver/views/streams.py:662
+#: zerver/views/streams.py:666
 msgid "new streams"
 msgstr "ffrydiau newydd"
 
-#: zerver/views/streams.py:694
+#: zerver/views/streams.py:698
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
 msgstr ""
 
-#: zerver/views/streams.py:914
+#: zerver/views/streams.py:918
 msgid "Unknown subscription property: {}"
 msgstr "Eiddo tanysgrifio anhysbys: {}"
 
-#: zerver/views/streams.py:918
+#: zerver/views/streams.py:922
 msgid "Not subscribed to stream id {}"
 msgstr "Heb danysgrifio i id ffrwd {}"
 
@@ -4467,8 +4471,8 @@ msgstr "Enw ffeil annilys"
 msgid "You must specify a file to upload"
 msgstr "Rhaid i chi nodi ffeil i'w huwchlwytho"
 
-#: zerver/views/upload.py:137 zerver/views/users.py:351
-#: zerver/views/users.py:449
+#: zerver/views/upload.py:137 zerver/views/users.py:355
+#: zerver/views/users.py:453
 msgid "You may only upload one file at a time"
 msgstr "Dim ond un ffeil y gallwch ei lanlwytho ar y tro"
 
@@ -4525,55 +4529,55 @@ msgstr "Mae cyfrinair newydd yn rhy wan!"
 msgid "You must upload exactly one avatar."
 msgstr "Rhaid i chi uwchlwytho un avatar yn union."
 
-#: zerver/views/users.py:106
+#: zerver/views/users.py:110
 msgid "Cannot deactivate the only organization owner"
 msgstr "Ni all ddadactifadu unig berchennog y sefydliad"
 
-#: zerver/views/users.py:195
+#: zerver/views/users.py:199
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
 msgstr "Ni ellir tynnu caniatâd y perchennog oddi wrth unig berchennog y sefydliad."
 
-#: zerver/views/users.py:308
+#: zerver/views/users.py:312
 msgid "Failed to change owner, no such user"
 msgstr "Wedi methu newid perchennog, dim defnyddiwr o'r fath"
 
-#: zerver/views/users.py:310
+#: zerver/views/users.py:314
 msgid "Failed to change owner, user is deactivated"
 msgstr "Wedi methu newid perchennog, mae'r defnyddiwr wedi'i ddadactifadu"
 
-#: zerver/views/users.py:312
+#: zerver/views/users.py:316
 msgid "Failed to change owner, bots can't own other bots"
 msgstr "Wedi methu newid perchennog, ni all bots fod yn berchen ar bots eraill"
 
-#: zerver/views/users.py:416
+#: zerver/views/users.py:420
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr "Methu creu bots nes bod FAKE_EMAIL_DOMAIN wedi'i ffurfweddu'n gywir. \nCysylltwch â'ch gweinyddwr gweinydd."
 
-#: zerver/views/users.py:424
+#: zerver/views/users.py:428
 msgid "Embedded bots are not enabled."
 msgstr "Nid yw bots wedi'u hymgorffori yn cael eu galluogi."
 
-#: zerver/views/users.py:426
+#: zerver/views/users.py:430
 msgid "Invalid embedded bot name."
 msgstr "Enw bot gwreiddio annilys."
 
-#: zerver/views/users.py:433
+#: zerver/views/users.py:437
 msgid "Username already in use"
 msgstr "Enw defnyddiwr eisoes yn cael ei ddefnyddio"
 
-#: zerver/views/users.py:626
+#: zerver/views/users.py:630
 #, python-brace-format
 msgid "Email '{email}' not allowed in this organization"
 msgstr "Ni chaniateir e-bost '{email}' yn y sefydliad hwn"
 
-#: zerver/views/users.py:631
+#: zerver/views/users.py:635
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr "Ni chaniateir cyfeiriadau e-bost tafladwy yn y sefydliad hwn"
 
-#: zerver/views/users.py:637
+#: zerver/views/users.py:641
 msgid "Email '{}' already in use"
 msgstr "E-bostiwch '{}' sydd eisoes yn cael ei ddefnyddio"
 
@@ -4687,7 +4691,7 @@ msgstr "Neges gan Slack"
 msgid "Unknown WordPress webhook action: {}"
 msgstr "Gweithred webhook anhysbys WordPress: {}"
 
-#: zerver/worker/queue_processors.py:1058
+#: zerver/worker/queue_processors.py:1060
 #, python-brace-format
 msgid ""
 "Your data export is complete and has been uploaded here:\n"
@@ -4734,18 +4738,18 @@ msgstr "Mae'r data allan o drefn."
 msgid "Invalid data."
 msgstr "Data annilys."
 
-#: zproject/backends.py:465
+#: zproject/backends.py:462
 msgid "You need to reset your password."
 msgstr "Mae angen i chi ailosod eich cyfrinair."
 
-#: zproject/backends.py:2125
+#: zproject/backends.py:2122
 msgid "Missing id_token parameter"
 msgstr "Paramedr id_token ar goll"
 
-#: zproject/backends.py:2722
+#: zproject/backends.py:2719
 msgid "Invalid OTP"
 msgstr "OTP annilys"
 
-#: zproject/backends.py:2725
+#: zproject/backends.py:2722
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Methu defnyddio mobile_flow_otp a desktop_flow_otp gyda'i gilydd."

@@ -774,13 +774,15 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"<Realm: {self.string_id} {self.id}>"
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_realm_emoji_uncached(self)
+    def get_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_realm_emoji_uncached(realm)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_active_realm_emoji_uncached(self)
+    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_active_realm_emoji_uncached(realm)
 
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
@@ -880,9 +882,11 @@ class Realm(models.Model):
         # it as gibibytes (GiB) to be a bit more generous in case of confusion.
         return self.upload_quota_gb << 30
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
-    def currently_used_upload_space_bytes(self) -> int:
-        used_space = Attachment.objects.filter(realm=self).aggregate(Sum("size"))["size__sum"]
+    def currently_used_upload_space_bytes(realm) -> int:
+        used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
             return 0
         return used_space
@@ -1463,6 +1467,7 @@ class UserBaseSettings(models.Model):
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
+    display_emoji_reaction_users: bool = models.BooleanField(default=True)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
     starred_message_counts: bool = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
@@ -1599,6 +1604,7 @@ class UserBaseSettings(models.Model):
         **notification_setting_types,
         **dict(
             # Add new general settings here.
+            display_emoji_reaction_users=bool,
             escape_navigates_to_default_view=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
@@ -2225,6 +2231,12 @@ class PreregistrationUser(models.Model):
         GUEST_USER=600,
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
+
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationUser
+    created_user: Optional[UserProfile] = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
 
     class Meta:
         indexes = [
@@ -3565,8 +3577,8 @@ class Subscription(models.Model):
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
-def get_user_profile_by_id(uid: int) -> UserProfile:
-    return UserProfile.objects.select_related().get(id=uid)
+def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+    return UserProfile.objects.select_related().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -3732,6 +3744,21 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
         .values_list("id", flat=True)
     )
     return list(query)
+
+
+def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
+    is_private_bot = (
+        user_profile.default_sending_stream
+        and user_profile.default_sending_stream.invite_only
+        or user_profile.default_events_register_stream
+        and user_profile.default_events_register_stream.invite_only
+    )
+    if is_private_bot:
+        return {user_profile.bot_owner_id}
+    else:
+        users = {user.id for user in user_profile.realm.get_human_admin_users()}
+        users.add(user_profile.bot_owner_id)
+        return users
 
 
 def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
@@ -4147,6 +4174,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_REACTIVATED = 104
     USER_ROLE_CHANGED = 105
     USER_DELETED = 106
+    USER_DELETED_PRESERVING_MESSAGES = 107
 
     USER_SOFT_ACTIVATED = 120
     USER_SOFT_DEACTIVATED = 121

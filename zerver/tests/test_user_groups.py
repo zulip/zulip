@@ -5,7 +5,9 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_set_realm_property, ensure_stream, promote_new_full_members
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_groups import promote_new_full_members
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
@@ -757,7 +759,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         current_time = timezone_now()
         with mock.patch(
-            "zerver.lib.actions.timezone_now", return_value=current_time + timedelta(days=3)
+            "zerver.actions.user_groups.timezone_now", return_value=current_time + timedelta(days=3)
         ):
             promote_new_full_members()
 

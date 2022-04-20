@@ -3,8 +3,9 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_delete_user, get_active_bots_owned_by_user
+from zerver.actions.users import do_delete_user
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.users import get_active_bots_owned_by_user
 
 
 class Command(ZulipBaseCommand):
@@ -63,5 +64,5 @@ This will:
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
         for user_profile in user_profiles:
-            do_delete_user(user_profile)
+            do_delete_user(user_profile, acting_user=None)
             print(f"Successfully deleted user {user_profile.delivery_email}.")

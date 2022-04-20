@@ -12,22 +12,20 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
-from zerver.lib.actions import (
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
+from zerver.actions.message_send import get_recipient_info
+from zerver.actions.muted_users import do_mute_user
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import (
     change_user_is_active,
-    create_users,
     do_change_can_create_users,
     do_change_user_role,
-    do_create_multiuse_invite_link,
-    do_create_user,
     do_deactivate_user,
     do_delete_user,
-    do_invite_users,
-    do_mute_user,
-    do_reactivate_user,
-    do_set_realm_property,
-    get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
@@ -2220,7 +2218,7 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
-        do_delete_user(hamlet)
+        do_delete_user(hamlet, acting_user=None)
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 

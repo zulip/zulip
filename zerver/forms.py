@@ -19,9 +19,12 @@ from markupsafe import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
 
+from zerver.actions.user_settings import do_change_password
 from zerver.decorator import rate_limit_request_by_ip
-from zerver.lib.actions import do_change_password, email_not_system_bot
-from zerver.lib.email_validation import email_allowed_for_realm
+from zerver.lib.email_validation import (
+    email_allowed_for_realm,
+    email_reserved_for_system_bots_error,
+)
 from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject
@@ -37,6 +40,7 @@ from zerver.models import (
     email_to_domain,
     get_realm,
     get_user_by_delivery_email,
+    is_cross_realm_bot_email,
 )
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
@@ -220,6 +224,17 @@ class HomepageForm(forms.Form):
                 )
 
         return email
+
+
+def email_not_system_bot(email: str) -> None:
+    if is_cross_realm_bot_email(email):
+        msg = email_reserved_for_system_bots_error(email)
+        code = msg
+        raise ValidationError(
+            msg,
+            code=code,
+            params=dict(deactivated=False),
+        )
 
 
 def email_is_not_disposable(email: str) -> None:

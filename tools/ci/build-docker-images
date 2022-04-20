@@ -7,3 +7,4 @@ docker build . --build-arg=BASE_IMAGE=debian:10 --pull --tag=zulip/ci:buster
 docker build . --build-arg=BASE_IMAGE=debian:11 --pull --tag=zulip/ci:bullseye
 docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:buster --build-arg=VERSION=3.4 --tag=zulip/ci:buster-3.4
 docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=4.11 --tag=zulip/ci:bullseye-4.11
+docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=5.1 --tag=zulip/ci:bullseye-5.1

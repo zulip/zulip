@@ -1,13 +1,13 @@
 import json
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import requests
 from pyoembed import PyOembedException, oEmbed
 
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
-def get_oembed_data(
-    url: str, maxwidth: int = 640, maxheight: int = 480
-) -> Optional[Dict[str, Any]]:
+
+def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> Optional[UrlEmbedData]:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except (PyOembedException, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError):
@@ -16,29 +16,27 @@ def get_oembed_data(
     oembed_resource_type = data.get("type", "")
     image = data.get("url", data.get("image"))
     thumbnail = data.get("thumbnail_url")
-    html = data.pop("html", "")
+    html = data.get("html", "")
     if oembed_resource_type == "photo" and image:
-        return dict(
-            oembed=True,
+        return UrlOEmbedData(
             image=image,
-            type=oembed_resource_type,
+            type="photo",
             title=data.get("title"),
             description=data.get("description"),
         )
 
     if oembed_resource_type == "video" and html and thumbnail:
-        return dict(
-            oembed=True,
+        return UrlOEmbedData(
             image=thumbnail,
-            type=oembed_resource_type,
+            type="video",
             html=strip_cdata(html),
             title=data.get("title"),
             description=data.get("description"),
         )
 
-    # Otherwise, start with just the embed type.
-    return dict(
-        type=oembed_resource_type,
+    # Otherwise, use the title/description from pyembed as the basis
+    # for our other parsers
+    return UrlEmbedData(
         title=data.get("title"),
         description=data.get("description"),
     )

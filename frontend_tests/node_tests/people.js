@@ -835,9 +835,13 @@ test_people("extract_people_from_message", ({override_rewire}) => {
     assert.ok(reported);
 
     // Get line coverage
-    people.__Rewire__("report_late_add", () => {
-        throw new Error("unexpected late add");
-    });
+    people.__Rewire__(
+        "report_late_add",
+        /* istanbul ignore next */
+        () => {
+            throw new Error("unexpected late add");
+        },
+    );
 
     message = {
         type: "private",
