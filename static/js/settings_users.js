@@ -24,7 +24,6 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as user_pill from "./user_pill";
@@ -600,7 +599,15 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
-        dialog_widget.submit_api_request(channel.patch, url, data);
+        const opts = {
+            error_continuation() {
+                // Scrolling modal to top, to make error visible to user.
+                $("#edit-user-form")
+                    .closest(".simplebar-content-wrapper")
+                    .animate({scrollTop: 0}, "fast");
+            },
+        };
+        dialog_widget.submit_api_request(channel.patch, url, data, opts);
     }
 
     dialog_widget.launch({
@@ -621,7 +628,7 @@ function handle_human_form($tbody) {
     });
 }
 
-function handle_bot_form($tbody, $status_field) {
+function handle_bot_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -656,8 +663,7 @@ function handle_bot_form($tbody, $status_field) {
                 data.bot_owner_id = human_user_id;
             }
 
-            settings_ui.do_settings_change(channel.patch, url, data, $status_field);
-            dialog_widget.close_modal();
+            dialog_widget.submit_api_request(channel.patch, url, data);
         }
 
         function get_bot_owner_widget() {
@@ -709,11 +715,10 @@ section.deactivated.handle_events = () => {
 
 section.bots.handle_events = () => {
     const $tbody = $("#admin_bots_table").expectOne();
-    const $status_field = $("#bot-field-status").expectOne();
 
     handle_bot_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_bot_form($tbody, $status_field);
+    handle_bot_form($tbody);
 };
 
 export function set_up_humans() {
