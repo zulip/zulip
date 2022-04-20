@@ -10,6 +10,7 @@ import render_draft_table_body from "../templates/draft_table_body.hbs";
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as color_class from "./color_class";
+import * as components from "./components";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
@@ -382,75 +383,149 @@ function remove_draft($draft_row) {
     }
 }
 
-export function launch() {
-    function format_drafts(data) {
-        for (const [id, draft] of Object.entries(data)) {
-            draft.id = id;
+function setup_event_handlers() {
+    $(".restore-draft").on("click", function (e) {
+        if (document.getSelection().type === "Range") {
+            return;
         }
 
-        const unsorted_raw_drafts = Object.values(data);
+        e.stopPropagation();
 
-        const sorted_raw_drafts = unsorted_raw_drafts.sort(
-            (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
+        const $draft_row = $(this).closest(".draft-row");
+        const $draft_id = $draft_row.data("draft-id");
+        restore_draft($draft_id);
+    });
+
+    $(".draft_controls .delete-draft").on("click", function () {
+        const $draft_row = $(this).closest(".draft-row");
+
+        remove_draft($draft_row);
+    });
+}
+
+function format_drafts(data) {
+    console.log("format");
+    for (const [id, draft] of Object.entries(data)) {
+        draft.id = id;
+    }
+
+    const unsorted_raw_drafts = Object.values(data);
+
+    const sorted_raw_drafts = unsorted_raw_drafts.sort(
+        (draft_a, draft_b) => draft_b.updatedAt - draft_a.updatedAt,
+    );
+
+    const sorted_formatted_drafts = sorted_raw_drafts
+        .map((draft_row) => format_draft(draft_row))
+        .filter(Boolean);
+
+    return sorted_formatted_drafts;
+}
+
+function render_widgets(drafts) {
+    console.log("render");
+    $("#drafts_table").empty();
+    const rendered = render_draft_table_body({
+        drafts,
+        draft_lifetime: DRAFT_LIFETIME,
+    });
+    const $drafts_table = $("#drafts_table");
+    $drafts_table.append(rendered);
+    if ($("#drafts_table .draft-row").length > 0) {
+        $("#drafts_table .no-drafts").hide();
+        // Update possible dynamic elements.
+        const $rendered_drafts = $drafts_table.find(
+            ".message_content.rendered_markdown.restore-draft",
         );
-
-        const sorted_formatted_drafts = sorted_raw_drafts
-            .map((draft_row) => format_draft(draft_row))
-            .filter(Boolean);
-
-        return sorted_formatted_drafts;
-    }
-
-    function render_widgets(drafts) {
-        $("#drafts_table").empty();
-        const rendered = render_draft_table_body({
-            drafts,
-            draft_lifetime: DRAFT_LIFETIME,
+        $rendered_drafts.each(function () {
+            rendered_markdown.update_elements($(this));
         });
-        const $drafts_table = $("#drafts_table");
-        $drafts_table.append(rendered);
-        if ($("#drafts_table .draft-row").length > 0) {
-            $("#drafts_table .no-drafts").hide();
-            // Update possible dynamic elements.
-            const $rendered_drafts = $drafts_table.find(
-                ".message_content.rendered_markdown.restore-draft",
-            );
-            $rendered_drafts.each(function () {
-                rendered_markdown.update_elements($(this));
-            });
-        }
     }
+}
 
-    function setup_event_handlers() {
-        $(".restore-draft").on("click", function (e) {
-            if (document.getSelection().type === "Range") {
-                return;
+export function switch_draft_tab(tab_name) {
+    console.log("switch");
+    if (tab_name === "all") {
+        const drafts = format_drafts(draft_model.get());
+        console.log(drafts);
+        render_widgets(drafts);
+        $("#draft_overlay").css("opacity");
+        open_overlay();
+        set_initial_element(drafts);
+        setup_event_handlers();
+    } else if (tab_name === "topic") {
+        let drafts = format_drafts(draft_model.get());
+        const topic = compose_state.topic();
+        console.log(topic);
+        for (const draft of drafts) {
+            if (draft.topic !== topic) {
+                drafts.splice(drafts.indexOf(draft), 1);
             }
+        }
+        console.log(drafts);
+        render_widgets(drafts);
+        $("#draft_overlay").css("opacity");
+        open_overlay();
+        set_initial_element(drafts);
+        setup_event_handlers();
+    }
+}
 
-            e.stopPropagation();
+export let toggler;
 
-            const $draft_row = $(this).closest(".draft-row");
-            const $draft_id = $draft_row.data("draft-id");
-            restore_draft($draft_id);
-        });
+export function setup_page(callback) {
+    console.log("setup");
 
-        $(".draft_controls .delete-draft").on("click", function () {
-            const $draft_row = $(this).closest(".draft-row");
+    toggler = components.toggle({
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "All"}), key: "all"},
+            {label: $t({defaultMessage: "Topic"}), key: "topic"},
+        ],
+        callback(value, key) {
+            switch_draft_tab(key);
+        },
+    });
 
-            remove_draft($draft_row);
-        });
+    console.log(toggler.get());
+    $("#draft_overlay .tab-container").append(toggler.get());
+}
+
+export function change_state(section) {
+    console.log("change");
+    if (section === "all") {
+        toggler.goto("all");
+        return;
     }
 
-    const drafts = format_drafts(draft_model.get());
-    render_widgets(drafts);
+    if (section === "topic") {
+        toggler.goto("topic");
+        return;
+    }
+
+    blueslip.warn("invalid section for drafts: " + section);
+    toggler.goto("all");
+}
+
+export function open_overlay() {
+    overlays.open_overlay({
+        name: "drafts",
+        $overlay: $("#draft_overlay"),
+        on_close() {
+            browser_history.exit_overlay();
+        },
+    });
+}
+
+export function launch(section) {
+    console.log("launch");
+    setup_page(() => {
+        change_state(section);
+    });
+    switch_draft_tab(section);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
-    $("#draft_overlay").css("opacity");
-
-    open_overlay();
-    set_initial_element(drafts);
-    setup_event_handlers();
 }
 
 function activate_element(elem) {
@@ -578,16 +653,6 @@ export function drafts_handle_events(e, event_key) {
             restore_draft(first_draft);
         }
     }
-}
-
-export function open_overlay() {
-    overlays.open_overlay({
-        name: "drafts",
-        $overlay: $("#draft_overlay"),
-        on_close() {
-            browser_history.exit_overlay();
-        },
-    });
 }
 
 export function set_initial_element(drafts) {

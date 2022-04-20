@@ -230,6 +230,10 @@ function do_hashchange_overlay(old_hash) {
         history.replaceState(null, "", get_full_url("streams/subscribed"));
     }
 
+    if (base === "drafts" && !section) {
+        history.replaceState(null, "", get_full_url("drafts/all"));
+    }
+
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
     //
@@ -238,6 +242,11 @@ function do_hashchange_overlay(old_hash) {
     if (coming_from_overlay && base === old_base) {
         if (base === "streams") {
             stream_settings_ui.change_state(section);
+            return;
+        }
+
+        if (base === "streams") {
+            drafts.change_state(section);
             return;
         }
 
@@ -303,7 +312,7 @@ function do_hashchange_overlay(old_hash) {
     }
 
     if (base === "drafts") {
-        drafts.launch();
+        drafts.launch(section);
         return;
     }
 
