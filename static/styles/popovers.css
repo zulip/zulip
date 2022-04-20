@@ -302,7 +302,8 @@ ul {
         background-position: center;
         border-radius: 5px;
         margin-right: 10px;
-        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        border: 1px solid hsla(0, 0%, 0%);
+        margin-left: 1px;
 
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);
