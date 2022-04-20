@@ -82,7 +82,7 @@ export function clean_query_lowercase(query) {
 }
 
 export function get_emoji_matcher(query) {
-    // replaces spaces with underscores for emoji matching
+    // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
 
@@ -131,6 +131,8 @@ export function triage(query, objs, get_item = (x) => x) {
 }
 
 export function sort_emojis(objs, query) {
+    // replace spaces with underscores for emoji matching
+    query = query.replace(/ /g, "_");
     query = query.toLowerCase();
 
     function decent_match(name) {

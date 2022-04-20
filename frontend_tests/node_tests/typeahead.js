@@ -189,3 +189,19 @@ run_test("sort_emojis: SM", () => {
         "big_smile",
     ]);
 });
+
+run_test("sort_emojis: prefix before midphrase, with underscore (traffic_li)", () => {
+    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    assert.deepEqual(sort_emojis(emoji_list, "traffic_li"), [
+        "traffic_light",
+        "horizontal_traffic_light",
+    ]);
+});
+
+run_test("sort_emojis: prefix before midphrase, with space (traffic li)", () => {
+    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    assert.deepEqual(sort_emojis(emoji_list, "traffic li"), [
+        "traffic_light",
+        "horizontal_traffic_light",
+    ]);
+});
