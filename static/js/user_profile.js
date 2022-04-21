@@ -1,6 +1,7 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
@@ -9,16 +10,21 @@ import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
+import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
@@ -51,6 +57,120 @@ function format_user_group_list_item(group) {
     return render_user_group_list_item({
         group_id: group.id,
         name: group.name,
+    });
+}
+
+function show_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+    loading.make_indicator($spinner);
+}
+
+function hide_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+    loading.destroy_indicator($spinner);
+}
+
+function render_manage_user_tab_content(user) {
+    const $container = $("#user-profile-manage-user-tab");
+    $container.empty();
+    const user_role_values = JSON.parse(JSON.stringify(settings_config.user_role_values));
+
+    if (!page_params.is_owner && !user.is_owner) {
+        delete user_role_values.owner;
+    }
+
+    let user_email = settings_data.email_for_user_settings(user);
+    if (!user_email) {
+        // When email_address_visibility is "Nobody", we still
+        // want to show the fake email address in the edit form.
+        //
+        // We may in the future want to just hide the form field
+        // for this situation, once we display user IDs.
+        user_email = user.email;
+    }
+
+    const admin_human_form = render_admin_human_form({
+        user_id: user.user_id,
+        email: user_email,
+        full_name: user.full_name,
+        user_role_values,
+        disable_role_dropdown: user.is_owner && !page_params.is_owner,
+        html_submit_button: $t_html({defaultMessage: "Save changes"}),
+        require_modal_footer: true,
+    });
+
+    $container.append(admin_human_form);
+
+    const fields_user_pills = set_role_dropdown_and_fields_user_pills();
+    function set_role_dropdown_and_fields_user_pills() {
+        $("#user-role-select").val(user.role);
+        const profileFieldSelector = "#edit-user-form .custom-profile-field-form";
+        settings_account.append_custom_profile_fields(profileFieldSelector, user.user_id);
+        settings_account.initialize_custom_date_type_fields(profileFieldSelector);
+        return settings_account.initialize_custom_user_type_fields(
+            profileFieldSelector,
+            user.user_id,
+            true,
+            false,
+        );
+    }
+
+    $("#edit-user-form").on("click", ".dialog_submit_button", () => {
+        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
+        const $full_name = $("#edit-user-form").find("input[name='full_name']");
+        const profile_data = custom_profile_fields_ui.get_human_profile_data(fields_user_pills);
+        const url = "/json/users/" + encodeURIComponent(user.user_id);
+        const data = {
+            full_name: $full_name.val(),
+            role: JSON.stringify(role),
+            profile_data: JSON.stringify(profile_data),
+        };
+        const $submitBtn = $("#edit-user-form .dialog_submit_button");
+        const $cancelBtn = $("#edit-user-form .dialog_cancel_button");
+        show_button_spinner($submitBtn);
+        $cancelBtn.prop("disabled", true);
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                hide_user_profile();
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                hide_button_spinner($submitBtn);
+                $cancelBtn.prop("disabled", false);
+            },
+        });
+    });
+
+    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = user.user_id;
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            channel.del({
+                url,
+                success() {
+                    overlays.close_modal("dialog_widget_modal", {
+                        micromodal: true,
+                    });
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+        overlays.close_modal("user-profile-modal", {
+            micromodal: true,
+            on_hidden: () => settings_users.confirm_deactivation(user_id, handle_confirm, true),
+        });
     });
 }
 
@@ -149,7 +269,9 @@ export function show_user_profile(user) {
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const can_manage_user = page_params.is_admin && !people.is_my_user_id(user.user_id);
     const args = {
+        can_manage_user,
         user_id: user.user_id,
         full_name: user.full_name,
         email: people.get_visible_email(user),
@@ -190,9 +312,23 @@ export function show_user_profile(user) {
         },
     };
 
-    const $elem = components.toggle(opts).get();
+    if (can_manage_user) {
+        const manage_user_tab = {
+            label: $t({defaultMessage: "Manage user"}),
+            key: "user-profile-manage-user-tab",
+        };
+        opts.values.push(manage_user_tab);
+        render_manage_user_tab_content(user);
+    }
+
+    const tab_component = components.toggle(opts);
+    const $elem = tab_component.get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
+
+    $("#user-profile-modal").on("click", ".full-profile-edit-user-button", () =>
+        tab_component.goto("user-profile-manage-user-tab"),
+    );
 
     settings_account.initialize_custom_user_type_fields(
         "#user-profile-modal #content",
