@@ -144,6 +144,7 @@
             margin-right: 10px;
             margin-left: 10px;
             align-self: center;
+            background-color: hsl(105, 2%, 50%);
         }
 
         .unread_hidden {

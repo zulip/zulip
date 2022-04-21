@@ -1374,6 +1374,7 @@ td.pointer {
 }
 
 .always_visible_topic_edit,
+.on_hover_topic_read,
 .on_hover_topic_unmute {
     opacity: 0.7;
 
@@ -1384,7 +1385,6 @@ td.pointer {
 }
 
 .on_hover_topic_edit,
-.on_hover_topic_read,
 .on_hover_topic_unresolve,
 .on_hover_topic_resolve,
 .on_hover_topic_mute {
