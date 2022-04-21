@@ -1785,6 +1785,7 @@ input[type="checkbox"] {
 
 #admin-user-list .last_active {
     width: 100px;
+    display: none;
 }
 
 .required-text {
