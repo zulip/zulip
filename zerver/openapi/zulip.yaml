@@ -12182,27 +12182,24 @@ paths:
                             - $ref: "#/components/schemas/UserBase"
                             - additionalProperties: false
                               properties:
-                                email: {}
-                                is_bot: {}
-                                avatar_url:
-                                  nullable: true
-                                avatar_version: {}
-                                full_name: {}
-                                is_admin: {}
-                                is_owner: {}
-                                is_billing_admin: {}
-                                role: {}
-                                bot_type:
-                                  nullable: true
                                 user_id: {}
-                                bot_owner_id:
-                                  nullable: true
-                                is_active: {}
-                                is_guest: {}
-                                timezone: {}
-                                date_joined: {}
                                 delivery_email: {}
-                                profile_data: {}
+                                email: {}
+                                full_name: {}
+                                date_joined: {}
+                                is_active: {}
+                                is_owner: {}
+                                is_admin: {}
+                                is_guest: {}
+                                is_billing_admin: {}
+                                is_bot: {}
+                                # Referenced schema properties are rendered before any
+                                # non-referenced properties in the API documentation, so
+                                # `is_system_bot` appears last instead of in this order.
+                                # General practice should be to define properties in the
+                                # same order that they are rendered in the API documentation.
+                                # TODO: See if we can match the order of properties as
+                                # listed here when rendered in the API documentation.
                                 is_system_bot:
                                   type: boolean
                                   description: |
@@ -12212,6 +12209,16 @@ paths:
 
                                     **Changes**: This field was called `is_cross_realm_bot`
                                     before Zulip 5.0 (feature level 83).
+                                bot_type:
+                                  nullable: true
+                                bot_owner_id:
+                                  nullable: true
+                                role: {}
+                                timezone: {}
+                                avatar_url:
+                                  nullable: true
+                                avatar_version: {}
+                                profile_data: {}
                     example:
                       {
                         "last_event_id": -1,
@@ -15626,32 +15633,43 @@ components:
         - $ref: "#/components/schemas/UserBase"
         - additionalProperties: false
           properties:
+            user_id: {}
+            delivery_email: {}
             email: {}
+            full_name: {}
+            date_joined: {}
+            is_active: {}
+            is_owner: {}
+            is_admin: {}
+            is_guest: {}
+            is_billing_admin: {}
             is_bot: {}
+            bot_type:
+              nullable: true
+            bot_owner_id:
+              nullable: true
+            role: {}
+            timezone: {}
             avatar_url:
               nullable: true
             avatar_version: {}
-            full_name: {}
-            is_admin: {}
-            is_owner: {}
-            is_billing_admin: {}
-            role: {}
-            bot_type:
-              nullable: true
-            user_id: {}
-            bot_owner_id:
-              nullable: true
-            is_active: {}
-            is_guest: {}
-            timezone: {}
-            date_joined: {}
-            delivery_email: {}
             profile_data: {}
     UserBase:
       type: object
       description: |
         A dictionary containing basic data on a given Zulip user.
       properties:
+        user_id:
+          type: integer
+          description: |
+            The unique ID of the user.
+        delivery_email:
+          type: string
+          description: |
+            The user's real email address. This field is present only if
+            [email address visibility](/help/restrict-visibility-of-email-addresses) is
+            limited and you are an administrator with access to real email addresses
+            under the configured policy.
         email:
           type: string
           description: |
@@ -15659,35 +15677,18 @@ components:
 
             If you do not have permission to view the email address of the target user,
             this will be a fake email address that is usable for the Zulip API but nothing else.
-        is_bot:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a bot or full account.
-        avatar_url:
-          type: string
-          nullable: true
-          description: |
-            URL for the user's avatar. Will be `null` if the `client_gravatar`
-            query parameter was set to `True` and the user's avatar is hosted by
-            the Gravatar provider (i.e. the user has never uploaded an avatar).
-
-            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
-            `user_avatar_url_field_optional` capability, this will be missing at
-            the server's sole discretion.
-        avatar_version:
-          type: integer
-          description: |
-            Version for the user's avatar. Used for cache-busting requests
-            for the user's avatar. Clients generally shouldn't need to use this;
-            most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         full_name:
           type: string
           description: |
             Full name of the user or bot, used for all display purposes.
-        is_admin:
+        date_joined:
+          type: string
+          description: |
+            The time the user account was created.
+        is_active:
           type: boolean
           description: |
-            A boolean specifying whether the user is an organization administrator.
+            A boolean specifying whether the user account has been deactivated.
         is_owner:
           type: boolean
           description: |
@@ -15695,12 +15696,48 @@ components:
             If true, `is_admin` will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        is_admin:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is an organization administrator.
+        is_guest:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a guest user.
         is_billing_admin:
           type: boolean
           description: |
             A boolean specifying whether the user is a billing administrator.
 
             **Changes**: New in Zulip 5.0 (feature level 73).
+        is_bot:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a bot or full account.
+        bot_type:
+          type: integer
+          nullable: true
+          description: |
+            An integer describing the type of bot:
+
+            - `null` if the user isn't a bot.
+            - `1` for a `Generic` bot.
+            - `2` for an `Incoming webhook` bot.
+            - `3` for an `Outgoing webhook` bot.
+            - `4` for an `Embedded` bot.
+        bot_owner_id:
+          type: integer
+          nullable: true
+          description: |
+            If the user is a bot (i.e. `is_bot` is `True`),
+            `bot_owner` is the user ID of the bot's owner (usually, whoever
+            created the bot).
+
+            Will be null for legacy bots that do not have an owner.
+
+            **Changes**: New in Zulip 3.0 (feature level
+            1). In previous versions, there was a `bot_owner` field
+            containing the email address of the bot's owner.
         role:
           type: integer
           enum:
@@ -15720,57 +15757,27 @@ components:
             - Guest => 600
 
             **Changes**: New in Zulip 4.0 (feature level 59).
-        bot_type:
-          type: integer
-          nullable: true
-          description: |
-            An integer describing the type of bot:
-
-            - `null` if the user isn't a bot.
-            - `1` for a `Generic` bot.
-            - `2` for an `Incoming webhook` bot.
-            - `3` for an `Outgoing webhook` bot.
-            - `4` for an `Embedded` bot.
-        user_id:
-          type: integer
-          description: |
-            The unique ID of the user.
-        bot_owner_id:
-          type: integer
-          nullable: true
-          description: |
-            If the user is a bot (i.e. `is_bot` is `True`),
-            `bot_owner` is the user ID of the bot's owner (usually, whoever
-            created the bot).
-
-            Will be null for legacy bots that do not have an owner.
-
-            **Changes**: New in Zulip 3.0 (feature level
-            1). In previous versions, there was a `bot_owner` field
-            containing the email address of the bot's owner.
-        is_active:
-          type: boolean
-          description: |
-            A boolean specifying whether the user account has been deactivated.
-        is_guest:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a guest user.
         timezone:
           type: string
           description: |
             The time zone of the user.
-        date_joined:
+        avatar_url:
           type: string
+          nullable: true
           description: |
-            The time the user account was created.
-        delivery_email:
-          type: string
+            URL for the user's avatar. Will be `null` if the `client_gravatar`
+            query parameter was set to `True` and the user's avatar is hosted by
+            the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            `user_avatar_url_field_optional` capability, this will be missing at
+            the server's sole discretion.
+        avatar_version:
+          type: integer
           description: |
-            The user's real email address. This field is present only if
-            [email address visibility](/help/restrict-visibility-of-email-addresses) is
-            limited and you are an administrator with access to real email addresses
-            under the configured policy.
+            Version for the user's avatar. Used for cache-busting requests
+            for the user's avatar. Clients generally shouldn't need to use this;
+            most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         profile_data:
           $ref: "#/components/schemas/profile_data"
     profile_data:
