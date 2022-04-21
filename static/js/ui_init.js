@@ -581,6 +581,11 @@ export function initialize_everything() {
     popover_menus.initialize();
 
     initialize_user_settings(user_settings_params);
+    if (page_params.is_spectator) {
+        /* Don't show right sidebar to spectator by default. */
+        user_settings.narrow_mode = true;
+    }
+
     realm_user_settings_defaults.initialize(realm_settings_defaults_params);
     people.initialize(page_params.user_id, people_params);
 
