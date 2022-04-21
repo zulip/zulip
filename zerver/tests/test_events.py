@@ -2445,6 +2445,19 @@ class NormalActionsTest(BaseAction):
         check_subscription_peer_add("events[2]", events[2])
         check_subscription_peer_add("events[3]", events[3])
 
+        do_deactivate_user(bot, acting_user=None)
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
+
+        reset_email_visibility_to_everyone_in_zulip_realm()
+        bot.refresh_from_db()
+
+        self.user_profile = self.example_user("iago")
+        action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
+        events = self.verify_action(action, num_events=6)
+        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_update("events[2]", events[2], "owner_id")
+        check_realm_user_update("events[3]", events[3], "bot_owner_id")
+
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
         action = lambda: do_deactivate_realm(realm, acting_user=None)

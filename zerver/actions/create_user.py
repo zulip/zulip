@@ -606,6 +606,26 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
             }
         ).decode(),
     )
+
+    bot_owner_changed = False
+    if (
+        user_profile.is_bot
+        and user_profile.bot_owner is not None
+        and not user_profile.bot_owner.is_active
+        and acting_user is not None
+    ):
+        previous_owner = user_profile.bot_owner
+        user_profile.bot_owner = acting_user
+        user_profile.save()  # Can't use update_fields because of how the foreign key works.
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
+            event_time=event_time,
+        )
+        bot_owner_changed = True
+
     do_increment_logging_stat(
         user_profile.realm,
         COUNT_STATS["active_users_log:is_bot:day"],
@@ -619,6 +639,12 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
 
     if user_profile.is_bot:
         notify_created_bot(user_profile)
+
+        if bot_owner_changed:
+            from zerver.actions.bots import send_bot_owner_update_events
+
+            assert acting_user is not None
+            send_bot_owner_update_events(user_profile, acting_user, previous_owner)
 
     subscribed_recipient_ids = Subscription.objects.filter(
         user_profile_id=user_profile.id, active=True, recipient__type=Recipient.STREAM

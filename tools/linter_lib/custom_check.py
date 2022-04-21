@@ -255,6 +255,10 @@ python_rules = RuleList(
                     "zerver/actions/bots.py",
                     "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
                 ),
+                (
+                    "zerver/actions/create_user.py",
+                    "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
+                ),
             },
             "exclude": {"zerver/tests", "zerver/lib/create_user.py"},
             "good_lines": ['user_profile.save(update_fields=["pointer"])'],
