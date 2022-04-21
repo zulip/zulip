@@ -67,9 +67,19 @@ function render_manage_user_tab_content(user) {
         delete user_role_values.owner;
     }
 
+    let user_email = settings_data.email_for_user_settings(user);
+    if (!user_email) {
+        // When email_address_visibility is "Nobody", we still
+        // want to show the fake email address in the edit form.
+        //
+        // We may in the future want to just hide the form field
+        // for this situation, once we display user IDs.
+        user_email = user.email;
+    }
+
     const adminHumanForm = render_admin_human_form({
         user_id: user.user_id,
-        email: user.email,
+        email: user_email,
         full_name: user.full_name,
         user_role_values,
         disable_role_dropdown: user.is_owner && !page_params.is_owner,
