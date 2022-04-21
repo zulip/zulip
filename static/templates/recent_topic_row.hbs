@@ -21,9 +21,9 @@
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable hidden-for-spectators">
                         {{#if topic_muted}}
-                        <i class="fa fa-bell-slash on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }}" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
                         {{else}}
-                        <i class="fa fa-bell-slash on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                        <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon tippy-zulip-tooltip" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }}" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
                         {{/if}}
                     </div>
                 </div>

@@ -101,6 +101,7 @@ ul {
         width: 14px;
         text-align: center;
         margin-right: 3px;
+        vertical-align: middle;
     }
 
     &.topics_popover {

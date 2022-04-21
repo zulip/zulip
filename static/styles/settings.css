@@ -412,6 +412,7 @@ input[type="checkbox"] {
 #stream-specific-notify-table .unmute_stream {
     position: relative;
     left: 3px;
+    top: 2px;
 
     &:hover {
         color: hsl(0, 0%, 20%);

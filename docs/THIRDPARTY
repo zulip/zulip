@@ -118,6 +118,12 @@ Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
 
+Files: static/shared/icons/mute.svg
+Source: https://fonts.google.com/icons?selected=Material+Symbols+Rounded:volume_mute
+Copyright: Google, Inc.
+License: Apache-2.0
+Comment: Material volume icon (rounded) with custom cross symbol
+
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.

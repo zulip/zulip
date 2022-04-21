@@ -1200,7 +1200,9 @@ td.pointer {
 }
 
 .recipient_bar_controls {
+    display: flex;
     flex-grow: 1;
+    align-items: center;
 }
 
 .recipient_row_date {
@@ -1217,8 +1219,8 @@ td.pointer {
 }
 
 .recipient_bar_icon {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 #mark_as_read_turned_off_banner {
