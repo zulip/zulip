@@ -5007,7 +5007,10 @@ paths:
           description: |
             For stream messages, either the name or integer ID of the stream. For
             private messages, either a list containing integer user IDs or a list
-            containing string email addresses.
+            containing string email addresses of users to whom you wish to send
+            the private message. Note that the recipients must be part of the same
+            organization as you. Including the client's own user in this list is allowed
+            and ignored.
 
             **Changes**: Support for using user/stream IDs was added in Zulip 2.0.0.
           content:
