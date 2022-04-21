@@ -10,6 +10,7 @@ import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as components from "./components";
+import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -21,6 +22,7 @@ import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
@@ -86,6 +88,31 @@ function render_manage_user_tab_content(user) {
         true,
         false,
     );
+
+    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = user.user_id;
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            channel.del({
+                url,
+                success() {
+                    overlays.close_modal("dialog_widget_modal", {
+                        micromodal: true,
+                    });
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+        overlays.close_modal("user-profile-modal", {
+            micromodal: true,
+            on_hidden: () => settings_users.confirm_deactivation(user_id, handle_confirm, true),
+        });
+    });
 }
 
 function render_user_stream_list(streams, user) {
