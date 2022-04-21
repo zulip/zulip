@@ -1,6 +1,7 @@
 import {parseISO} from "date-fns";
 import $ from "jquery";
 
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
@@ -17,6 +18,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
@@ -52,6 +54,37 @@ function format_user_group_list_item(group) {
         group_id: group.id,
         name: group.name,
     });
+}
+
+function render_manage_user_tab_content(user) {
+    const $container = $("#user-profile-manage-user-tab");
+    $container.empty();
+    const user_role_values = JSON.parse(JSON.stringify(settings_config.user_role_values));
+
+    if (!page_params.is_owner && !user.is_owner) {
+        delete user_role_values.owner;
+    }
+
+    const adminHumanForm = render_admin_human_form({
+        user_id: user.user_id,
+        email: user.email,
+        full_name: user.full_name,
+        user_role_values,
+        disable_role_dropdown: user.is_owner && !page_params.is_owner,
+        html_submit_button: $t_html({defaultMessage: "Save changes"}),
+    });
+
+    $container.append(adminHumanForm);
+    $("#user-role-select").val(user.role);
+    const profileFieldSelector = "#edit-user-form .custom-profile-field-form";
+    settings_account.append_custom_profile_fields(profileFieldSelector, user.user_id);
+    settings_account.initialize_custom_date_type_fields(profileFieldSelector);
+    settings_account.initialize_custom_user_type_fields(
+        profileFieldSelector,
+        user.user_id,
+        true,
+        false,
+    );
 }
 
 function render_user_stream_list(streams, user) {
@@ -149,7 +182,9 @@ export function show_user_profile(user) {
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const can_manage_user = page_params.is_admin && !people.is_my_user_id(user.user_id);
     const args = {
+        can_manage_user,
         user_id: user.user_id,
         full_name: user.full_name,
         email: people.get_visible_email(user),
@@ -189,6 +224,15 @@ export function show_user_profile(user) {
             }
         },
     };
+
+    if (can_manage_user) {
+        const manageUserTab = {
+            label: $t({defaultMessage: "Manage user"}),
+            key: "user-profile-manage-user-tab",
+        };
+        opts.values.push(manageUserTab);
+        render_manage_user_tab_content(user);
+    }
 
     const $elem = components.toggle(opts).get();
     $elem.addClass("large allow-overflow");
