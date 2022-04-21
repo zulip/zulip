@@ -1396,6 +1396,10 @@ td.pointer {
     }
 }
 
+.on_hover_topic_read {
+    opacity: 0.7;
+}
+
 .has_actions_popover .info {
     opacity: 1;
     visibility: visible;
