@@ -72,6 +72,7 @@ function render_manage_user_tab_content(user) {
         user_role_values,
         disable_role_dropdown: user.is_owner && !page_params.is_owner,
         html_submit_button: $t_html({defaultMessage: "Save changes"}),
+        require_modal_footer: true,
     });
 
     $container.append(adminHumanForm);
