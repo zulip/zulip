@@ -849,6 +849,29 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
 
+    def test_reactivating_bot_with_deactivated_owner(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Test bot",
+            "short_name": "testbot",
+            "bot_type": "1",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        bot_id = result.json()["user_id"]
+
+        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        do_deactivate_user(test_bot, acting_user=None)
+
+        # Deactivate the bot owner
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
+
+        self.login("iago")
+        result = self.client_post(f"/json/users/{bot_id}/reactivate")
+        self.assert_json_success(result)
+        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        assert test_bot.bot_owner is not None
+        self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+
     def test_patch_bot_full_name(self) -> None:
         self.login("hamlet")
         bot_info = {
