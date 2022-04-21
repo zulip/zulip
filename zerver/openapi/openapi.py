@@ -474,7 +474,18 @@ def validate_against_openapi_schema(
                     validator_value=brief_error_validator_value,
                     cause=error.cause,
                 )
+            # Some endpoints have long, descriptive OpenAPI schemas
+            # which, when printed to the console, do not assist with
+            # debugging, so we omit some of the error information.
+            if path in ["/register"] and isinstance(error, JsonSchemaValidationError):
+                error.schema = "OpenAPI schema omitted due to length of output."
+                if len(error.instance) > 100:
+                    error.instance = "Error instance omitted due to length of output."
             message += f"\n\n{type(error).__name__}: {error}"
+        message += (
+            "\n\nFor help debugging these errors see: "
+            "https://zulip.readthedocs.io/en/latest/documentation/api.html#debugging-schema-validation-errors"
+        )
         raise SchemaError(message) from None
 
     return True
