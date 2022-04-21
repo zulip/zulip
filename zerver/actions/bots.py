@@ -9,22 +9,9 @@ from zerver.models import RealmAuditLog, Stream, UserProfile, active_user_ids, b
 from zerver.tornado.django_api import send_event_on_commit
 
 
-@transaction.atomic(durable=True)
-def do_change_bot_owner(
-    user_profile: UserProfile, bot_owner: UserProfile, acting_user: Union[UserProfile, None]
+def send_bot_owner_update_events(
+    user_profile: UserProfile, bot_owner: UserProfile, previous_owner: Optional[UserProfile]
 ) -> None:
-    previous_owner = user_profile.bot_owner
-    user_profile.bot_owner = bot_owner
-    user_profile.save()  # Can't use update_fields because of how the foreign key works.
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        acting_user=acting_user,
-        modified_user=user_profile,
-        event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
-        event_time=event_time,
-    )
-
     update_users = bot_owner_user_ids(user_profile)
 
     # For admins, update event is sent instead of delete/add
@@ -61,7 +48,7 @@ def do_change_bot_owner(
         op="update",
         bot=dict(
             user_id=user_profile.id,
-            owner_id=user_profile.bot_owner.id,
+            owner_id=bot_owner.id,
         ),
     )
     send_event_on_commit(
@@ -77,10 +64,29 @@ def do_change_bot_owner(
         op="update",
         person=dict(
             user_id=user_profile.id,
-            bot_owner_id=user_profile.bot_owner.id,
+            bot_owner_id=bot_owner.id,
         ),
     )
     send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+
+
+@transaction.atomic(durable=True)
+def do_change_bot_owner(
+    user_profile: UserProfile, bot_owner: UserProfile, acting_user: Union[UserProfile, None]
+) -> None:
+    previous_owner = user_profile.bot_owner
+    user_profile.bot_owner = bot_owner
+    user_profile.save()  # Can't use update_fields because of how the foreign key works.
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
+        event_time=event_time,
+    )
+
+    send_bot_owner_update_events(user_profile, bot_owner, previous_owner)
 
 
 @transaction.atomic(durable=True)
