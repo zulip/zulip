@@ -335,3 +335,186 @@ it? There's several major benefits to this system:
 Using the standard OpenAPI format gives us flexibility, though; if we
 later choose to migrate to third-party tools, we don't need to redo
 the actual documentation work in order to migrate tools.
+
+## Debugging schema validation errors
+
+A common function used to validate and test Zulip's REST API is
+`validate_against_openapi_schema`. It is used to verify that every
+successful API response returned in the backend and documentation test
+suites are a documented possibility in the API documentation.
+
+Therefore, when you add a new feature or setting to Zulip, you will most
+likely need to update the API documentation (`zerver/openapi/zulip.yaml`)
+in order to pass existing tests that use this function. Additionally, if
+you're writing documentation for a new or undocumented REST API endpoint,
+you'll want to use this function to validate and test your changes in
+`zerver/openapi/python_examples.py`.
+
+Below are some examples to help you when debugging the schema validation
+errors produced by `validate_against_openapi_schema`. Before reading
+through the examples, we recommend reviewing the
+[OpenAPI configuration](openapi.md) documentation if you're unfamiliar
+with the format.
+
+If you use Visual Studio Code, an OpenAPI extension can be very helpful in
+navigating Zulip's large and detailed OpenAPI file; see
+`.vscode/extensions.json`.
+
+### Deconstructing the error output
+
+To start with a clear example, let's imagine that we are writing the
+documentation for the REST API endpoint for uploading a file,
+[POST /api/v1/user_uploads](https://zulip.com/api/upload-file).
+
+There are no parameters for this endpoint, and only one return value
+specific to this endpoint, `uri`, which is the URL of the uploaded file.
+If we comment out that return value and example from the existing API
+documentation in `zerver/openapi/zulip.yaml`, e.g.:
+
+```yaml
+  /user_uploads:
+    post:
+      operationId: upload-file
+...
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      # uri:
+                      #   type: string
+                      #   description: |
+                      #     The URI of the uploaded file.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        # "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt",
+                      }
+```
+
+We will now get an error when we run the API documentation test suite
+in the development environment (`tools/test-api`):
+
+```console
+Running API tests...
+2022-12-19 15:05:42.347 WARN [django.server] "POST /api/v1/users HTTP/1.1" 400 88
+Waiting for children to stop...
+Traceback (most recent call last):
+  File "tools/test-api", line 93, in <module>
+    test_the_api(client, nonadmin_client, owner_client)
+  File "/srv/zulip/zerver/openapi/python_examples.py", line 1636, in test_the_api
+    test_users(client, owner_client)
+  File "/srv/zulip/zerver/openapi/python_examples.py", line 1555, in test_users
+    upload_file(client)
+  File "/srv/zulip/zerver/openapi/python_examples.py", line 52, in _record_calls_wrapper
+    return test_func(*args, **kwargs)
+  File "/srv/zulip/zerver/openapi/python_examples.py", line 1284, in upload_file
+    validate_against_openapi_schema(result, "/user_uploads", "post", "200")
+  File "/srv/zulip/zerver/openapi/openapi.py", line 489, in validate_against_openapi_schema
+    raise SchemaError(message) from None
+zerver.openapi.openapi.SchemaError: 1 response validation error(s) at post /api/v1/user_uploads (200):
+
+ValidationError: Additional properties are not allowed ('uri' was unexpected)
+
+Failed validating 'additionalProperties' in schema['allOf'][2]:
+    {'additionalProperties': False,
+     'example': {'msg': '',
+                 'result': 'success',
+     'properties': {'msg': {}, 'result': {}}}
+
+On instance:
+    {'msg': '',
+     'result': 'success',
+     'uri': '/user_uploads/2/85/XoqF0K7XEOLVGylgdpof80RB/img.jpg'}
+
+```
+
+We can see in the traceback that a `SchemaError` was raised in
+`validate_against_openapi_schema`:
+
+```console
+  File "/srv/zulip/zerver/openapi/openapi.py", line 478, in validate_against_openapi_schema
+    raise SchemaError(message) from None
+```
+
+The next line in the output, let's us know how many errors were found
+and for what endpoint.
+
+```console
+zerver.openapi.openapi.SchemaError: 1 response validation error(s) at post /api/v1/user_uploads (200):
+```
+
+As expected from commenting out the code above, there was one validation
+error for the `POST /api/v1/user_uploads` endpoint. The next line gives
+more information about that error.
+
+```console
+ValidationError: Additional properties are not allowed ('uri' was unexpected)
+```
+
+We see that there was a `uri` value returned by the endpoint that hasn't
+been documented. The next few lines of output, show us what return values
+are documented (again due to our changes) for this endpoint.
+
+```console
+Failed validating 'additionalProperties' in schema['allOf'][2]:
+    {'additionalProperties': False,
+     'example': {'msg': '',
+                 'result': 'success',
+     'properties': {'msg': {}, 'result': {}}}
+```
+
+And finally, we see the test instance that did not match our current
+documentation, which includes the `uri` return value.
+
+```console
+On instance:
+    {'msg': '',
+     'result': 'success',
+     'uri': '/user_uploads/2/85/XoqF0K7XEOLVGylgdpof80RB/img.jpg'}
+```
+
+This is a useful example because the endpoint's documentation is short
+and straightforward, helping to easily identify the parts of the
+error output that are useful in debugging these errors when testing the
+API documentation.
+
+### Adding a realm setting
+
+Building on [the new feature tutorial](../tutorials/new-feature-tutorial.md)
+example, if the realm setting for `mandatory_topics` was not documented
+in the `POST /api/v1/register` endpoint, running `tools/test-api` in the
+development environment would result in this error:
+
+```console
+...
+zerver.openapi.openapi.SchemaError: 1 response validation error(s) at post /api/v1/register (200):
+
+ValidationError: Additional properties are not allowed ('realm_mandatory_topics' was unexpected)
+
+Failed validating 'additionalProperties' in schema['allOf'][2]:
+    'OpenAPI schema omitted due to length of output.'
+
+On instance:
+    'Error instance omitted due to length of output.'
+```
+
+Because this endpoint is very long and descriptive, we do not print the
+entire documentation schema (or test instance, in this case) to the
+console. Doing so would print thousands of lines of output that are not
+useful for debugging what is missing from the API documentation.
+
+The key information for debugging this endpoint is in the line beginning
+with `ValidationError`. There we can see that the documentation does not
+include the new `realm_mandatory_topics` boolean that we added in the
+example feature tutorial, and we can look at other similar realm settings
+to add the documentation for that new feature.

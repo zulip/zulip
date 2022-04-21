@@ -517,6 +517,12 @@ the setting enabled).
 Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
+Also note that you may already need to update the API documentation for
+your new feature to pass new or existing backend tests at this point.
+The tutorial for [writing REST API endpoints](../documentation/api.md)
+can be a helpful resource, especially the section on [debugging schema
+validation errors](../documentation//api.md#debugging-schema-validation-errors).
+
 ### Update the frontend
 
 After completing the process of adding a new feature on the backend,
