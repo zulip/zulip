@@ -793,6 +793,13 @@ run_test("user_settings", ({override, override_rewire}) => {
     assert_same(user_settings.dense_mode, true);
     assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
 
+    event = event_fixtures.user_settings__narrow_mode;
+    user_settings.narrow_mode = false;
+    toggled = [];
+    dispatch(event);
+    assert_same(user_settings.narrow_mode, true);
+    assert_same(toggled, ["narrow_mode"]);
+
     $("body").fadeOut = (secs) => {
         assert_same(secs, 300);
     };

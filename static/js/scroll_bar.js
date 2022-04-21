@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {media_breakpoints} from "./css_variables";
 import {user_settings} from "./user_settings";
 
 // A few of our width properties in Zulip depend on the width of the
@@ -48,6 +49,22 @@ export function initialize() {
 
         // Align floating recipient bar with the middle column.
         $(".fixed-app").css("left", "-" + sbWidth / 2 + "px");
+
+        if (user_settings.narrow_mode) {
+            // No way to override inline css without using `!important`.
+            $("head").append(
+                `<style>
+                    @media (min-width: ${media_breakpoints.xl_min}) {
+                        .fixed-app {
+                            left: -${sbWidth}px !important;
+                        }
+                        .fixed-app .app-main {
+                            width: 100% !important;
+                        }
+                    }
+                </style>`,
+            );
+        }
     }
     set_layout_width();
 }

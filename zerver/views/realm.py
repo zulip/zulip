@@ -345,6 +345,7 @@ def update_realm_user_settings_defaults(
     request: HttpRequest,
     user_profile: UserProfile,
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    narrow_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),

@@ -287,6 +287,14 @@ export function initialize_kitchen_sink_stuff() {
         $("body").addClass("spectator-view");
     }
 
+    if (user_settings.narrow_mode) {
+        $("body").addClass("narrow_mode");
+    }
+
+    if (user_settings.fluid_layout_width) {
+        $("body").addClass("fluid_layout_width");
+    }
+
     if (!user_settings.left_side_userlist) {
         $("#navbar-buttons").addClass("right-userlist");
     }

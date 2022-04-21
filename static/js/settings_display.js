@@ -81,7 +81,7 @@ export function set_up(settings_panel) {
             .closest(".subsection-parent")
             .find(".alert-notification");
 
-        if (["left_side_userlist"].includes(setting)) {
+        if (["left_side_userlist", "narrow_mode"].includes(setting)) {
             change_display_setting(
                 data,
                 $status_element,

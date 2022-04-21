@@ -8033,6 +8033,13 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: narrow_mode
+          in: query
+          description: |
+            Whether to show or hide user list on wide screens.
+          schema:
+            type: boolean
+          example: true
         - name: starred_message_counts
           in: query
           description: |
@@ -10004,6 +10011,10 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in controlling
                               the default font size in Zulip.
+                          narrow_mode:
+                            type: boolean
+                            description: |
+                              Whether to show or hide user list on wide screens.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -10671,6 +10682,10 @@ paths:
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
                           connecting to newer servers should declare the `user_settings_object`
                           client capability and access the `user_settings` object instead.
+                      narrow_mode:
+                        type: boolean
+                        description: |
+                          Whether to show or hide user list on wide screens.
                       emojiset:
                         deprecated: true
                         type: string
@@ -11823,6 +11838,10 @@ paths:
                             description: |
                               This setting has no effect at present. It is reserved for use in
                               controlling the default font size in Zulip.
+                          narrow_mode:
+                            type: boolean
+                            description: |
+                              Whether to show or hide user list on wide screens.
                           starred_message_counts:
                             type: boolean
                             description: |
@@ -12736,6 +12755,13 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
+          schema:
+            type: boolean
+          example: true
+        - name: narrow_mode
+          in: query
+          description: |
+            Whether to show or hide user list on wide screens.
           schema:
             type: boolean
           example: true

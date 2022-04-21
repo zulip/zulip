@@ -134,6 +134,11 @@ body.dark-theme {
         }
     }
 
+    .column-right .right-sidebar {
+        background-color: hsl(212, 28%, 18%) !important;
+        border-color: hsla(0, 0%, 0%, 0.2) !important;
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
@@ -141,7 +146,6 @@ body.dark-theme {
     .column-middle,
     #compose,
     .column-left .left-sidebar,
-    .column-right .right-sidebar,
     #subscription_overlay .right,
     #settings_page .form-sidebar,
     #settings_page .right {
@@ -178,8 +182,7 @@ body.dark-theme {
 
     .column-left .left-sidebar,
     #settings_page .form-sidebar,
-    .stream_name_search_section,
-    .column-right .right-sidebar {
+    .stream_name_search_section {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
