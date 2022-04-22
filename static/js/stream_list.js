@@ -160,7 +160,6 @@ export function build_stream_list(force_rerender) {
 }
 
 export function build_add_stream_link() {
-
     // Only append when parent does not have children
 
     const more_streams = stream_data.get_non_default_stream_names();
