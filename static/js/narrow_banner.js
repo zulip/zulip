@@ -64,7 +64,7 @@ function retrieve_search_query_data() {
 
 function pick_empty_narrow_banner() {
     const default_banner = {
-        title: $t({defaultMessage: "You are not allowed to send private messages here!"}),
+        title: $t({defaultMessage: "You are not allowed to send private messages Here!"}),
         html: $t_html(
             {
                 defaultMessage: "Why not <z-link>start the conversation</z-link>?",
@@ -174,7 +174,7 @@ function pick_empty_narrow_banner() {
                     // You have no private messages.
                     return {
                         title: $t({
-                            defaultMessage: "You are not allowed to send private messages here!",
+                            defaultMessage: "You are not allowed to send private messages Here!",
                         }),
                         html: $t_html(
                             {
