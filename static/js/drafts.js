@@ -488,7 +488,7 @@ export function setup_page(callback) {
     });
 
     console.log(toggler.get());
-    $("#draft_overlay .tab-container").append(toggler.get());
+    $("#draft_overlay .tab-container").html(toggler.get().html());
 }
 
 export function change_state(section) {
