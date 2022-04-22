@@ -19,10 +19,11 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
         // unread topic (with respect to the left-sidebar filter) in a stream using 'n' hotkey aka
         // 'n_key', rather than jumping to the next unread topic overall, which disregards a filter.
         const stream = streams[curr_stream_index];
-        const filtered_topics_in_stream = topic_list_data.get_list_info(
+        let filtered_topics_in_stream = topic_list_data.get_list_info(
             curr_stream_widget_id,
             true,
         ).items;
+        filtered_topics_in_stream = filtered_topics_in_stream.filter((topic) => !muted_topics.is_topic_muted(curr_stream_index, topic.topic_name));
         const all_topics_in_stream = get_topics(stream);
         // first "pass" --> check all filtered topics first for unread topics. Return topic if found.
         if (filtered_topics_in_stream.length > 0) {
@@ -36,14 +37,14 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
             for (let i = curr_topic_index + 1; i < filtered_topics_in_stream.length; i += 1) {
                 const topic = filtered_topics_in_stream[i].topic_name;
                 if (has_unread_messages(stream, topic)) {
-                    return {stream, topic};
+                    return { stream, topic };
                 }
             }
 
             for (let i = 0; i < curr_topic_index; i += 1) {
                 const topic = filtered_topics_in_stream[i].topic_name;
                 if (has_unread_messages(stream, topic)) {
-                    return {stream, topic};
+                    return { stream, topic };
                 }
             }
         }
@@ -55,14 +56,14 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
             for (let i = curr_topic_index + 1; i < all_topics_in_stream.length; i += 1) {
                 const topic = all_topics_in_stream[i];
                 if (has_unread_messages(stream, topic)) {
-                    return {stream, topic};
+                    return { stream, topic };
                 }
             }
 
             for (let i = 0; i < curr_topic_index; i += 1) {
                 const topic = all_topics_in_stream[i];
                 if (has_unread_messages(stream, topic)) {
-                    return {stream, topic};
+                    return { stream, topic };
                 }
             }
         }
@@ -74,7 +75,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
         const stream = streams[i];
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
-                return {stream, topic};
+                return { stream, topic };
             }
         }
     }
@@ -83,7 +84,7 @@ export function next_topic(streams, get_topics, has_unread_messages, curr_stream
         const stream = streams[i];
         for (const topic of get_topics(stream)) {
             if (has_unread_messages(stream, topic)) {
-                return {stream, topic};
+                return { stream, topic };
             }
         }
     }
