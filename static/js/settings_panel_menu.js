@@ -45,7 +45,9 @@ export class SettingsPanelMenu {
             // In one column mode want to show the settings list, not the first settings section.
             this.activate_section_or_default(section);
         }
-        this.$curr_li.trigger("focus");
+        // Finds the correct element to focus.
+        const el = document.querySelector("li.active");
+        el.focus();
     }
 
     hide() {
