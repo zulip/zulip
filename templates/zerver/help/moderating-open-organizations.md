@@ -57,7 +57,15 @@ organization's policy choices.
 
 {!web-public-streams-intro.md!}
 
+## Zulip communities directory
+
+{!communities-directory-intro.md!}
+
+For details on how to get your community listed, see [Communities
+directory](/help/communities-directory).
+
 ## Related articles
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 * [Public access option](/help/public-access-option)
+* [Communities directory](/help/communities-directory)

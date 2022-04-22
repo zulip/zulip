@@ -143,6 +143,9 @@ def update_realm(
     ),
     org_type: Optional[int] = REQ(json_validator=check_int_in(ORG_TYPE_IDS), default=None),
     enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    want_advertise_in_communities_directory: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
 ) -> HttpResponse:
     realm = user_profile.realm
 

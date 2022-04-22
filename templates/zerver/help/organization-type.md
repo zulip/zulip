@@ -22,3 +22,4 @@ your organization.
 ## Related articles
 
 * [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Communities directory](/help/communities-directory)

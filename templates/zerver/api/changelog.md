@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 129**
+
+* [`POST /register`](/api/register-queue),
+  [`GET/events`](/api/get-events), `PATCH /realm`: Added realm setting
+  `want_advertise_in_communities_directory` for organizations to give
+  permission to be advertised in the Zulip communities directory.
+
 **Feature level 128**
 
 * [`POST /register`](/api/register-queue), [`GET

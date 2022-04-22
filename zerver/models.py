@@ -293,6 +293,10 @@ class Realm(models.Model):
     # setting also controls API access of web-public streams.
     enable_spectator_access: bool = models.BooleanField(default=False)
 
+    # Whether organization has given permission to be advertised in the
+    # Zulip communities directory.
+    want_advertise_in_communities_directory: bool = models.BooleanField(default=False)
+
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview: bool = models.BooleanField(default=True)
     inline_url_embed_preview: bool = models.BooleanField(default=False)
@@ -711,6 +715,7 @@ class Realm(models.Model):
         user_group_edit_policy=int,
         video_chat_provider=int,
         waiting_period_threshold=int,
+        want_advertise_in_communities_directory=bool,
         wildcard_mention_policy=int,
     )
 

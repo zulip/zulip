@@ -25,6 +25,13 @@
                         {{> dropdown_options_widget option_values=realm_org_type_values}}
                     </select>
                 </div>
+                {{> settings_checkbox
+                  setting_name="realm_want_advertise_in_communities_directory"
+                  prefix="id_"
+                  is_checked=realm_want_advertise_in_communities_directory
+                  is_disabled=disable_want_advertise_in_communities_directory
+                  label=admin_settings_label.realm_want_advertise_in_communities_directory
+                  help_link="/help/communities-directory"}}
                 <div class="input-group admin-realm">
                     <label for="realm_description">{{t "Organization description" }}</label>
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element"

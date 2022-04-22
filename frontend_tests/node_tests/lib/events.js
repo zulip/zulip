@@ -356,6 +356,13 @@ exports.fixtures = {
         value: 41,
     },
 
+    realm__update__want_advertise_in_communities_directory: {
+        type: "realm",
+        op: "update",
+        property: "want_advertise_in_communities_directory",
+        value: false,
+    },
+
     realm__update_dict__default: {
         type: "realm",
         op: "update_dict",
