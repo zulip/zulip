@@ -161,24 +161,26 @@ export function build_stream_list(force_rerender) {
 
 export function build_add_stream_link() {
 
+    // Only append when parent does not have children
+
     const more_streams = stream_data.get_non_default_stream_names();
     const num_more_streams = more_streams.length;
     const $parent = $("#add-stream-link");
+
+    $parent.empty();
 
     // child textNode to append to anchor element
     let text_content = `Borrow ${num_more_streams} more streams`;
 
     const icon_elem = '<i class="fa fa-plus-circle" aria-hidden="true"></i>';
-    const anchor_elem = `<a href="#streams/all">${icon_elem}${text_content}</a>`;
+    let anchor_elem = `<a href="#streams/all">${icon_elem}${text_content}</a>`;
 
     if (num_more_streams < 1) {
         text_content = "Create a stream";
         anchor_elem = `<a id="add-stream-link-create">${icon_elem}${text_content}</a>`;
     }
 
-    // Only append when parent does not have children
-    if ($("#add-stream-link a").length < 1)
-        $parent.append(anchor_elem);
+    $parent.append(anchor_elem);
 }
 
 export function get_stream_li(stream_id) {
