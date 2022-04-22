@@ -617,7 +617,7 @@ export function setup_page(callback) {
             const toggler_elem = toggler.get();
             $("#manage_streams_container .search-container").prepend(toggler_elem);
         }
-        if (page_params.is_guest) {
+        if (page_params.is_guest && !settings_data.web_public_streams_enabled_for_realm()) {
             toggler.disable_tab("all-streams");
         }
 
