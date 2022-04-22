@@ -4013,6 +4013,13 @@ paths:
                                         for the purpose of settings that restrict access to new members.
 
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    want_advertise_in_communities_directory:
+                                      type: boolean
+                                      description: |
+                                        Whether the organization has given permission to be advertised in the
+                                        Zulip [communities directory](/help/communities-directory).
+
+                                        **Changes**: New in Zulip 6.0 (feature level 129).
                                     wildcard_mention_policy:
                                       type: integer
                                       description: |
@@ -11167,7 +11174,21 @@ paths:
                           **Changes**: New in Zulip 5.0 (feature level 109).
 
                           [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+                      realm_want_advertise_in_communities_directory:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
 
+                          Whether the organization has given permission to be advertised in the
+                          Zulip [communities directory](/help/communities-directory).
+
+                          Useful only to clients supporting changing this setting for the
+                          organization.
+
+                          Giving permission via this setting does not guarantee that an
+                          organization will be listed in the Zulip communities directory.
+
+                          **Changes**: New in Zulip 6.0 (feature level 129).
                       realm_video_chat_provider:
                         type: integer
                         description: |

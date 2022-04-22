@@ -12,6 +12,10 @@ registration/login page:
 
 {!edit-organization-profile.md!}
 
+## Zulip communities directory
+
+{!communities-directory-intro.md!}
+
 ## Add a wide logo
 
 {!add-a-wide-logo.md!}

@@ -182,6 +182,7 @@ class HomeTest(ZulipTestCase):
         "realm_users",
         "realm_video_chat_provider",
         "realm_waiting_period_threshold",
+        "realm_want_advertise_in_communities_directory",
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
         "request_language",

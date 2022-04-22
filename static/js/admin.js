@@ -17,6 +17,10 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 
 const admin_settings_label = {
+    // Organization profile
+    realm_want_advertise_in_communities_directory: $t({
+        defaultMessage: "Advertise organization in the Zulip communities directory",
+    }),
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
@@ -164,6 +168,10 @@ export function build_page() {
         can_sort_by_email: settings_data.show_email(),
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
+        realm_want_advertise_in_communities_directory:
+            page_params.realm_want_advertise_in_communities_directory,
+        disable_want_advertise_in_communities_directory:
+            !page_params.server_web_public_streams_enabled,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
