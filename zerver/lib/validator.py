@@ -384,12 +384,21 @@ def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
         ]
     )
 
+    # To create an array of texts of each option
+    distinct_field_names: Set[str] = set()
+
     for key, value in field_data.items():
         if not key.strip():
             raise ValidationError(_("'{item}' cannot be blank.").format(item="value"))
 
         valid_value = validator("field_data", value)
         assert value is valid_value  # To justify the unchecked cast below
+
+        distinct_field_names.add(valid_value["text"])
+
+    # To show error if the options are duplicate
+    if len(field_data) != len(distinct_field_names):
+        raise ValidationError(_("Field must not have duplicate choices."))
 
     return cast(Dict[str, Dict[str, str]], field_data)
 
