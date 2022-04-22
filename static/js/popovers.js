@@ -42,6 +42,7 @@ import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
@@ -205,6 +206,7 @@ function render_user_info_popover(
     }
 
     const muting_allowed = !is_me && !user.is_bot;
+    const is_active = people.is_active_user_for_popover(user.user_id);
     const is_muted = muted_users.is_user_muted(user.user_id);
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
@@ -221,9 +223,14 @@ function render_user_info_popover(
         can_set_away,
         can_mute: muting_allowed && !is_muted,
         can_manage_user: page_params.is_admin && !is_me,
+        can_send_private_message:
+            is_active &&
+            !is_me &&
+            page_params.realm_private_message_policy !==
+                settings_config.private_message_policy_values.disabled.code,
         can_unmute: muting_allowed && is_muted,
         has_message_context,
-        is_active: people.is_active_user_for_popover(user.user_id),
+        is_active,
         is_bot: user.is_bot,
         is_me,
         is_sender_popover,

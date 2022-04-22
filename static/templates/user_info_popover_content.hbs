@@ -117,14 +117,12 @@
             </a>
         </li>
         {{/if}}
-        {{#if is_active}}
-            {{#unless is_me}}
+        {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
                     <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
-            {{/unless}}
         {{/if}}
         {{#unless is_me}}
         <li>
