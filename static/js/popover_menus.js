@@ -56,31 +56,51 @@ function on_show_prep(instance) {
     popovers.hide_all_except_sidebars(instance);
 }
 
+// boilerplate functions to pass to delegate() parameter for creating new stream popover
+function onShowStreamCreation(instance) {
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
+    on_show_prep(instance);
+
+    if (!can_create_streams) {
+        // If the user can't create streams, we directly
+        // navigate them to the Manage streams subscribe UI.
+        window.location.assign("#streams/all");
+        // Returning false from an onShow handler cancels the show.
+        return false;
+    }
+
+    instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
+    left_sidebar_stream_setting_popover_displayed = true;
+    return true;
+}
+
+function onHiddenStreamCreation() {
+    left_sidebar_stream_setting_popover_displayed = false;
+}
+
 export function initialize() {
     delegate("body", {
         ...default_popover_props,
         target: "#streams_inline_icon",
         onShow(instance) {
-            const can_create_streams =
-                settings_data.user_can_create_private_streams() ||
-                settings_data.user_can_create_public_streams() ||
-                settings_data.user_can_create_web_public_streams();
-            on_show_prep(instance);
-
-            if (!can_create_streams) {
-                // If the user can't create streams, we directly
-                // navigate them to the Manage streams subscribe UI.
-                window.location.assign("#streams/all");
-                // Returning false from an onShow handler cancels the show.
-                return false;
-            }
-
-            instance.setContent(parse_html(render_left_sidebar_stream_setting_popover()));
-            left_sidebar_stream_setting_popover_displayed = true;
-            return true;
+            onShowStreamCreation(instance);
         },
         onHidden() {
-            left_sidebar_stream_setting_popover_displayed = false;
+            onHiddenStreamCreation();
+        },
+    });
+
+    delegate("body", {
+        ...default_popover_props,
+        target: "#add-stream-link-create",
+        onShow(instance) {
+            onShowStreamCreation(instance);
+        },
+        onHidden() {
+            onHiddenStreamCreation();
         },
     });
 

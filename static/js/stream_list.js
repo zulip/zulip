@@ -79,12 +79,14 @@ function get_search_term() {
 export function add_sidebar_row(sub) {
     create_sidebar_row(sub);
     build_stream_list();
+    build_add_stream_link();
     stream_cursor.redraw();
 }
 
 export function remove_sidebar_row(stream_id) {
     stream_sidebar.remove_row(stream_id);
     build_stream_list();
+    build_add_stream_link();
     stream_cursor.redraw();
 }
 
@@ -155,6 +157,28 @@ export function build_stream_list(force_rerender) {
     }
 
     $parent.append(elems);
+}
+
+export function build_add_stream_link() {
+
+    const more_streams = stream_data.get_non_default_stream_names();
+    const num_more_streams = more_streams.length;
+    const $parent = $("#add-stream-link");
+
+    // child textNode to append to anchor element
+    let text_content = `Borrow ${num_more_streams} more streams`;
+
+    const icon_elem = '<i class="fa fa-plus-circle" aria-hidden="true"></i>';
+    const anchor_elem = `<a href="#streams/all">${icon_elem}${text_content}</a>`;
+
+    if (num_more_streams < 1) {
+        text_content = "Create a stream";
+        anchor_elem = `<a id="add-stream-link-create">${icon_elem}${text_content}</a>`;
+    }
+
+    // Only append when parent does not have children
+    if ($("#add-stream-link a").length < 1)
+        $parent.append(anchor_elem);
 }
 
 export function get_stream_li(stream_id) {
@@ -332,6 +356,7 @@ function set_stream_unread_count(stream_id, count) {
 
 export function update_streams_sidebar(force_rerender) {
     build_stream_list(force_rerender);
+    build_add_stream_link();
 
     stream_cursor.redraw();
 
@@ -498,6 +523,7 @@ export function initialize() {
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list();
+    build_add_stream_link();
     set_event_handlers();
 }
 
