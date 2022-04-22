@@ -239,7 +239,7 @@ export function try_deliver_locally(message_request) {
     // We ask the drafts system to not notify the user, since they'd
     // be quite distracting in the very common case that the message
     // sends normally.
-    const draft_id = drafts.update_draft({no_notify: true});
+    const draft_id = drafts.update_draft({no_notify: true}, true);
     message_request.draft_id = draft_id;
 
     // Now that we've committed to delivering the message locally, we

@@ -29,9 +29,11 @@ import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
-function set_count(count) {
+function set_count(count, sending_message) {
     const $drafts_li = $(".top_left_drafts");
-    ui_util.update_unread_count_in_dom($drafts_li, count);
+    if (!sending_message) {
+        ui_util.update_unread_count_in_dom($drafts_li, count);
+    }
 }
 
 export const draft_model = (function () {
@@ -55,12 +57,13 @@ export const draft_model = (function () {
         return get()[id] || false;
     };
 
-    function save(drafts) {
+    function save(drafts, sending_message) {
         ls.set(KEY, drafts);
-        set_count(Object.keys(drafts).length);
+
+        set_count(Object.keys(drafts).length, sending_message);
     }
 
-    exports.addDraft = function (draft) {
+    exports.addDraft = function (draft, sending_message) {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -69,7 +72,7 @@ export const draft_model = (function () {
 
         draft.updatedAt = getTimestamp();
         drafts[id] = draft;
-        save(drafts);
+        save(drafts, sending_message);
 
         return id;
     };
@@ -190,7 +193,7 @@ function maybe_notify(no_notify) {
     }
 }
 
-export function update_draft(opts = {}) {
+export function update_draft(opts = {}, sending_message) {
     const no_notify = opts.no_notify || false;
     const draft = snapshot_message();
 
@@ -217,7 +220,8 @@ export function update_draft(opts = {}) {
 
     // We have never saved a draft for this message, so add
     // one.
-    const new_draft_id = draft_model.addDraft(draft);
+
+    const new_draft_id = draft_model.addDraft(draft, sending_message);
     $("#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
 
