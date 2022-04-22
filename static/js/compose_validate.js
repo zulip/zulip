@@ -600,9 +600,14 @@ function validate_private_message() {
     ) {
         // Unless we're composing to a bot
         compose_error.show(
-            $t_html({defaultMessage: "Private messages are disabled in this organization."}),
+            $t_html({
+                defaultMessage:
+                    "You are not allowed to send private messages in this organization.",
+            }),
             $("#private_message_recipient"),
         );
+
+        $(".empty_feed_notice p").html("");
         return false;
     }
 

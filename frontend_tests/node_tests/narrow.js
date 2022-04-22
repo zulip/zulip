@@ -79,12 +79,15 @@ function hide_all_empty_narrow_messages() {
 run_test("empty_narrow_html", ({mock_template}) => {
     mock_template("empty_feed_notice.hbs", true, (data, html) => html);
 
-    let actual_html = empty_narrow_html("This is a title", "<h1> This is the html </h1>");
+    let actual_html = empty_narrow_html("This is a title", "This is the html");
+
     assert.equal(
         actual_html,
         `<div class="empty_feed_notice">
     <h4> This is a title </h4>
-    <h1> This is the html </h1>
+    <p>
+        This is the html
+    </p>
 </div>
 `,
     );
