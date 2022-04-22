@@ -173,9 +173,7 @@ function pick_empty_narrow_banner() {
                 case "private":
                     // You have no private messages.
                     return {
-                        title: $t({
-                            defaultMessage: "You are not allowed to send private messages Here!",
-                        }),
+                        title: $t({defaultMessage: "You have no private messages yet!"}),
                         html: $t_html(
                             {
                                 defaultMessage: "Why not <z-link>start the conversation</z-link>?",

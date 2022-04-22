@@ -201,7 +201,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: You are not allowed to send private messages Here!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -393,7 +393,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: You are not allowed to send private messages Here!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -404,7 +404,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: You are not allowed to send private messages Here!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
@@ -422,7 +422,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
     assert.equal(
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
-            "translated: Nothing's been sent here yet!",
+            "translated: You are not allowed to send private messages Here!",
             'translated HTML: Why not <a href="#" class="empty_feed_compose_stream">start the conversation</a>?',
         ),
     );
