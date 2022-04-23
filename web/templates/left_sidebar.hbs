@@ -102,9 +102,9 @@
             </div>
             <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
-                {{#unless is_guest }}
+                {{#if can_subscribe_to_streams }}
                     <div id="subscribe-to-more-streams"></div>
-                {{/unless}}
+                {{/if}}
                 <div id="login-link-container" class="only-visible-for-spectators">
                     <a class="login_button">
                         <i class="fa fa-sign-in" aria-hidden="true"></i>
