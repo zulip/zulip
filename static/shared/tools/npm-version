@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+git commit -am "shared: Bump version to ${npm_package_version}"
+git tag "shared-${npm_package_version}"

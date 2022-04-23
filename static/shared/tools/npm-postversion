@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+echo >&2 "\
+Version updated: ${npm_package_version}
+
+Next steps:
+
+  \$ git log --stat -p upstream..  # check your work!
+
+  \$ git push upstream main shared-${npm_package_version}
+
+  \$ npm publish  # should prompt for an OTP, from your 2FA setup
+"
