@@ -1546,23 +1546,34 @@ test("typeahead_results", () => {
         {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
     ]);
     assert_emoji_matches("notaemoji", []);
+
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
     assert_mentions_matches("cordelia, le", [cordelia]);
     assert_mentions_matches("cordelia, le ", []);
+    assert_mentions_matches("moor", [othello]);
+    assert_mentions_matches("moor ", [othello]);
+    assert_mentions_matches("moor of", [othello]);
+    assert_mentions_matches("moor of ven", [othello]);
+    assert_mentions_matches("oor", [othello]);
+    assert_mentions_matches("oor ", []);
+    assert_mentions_matches("oor o", []);
+    assert_mentions_matches("oor of venice", []);
     assert_mentions_matches("King ", [hamlet, lear]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);
     assert_mentions_matches("delia lear", []);
     assert_mentions_matches("Mark Tw", [twin1, twin2]);
+
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
+
     // Autocomplete user group mentions by group descriptions.
     assert_mentions_matches("characters ", [hamletcharacters]);
     assert_mentions_matches("characters of ", [hamletcharacters]);
     assert_mentions_matches("characters o ", []);
     assert_mentions_matches("haracters of hamlet", []);
-    assert_mentions_matches("of hamlet", []);
+    assert_mentions_matches("of hamlet", [hamletcharacters]);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
