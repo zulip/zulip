@@ -1,12 +1,18 @@
 import $ from "jquery";
+import _ from "lodash";
 import tippy, {delegate} from "tippy.js";
 
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
+import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
+import * as common from "./common";
+import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
+import * as narrow_state from "./narrow_state";
 import * as popover_menus from "./popover_menus";
 import * as reactions from "./reactions";
+import * as recent_topics_util from "./recent_topics_util";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
 import {parse_html} from "./ui_util";
@@ -229,9 +235,45 @@ export function initialize() {
             ".rendered_markdown .copy_codeblock",
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
-            ".narrow_to_compose_recipients",
         ],
         appendTo: () => document.body,
+        onHidden(instance) {
+            instance.destroy();
+        },
+    });
+
+    delegate("body", {
+        target: ".narrow_to_compose_recipients",
+        appendTo: () => document.body,
+        content() {
+            const narrow_filter = narrow_state.filter();
+            let display_current_view;
+            if (!recent_topics_util.is_visible()) {
+                if (narrow_filter === undefined) {
+                    display_current_view = $t({defaultMessage: "Currently viewing all messages."});
+                } else if (
+                    _.isEqual(narrow_filter.sorted_term_types(), ["stream"]) &&
+                    compose_state.get_message_type() === "stream" &&
+                    narrow_filter.operands("stream")[0] === compose_state.stream_name()
+                ) {
+                    display_current_view = $t({
+                        defaultMessage: "Currently viewing the entire stream.",
+                    });
+                } else if (
+                    _.isEqual(narrow_filter.sorted_term_types(), ["is-private"]) &&
+                    compose_state.get_message_type() === "private"
+                ) {
+                    display_current_view = $t({
+                        defaultMessage: "Currently viewing all private messages.",
+                    });
+                }
+            }
+
+            const shortcut_html = (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .";
+            return parse_html(
+                render_narrow_to_compose_recipients_tooltip({shortcut_html, display_current_view}),
+            );
+        },
         onHidden(instance) {
             instance.destroy();
         },
