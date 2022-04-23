@@ -730,7 +730,7 @@ export function initialize() {
         update_topic_clear_button_display();
     });
 
-    $("#stream_message_recipient_topic").on("keyup", () => {
+    $("#stream_message_recipient_topic").on("input", () => {
         update_topic_clear_button_display();
     });
 
