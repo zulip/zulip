@@ -16,11 +16,9 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 #### DMG or zip (DMG recommended)
 <!-- TODO why zip? -->
 
-1. Download and run [Zulip-x.x.x.dmg][latest] or 
-[Zulip-x.x.x-mac.zip][latest].
+1. Download and run [Zulip-x.x.x.dmg][latest] or [Zulip-x.x.x-mac.zip][latest].
 
-2. Open or unzip the file, and drag the app into the `Applications` 
-folder.
+2. Open or unzip the file, and drag the app into the `Applications` folder.
 
 The app will update automatically to future versions.
 
@@ -30,8 +28,7 @@ The app will update automatically to future versions.
 
 2. Zulip will be installed in `Applications`. <!-- TODO fact check -->
 
-The app will update automatically to future versions. `brew update && brew 
-upgrade zulip` will also work, if you prefer.
+The app will update automatically to future versions. (`brew update && brew upgrade zulip` will also work, if you prefer)
 
 {tab|windows}
 
@@ -39,7 +36,7 @@ upgrade zulip` will also work, if you prefer.
 
 1. Download and run [Zulip for Windows](https://zulip.com/apps/windows).
 
-1. Run Zulip from the Start menu.
+2. Run Zulip from the Start menu.
 
 The app will update automatically to future versions.
 
@@ -125,17 +122,14 @@ system above.
 
 #### Linux with Apt-get (Ubuntu or Debian 8+)
 
-1. First download the following signing key to ensure the deb download is 
-correct:
+1. First download the following signing key to ensure the deb download is correct:
 
-```sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 
-69AD12704E71A4803DCA3A682424BE5AE9BD10D9
-```
+```sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9```
+
 2. Then add the repo to the apt source list using the command
 
 ```echo "deb https://dl.bintray.com/zulip/debian/ beta main"
-sudo tee -a /etc/apt/sources.list.d/zulip.list
-```
+sudo tee -a /etc/apt/sources.list.d/zulip.list```
 
 3. Install the client:
 ```
@@ -151,3 +145,4 @@ sudo apt-get install zulip
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
 * [View Zulip version](/help/view-zulip-version)
+
