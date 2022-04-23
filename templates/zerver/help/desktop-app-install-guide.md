@@ -16,7 +16,7 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 #### DMG or zip (DMG recommended)
 <!-- TODO why zip? -->
 
-1. Download and run [Zulip-x.x.x.dmg][lr] or [Zulip-x.x.x-mac.zip][lr].
+1. Download and run [Zulip-x.x.x.dmg] or [Zulip-x.x.x-mac.zip].
 
 2. Open or unzip the file, and drag the app into the `Applications` 
 folder.
@@ -30,7 +30,7 @@ The app will update automatically to future versions.
 2. Zulip will be installed in `Applications`. <!-- TODO fact check -->
 
 The app will update automatically to future versions. `brew update && brew 
-upgrade zulip ` will also work, if you prefer.
+upgrade zulip` will also work, if you prefer.
 
 {tab|windows}
 
@@ -59,7 +59,7 @@ to future versions. <!-- TODO fact check -->
 
 #### APT (Ubuntu or Debian 8+)
 
-1. Download [Zulip-x.x.x-amd64.deb][lr] 
+1. Download [Zulip-x.x.x-amd64.deb]
 
 2. Double click and install, then run `zulip` in terminal.
 
