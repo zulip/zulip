@@ -16,7 +16,8 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 #### DMG or zip (DMG recommended)
 <!-- TODO why zip? -->
 
-1. Download and run [Zulip-x.x.x.dmg] or [Zulip-x.x.x-mac.zip].
+1. Download and run [Zulip-x.x.x.dmg][latest] or 
+[Zulip-x.x.x-mac.zip][latest].
 
 2. Open or unzip the file, and drag the app into the `Applications` 
 folder.
@@ -59,7 +60,7 @@ to future versions. <!-- TODO fact check -->
 
 #### APT (Ubuntu or Debian 8+)
 
-1. Download [Zulip-x.x.x-amd64.deb]
+1. Download [Zulip-x.x.x-amd64.deb][latest]
 
 2. Double click and install, then run `zulip` in terminal.
 
@@ -122,7 +123,7 @@ later than the latest release. If there is, download the appropriate Zulip
 installer or app from there, and follow the instructions for your operating
 system above.
 
-#### Linux with apt-get (Ubuntu or Debian 8+)
+#### Linux with Apt-get (Ubuntu or Debian 8+)
 
 1. First download the following signing key to ensure the deb download is 
 correct:
