@@ -878,7 +878,7 @@ export function initialize() {
         }
 
         if (compose_state.composing()) {
-            compose.update_topic_clear_button_display()
+            compose.update_topic_clear_button_display();
             if (
                 $(e.target).closest("a").length > 0 ||
                 $(e.target).closest(".copy_codeblock").length > 0
