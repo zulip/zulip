@@ -28,7 +28,8 @@ The app will update automatically to future versions.
 
 2. Zulip will be installed in `Applications`. <!-- TODO fact check -->
 
-The app will update automatically to future versions. (`brew update && brew upgrade zulip` will also work, if you prefer)
+The app will update automatically to future versions. (`brew update && brew upgrade zulip` will also work, if you 
+prefer)
 
 {tab|windows}
 
@@ -61,7 +62,7 @@ to future versions. <!-- TODO fact check -->
 
 2. Double click and install, then run `zulip` in terminal.
 
-or
+	or
 
 1. Enter the following commands into a terminal:
 
@@ -129,7 +130,8 @@ system above.
 2. Then add the repo to the apt source list using the command
 
 ```echo "deb https://dl.bintray.com/zulip/debian/ beta main"
-sudo tee -a /etc/apt/sources.list.d/zulip.list```
+sudo tee -a /etc/apt/sources.list.d/zulip.list 
+```
 
 3. Install the client:
 ```
@@ -145,4 +147,3 @@ sudo apt-get install zulip
 * [Connect through a proxy](/help/connect-through-a-proxy)
 * [Use a custom certificate](/help/custom-certificates)
 * [View Zulip version](/help/view-zulip-version)
-
