@@ -6,6 +6,7 @@ import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import * as buddy_data from "./buddy_data";
+import * as compose_state from "./compose_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
@@ -14,7 +15,6 @@ import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as util from "./util";
-
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
 export function get_cleaned_pm_recipients(query_string) {
@@ -186,13 +186,24 @@ export function compare_people_for_relevance(
     // We use is_broadcast for a quick check.  It will
     // true for all/everyone/stream and undefined (falsy)
     // for actual people.
-    if (person_a.is_broadcast) {
-        if (person_b.is_broadcast) {
-            return person_a.idx - person_b.idx;
+    if (compose_state.get_message_type() !== "private") {
+        if (person_a.is_broadcast) {
+            if (person_b.is_broadcast) {
+                return person_a.idx - person_b.idx;
+            }
+            return -1;
+        } else if (person_b.is_broadcast) {
+            return 1;
         }
-        return -1;
-    } else if (person_b.is_broadcast) {
-        return 1;
+    } else {
+        if (person_a.is_broadcast) {
+            if (person_b.is_broadcast) {
+                return person_a.idx - person_b.idx;
+            }
+            return 1;
+        } else if (person_b.is_broadcast) {
+            return -1;
+        }
     }
 
     // Now handle actual people users.

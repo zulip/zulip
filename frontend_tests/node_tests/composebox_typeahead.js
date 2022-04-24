@@ -1486,6 +1486,7 @@ test("content_highlighter", ({override_rewire}) => {
 });
 
 test("filter_and_sort_mentions (normal)", () => {
+    compose_state.set_message_type("stream");
     const is_silent = false;
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");

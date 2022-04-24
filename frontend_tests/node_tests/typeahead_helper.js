@@ -13,7 +13,7 @@ const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-
+const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
@@ -402,6 +402,7 @@ test("sort_recipients", () => {
 });
 
 test("sort_recipients all mention", () => {
+    compose_state.set_message_type("stream");
     const all_obj = ct.broadcast_mentions()[0];
     assert.equal(all_obj.email, "all");
     assert.equal(all_obj.is_broadcast, true);
@@ -493,6 +494,7 @@ test("sort_recipients dup bots", () => {
 });
 
 test("sort_recipients dup alls", () => {
+    compose_state.set_message_type("stream");
     const all_obj = ct.broadcast_mentions()[0];
 
     // full_name starts with same character but emails are 'all'
@@ -506,6 +508,22 @@ test("sort_recipients dup alls", () => {
     });
 
     const expected = [all_obj, all_obj, a_user];
+    assertSameEmails(recipients, expected);
+});
+
+test("sort_recipients dup alls private", () => {
+    compose_state.set_message_type("private");
+    const all_obj = ct.broadcast_mentions()[0];
+
+    // full_name starts with same character but emails are 'all'
+    const test_objs = [all_obj, a_user, all_obj];
+
+    const recipients = th.sort_recipients({
+        users: test_objs,
+        query: "a",
+    });
+
+    const expected = [a_user, all_obj, all_obj];
     assertSameEmails(recipients, expected);
 });
 
@@ -538,11 +556,12 @@ test("sort_recipients pm partners", () => {
     assert.deepEqual(recipients_email, expected);
 });
 
-test("sort broadcast mentions", () => {
+test("sort broadcast mentions for stream message type", () => {
     // test the normal case, which is that the
     // broadcast mentions are already sorted (we
     // actually had a bug where the sort would
     // randomly rearrange them)
+    compose_state.set_message_type("stream");
     const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
 
     assert.deepEqual(
@@ -565,15 +584,46 @@ test("sort broadcast mentions", () => {
     );
 });
 
-test("test compare directly", () => {
+test("sort broadcast mentions for private message type", () => {
+    compose_state.set_message_type("private");
+    const results = th.sort_people_for_relevance(ct.broadcast_mentions().reverse(), "", "");
+
+    assert.deepEqual(
+        results.map((r) => r.email),
+        ["all", "everyone"],
+    );
+
+    const test_objs = Array.from(ct.broadcast_mentions()).reverse();
+    test_objs.unshift(zman);
+    test_objs.push(a_user);
+
+    const results2 = th.sort_people_for_relevance(test_objs, "", "");
+
+    assert.deepEqual(
+        results2.map((r) => r.email),
+        [a_user.email, zman.email, "all", "everyone"],
+    );
+});
+
+test("test compare directly for stream message type", () => {
     // This is important for ensuring test coverage.
     // We don't technically need it now, but our test
     // coverage is subject to the whims of how JS sorts.
+    compose_state.set_message_type("stream");
     const all_obj = ct.broadcast_mentions()[0];
 
     assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
     assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
     assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
+});
+
+test("test compare directly for private message", () => {
+    compose_state.set_message_type("private");
+    const all_obj = ct.broadcast_mentions()[0];
+
+    assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
+    assert.equal(th.compare_people_for_relevance(all_obj, zman), 1);
+    assert.equal(th.compare_people_for_relevance(zman, all_obj), -1);
 });
 
 test("highlight_with_escaping", () => {
