@@ -428,6 +428,7 @@ test("private_messages", () => {
         display_recipient: [{id: alice.user_id}],
         type: "private",
         unread: true,
+        to_user_ids: alice.user_id.toString(),
     };
 
     const read_message = {

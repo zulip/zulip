@@ -9,6 +9,11 @@ import * as people from "./people";
 import * as recent_topics_util from "./recent_topics_util";
 
 export function get_recipient_label(message) {
+    // TODO: This code path is bit of a type-checking disaster; we mix
+    // actual message objects with fake objects containing just a
+    // couple fields, both those constructed here and potentially
+    // passed in.
+
     if (message === undefined) {
         if (message_lists.current.empty()) {
             // For empty narrows where there's a clear reply target,

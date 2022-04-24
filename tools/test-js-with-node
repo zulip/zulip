@@ -134,6 +134,7 @@ EXEMPT_FILES = make_set(
         "static/js/realm_playground.js",
         "static/js/realm_user_settings_defaults.ts",
         "static/js/recent_topics_ui.js",
+        "static/js/recent_topics_util.js",
         "static/js/reload.js",
         "static/js/reminder.js",
         "static/js/resize.js",
