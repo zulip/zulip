@@ -25,6 +25,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const message_util = mock_esm("../../static/js/message_util");
 const notifications = mock_esm("../../static/js/notifications");
 const pm_list = mock_esm("../../static/js/pm_list");
+const recent_topics_data = mock_esm("../../static/js/recent_topics_data");
 const resize = mock_esm("../../static/js/resize");
 const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ops = mock_esm("../../static/js/unread_ops");
@@ -91,6 +92,7 @@ run_test("insert_message", ({override}) => {
     helper.redirect(message_util, "add_new_messages_data");
     helper.redirect(message_util, "add_new_messages");
     helper.redirect(notifications, "received_messages");
+    helper.redirect(recent_topics_data, "process_message");
     helper.redirect(resize, "resize_page_components");
     helper.redirect(stream_list, "update_streams_sidebar");
     helper.redirect(unread_ops, "process_visible");
@@ -113,6 +115,7 @@ run_test("insert_message", ({override}) => {
         [unread_ops, "process_visible"],
         [notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],
+        [recent_topics_data, "process_message"],
     ]);
 
     // Despite all of our stubbing/mocking, the call to

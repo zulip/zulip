@@ -70,6 +70,21 @@
             padding-right: 3px;
         }
 
+        .fa-group {
+            font-size: 0.8rem;
+            margin-left: 5px;
+            /* color: hsl(105, 2%, 50%); */
+            opacity: 0.6;
+        }
+
+        .fa-envelope {
+            font-size: 0.7rem;
+            margin-right: 2px;
+            position: relative;
+            top: -1px;
+            opacity: 0.6;
+        }
+
         .table_fix_head {
             padding: 0 !important;
             /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
@@ -148,8 +163,29 @@
             background-color: hsl(105, 2%, 50%);
         }
 
+        .unread_count_pm {
+            /* 10px of unread count + 23px for bell icon */
+            margin-right: 33px;
+            /* match the opacity with topic unread count without hover */
+            opacity: 0.7;
+        }
+
         .unread_hidden {
             visibility: hidden;
+        }
+
+        .user_circle {
+            /* Shrink the user activity circle for the recent topics context. */
+            min-width: 7px;
+            height: 7px;
+            margin-left: 8px;
+            top: 0;
+        }
+
+        .flex_container_pm {
+            /* Flex container to fit in user circle and group icon */
+            display: flex;
+            justify-content: space-between;
         }
 
         .flex_container {
@@ -287,11 +323,22 @@
            as new messages arrive from the server. */
         .recent_topic_stream {
             width: 25%;
-            padding: 8px;
+            padding: 8px 0 8px 8px;
         }
 
         .recent_topic_name {
             width: 40%;
+
+            .line_clamp {
+                /* This -webkit-box display property is webkit-specific, but
+                   it appears that line clamping works fine for this component
+                   on Firefox anyway. */
+                /* stylelint-disable-next-line value-no-vendor-prefix */
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
         }
 
         .recent_topic_users {
@@ -326,6 +373,11 @@
             .recent_topic_actions {
                 margin-right: 5px;
                 font-size: 15px;
+            }
+
+            .unread_count_pm {
+                /* Margin equal to size of recent topic actions */
+                margin-right: 44px;
             }
         }
     }

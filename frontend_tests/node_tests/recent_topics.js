@@ -146,7 +146,6 @@ mock_esm("../../static/js/top_left_corner", {
 mock_esm("../../static/js/unread", {
     num_unread_for_topic: (stream_id, topic) => {
         if (stream_id === 1 && topic === "topic-1") {
-            // Only stream1, topic-1 is read.
             return 0;
         }
         return 1;
@@ -281,6 +280,7 @@ function generate_topic_data(topic_info_array) {
             other_sender_names_html: "",
             invite_only: false,
             is_web_public: true,
+            is_private: false,
             last_msg_time: "Just now",
             last_msg_url: "https://www.example.com",
             full_last_msg_date_time: "date at time",
@@ -290,7 +290,7 @@ function generate_topic_data(topic_info_array) {
             stream_id,
             stream_url: "https://www.example.com",
             topic,
-            topic_key: get_topic_key(stream_id, topic),
+            conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
             muted,
@@ -343,6 +343,7 @@ test("test_recent_topics_show", ({mock_template, override}) => {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
+        filter_pm: false,
         search_val: "",
         is_spectator: false,
     };
@@ -375,6 +376,7 @@ test("test_filter_all", ({mock_template}) => {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
+        filter_pm: false,
         search_val: "",
         is_spectator: true,
     };
@@ -401,8 +403,8 @@ test("test_filter_all", ({mock_template}) => {
     rt.process_messages([messages[0]]);
 
     expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 10, participated: true},
-        {last_msg_id: 1, participated: true},
+        {last_msg_id: 10, participated: true, type: "stream"},
+        {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
     row_data = row_data.concat(generate_topic_data([[1, "topic-7", 1, true, true]]));
@@ -429,6 +431,7 @@ test("test_filter_unread", ({mock_template}) => {
             filter_participated: false,
             filter_unread: expected_filter_unread,
             filter_muted: false,
+            filter_pm: false,
             search_val: "",
             is_spectator: false,
         });
@@ -482,34 +485,42 @@ test("test_filter_unread", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
@@ -539,6 +550,7 @@ test("test_filter_participated", ({mock_template}) => {
             filter_participated: expected_filter_participated,
             filter_unread: false,
             filter_muted: false,
+            filter_pm: false,
             search_val: "",
             is_spectator: false,
         });
@@ -602,34 +614,42 @@ test("test_filter_participated", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
@@ -656,7 +676,7 @@ test("basic assertions", ({mock_template}) => {
 
     mock_template("recent_topics_table.hbs", false, () => {});
     mock_template("recent_topic_row.hbs", true, (data, html) => {
-        assert.ok(html.startsWith('<tr id="recent_topic'));
+        assert.ok(html.startsWith('<tr id="recent_conversation'));
     });
 
     stub_out_filter_buttons();
@@ -673,34 +693,42 @@ test("basic assertions", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
@@ -713,15 +741,16 @@ test("basic assertions", ({mock_template}) => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
+    // Process private message
     rt_data.process_message({
         type: "private",
+        to_user_ids: "6,7,8",
     });
-
-    // Private msgs are not processed.
-    assert.equal(all_topics.size, 8);
+    all_topics = rt_data.get();
+    assert.equal(all_topics.size, 9);
     assert.equal(
         Array.from(all_topics.keys()).toString(),
-        "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
+        "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1,6,7,8",
     );
 
     // participated
@@ -745,7 +774,7 @@ test("basic assertions", ({mock_template}) => {
     all_topics = rt_data.get();
     assert.equal(
         Array.from(all_topics.keys()).toString(),
-        "1:topic-3,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1",
+        "1:topic-3,4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
     verify_topic_data(all_topics, stream1, topic3, id, true);
 
@@ -762,7 +791,7 @@ test("basic assertions", ({mock_template}) => {
     all_topics = rt_data.get();
     assert.equal(
         Array.from(all_topics.keys()).toString(),
-        "1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1",
+        "1:topic-7,1:topic-3,4:topic-10,1:topic-6,1:topic-5,1:topic-4,1:topic-2,1:topic-1,6,7,8",
     );
 
     // update_topic_is_muted now relies on external libraries completely
