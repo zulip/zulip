@@ -4,7 +4,7 @@
 <img src="{{still_url}}" class="emoji status_emoji" data-animated-url="{{url}}" data-still-url="{{still_url}}" />
 {{else if url}}
 {{!-- note that we have no still_url --}}
-<img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" />
+<img src="{{url}}" class="emoji status_emoji" data-animated-url="{{url}}" title="{{emoji_name}}"/>
 {{else if emoji_code}}
-<div class="emoji status_emoji emoji-{{emoji_code}}"></div>
+<div class="emoji status_emoji emoji-{{emoji_code}}" role="img" title="{{emoji_name}}"></div>
 {{/if}}
