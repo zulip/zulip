@@ -102,6 +102,7 @@ test("changing_topics", () => {
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
     assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
+    assert.deepEqual(unread.get_thread_unread_count_from_message(message), 0);
 
     let msg_ids = unread.get_msg_ids_for_topic(stream_id, "LuNcH");
     assert.deepEqual(msg_ids, []);
@@ -428,6 +429,7 @@ test("private_messages", () => {
         display_recipient: [{id: alice.user_id}],
         type: "private",
         unread: true,
+        to_user_ids: alice.user_id.toString(),
     };
 
     const read_message = {
@@ -435,6 +437,7 @@ test("private_messages", () => {
     };
     unread.process_loaded_messages([message, read_message]);
     assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 1);
+    assert.equal(unread.get_thread_unread_count_from_message(message), 1);
 
     assert.equal(unread.num_unread_for_person(""), 0);
 

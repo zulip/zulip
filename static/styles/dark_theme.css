@@ -635,6 +635,11 @@ body.dark-theme {
 
     #recent_topics_table {
         border-color: hsla(0, 0%, 0%, 0.6);
+
+        .fa-envelope,
+        .fa-group {
+            color: hsl(221, 13%, 71%);
+        }
     }
 
     thead,

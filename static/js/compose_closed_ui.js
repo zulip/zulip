@@ -44,6 +44,8 @@ export function get_recipient_label(message) {
             return "#" + message.stream + " > " + message.topic;
         } else if (message.display_reply_to) {
             return message.display_reply_to;
+        } else if (message.recipients) {
+            return message.recipients;
         }
     }
     return "";

@@ -667,6 +667,13 @@ export function get_missing_topics(opts) {
     return unread_topic_counter.get_missing_topics(opts);
 }
 
+export function get_thread_unread_count_from_message(msg) {
+    if (msg.type === "private") {
+        return num_unread_for_person(msg.to_user_ids);
+    }
+    return num_unread_for_topic(msg.stream_id, msg.topic);
+}
+
 export function get_msg_ids_for_starred() {
     // This is here for API consistency sake--we never
     // have unread starred messages.  (Some day we may ironically

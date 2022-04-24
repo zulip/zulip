@@ -468,7 +468,7 @@ export function initialize() {
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
         const $topic_row = $(e.target).closest("tr");
-        const topic_key = $topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_key = $topic_row.attr("id").slice("recent_conversation:".length);
         const topic_row_index = $topic_row.index();
         recent_topics_ui.focus_clicked_element(
             topic_row_index,

@@ -1,18 +1,43 @@
-<tr id="recent_topic:{{topic_key}}" {{#if unread_count}}class="unread_topic"{{/if}} data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}">
+<tr id="recent_conversation:{{conversation_key}}" {{#if unread_count}}class="unread_topic"{{/if}} data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}">
     <td class="recent_topic_stream">
+        {{#if is_private}}
+        <div class="flex_container flex_container_pm">
+            <div class="left_part recent_topics_focusable">
+                <span class="fa fa-envelope"></span>
+                <a href="{{pm_url}}">Private messages</a>
+            </div>
+            <div class="right_part">
+                <span class="stream-privacy filter-icon">
+                    {{#if is_group}}
+                    <span class="fa fa-group"></span>
+                    {{else}}
+                    <span class="{{user_circle_class}} user_circle"></span>
+                    {{/if}}
+                </span>
+            </div>
+        </div>
+        {{else}}
         <div class="recent_topics_focusable">
             <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
                 {{> stream_privacy }}
             </span>
-            <a href="{{stream_url}}">{{stream}}</a>
+            <a href="{{topic_url}}">{{stream}}</a>
         </div>
+        {{/if}}
     </td>
     <td class="recent_topic_name">
         <div class="flex_container">
             <div class="left_part recent_topics_focusable">
+                {{#if is_private}}
+                <a href="{{pm_url}}">{{pm_with}}</a>
+                {{else}}
                 <a href="{{topic_url}}">{{topic}}</a>
+                {{/if}}
             </div>
             <div class="right_part">
+                {{#if is_private}}
+                <span class="unread_count unread_count_pm {{#unless unread_count}}unread_hidden{{/unless}}">{{unread_count}}</span>
+                {{else}}
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable hidden-for-spectators">
                         <span class="unread_count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
@@ -27,16 +52,17 @@
                         {{/if}}
                     </div>
                 </div>
+                {{/if}}
             </div>
         </div>
     </td>
     <td class='recent_topic_users'>
         <ul class="recent_topics_participants">
             {{#if other_senders_count}}
-            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_topics_participant_overflow_tooltip:{{topic_key}}">
+            <li class="recent_topics_participant_item tippy-zulip-tooltip" data-tooltip-template-id="recent_topics_participant_overflow_tooltip:{{conversation_key}}">
                 <span class="recent_topics_participant_overflow">+{{other_senders_count}}</span>
             </li>
-            <template id="recent_topics_participant_overflow_tooltip:{{topic_key}}">{{{other_sender_names_html}}}</template>
+            <template id="recent_topics_participant_overflow_tooltip:{{conversation_key}}">{{{other_sender_names_html}}}</template>
             {{/if}}
             {{#each senders}}
                 {{#if this.is_muted}}
