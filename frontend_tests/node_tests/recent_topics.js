@@ -401,8 +401,8 @@ test("test_filter_all", ({mock_template}) => {
     rt.process_messages([messages[0]]);
 
     expected_data_to_replace_in_list_widget = [
-        {last_msg_id: 10, participated: true},
-        {last_msg_id: 1, participated: true},
+        {last_msg_id: 10, participated: true, type: "stream"},
+        {last_msg_id: 1, participated: true, type: "stream"},
     ];
 
     row_data = row_data.concat(generate_topic_data([[1, "topic-7", 1, true, true]]));
@@ -482,34 +482,42 @@ test("test_filter_unread", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
@@ -602,34 +610,42 @@ test("test_filter_participated", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
@@ -673,51 +689,48 @@ test("basic assertions", ({mock_template}) => {
         {
             last_msg_id: 11,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 10,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 9,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 7,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 5,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 4,
             participated: false,
+            type: "stream",
         },
         {
             last_msg_id: 3,
             participated: true,
+            type: "stream",
         },
         {
             last_msg_id: 1,
             participated: true,
+            type: "stream",
         },
     ];
 
     rt.process_messages([messages[9]]);
     // Check for expected lengths.
     // total 8 topics, 1 muted
-    assert.equal(all_topics.size, 8);
-    assert.equal(
-        Array.from(all_topics.keys()).toString(),
-        "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
-    );
-
-    rt_data.process_message({
-        type: "private",
-    });
-
-    // Private msgs are not processed.
     assert.equal(all_topics.size, 8);
     assert.equal(
         Array.from(all_topics.keys()).toString(),

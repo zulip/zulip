@@ -1,21 +1,21 @@
 import * as people from "./people";
-import {get_topic_key} from "./recent_topics_util";
+import {get_key_from_message} from "./recent_topics_util";
 
 export const topics = new Map(); // Key is stream-id:topic.
 
 export function process_message(msg) {
     // This function returns if topic_data
     // has changed or not.
-    if (msg.type !== "stream") {
-        // We don't process private messages yet.
-        return false;
-    }
-    // Initialize topic data
-    const key = get_topic_key(msg.stream_id, msg.topic);
+
+    // Initialize topic and pm data
+    // Key for private message is the user id's
+    // to whom the message is begin sent.
+    const key = get_key_from_message(msg);
     if (!topics.has(key)) {
         topics.set(key, {
             last_msg_id: -1,
             participated: false,
+            type: msg.type,
         });
     }
     // Update topic data

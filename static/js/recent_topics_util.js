@@ -29,3 +29,12 @@ export function is_in_focus() {
 export function get_topic_key(stream_id, topic) {
     return stream_id + ":" + topic.toLowerCase();
 }
+
+export function get_key_from_message(msg) {
+    if (msg.type === "private") {
+        return msg.to_user_ids;
+    } else if (msg.type === "stream") {
+        return get_topic_key(msg.stream_id, msg.topic);
+    }
+    return "";
+}
