@@ -7,10 +7,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import InvalidJSONError
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.request import REQ, RequestVariableMissingError, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,19 +20,28 @@ def api_slack_incoming_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     user_specified_topic: Optional[str] = REQ("topic", default=None),
-    payload: Optional[Dict[str, Any]] = REQ("payload", json_validator=check_dict(), default=None),
 ) -> HttpResponse:
 
     # Slack accepts webhook payloads as payload="encoded json" as
     # application/x-www-form-urlencoded, as well as in the body as
-    # application/json. We use has_request_variables to try to get
-    # the form encoded version, and parse the body out ourselves if
-    # # we were given JSON.
-    if payload is None:
+    # application/json.
+    if request.content_type == "application/json":
         try:
-            payload = orjson.loads(request.body)
-        except orjson.JSONDecodeError:  # nocoverage
-            raise InvalidJSONError(_("Malformed JSON"))
+            val = request.body.decode(request.encoding or "utf-8")
+        except UnicodeDecodeError:  # nocoverage
+            raise JsonableError(_("Malformed payload"))
+    else:
+        req_var = "payload"
+        if req_var in request.POST:
+            val = request.POST[req_var]
+        elif req_var in request.GET:  # nocoverage
+            val = request.GET[req_var]
+        else:
+            raise RequestVariableMissingError(req_var)
+    try:
+        payload = orjson.loads(val)
+    except orjson.JSONDecodeError:  # nocoverage
+        raise InvalidJSONError(_("Malformed JSON"))
 
     if user_specified_topic is None and "channel" in payload:
         user_specified_topic = re.sub("^[@#]", "", payload["channel"])
