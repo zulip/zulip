@@ -1023,7 +1023,7 @@ def check_realm_update_dict(
     elif event["property"] == "night_logo":
         sub_type = night_logo_data
     else:
-        raise AssertionError("unhandled property: {event['property']}")
+        raise AssertionError(f"unhandled property: {event['property']}")
 
     check_data(sub_type, f"{var_name}['data']", event["data"])
 
