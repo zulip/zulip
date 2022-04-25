@@ -955,16 +955,16 @@ class Command(BaseCommand):
 
 def mark_all_messages_as_read() -> None:
     """
-    We want to keep these two flags intact after we
-    create messages:
+    We want to keep these flags mostly intact after we create
+    messages. The is_private flag, for example, would be bad to overwrite.
 
-        has_alert_word
-        is_private
+    So we're careful to only toggle the read flag.
 
-    But we will mark all messages as read to save a step for users.
+    We exclude marking messages as read for bots, since bots, by
+    default, never mark messages as read.
     """
     # Mark all messages as read
-    UserMessage.objects.all().update(
+    UserMessage.objects.filter(user_profile__is_bot=False).update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
