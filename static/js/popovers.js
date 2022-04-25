@@ -47,6 +47,7 @@ import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
+import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
@@ -1285,7 +1286,8 @@ export function register_click_handlers() {
     $("body").on("click", ".sidebar-popover-manage-user", (e) => {
         hide_all();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        settings_users.show_edit_user_info_modal(user_id, true);
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user, 3);
     });
 }
 

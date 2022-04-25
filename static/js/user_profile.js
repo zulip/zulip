@@ -259,7 +259,7 @@ export function hide_user_profile() {
     });
 }
 
-export function show_user_profile(user) {
+export function show_user_profile(user, selected_tab_index = 0) {
     popovers.hide_all();
 
     const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
@@ -288,10 +288,9 @@ export function show_user_profile(user) {
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     overlays.open_modal("user-profile-modal", {autoremove: true, micromodal: true});
-    $(".tabcontent").hide();
-    $("#profile-tab").show(); // Show general profile details by default.
+
     const opts = {
-        selected: 0,
+        selected: selected_tab_index,
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
