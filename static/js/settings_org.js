@@ -1197,6 +1197,22 @@ export function build_page() {
         update_message_edit_sub_settings(is_checked);
     });
 
+    $("#id_realm_delete_own_message_policy").on("change", (e) => {
+        const setting_value = Number.parseInt($(e.target).val(), 10);
+        const disable_limit_setting =
+            setting_value === settings_config.common_message_policy_values.by_admins_only.code;
+        settings_ui.disable_sub_setting_onchange(
+            !disable_limit_setting,
+            "id_realm_msg_delete_limit_setting",
+            true,
+        );
+        settings_ui.disable_sub_setting_onchange(
+            !disable_limit_setting,
+            "id_realm_message_content_delete_limit_minutes",
+            true,
+        );
+    });
+
     $("#id_realm_org_join_restrictions").on("click", (e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
