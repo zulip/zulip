@@ -1,14 +1,26 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+should_color=
+if [ -t 2 ]; then  # if we're sending to a terminal
+    should_color=yes
+fi
+
+reset=
+bold=
+if [ -n "${should_color}" ]; then
+    reset=$'\033'[0m
+    bold=$'\033'[1m
+fi
+
 echo >&2 "\
-Version updated: ${npm_package_version}
+Version updated: ${bold}${npm_package_version}${reset}
 
 Next steps:
 
-  \$ git log --stat -p upstream..  # check your work!
+  \$ ${bold}git log --stat -p upstream..${reset}  # check your work!
 
-  \$ git push upstream main shared-${npm_package_version}
+  \$ ${bold}git push upstream main shared-${npm_package_version}${reset}
 
-  \$ npm publish  # should prompt for an OTP, from your 2FA setup
+  \$ ${bold}npm publish${reset}  # should prompt for an OTP, from your 2FA setup
 "
