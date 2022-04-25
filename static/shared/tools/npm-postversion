@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-# shellcheck disable=SC2154 # expect this to run as NPM script
-: "${npm_package_version}"
+# expect this to run as NPM script
+: "${npm_package_version?}"
 
 should_color=
 if [ -t 2 ]; then # if we're sending to a terminal
