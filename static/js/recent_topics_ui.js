@@ -29,6 +29,7 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";
+import * as unread_ui from "./unread_ui";
 
 let topics_widget;
 // Sets the number of avatars to display.
@@ -651,7 +652,7 @@ export function show() {
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
-    narrow.hide_mark_as_read_turned_off_banner();
+    unread_ui.hide_mark_as_read_turned_off_banner();
 
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this

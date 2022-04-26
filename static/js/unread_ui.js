@@ -15,6 +15,10 @@ import {notify_server_messages_read} from "./unread_ops";
 
 let last_mention_count = 0;
 
+export function hide_mark_as_read_turned_off_banner() {
+    $("#mark_as_read_turned_off_banner").hide();
+}
+
 function do_new_messages_animation($li) {
     $li.addClass("new_messages");
     function mid_animation() {

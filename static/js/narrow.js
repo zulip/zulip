@@ -40,6 +40,7 @@ import * as typing_events from "./typing_events";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 import * as widgetize from "./widgetize";
 
@@ -155,17 +156,13 @@ function update_narrow_title(filter) {
     }
 }
 
-export function hide_mark_as_read_turned_off_banner() {
-    $("#mark_as_read_turned_off_banner").hide();
-}
-
 export function reset_ui_state() {
     // Resets the state of various visual UI elements that are
     // a function of the current narrow.
     narrow_banner.hide_empty_narrow_message();
     message_scroll.hide_top_of_narrow_notices();
     message_scroll.hide_indicators();
-    hide_mark_as_read_turned_off_banner();
+    unread_ui.hide_mark_as_read_turned_off_banner();
 }
 
 export function handle_middle_pane_transition() {
