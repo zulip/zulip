@@ -110,7 +110,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         ]
 
         self.assertEqual(
-            set(emailed_user_ids), set(user_id for user_id in user_ids if user_id != hamlet.id)
+            set(emailed_user_ids), {user_id for user_id in user_ids if user_id != hamlet.id}
         )
 
     @mock.patch("zerver.lib.digest.enough_traffic")
