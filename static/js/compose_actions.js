@@ -78,8 +78,7 @@ export function set_focus(msg_type, opts) {
     }
 }
 
-// Show the compose box.
-function show_box(msg_type, opts) {
+function show_compose_box(msg_type, opts) {
     if (msg_type === "stream") {
         $("#private-message").hide();
         $("#stream-message").show();
@@ -313,7 +312,7 @@ export function start(msg_type, opts) {
     compose_state.set_message_type(msg_type);
 
     // Show either stream/topic fields or "You and" field.
-    show_box(msg_type, opts);
+    show_compose_box(msg_type, opts);
 
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
