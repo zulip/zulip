@@ -161,7 +161,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
-* [Web-public streams](/help/web-public-streams)
+* [Public access option](/help/web-public-streams)
 * [Stream posting policy](/help/stream-sending-policy)
 * [Restrict stream creation](/help/configure-who-can-create-streams)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)

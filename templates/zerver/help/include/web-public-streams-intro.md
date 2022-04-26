@@ -1,6 +1,6 @@
-Administrators may enable the option to create **web-public streams**.
-Web-public streams can be viewed by anyone on the Internet without
-creating an account in your organization.
+The public access option lets administrators configure selected streams to be
+**web-public**. Web-public streams can be viewed by anyone on the Internet
+without creating an account in your organization.
 
 For example, you can [link to a Zulip
 topic](/help/link-to-a-message-or-conversation) in a web-public stream

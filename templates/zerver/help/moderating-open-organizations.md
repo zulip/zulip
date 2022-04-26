@@ -53,7 +53,7 @@ organization's policy choices.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
   [delete custom emoji](/help/custom-emoji#delete-custom-emoji).
 
-## Web-public streams
+## Public access option
 
 {!web-public-streams-intro.md!}
 

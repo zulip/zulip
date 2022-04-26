@@ -1,4 +1,4 @@
-# Web-public streams
+# Public access option
 
 !!! warn ""
 
