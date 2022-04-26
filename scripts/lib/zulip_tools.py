@@ -663,7 +663,7 @@ def listening_publicly(port: int) -> List[str]:
     lines = (
         subprocess.check_output(
             ["/bin/ss", "-Hnl", filter],
-            universal_newlines=True,
+            text=True,
             # Hosts with IPv6 disabled will get "RTNETLINK answers: Invalid
             # argument"; eat stderr to hide that
             stderr=subprocess.DEVNULL,
