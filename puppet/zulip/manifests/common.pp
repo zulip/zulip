@@ -8,11 +8,19 @@ class zulip::common {
       $supervisor_system_conf_dir = '/etc/supervisor/conf.d'
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
-      $supervisor_start = '/etc/init.d/supervisor start'
-      # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
-      # "restart" is actually "stop" under sysvinit
-      $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
-      $supervisor_status = '/etc/init.d/supervisor status'
+      $supervisor_start = '/usr/sbin/service supervisor start'
+      $supervisor_reload = @(EOT)
+        # The init script's timeout waiting for supervisor is shorter
+        # than supervisor's timeout waiting for its programs, so we need
+        # to ask supervisor to stop its programs first.
+        supervisorctl stop all &&
+        service supervisor restart &&
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
+        # "restart" is actually "stop" under sysvinit
+        { service supervisor start || true; } &&
+        service supervisor status
+        | EOT
+      $supervisor_status = '/usr/sbin/service supervisor status'
     }
     'RedHat': {
       $nagios_plugins = 'nagios-plugins'
