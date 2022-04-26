@@ -974,7 +974,7 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".view_user_profile", (e) => {
-        const user_id = Number.parseInt($(e.target).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const user = people.get_by_user_id(user_id);
         show_user_info_popover(e.target, user);
         e.stopPropagation();
