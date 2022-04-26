@@ -877,9 +877,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         # Invalid subgroup id will raise an error.
-        params = {"add": orjson.dumps([leadership_group.id, 101]).decode()}
+        params = {"add": orjson.dumps([leadership_group.id, 1111]).decode()}
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
-        self.assert_json_error(result, "Invalid user group ID: 101")
+        self.assert_json_error(result, "Invalid user group ID: 1111")
 
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
@@ -896,11 +896,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         )
 
         # Invalid user ID.
-        result = self.client_get(f"/json/user_groups/{admins_group.id}/members/25")
+        result = self.client_get(f"/json/user_groups/{admins_group.id}/members/1111")
         self.assert_json_error(result, "No such user")
 
         # Invalid user group ID.
-        result = self.client_get(f"/json/user_groups/25/members/{iago.id}")
+        result = self.client_get(f"/json/user_groups/1111/members/{iago.id}")
         self.assert_json_error(result, "Invalid user group")
 
         result_dict = orjson.loads(
@@ -953,7 +953,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login("iago")
 
         # Test invalid user group id
-        result = self.client_get("/json/user_groups/25/members")
+        result = self.client_get("/json/user_groups/1111/members")
         self.assert_json_error(result, "Invalid user group")
 
         result_dict = orjson.loads(
@@ -992,7 +992,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.login("iago")
 
         # Test invalid user group id
-        result = self.client_get("/json/user_groups/25/subgroups")
+        result = self.client_get("/json/user_groups/1111/subgroups")
         self.assert_json_error(result, "Invalid user group")
 
         result_dict = orjson.loads(
