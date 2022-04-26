@@ -41,12 +41,7 @@ from zerver.actions.streams import (
     get_subscriber_ids,
 )
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import (
-    authenticated_json_view,
-    require_non_guest_user,
-    require_post,
-    require_realm_admin,
-)
+from zerver.decorator import authenticated_json_view, require_post, require_realm_admin
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
@@ -551,7 +546,6 @@ RETENTION_DEFAULT: Union[str, int] = "realm_default"
 EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 
 
-@require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
     request: HttpRequest,
@@ -625,6 +619,9 @@ def add_subscriptions_backend(
         user_profile, existing_streams
     )
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
+        if user_profile.is_guest:
+            raise JsonableError(_("Not allowed for guest users"))
+
         raise JsonableError(
             _("Unable to access stream ({stream_name}).").format(
                 stream_name=unauthorized_streams[0].name,
@@ -634,13 +631,16 @@ def add_subscriptions_backend(
     streams = authorized_streams + created_streams
 
     if len(principals) > 0:
+        if user_profile.is_guest:
+            raise JsonableError(_("Not allowed for guest users"))
+
         if realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             raise JsonableError(
                 _("You can only invite other Zephyr mirroring users to private streams.")
             )
         if not user_profile.can_subscribe_other_users():
             # Guest users case will not be handled here as it will
-            # be handled by the decorator above.
+            # be handled above.
             raise JsonableError(_("Insufficient permission"))
         subscribers = {
             principal_to_user_profile(user_profile, principal) for principal in principals

@@ -721,6 +721,9 @@ def list_to_streams(
         created_streams: List[Stream] = []
     else:
         # autocreate=True path starts here
+        if user_profile.is_guest:
+            # We do not allow guests to create streams at all.
+            raise JsonableError(_("Not allowed for guest users"))
         for stream_dict in missing_stream_dicts:
             invite_only = stream_dict.get("invite_only", False)
             if invite_only and not user_profile.can_create_private_streams():

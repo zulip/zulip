@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 167**
+
+* [`POST /users/me/subscriptions`](/api/subscribe), [`PATCH
+  /users/me/subscriptions`](/api/update-subscriptions): Guests
+  are now allowed to subscribe themselves to web-public streams.
+
 **Feature level 166**
 
 * [`POST /messages`](/api/send-message): Eliminated the undocumented
