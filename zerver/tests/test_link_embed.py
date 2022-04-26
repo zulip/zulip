@@ -916,7 +916,7 @@ class PreviewTestCase(ZulipTestCase):
 
         self.assertEqual(cached_data, mocked_data)
         msg.refresh_from_db()
-        self.assertIn('a data-id="{}"'.format(escape(mocked_data.html)), msg.rendered_content)
+        self.assertIn(f'a data-id="{escape(mocked_data.html)}"', msg.rendered_content)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
