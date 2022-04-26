@@ -1,3 +1,8 @@
+/* The height of the settings header (including tab switcher). */
+$settings_header_height: 45px;
+/* The width of the settings sidebar. */
+$settings_sidebar_width: 250px;
+
 label {
     margin: 0;
 
@@ -1396,19 +1401,19 @@ input[type="checkbox"] {
     .sidebar-wrapper {
         float: left;
         position: relative;
-        width: 250px;
+        width: $settings_sidebar_width;
         height: 100%;
 
         .tab-container {
             box-sizing: border-box;
-            height: 45px;
+            height: $settings_header_height;
             padding: 6px;
             border-bottom: 1px solid hsl(0, 0%, 87%);
         }
     }
 
     .sidebar {
-        height: calc(100% - 45px);
+        height: calc(100% - $settings_header_height);
         overflow-y: auto;
         border-right: 1px solid hsl(0, 0%, 93%);
 
@@ -1552,15 +1557,14 @@ input[type="checkbox"] {
 
     .content-wrapper {
         position: absolute;
-        left: 250px;
-        /* the width of the settings sidebar is 250px */
-        width: calc(100% - 250px);
+        left: $settings_sidebar_width;
+        width: calc(100% - $settings_sidebar_width);
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: 45px;
+            height: $settings_header_height;
             box-sizing: border-box;
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
@@ -1574,7 +1578,7 @@ input[type="checkbox"] {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - 45px);
+            height: calc(100% - $settings_header_height);
 
             float: left;
             overflow-y: auto;
