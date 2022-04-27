@@ -1454,7 +1454,7 @@ class UserBaseSettings(models.Model):
     """
 
     # UI settings
-    enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
+    enter_sends: bool = models.BooleanField(default=False)
 
     # display settings
     left_side_userlist: bool = models.BooleanField(default=False)
@@ -2388,7 +2388,7 @@ class Stream(models.Model):
             "policy_name": gettext_lazy("Public, protected history"),
         },
     }
-    invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
+    invite_only: bool = models.BooleanField(default=False)
     history_public_to_subscribers: bool = models.BooleanField(default=True)
 
     # Whether this stream's content should be published by the web-public archive features
@@ -3517,7 +3517,7 @@ class Subscription(models.Model):
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     # Whether this user had muted this stream.
-    is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
+    is_muted: bool = models.BooleanField(default=False)
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color: str = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
@@ -4361,7 +4361,7 @@ class CustomProfileField(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name: str = models.CharField(max_length=NAME_MAX_LENGTH)
-    hint: Optional[str] = models.CharField(max_length=HINT_MAX_LENGTH, default="", null=True)
+    hint: str = models.CharField(max_length=HINT_MAX_LENGTH, default="")
     order: int = models.IntegerField(default=0)
 
     SHORT_TEXT = 1
@@ -4423,12 +4423,12 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this null.  Fields of type SELECT store the
+    # DATE, URL, and USER leave this empty.  Fields of type SELECT store the
     # choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.
     # See https://www.postgresql.org/docs/9.0/static/datatype-character.html
-    field_data: Optional[str] = models.TextField(default="", null=True)
+    field_data: str = models.TextField(default="")
 
     class Meta:
         unique_together = ("realm", "name")
