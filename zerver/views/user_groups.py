@@ -22,7 +22,7 @@ from zerver.lib.user_groups import (
     access_user_groups_as_potential_subgroups,
     get_direct_memberships_of_users,
     get_subgroup_ids,
-    get_user_group_direct_members,
+    get_user_group_direct_member_ids,
     get_user_group_member_ids,
     is_user_in_group,
     user_groups_in_realm_serialized,
@@ -145,7 +145,7 @@ def remove_members_from_group_backend(
 
     user_profiles = user_ids_to_users(members, user_profile.realm)
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    group_member_ids = get_user_group_direct_members(user_group)
+    group_member_ids = get_user_group_direct_member_ids(user_group)
     for member in members:
         if member not in group_member_ids:
             raise JsonableError(_("There is no member '{}' in this user group").format(member))
