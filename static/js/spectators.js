@@ -12,17 +12,11 @@ import render_login_to_access_modal from "../templates/login_to_access.hbs";
 import * as browser_history from "./browser_history";
 import * as hash_util from "./hash_util";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
 
 export function login_to_access() {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
-    let login_link;
-    if (page_params.development_environment) {
-        login_link = "/devlogin/?" + hash_util.current_hash_as_next();
-    } else {
-        login_link = "/login/?" + hash_util.current_hash_as_next();
-    }
+    const login_link = hash_util.build_login_link();
 
     $("body").append(
         render_login_to_access_modal({

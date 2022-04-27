@@ -89,6 +89,7 @@ EXEMPT_FILES = make_set(
         "static/js/gear_menu.js",
         "static/js/giphy.js",
         "static/js/global.d.ts",
+        "static/js/hash_util.js",
         "static/js/hashchange.js",
         "static/js/hbs.d.ts",
         "static/js/hotkey.js",
