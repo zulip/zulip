@@ -24,7 +24,7 @@ async function test_reactivation_confirmation_modal(page: Page, fullname: string
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
         "Reactivate " + fullname,
-        "Reactivate modal has wrong user.",
+        "Unexpected title for reactivate user modal",
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
@@ -45,7 +45,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
         "Deactivate " + common.fullname.cordelia,
-        "Deactivate modal has wrong user.",
+        "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
