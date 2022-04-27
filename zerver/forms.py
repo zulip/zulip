@@ -288,7 +288,7 @@ def generate_password_reset_url(
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(
         self,
-        domain_override: Optional[bool] = None,
+        domain_override: Optional[str] = None,
         subject_template_name: str = "registration/password_reset_subject.txt",
         email_template_name: str = "registration/password_reset_email.html",
         use_https: bool = False,
