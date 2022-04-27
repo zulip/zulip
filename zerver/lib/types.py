@@ -186,7 +186,7 @@ class SubscriptionStreamDict(TypedDict):
     email_notifications: Optional[bool]
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
-    in_home_view: Optional[bool]
+    in_home_view: bool
     # Bug: invite_only should be bool.
     invite_only: Optional[bool]
     is_announcement_only: bool

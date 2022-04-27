@@ -703,12 +703,12 @@ def flush_stream(
 def flush_used_upload_space_cache(
     *,
     instance: "Attachment",
-    created: Optional[bool] = None,
+    created: bool = True,
     **kwargs: object,
 ) -> None:
     attachment = instance
 
-    if created is None or created:
+    if created:
         cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm))
 
 

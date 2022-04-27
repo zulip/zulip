@@ -142,11 +142,11 @@ def support(
         default=None, str_validator=check_string_in(VALID_BILLING_METHODS)
     ),
     sponsorship_pending: Optional[bool] = REQ(default=None, json_validator=check_bool),
-    approve_sponsorship: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    approve_sponsorship: bool = REQ(default=False, json_validator=check_bool),
     downgrade_method: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_DOWNGRADE_METHODS)
     ),
-    scrub_realm: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    scrub_realm: bool = REQ(default=False, json_validator=check_bool),
     query: Optional[str] = REQ("q", default=None),
     org_type: Optional[int] = REQ(default=None, converter=to_non_negative_int),
 ) -> HttpResponse:

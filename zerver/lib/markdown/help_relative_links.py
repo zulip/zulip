@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Match, Optional
+from typing import Any, List, Match
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -81,7 +81,7 @@ class RelativeLinksHelpExtension(Extension):
         )
 
 
-relative_help_links: Optional[bool] = None
+relative_help_links: bool = False
 
 
 def set_relative_help_links(value: bool) -> None:

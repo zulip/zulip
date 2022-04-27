@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Match, Optional
+from typing import Any, List, Match
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -114,7 +114,7 @@ class SettingHelpExtension(Extension):
         md.preprocessors.register(Setting(), "setting", PREPROCESSOR_PRIORITES["setting"])
 
 
-relative_settings_links: Optional[bool] = None
+relative_settings_links: bool = False
 
 
 def set_relative_settings_links(value: bool) -> None:
