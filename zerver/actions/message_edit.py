@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set, TypedDict
 
 from django.conf import settings
 from django.db import transaction
@@ -7,7 +7,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
-from typing_extensions import TypedDict
 
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (

@@ -1,6 +1,4 @@
-from typing import Dict, List, Optional, Set, Tuple
-
-from typing_extensions import TypedDict
+from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from zerver.lib.cache import (
     bulk_cached_fetch,

@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
 
 from scripts.lib.zulip_tools import deport
 
@@ -7,7 +7,6 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-    from typing_extensions import TypedDict
 
     from zerver.lib.types import SAMLIdPConfigDict
 

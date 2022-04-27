@@ -1,11 +1,10 @@
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple, TypedDict, Union
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
 
 from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.lib.exceptions import (

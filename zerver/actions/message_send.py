@@ -12,6 +12,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     Union,
 )
 
@@ -24,7 +25,6 @@ from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from typing_extensions import TypedDict
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.lib.addressee import Addressee

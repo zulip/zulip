@@ -2,10 +2,9 @@
 import re
 import string
 from functools import partial
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Protocol
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import Protocol
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType

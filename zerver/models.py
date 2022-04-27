@@ -14,6 +14,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
 )
@@ -48,7 +49,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
-from typing_extensions import TypedDict
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
