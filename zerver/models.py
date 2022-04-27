@@ -2389,7 +2389,7 @@ class Stream(models.Model):
         },
     }
     invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
-    history_public_to_subscribers: bool = models.BooleanField(default=False)
+    history_public_to_subscribers: bool = models.BooleanField(default=True)
 
     # Whether this stream's content should be published by the web-public archive features
     is_web_public: bool = models.BooleanField(default=False)
