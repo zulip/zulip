@@ -684,6 +684,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["deactivated"], True)
         self.assertEqual(zerver_stream[0]["description"], "no purpose")
         self.assertEqual(zerver_stream[0]["invite_only"], False)
+        self.assertEqual(zerver_stream[0]["history_public_to_subscribers"], True)
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
         self.assertEqual(zerver_stream[2]["id"], test_added_channels[zerver_stream[2]["name"]][1])
 
