@@ -1,5 +1,0 @@
-deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main
-
-deb http://apt-archive.postgresql.org/pub/repos/apt/ buster-pgdg-archive main
-deb-src http://apt-archive.postgresql.org/pub/repos/apt/ buster-pgdg-archive main

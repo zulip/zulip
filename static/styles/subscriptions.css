@@ -514,6 +514,14 @@ h4.stream_setting_subsection_title {
                 .large-icon {
                     display: inline-block;
                 }
+
+                .fa-lock {
+                    position: relative;
+                }
+
+                .zulip-icon-globe {
+                    font-size: 15px;
+                }
             }
         }
 
@@ -904,9 +912,13 @@ h4.stream_setting_subsection_title {
             font-size: 1.5em;
 
             &.hash::after {
-                top: 1px;
+                top: -1px;
                 font-size: 1.09em;
                 font-weight: 800;
+            }
+
+            .zulip-icon-globe {
+                font-size: 15px;
             }
         }
 

@@ -625,6 +625,10 @@ body.dark-theme {
     .btn-recent-selected,
     #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
+
+        &[data-sort]:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
     }
 
     #recent_topics_table td a {
@@ -652,7 +656,7 @@ body.dark-theme {
     #settings_page .settings-header,
     #settings_page .form-sidebar .title,
     #settings_page .sidebar li.active,
-    #settings_page .sidebar .tab-container,
+    #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
     .modal-footer,
@@ -679,8 +683,8 @@ body.dark-theme {
     #subscription_overlay .subsection-parent div,
     #subscription_overlay .radio-input-parent,
     #stream_privacy_modal .radio-input-parent,
-    #settings_page .sidebar,
-    #settings_page .sidebar *,
+    #settings_page .sidebar-wrapper,
+    #settings_page .sidebar-wrapper *,
     table,
     table th,
     table td {

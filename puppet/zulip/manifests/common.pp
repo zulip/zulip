@@ -8,11 +8,19 @@ class zulip::common {
       $supervisor_system_conf_dir = '/etc/supervisor/conf.d'
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
-      $supervisor_start = '/etc/init.d/supervisor start'
-      # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
-      # "restart" is actually "stop" under sysvinit
-      $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
-      $supervisor_status = '/etc/init.d/supervisor status'
+      $supervisor_start = '/usr/sbin/service supervisor start'
+      $supervisor_reload = @(EOT)
+        # The init script's timeout waiting for supervisor is shorter
+        # than supervisor's timeout waiting for its programs, so we need
+        # to ask supervisor to stop its programs first.
+        supervisorctl stop all &&
+        service supervisor restart &&
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
+        # "restart" is actually "stop" under sysvinit
+        { service supervisor start || true; } &&
+        service supervisor status
+        | EOT
+      $supervisor_status = '/usr/sbin/service supervisor status'
     }
     'RedHat': {
       $nagios_plugins = 'nagios-plugins'
@@ -52,10 +60,10 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.18',
+      'version' => '1.18.1',
       'sha256' => {
-        'amd64'   => 'e85278e98f57cdb150fe8409e6e5df5343ecb13cebf03a5d5ff12bd55a80264f',
-        'aarch64' => '7ac7b396a691e588c5fb57687759e6c4db84a2a3bbebb0765f4b38e5b1c5b00e',
+        'amd64'   => 'b3b815f47ababac13810fc6021eb73d65478e0b2db4b09d348eefad9581a2334',
+        'aarch64' => '56a91851c97fb4697077abbca38860f735c32b38993ff79b088dac46e4735633',
       },
     },
 
@@ -81,10 +89,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.4.6',
+      'version' => '8.5.0',
       'sha256' => {
-        'amd64'   => 'ee48b4f3034cc011ba4b0038aa97f0041315fb95aa4fb12596ba8a35cf11c0a9',
-        'aarch64' => 'b716452cde84411473eb1b47486d0e914a56249f8cba07e06ba713f0a8471392',
+        'amd64'   => 'ad5e858e2255d69da45f83f9571cf741c6867ed8ccede5ad42e90079119b98aa',
+        'aarch64' => '6e906e0902b88314cd8f5a49c11140398981a7643b268dc04632fc30667581ae',
       },
     },
 
@@ -108,10 +116,10 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.34.0',
+      'version' => '2.35.0',
       'sha256' => {
-        'amd64'   => '9ec560940bf53361dd9d3a867d51ceb96f3854ae12f5e532b7d3f60c27f364d0',
-        'aarch64' => 'f00255293a801b34003e0ad1d34bb89827bbfd1bba286c39575884aac84a6058',
+        'amd64'   => 'e4546960688d1c85530ec3a93e109d15b540f3251e1f4736d0d9735e1e857faf',
+        'aarch64' => '3ebe0c533583a9ab03363a80aa629edd8e0cc42da3583e33958eb7abe74d4cd2',
       },
     },
 

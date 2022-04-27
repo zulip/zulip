@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -9,9 +9,18 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
 
 
-def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
+def access_user_group_by_id(
+    user_group_id: int, user_profile: UserProfile, *, for_read: bool = False
+) -> UserGroup:
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        if for_read and not user_profile.is_guest:
+            # Everyone is allowed to read a user group and check who
+            # are its members. Guests should be unable to reach this
+            # code path, since they can't access user groups API
+            # endpoints, but we check for guests here for defense in
+            # depth.
+            return user_group
         if user_group.is_system_group:
             raise JsonableError(_("Insufficient permission"))
         group_member_ids = get_user_group_direct_members(user_group)
@@ -24,6 +33,19 @@ def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> Us
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
     return user_group
+
+
+def access_user_groups_as_potential_subgroups(
+    user_group_ids: Sequence[int], acting_user: UserProfile
+) -> List[UserGroup]:
+    user_groups = UserGroup.objects.filter(id__in=user_group_ids, realm=acting_user.realm)
+
+    valid_group_ids = [group.id for group in user_groups]
+    invalid_group_ids = [group_id for group_id in user_group_ids if group_id not in valid_group_ids]
+    if invalid_group_ids:
+        raise JsonableError(_("Invalid user group ID: {}").format(invalid_group_ids[0]))
+
+    return list(user_groups)
 
 
 def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
@@ -40,6 +62,7 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
             name=user_group.name,
             description=user_group.description,
             members=[],
+            subgroups=[],
             is_system_group=user_group.is_system_group,
         )
 
@@ -48,8 +71,16 @@ def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     )
     for (user_group_id, user_profile_id) in membership:
         group_dicts[user_group_id]["members"].append(user_profile_id)
+
+    group_membership = GroupGroupMembership.objects.filter(subgroup__realm=realm).values_list(
+        "subgroup_id", "supergroup_id"
+    )
+    for (subgroup_id, supergroup_id) in group_membership:
+        group_dicts[supergroup_id]["subgroups"].append(subgroup_id)
+
     for group_dict in group_dicts.values():
         group_dict["members"] = sorted(group_dict["members"])
+        group_dict["subgroups"] = sorted(group_dict["subgroups"])
 
     return sorted(group_dicts.values(), key=lambda group_dict: group_dict["id"])
 
@@ -126,6 +157,39 @@ def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[User
         )
     )
     return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
+
+
+def is_user_in_group(
+    user_group: UserGroup, user: UserProfile, *, direct_member_only: bool = False
+) -> bool:
+    if direct_member_only:
+        return UserGroupMembership.objects.filter(user_group=user_group, user_profile=user).exists()
+
+    return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
+
+
+def get_user_group_member_ids(
+    user_group: UserGroup, *, direct_member_only: bool = False
+) -> List[int]:
+    if direct_member_only:
+        member_ids = get_user_group_direct_members(user_group)
+    else:
+        member_ids = get_recursive_group_members(user_group).values_list("id", flat=True)
+
+    return list(member_ids)
+
+
+def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = False) -> List[int]:
+    if direct_subgroup_only:
+        subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
+    else:
+        subgroup_ids = (
+            get_recursive_subgroups(user_group)
+            .exclude(id=user_group.id)
+            .values_list("id", flat=True)
+        )
+
+    return list(subgroup_ids)
 
 
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:

@@ -18,6 +18,14 @@
                       value="{{ realm_name }}" maxlength="40" />
                 </div>
                 <div class="input-group admin-realm">
+                    <label for="realm_org_type" class="dropdown-title">{{t "Organization type" }}
+                        {{> ../help_link_widget link="/help/organization-type" }}
+                    </label>
+                    <select name="realm_org_type" class="setting-widget prop-element" id="id_realm_org_type" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=realm_org_type_values}}
+                    </select>
+                </div>
+                <div class="input-group admin-realm">
                     <label for="realm_description">{{t "Organization description" }}</label>
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description setting-widget prop-element"
                       maxlength="1000" data-setting-widget-type="string">{{ realm_description }}</textarea>

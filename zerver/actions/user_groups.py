@@ -8,7 +8,14 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
-from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile, active_user_ids
+from zerver.models import (
+    GroupGroupMembership,
+    Realm,
+    UserGroup,
+    UserGroupMembership,
+    UserProfile,
+    active_user_ids,
+)
 from zerver.tornado.django_api import send_event
 
 
@@ -81,7 +88,9 @@ def promote_new_full_members() -> None:
         update_users_in_full_members_system_group(realm)
 
 
-def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
+def do_send_create_user_group_event(
+    user_group: UserGroup, members: List[UserProfile], subgroups: Sequence[UserGroup] = []
+) -> None:
     event = dict(
         type="user_group",
         op="add",
@@ -91,6 +100,7 @@ def do_send_create_user_group_event(user_group: UserGroup, members: List[UserPro
             description=user_group.description,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
+            subgroups=[subgroup.id for subgroup in subgroups],
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -153,6 +163,36 @@ def remove_members_from_user_group(user_group: UserGroup, user_profile_ids: List
     ).delete()
 
     do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
+
+
+def do_send_subgroups_update_event(
+    event_name: str, user_group: UserGroup, subgroup_ids: List[int]
+) -> None:
+    event = dict(
+        type="user_group", op=event_name, group_id=user_group.id, subgroup_ids=subgroup_ids
+    )
+    transaction.on_commit(
+        lambda: send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
+    )
+
+
+@transaction.atomic
+def add_subgroups_to_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+    group_memberships = [
+        GroupGroupMembership(supergroup=user_group, subgroup=subgroup) for subgroup in subgroups
+    ]
+    GroupGroupMembership.objects.bulk_create(group_memberships)
+
+    subgroup_ids = [subgroup.id for subgroup in subgroups]
+    do_send_subgroups_update_event("add_subgroups", user_group, subgroup_ids)
+
+
+@transaction.atomic
+def remove_subgroups_from_user_group(user_group: UserGroup, subgroups: List[UserGroup]) -> None:
+    GroupGroupMembership.objects.filter(supergroup=user_group, subgroup__in=subgroups).delete()
+
+    subgroup_ids = [subgroup.id for subgroup in subgroups]
+    do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
 
 def do_send_delete_user_group_event(realm: Realm, user_group_id: int, realm_id: int) -> None:

@@ -79,9 +79,7 @@ except OSError:
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
-if vendor == "debian" and os_version == "10":  # buster
-    POSTGRESQL_VERSION = "11"
-elif vendor == "debian" and os_version == "11":  # bullseye
+if vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"

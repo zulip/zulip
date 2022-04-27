@@ -342,6 +342,13 @@ exports.fixtures = {
         value: 42,
     },
 
+    realm__update__org_type: {
+        type: "realm",
+        op: "update",
+        property: "org_type",
+        value: 50,
+    },
+
     realm__update__signup_notifications_stream_id: {
         type: "realm",
         op: "update",
@@ -721,6 +728,7 @@ exports.fixtures = {
             description: "mobile folks",
             members: [1],
             is_system_group: false,
+            subgroups: [2],
         },
     },
 

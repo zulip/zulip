@@ -1,3 +1,8 @@
+/* The height of the settings header (including tab switcher). */
+$settings_header_height: 45px;
+/* The width of the settings sidebar. */
+$settings_sidebar_width: 250px;
+
 label {
     margin: 0;
 
@@ -1393,13 +1398,23 @@ input[type="checkbox"] {
         }
     }
 
-    .sidebar {
+    .sidebar-wrapper {
         float: left;
         position: relative;
-        width: 250px;
+        width: $settings_sidebar_width;
         height: 100%;
+
+        .tab-container {
+            box-sizing: border-box;
+            height: $settings_header_height;
+            padding: 6px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
+    }
+
+    .sidebar {
+        height: calc(100% - $settings_header_height);
         overflow-y: auto;
-        border-top-left-radius: 4px;
         border-right: 1px solid hsl(0, 0%, 93%);
 
         .header {
@@ -1483,11 +1498,6 @@ input[type="checkbox"] {
             display: none;
         }
 
-        .tab-container {
-            padding: 6px;
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-        }
-
         .normal-settings-list,
         .org-settings-list {
             position: relative;
@@ -1547,15 +1557,15 @@ input[type="checkbox"] {
 
     .content-wrapper {
         position: absolute;
-        left: 251px;
-        /* the width of the settings sidebar this is right of is 250px + 1px border. */
-        width: calc(100% - 250px - 1px);
+        left: $settings_sidebar_width;
+        width: calc(100% - $settings_sidebar_width);
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: 43px;
+            height: $settings_header_height;
+            box-sizing: border-box;
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
             h1 .section {
@@ -1568,7 +1578,7 @@ input[type="checkbox"] {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - 45px);
+            height: calc(100% - $settings_header_height);
 
             float: left;
             overflow-y: auto;
@@ -1958,12 +1968,11 @@ input[type="checkbox"] {
             }
         }
 
-        .sidebar {
-            float: left;
-            position: relative;
-            width: 250px;
-            height: 100%;
+        .sidebar-wrapper {
+            width: 100%;
+        }
 
+        .sidebar {
             li.active {
                 /* Don't highlight the active section in the settings list. */
                 background: inherit;

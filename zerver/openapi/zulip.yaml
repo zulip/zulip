@@ -2833,6 +2833,82 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users when subgroups have been added to
+                                a user group.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
+                                op:
+                                  type: string
+                                  enum:
+                                    - add_subgroups
+                                group_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user group whose details have changed.
+                                subgroup_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    Array containing the IDs of the subgroups that have been added
+                                    to the user group.
+                              example:
+                                {
+                                  "type": "user_group",
+                                  "op": "add_subgroups",
+                                  "group_id": 2,
+                                  "subgroup_ids": [10],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users when subgroups have been removed from
+                                a user group.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
+                                op:
+                                  type: string
+                                  enum:
+                                    - remove_subgroups
+                                group_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the user group whose details have changed.
+                                subgroup_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    Array containing the IDs of the subgroups that have been
+                                    removed from the user group.
+                              example:
+                                {
+                                  "type": "user_group",
+                                  "op": "remove_subgroups",
+                                  "group_id": 2,
+                                  "subgroup_ids": [10],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to all users when a user group has been deleted.
                               properties:
                                 id:
@@ -3853,6 +3929,27 @@ paths:
 
                                         Since these notifications are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
+                                    org_type:
+                                      type: integer
+                                      description: |
+                                        The [organization type](/help/organization-type)
+                                        for the realm.
+
+                                        - 0 = Unspecified
+                                        - 10 = Business
+                                        - 20 = Open-source project
+                                        - 30 = Education (non-profit)
+                                        - 35 = Education (for-profit)
+                                        - 40 = Research
+                                        - 50 = Event or conference
+                                        - 60 = Non-profit (registered)
+                                        - 70 = Government
+                                        - 80 = Political group
+                                        - 90 = Community
+                                        - 100 = Personal
+                                        - 1000 = Other
+
+                                        **Changes**: New in Zulip 6.0 (feature level 128).
                                     plan_type:
                                       type: integer
                                       description: |
@@ -11390,6 +11487,31 @@ paths:
 
                           **Changes**: New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_org_type:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The [organization type](/help/organization-type) for the realm.
+                          Useful only to clients supporting changing this setting for the
+                          organization, or clients implementing onboarding content or
+                          other features that varies with organization type.
+
+                          - 0 = Unspecified
+                          - 10 = Business
+                          - 20 = Open-source project
+                          - 30 = Education (non-profit)
+                          - 35 = Education (for-profit)
+                          - 40 = Research
+                          - 50 = Event or conference
+                          - 60 = Non-profit (registered)
+                          - 70 = Government
+                          - 80 = Political group
+                          - 90 = Community
+                          - 100 = Personal
+                          - 1000 = Other
+
+                          **Changes**: New in Zulip 6.0 (feature level 128).
                       realm_plan_type:
                         type: integer
                         description: |
@@ -12109,27 +12231,24 @@ paths:
                             - $ref: "#/components/schemas/UserBase"
                             - additionalProperties: false
                               properties:
-                                email: {}
-                                is_bot: {}
-                                avatar_url:
-                                  nullable: true
-                                avatar_version: {}
-                                full_name: {}
-                                is_admin: {}
-                                is_owner: {}
-                                is_billing_admin: {}
-                                role: {}
-                                bot_type:
-                                  nullable: true
                                 user_id: {}
-                                bot_owner_id:
-                                  nullable: true
-                                is_active: {}
-                                is_guest: {}
-                                timezone: {}
-                                date_joined: {}
                                 delivery_email: {}
-                                profile_data: {}
+                                email: {}
+                                full_name: {}
+                                date_joined: {}
+                                is_active: {}
+                                is_owner: {}
+                                is_admin: {}
+                                is_guest: {}
+                                is_billing_admin: {}
+                                is_bot: {}
+                                # Referenced schema properties are rendered before any
+                                # non-referenced properties in the API documentation, so
+                                # `is_system_bot` appears last instead of in this order.
+                                # General practice should be to define properties in the
+                                # same order that they are rendered in the API documentation.
+                                # TODO: See if we can match the order of properties as
+                                # listed here when rendered in the API documentation.
                                 is_system_bot:
                                   type: boolean
                                   description: |
@@ -12139,6 +12258,16 @@ paths:
 
                                     **Changes**: This field was called `is_cross_realm_bot`
                                     before Zulip 5.0 (feature level 83).
+                                bot_type:
+                                  nullable: true
+                                bot_owner_id:
+                                  nullable: true
+                                role: {}
+                                timezone: {}
+                                avatar_url:
+                                  nullable: true
+                                avatar_version: {}
+                                profile_data: {}
                     example:
                       {
                         "last_event_id": -1,
@@ -13683,6 +13812,40 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+    get:
+      operationId: get-user-group-members
+      summary: Get user group members
+      tags: ["users"]
+      description: |
+        Get the members of a [user group](/help/user-groups).
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - $ref: "#/components/parameters/DirectMemberOnly"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      members:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the user IDs of members of the user group.
+                    example:
+                      {"msg": "", "result": "success", "members": [10, 12]}
   /user_groups/{user_group_id}:
     patch:
       operationId: update-user-group
@@ -13810,6 +13973,14 @@ paths:
                                 The integer user IDs of the user group members.
                               items:
                                 type: integer
+                            subgroups:
+                              type: array
+                              description: |
+                                The integer user group IDs of the subgroups.
+
+                                **Changes**: New in Zulip 6.0 (feature level 127).
+                              items:
+                                type: integer
                             name:
                               type: string
                               description: |
@@ -13835,6 +14006,7 @@ paths:
                               "id": 1,
                               "name": "hamletcharacters",
                               "members": [3, 4],
+                              "subgroups": [],
                               "is_system_group": false,
                             },
                             {
@@ -13842,9 +14014,137 @@ paths:
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
+                              "subgroups": [1, 2],
                               "is_system_group": true,
                             },
                           ],
+                      }
+  /user_groups/{user_group_id}/subgroups:
+    post:
+      operationId: update-user-group-subgroups
+      summary: Update subgroups of a user group
+      tags: ["users"]
+      description: |
+        Update the subgroups of a [user group](/help/user-groups).
+
+        `POST {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - delete
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - name: delete
+          in: query
+          description: |
+            The list of user group ids to be removed from the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [10]
+          required: false
+        - name: add
+          in: query
+          description: |
+            The list of user group ids to be added to the user group.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+              example: [1, 2]
+          required: false
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+    get:
+      operationId: get-user-group-subgroups
+      summary: Get subgroups of the user group
+      tags: ["users"]
+      description: |
+        Get the subgroups of a [user group](/help/user-groups).
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - name: direct_subgroup_only
+          in: query
+          description: |
+            Whether to consider only direct subgroups of the user group
+            or subgroups of subgroups also.
+          schema:
+            type: boolean
+            default: false
+          example: true
+          required: false
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      subgroups:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          A list containing the IDs of subgroups of the user group.
+                    example:
+                      {"msg": "", "result": "success", "subgroups": [2, 3]}
+  /user_groups/{user_group_id}/members/{user_id}:
+    get:
+      operationId: get-is-user-group-member
+      summary: Get user group membership status
+      tags: ["users"]
+      description: |
+        Check whether a user is member of user group.
+
+        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members/{user_id}`
+
+        **Changes**: New in Zulip 6.0 (feature level 127).
+      parameters:
+        - $ref: "#/components/parameters/UserGroupId"
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/DirectMemberOnly"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      is_user_group_member:
+                        type: boolean
+                        description: |
+                          Whether the user is member of user group.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "is_user_group_member": false,
                       }
   /real-time:
     # This entry is a hack; it exists to give us a place to put the text
@@ -14653,6 +14953,15 @@ components:
           description: |
             Array containing the id of the users who are
             members of this user group.
+        subgroups:
+          type: array
+          items:
+            type: integer
+          description: |
+            Array containing the id of the subgroups of this
+            user group.
+
+            **Changes**: New in Zulip 6.0 (feature level 127).
         id:
           type: integer
           description: |
@@ -15373,32 +15682,43 @@ components:
         - $ref: "#/components/schemas/UserBase"
         - additionalProperties: false
           properties:
+            user_id: {}
+            delivery_email: {}
             email: {}
+            full_name: {}
+            date_joined: {}
+            is_active: {}
+            is_owner: {}
+            is_admin: {}
+            is_guest: {}
+            is_billing_admin: {}
             is_bot: {}
+            bot_type:
+              nullable: true
+            bot_owner_id:
+              nullable: true
+            role: {}
+            timezone: {}
             avatar_url:
               nullable: true
             avatar_version: {}
-            full_name: {}
-            is_admin: {}
-            is_owner: {}
-            is_billing_admin: {}
-            role: {}
-            bot_type:
-              nullable: true
-            user_id: {}
-            bot_owner_id:
-              nullable: true
-            is_active: {}
-            is_guest: {}
-            timezone: {}
-            date_joined: {}
-            delivery_email: {}
             profile_data: {}
     UserBase:
       type: object
       description: |
         A dictionary containing basic data on a given Zulip user.
       properties:
+        user_id:
+          type: integer
+          description: |
+            The unique ID of the user.
+        delivery_email:
+          type: string
+          description: |
+            The user's real email address. This field is present only if
+            [email address visibility](/help/restrict-visibility-of-email-addresses) is
+            limited and you are an administrator with access to real email addresses
+            under the configured policy.
         email:
           type: string
           description: |
@@ -15406,35 +15726,18 @@ components:
 
             If you do not have permission to view the email address of the target user,
             this will be a fake email address that is usable for the Zulip API but nothing else.
-        is_bot:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a bot or full account.
-        avatar_url:
-          type: string
-          nullable: true
-          description: |
-            URL for the user's avatar. Will be `null` if the `client_gravatar`
-            query parameter was set to `True` and the user's avatar is hosted by
-            the Gravatar provider (i.e. the user has never uploaded an avatar).
-
-            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
-            `user_avatar_url_field_optional` capability, this will be missing at
-            the server's sole discretion.
-        avatar_version:
-          type: integer
-          description: |
-            Version for the user's avatar. Used for cache-busting requests
-            for the user's avatar. Clients generally shouldn't need to use this;
-            most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         full_name:
           type: string
           description: |
             Full name of the user or bot, used for all display purposes.
-        is_admin:
+        date_joined:
+          type: string
+          description: |
+            The time the user account was created.
+        is_active:
           type: boolean
           description: |
-            A boolean specifying whether the user is an organization administrator.
+            A boolean specifying whether the user account has been deactivated.
         is_owner:
           type: boolean
           description: |
@@ -15442,12 +15745,48 @@ components:
             If true, `is_admin` will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        is_admin:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is an organization administrator.
+        is_guest:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a guest user.
         is_billing_admin:
           type: boolean
           description: |
             A boolean specifying whether the user is a billing administrator.
 
             **Changes**: New in Zulip 5.0 (feature level 73).
+        is_bot:
+          type: boolean
+          description: |
+            A boolean specifying whether the user is a bot or full account.
+        bot_type:
+          type: integer
+          nullable: true
+          description: |
+            An integer describing the type of bot:
+
+            - `null` if the user isn't a bot.
+            - `1` for a `Generic` bot.
+            - `2` for an `Incoming webhook` bot.
+            - `3` for an `Outgoing webhook` bot.
+            - `4` for an `Embedded` bot.
+        bot_owner_id:
+          type: integer
+          nullable: true
+          description: |
+            If the user is a bot (i.e. `is_bot` is `True`),
+            `bot_owner` is the user ID of the bot's owner (usually, whoever
+            created the bot).
+
+            Will be null for legacy bots that do not have an owner.
+
+            **Changes**: New in Zulip 3.0 (feature level
+            1). In previous versions, there was a `bot_owner` field
+            containing the email address of the bot's owner.
         role:
           type: integer
           enum:
@@ -15467,57 +15806,27 @@ components:
             - Guest => 600
 
             **Changes**: New in Zulip 4.0 (feature level 59).
-        bot_type:
-          type: integer
-          nullable: true
-          description: |
-            An integer describing the type of bot:
-
-            - `null` if the user isn't a bot.
-            - `1` for a `Generic` bot.
-            - `2` for an `Incoming webhook` bot.
-            - `3` for an `Outgoing webhook` bot.
-            - `4` for an `Embedded` bot.
-        user_id:
-          type: integer
-          description: |
-            The unique ID of the user.
-        bot_owner_id:
-          type: integer
-          nullable: true
-          description: |
-            If the user is a bot (i.e. `is_bot` is `True`),
-            `bot_owner` is the user ID of the bot's owner (usually, whoever
-            created the bot).
-
-            Will be null for legacy bots that do not have an owner.
-
-            **Changes**: New in Zulip 3.0 (feature level
-            1). In previous versions, there was a `bot_owner` field
-            containing the email address of the bot's owner.
-        is_active:
-          type: boolean
-          description: |
-            A boolean specifying whether the user account has been deactivated.
-        is_guest:
-          type: boolean
-          description: |
-            A boolean specifying whether the user is a guest user.
         timezone:
           type: string
           description: |
             The time zone of the user.
-        date_joined:
+        avatar_url:
           type: string
+          nullable: true
           description: |
-            The time the user account was created.
-        delivery_email:
-          type: string
+            URL for the user's avatar. Will be `null` if the `client_gravatar`
+            query parameter was set to `True` and the user's avatar is hosted by
+            the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            `user_avatar_url_field_optional` capability, this will be missing at
+            the server's sole discretion.
+        avatar_version:
+          type: integer
           description: |
-            The user's real email address. This field is present only if
-            [email address visibility](/help/restrict-visibility-of-email-addresses) is
-            limited and you are an administrator with access to real email addresses
-            under the configured policy.
+            Version for the user's avatar. Used for cache-busting requests
+            for the user's avatar. Clients generally shouldn't need to use this;
+            most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         profile_data:
           $ref: "#/components/schemas/profile_data"
     profile_data:
@@ -16182,3 +16491,13 @@ components:
         type: string
       example: https://github.com/zulip/zulip/issues/%(id)s
       required: true
+    DirectMemberOnly:
+      name: direct_member_only
+      in: query
+      description: |
+        Whether to consider only the direct members of user group and not members
+        of its subgroups. Default is `False`.
+      schema:
+        type: boolean
+      example: false
+      required: false

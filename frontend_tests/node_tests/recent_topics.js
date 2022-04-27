@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -330,11 +331,13 @@ test("test_recent_topics_show", ({mock_template, override}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
+    page_params.is_spectator = false;
     const expected = {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
         search_val: "",
+        is_spectator: false,
     };
 
     mock_template("recent_topics_table.hbs", false, (data) => {
@@ -358,11 +361,13 @@ test("test_recent_topics_show", ({mock_template, override}) => {
 test("test_filter_all", ({override_rewire, mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
+    page_params.is_spectator = true;
     const expected = {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
         search_val: "",
+        is_spectator: true,
     };
     let row_data;
     let i;
@@ -408,6 +413,7 @@ test("test_filter_all", ({override_rewire, mock_template}) => {
 
 test("test_filter_unread", ({override_rewire, mock_template}) => {
     let expected_filter_unread = false;
+    page_params.is_spectator = false;
 
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
@@ -415,6 +421,7 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
             filter_unread: expected_filter_unread,
             filter_muted: false,
             search_val: "",
+            is_spectator: false,
         });
     });
 
@@ -517,12 +524,14 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
 test("test_filter_participated", ({override_rewire, mock_template}) => {
     let expected_filter_participated;
 
+    page_params.is_spectator = false;
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: expected_filter_participated,
             filter_unread: false,
             filter_muted: false,
             search_val: "",
+            is_spectator: false,
         });
     });
 
