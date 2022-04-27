@@ -1,7 +1,19 @@
 import inspect
 import os
 from collections import abc
-from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    get_args,
+    get_origin,
+)
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -326,17 +338,17 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         E.g. typing.Union[typing.List[typing.Dict[str, typing.Any]], NoneType]
         needs to be mapped to list."""
 
-        origin = getattr(t, "__origin__", None)
+        origin = get_origin(t)
 
-        if not origin:
+        if origin is None:
             # Then it's most likely one of the fundamental data types
             # I.E. Not one of the data types from the "typing" module.
             return t
         elif origin == Union:
-            subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
+            subtypes = [self.get_standardized_argument_type(st) for st in get_args(t)]
             return self.get_type_by_priority(subtypes)
         elif origin in [list, abc.Sequence]:
-            [st] = t.__args__
+            [st] = get_args(t)
             return (list, self.get_standardized_argument_type(st))
         elif origin in [dict, abc.Mapping]:
             return dict
