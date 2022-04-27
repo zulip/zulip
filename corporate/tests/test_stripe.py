@@ -336,12 +336,10 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
 
 
 def mock_stripe(
-    tested_timestamp_fields: Sequence[str] = [], generate: Optional[bool] = None
+    tested_timestamp_fields: Sequence[str] = [], generate: bool = settings.GENERATE_STRIPE_FIXTURES
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     def _mock_stripe(decorated_function: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         generate_fixture = generate
-        if generate_fixture is None:
-            generate_fixture = settings.GENERATE_STRIPE_FIXTURES
         if generate_fixture:  # nocoverage
             assert stripe.api_key
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:

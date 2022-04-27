@@ -136,8 +136,8 @@ def do_create_realm(
     plan_type: Optional[int] = None,
     org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
-    is_demo_organization: Optional[bool] = False,
-    enable_spectator_access: Optional[bool] = False,
+    is_demo_organization: bool = False,
+    enable_spectator_access: Optional[bool] = None,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
