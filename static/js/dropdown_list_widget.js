@@ -260,6 +260,15 @@ export function MultiSelectDropdownListWidget({
     // A widget mostly similar to `DropdownListWidget` but
     // used in cases of multiple dropdown selection.
 
+    DropdownListWidget.call(this, {
+        widget_name,
+        data,
+        default_text,
+        null_value,
+        on_update,
+        value,
+    });
+
     // Initializing values specific to `MultiSelectDropdownListWidget`.
     this.limit = limit;
     this.on_close = on_close;
@@ -270,15 +279,6 @@ export function MultiSelectDropdownListWidget({
     // `list_widget` as well. The way we manage dropdown elements are
     // essentially by just modifying the values in `data_selected` variable.
     this.data_selected = []; // Populate the dropdown values selected by user.
-
-    DropdownListWidget.call(this, {
-        widget_name,
-        data,
-        default_text,
-        null_value,
-        on_update,
-        value,
-    });
 
     if (limit === undefined) {
         this.limit = 2;
