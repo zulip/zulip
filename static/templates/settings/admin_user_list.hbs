@@ -41,7 +41,7 @@
     {{#if can_modify}}
     <td class="actions">
         <span class="user-status-settings">
-            <button class="button rounded small btn-warning open-user-form" {{#unless is_active}}style="display: none;"{{/unless}} title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+            <button class="button rounded small btn-warning open-user-form" {{#unless is_active}}style="display: none;"{{/unless}} title="{{#if is_bot}}{{t 'Edit bot' }}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}">
                 <i class="fa fa-pencil" aria-hidden="true"></i>
             </button>
             {{#if is_active}}

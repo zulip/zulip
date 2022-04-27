@@ -5,7 +5,9 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import do_set_realm_property, ensure_stream, promote_new_full_members
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_groups import promote_new_full_members
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
@@ -15,6 +17,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members,
     get_recursive_membership_groups,
     get_recursive_subgroups,
+    is_user_in_group,
     user_groups_in_realm_serialized,
 )
 from zerver.models import (
@@ -48,6 +51,12 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(user_groups[0]["name"], "@role:owners")
         self.assertEqual(user_groups[0]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[0]["members"]), set(membership))
+        self.assertEqual(user_groups[0]["subgroups"], [])
+
+        admins_system_group = UserGroup.objects.get(name="@role:administrators", realm=realm)
+        self.assertEqual(user_groups[1]["id"], admins_system_group.id)
+        # Check that owners system group is present in "subgroups"
+        self.assertEqual(user_groups[1]["subgroups"], [user_group.id])
 
         self.assertEqual(user_groups[8]["id"], empty_user_group.id)
         self.assertEqual(user_groups[8]["name"], "newgroup")
@@ -166,6 +175,29 @@ class UserGroupTestCase(ZulipTestCase):
             ],
         )
 
+    def test_is_user_in_group(self) -> None:
+        realm = get_realm("zulip")
+        shiva = self.example_user("shiva")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        administrators_group = UserGroup.objects.get(
+            name="@role:administrators", realm=realm, is_system_group=True
+        )
+
+        self.assertTrue(is_user_in_group(moderators_group, shiva))
+
+        # Iago is member of a subgroup of moderators group.
+        self.assertTrue(is_user_in_group(moderators_group, iago))
+        self.assertFalse(is_user_in_group(moderators_group, iago, direct_member_only=True))
+        self.assertTrue(is_user_in_group(administrators_group, iago, direct_member_only=True))
+
+        self.assertFalse(is_user_in_group(moderators_group, hamlet))
+        self.assertFalse(is_user_in_group(moderators_group, hamlet, direct_member_only=True))
+
 
 class UserGroupAPITestCase(UserGroupTestCase):
     def test_user_group_create(self) -> None:
@@ -246,6 +278,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         result = self.client_patch("/json/user_groups/1111", info=params)
         self.assert_json_error(result, "Invalid user group")
 
+        lear_realm = get_realm("lear")
+        lear_test_group = create_user_group("test", [self.lear_user("cordelia")], lear_realm)
+        result = self.client_patch(f"/json/user_groups/{lear_test_group.id}", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
     def test_user_group_update_to_already_existing_name(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -278,6 +315,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         self.assertEqual(UserGroupMembership.objects.count(), 18)
         # Test when invalid user group is supplied
         result = self.client_delete("/json/user_groups/1111")
+        self.assert_json_error(result, "Invalid user group")
+
+        lear_realm = get_realm("lear")
+        lear_test_group = create_user_group("test", [self.lear_user("cordelia")], lear_realm)
+        result = self.client_delete(f"/json/user_groups/{lear_test_group.id}")
         self.assert_json_error(result, "Invalid user group")
 
     def test_update_members_of_user_group(self) -> None:
@@ -757,7 +799,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         current_time = timezone_now()
         with mock.patch(
-            "zerver.lib.actions.timezone_now", return_value=current_time + timedelta(days=3)
+            "zerver.actions.user_groups.timezone_now", return_value=current_time + timedelta(days=3)
         ):
             promote_new_full_members()
 
@@ -771,3 +813,245 @@ class UserGroupAPITestCase(UserGroupTestCase):
                 user_profile=hamlet, user_group=full_members_group
             ).exists()
         )
+
+    def test_updating_subgroups_of_user_group(self) -> None:
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        leadership_group = create_user_group("leadership", [desdemona, iago, hamlet], realm)
+        support_group = create_user_group("support", [hamlet, othello], realm)
+
+        self.login("cordelia")
+        # Non-admin and non-moderators who are not a member of group cannot add or remove subgroups.
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login("iago")
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        self.login("shiva")
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        self.login("hamlet")
+        # Non-admin and non-moderators who are a member of the user group can add or remove subgroups.
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        # Users need not be part of the subgroup to add or remove it from a user group.
+        self.login("othello")
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        params = {"delete": orjson.dumps([leadership_group.id]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_success(result)
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(
+            result,
+            ("User group {group_id} is not a subgroup of this group.").format(
+                group_id=leadership_group.id
+            ),
+        )
+
+        params = {"add": orjson.dumps([leadership_group.id]).decode()}
+        self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(
+            result,
+            ("User group {group_id} is already a subgroup of this group.").format(
+                group_id=leadership_group.id
+            ),
+        )
+
+        lear_realm = get_realm("lear")
+        lear_test_group = create_user_group("test", [self.lear_user("cordelia")], lear_realm)
+        result = self.client_post(f"/json/user_groups/{lear_test_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "Invalid user group")
+
+        # Invalid subgroup id will raise an error.
+        params = {"add": orjson.dumps([leadership_group.id, 1111]).decode()}
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info=params)
+        self.assert_json_error(result, "Invalid user group ID: 1111")
+
+        # Test when nothing is provided
+        result = self.client_post(f"/json/user_groups/{support_group.id}/subgroups", info={})
+        self.assert_json_error(result, 'Nothing to do. Specify at least one of "add" or "delete".')
+
+    def test_get_is_user_group_member_status(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        admins_group = UserGroup.objects.get(
+            realm=realm, name="@role:administrators", is_system_group=True
+        )
+
+        # Invalid user ID.
+        result = self.client_get(f"/json/user_groups/{admins_group.id}/members/1111")
+        self.assert_json_error(result, "No such user")
+
+        # Invalid user group ID.
+        result = self.client_get(f"/json/user_groups/1111/members/{iago.id}")
+        self.assert_json_error(result, "Invalid user group")
+
+        lear_realm = get_realm("lear")
+        lear_cordelia = self.lear_user("cordelia")
+        lear_test_group = create_user_group("test", [lear_cordelia], lear_realm)
+        result = self.client_get(
+            f"/json/user_groups/{lear_test_group.id}/members/{lear_cordelia.id}"
+        )
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        # Checking membership of not a direct member but member of a subgroup.
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{desdemona.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        # Checking membership of not a direct member but member of a subgroup when passing
+        # recursive parameter as False.
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{admins_group.id}/members/{desdemona.id}", info=params
+            ).content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+        # Logging in with a user not part of the group.
+        self.login("hamlet")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{iago.id}").content
+        )
+        self.assertTrue(result_dict["is_user_group_member"])
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{admins_group.id}/members/{othello.id}").content
+        )
+        self.assertFalse(result_dict["is_user_group_member"])
+
+    def test_get_user_group_members(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        shiva = self.example_user("shiva")
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("iago")
+
+        # Test invalid user group id
+        result = self.client_get("/json/user_groups/1111/members")
+        self.assert_json_error(result, "Invalid user group")
+
+        lear_realm = get_realm("lear")
+        lear_test_group = create_user_group("test", [self.lear_user("cordelia")], lear_realm)
+        result = self.client_get(f"/json/user_groups/{lear_test_group.id}/members")
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
+        )
+        self.assertCountEqual(result_dict["members"], [shiva.id])
+
+        # User not part of a group can also get its members.
+        self.login("hamlet")
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members").content
+        )
+        self.assertCountEqual(result_dict["members"], [desdemona.id, iago.id, shiva.id])
+
+        params = {"direct_member_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/members", info=params).content
+        )
+        self.assertCountEqual(result_dict["members"], [shiva.id])
+
+    def test_get_subgroups_of_user_group(self) -> None:
+        realm = get_realm("zulip")
+        owners_group = UserGroup.objects.get(name="@role:owners", realm=realm, is_system_group=True)
+        admins_group = UserGroup.objects.get(
+            name="@role:administrators", realm=realm, is_system_group=True
+        )
+        moderators_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        self.login("iago")
+
+        # Test invalid user group id
+        result = self.client_get("/json/user_groups/1111/subgroups")
+        self.assert_json_error(result, "Invalid user group")
+
+        lear_realm = get_realm("lear")
+        lear_test_group = create_user_group("test", [self.lear_user("cordelia")], lear_realm)
+        result = self.client_get(f"/json/user_groups/{lear_test_group.id}/subgroups")
+        self.assert_json_error(result, "Invalid user group")
+
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
+        )
+        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+
+        params = {"direct_subgroup_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{moderators_group.id}/subgroups", info=params
+            ).content
+        )
+        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])
+
+        # User not part of a group can also get its subgroups.
+        self.login("hamlet")
+        result_dict = orjson.loads(
+            self.client_get(f"/json/user_groups/{moderators_group.id}/subgroups").content
+        )
+        self.assertEqual(result_dict["subgroups"], [admins_group.id, owners_group.id])
+
+        params = {"direct_subgroup_only": orjson.dumps(True).decode()}
+        result_dict = orjson.loads(
+            self.client_get(
+                f"/json/user_groups/{moderators_group.id}/subgroups", info=params
+            ).content
+        )
+        self.assertCountEqual(result_dict["subgroups"], [admins_group.id])

@@ -13,7 +13,8 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from functools import lru_cache
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypedDict
 
 import orjson
 from django.apps import apps
@@ -23,12 +24,10 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
 from mypy_boto3_s3.service_resource import Object
-from typing_extensions import TypedDict
 
 import zerver.lib.upload
 from analytics.models import RealmCount, StreamCount, UserCount
 from scripts.lib.zulip_tools import overwrite_symlink
-from zerver.decorator import cachify
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import get_bucket
@@ -2107,7 +2106,7 @@ def chunkify(lst: List[int], chunk_size: int) -> List[List[int]]:
 def export_messages_single_user(
     user_profile: UserProfile, *, output_dir: Path, reaction_message_ids: Set[int]
 ) -> None:
-    @cachify
+    @lru_cache(maxsize=None)
     def get_recipient(recipient_id: int) -> str:
         recipient = Recipient.objects.get(id=recipient_id)
 

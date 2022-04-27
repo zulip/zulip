@@ -32,9 +32,3 @@ proxy_service:
   enabled: no
 auth_service:
   enabled: no
-
-# We intentionally end with `app_service` so we can append services under
-# `apps:` via puppet.
-app_service:
-  enabled: yes
-  apps:

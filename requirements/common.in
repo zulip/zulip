@@ -5,7 +5,7 @@
 # Django itself
 Django[argon2]==3.2.*
 
-# needed for Literal, TypedDict
+# needed for NotRequired, ParamSpec
 typing-extensions
 
 # Needed for rendering backend templates

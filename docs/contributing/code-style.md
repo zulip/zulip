@@ -155,7 +155,7 @@ object before the first thread wrote out its change.
 
 ### Using raw saves to update important model objects
 
-In most cases, we already have a function in zerver/lib/actions.py with
+In most cases, we already have a function in `zerver.actions` with
 a name like do_activate_user that will correctly handle lookups,
 caching, and notifying running browsers via the event system about your
 change. So please check whether such a function exists before writing

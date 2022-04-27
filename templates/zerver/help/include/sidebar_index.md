@@ -128,6 +128,7 @@
 
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
+* [Organization type](/help/organization-type)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
@@ -196,4 +197,5 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Support
+* [View Zulip version](/help/view-zulip-version)
 * [Contact support](/help/contact-support)

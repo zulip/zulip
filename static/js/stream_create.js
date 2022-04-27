@@ -9,6 +9,7 @@ import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -111,6 +112,11 @@ class StreamNameError {
 }
 const stream_name_error = new StreamNameError();
 
+// Stores the previous state of the stream creation checkbox.
+let stream_announce_previous_value =
+    settings_data.user_can_create_public_streams() ||
+    settings_data.user_can_create_web_public_streams();
+
 // Within the new stream modal...
 function update_announce_stream_state() {
     // If there is no notifications_stream, we simply hide the widget.
@@ -129,10 +135,22 @@ function update_announce_stream_state() {
         privacy_type === "invite-only" || privacy_type === "invite-only-public-history";
     $announce_stream_label.removeClass("control-label-disabled");
 
+    // Here, we arrange to save the state of the announce checkbox
+    // when switching to creating a private stream; we will restore it
+    // when switching back to a public stream. This input-disabled
+    // check prevents overwriting stream_announce_previous_value with
+    // the false when switching between private stream types.
+    if (!$announce_stream_checkbox.prop("disabled")) {
+        stream_announce_previous_value = $announce_stream_checkbox.prop("checked");
+    }
+
     if (is_invite_only) {
         disable_it = true;
         $announce_stream_checkbox.prop("checked", false);
         $announce_stream_label.addClass("control-label-disabled");
+    } else {
+        // If the stream was already public, this will be a noop.
+        $announce_stream_checkbox.prop("checked", stream_announce_previous_value);
     }
 
     $announce_stream_checkbox.prop("disabled", disable_it);
@@ -310,13 +328,6 @@ export function show_new_stream_modal() {
     });
 
     update_announce_stream_state();
-    if (stream_data.realm_has_notifications_stream()) {
-        $("#announce-new-stream").show();
-        $("#announce-new-stream input").prop("disabled", false);
-        $("#announce-new-stream input").prop("checked", true);
-    } else {
-        $("#announce-new-stream").hide();
-    }
     clear_error_display();
 }
 
@@ -326,7 +337,7 @@ export function set_up_handlers() {
 
     const $container = $("#stream-creation").expectOne();
 
-    $container.on("change", "#make-invite-only input", update_announce_stream_state);
+    $container.on("change", ".stream-privacy-values input", update_announce_stream_state);
 
     $container.on("click", ".finalize_create_stream", (e) => {
         e.preventDefault();

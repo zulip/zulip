@@ -13,94 +13,110 @@ from unittest import mock
 import orjson
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    bulk_add_members_to_user_group,
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
-    check_add_realm_emoji,
-    check_add_user_group,
-    check_delete_user_group,
-    check_send_typing_notification,
-    do_add_alert_words,
-    do_add_default_stream,
-    do_add_linkifier,
-    do_add_reaction,
-    do_add_realm_domain,
-    do_add_realm_playground,
-    do_add_streams_to_default_stream_group,
-    do_add_submessage,
-    do_change_avatar_fields,
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.bots import (
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
+)
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.custom_profile_fields import (
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_update_realm_custom_profile_field,
+)
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_add_streams_to_default_stream_group,
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
-    do_change_full_name,
-    do_change_icon_source,
-    do_change_logo_source,
-    do_change_realm_domain,
-    do_change_realm_plan_type,
-    do_change_stream_description,
-    do_change_stream_message_retention_days,
-    do_change_stream_permission,
-    do_change_stream_post_policy,
-    do_change_subscription_property,
-    do_change_user_delivery_email,
-    do_change_user_role,
-    do_change_user_setting,
     do_create_default_stream_group,
-    do_create_multiuse_invite_link,
-    do_create_user,
-    do_deactivate_realm,
-    do_deactivate_stream,
-    do_deactivate_user,
-    do_delete_messages,
-    do_invite_users,
-    do_make_user_billing_admin,
-    do_mark_hotspot_as_read,
-    do_mute_topic,
-    do_mute_user,
-    do_reactivate_user,
-    do_regenerate_api_key,
-    do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
-    do_remove_linkifier,
-    do_remove_reaction,
-    do_remove_realm_custom_profile_field,
-    do_remove_realm_domain,
-    do_remove_realm_emoji,
-    do_remove_realm_playground,
     do_remove_streams_from_default_stream_group,
-    do_rename_stream,
+    lookup_default_stream_groups,
+)
+from zerver.actions.hotspots import do_mark_hotspot_as_read
+from zerver.actions.invites import (
+    do_create_multiuse_invite_link,
+    do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
-    do_send_stream_typing_notification,
+)
+from zerver.actions.message_edit import (
+    do_delete_messages,
+    do_update_embedded_data,
+    do_update_message,
+)
+from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.reactions import do_add_reaction, do_remove_reaction
+from zerver.actions.realm_domains import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
+from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
+from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_linkifiers import (
+    do_add_linkifier,
+    do_remove_linkifier,
+    do_update_linkifier,
+)
+from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_change_realm_plan_type,
+    do_deactivate_realm,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
-    do_set_zoom_token,
-    do_unmute_topic,
-    do_unmute_user,
-    do_update_embedded_data,
-    do_update_linkifier,
-    do_update_message,
-    do_update_message_flags,
-    do_update_outgoing_webhook_service,
-    do_update_user_custom_profile_data_if_changed,
+)
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_stream_description,
+    do_change_stream_message_retention_days,
+    do_change_stream_permission,
+    do_change_stream_post_policy,
+    do_change_subscription_property,
+    do_deactivate_stream,
+    do_rename_stream,
+)
+from zerver.actions.submessage import do_add_submessage
+from zerver.actions.typing import check_send_typing_notification, do_send_stream_typing_notification
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    bulk_add_members_to_user_group,
+    check_add_user_group,
+    check_delete_user_group,
     do_update_user_group_description,
     do_update_user_group_name,
-    do_update_user_presence,
-    do_update_user_status,
-    lookup_default_stream_groups,
     remove_members_from_user_group,
-    try_add_realm_custom_profile_field,
-    try_update_realm_custom_profile_field,
+    remove_subgroups_from_user_group,
 )
+from zerver.actions.user_settings import (
+    do_change_avatar_fields,
+    do_change_full_name,
+    do_change_user_delivery_email,
+    do_change_user_setting,
+    do_regenerate_api_key,
+)
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
+from zerver.actions.users import (
+    do_change_user_role,
+    do_deactivate_user,
+    do_make_user_billing_admin,
+    do_update_outgoing_webhook_service,
+)
+from zerver.actions.video_calls import do_set_zoom_token
 from zerver.lib.drafts import do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -158,8 +174,10 @@ from zerver.lib.event_schema import (
     check_update_message_flags_remove,
     check_user_group_add,
     check_user_group_add_members,
+    check_user_group_add_subgroups,
     check_user_group_remove,
     check_user_group_remove_members,
+    check_user_group_remove_subgroups,
     check_user_group_update,
     check_user_settings_update,
     check_user_status,
@@ -181,6 +199,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.user_groups import create_user_group
 from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
@@ -760,13 +779,13 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         events = self.verify_action(
             lambda: do_invite_users(
                 self.user_profile,
                 ["foo@zulip.com"],
                 streams,
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             ),
             state_change_expected=False,
         )
@@ -778,12 +797,12 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         events = self.verify_action(
             lambda: do_create_multiuse_invite_link(
                 self.user_profile,
                 PreregistrationUser.INVITE_AS["MEMBER"],
-                invite_expires_in_days,
+                invite_expires_in_minutes,
                 streams,
             ),
             state_change_expected=False,
@@ -793,12 +812,12 @@ class NormalActionsTest(BaseAction):
     def test_deactivate_user_invites_changed_event(self) -> None:
         self.user_profile = self.example_user("iago")
         user_profile = self.example_user("cordelia")
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user_profile,
             ["foo@zulip.com"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         events = self.verify_action(
@@ -814,12 +833,12 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_users = PreregistrationUser.objects.filter(
             referred_by__realm=self.user_profile.realm
@@ -836,11 +855,11 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_create_multiuse_invite_link(
             self.user_profile,
             PreregistrationUser.INVITE_AS["MEMBER"],
-            invite_expires_in_days,
+            invite_expires_in_minutes,
             streams,
         )
 
@@ -859,12 +878,12 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
@@ -1211,6 +1230,18 @@ class NormalActionsTest(BaseAction):
         hamlet = self.example_user("hamlet")
         events = self.verify_action(lambda: remove_members_from_user_group(backend, [hamlet.id]))
         check_user_group_remove_members("events[0]", events[0])
+
+        api_design = create_user_group(
+            "api-design", [hamlet], hamlet.realm, description="API design team"
+        )
+
+        # Test add subgroups
+        events = self.verify_action(lambda: add_subgroups_to_user_group(backend, [api_design]))
+        check_user_group_add_subgroups("events[0]", events[0])
+
+        # Test remove subgroups
+        events = self.verify_action(lambda: remove_subgroups_from_user_group(backend, [api_design]))
+        check_user_group_remove_subgroups("events[0]", events[0])
 
         # Test remove event
         events = self.verify_action(lambda: check_delete_user_group(backend.id, othello))
@@ -1708,6 +1739,22 @@ class NormalActionsTest(BaseAction):
         )
         check_user_settings_update("events[0]", events[0])
         check_update_global_notifications("events[1]", events[1], 1)
+
+    def test_realm_update_org_type(self) -> None:
+        realm = self.user_profile.realm
+
+        state_data = fetch_initial_state_data(self.user_profile)
+        self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["business"]["id"])
+
+        events = self.verify_action(
+            lambda: do_change_realm_org_type(
+                realm, Realm.ORG_TYPES["government"]["id"], acting_user=self.user_profile
+            )
+        )
+        check_realm_update("events[0]", events[0], "org_type")
+
+        state_data = fetch_initial_state_data(self.user_profile)
+        self.assertEqual(state_data["realm_org_type"], Realm.ORG_TYPES["government"]["id"])
 
     def test_realm_update_plan_type(self) -> None:
         realm = self.user_profile.realm

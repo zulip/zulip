@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -374,3 +375,33 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProf
         **filter_kwargs,
     )
     return users_to_catch_up
+
+
+def soft_reactivate_if_personal_notification(
+    user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
+) -> None:
+    """When we're about to send an email/push notification to a
+    long_term_idle user, it's very likely that the user will try to
+    return to Zulip. As a result, it makes sense to optimistically
+    soft-reactivate that user, to give them a good return experience.
+
+    It's important that we do nothing for wildcard or group mentions,
+    because soft-reactivating an entire realm would be very expensive
+    (and we can't easily check the group's size). The caller is
+    responsible for passing a mentioned_user_group_name that is None
+    for messages that contain both a personal mention and a group
+    mention.
+    """
+    if not user_profile.long_term_idle:
+        return
+
+    private_message = "private_message" in unique_triggers
+    personal_mention = "mentioned" in unique_triggers and mentioned_user_group_name is None
+    if not private_message and not personal_mention:
+        return
+
+    event = {
+        "type": "soft_reactivate",
+        "user_profile_id": user_profile.id,
+    }
+    queue_json_publish("deferred_work", event)

@@ -91,8 +91,6 @@ run_test("unread_ops", ({override, override_rewire}) => {
 
     // We don't want recent topics to process message for this test.
     override_rewire(recent_topics_util, "is_visible", () => false);
-    // Show message_viewport as not visible so that messages will be stored as unread.
-    override(message_viewport, "is_visible_and_focused", () => false);
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.

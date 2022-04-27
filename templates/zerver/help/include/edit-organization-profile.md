@@ -7,8 +7,10 @@
 
 {settings_tab|organization-profile}
 
-1. Edit your organization **name**, **description**, and **profile picture**.
-1. Click **Save changes**.
+1. Edit your organization **name**, **type**, **description**, and
+**profile picture**.
+
+{!save-changes.md!}
 
 {end_tabs}
 

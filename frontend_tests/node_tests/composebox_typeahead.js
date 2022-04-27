@@ -54,9 +54,6 @@ const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
-// To be eliminated in next commit:
-stream_data.__Rewire__("set_filter_out_inactives", () => false);
-
 const ct = composebox_typeahead;
 
 // Use a slightly larger value than what's user-facing
@@ -64,9 +61,35 @@ const ct = composebox_typeahead;
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
 
-const mention_all = ct.broadcast_mentions()[0];
-assert.equal(mention_all.email, "all");
-assert.equal(mention_all.full_name, "all");
+run_test("verify wildcard mentions typeahead for stream message", () => {
+    const mention_all = ct.broadcast_mentions()[0];
+    const mention_everyone = ct.broadcast_mentions()[1];
+    const mention_stream = ct.broadcast_mentions()[2];
+    assert.equal(mention_all.email, "all");
+    assert.equal(mention_all.full_name, "all");
+    assert.equal(mention_everyone.email, "everyone");
+    assert.equal(mention_everyone.full_name, "everyone");
+    assert.equal(mention_stream.email, "stream");
+    assert.equal(mention_stream.full_name, "stream");
+
+    assert.equal(mention_all.special_item_text, "all (translated: Notify stream)");
+    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify stream)");
+    assert.equal(mention_stream.special_item_text, "stream (translated: Notify stream)");
+});
+
+run_test("verify wildcard mentions typeahead for private message", () => {
+    compose_state.set_message_type("private");
+    assert.equal(ct.broadcast_mentions().length, 2);
+    const mention_all = ct.broadcast_mentions()[0];
+    const mention_everyone = ct.broadcast_mentions()[1];
+    assert.equal(mention_all.email, "all");
+    assert.equal(mention_all.full_name, "all");
+    assert.equal(mention_everyone.email, "everyone");
+    assert.equal(mention_everyone.full_name, "everyone");
+
+    assert.equal(mention_all.special_item_text, "all (translated: Notify recipients)");
+    assert.equal(mention_everyone.special_item_text, "everyone (translated: Notify recipients)");
+});
 
 const emoji_stadium = {
     name: "stadium",
@@ -143,19 +166,10 @@ const emojis_by_name = new Map(
         headphones: emoji_headphones,
     }),
 );
-const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => {
-    if (emoji_dict.is_realm_emoji === true) {
-        return {
-            emoji_name: emoji_dict.name,
-            emoji_url: emoji_dict.url,
-            is_realm_emoji: true,
-        };
-    }
-    return {
-        emoji_name: emoji_dict.name,
-        emoji_code: emoji_dict.emoji_code,
-    };
-});
+const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => ({
+    emoji_name: emoji_dict.name,
+    emoji_code: emoji_dict.emoji_code,
+}));
 
 const me_slash = {
     name: "me",
@@ -1070,14 +1084,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         stopPropagation: noop,
     };
 
-    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
 
-    const stub_typeahead_hidden = () => ({typeahead: {shown: false}});
-    $("#stream_message_recipient_topic").data = stub_typeahead_hidden;
-    $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
-    $("#private_message_recipient").data = stub_typeahead_hidden;
-    $("#compose-textarea").data = stub_typeahead_hidden;
     $("form#send_message_form").trigger(event);
 
     event.key = "Tab";
@@ -1144,7 +1152,6 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         preventDefault: noop,
     };
     // We trigger keydown in order to make nextFocus !== false
-    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
     $("#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
@@ -1483,6 +1490,7 @@ test("filter_and_sort_mentions (normal)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
+    const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
 });
 
@@ -1538,23 +1546,34 @@ test("typeahead_results", () => {
         {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
     ]);
     assert_emoji_matches("notaemoji", []);
+
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
     assert_mentions_matches("cordelia, le", [cordelia]);
     assert_mentions_matches("cordelia, le ", []);
+    assert_mentions_matches("moor", [othello]);
+    assert_mentions_matches("moor ", [othello]);
+    assert_mentions_matches("moor of", [othello]);
+    assert_mentions_matches("moor of ven", [othello]);
+    assert_mentions_matches("oor", [othello]);
+    assert_mentions_matches("oor ", []);
+    assert_mentions_matches("oor o", []);
+    assert_mentions_matches("oor of venice", []);
     assert_mentions_matches("King ", [hamlet, lear]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);
     assert_mentions_matches("delia lear", []);
     assert_mentions_matches("Mark Tw", [twin1, twin2]);
+
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
+
     // Autocomplete user group mentions by group descriptions.
     assert_mentions_matches("characters ", [hamletcharacters]);
     assert_mentions_matches("characters of ", [hamletcharacters]);
     assert_mentions_matches("characters o ", []);
     assert_mentions_matches("haracters of hamlet", []);
-    assert_mentions_matches("of hamlet", []);
+    assert_mentions_matches("of hamlet", [hamletcharacters]);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
@@ -1639,5 +1658,6 @@ test("muted users excluded from results", () => {
     // Make sure our muting logic doesn't break wildcard mentions
     // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
+    const mention_all = ct.broadcast_mentions()[0];
     assert.deepEqual(results, [mention_all, call_center]);
 });

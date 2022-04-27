@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Protocol, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -16,7 +16,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from typing_extensions import Protocol
 
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
@@ -86,10 +85,10 @@ def create_confirmation_link(
     obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
     confirmation_type: int,
     *,
-    validity_in_days: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
+    validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
 ) -> str:
-    # validity_in_days is an override for the default values which are
+    # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
@@ -101,12 +100,12 @@ def create_confirmation_link(
 
     current_time = timezone_now()
     expiry_date = None
-    if not isinstance(validity_in_days, UnspecifiedValue):
-        if validity_in_days is None:
+    if not isinstance(validity_in_minutes, UnspecifiedValue):
+        if validity_in_minutes is None:
             expiry_date = None
         else:
-            assert validity_in_days is not None
-            expiry_date = current_time + datetime.timedelta(days=validity_in_days)
+            assert validity_in_minutes is not None
+            expiry_date = current_time + datetime.timedelta(minutes=validity_in_minutes)
     else:
         expiry_date = current_time + datetime.timedelta(
             days=_properties[confirmation_type].validity_in_days

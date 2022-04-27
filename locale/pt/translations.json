@@ -135,6 +135,7 @@
   "April": "Abril",
   "Archive stream": "",
   "Archive stream {stream}": "",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "",
   "Are you sure you want to deactivate this organization?": "",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Dia da semana para enviar resumos",
   "Deactivate": "Desativar",
   "Deactivate account": "Conta desativada",
+  "Deactivate bot": "",
   "Deactivate organization": "Desativar organização",
   "Deactivate user": "",
   "Deactivate your account": "Desativar sua conta",
@@ -278,7 +280,6 @@
   "Delete": "Excluir",
   "Delete alert word": "Excluir alerta de palavra",
   "Delete all drafts": "",
-  "Delete bot": "Excluir bot",
   "Delete draft": "Excluir rascunho",
   "Delete file": "Excluir arquivo",
   "Delete icon": "Excluir ícone",
@@ -685,6 +686,8 @@
   "Notification triggers": "",
   "Notifications": "Notificações",
   "Notifications for @all/@everyone mentions": "",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Novembro",
   "October": "Outubro",
   "Offline": "Offline",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "",
   "Only owners can deactivate the organization.": "Apenas proprietários podem desativar a organização.",
   "Only stream members can add users to a private stream": "Somente membros do fluxo podem adicionar usuários a um fluxo privado.",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Abrir",
   "Open message menu": "Abrir menu de mensagem",
   "Open reactions menu": "Abrir menu de reações",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "",
   "{starred_status} this message (Ctrl + s)": "",
   "{username} [said]({link_to_message}):": "",
-  "{username} reacted with {emoji_name}": "",
-  "{wildcard_mention_token} (Notify stream)": ""
+  "{username} reacted with {emoji_name}": ""
 }

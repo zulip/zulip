@@ -20,6 +20,44 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 128**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), `PATCH /realm`: Added
+  `org_type` realm setting.
+
+**Feature level 127**
+
+* [`GET /user_groups`](/api/get-user-groups),[`POST
+  /register`](/api/register-queue): Added `subgroups` field,
+  which is a list of IDs of all the subgroups of the user group, to
+  user group objects.
+* [`GET /events`](/api/get-events): Added new `user_group` events
+  operations for live updates to subgroups (`add_subgroups` and
+  `remove_subgroups`).
+* [`PATCH /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups):
+  Added new endpoint for updating subgroups of a user group.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Added new endpoint for checking whether a given user is member of a
+  given user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Added new endpoint to get members of a user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-subgroups):
+  Added new endpoint to get subgroups of a user group.
+
+**Feature level 126**
+
+* `POST /invites`, `POST /invites/multiuse`: Replaced `invite_expires_in_days`
+  parameter with `invite_expires_in_minutes`.
+
+**Feature level 125**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `display_emoji_reaction_users` display setting,
+  controlling whether to display the names of users with emoji reactions.
+
 Feature levels 123-124 are reserved for future use in 5.x maintenance
 releases.
 
@@ -333,8 +371,8 @@ No changes; feature level used for Zulip 5.0 release.
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
 * [`POST /register`](/api/register-queue): Added `emoji_name`,
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
-* `POST /users/me/status`: Added support for new `emoji_name`,
-  `emoji_code`, and `reaction_type` parameters.
+* [`POST /users/me/status`](/api/update-status): Added support for new
+  `emoji_name`, `emoji_code`, and `reaction_type` parameters.
 
 **Feature level 85**
 

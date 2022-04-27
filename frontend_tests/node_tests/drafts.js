@@ -7,23 +7,8 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
-const ls_container = new Map();
 const noop = () => {};
 
-const localStorage = set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
-    },
-});
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, setTimeout_delay);
@@ -106,7 +91,7 @@ const short_msg = {
 function test(label, f) {
     run_test(label, ({override, override_rewire, mock_template}) => {
         $("#draft_overlay").css = () => {};
-        localStorage.clear();
+        window.localStorage.clear();
         f({override, override_rewire, mock_template});
     });
 }

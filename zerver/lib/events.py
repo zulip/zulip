@@ -8,16 +8,12 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
+from zerver.actions.default_streams import (
     default_stream_groups_to_dicts_sorted,
-    do_get_streams,
-    gather_subscriptions_helper,
-    get_available_notification_sounds,
     get_default_streams_for_realm,
-    get_owned_bot_dicts,
-    get_web_public_streams,
     streams_to_dicts_sorted,
 )
+from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
@@ -43,8 +39,10 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
-from zerver.lib.subscription_info import get_web_public_subs
+from zerver.lib.streams import do_get_streams, get_web_public_streams
+from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
@@ -288,6 +286,7 @@ def fetch_initial_state_data(
         state["server_generation"] = settings.SERVER_GENERATION
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
+        state["realm_org_type"] = realm.org_type
         state["realm_plan_type"] = realm.plan_type
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
@@ -1247,6 +1246,17 @@ def apply_event(
                     members = set(user_group["members"])
                     user_group["members"] = list(members - set(event["user_ids"]))
                     user_group["members"].sort()
+        elif event["op"] == "add_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    user_group["subgroups"].extend(event["subgroup_ids"])
+                    user_group["subgroups"].sort()
+        elif event["op"] == "remove_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    subgroups = set(user_group["subgroups"])
+                    user_group["subgroups"] = list(subgroups - set(event["subgroup_ids"]))
+                    user_group["subgroups"].sort()
         elif event["op"] == "remove":
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]

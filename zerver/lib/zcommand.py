@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_change_user_setting
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile
 

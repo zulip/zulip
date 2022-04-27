@@ -10,14 +10,12 @@ from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
 
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_add_alert_words,
-    do_change_user_setting,
-    do_create_realm,
-    do_remove_realm_emoji,
-    do_set_realm_property,
-)
+from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.realm_emoji import do_remove_realm_emoji
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
@@ -471,16 +469,13 @@ class MarkdownTest(ZulipTestCase):
                 href = "http://" + url
             return payload % (f'<a href="{href}">{url}</a>',)
 
-        with mock.patch(
-            "zerver.lib.url_preview.preview.link_embed_data_from_cache", return_value=None
-        ):
-            for inline_url, reference, url in linkify_tests:
-                try:
-                    match = replaced(reference, url, phrase=inline_url)
-                except TypeError:
-                    match = reference
-                converted = markdown_convert_wrapper(inline_url)
-                self.assertEqual(match, converted)
+        for inline_url, reference, url in linkify_tests:
+            try:
+                match = replaced(reference, url, phrase=inline_url)
+            except TypeError:
+                match = reference
+            converted = markdown_convert_wrapper(inline_url)
+            self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
         msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"

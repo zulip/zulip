@@ -11,12 +11,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-let form_data;
-
-const _FormData = function () {
-    return form_data;
-};
-
 const realm_icon = mock_esm("../../static/js/realm_icon");
 
 const channel = mock_esm("../../static/js/channel");
@@ -40,14 +34,20 @@ mock_esm("../../static/js/ui_report", {
     },
 });
 
-set_global("FormData", _FormData);
+set_global(
+    "FormData",
+    class FormData {
+        append(field, val) {
+            this[field] = val;
+        }
+    },
+);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
-const sub_store = zrequire("sub_store");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
@@ -195,7 +195,6 @@ function test_submit_settings_form(override, submit_form) {
     let stubs = createSaveButtons(subsection);
     let $save_button = stubs.$save_button;
     $save_button.attr("id", `org-submit-${subsection}`);
-    $save_button.replace = () => `${subsection}`;
 
     $("#id_realm_waiting_period_threshold").val(10);
 
@@ -241,6 +240,7 @@ function test_submit_settings_form(override, submit_form) {
         $add_custom_emoji_policy_elem,
         $create_public_stream_policy_elem,
         $create_private_stream_policy_elem,
+        $invite_to_realm_policy_elem,
         $invite_to_stream_policy_elem,
     ]);
 
@@ -250,6 +250,7 @@ function test_submit_settings_form(override, submit_form) {
 
     let expected_value = {
         bot_creation_policy: 1,
+        invite_to_realm_policy: 2,
         invite_to_stream_policy: 1,
         email_address_visibility: 1,
         add_custom_emoji_policy: 1,
@@ -332,12 +333,6 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    form_data = {
-        append(field, val) {
-            form_data[field] = val;
-        },
-    };
-
     const file_input = [{files: ["image1.png", "image2.png"]}];
 
     let posted;
@@ -925,10 +920,6 @@ test("misc", ({override_rewire}) => {
     let setting_name = "realm_notifications_stream_id";
     let $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
-    sub_store.__Rewire__("get", (stream_id) => {
-        assert.equal(stream_id, 42);
-        return {name: "some_stream"};
-    });
     settings_org.notifications_stream_widget.render(42);
     assert.equal($elem.text(), "#some_stream");
     assert.ok(!$elem.hasClass("text-warning"));
@@ -940,10 +931,6 @@ test("misc", ({override_rewire}) => {
     setting_name = "realm_signup_notifications_stream_id";
     $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
-    sub_store.__Rewire__("get", (stream_id) => {
-        assert.equal(stream_id, 75);
-        return {name: "some_stream"};
-    });
     settings_org.signup_notifications_stream_widget.render(75);
     assert.equal($elem.text(), "#some_stream");
     assert.ok(!$elem.hasClass("text-warning"));

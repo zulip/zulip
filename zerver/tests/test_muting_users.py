@@ -3,7 +3,7 @@ from unittest import mock
 
 import orjson
 
-from zerver.lib.actions import do_deactivate_user
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -153,7 +153,7 @@ class MutedUsersTests(ZulipTestCase):
             result = self.api_post(hamlet, url)
             self.assert_json_success(result)
 
-        with mock.patch("zerver.lib.actions.timezone_now", return_value=mute_time):
+        with mock.patch("zerver.actions.muted_users.timezone_now", return_value=mute_time):
             # To test that `RealmAuditLog` entry has correct `event_time`.
             url = f"/api/v1/users/me/muted_users/{cordelia.id}"
             result = self.api_delete(hamlet, url)

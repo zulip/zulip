@@ -135,6 +135,7 @@
   "April": "Ebrill",
   "Archive stream": "Archif ffrwd",
   "Archive stream {stream}": "Ffrwd archif {stream}",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "Ydych chi'n siŵr eich bod chi am archifo'r nant hon?",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Ydych chi'n siŵr eich bod chi eisiau creu ffrwd ''''{stream_name}''''  a thanysgrifio defnyddwyr {count} iddo?",
   "Are you sure you want to deactivate this organization?": "Ydych chi'n siŵr eich bod chi am ddadactifadu'r sefydliad hwn?",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Diwrnod o'r wythnos i anfon crynhoadau",
   "Deactivate": "Dadactifadwch",
   "Deactivate account": "Dadactifadwch cyfrif",
+  "Deactivate bot": "",
   "Deactivate organization": "Dadactifadwch sefydliad",
   "Deactivate user": "",
   "Deactivate your account": "Dadactifadwch eich cyfrif",
@@ -278,7 +280,6 @@
   "Delete": "Dileu",
   "Delete alert word": "Dileu gair rhybuddio",
   "Delete all drafts": "Dileu pob drafft",
-  "Delete bot": "Dileu bot",
   "Delete draft": "Dileu drafft",
   "Delete file": "Dileu ffeil",
   "Delete icon": "Dileu eicon",
@@ -685,6 +686,8 @@
   "Notification triggers": "Sbardunau hysbysu",
   "Notifications": "Hysbysiadau",
   "Notifications for @all/@everyone mentions": "Hysbysiadau i @all/@everyone yn crybwyll",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Tachwedd",
   "October": "Hydref",
   "Offline": "All-lein",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "Dim ond perchnogion all newid y gosodiad hwn.",
   "Only owners can deactivate the organization.": "Dim ond perchnogion all ddadactifadu'r sefydliad.",
   "Only stream members can add users to a private stream": "Dim ond aelodau ffrwd all ychwanegu defnyddwyr at ffrwd breifat",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Ar agor",
   "Open message menu": "Agor dewislen neges ",
   "Open reactions menu": "Agor dewislen adweithiau",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} y neges hon",
   "{starred_status} this message (Ctrl + s)": "{starred_status} y neges hon (Ctrl + s)",
   "{username} [said]({link_to_message}):": "{username} [dywedodd] ({link_to_message}):",
-  "{username} reacted with {emoji_name}": "Adweithiodd {username} gyda {emoji_name}",
-  "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (Hysbysu'r ffrwd)"
+  "{username} reacted with {emoji_name}": "Adweithiodd {username} gyda {emoji_name}"
 }

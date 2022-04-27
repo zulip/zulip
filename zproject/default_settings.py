@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
 
 from scripts.lib.zulip_tools import deport
 
@@ -7,7 +7,6 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-    from typing_extensions import TypedDict
 
     from zerver.lib.types import SAMLIdPConfigDict
 
@@ -469,7 +468,7 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
 # Maximum length of message content allowed.
 # Any message content exceeding this limit will be truncated.
-# See: `_internal_prep_message` function in zerver/lib/actions.py.
+# See: `_internal_prep_message` function in zerver/actions/message_send.py.
 MAX_MESSAGE_LENGTH = 10000
 
 # The maximum number of drafts to send in the response to /register.

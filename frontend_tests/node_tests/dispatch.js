@@ -392,6 +392,10 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(page_params.realm_name, "new_realm_name");
 
+    event = event_fixtures.realm__update__org_type;
+    dispatch(event);
+    assert_same(page_params.realm_org_type, 50);
+
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
 
@@ -741,6 +745,11 @@ run_test("user_settings", ({override, override_rewire}) => {
     user_settings.translate_emoticons = false;
     dispatch(event);
     assert_same(user_settings.translate_emoticons, true);
+
+    event = event_fixtures.user_settings__display_emoji_reaction_users;
+    user_settings.display_emoji_reaction_users = false;
+    dispatch(event);
+    assert_same(user_settings.display_emoji_reaction_users, true);
 
     event = event_fixtures.user_settings__high_contrast_mode;
     user_settings.high_contrast_mode = false;

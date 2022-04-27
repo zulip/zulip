@@ -4,7 +4,7 @@ from typing import Any
 
 from django.core.management.base import CommandError
 
-from zerver.lib.actions import do_add_linkifier, do_remove_linkifier
+from zerver.actions.realm_linkifiers import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import linkifiers_for_realm
 

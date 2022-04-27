@@ -38,7 +38,7 @@ organization in Zulip). The following files are involved in the process:
 - `zerver/models.py`: Defines the database model.
 - `zerver/views/realm.py`: The view function that implements the API endpoint
   for editing realm objects.
-- `zerver/lib/actions.py`: Contains code for updating and interacting with the database.
+- `zerver/actions/realm_settings.py`: Contains code for updating and interacting with the database.
 - `zerver/lib/events.py`: Ensures that the state Zulip sends to clients is always
   consistent and correct.
 
@@ -101,7 +101,7 @@ the flow of events even if the `property_types` framework means you don't
 have to write much code for a new setting.
 
 **Database interaction:** Add any necessary code for updating and
-interacting with the database in `zerver/lib/actions.py`. It should
+interacting with the database in `zerver/actions/realm_settings.py`. It should
 update the database and send an event announcing the change.
 
 **Application state:** Modify the `fetch_initial_state_data` and
@@ -290,10 +290,10 @@ gory details.
 Anyway, getting back to implementation details...
 
 If you are working on a feature that is in the realm `property_types`
-dictionary, you will not need to add code to `zerver/lib/actions.py`, but
+dictionary, you will not need to add code to `zerver/actions/realm_settings.py`, but
 we will describe what the process in that file does:
 
-In `zerver/lib/actions.py`, the function `do_set_realm_property` takes
+In `zerver/actions/realm_settings.py`, the function `do_set_realm_property` takes
 in the name of a realm property to update and the value it should
 have. This function updates the database and triggers an event to
 notify clients about the change. It uses the field's type, specified
@@ -310,7 +310,7 @@ time display format), members in a particular stream only or all
 active users in a realm.
 
 ```python
-# zerver/lib/actions.py
+# zerver/actions/realm_settings.py
 
 def do_set_realm_property(
     realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
@@ -340,7 +340,7 @@ field), you'll need to create a new function to explicitly update this
 field and send an event. For example:
 
 ```python
-# zerver/lib/actions.py
+# zerver/actions/realm_settings.p
 
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
@@ -480,7 +480,7 @@ with the new value. E.g., for `authentication_methods`, we created
 # zerver/views/realm.py
 
 # import do_set_realm_authentication_methods from actions.py
-from zerver.lib.actions import (
+from zerver.actions.realm_settings import (
     do_set_realm_message_editing,
     do_set_realm_authentication_methods,
     # ...

@@ -9,11 +9,9 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, confirmation_url
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_change_user_delivery_email,
-    do_send_realm_reactivation_email,
-)
+from zerver.actions.realm_settings import do_send_realm_reactivation_email
+from zerver.actions.user_settings import do_change_user_delivery_email
+from zerver.actions.users import change_user_is_active
 from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
@@ -67,7 +65,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     registered_email = "hamlet@zulip.com"
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
-    invite_expires_in_days = settings.INVITATION_LINK_VALIDITY_DAYS
+    invite_expires_in_minutes = settings.INVITATION_LINK_VALIDITY_MINUTES
     realm = get_realm("zulip")
     other_realm = Realm.objects.exclude(string_id="zulip").first()
     user = get_user_by_delivery_email(registered_email, realm)
@@ -112,7 +110,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
         "/json/invites",
         {
             "invitee_emails": unregistered_email_2,
-            "invite_expires_in_days": invite_expires_in_days,
+            "invite_expires_in_minutes": invite_expires_in_minutes,
             "stream_ids": orjson.dumps([stream.id]).decode(),
         },
         **host_kwargs,

@@ -30,8 +30,6 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
-import * as muted_topics from "./muted_topics";
-import * as muted_topics_ui from "./muted_topics_ui";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow from "./narrow";
@@ -469,14 +467,6 @@ export function toggle_actions_popover(element, id) {
             use_edit_icon = false;
             editability_menu_item = $t({defaultMessage: "View source"});
         }
-        const topic = message.topic;
-        const can_mute_topic =
-            message.stream &&
-            topic &&
-            !muted_topics.is_topic_muted(message.stream_id, topic) &&
-            not_spectator;
-        const can_unmute_topic =
-            message.stream && topic && muted_topics.is_topic_muted(message.stream_id, topic);
 
         const should_display_edit_history_option =
             message.edit_history &&
@@ -515,11 +505,8 @@ export function toggle_actions_popover(element, id) {
             message_id: message.id,
             historical: message.historical,
             stream_id: message.stream_id,
-            topic,
             use_edit_icon,
             editability_menu_item,
-            can_mute_topic,
-            can_unmute_topic,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -1234,26 +1221,6 @@ export function register_click_handlers() {
         hide_actions_popover();
         message_edit_history.show_history(message);
         $("#message-history-cancel").trigger("focus");
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".popover_mute_topic", (e) => {
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-msg-topic");
-
-        hide_actions_popover();
-        muted_topics_ui.mute_topic(stream_id, topic);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $("body").on("click", ".popover_unmute_topic", (e) => {
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-msg-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-msg-topic");
-
-        hide_actions_popover();
-        muted_topics_ui.unmute_topic(stream_id, topic);
         e.stopPropagation();
         e.preventDefault();
     });

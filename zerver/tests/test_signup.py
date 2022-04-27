@@ -25,28 +25,28 @@ from confirmation.models import (
     one_click_unsubscribe_link,
 )
 from corporate.lib.stripe import get_latest_seat_count
+from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
+from zerver.actions.create_user import add_new_user_history, do_create_user, process_new_human_user
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_create_default_stream_group,
+    get_default_streams_for_realm,
+)
+from zerver.actions.invites import (
+    do_create_multiuse_invite_link,
+    do_get_invites_controlled_by_user,
+    do_invite_users,
+)
+from zerver.actions.realm_settings import (
+    do_deactivate_realm,
+    do_set_realm_property,
+    do_set_realm_user_default_setting,
+)
+from zerver.actions.user_settings import do_change_full_name
+from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
-from zerver.lib.actions import (
-    add_new_user_history,
-    change_user_is_active,
-    do_add_default_stream,
-    do_change_full_name,
-    do_change_realm_subdomain,
-    do_change_user_role,
-    do_create_default_stream_group,
-    do_create_multiuse_invite_link,
-    do_create_realm,
-    do_create_user,
-    do_deactivate_realm,
-    do_deactivate_user,
-    do_get_invites_controlled_by_user,
-    do_invite_users,
-    do_set_realm_property,
-    do_set_realm_user_default_setting,
-    get_default_streams_for_realm,
-)
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import (
@@ -250,7 +250,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), stream.name, "test 2")
         self.send_stream_message(self.example_user("hamlet"), stream.name, "test 3")
 
-        with patch("zerver.lib.actions.add_new_user_history"):
+        with patch("zerver.actions.create_user.add_new_user_history"):
             self.register(self.nonreg_email("test"), "test")
         user_profile = self.nonreg_user("test")
         subs = Subscription.objects.select_related("recipient").filter(
@@ -266,7 +266,9 @@ class AddNewUserHistoryTest(ZulipTestCase):
 
         # Overwrite ONBOARDING_UNREAD_MESSAGES to 2
         ONBOARDING_UNREAD_MESSAGES = 2
-        with patch("zerver.lib.actions.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES):
+        with patch(
+            "zerver.actions.create_user.ONBOARDING_UNREAD_MESSAGES", ONBOARDING_UNREAD_MESSAGES
+        ):
             add_new_user_history(user_profile, streams)
 
         # Our first message is in the user's history
@@ -1048,7 +1050,7 @@ class InviteUserBase(ZulipTestCase):
         self,
         invitee_emails: str,
         stream_names: Sequence[str],
-        invite_expires_in_days: Optional[int] = settings.INVITATION_LINK_VALIDITY_DAYS,
+        invite_expires_in_minutes: Optional[int] = settings.INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     ) -> HttpResponse:
@@ -1064,7 +1066,7 @@ class InviteUserBase(ZulipTestCase):
         for stream_name in stream_names:
             stream_ids.append(self.get_stream_id(stream_name))
 
-        invite_expires_in: Union[str, Optional[int]] = invite_expires_in_days
+        invite_expires_in: Union[str, Optional[int]] = invite_expires_in_minutes
         if invite_expires_in is None:
             invite_expires_in = orjson.dumps(None).decode()
 
@@ -1072,7 +1074,7 @@ class InviteUserBase(ZulipTestCase):
             "/json/invites",
             {
                 "invitee_emails": invitee_emails,
-                "invite_expires_in_days": invite_expires_in,
+                "invite_expires_in_minutes": invite_expires_in,
                 "stream_ids": orjson.dumps(stream_ids).decode(),
                 "invite_as": invite_as,
             },
@@ -1979,9 +1981,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         data = {"email": invitee_email, "referrer_email": current_user.email}
         invitee = PreregistrationUser.objects.get(email=data["email"])
         referrer = self.example_user(referrer_name)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         link = create_confirmation_link(
-            invitee, Confirmation.INVITATION, validity_in_days=validity_in_days
+            invitee, Confirmation.INVITATION, validity_in_minutes=validity_in_minutes
         )
         context = common_context(referrer)
         context.update(
@@ -2035,12 +2037,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_no_invitation_reminder_when_link_expires_quickly(self) -> None:
         self.login("hamlet")
         # Check invitation reminder email is scheduled with 4 day link expiry
-        self.invite("alice@zulip.com", ["Denmark"], invite_expires_in_days=4)
+        self.invite("alice@zulip.com", ["Denmark"], invite_expires_in_minutes=4 * 24 * 60)
         self.assertEqual(
             ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1
         )
         # Check invitation reminder email is not scheduled with 3 day link expiry
-        self.invite("bob@zulip.com", ["Denmark"], invite_expires_in_days=3)
+        self.invite("bob@zulip.com", ["Denmark"], invite_expires_in_minutes=3 * 24 * 60)
         self.assertEqual(
             ScheduledEmail.objects.filter(type=ScheduledEmail.INVITATION_REMINDER).count(), 1
         )
@@ -2106,7 +2108,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         activation_url = create_confirmation_link(
-            prereg_user, Confirmation.INVITATION, validity_in_days=None
+            prereg_user, Confirmation.INVITATION, validity_in_minutes=None
         )
         confirmation = Confirmation.objects.last()
         assert confirmation is not None
@@ -2124,38 +2126,38 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             self.user_profile,
             ["foo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         # Also send an invite from a different realm.
         lear = get_realm("lear")
         lear_user = self.lear_user("cordelia")
         do_invite_users(
-            lear_user, ["foo@zulip.com"], [], invite_expires_in_days=invite_expires_in_days
+            lear_user, ["foo@zulip.com"], [], invite_expires_in_minutes=invite_expires_in_minutes
         )
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
         self.assert_length(invites, 4)
 
-        do_create_user(
+        created_user = do_create_user(
             "foo@zulip.com",
             "password",
             self.user_profile.realm,
@@ -2174,6 +2176,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # the others must be canceled.
         self.assert_length(accepted_invite, 1)
         self.assertEqual(accepted_invite[0].id, prereg_user.id)
+        self.assertEqual(accepted_invite[0].created_user, created_user)
 
         expected_revoked_invites = set(invites.exclude(id=prereg_user.id).exclude(realm=lear))
         self.assertEqual(set(revoked_invites), expected_revoked_invites)
@@ -2181,6 +2184,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(
             PreregistrationUser.objects.get(email__iexact="foo@zulip.com", realm=lear).status, 0
         )
+
+        with self.assertRaises(AssertionError):
+            process_new_human_user(created_user, prereg_user)
 
     def test_confirmation_obj_not_exist_error(self) -> None:
         """Since the key is a param input by the user to the registration endpoint,
@@ -2288,33 +2294,39 @@ class InvitationsTestCase(InviteUserBase):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user_profile,
             ["TestOne@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             user_profile,
             ["TestTwo@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
-            hamlet, ["TestThree@zulip.com"], streams, invite_expires_in_days=invite_expires_in_days
+            hamlet,
+            ["TestThree@zulip.com"],
+            streams,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
-            othello, ["TestFour@zulip.com"], streams, invite_expires_in_days=invite_expires_in_days
+            othello,
+            ["TestFour@zulip.com"],
+            streams,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_invite_users(
             self.mit_user("sipbtest"),
             ["TestOne@mit.edu"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         do_create_multiuse_invite_link(
-            user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            user_profile, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         )
         self.assert_length(do_get_invites_controlled_by_user(user_profile), 5)
         self.assert_length(do_get_invites_controlled_by_user(hamlet), 1)
@@ -2338,26 +2350,26 @@ class InvitationsTestCase(InviteUserBase):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, user_profile.realm))
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user_profile,
             ["TestOne@zulip.com"],
             streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         with patch(
             "confirmation.models.timezone_now",
-            return_value=timezone_now() - datetime.timedelta(days=invite_expires_in_days + 1),
+            return_value=timezone_now() - datetime.timedelta(days=3),
         ):
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
             do_create_multiuse_invite_link(
-                othello, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+                othello, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
             )
 
         prereg_user_three = PreregistrationUser(
@@ -2365,11 +2377,13 @@ class InvitationsTestCase(InviteUserBase):
         )
         prereg_user_three.save()
         create_confirmation_link(
-            prereg_user_three, Confirmation.INVITATION, validity_in_days=invite_expires_in_days
+            prereg_user_three,
+            Confirmation.INVITATION,
+            validity_in_minutes=invite_expires_in_minutes,
         )
 
         do_create_multiuse_invite_link(
-            hamlet, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            hamlet, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         )
 
         result = self.client_get("/json/invites")
@@ -2400,13 +2414,13 @@ class InvitationsTestCase(InviteUserBase):
                 user_profile,
                 ["TestOne@zulip.com"],
                 streams,
-                invite_expires_in_days=None,
+                invite_expires_in_minutes=None,
             )
             do_invite_users(
                 user_profile,
                 ["TestTwo@zulip.com"],
                 streams,
-                invite_expires_in_days=100,
+                invite_expires_in_minutes=100 * 24 * 60,
             )
             do_create_multiuse_invite_link(
                 user_profile, PreregistrationUser.INVITE_AS["MEMBER"], None
@@ -2531,9 +2545,9 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite = MultiuseInvite.objects.create(
             referred_by=self.example_user("hamlet"), realm=zulip_realm
         )
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
@@ -2548,9 +2562,9 @@ class InvitationsTestCase(InviteUserBase):
             realm=zulip_realm,
             invited_as=PreregistrationUser.INVITE_AS["REALM_OWNER"],
         )
-        validity_in_days = 2
+        validity_in_minutes = 2
         create_confirmation_link(
-            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_error(error_result, "Must be an organization owner")
@@ -2565,9 +2579,11 @@ class InvitationsTestCase(InviteUserBase):
         multiuse_invite_in_mit = MultiuseInvite.objects.create(
             referred_by=self.mit_user("sipbtest"), realm=mit_realm
         )
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_invite_in_mit, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_invite_in_mit,
+            Confirmation.MULTIUSE_INVITE,
+            validity_in_minutes=validity_in_minutes,
         )
         error_result = self.client_delete(
             "/json/invites/multiuse/" + str(multiuse_invite_in_mit.id)
@@ -2824,10 +2840,10 @@ class MultiuseInviteTest(ZulipTestCase):
 
         if date_sent is None:
             date_sent = timezone_now()
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         with patch("confirmation.models.timezone_now", return_value=date_sent):
             return create_confirmation_link(
-                invite, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+                invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
             )
 
     def check_user_able_to_register(self, email: str, invite_link: str) -> None:
@@ -2855,8 +2871,7 @@ class MultiuseInviteTest(ZulipTestCase):
         email2 = self.nonreg_email("test1")
         email3 = self.nonreg_email("alice")
 
-        validity_in_days = 2
-        date_sent = timezone_now() - datetime.timedelta(days=validity_in_days - 1)
+        date_sent = timezone_now() - datetime.timedelta(days=1)
         invite_link = self.generate_multiuse_invite_link(date_sent=date_sent)
 
         self.check_user_able_to_register(email1, invite_link)
@@ -2942,7 +2957,9 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
 
-        result = self.client_post("/json/invites/multiuse", {"invite_expires_in_days": 2})
+        result = self.client_post(
+            "/json/invites/multiuse", {"invite_expires_in_minutes": 2 * 24 * 60}
+        )
         self.assert_json_success(result)
 
         invite_link = result.json()["invite_link"]
@@ -2956,7 +2973,10 @@ class MultiuseInviteTest(ZulipTestCase):
 
         result = self.client_post(
             "/json/invites/multiuse",
-            {"stream_ids": orjson.dumps(stream_ids).decode(), "invite_expires_in_days": 2},
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
         )
         self.assert_json_success(result)
 
@@ -2971,7 +2991,9 @@ class MultiuseInviteTest(ZulipTestCase):
         self.realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
         self.realm.save()
 
-        result = self.client_post("/json/invites/multiuse", {"invite_expires_in_days": 2})
+        result = self.client_post(
+            "/json/invites/multiuse", {"invite_expires_in_minutes": 2 * 24 * 60}
+        )
         self.assert_json_success(result)
 
         invite_link = result.json()["invite_link"]
@@ -2987,7 +3009,7 @@ class MultiuseInviteTest(ZulipTestCase):
             "/json/invites/multiuse",
             {
                 "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_OWNER"]).decode(),
-                "invite_expires_in_days": 2,
+                "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
         self.assert_json_error(result, "Must be an organization owner")
@@ -2997,7 +3019,7 @@ class MultiuseInviteTest(ZulipTestCase):
             "/json/invites/multiuse",
             {
                 "invite_as": orjson.dumps(PreregistrationUser.INVITE_AS["REALM_OWNER"]).decode(),
-                "invite_expires_in_days": 2,
+                "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
         self.assert_json_success(result)
@@ -3009,7 +3031,10 @@ class MultiuseInviteTest(ZulipTestCase):
         self.login("iago")
         result = self.client_post(
             "/json/invites/multiuse",
-            {"stream_ids": orjson.dumps([54321]).decode(), "invite_expires_in_days": 2},
+            {
+                "stream_ids": orjson.dumps([54321]).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
         )
         self.assert_json_error(result, "Invalid stream id 54321. No invites were sent.")
 

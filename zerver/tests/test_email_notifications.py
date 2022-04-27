@@ -1,6 +1,6 @@
 import random
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from typing import List, Optional, Sequence
 from unittest import mock
@@ -15,11 +15,13 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
 
-from zerver.lib.actions import do_change_user_role, do_change_user_setting
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
     fix_emojis,
     fix_spoilers_in_html,
+    followup_day2_email_delay,
     handle_missedmessage_emails,
     relative_to_full_url,
 )
@@ -1446,3 +1448,70 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True
         )
+
+    def test_long_term_idle_user_missed_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        large_user_group = create_user_group(
+            "large_user_group", [hamlet, othello, cordelia], get_realm("zulip")
+        )
+
+        # Do note that the event dicts for the missed messages are constructed by hand
+        # The part of testing the consumption of missed messages by the worker is left to
+        # test_queue_worker.test_missed_message_worker
+
+        # Personal mention in a stream message should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+            mention = f"@**{hamlet.full_name}**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                [{"message_id": stream_mentioned_message_id, "trigger": "mentioned"}],
+            )
+
+        # Private message should soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=False):
+            # Soft reactivate the user by sending a personal message
+            personal_message_id = self.send_personal_message(othello, hamlet, "Message")
+            handle_missedmessage_emails(
+                hamlet.id,
+                [{"message_id": personal_message_id, "trigger": "private_message"}],
+            )
+
+        # Wild card mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+            # Soft reactivate the user by sending a personal message
+            mention = "@**all**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                [{"message_id": stream_mentioned_message_id, "trigger": "wildcard_mentioned"}],
+            )
+
+        # Group mention should NOT soft reactivate the user
+        with self.soft_deactivate_and_check_long_term_idle(hamlet, expected=True):
+            # Soft reactivate the user by sending a personal message
+            mention = "@*large_user_group*"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_missedmessage_emails(
+                hamlet.id,
+                [
+                    {
+                        "message_id": stream_mentioned_message_id,
+                        "trigger": "mentioned",
+                        "mentioned_user_group_id": large_user_group.id,
+                    }
+                ],
+            )
+
+
+class TestFollowupEmailDelay(ZulipTestCase):
+    def test_followup_day2_email_delay(self) -> None:
+        user_profile = self.example_user("hamlet")
+        # Test date_joined == Thursday
+        user_profile.date_joined = datetime(2018, 1, 4, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=1, hours=-1))
+        # Test date_joined == Friday
+        user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
+        self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))

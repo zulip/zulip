@@ -2,18 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {
-    set_global,
-    with_function_call_disallowed_rewire,
-    zrequire,
-} = require("../zjsunit/namespace");
+const {with_function_call_disallowed_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-set_global("setTimeout", (f, delay) => {
-    assert.equal(delay, 0);
-    return f();
-});
 
 const muted_topics = zrequire("muted_topics");
 const muted_users = zrequire("muted_users");

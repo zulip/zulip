@@ -107,29 +107,28 @@ function test_helper() {
 }
 
 function stub_message_list() {
-    message_list.MessageList = function (opts) {
-        this.data = opts.data;
-        this.view = {
+    message_list.MessageList = class MessageList {
+        constructor(opts) {
+            this.data = opts.data;
+        }
+
+        view = {
             set_message_offset(offset) {
                 this.offset = offset;
             },
         };
 
-        return this;
-    };
-
-    message_list.MessageList.prototype = {
         get(msg_id) {
             return this.data.get(msg_id);
-        },
+        }
 
         empty() {
             return this.data.empty();
-        },
+        }
 
         select_id(msg_id) {
             this.selected_id = msg_id;
-        },
+        }
     };
 }
 
@@ -160,13 +159,6 @@ run_test("basics", () => {
 
     all_messages_data.all_messages_data = {
         all_messages: () => messages,
-        get: (msg_id) => {
-            assert.equal(msg_id, selected_id);
-            return selected_message;
-        },
-        fetch_status: {
-            has_found_newest: () => true,
-        },
         empty: () => false,
         first: () => ({id: 900}),
         last: () => ({id: 1100}),

@@ -4,18 +4,14 @@ import django_scim.constants as scim_constants
 import django_scim.exceptions as scim_exceptions
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import models
 from django.http import HttpRequest
 from django_scim.adapters import SCIMUser
 from scim2_filter_parser.attr_paths import AttrPath
 
-from zerver.lib.actions import (
-    check_change_full_name,
-    do_change_user_delivery_email,
-    do_create_user,
-    do_deactivate_user,
-    do_reactivate_user,
-)
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.user_settings import check_change_full_name, do_change_user_delivery_email
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.request import RequestNotes
 from zerver.lib.subdomains import get_subdomain
@@ -281,18 +277,22 @@ class ZulipSCIMUser(SCIMUser):
             )
             return
 
-        with transaction.atomic():
-            # We process full_name first here, since it's the only one that can fail.
-            if full_name_new_value:
-                check_change_full_name(self.obj, full_name_new_value, acting_user=None)
+        # TODO: The below operations should ideally be executed in a single
+        # atomic block to avoid failing with partial changes getting saved.
+        # This can be fixed once we figure out how do_deactivate_user can be run
+        # inside an atomic block.
 
-            if email_new_value:
-                do_change_user_delivery_email(self.obj, email_new_value)
+        # We process full_name first here, since it's the only one that can fail.
+        if full_name_new_value:
+            check_change_full_name(self.obj, full_name_new_value, acting_user=None)
 
-            if is_active_new_value is not None and is_active_new_value:
-                do_reactivate_user(self.obj, acting_user=None)
-            elif is_active_new_value is not None and not is_active_new_value:
-                do_deactivate_user(self.obj, acting_user=None)
+        if email_new_value:
+            do_change_user_delivery_email(self.obj, email_new_value)
+
+        if is_active_new_value is not None and is_active_new_value:
+            do_reactivate_user(self.obj, acting_user=None)
+        elif is_active_new_value is not None and not is_active_new_value:
+            do_deactivate_user(self.obj, acting_user=None)
 
     def delete(self) -> None:
         """

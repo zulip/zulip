@@ -11,12 +11,15 @@ function password_field(min_length, min_guesses) {
     const self = {};
 
     self.data = (field) => {
-        if (field === "minLength") {
-            return min_length;
-        } else if (field === "minGuesses") {
-            return min_guesses;
+        switch (field) {
+            case "minLength":
+                return min_length;
+            case "minGuesses":
+                return min_guesses;
+            /* istanbul ignore next */
+            default:
+                throw new Error(`Unknown field ${field}`);
         }
-        throw new Error(`Unknown field ${field}`);
     };
 
     return self;

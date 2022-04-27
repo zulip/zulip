@@ -38,6 +38,7 @@ from .configured_settings import (
     EXTERNAL_URI_SCHEME,
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
+    INVITATION_LINK_VALIDITY_DAYS,
     IS_DEV_DROPLET,
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
@@ -313,7 +314,7 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
     else:
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
-elif get_config("postgresql", "database_user") != "zulip":
+elif get_config("postgresql", "database_user", "zulip") != "zulip":
     if get_secret("postgres_password") is not None:
         DATABASES["default"].update(
             PASSWORD=get_secret("postgres_password"),
@@ -361,9 +362,6 @@ CACHES = {
             "CULL_FREQUENCY": 10,
         },
     },
-    "in-memory": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    },
 }
 
 ########################################################################
@@ -381,7 +379,7 @@ RATE_LIMITING_RULES = {
         (60, 1000),
     ],
     "authenticate_by_username": [
-        (1800, 5),  # 5 login attempts within 30 minutes
+        (1800, 5),  # 5 failed login attempts within 30 minutes
     ],
     "email_change_by_user": [
         (3600, 2),  # 2 per hour
@@ -1200,6 +1198,9 @@ AUTH_LDAP_BIND_PASSWORD = get_secret("auth_ldap_bind_password", "")
 ########################################################################
 # MISC SETTINGS
 ########################################################################
+
+# Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
+INVITATION_LINK_VALIDITY_MINUTES = 24 * 60 * INVITATION_LINK_VALIDITY_DAYS
 
 if PRODUCTION:
     # Filter out user data

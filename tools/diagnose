@@ -25,7 +25,7 @@ def run(check_func: Callable[[], bool]) -> None:
 
 
 def run_command(args: List[str]) -> None:
-    print(" ".join(map(shlex.quote, args)))
+    print(shlex.join(args))
     subprocess.check_call(args)
 
 

@@ -135,6 +135,7 @@
   "April": "Duben",
   "Archive stream": "Archivovat kanál",
   "Archive stream {stream}": "Archivovat kanál {stream}",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "Opravdu chcete tento kanál archivovat?",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Jste si jistý, že chcete vytvořit kanál '''{stream_name}'''' a přihlásit k jeho odběru {count} uživatelů?",
   "Are you sure you want to deactivate this organization?": "Opravdu chcete vypnout tuto organizaci?",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Den v týdnu, kdy posílat přehledy",
   "Deactivate": "Vypnout",
   "Deactivate account": "Vypnout účet",
+  "Deactivate bot": "",
   "Deactivate organization": "Vypnout organizaci",
   "Deactivate user": "Vypnout uživatele",
   "Deactivate your account": "Vypnout váš účet",
@@ -278,7 +280,6 @@
   "Delete": "Smazat",
   "Delete alert word": "Smazat sledované slovo",
   "Delete all drafts": "Smazat všechny koncepty",
-  "Delete bot": "Smazat robota",
   "Delete draft": "Smazat koncept",
   "Delete file": "Smazat soubor",
   "Delete icon": "Smazat ikonu",
@@ -685,6 +686,8 @@
   "Notification triggers": "Spouštěče oznámení",
   "Notifications": "Oznámení",
   "Notifications for @all/@everyone mentions": "Oznámení pro @all/@everyone zmínky",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Listopad",
   "October": "Říjen",
   "Offline": "Nepřipojen",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "Toto nastavení mohou měnit pouze majitelé.",
   "Only owners can deactivate the organization.": "Pouze vlastníci mohou vypnout organizaci",
   "Only stream members can add users to a private stream": "Do soukromého kanálu mohou další uživatele přidávat pouze jeho členové.",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Otevřít",
   "Open message menu": "Otevřít nabídku ke zprávě",
   "Open reactions menu": "Otevřít nabídku odpovědí",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} tuto zprávu",
   "{starred_status} this message (Ctrl + s)": "{starred_status} tuto zprávu (Ctrl + s)",
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}",
-  "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (upozornit kanál)"
+  "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}"
 }

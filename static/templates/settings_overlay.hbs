@@ -7,180 +7,182 @@
         </div>
         <div class="clear-float"></div>
     </div>
-    <div class="sidebar left" data-simplebar>
-        <div class="sidebar-list dark-grey small-text">
-            <div class="center tab-container settings-sticky-bar"></div>
-            <ul class="normal-settings-list">
-                <li tabindex="0" data-section="profile">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{t "Profile" }}</div>
-                </li>
-                <li tabindex="0" data-section="account-and-privacy">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
-                    <div class="text">{{t "Account & privacy" }}</div>
-                </li>
-                <li tabindex="0" data-section="display-settings">
-                    <i class="icon fa fa-clock-o" aria-hidden="true"></i>
-                    <div class="text">{{t "Display settings" }}</div>
-                </li>
-                <li tabindex="0" data-section="notifications">
-                    <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
-                    <div class="text">{{t "Notifications" }}</div>
-                </li>
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="your-bots">
-                    <i class="icon fa fa-github" aria-hidden="true"></i>
-                    <div class="text">{{t "Bots" }}</div>
-                </li>
-                {{/unless}}
-                <li tabindex="0" data-section="alert-words">
-                    <i class="icon fa fa-book" aria-hidden="true"></i>
-                    <div class="text">{{t "Alert words" }}</div>
-                </li>
-                {{#if show_uploaded_files_section}}
-                <li tabindex="0" data-section="uploaded-files">
-                    <i class="icon fa fa-paperclip" aria-hidden="true"></i>
-                    <div class="text">{{t "Uploaded files" }}</div>
-                </li>
-                {{/if}}
-                <li tabindex="0" data-section="muted-topics">
-                    <i class="icon fa fa-bell-slash" aria-hidden="true"></i>
-                    <div class="text">{{t "Muted topics" }}</div>
-                </li>
-                <li tabindex="0" data-section="muted-users">
-                    <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
-                    <div class="text">{{t "Muted users" }}</div>
-                </li>
-            </ul>
-
-            <ul class="org-settings-list">
-                <li tabindex="0" data-section="organization-profile">
-                    <i class="icon fa fa-address-card" aria-hidden="true"></i>
-                    <div class="text">{{t "Organization profile" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+    <div class="sidebar-wrapper">
+        <div class="center tab-container settings-sticky-bar"></div>
+        <div class="sidebar left" data-simplebar>
+            <div class="sidebar-list dark-grey small-text">
+                <ul class="normal-settings-list">
+                    <li tabindex="0" data-section="profile">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{t "Profile" }}</div>
+                    </li>
+                    <li tabindex="0" data-section="account-and-privacy">
+                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                        <div class="text">{{t "Account & privacy" }}</div>
+                    </li>
+                    <li tabindex="0" data-section="display-settings">
+                        <i class="icon fa fa-clock-o" aria-hidden="true"></i>
+                        <div class="text">{{t "Display settings" }}</div>
+                    </li>
+                    <li tabindex="0" data-section="notifications">
+                        <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
+                        <div class="text">{{t "Notifications" }}</div>
+                    </li>
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="your-bots">
+                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <div class="text">{{t "Bots" }}</div>
+                    </li>
                     {{/unless}}
-                </li>
-                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
-                    <i class="icon fa fa-flask" aria-hidden="true"></i>
-                    <div class="text">{{t "Organization settings" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings' }}"></i>
-                    {{/unless}}
-                </li>
-                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
-                    <div class="text">{{t "Organization permissions" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
-                    <i class="icon fa fa-cog" aria-hidden="true"></i>
-                    <div class="text">{{t "Default user settings" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                <li tabindex="0" data-section="emoji-settings">
-                    <i class="icon fa fa-smile-o" aria-hidden="true"></i>
-                    <div class="text">{{t "Custom emoji" }}</div>
-                    {{#if is_guest}}
-                        <i class="locked fa fa-lock" title="{{t 'Guest users cannot edit custom emoji.' }}"></i>
-                    {{else}}
-                        {{#if show_emoji_settings_lock}}
-                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.'}}"></i>
-                        {{/if}}
+                    <li tabindex="0" data-section="alert-words">
+                        <i class="icon fa fa-book" aria-hidden="true"></i>
+                        <div class="text">{{t "Alert words" }}</div>
+                    </li>
+                    {{#if show_uploaded_files_section}}
+                    <li tabindex="0" data-section="uploaded-files">
+                        <i class="icon fa fa-paperclip" aria-hidden="true"></i>
+                        <div class="text">{{t "Uploaded files" }}</div>
+                    </li>
                     {{/if}}
-                </li>
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="user-groups-admin">
-                    <i class="icon fa fa-group" aria-hidden="true"></i>
-                    <div class="text">{{t "User groups" }}</div>
-                </li>
-                {{/unless}}
-                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="auth-methods">
-                    <i class="icon fa fa-key" aria-hidden="true"></i>
-                    <div class="text">{{t "Authentication methods" }}</div>
-                    {{#unless is_owner}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization owners can edit these settings.' }}"></i>
+                    <li tabindex="0" data-section="muted-topics">
+                        <i class="icon fa fa-bell-slash" aria-hidden="true"></i>
+                        <div class="text">{{t "Muted topics" }}</div>
+                    </li>
+                    <li tabindex="0" data-section="muted-users">
+                        <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
+                        <div class="text">{{t "Muted users" }}</div>
+                    </li>
+                </ul>
+
+                <ul class="org-settings-list">
+                    <li tabindex="0" data-section="organization-profile">
+                        <i class="icon fa fa-address-card" aria-hidden="true"></i>
+                        <div class="text">{{t "Organization profile" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
+                        <i class="icon fa fa-flask" aria-hidden="true"></i>
+                        <div class="text">{{t "Organization settings" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings' }}"></i>
+                        {{/unless}}
+                    </li>
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-permissions">
+                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                        <div class="text">{{t "Organization permissions" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-level-user-defaults">
+                        <i class="icon fa fa-cog" aria-hidden="true"></i>
+                        <div class="text">{{t "Default user settings" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    <li tabindex="0" data-section="emoji-settings">
+                        <i class="icon fa fa-smile-o" aria-hidden="true"></i>
+                        <div class="text">{{t "Custom emoji" }}</div>
+                        {{#if is_guest}}
+                            <i class="locked fa fa-lock" title="{{t 'Guest users cannot edit custom emoji.' }}"></i>
+                        {{else}}
+                            {{#if show_emoji_settings_lock}}
+                            <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.'}}"></i>
+                            {{/if}}
+                        {{/if}}
+                    </li>
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="user-groups-admin">
+                        <i class="icon fa fa-group" aria-hidden="true"></i>
+                        <div class="text">{{t "User groups" }}</div>
+                    </li>
                     {{/unless}}
-                </li>
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="user-list-admin">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{t "Users" }}</div>
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="auth-methods">
+                        <i class="icon fa fa-key" aria-hidden="true"></i>
+                        <div class="text">{{t "Authentication methods" }}</div>
+                        {{#unless is_owner}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization owners can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="user-list-admin">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{t "Users" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{/unless}}
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="deactivated-users-admin">
+                        <i class="icon fa fa-trash-o" aria-hidden="true"></i>
+                        <div class="text">{{t "Deactivated users" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{/unless}}
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="bot-list-admin">
+                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <div class="text">{{t "Bots" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{/unless}}
+                    {{#unless is_guest}}
+                    <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-streams-list">
+                        <i class="icon fa fa-exchange" aria-hidden="true"></i>
+                        <div class="text">{{t "Default streams" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{/unless}}
+                    <li tabindex="0" data-section="linkifier-settings">
+                        <i class="icon fa fa-font" aria-hidden="true"></i>
+                        <div class="text">{{t "Linkifiers" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    <li tabindex="0" data-section="playground-settings">
+                        <i class="icon fa fa-external-link" aria-hidden="true"></i>
+                        <div class="text">{{t "Code playgrounds" }}</div>
+                        {{#unless is_admin}}
+                        <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                        {{/unless}}
+                    </li>
+                    {{#if is_admin}}
+                    <li tabindex="0" data-section="profile-field-settings">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{t "Custom profile fields" }}</div>
+                    </li>
+                    {{/if}}
+                    {{#unless is_guest}}
+                    <li tabindex="0" data-section="invites-list-admin">
+                        <i class="icon fa fa-user-plus" aria-hidden="true"></i>
+                        <div class="text">{{t "Invitations" }}</div>
+                    </li>
+                    {{/unless}}
+                    {{#if is_admin}}
+                    <li tabindex="0" data-section="data-exports-admin">
+                        <i class="icon fa fa-database" aria-hidden="true"></i>
+                        <div class="text">{{t "Data exports" }}</div>
+                    </li>
+                    {{/if}}
                     {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
+                    <div class="collapse-settings-btn">
+                        <i id='toggle_collapse_chevron' class='fa fa-angle-double-down'></i>
+                        <p id='toggle_collapse'>{{t "Show more" }}</p>
+                    </div>
                     {{/unless}}
-                </li>
-                {{/unless}}
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="deactivated-users-admin">
-                    <i class="icon fa fa-trash-o" aria-hidden="true"></i>
-                    <div class="text">{{t "Deactivated users" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                {{/unless}}
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="bot-list-admin">
-                    <i class="icon fa fa-github" aria-hidden="true"></i>
-                    <div class="text">{{t "Bots" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                {{/unless}}
-                {{#unless is_guest}}
-                <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="default-streams-list">
-                    <i class="icon fa fa-exchange" aria-hidden="true"></i>
-                    <div class="text">{{t "Default streams" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                {{/unless}}
-                <li tabindex="0" data-section="linkifier-settings">
-                    <i class="icon fa fa-font" aria-hidden="true"></i>
-                    <div class="text">{{t "Linkifiers" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                <li tabindex="0" data-section="playground-settings">
-                    <i class="icon fa fa-external-link" aria-hidden="true"></i>
-                    <div class="text">{{t "Code playgrounds" }}</div>
-                    {{#unless is_admin}}
-                    <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
-                    {{/unless}}
-                </li>
-                {{#if is_admin}}
-                <li tabindex="0" data-section="profile-field-settings">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{t "Custom profile fields" }}</div>
-                </li>
-                {{/if}}
-                {{#unless is_guest}}
-                <li tabindex="0" data-section="invites-list-admin">
-                    <i class="icon fa fa-user-plus" aria-hidden="true"></i>
-                    <div class="text">{{t "Invitations" }}</div>
-                </li>
-                {{/unless}}
-                {{#if is_admin}}
-                <li tabindex="0" data-section="data-exports-admin">
-                    <i class="icon fa fa-database" aria-hidden="true"></i>
-                    <div class="text">{{t "Data exports" }}</div>
-                </li>
-                {{/if}}
-                {{#unless is_admin}}
-                <div class="collapse-settings-btn">
-                    <i id='toggle_collapse_chevron' class='fa fa-angle-double-down'></i>
-                    <p id='toggle_collapse'>{{t "Show more" }}</p>
-                </div>
-                {{/unless}}
-            </ul>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="content-wrapper right">

@@ -2,7 +2,7 @@ from typing import Any
 
 from django.core.management.base import CommandParser
 
-from zerver.lib.actions import bulk_remove_subscriptions
+from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import get_stream
 

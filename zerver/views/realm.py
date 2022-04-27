@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
@@ -7,10 +7,9 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_safe
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
-from zerver.decorator import require_realm_admin, require_realm_owner
-from zerver.forms import check_subdomain_available as check_subdomain
-from zerver.lib.actions import (
-    do_change_realm_subdomain,
+from zerver.actions.create_realm import do_change_realm_subdomain
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -20,6 +19,8 @@ from zerver.lib.actions import (
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
 )
+from zerver.decorator import require_realm_admin, require_realm_owner
+from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequired
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.message import parse_message_content_delete_limit
@@ -39,6 +40,8 @@ from zerver.lib.validator import (
 )
 from zerver.models import Realm, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
+
+ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
 
 
 @require_realm_admin
@@ -138,6 +141,7 @@ def update_realm(
         str_validator=check_capped_string(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
         default=None,
     ),
+    org_type: Optional[int] = REQ(json_validator=check_int_in(ORG_TYPE_IDS), default=None),
     enable_spectator_access: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
@@ -294,6 +298,10 @@ def update_realm(
         do_change_realm_subdomain(realm, string_id, acting_user=user_profile)
         data["realm_uri"] = realm.uri
 
+    if org_type is not None:
+        do_change_realm_org_type(realm, org_type, acting_user=user_profile)
+        data["org_type"] = org_type
+
     return json_success(request, data)
 
 
@@ -341,6 +349,7 @@ def update_realm_user_settings_defaults(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    display_emoji_reaction_users: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_view: Optional[str] = REQ(
         str_validator=check_string_in(default_view_options), default=None
     ),

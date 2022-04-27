@@ -8,12 +8,10 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
-    check_send_message,
-    do_change_user_role,
-    do_set_realm_property,
-    do_update_user_presence,
-)
+from zerver.actions.message_send import check_send_message
+from zerver.actions.presence import do_update_user_presence
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
@@ -1006,7 +1004,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 35)
+        self.assert_length(queries, 36)
 
         expected_counts = dict(
             alert_words=1,
@@ -1029,7 +1027,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_linkifiers=1,
             realm_playgrounds=1,
             realm_user=3,
-            realm_user_groups=2,
+            realm_user_groups=3,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
             starred_messages=1,

@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 from django.http import HttpRequest
 from django.http.response import HttpResponse
 
+from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
-from zerver.lib.actions import do_rename_stream
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase

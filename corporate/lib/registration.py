@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count
 from corporate.models import get_current_plan_by_realm
-from zerver.lib.actions import send_message_to_signup_notification_stream
+from zerver.actions.create_user import send_message_to_signup_notification_stream
 from zerver.lib.exceptions import InvitationError
 from zerver.models import Realm, get_system_bot
 

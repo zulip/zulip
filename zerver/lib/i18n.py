@@ -13,7 +13,7 @@ from django.utils import translation
 from zerver.lib.request import RequestNotes
 
 
-@lru_cache()
+@lru_cache(None)
 def get_language_list() -> List[Dict[str, Any]]:
     path = os.path.join(settings.DEPLOY_ROOT, "locale", "language_name_map.json")
     with open(path, "rb") as reader:

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Mapping
 from unittest import mock
 
-from zerver.lib.actions import do_add_submessage
+from zerver.actions.submessage import do_add_submessage
 from zerver.lib.message import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, SubMessage
@@ -196,7 +196,7 @@ class TestBasics(ZulipTestCase):
         message_id = self.send_stream_message(hamlet, "Denmark")
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.submessage.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

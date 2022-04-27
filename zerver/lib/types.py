@@ -1,10 +1,10 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django.http import HttpResponse
 from django.utils.functional import Promise
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired
 
 ViewFuncT = TypeVar("ViewFuncT", bound=Callable[..., HttpResponse])
 
@@ -23,8 +23,8 @@ class ProfileDataElementBase(TypedDict):
     id: int
     name: str
     type: int
-    hint: Optional[str]
-    field_data: Optional[str]
+    hint: str
+    field_data: str
     order: int
 
 
@@ -144,7 +144,7 @@ class RawStreamDict(TypedDict):
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
     id: int
-    invite_only: Optional[bool]
+    invite_only: bool
     is_web_public: bool
     message_retention_days: Optional[int]
     name: str
@@ -162,7 +162,7 @@ class RawSubscriptionDict(TypedDict):
     color: str
     desktop_notifications: Optional[bool]
     email_notifications: Optional[bool]
-    is_muted: Optional[bool]
+    is_muted: bool
     pin_to_top: bool
     push_notifications: Optional[bool]
     recipient_id: int
@@ -186,11 +186,10 @@ class SubscriptionStreamDict(TypedDict):
     email_notifications: Optional[bool]
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
-    in_home_view: Optional[bool]
-    # Bug: invite_only should be bool.
-    invite_only: Optional[bool]
+    in_home_view: bool
+    invite_only: bool
     is_announcement_only: bool
-    is_muted: Optional[bool]
+    is_muted: bool
     is_web_public: bool
     message_retention_days: Optional[int]
     name: str
@@ -210,7 +209,7 @@ class NeverSubscribedStreamDict(TypedDict):
     description: str
     first_message_id: Optional[int]
     history_public_to_subscribers: bool
-    invite_only: Optional[bool]
+    invite_only: bool
     is_announcement_only: bool
     is_web_public: bool
     message_retention_days: Optional[int]

@@ -84,3 +84,7 @@ export function private_message_recipient(value) {
 export function has_message_content() {
     return message_content() !== "";
 }
+
+export function is_topic_field_empty() {
+    return topic() === "";
+}

@@ -1,12 +1,11 @@
 import time
-from typing import List, Optional
+from typing import List, Optional, TypedDict
 
 import orjson
 from django.db import migrations, transaction
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min, Model
-from typing_extensions import TypedDict
 
 BATCH_SIZE = 10000
 STREAM = 2

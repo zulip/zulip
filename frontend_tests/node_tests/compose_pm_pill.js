@@ -41,8 +41,6 @@ run_test("pills", ({override}) => {
     people.add_active_user(iago);
     people.add_active_user(hamlet);
 
-    people.get_realm_users = () => [iago, othello, hamlet];
-
     const $recipient_stub = $("#private_message_recipient");
     const pill_container_stub = "pill-container";
     $recipient_stub.set_parent(pill_container_stub);
@@ -81,25 +79,29 @@ run_test("pills", ({override}) => {
     let get_by_email_called = false;
     people.get_by_email = (user_email) => {
         get_by_email_called = true;
-        if (user_email === iago.email) {
-            return iago;
+        switch (user_email) {
+            case iago.email:
+                return iago;
+            case othello.email:
+                return othello;
+            /* istanbul ignore next */
+            default:
+                throw new Error(`Unknown user email ${user_email}`);
         }
-        if (user_email === othello.email) {
-            return othello;
-        }
-        throw new Error(`Unknown user email ${user_email}`);
     };
 
     let get_by_user_id_called = false;
     people.get_by_user_id = (id) => {
         get_by_user_id_called = true;
-        if (id === othello.user_id) {
-            return othello;
+        switch (id) {
+            case othello.user_id:
+                return othello;
+            case hamlet.user_id:
+                return hamlet;
+            /* istanbul ignore next */
+            default:
+                throw new Error(`Unknown user ID ${id}`);
         }
-        if (id === hamlet.user_id) {
-            return hamlet;
-        }
-        throw new Error(`Unknown user ID ${id}`);
     };
 
     function test_create_item(handler) {

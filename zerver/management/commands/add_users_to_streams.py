@@ -2,8 +2,9 @@ from typing import Any
 
 from django.core.management.base import CommandParser
 
-from zerver.lib.actions import bulk_add_subscriptions, ensure_stream
+from zerver.actions.streams import bulk_add_subscriptions
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.streams import ensure_stream
 
 
 class Command(ZulipBaseCommand):

@@ -2,8 +2,12 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.realm_domains import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, do_remove_realm_domain
 from zerver.lib.domains import validate_domain
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables

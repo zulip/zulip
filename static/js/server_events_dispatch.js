@@ -214,6 +214,7 @@ export function dispatch_normal_event(event) {
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
+                org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
@@ -606,6 +607,7 @@ export function dispatch_normal_event(event) {
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
+                "display_emoji_reaction_users",
                 "starred_message_counts",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
@@ -685,6 +687,10 @@ export function dispatch_normal_event(event) {
                 }
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();
+            }
+
+            if (event.property === "display_emoji_reaction_users") {
+                message_live_update.rerender_messages_view();
             }
             if (event.property === "escape_navigates_to_default_view") {
                 $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);

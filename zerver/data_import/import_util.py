@@ -4,12 +4,23 @@ import os
 import random
 import shutil
 from functools import partial
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 import orjson
 import requests
 from django.forms.models import model_to_dict
-from typing_extensions import Protocol
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -441,6 +452,13 @@ def build_stream(
     invite_only: bool = False,
     stream_post_policy: int = 1,
 ) -> ZerverFieldsT:
+
+    # Other applications don't have the distinction of "private stream with public history"
+    # vs "private stream with hidden history" - and we've traditionally imported private "streams"
+    # of other products as private streams with hidden history.
+    # So we can set the history_public_to_subscribers value based on the invite_only flag.
+    history_public_to_subscribers = not invite_only
+
     stream = Stream(
         name=name,
         deactivated=deactivated,
@@ -450,6 +468,7 @@ def build_stream(
         invite_only=invite_only,
         id=stream_id,
         stream_post_policy=stream_post_policy,
+        history_public_to_subscribers=history_public_to_subscribers,
     )
     stream_dict = model_to_dict(stream, exclude=["realm"])
     stream_dict["realm"] = realm_id

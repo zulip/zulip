@@ -235,17 +235,19 @@
 #compose_top_right {
     display: flex;
     align-items: center;
+    margin-bottom: auto;
 
     button {
         background: transparent;
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 15px;
+        font-weight: normal;
         line-height: 20px;
         opacity: 0.6;
         border: 0;
         padding: 0;
         margin-left: 4px;
         vertical-align: unset;
+        text-shadow: none;
 
         &:hover {
             opacity: 1;

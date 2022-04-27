@@ -7,53 +7,67 @@ const {run_test} = require("../zjsunit/test");
 
 const typeahead = zrequire("../shared/js/typeahead");
 
-// The data structures here may be different for
-// different apps; the only key thing is we look
-// at emoji_name and we'll return the entire structures.
+const unicode_emojis = [
+    ["1f43c", "panda_face"],
+    ["1f642", "smile"],
+    ["1f604", "big_smile"],
+    ["1f368", "ice_cream"],
+    ["1f366", "soft_ice_cream"],
+    ["1f6a5", "horizontal_traffic_light"],
+    ["1f6a6", "traffic_light"],
+    ["1f537", "large_blue_diamond"],
+    ["1f539", "small_blue_diamond"],
+];
 
-const emoji_japanese_post_office = {
-    emoji_name: "japanese_post_office",
-    url: "TBD",
-};
+const emojis = [
+    {emoji_name: "japanese_post_office", url: "TBD"},
+    {emoji_name: "tada", random_field: "whatever"},
+    ...unicode_emojis.map(([emoji_code, emoji_name]) => ({
+        emoji_name,
+        emoji_code,
+    })),
+];
 
-const emoji_panda_face = {
-    emoji_name: "panda_face",
-    emoji_code: "1f43c",
-};
+function emoji_matches(query) {
+    const matcher = typeahead.get_emoji_matcher(query);
+    return emojis.filter((emoji) => matcher(emoji));
+}
 
-const emoji_smile = {
-    emoji_name: "smile",
-};
+function assert_emoji_matches(query, expected) {
+    const names = emoji_matches(query).map((emoji) => emoji.emoji_name);
+    assert.deepEqual(names.sort(), expected);
+}
 
-const emoji_tada = {
-    emoji_name: "tada",
-    random_field: "whatever",
-};
+run_test("get_emoji_matcher: nonmatches", () => {
+    assert_emoji_matches("notaemoji", []);
+    assert_emoji_matches("da_", []);
+});
 
-const emojis = [emoji_japanese_post_office, emoji_panda_face, emoji_smile, emoji_tada];
+run_test("get_emoji_matcher: misc matches", () => {
+    assert_emoji_matches("da", ["panda_face", "tada"]);
+    assert_emoji_matches("smil", ["big_smile", "smile"]);
+    assert_emoji_matches("mile", ["big_smile", "smile"]);
+    assert_emoji_matches("japanese_post_", ["japanese_post_office"]);
+});
 
-run_test("get_emoji_matcher", () => {
-    function assert_matches(query, expected) {
-        const matcher = typeahead.get_emoji_matcher(query);
-        assert.deepEqual(
-            emojis.filter((emoji) => matcher(emoji)),
-            expected,
-        );
+run_test("matches starting at non-first word, too", () => {
+    assert_emoji_matches("ice_cream", ["ice_cream", "soft_ice_cream"]);
+    assert_emoji_matches("blue_dia", ["large_blue_diamond", "small_blue_diamond"]);
+    assert_emoji_matches("traffic_", ["horizontal_traffic_light", "traffic_light"]);
+});
+
+run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
+    function assert_equivalent(query) {
+        assert.deepEqual(emoji_matches(query), emoji_matches(query.replace(" ", "_")));
     }
-
-    assert_matches("notaemoji", []);
-    assert_matches("da_", []);
-    assert_matches("da ", []);
-
-    assert_matches("da", [emoji_panda_face, emoji_tada]);
-    assert_matches("panda ", [emoji_panda_face]);
-    assert_matches("smil", [emoji_smile]);
-    assert_matches("mile", [emoji_smile]);
-
-    assert_matches("japanese_post_", [emoji_japanese_post_office]);
-    assert_matches("japanese post ", [emoji_japanese_post_office]);
-
-    assert_matches("🐼", [emoji_panda_face]);
+    assert_equivalent("da ");
+    assert_equivalent("panda ");
+    assert_equivalent("japanese post ");
+    assert_equivalent("ice ");
+    assert_equivalent("ice cream");
+    assert_equivalent("blue dia");
+    assert_equivalent("traffic ");
+    assert_equivalent("traffic l");
 });
 
 run_test("triage", () => {
@@ -131,48 +145,63 @@ run_test("triage", () => {
     );
 });
 
-run_test("sort_emojis th", () => {
-    const thumbs_up = {
-        emoji_name: "thumbs_up",
-        emoji_code: "1f44d",
-    };
-    const thumbs_down = {
-        emoji_name: "thumbs_down",
-    };
-    const thermometer = {
-        emoji_name: "thermometer",
-    };
-    const mother_nature = {
-        emoji_name: "mother_nature",
-    };
+function sort_emojis(emojis, query) {
+    return typeahead.sort_emojis(emojis, query).map((emoji) => emoji.emoji_name);
+}
 
-    const emoji_list = [mother_nature, thermometer, thumbs_down, thumbs_up];
-
-    assert.deepEqual(typeahead.sort_emojis(emoji_list, "th"), [
-        thumbs_up,
-        thermometer,
-        thumbs_down,
-        mother_nature,
+run_test("sort_emojis: th", () => {
+    const emoji_list = [
+        {emoji_name: "mother_nature"},
+        {emoji_name: "thermometer"},
+        {emoji_name: "thumbs_down"},
+        {emoji_name: "thumbs_up", emoji_code: "1f44d"},
+    ];
+    assert.deepEqual(sort_emojis(emoji_list, "th"), [
+        "thumbs_up",
+        "thermometer",
+        "thumbs_down",
+        "mother_nature",
     ]);
 });
 
-run_test("sort_emojis sm", () => {
-    const big_smile = {
-        emoji_name: "big_smile",
-    };
-    const slight_smile = {
-        emoji_name: "slight_smile",
-        emoji_code: "1f642",
-    };
-    const small_airplane = {
-        emoji_name: "small_airplane",
-    };
+run_test("sort_emojis: sm", () => {
+    const emoji_list = [
+        {emoji_name: "big_smile"},
+        {emoji_name: "slight_smile", emoji_code: "1f642"},
+        {emoji_name: "small_airplane"},
+    ];
+    assert.deepEqual(sort_emojis(emoji_list, "sm"), [
+        "slight_smile",
+        "small_airplane",
+        "big_smile",
+    ]);
+});
 
-    const emoji_list = [big_smile, slight_smile, small_airplane];
+run_test("sort_emojis: SM", () => {
+    const emoji_list = [
+        {emoji_name: "big_smile"},
+        {emoji_name: "slight_smile", emoji_code: "1f642"},
+        {emoji_name: "small_airplane"},
+    ];
+    assert.deepEqual(sort_emojis(emoji_list, "SM"), [
+        "slight_smile",
+        "small_airplane",
+        "big_smile",
+    ]);
+});
 
-    assert.deepEqual(typeahead.sort_emojis(emoji_list, "sm"), [
-        slight_smile,
-        small_airplane,
-        big_smile,
+run_test("sort_emojis: prefix before midphrase, with underscore (traffic_li)", () => {
+    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    assert.deepEqual(sort_emojis(emoji_list, "traffic_li"), [
+        "traffic_light",
+        "horizontal_traffic_light",
+    ]);
+});
+
+run_test("sort_emojis: prefix before midphrase, with space (traffic li)", () => {
+    const emoji_list = [{emoji_name: "horizontal_traffic_light"}, {emoji_name: "traffic_light"}];
+    assert.deepEqual(sort_emojis(emoji_list, "traffic li"), [
+        "traffic_light",
+        "horizontal_traffic_light",
     ]);
 });

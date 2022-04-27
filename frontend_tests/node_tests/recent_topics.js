@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -63,9 +64,11 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
     replace_list_data: (data) => {
-        if (expected_data_to_replace_in_list_widget === undefined) {
-            throw new Error("You must set expected_data_to_replace_in_list_widget");
-        }
+        assert.notEqual(
+            expected_data_to_replace_in_list_widget,
+            undefined,
+            "You must set expected_data_to_replace_in_list_widget",
+        );
         assert.deepEqual(data, expected_data_to_replace_in_list_widget);
         expected_data_to_replace_in_list_widget = undefined;
     },
@@ -110,7 +113,6 @@ mock_esm("../../static/js/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
-    is_subscribed: () => true,
 });
 mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
@@ -143,22 +145,6 @@ mock_esm("../../static/js/unread", {
             return 0;
         }
         return 1;
-    },
-});
-
-const ls_container = new Map();
-set_global("localStorage", {
-    getItem(key) {
-        return ls_container.get(key);
-    },
-    setItem(key, val) {
-        ls_container.set(key, val);
-    },
-    removeItem(key) {
-        ls_container.delete(key);
-    },
-    clear() {
-        ls_container.clear();
     },
 });
 
@@ -345,11 +331,13 @@ test("test_recent_topics_show", ({mock_template, override}) => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
+    page_params.is_spectator = false;
     const expected = {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
         search_val: "",
+        is_spectator: false,
     };
 
     mock_template("recent_topics_table.hbs", false, (data) => {
@@ -373,11 +361,13 @@ test("test_recent_topics_show", ({mock_template, override}) => {
 test("test_filter_all", ({override_rewire, mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
+    page_params.is_spectator = true;
     const expected = {
         filter_participated: false,
         filter_unread: false,
         filter_muted: false,
         search_val: "",
+        is_spectator: true,
     };
     let row_data;
     let i;
@@ -423,6 +413,7 @@ test("test_filter_all", ({override_rewire, mock_template}) => {
 
 test("test_filter_unread", ({override_rewire, mock_template}) => {
     let expected_filter_unread = false;
+    page_params.is_spectator = false;
 
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
@@ -430,6 +421,7 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
             filter_unread: expected_filter_unread,
             filter_muted: false,
             search_val: "",
+            is_spectator: false,
         });
     });
 
@@ -532,12 +524,14 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
 test("test_filter_participated", ({override_rewire, mock_template}) => {
     let expected_filter_participated;
 
+    page_params.is_spectator = false;
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
             filter_participated: expected_filter_participated,
             filter_unread: false,
             filter_muted: false,
             search_val: "",
+            is_spectator: false,
         });
     });
 

@@ -51,11 +51,9 @@ run_test("settings", ({override_rewire}) => {
 
     let row_attribute_fetched = false;
     $fake_row.attr = (opts) => {
-        if (opts === "data-user-id") {
-            row_attribute_fetched += 1;
-            return "5";
-        }
-        throw new Error(`Unknown attribute ${opts}`);
+        assert.equal(opts, "data-user-id");
+        row_attribute_fetched += 1;
+        return "5";
     };
 
     let unmute_user_called = false;

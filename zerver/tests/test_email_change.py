@@ -11,12 +11,9 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
-from zerver.lib.actions import (
-    do_deactivate_realm,
-    do_deactivate_user,
-    do_set_realm_property,
-    do_start_email_change_process,
-)
+from zerver.actions.realm_settings import do_deactivate_realm, do_set_realm_property
+from zerver.actions.user_settings import do_start_email_change_process
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     EmailChangeStatus,

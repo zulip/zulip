@@ -5,7 +5,8 @@ import orjson
 from django.db import connection
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_permission, do_update_message_flags
+from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,

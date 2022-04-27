@@ -24,6 +24,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.remote_server import send_json_to_push_bouncer, send_to_push_bouncer
+from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     AbstractPushDeviceToken,
@@ -1097,11 +1098,17 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
 
     trigger = missed_message["trigger"]
     mentioned_user_group_name = None
+    # mentioned_user_group_id will be None if the user is personally mentioned
+    # regardless whether they are a member of the mentioned user group in the
+    # message or not.
     mentioned_user_group_id = missed_message.get("mentioned_user_group_id")
 
     if mentioned_user_group_id is not None:
         user_group = UserGroup.objects.get(id=mentioned_user_group_id, realm=user_profile.realm)
         mentioned_user_group_name = user_group.name
+
+    # Soft reactivate if pushing to a long_term_idle user that is personally mentioned
+    soft_reactivate_if_personal_notification(user_profile, {trigger}, mentioned_user_group_name)
 
     apns_payload = get_message_payload_apns(
         user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name

@@ -8,21 +8,18 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
+from zerver.actions.message_edit import (
     check_update_message,
-    do_add_reaction,
-    do_change_realm_plan_type,
-    do_change_stream_post_policy,
-    do_change_user_role,
-    do_deactivate_stream,
     do_delete_messages,
-    do_set_realm_property,
     do_update_message,
-    get_topic_messages,
     get_user_info_for_message_updates,
 )
+from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.users import do_change_user_role
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
 from zerver.lib.user_topics import (
@@ -1164,7 +1161,7 @@ class EditMessageTest(EditMessageTestCase):
         message.save()
         do_edit_message_assert_success(id_, "D", "cordelia")
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1246,7 +1243,7 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Stream 123"
         stream = self.make_stream(stream_name)
@@ -1488,7 +1485,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertFalse(topic_is_muted(cordelia, new_public_stream.id, "final topic name"))
         self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "final topic name"))
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -2890,7 +2887,7 @@ class DeleteMessageTest(ZulipTestCase):
         message = self.get_last_message()
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.message_edit.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

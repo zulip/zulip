@@ -101,7 +101,6 @@ not_yet_fully_covered = [
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",
     "zerver/lib/storage.py",
-    "zerver/lib/timeout.py",
     "zerver/lib/unminify.py",
     "zerver/lib/utils.py",
     "zerver/lib/zephyr.py",
@@ -242,7 +241,7 @@ def main() -> None:
         "--parallel",
         dest="processes",
         type=int,
-        default=default_parallel,
+        default=None,
         help="Specify the number of processes to run the "
         "tests in. Default is the number of logical CPUs",
     )
@@ -284,10 +283,9 @@ def main() -> None:
         os.environ["BAN_CONSOLE_OUTPUT"] = "1"
 
     args = options.args
-    parallel = options.processes
     include_webhooks = options.coverage or options.include_webhooks
 
-    if parallel < 1:
+    if options.processes is not None and options.processes < 1:
         raise argparse.ArgumentTypeError("option processes: Only positive integers are allowed.")
 
     zerver_test_dir = "zerver/tests/"
@@ -298,14 +296,14 @@ def main() -> None:
     # !fatal_errors, so that we don't end up removing tests from
     # the list that weren't run.
     if options.rerun:
-        parallel = 1
+        default_parallel = 1
         options.fatal_errors = False
         failed_tests = get_failed_tests()
         if failed_tests:
             args = failed_tests
     if len(args) > 0:
         # If we passed a specific set of tests, run in serial mode.
-        parallel = 1
+        default_parallel = 1
 
         # to transform forward slashes '/' present in the argument into dots '.'
         for i, suite in enumerate(args):
@@ -407,6 +405,7 @@ def main() -> None:
 
     TestRunner = get_runner(settings)
 
+    parallel = default_parallel if options.processes is None else options.processes
     if parallel > 1:
         print(f"-- Running tests in parallel mode with {parallel} processes.", flush=True)
     else:

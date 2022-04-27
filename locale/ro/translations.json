@@ -135,6 +135,7 @@
   "April": "Aprilie",
   "Archive stream": "Arhivați fluxul",
   "Archive stream {stream}": "Arhivați fluxul {stream}",
+  "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to archive this stream?": "Sigur doriți să arhivați acest flux?",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Sigur doriți să creați fluxul „&#39;&#39;&#39;{stream_name}&#39;&#39;&#39;&#39; și să vă abonați la acesta {count} utilizatori?",
   "Are you sure you want to deactivate this organization?": "Sigur doriți să dezactivați această organizație?",
@@ -259,6 +260,7 @@
   "Day of the week to send digests": "Ziua săptămânii când să trimit rezumatele",
   "Deactivate": "Dezactivează",
   "Deactivate account": "Dezactivează contul",
+  "Deactivate bot": "",
   "Deactivate organization": "Dezactivează organizația",
   "Deactivate user": "Dezactivați utilizatorul",
   "Deactivate your account": "Dezactivează contul tău",
@@ -278,7 +280,6 @@
   "Delete": "Șterge",
   "Delete alert word": "Șterge cuvântul alertă",
   "Delete all drafts": "Ștergeți toate schițele",
-  "Delete bot": "Șterge botul",
   "Delete draft": "Șterge schița",
   "Delete file": "Șterge fișierul",
   "Delete icon": "Șterge icoana",
@@ -685,6 +686,8 @@
   "Notification triggers": "Declanșatorii notificarii",
   "Notifications": "Notificări",
   "Notifications for @all/@everyone mentions": "Notificări pentru menționări @all / @everyone",
+  "Notify recipients": "",
+  "Notify stream": "",
   "November": "Noiembrie",
   "October": "Octombrie",
   "Offline": "Deconectat",
@@ -714,6 +717,7 @@
   "Only owners can change this setting.": "Numai proprietarii pot modifica această setare.",
   "Only owners can deactivate the organization.": "Doar proprietarii pot dezactiva o organizație.",
   "Only stream members can add users to a private stream": "Numai membrii din hub pot adăuga utilizatori într-un hub privat",
+  "Only subscribers to this stream can edit stream permissions.": "",
   "Open": "Deschide",
   "Open message menu": "Deschide mesajul meniu",
   "Open reactions menu": "Deschide meniul reacțiilor",
@@ -1187,6 +1191,5 @@
   "{starred_status} this message": "{starred_status} acest mesaj",
   "{starred_status} this message (Ctrl + s)": "{starred_status} acest mesaj (Ctrl + s)",
   "{username} [said]({link_to_message}):": "{username} [a spus]({link_to_message}):",
-  "{username} reacted with {emoji_name}": "{username} a reacționat cu {emoji_name}",
-  "{wildcard_mention_token} (Notify stream)": "{wildcard_mention_token} (Notifică fluxul)"
+  "{username} reacted with {emoji_name}": "{username} a reacționat cu {emoji_name}"
 }

@@ -53,14 +53,14 @@ run_test("update_button_visibility", () => {
 
     $search_query.is = () => true;
     $search_query.val("");
-    narrow_state.active = () => false;
+    delete narrow_state.active;
     $search_button.prop("disabled", true);
     search.update_button_visibility();
     assert.ok(!$search_button.prop("disabled"));
 
     $search_query.is = () => false;
     $search_query.val("Test search term");
-    narrow_state.active = () => false;
+    delete narrow_state.active;
     $search_button.prop("disabled", true);
     search.update_button_visibility();
     assert.ok(!$search_button.prop("disabled"));
@@ -247,6 +247,7 @@ run_test("initialize", () => {
     _setup("");
 
     ev.key = "a";
+    /* istanbul ignore next */
     $search_query_box.is = () => false;
     $searchbox_form.trigger(ev);
 

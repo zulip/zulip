@@ -4,7 +4,8 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_change_stream_permission, notify_reaction_update
+from zerver.actions.reactions import notify_reaction_update
+from zerver.actions.streams import do_change_stream_permission
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.exceptions import JsonableError
@@ -1034,7 +1035,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         }
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits!"
                 )
@@ -1118,7 +1119,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         )
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.reactions.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

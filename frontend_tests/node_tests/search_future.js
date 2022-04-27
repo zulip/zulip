@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -24,8 +24,6 @@ mock_esm("../../static/js/ui_util", {
     change_tab_to: noop,
     place_caret_at_end: noop,
 });
-
-set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
@@ -63,14 +61,14 @@ test("update_button_visibility", () => {
 
     $search_query.is = () => true;
     $search_query.val("");
-    narrow_state.active = () => false;
+    delete narrow_state.active;
     $search_button.prop("disabled", true);
     search.update_button_visibility();
     assert.ok(!$search_button.prop("disabled"));
 
     $search_query.is = () => false;
     $search_query.val("Test search term");
-    narrow_state.active = () => false;
+    delete narrow_state.active;
     $search_button.prop("disabled", true);
     search.update_button_visibility();
     assert.ok(!$search_button.prop("disabled"));
@@ -144,9 +142,13 @@ test("initialize", () => {
             let operators;
             let is_blurred;
             let is_append_search_string_called;
-            $search_query_box.on("blur", () => {
-                is_blurred = true;
-            });
+            $search_query_box.on(
+                "blur",
+                /* istanbul ignore next */
+                () => {
+                    is_blurred = true;
+                },
+            );
             search_pill.append_search_string = () => {
                 is_append_search_string_called = true;
             };
@@ -155,14 +157,17 @@ test("initialize", () => {
                 is_blurred = false;
                 is_append_search_string_called = false;
                 $search_query_box.val(search_box_val);
+                /* istanbul ignore next */
                 Filter.parse = (search_string) => {
                     assert.equal(search_string, search_box_val);
                     return operators;
                 };
+                /* istanbul ignore next */
                 narrow.activate = (raw_operators, options) => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: "search"});
                 };
+                /* istanbul ignore next */
                 search_pill.get_search_string_for_current_filter = () => search_box_val;
             };
 
@@ -285,6 +290,7 @@ test("initialize", () => {
         type: "keyup",
         which: 15,
     };
+    /* istanbul ignore next */
     $search_query_box.is = () => false;
     $searchbox_form.trigger(ev);
 

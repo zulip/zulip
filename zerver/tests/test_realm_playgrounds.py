@@ -1,4 +1,4 @@
-from zerver.lib.actions import do_add_realm_playground
+from zerver.actions.realm_playgrounds import do_add_realm_playground
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmPlayground, get_realm
 
