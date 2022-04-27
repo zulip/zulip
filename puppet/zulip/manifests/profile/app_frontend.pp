@@ -61,7 +61,12 @@ class zulip::profile::app_frontend {
     require => Package[certbot],
   }
   exec { 'fix-standalone-certbot':
-    onlyif  => 'test -d /etc/letsencrypt/renewal && grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf',
+    onlyif  => @(EOT),
+      test -L /etc/ssl/certs/zulip.combined-chain.crt &&
+      readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
+      test -d /etc/letsencrypt/renewal &&
+      grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
+      | EOT
     command => "${::zulip_scripts_path}/lib/fix-standalone-certbot",
   }
 
