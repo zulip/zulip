@@ -120,6 +120,10 @@ def get_user_group_direct_member_ids(user_group: UserGroup) -> List[int]:
     )
 
 
+def get_user_group_direct_members(user_group: UserGroup) -> "QuerySet[UserGroup]":
+    return user_group.direct_members.all()
+
+
 def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
     return list(
         UserGroupMembership.objects.filter(
@@ -163,7 +167,7 @@ def is_user_in_group(
     user_group: UserGroup, user: UserProfile, *, direct_member_only: bool = False
 ) -> bool:
     if direct_member_only:
-        return UserGroupMembership.objects.filter(user_group=user_group, user_profile=user).exists()
+        return get_user_group_direct_members(user_group=user_group).filter(id=user.id).exists()
 
     return get_recursive_group_members(user_group=user_group).filter(id=user.id).exists()
 
