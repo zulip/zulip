@@ -73,7 +73,7 @@ def run_single_test(test_file: str, test_number: int, total_tests: int) -> int:
     ]
 
     test_name = os.path.basename(test_file)
-    cmd_str = " ".join(map(shlex.quote, cmd))
+    cmd_str = shlex.join(cmd)
     print(
         f"\n\n===================== ({test_number}/{total_tests}) {test_name} =====================\nRunning {cmd_str}\n\n",
         flush=True,
