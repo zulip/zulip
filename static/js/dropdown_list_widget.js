@@ -35,9 +35,6 @@ export function DropdownListWidget({
         this.initial_value = null_value;
         blueslip.warn("dropdown-list-widget: Called without a default value; using null value");
     }
-
-    // Setting up dropdown_list_widget
-    this.setup();
 }
 
 DropdownListWidget.prototype.render_default_text = function ($elem) {
@@ -289,11 +286,14 @@ export function MultiSelectDropdownListWidget({
             "Multiselect dropdown-list-widget: Called without limit value; using 2 as the limit",
         );
     }
-
-    this.initialize_dropdown_values();
 }
 
 MultiSelectDropdownListWidget.prototype = Object.create(DropdownListWidget.prototype);
+
+MultiSelectDropdownListWidget.prototype.setup = function () {
+    DropdownListWidget.prototype.setup.call(this);
+    this.initialize_dropdown_values();
+};
 
 MultiSelectDropdownListWidget.prototype.initialize_dropdown_values = function () {
     // Stop the execution if value parameter is undefined and null_value is passed.

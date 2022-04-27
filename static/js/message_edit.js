@@ -476,6 +476,7 @@ function edit_message($row, raw_content) {
 
     if (is_stream_editable) {
         stream_widget = new DropdownListWidget(opts);
+        stream_widget.setup();
     }
     stream_bar.decorate(message.stream, $stream_header_colorblock, false);
 

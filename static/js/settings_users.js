@@ -714,6 +714,7 @@ function handle_bot_form($tbody, $status_field) {
             // Note: Rendering this is quite expensive in
             // organizations with 10Ks of users.
             owner_widget = new DropdownListWidget(opts);
+            owner_widget.setup();
         }
 
         dialog_widget.launch({
