@@ -450,6 +450,7 @@ export function set_up() {
                 value: bot.owner_id,
             };
             const owner_widget = new DropdownListWidget(opts);
+            owner_widget.setup();
 
             const service = bot_data.get_services(bot_id)[0];
             if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {

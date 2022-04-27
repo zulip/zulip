@@ -662,6 +662,7 @@ test("set_up", ({override, override_rewire, mock_template}) => {
     };
 
     override_rewire(dropdown_list_widget, "DropdownListWidget", () => ({
+        setup: noop,
         render: noop,
         update: noop,
     }));

@@ -492,6 +492,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
             on_update: update_submit_button_disabled_state,
         };
         stream_widget = new DropdownListWidget(opts);
+        stream_widget.setup();
 
         update_submit_button_disabled_state(stream_widget.value());
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
