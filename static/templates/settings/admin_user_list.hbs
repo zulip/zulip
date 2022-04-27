@@ -1,7 +1,7 @@
 <tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}">
     <td>
         <span class="user_name" >{{full_name}} {{#if is_current_user}}<span class="my_user_status">{{t '(you)' }}</span>{{/if}}</span>
-        <i class="fa fa-ban deactivated-user-icon" title="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
+        <i class="tippy-zulip-tooltip fa fa-ban deactivated-user-icon" data-tippy-content="{{t 'User is deactivated' }}" {{#if is_active}}style="display: none;"{{/if}}></i>
     </td>
     {{#if display_email}}
     <td>
@@ -41,15 +41,15 @@
     {{#if can_modify}}
     <td class="actions">
         <span class="user-status-settings">
-            <button class="button rounded small btn-warning open-user-form" {{#unless is_active}}style="display: none;"{{/unless}} title="{{#if is_bot}}{{t 'Edit bot' }}{{else}}{{t 'Edit user' }}{{/if}}" data-user-id="{{user_id}}">
+            <button class="button tippy-zulip-tooltip rounded small btn-warning open-user-form" {{#unless is_active}}style="display: none;"{{/unless}} data-tippy-content="{{t 'Edit user' }}" data-user-id="{{user_id}}">
                 <i class="fa fa-pencil" aria-hidden="true"></i>
             </button>
             {{#if is_active}}
-            <button title="{{t 'Deactivate' }}" class="button rounded small deactivate btn-danger" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
+            <button data-tippy-content="{{t 'Deactivate' }}" class="button tippy-zulip-tooltip rounded small deactivate btn-danger" {{#if cannot_deactivate}}disabled="disabled"{{/if}}>
                 <i class="fa fa-user-times" aria-hidden="true"></i>
             </button>
             {{else}}
-            <button title="{{t 'Reactivate' }}" class="button rounded small reactivate btn-warning">
+            <button data-tippy-content="{{t 'Reactivate' }}" class="button tippy-zulip-tooltip rounded small reactivate btn-warning">
                 <i class="fa fa-user-plus" aria-hidden="true"></i>
             </button>
             {{/if}}

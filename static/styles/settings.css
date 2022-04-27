@@ -232,6 +232,7 @@ h3,
 
 .table-condensed td {
     vertical-align: middle;
+    padding: 8px 5px;
 }
 
 #settings_content {
