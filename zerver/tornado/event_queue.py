@@ -28,6 +28,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     Union,
     cast,
 )
@@ -36,7 +37,6 @@ import orjson
 import tornado.ioloop
 from django.conf import settings
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError

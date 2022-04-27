@@ -4,12 +4,23 @@ import os
 import random
 import shutil
 from functools import partial
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Protocol,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 import orjson
 import requests
 from django.forms.models import model_to_dict
-from typing_extensions import Protocol
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids

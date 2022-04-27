@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
-from typing import List, Mapping, Optional, Union
+from typing import List, Mapping, Optional, Protocol, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -16,7 +16,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
-from typing_extensions import Protocol
 
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile

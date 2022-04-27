@@ -1,14 +1,13 @@
 import logging
 from datetime import timedelta
 from importlib import import_module
-from typing import Any, List, Mapping, Optional, Type, cast
+from typing import Any, List, Mapping, Optional, Protocol, Type, cast
 
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.backends.base import SessionBase
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
-from typing_extensions import Protocol
 
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_user_profile_by_id

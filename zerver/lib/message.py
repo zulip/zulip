@@ -2,7 +2,7 @@ import copy
 import datetime
 import zlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, TypedDict, Union
 
 import ahocorasick
 import orjson
@@ -12,7 +12,6 @@ from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
-from typing_extensions import TypedDict
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount

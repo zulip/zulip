@@ -10,6 +10,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Literal,
     MutableMapping,
     Optional,
     Sequence,
@@ -24,7 +25,6 @@ import orjson
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from typing_extensions import Literal
 
 import zerver.lib.rate_limiter as rate_limiter
 import zerver.tornado.handlers as handlers

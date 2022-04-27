@@ -18,9 +18,10 @@ from scripts.lib.setup_path import setup_path
 setup_path()
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
+from typing import TypedDict
+
 import django
 from django.conf import settings
-from typing_extensions import TypedDict
 from urllib3.util import Retry
 
 django.setup()

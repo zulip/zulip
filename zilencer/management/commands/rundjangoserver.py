@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import Protocol
 
 from django.core.management.commands.runserver import Command as DjangoCommand
-from typing_extensions import Protocol
 
 
 class Writable(Protocol):
