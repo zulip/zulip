@@ -227,19 +227,14 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ {}".format(" ".join(map(shlex.quote, args))), flush=True)
+    print(f"+ {shlex.join(args)}", flush=True)
 
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
         print(
-            WHITEONRED
-            + "Error running a subcommand of {}: {}".format(
-                sys.argv[0],
-                " ".join(map(shlex.quote, args)),
-            )
-            + ENDC
+            WHITEONRED + f"Error running a subcommand of {sys.argv[0]}: {shlex.join(args)}" + ENDC
         )
         print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
@@ -258,7 +253,7 @@ def log_management_command(cmd: Sequence[str], log_path: str) -> None:
     logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info("Ran %s", " ".join(map(shlex.quote, cmd)))
+    logger.info("Ran %s", shlex.join(cmd))
 
 
 def get_environment() -> str:
@@ -567,7 +562,7 @@ def get_config_file() -> configparser.RawConfigParser:
 
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return shlex.split(get_config(config_file, "deployment", "deploy_options", "").strip())
+    return shlex.split(get_config(config_file, "deployment", "deploy_options", ""))
 
 
 def run_psql_as_postgres(
@@ -575,20 +570,7 @@ def run_psql_as_postgres(
     sql_query: str,
 ) -> None:
     dbname = get_config(config_file, "postgresql", "database_name", "zulip")
-    subcmd = " ".join(
-        map(
-            shlex.quote,
-            [
-                "psql",
-                "-v",
-                "ON_ERROR_STOP=1",
-                "-d",
-                dbname,
-                "-c",
-                sql_query,
-            ],
-        )
-    )
+    subcmd = shlex.join(["psql", "-v", "ON_ERROR_STOP=1", "-d", dbname, "-c", sql_query])
     subprocess.check_call(["su", "postgres", "-c", subcmd])
 
 
