@@ -17,7 +17,7 @@ https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-r
 <!-- Once you create the PR, check off all the steps below that you have completed.
 If any of these steps are not relevant or you have not completed, leave them unchecked.-->
 
-- [ ] Self-reviewed the changes for clarity and maintainability
+- [ ] [Self-reviewed](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code) the changes for clarity and maintainability
       (variable names, code reuse, readability, etc.).
 
 Communicate decisions, questions, and potential concerns.
