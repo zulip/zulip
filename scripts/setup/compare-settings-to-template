@@ -35,16 +35,18 @@ while url is not None:
 
     url = resp.links.get("next", {}).get("url")
     for tag in [t["name"] for t in resp.json()]:
-        if re.match(r"^\d+\.\d+(\.\d+)?$", tag):
-            print(f"  - {tag}")
-            resp = requests.get(
-                f"https://raw.githubusercontent.com/zulip/zulip/{tag}/zproject/prod_settings_template.py",
-            )
-            if resp.status_code == 200:
-                templ[tag] = resp.content.decode()
-            else:
-                print("Failure: ")
-                print(resp)
+        if not re.match(r"^\d+\.\d+(\.\d+)?$", tag):
+            continue
+
+        print(f"  - {tag}")
+        resp = requests.get(
+            f"https://raw.githubusercontent.com/zulip/zulip/{tag}/zproject/prod_settings_template.py",
+        )
+        if resp.status_code == 200:
+            templ[tag] = resp.content.decode()
+        else:
+            print("Failure: ")
+            print(resp)
 
 print("Computing minimal difference...")
 sequence_matchers = {}
