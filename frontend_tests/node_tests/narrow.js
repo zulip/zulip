@@ -237,7 +237,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/public-access-option">publicly accessible</a>.',
+            'translated HTML: This stream does not exist or is not <a href="/help/public-access-option">publicly accessible</a>.',
         ),
     );
 
@@ -251,7 +251,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/public-access-option">publicly accessible</a>.',
+            'translated HTML: This stream does not exist or is not <a href="/help/public-access-option">publicly accessible</a>.',
         ),
     );
     page_params.is_spectator = false;

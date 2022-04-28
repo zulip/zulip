@@ -15,8 +15,7 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
                 "This stream does not exist or is not <z-link>publicly accessible</z-link>.",
         },
         {
-            "z-link": (content_html) =>
-                `<a href="https://zulip.com/help/public-access-option">${content_html}</a>`,
+            "z-link": (content_html) => `<a href="/help/public-access-option">${content_html}</a>`,
         },
     ),
 };
