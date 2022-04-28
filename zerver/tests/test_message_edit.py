@@ -385,7 +385,7 @@ class EditMessageTest(EditMessageTestCase):
         non_web_public_stream = self.make_stream("non-web-public-stream")
         self.subscribe(user_profile, non_web_public_stream.name)
         non_web_public_stream_msg_id = self.send_stream_message(
-            user_profile, non_web_public_stream.name, content="non web-public message"
+            user_profile, non_web_public_stream.name, content="non-web-public message"
         )
 
         # Generate a private message to use in verification.

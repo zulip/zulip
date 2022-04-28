@@ -303,7 +303,7 @@ class NarrowBuilder:
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand == "public":
-            # Get all both subscribed and non subscribed public streams
+            # Get all both subscribed and non-subscribed public streams
             # but exclude any private subscribed streams.
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
@@ -968,7 +968,7 @@ def get_messages_backend(
         #
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
         # that we are not leaking any secure data (private messages and
-        # non web-public-stream messages) via this path.
+        # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError()
         if not is_web_public_narrow(narrow):

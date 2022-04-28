@@ -215,7 +215,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: This stream does not exist or is private."),
     );
 
-    // for non sub public stream
+    // for non-subbed public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
@@ -228,7 +228,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // for non web-public stream for spectator
+    // for non-web-public stream for spectator
     page_params.is_spectator = true;
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();

@@ -4635,7 +4635,7 @@ class SubscriptionAPITest(ZulipTestCase):
             # peer_add event recipient list
             self.assertNotIn(user_id, event_sent_to_ids)
         for old_user in orig_user_ids_to_subscribe:
-            # Check non new users are in peer_add event recipient list.
+            # Check non-new users are in peer_add event recipient list.
             self.assertIn(old_user, event_sent_to_ids)
 
     def test_users_getting_remove_peer_event(self) -> None:
@@ -5934,7 +5934,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_length(unsubscribed_streams, 1)
         self.assert_length(unsubscribed_streams[0]["subscribers"], 1)
 
-        # Test non admin users cannot get previously subscribed private stream's subscribers.
+        # Test non-admin users cannot get previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(non_admin_user)
         self.verify_sub_fields(sub_data)
         unsubscribed_streams = sub_data.unsubscribed
@@ -6065,7 +6065,7 @@ class GetSubscribersTest(ZulipTestCase):
 
     def test_nonsubscriber_private_stream(self) -> None:
         """
-        A non-subscriber non realm admin user to a private stream can't query that stream's membership.
+        A non-subscriber non-realm-admin user to a private stream can't query that stream's membership.
         But unsubscribed realm admin users can query private stream's membership.
         """
         # Create a private stream for which Hamlet is the only subscriber.
