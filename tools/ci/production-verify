@@ -92,10 +92,10 @@ fi
 
 # TODO: Ideally this would test actually logging in, but this is a start.
 echo
-echo "Now testing that the newly installed server's homepage loads"
+echo "Now testing that the newly installed server's settings endpoint loads"
 echo
 
-curl -ILk https://localhost -o /tmp/http-headers
+curl -ILk https://localhost/api/v1/server_settings -o /tmp/http-headers
 grep -vi -e '^content-length:' -e '^date:' -e '^expires:' -e '^set-cookie:' /tmp/http-headers >/tmp/http-headers-processed
 
 nginx_version="$(nginx -v 2>&1)"
