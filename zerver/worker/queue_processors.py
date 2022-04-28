@@ -1039,10 +1039,11 @@ class DeferredWorker(QueueProcessingWorker):
                     )
                 ).decode()
                 export_event.save(update_fields=["extra_data"])
-                logging.error(
+                logging.exception(
                     "Data export for %s failed after %s",
                     user_profile.realm.string_id,
                     time.time() - start,
+                    stack_info=True,
                 )
                 notify_realm_export(user_profile)
                 return

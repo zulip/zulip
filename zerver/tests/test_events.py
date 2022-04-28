@@ -2314,7 +2314,7 @@ class NormalActionsTest(BaseAction):
         self.login_user(self.user_profile)
 
         with mock.patch(
-            "zerver.lib.export.do_export_realm", side_effect=Exception("test")
+            "zerver.lib.export.do_export_realm", side_effect=Exception("Some failure")
         ), self.assertLogs(level="ERROR") as error_log:
             with stdout_suppressed():
                 events = self.verify_action(
@@ -2327,6 +2327,7 @@ class NormalActionsTest(BaseAction):
             # Where last floating number is time and will vary in each test hence the following assertion is
             # independent of time bit by not matching exact log but only part of it.
             self.assertTrue("ERROR:root:Data export for zulip failed after" in error_log.output[0])
+            self.assertTrue("Some failure" in error_log.output[0])
 
         # We get two events for the export.
         check_realm_export(
