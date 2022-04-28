@@ -15829,6 +15829,8 @@ components:
     profile_data:
       type: object
       description: |
+        Only present if `is_bot` is false; bots can't have custom profile fields.
+
         A dictionary containing custom profile field data for the user. Each entry
         maps the integer ID of a custom profile field in the organization to a
         dictionary containing the user's data for that field. Generally the data
