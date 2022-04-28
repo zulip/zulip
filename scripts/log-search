@@ -25,18 +25,31 @@ from typing import Protocol
 
 from django.conf import settings
 
-from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
+from scripts.lib.zulip_tools import (
+    BOLD,
+    CYAN,
+    ENDC,
+    FAIL,
+    GRAY,
+    OKBLUE,
+    get_config,
+    get_config_file,
+)
 
 
 def parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Search logfiles, ignoring commonly-fetched URLs.")
     log_selection = parser.add_argument_group("File selection")
     log_selection_options = log_selection.add_mutually_exclusive_group()
+    access_log_retention_days = int(
+        get_config(get_config_file(), "application_server", "access_log_retention_days", "14")
+    )
     log_selection_options.add_argument(
         "--log-files",
         "-n",
         help="Number of log files to search",
-        choices=range(1, 16),
+        choices=range(1, access_log_retention_days + 2),
+        metavar=f"[1-{access_log_retention_days+1}]",
         type=int,
     )
     log_selection_options.add_argument(

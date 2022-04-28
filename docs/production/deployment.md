@@ -791,6 +791,11 @@ Override the default uwsgi backlog of 128 connections.
 Override the default `uwsgi` (Django) process count of 6 on hosts with
 more than 3.5GiB of RAM, 4 on hosts with less.
 
+#### `access_log_retention_days`
+
+Number of days of access logs to keep, for both nginx and the application.
+Defaults to 14 days.
+
 ### `[postfix]`
 
 #### `mailname`

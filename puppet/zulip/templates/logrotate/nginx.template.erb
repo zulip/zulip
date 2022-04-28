@@ -1,7 +1,7 @@
 /var/log/nginx/*.log {
 	daily
 	missingok
-	rotate 14
+	rotate <%= @access_log_retention_days %>
 	compress
 	delaycompress
 	notifempty
