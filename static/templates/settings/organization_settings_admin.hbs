@@ -48,23 +48,16 @@
               reset_button_text=(t '[Disable]')
               label=admin_settings_label.realm_signup_notifications_stream }}
 
-        </div>
-
-        <div id="org-user-defaults" class="org-subsection-parent">
-            <div class="subsection-header">
-                <h3>{{t "Default user settings" }}</h3>
-                {{> settings_save_discard_widget section_name="user-defaults" }}
-            </div>
-            <p>{{t "Default settings for new users joining this organization." }}</p>
-            <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label for="realm_default_language" class="dropdown-title">{{t "Default language" }}</label>
-                    <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="string">
-                        {{#each language_list}}
-                            <option value='{{this.code}}'>{{this.name}}</option>
-                        {{/each}}
-                    </select>
-                </div>
+            <div class="input-group">
+                <label for="realm_default_language" class="dropdown-title">
+                    {{t "Notifications language" }}
+                    {{> ../help_link_widget link="/help/change-the-default-language-for-your-organization" }}
+                </label>
+                <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="string">
+                    {{#each language_list}}
+                        <option value='{{this.code}}'>{{this.name}}</option>
+                    {{/each}}
+                </select>
             </div>
         </div>
 
