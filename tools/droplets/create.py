@@ -33,6 +33,7 @@ parser.add_argument("--tags", nargs="+", default=[])
 parser.add_argument("-f", "--recreate", action="store_true")
 parser.add_argument("-s", "--subdomain")
 parser.add_argument("-p", "--production", action="store_true")
+parser.add_argument("-r", "--region", choices=("nyc3", "sfo3", "blr1", "fra1"), default="nyc3")
 
 
 def get_config() -> configparser.ConfigParser:
@@ -175,12 +176,17 @@ service ssh restart
 
 
 def create_droplet(
-    my_token: str, template_id: str, name: str, tags: List[str], user_data: str
+    my_token: str,
+    template_id: str,
+    name: str,
+    tags: List[str],
+    user_data: str,
+    region: str = "nyc3",
 ) -> str:
     droplet = digitalocean.Droplet(
         token=my_token,
         name=name,
-        region="nyc3",
+        region=region,
         image=template_id,
         size_slug="s-1vcpu-2gb",
         user_data=user_data,
@@ -347,6 +353,7 @@ if __name__ == "__main__":
         name=droplet_domain_name,
         tags=args.tags + ["dev"],
         user_data=user_data,
+        region=args.region,
     )
 
     create_dns_record(my_token=api_token, record_name=subdomain, ip_address=ip_address)

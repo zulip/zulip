@@ -139,6 +139,7 @@ so they are notified.
    closing the connection and shutting the host down.
 1. Go to the Snapshots tab on the image, and "Take a Snapshot".
 1. Wait for several minutes for it to complete.
+1. "Add to region" the snapshot into `NYC3`, `SFO3`, `BLR1`, and `FRA1`.
 1. `curl -u <API_KEY>: https://api.digitalocean.com/v2/snapshots | jq .`
 1. Replace `template_id` in `create.py` in this directory with the
    appropriate `id`.
