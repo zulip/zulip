@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-Streams can be [web-public](/help/web-public-streams), public or private,
+Streams can be [web-public](/help/public-access-option), public or private,
 and private streams can have shared or protected history.
 See [stream permissions](/help/stream-permissions) for
 details on stream privacy settings.

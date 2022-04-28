@@ -11,11 +11,12 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
     html: $t_html(
         {
-            defaultMessage: "This stream does not exist or is not <z-link>web-public</z-link>.",
+            defaultMessage:
+                "This stream does not exist or is not <z-link>publicly accessible</z-link>.",
         },
         {
             "z-link": (content_html) =>
-                `<a href="https://zulip.com/help/web-public-streams">${content_html}</a>`,
+                `<a href="https://zulip.com/help/public-access-option">${content_html}</a>`,
         },
     ),
 };

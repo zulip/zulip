@@ -114,7 +114,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`GET /server_settings`](/api/get-server-settings): Added
   `realm_web_public_access_enabled` as a realm-specific server setting,
   which can be used by clients to detect whether the realm allows and
-  has at least one [web-public stream](/help/web-public-streams).
+  has at least one [web-public stream](/help/public-access-option).
 
 **Feature level 115**
 

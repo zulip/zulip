@@ -108,7 +108,7 @@ detailed below.
   required for Zulip to load, and may thus be [accessed via the Zulip API][info-via-api].
 * Logged out visitors cannot view [organization statistics](/help/analytics).
 
-[info-via-api]: /help/web-public-streams#information-that-can-be-accessed-via-api-when-web-public-streams-are-enabled
+[info-via-api]: /help/public-access-option#information-that-can-be-accessed-via-api-when-web-public-streams-are-enabled
 
 ### Information about users
 

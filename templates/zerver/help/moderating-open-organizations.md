@@ -60,4 +60,4 @@ organization's policy choices.
 ## Related articles
 
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
-* [Web-public streams](/help/web-public-streams)
+* [Public access option](/help/public-access-option)

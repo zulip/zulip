@@ -11699,7 +11699,7 @@ paths:
 
                           The value of the `WEB_PUBLIC_STREAMS_ENABLED` Zulip server level
                           setting. A server that has disabled this setting intends to not offer [web
-                          public streams](/help/web-public-streams) to realms it hosts. (Zulip Cloud
+                          public streams](/help/public-access-option) to realms it hosts. (Zulip Cloud
                           defaults to `True`; self-hosted servers default to `False`).
 
                           Clients should use this to determine whether to offer UI for the
@@ -12520,7 +12520,7 @@ paths:
                         type: boolean
                         description: |
                           Whether the organization has enabled the creation of
-                          [web-public streams](/help/web-public-streams) and
+                          [web-public streams](/help/public-access-option) and
                           at least one web-public stream on the server currently
                           exists. Clients that support viewing content
                           in web-public streams without an account can
