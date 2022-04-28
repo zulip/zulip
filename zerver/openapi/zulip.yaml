@@ -11165,6 +11165,9 @@ paths:
                           setting.
 
                           **Changes**: New in Zulip 5.0 (feature level 109).
+
+                          [server-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
+
                       realm_video_chat_provider:
                         type: integer
                         description: |
