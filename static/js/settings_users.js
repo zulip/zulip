@@ -455,16 +455,7 @@ function handle_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            channel.del({
-                url,
-                success() {
-                    dialog_widget.close_modal();
-                },
-                error(xhr) {
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    dialog_widget.hide_dialog_spinner();
-                },
-            });
+            dialog_widget.submit_api_request(channel.del, url);
         }
 
         confirm_deactivation(user_id, handle_confirm, true);
@@ -518,24 +509,19 @@ function handle_reactivation($tbody) {
         function handle_confirm() {
             const $row = get_user_info_row(user_id);
             const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
-            channel.post({
-                url,
-                success() {
-                    dialog_widget.close_modal();
+            const opts = {
+                success_continuation() {
                     update_view_on_reactivate($row);
                 },
-                error(xhr) {
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                    dialog_widget.hide_dialog_spinner();
-                },
-            });
+            };
+            dialog_widget.submit_api_request(channel.post, url, {}, opts);
         }
 
         confirm_reactivation(user_id, handle_confirm, true);
     });
 }
 
-export function show_edit_user_info_modal(user_id, from_user_info_popover, $status_field) {
+export function show_edit_user_info_modal(user_id, from_user_info_popover) {
     const person = people.get_by_user_id(user_id);
 
     if (!person) {
@@ -579,20 +565,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, $stat
             const user_id = $("#edit-user-form").data("user-id");
             function handle_confirm() {
                 const url = "/json/users/" + encodeURIComponent(user_id);
-                channel.del({
-                    url,
-                    success() {
-                        dialog_widget.close_modal();
-                    },
-                    error(xhr) {
-                        ui_report.error(
-                            $t_html({defaultMessage: "Failed"}),
-                            xhr,
-                            $("#dialog_error"),
-                        );
-                        dialog_widget.hide_dialog_spinner();
-                    },
-                });
+                dialog_widget.submit_api_request(channel.del, url);
             }
             const open_deactivate_modal_callback = () =>
                 confirm_deactivation(user_id, handle_confirm, true);
@@ -611,24 +584,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, $stat
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
-
-        if (!from_user_info_popover) {
-            settings_ui.do_settings_change(channel.patch, url, data, $status_field);
-            dialog_widget.close_modal();
-            return;
-        }
-
-        channel.patch({
-            url,
-            data,
-            success() {
-                dialog_widget.close_modal();
-            },
-            error(xhr) {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
-                dialog_widget.hide_dialog_spinner();
-            },
-        });
+        dialog_widget.submit_api_request(channel.patch, url, data);
     }
 
     dialog_widget.launch({
@@ -640,12 +596,12 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover, $stat
     });
 }
 
-function handle_human_form($tbody, $status_field) {
+function handle_human_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_edit_user_info_modal(user_id, false, $status_field);
+        show_edit_user_info_modal(user_id, false);
     });
 }
 
@@ -721,20 +677,18 @@ function handle_bot_form($tbody, $status_field) {
 
 section.active.handle_events = () => {
     const $tbody = $("#admin_users_table").expectOne();
-    const $status_field = $("#user-field-status").expectOne();
 
     handle_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_human_form($tbody, $status_field);
+    handle_human_form($tbody);
 };
 
 section.deactivated.handle_events = () => {
     const $tbody = $("#admin_deactivated_users_table").expectOne();
-    const $status_field = $("#deactivated-user-field-status").expectOne();
 
     handle_deactivation($tbody);
     handle_reactivation($tbody);
-    handle_human_form($tbody, $status_field);
+    handle_human_form($tbody);
 };
 
 section.bots.handle_events = () => {
