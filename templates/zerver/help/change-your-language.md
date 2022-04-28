@@ -1,11 +1,12 @@
 # Change your language
 
-Zulip has been translated or partially translated into a number of different
-languages. You can see which languages Zulip supports, and help add support
-for new languages on **[Transifex](https://www.transifex.com/zulip/zulip/)**.
+Zulip has been translated or partially translated into dozens of
+languages. You can see which languages Zulip supports, and help add
+support for new languages on **[Transifex](https://www.transifex.com/zulip/zulip/)**.
 
-If your entire organization speaks a language other than English, an administrator can
-[set the default language][change-org-lang] for new users joining the organization.
+If your organization has a primary language other than American
+English, an administrator should also [set the organization
+notifications language][change-org-lang].
 
 [change-org-lang]: change-the-default-language-for-your-organization
 

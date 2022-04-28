@@ -314,11 +314,11 @@ async function test_organization_profile(page: Page): Promise<void> {
 
 async function submit_default_user_settings(page: Page): Promise<void> {
     assert.strictEqual(
-        await common.get_text_from_selector(page, "#org-submit-user-defaults"),
+        await common.get_text_from_selector(page, "#org-submit-notifications"),
         "Save changes",
     );
-    await page.click("#org-submit-user-defaults");
-    const saved_status = '#org-submit-user-defaults[data-status="saved"]';
+    await page.click("#org-submit-notifications");
+    const saved_status = '#org-submit-notifications[data-status="saved"]';
     await page.waitForSelector(saved_status, {hidden: true});
 }
 
