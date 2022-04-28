@@ -25,7 +25,7 @@ import requests
 
 print("Fetching old versions of setting templates from Github...")
 templ = {}
-url: Optional[str] = "https://api.github.com/repos/zulip/zulip/tags"
+url: Optional[str] = "https://api.github.com/repos/zulip/zulip/tags?per_page=100"
 
 while url is not None:
     resp = requests.get(url)
