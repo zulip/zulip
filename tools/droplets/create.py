@@ -20,7 +20,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 import digitalocean
 import requests
@@ -182,7 +182,7 @@ def create_droplet(
     tags: List[str],
     user_data: str,
     region: str = "nyc3",
-) -> str:
+) -> Tuple[str, str]:
     droplet = digitalocean.Droplet(
         token=my_token,
         name=name,
@@ -192,6 +192,7 @@ def create_droplet(
         user_data=user_data,
         tags=tags,
         backups=False,
+        ipv6=True,
     )
 
     print("Initiating droplet creation...")
@@ -211,20 +212,24 @@ def create_droplet(
     print("...droplet created!")
     droplet.load()
     print(f"...ip address for new droplet is: {droplet.ip_address}.")
-    return droplet.ip_address
+    return (droplet.ip_address, droplet.ip_v6_address)
 
 
 def delete_existing_records(records: List[digitalocean.Record], record_name: str) -> None:
     count = 0
     for record in records:
-        if record.name == record_name and record.domain == "zulipdev.org" and record.type == "A":
+        if (
+            record.name == record_name
+            and record.domain == "zulipdev.org"
+            and record.type in ("AAAA", "A")
+        ):
             record.destroy()
             count = count + 1
     if count:
-        print(f"Deleted {count} existing A records for {record_name}.zulipdev.org.")
+        print(f"Deleted {count} existing A / AAAA records for {record_name}.zulipdev.org.")
 
 
-def create_dns_record(my_token: str, record_name: str, ip_address: str) -> None:
+def create_dns_record(my_token: str, record_name: str, ipv4: str, ipv6: str) -> None:
     domain = digitalocean.Domain(token=my_token, name="zulipdev.org")
     domain.load()
     records = domain.get_records()
@@ -233,10 +238,15 @@ def create_dns_record(my_token: str, record_name: str, ip_address: str) -> None:
     wildcard_name = "*." + record_name
     delete_existing_records(records, wildcard_name)
 
-    print(f"Creating new A record for {record_name}.zulipdev.org that points to {ip_address}.")
-    domain.create_new_domain_record(type="A", name=record_name, data=ip_address)
-    print(f"Creating new A record for *.{record_name}.zulipdev.org that points to {ip_address}.")
-    domain.create_new_domain_record(type="A", name=wildcard_name, data=ip_address)
+    print(f"Creating new A record for {record_name}.zulipdev.org that points to {ipv4}.")
+    domain.create_new_domain_record(type="A", name=record_name, data=ipv4)
+    print(f"Creating new A record for *.{record_name}.zulipdev.org that points to {ipv4}.")
+    domain.create_new_domain_record(type="A", name=wildcard_name, data=ipv4)
+
+    print(f"Creating new AAAA record for {record_name}.zulipdev.org that points to {ipv6}.")
+    domain.create_new_domain_record(type="AAAA", name=record_name, data=ipv6)
+    print(f"Creating new AAAA record for *.{record_name}.zulipdev.org that points to {ipv6}.")
+    domain.create_new_domain_record(type="AAAA", name=wildcard_name, data=ipv6)
 
 
 def print_dev_droplet_instructions(username: str, droplet_domain_name: str) -> None:
@@ -347,7 +357,7 @@ if __name__ == "__main__":
         my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate
     )
 
-    ip_address = create_droplet(
+    (ipv4, ipv6) = create_droplet(
         my_token=api_token,
         template_id=template_id,
         name=droplet_domain_name,
@@ -356,7 +366,7 @@ if __name__ == "__main__":
         region=args.region,
     )
 
-    create_dns_record(my_token=api_token, record_name=subdomain, ip_address=ip_address)
+    create_dns_record(my_token=api_token, record_name=subdomain, ipv4=ipv4, ipv6=ipv6)
 
     if args.production:
         print_production_droplet_instructions(droplet_domain_name=droplet_domain_name)
