@@ -265,7 +265,7 @@ function get_topic_key(stream_id, topic) {
 
 function generate_topic_data(topic_info_array) {
     // Since most of the fields are common, this function helps generate fixtures
-    // with non common fields.
+    // with non-common fields.
     $.clear_all_elements();
     const data = [];
 

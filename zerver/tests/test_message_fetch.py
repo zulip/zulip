@@ -1563,7 +1563,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(rome_web_public_get_params))
         self.assert_json_success(result)
 
-        # Cannot access non web-public stream even with `streams:web-public` narrow.
+        # Cannot access non-web-public stream even with `streams:web-public` narrow.
         scotland_web_public_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps(
@@ -1581,7 +1581,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def setup_web_public_test(self, num_web_public_message: int = 1) -> None:
         """
-        Send N+2 messages, N in a web-public stream, then one in a non web-public stream
+        Send N+2 messages, N in a web-public stream, then one in a non-web-public stream
         and then a private message.
         """
         user_profile = self.example_user("iago")
@@ -1599,7 +1599,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 user_profile, web_public_stream.name, content="web-public message"
             )
         self.send_stream_message(
-            user_profile, non_web_public_stream.name, content="non web-public message"
+            user_profile, non_web_public_stream.name, content="non-web-public message"
         )
         self.send_personal_message(
             user_profile, self.example_user("hamlet"), content="private message"

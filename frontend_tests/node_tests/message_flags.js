@@ -238,7 +238,7 @@ run_test("read", ({override}) => {
     channel_post_opts.success(success_response_data);
     assert.ok(events.timer_set);
 
-    // Mark them non local
+    // Mark them non-local
     local_msg_1.locally_echoed = false;
     local_msg_2.locally_echoed = false;
 

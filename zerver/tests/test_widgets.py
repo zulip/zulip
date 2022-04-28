@@ -385,7 +385,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         self.assertEqual(get_widget_type(message_id=message.id), "poll")
 
-        submessage.content = "bogus non json"
+        submessage.content = "bogus non-json"
         submessage.save()
         self.assertEqual(get_widget_type(message_id=message.id), None)
 
