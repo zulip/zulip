@@ -23,12 +23,13 @@ class zulip::profile::app_frontend {
     content => template('zulip/nginx/zulip-enterprise.template.erb'),
     notify  => Service['nginx'],
   }
+  $access_log_retention_days = zulipconf('application_server','access_log_retention_days', 14)
   file { '/etc/logrotate.d/zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/logrotate/zulip',
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('zulip/logrotate/zulip.template.erb'),
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
     ensure  => link,

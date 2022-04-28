@@ -32,8 +32,8 @@
 /var/log/zulip/server.log
 {
     missingok
-    rotate 10
-    size 500M
+    rotate <%= @access_log_retention_days %>
+    daily
     compress
     delaycompress
     notifempty
