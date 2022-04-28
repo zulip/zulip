@@ -321,7 +321,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(result.json()["message"]["id"], msg_id)
         self.assertEqual(result.json()["message"]["flags"], [])
 
-        # Send message to web public stream where hamlet is not subscribed.
+        # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
         # to message.
         web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
@@ -335,7 +335,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
         self.assertEqual(result.json()["message"]["flags"], ["read", "historical"])
 
-        # Spectator should be able to fetch message in web public stream.
+        # Spectator should be able to fetch message in web-public stream.
         self.logout()
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)

@@ -228,7 +228,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // for non web public stream for spectator
+    // for non web-public stream for spectator
     page_params.is_spectator = true;
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
