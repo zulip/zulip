@@ -60,7 +60,7 @@ class ThumbnailTest(ZulipTestCase):
         uri = json["uri"]
 
         add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
-        # Deny file access for non web public stream
+        # Deny file access for non web-public stream
         self.subscribe(self.example_user("hamlet"), "Denmark")
         host = self.example_user("hamlet").realm.host
         body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
@@ -70,7 +70,7 @@ class ThumbnailTest(ZulipTestCase):
         response = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(response.status_code, 403)
 
-        # Allow file access for web public stream
+        # Allow file access for web-public stream
         self.login("hamlet")
         self.make_stream("web-public-stream", is_web_public=True)
         self.subscribe(self.example_user("hamlet"), "web-public-stream")
