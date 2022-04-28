@@ -906,6 +906,10 @@ urls += [
         "help/night-mode",
         RedirectView.as_view(url="/help/dark-theme", permanent=True),
     ),
+    path(
+        "help/web-public-streams",
+        RedirectView.as_view(url="/help/public-access-option", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),

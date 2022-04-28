@@ -487,6 +487,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/disable-new-login-emails",
             "help/test-mobile-notifications",
             "help/troubleshooting-desktop-notifications",
+            "help/web-public-streams",
             "for/working-groups-and-communities/",
             "help/only-allow-admins-to-add-emoji",
             "help/night-mode",
