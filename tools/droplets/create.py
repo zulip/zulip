@@ -333,11 +333,8 @@ if __name__ == "__main__":
             username=username, subdomain=subdomain, userkey_dicts=public_keys
         )
 
-        # define id of image to create new droplets from
-        # You can get this with something like the following. You may need to try other pages.
-        # Broken in two to satisfy linter (line too long)
-        # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
-        # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
+        # define id of image to create new droplets from; see:
+        #     curl -u <API_KEY>: "https://api.digitalocean.com/v2/snapshots | jq .
         template_id = "103231841"
 
     assert_droplet_does_not_exist(
