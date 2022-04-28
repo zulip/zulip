@@ -4,6 +4,7 @@ import difflib
 import os
 import re
 import sys
+from typing import Optional
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
@@ -24,22 +25,26 @@ import requests
 
 print("Fetching old versions of setting templates from Github...")
 templ = {}
-resp = requests.get("https://api.github.com/repos/zulip/zulip/tags")
-if resp.status_code != 200:
-    print(resp.content)
-    sys.exit(1)
+url: Optional[str] = "https://api.github.com/repos/zulip/zulip/tags"
 
-for tag in [t["name"] for t in resp.json()]:
-    if re.match(r"^\d+\.\d+(\.\d+)?$", tag):
-        print(f"  - {tag}")
-        resp = requests.get(
-            f"https://raw.githubusercontent.com/zulip/zulip/{tag}/zproject/prod_settings_template.py",
-        )
-        if resp.status_code == 200:
-            templ[tag] = resp.content.decode()
-        else:
-            print("Failure: ")
-            print(resp)
+while url is not None:
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        print(resp.content)
+        sys.exit(1)
+
+    url = resp.links.get("next", {}).get("url")
+    for tag in [t["name"] for t in resp.json()]:
+        if re.match(r"^\d+\.\d+(\.\d+)?$", tag):
+            print(f"  - {tag}")
+            resp = requests.get(
+                f"https://raw.githubusercontent.com/zulip/zulip/{tag}/zproject/prod_settings_template.py",
+            )
+            if resp.status_code == 200:
+                templ[tag] = resp.content.decode()
+            else:
+                print("Failure: ")
+                print(resp)
 
 print("Computing minimal difference...")
 sequence_matchers = {}
