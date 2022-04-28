@@ -289,7 +289,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## (4) You should get a client ID and a client secret. Copy them.
 ## Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
 ## client secret in zulip-secrets.conf as `social_auth_google_secret`.
-# SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
+# SOCIAL_AUTH_GOOGLE_KEY = "<your client ID from Google>"
 
 ########
 ## GitLab OAuth.
@@ -309,8 +309,8 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## zulip-secrets.conf as `social_auth_gitlab_secret`.
 ## (5) If you are self-hosting GitLab, provide the URL of the
 ## GitLab server as SOCIAL_AUTH_GITLAB_API_URL here.
-# SOCIAL_AUTH_GITLAB_KEY = <your Application ID from GitLab>
-# SOCIAL_AUTH_GITLAB_API_URL = https://gitlab.example.com
+# SOCIAL_AUTH_GITLAB_KEY = "<your Application ID from GitLab>"
+# SOCIAL_AUTH_GITLAB_API_URL = "https://gitlab.example.com"
 
 ########
 ## GitHub OAuth.
@@ -328,14 +328,14 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## showing a client ID and a client secret.  Use the client ID as
 ## `SOCIAL_AUTH_GITHUB_KEY` here, and put the client secret in
 ## zulip-secrets.conf as `social_auth_github_secret`.
-# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
+# SOCIAL_AUTH_GITHUB_KEY = "<your client ID from GitHub>"
 
 ## (3) Optionally, you can configure the GitHub integration to only
 ## allow members of a particular GitHub team or organization to log
 ## into your Zulip server through GitHub authentication.  To enable
 ## this, set one of the two parameters below:
-# SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
-# SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+# SOCIAL_AUTH_GITHUB_TEAM_ID = "<your team id>"
+# SOCIAL_AUTH_GITHUB_ORG_NAME = "<your org name>"
 
 ## (4) If you are serving multiple Zulip organizations on different
 ## subdomains, you need to set SOCIAL_AUTH_SUBDOMAIN.  You can set it
@@ -645,8 +645,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## Controls the Zoom video call integration.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
-#
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom client ID>
+# VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
