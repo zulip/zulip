@@ -737,6 +737,7 @@ def import_uploads(
     realm: Realm,
     import_dir: Path,
     processes: int,
+    default_user_profile_id: Optional[int] = None,
     processing_avatars: bool = False,
     processing_emojis: bool = False,
     processing_realm_icons: bool = False,
@@ -815,14 +816,17 @@ def import_uploads(
         if s3_uploads:
             key = bucket.Object(relative_path)
             metadata = {}
-            if processing_emojis and "user_profile_id" not in record:
-                # Exported custom emoji from tools like Slack don't have
-                # the data for what user uploaded them in `user_profile_id`.
-                pass
-            elif processing_realm_icons and "user_profile_id" not in record:
-                # Exported realm icons and logos from local export don't have
-                # the value of user_profile_id in the associated record.
-                pass
+            if "user_profile_id" not in record:
+                # This should never happen for uploads or avatars; if
+                # so, it is an error, default_user_profile_id will be
+                # None, and we assert.  For emoji / realm icons, we
+                # fall back to default_user_profile_id.
+                # default_user_profile_id can be None in Gitter
+                # imports, which do not create any owners; but Gitter
+                # does not have emoji which we would need to allocate
+                # a user to.
+                assert default_user_profile_id is not None
+                metadata["user_profile_id"] = str(default_user_profile_id)
             else:
                 user_profile_id = int(record["user_profile_id"])
                 # Support email gateway bot and other cross-realm messages
@@ -1242,18 +1246,39 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(realm, os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
-    import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
+    import_uploads(
+        realm,
+        os.path.join(import_dir, "avatars"),
+        processes,
+        default_user_profile_id=None,  # Fail if there is no user set
+        processing_avatars=True,
+    )
+    import_uploads(
+        realm,
+        os.path.join(import_dir, "uploads"),
+        processes,
+        default_user_profile_id=None,  # Fail if there is no user set
+    )
 
     # We need to have this check as the emoji files are only present in the data
     # importer from Slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
-        import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+        import_uploads(
+            realm,
+            os.path.join(import_dir, "emoji"),
+            processes,
+            default_user_profile_id=first_user_profile.id if first_user_profile else None,
+            processing_emojis=True,
+        )
 
     if os.path.exists(os.path.join(import_dir, "realm_icons")):
         import_uploads(
-            realm, os.path.join(import_dir, "realm_icons"), processes, processing_realm_icons=True
+            realm,
+            os.path.join(import_dir, "realm_icons"),
+            processes,
+            default_user_profile_id=first_user_profile.id if first_user_profile else None,
+            processing_realm_icons=True,
         )
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
