@@ -117,6 +117,16 @@ class SemaphoreHookTests(WebhookTestCase):
                 "tag", expected_topic, expected_message, content_type="application/json"
             )
 
+    def test_semaphore_unknown(self) -> None:
+        expected_topic = "knighthood/master"
+        expected_message = "unknown: passed"
+        self.check_webhook(
+            "unknown",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
     def test_semaphore_unknown_event(self) -> None:
         expected_topic = "notifications"
         expected_message = """
