@@ -317,3 +317,19 @@ run_test("user_can_create_web_public_streams", () => {
     page_params.is_moderator = false;
     assert.equal(settings_data.user_can_create_web_public_streams(), false);
 });
+
+run_test("web_public_streams_enabled_for_realm", () => {
+    page_params.server_web_public_streams_enabled = false;
+    assert.equal(settings_data.web_public_streams_enabled_for_realm(), false);
+
+    page_params.server_web_public_streams_enabled = true;
+    page_params.zulip_plan_is_not_limited = false;
+    assert.equal(settings_data.web_public_streams_enabled_for_realm(), false);
+
+    page_params.zulip_plan_is_not_limited = true;
+    page_params.realm_enable_spectator_access = false;
+    assert.equal(settings_data.web_public_streams_enabled_for_realm(), false);
+
+    page_params.realm_enable_spectator_access = true;
+    assert.equal(settings_data.web_public_streams_enabled_for_realm(), true);
+});
