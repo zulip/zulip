@@ -12,9 +12,11 @@ import * as compose_ui from "./compose_ui";
 import * as emoji from "./emoji";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import * as spectators from "./spectators";
 import * as ui from "./ui";
 import {user_settings} from "./user_settings";
 import * as user_status_ui from "./user_status_ui";
@@ -717,6 +719,11 @@ export function register_click_handlers() {
 
     $("#main_div").on("click", ".reaction_button", function (e) {
         e.stopPropagation();
+
+        if (page_params.is_spectator) {
+            spectators.login_to_access();
+            return;
+        }
 
         const message_id = rows.get_message_id(this);
         toggle_emoji_popover(this, message_id);
