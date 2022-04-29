@@ -247,6 +247,43 @@ test("sort_streams", ({override_rewire}) => {
     assert.deepEqual(test_streams[3].name, "Ether"); // Unsubscribed and description starts with query
     assert.deepEqual(test_streams[4].name, "New"); // Subscribed and no match
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
+
+    //Test Streams Order: Pinned -> Subscribed (Unmuted) -> Subscribed (Muted) -> Unsubscribed
+    test_streams = [
+        {
+            stream_id: 401,
+            name: "Aaron",
+            subscribed: false,
+            pin_to_top: false,
+            is_muted: false,
+        },
+        {
+            stream_id: 402,
+            name: "Abba",
+            subscribed: true,
+            is_muted: true,
+            pin_to_top: false,
+        },
+        {
+            stream_id: 403,
+            name: "Ace",
+            subscribed: true,
+            is_muted: false,
+            pin_to_top: false,
+        },
+        {
+            stream_id: 404,
+            name: "Adeline",
+            subscribed: true,
+            is_muted: false,
+            pin_to_top: true,
+        },
+    ];
+    test_streams = th.sort_streams(test_streams, "a");
+    assert.deepEqual(test_streams[0].name, "Adeline"); // Subscribed and Pinned to the top
+    assert.deepEqual(test_streams[1].name, "Ace"); // Subscribed and Unmuted
+    assert.deepEqual(test_streams[2].name, "Abba"); // Subscribed and Muted
+    assert.deepEqual(test_streams[3].name, "Aaron"); // Unsubscribed
 });
 
 test("sort_languages", () => {
