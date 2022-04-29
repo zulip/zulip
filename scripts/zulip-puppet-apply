@@ -65,6 +65,8 @@ puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 # This is to suppress Puppet warnings with ruby 2.7.
 if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
     puppet_env["RUBYOPT"] = "-W0"
+if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "22.04")]:
+    puppet_env["RUBYOPT"] = "-r " + os.path.join(scripts_path, "lib", "ruby3hack.rb")
 
 if not args.noop and not args.force:
     # --noop does not work with --detailed-exitcodes; see https://tickets.puppetlabs.com/browse/PUP-686
