@@ -62,27 +62,26 @@ jobs:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      # TEMPORARY: due to CI failures.
-      # - name: Restore node_modules cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: /srv/zulip-npm-cache
-      #     key: v1-yarn-deps-focal-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
-      #     restore-keys: v1-yarn-deps-focal
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-npm-cache
+          key: v1-yarn-deps-focal-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: v1-yarn-deps-focal
 
-      # - name: Restore python cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: /srv/zulip-venv-cache
-      #     key: v1-venv-focal-${{ hashFiles('requirements/dev.txt') }}
-      #     restore-keys: v1-venv-focal
+      - name: Restore python cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-venv-cache
+          key: v1-venv-focal-${{ hashFiles('requirements/dev.txt') }}
+          restore-keys: v1-venv-focal
 
-      # - name: Restore emoji cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: /srv/zulip-emoji-cache
-      #     key: v1-emoji-focal-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
-      #     restore-keys: v1-emoji-focal
+      - name: Restore emoji cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-emoji-cache
+          key: v1-emoji-focal-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          restore-keys: v1-emoji-focal
 
       - name: Build production tarball
         run: ./tools/ci/production-build
@@ -155,13 +154,12 @@ jobs:
           sudo mkdir -p "${dirs[@]}"
           sudo chown -R github "${dirs[@]}"
 
-      # TEMPORARY: due to CI failures.
-      # - name: Restore node_modules cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: /srv/zulip-npm-cache
-      #     key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
-      #     restore-keys: v1-yarn-deps-${{ matrix.os }}
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        with:
+          path: /srv/zulip-npm-cache
+          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
+          restore-keys: v1-yarn-deps-${{ matrix.os }}
 
       - name: Install production
         run: |
