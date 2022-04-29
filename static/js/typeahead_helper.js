@@ -375,9 +375,24 @@ function activity_score(sub) {
     if (!sub.subscribed) {
         stream_score = -1;
     } else {
-        if (sub.pin_to_top) {
-            stream_score += 2;
+        if (sub.name === compose_state.stream_name()) {
+            stream_score += 8;
         }
+        if (sub.pin_to_top) {
+            stream_score += 4;
+            if (!sub.is_muted) {
+                stream_score += 2;
+            } else {
+                stream_score += 1;
+            }
+        }
+        if (!sub.pin_to_top) {
+            stream_score += 2;
+            if (!sub.is_muted) {
+                stream_score += 1;
+            }
+        }
+
         // Note: A pinned stream may accumulate a 3rd point if it is active
         if (stream_data.is_active(sub)) {
             stream_score += 1;

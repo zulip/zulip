@@ -14,7 +14,8 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
-const emoji = zrequire("emoji");
+
+const emoji = zrequire("../shared/js/emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
@@ -119,6 +120,7 @@ test("sort_streams", ({override_rewire}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: true,
         },
         {
             stream_id: 102,
@@ -126,6 +128,7 @@ test("sort_streams", ({override_rewire}) => {
             pin_to_top: false,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 103,
@@ -133,6 +136,7 @@ test("sort_streams", ({override_rewire}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
         },
         {
             stream_id: 104,
@@ -140,6 +144,7 @@ test("sort_streams", ({override_rewire}) => {
             pin_to_top: true,
             stream_weekly_traffic: 100,
             subscribed: true,
+            is_muted: true,
         },
         {
             stream_id: 105,
@@ -147,17 +152,37 @@ test("sort_streams", ({override_rewire}) => {
             pin_to_top: false,
             stream_weekly_traffic: 0,
             subscribed: true,
+            is_muted: false,
+        },
+        {
+            stream_id: 106,
+            name: "dead1",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+            is_muted: false,
+        },
+        {
+            stream_id: 107,
+            name: "Denver",
+            pin_to_top: true,
+            stream_weekly_traffic: 100,
+            subscribed: true,
+            is_muted: false,
         },
     ];
 
+    override_rewire(compose_state, "stream_name", () => "dead1");
     override_rewire(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
-    assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-    assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
-    assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
-    assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
-    assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+    assert.deepEqual(test_streams[0].name, "dead1"); // stream mentioned in message #dead1 (Unmuted)
+    assert.deepEqual(test_streams[1].name, "Denver"); // Pinned streams first (Unmuted)
+    assert.deepEqual(test_streams[2].name, "Denmark"); // Pinned streams first (Muted)
+    assert.deepEqual(test_streams[3].name, "Docs"); // Active streams next (Unmuted)
+    assert.deepEqual(test_streams[4].name, "Derp"); // Less subscribers (Unmuted)
+    assert.deepEqual(test_streams[5].name, "dead"); // Inactive streams last (Unmuted)
+    assert.deepEqual(test_streams[6].name, "Dev"); // Alphabetically last (Muted)
 
     // Test sort streams with description
     test_streams = [
