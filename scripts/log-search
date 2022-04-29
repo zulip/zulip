@@ -15,7 +15,7 @@ from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
 
 def parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Search nginx logfiles for an IP or hostname, ignoring commonly-fetched URLs."
+        description="Search logfiles for an IP or hostname, ignoring commonly-fetched URLs."
     )
     log_selection = parser.add_argument_group("File selection")
     log_selection_options = log_selection.add_mutually_exclusive_group()
@@ -39,6 +39,12 @@ def parser() -> argparse.ArgumentParser:
         type=int,
         choices=range(0, 24),
         default=3,
+    )
+    log_selection.add_argument(
+        "--nginx",
+        "-N",
+        help="Parse from NGINX logs, not server.log",
+        action="store_true",
     )
 
     filtering = parser.add_argument_group("Filtering")
@@ -103,6 +109,36 @@ NGINX_LOG_LINE_RE = re.compile(
     re.X,
 )
 
+PYTHON_LOG_LINE_RE = re.compile(
+    r"""
+      (?P<date> \d+-\d+-\d+ ) \s+
+      (?P<time> \d+:\d+:\d+\.\d+ ) \s+
+      INFO \s+  # All access log lines are INFO
+      \[ (?P<source> zr(:\d+)?) \] \s+
+      (?P<ip>
+        \d{1,3}(\.\d{1,3}){3}
+      | ([a-f0-9:]+:+){1,7}[a-f0-9]*
+      ) \s+
+      (?P<method> [A-Z]+ ) \s+
+      (?P<code> \d+ ) \s+
+      (?P<duration> \S+ ) \s+ # This can be "217ms" or "1.7s"
+      ( \( [^)]+ \) \s+ )*
+      (?P<path> /\S* ) \s+
+      .*   # Multiple extra things can go here
+      \(
+        (?P<user>
+           ( (?P<user_id> \d+ ) | unauth )
+           @
+           (?P<hostname> \S+ )
+         | zulip-server:\S+
+         | scim-client:\S+
+         | internal
+        ) \s+ via \s+ (?P<user_agent> .* )
+      \)
+    """,
+    re.X,
+)
+
 
 class FilterType(Enum):
     HOSTNAME = auto()
@@ -112,7 +148,12 @@ class FilterType(Enum):
 def main() -> None:
     args = parser().parse_args()
 
-    logfile_names = ["/var/log/nginx/access.log"]
+    if args.nginx:
+        base_path = "/var/log/nginx/access.log"
+    else:
+        base_path = "/var/log/zulip/server.log"
+
+    logfile_names = [base_path]
     if args.all_logs:
         logfile_count = 15
     elif args.log_files is not None:
@@ -123,14 +164,14 @@ def main() -> None:
         # logfile as well.
         logfile_count = 1
         try:
-            current_size = os.path.getsize(logfile_names[0])
-            past_size = os.path.getsize(logfile_names[0] + ".1")
+            current_size = os.path.getsize(base_path)
+            past_size = os.path.getsize(base_path + ".1")
             if current_size < (args.min_hours / 24.0) * past_size:
                 logfile_count = 2
         except FileNotFoundError:
             pass
     for n in range(1, logfile_count):
-        logname = f"/var/log/nginx/access.log.{n}"
+        logname = f"{base_path}.{n}"
         if n > 1:
             logname += ".gz"
         logfile_names.append(logname)
@@ -151,11 +192,16 @@ def main() -> None:
         filter_type = FilterType.CLIENT_IP
     elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter.lower()):
         filter = filter.lower()
-        string_filter = lambda m: m["hostname"].startswith(filter + ".")
+        if args.nginx:
+            string_filter = lambda m: m["hostname"].startswith(filter + ".")
+        else:
+            string_filter = lambda m: m["hostname"] == filter
         filter_type = FilterType.HOSTNAME
     elif re.match(r"[a-z0-9-]+(\.[a-z0-9-]+)+$", filter.lower()) and re.search(
         r"[a-z-]", filter.lower()
     ):
+        if not args.nginx:
+            raise parser().error("Cannot parse full domains with Python logs; try --nginx")
         filter = filter.lower()
         string_filter = lambda m: m["hostname"] == filter
         filter_type = FilterType.HOSTNAME
@@ -171,9 +217,14 @@ def main() -> None:
                 if filter not in logline.lower():
                     continue
 
-                match = NGINX_LOG_LINE_RE.match(logline)
+                if args.nginx:
+                    match = NGINX_LOG_LINE_RE.match(logline)
+                else:
+                    match = PYTHON_LOG_LINE_RE.match(logline)
                 if match is None:
-                    print(f"! Failed to parse:\n{logline}", file=sys.stderr)
+                    # We expect other types of loglines in the Python logfiles
+                    if args.nginx:
+                        print(f"! Failed to parse:\n{logline}", file=sys.stderr)
                     continue
                 if passes_filters(string_filter, match, args):
                     print_line(
