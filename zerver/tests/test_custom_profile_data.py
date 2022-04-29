@@ -290,7 +290,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Malformed URL pattern.")
+        self.assert_json_error(result, "URL pattern must contain '%(username)s'.")
 
         data["field_data"] = orjson.dumps(
             {
@@ -299,7 +299,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Malformed URL pattern.")
+        self.assert_json_error(result, "URL pattern must contain '%(username)s'.")
 
         data["field_data"] = orjson.dumps(
             {

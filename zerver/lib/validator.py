@@ -365,7 +365,7 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
     if s.count("%(username)s") != 1:
-        raise ValidationError(_("Malformed URL pattern."))
+        raise ValidationError(_("URL pattern must contain '%(username)s'."))
     url_val = s.replace("%(username)s", "username")
 
     check_url(var_name, url_val)
