@@ -4,6 +4,7 @@ from typing import Any, Optional, Union
 from unittest import mock
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+import requests
 import responses
 from django.test import override_settings
 from django.utils.html import escape
@@ -18,7 +19,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
-from zerver.lib.url_preview.preview import get_link_embed_data
+from zerver.lib.url_preview.preview import get_link_embed_data, guess_mimetype_from_content
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.worker.queue_processors import FetchLinksEmbedData
@@ -1023,3 +1024,27 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
+
+    @responses.activate
+    def test_empty_resp(self) -> None:
+        url = "http://foo.com/"
+        self.create_mock_response(url)
+        resp = requests.get(url)
+        with mock.patch("requests.Response.iter_content", side_effect=StopIteration):
+            res = guess_mimetype_from_content(resp)
+            self.assertEqual(res, "application/x-empty")
+
+    def test_bad_resp(self) -> None:
+        url = "http://must-miss-cache.com/"
+        self.create_mock_response(url)
+
+        class badresp(object):
+            ok = False
+
+        # a lot of mocking around to get into PreviewSession().get() => response.ok==False
+        with mock.patch("pyoembed.oEmbed", return_value={}):
+            with mock.patch("zerver.lib.url_preview.preview.valid_content_type", return_value=True):
+                with mock.patch("zerver.lib.url_preview.oembed.oEmbed", return_value={}):
+                    with mock.patch("requests.Session.get", return_value=badresp()):
+                        resp = get_link_embed_data(url)
+                        self.assertIsNone(resp)

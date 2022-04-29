@@ -1,12 +1,32 @@
+from typing import Any
 from unittest.mock import MagicMock, call, patch
 
 from django.template.loader import get_template
+from markdown.extensions.codehilite import makeExtension
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
+from zerver.lib.templates import render_markdown_path
 from zerver.lib.test_classes import ZulipTestCase
 
 
 class TemplateTestCase(ZulipTestCase):
+    def test_render_markdown_path(self) -> None:
+        ext = makeExtension(
+            linenums=None,
+            guess_lang=False,
+        )
+        with patch("zerver.lib.templates.md_extensions", None):
+            with patch("markdown.extensions.codehilite.makeExtension", return_value=ext):
+                content = render_markdown_path(
+                    "zerver/tests/markdown/test_code_hilite.md",
+                )
+
+        content_sans_whitespace = content.replace(" ", "").replace("\n", "")
+        self.assertEqual(
+            content_sans_whitespace,
+            '<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p><divclass="codehilite"data-code-language="JavaScript"><pre><span></span><code><spanclass="nx">a</span><spanclass="o">=</span><spanclass="mf">5</span><spanclass="o">+</span><spanclass="mf">5</span><spanclass="p">;</span></code></pre></div><divclass="codehilite"data-code-language="unknown"><pre><span></span><code>a=5+5;</code></pre></div><p><spanclass="tex-error">x\\timesyx\\sdjfhdjfy</span></p><tableclass="codehilitetable"><tr><tdclass="linenos"><divclass="linenodiv"><pre><spanclass="normal">1</span><spanclass="normal">2</span><spanclass="normal">3</span><spanclass="normal">4</span></pre></div></td><tdclass="code"><divclass="codehilite"><pre><span></span><code><spanclass="ch">#!pythonhl_lines=13</span><spanclass="k">def</span><spanclass="nf">foo</span><spanclass="p">():</span><spanclass="n">a</span><spanclass="o">=</span><spanclass="mi">1</span><spanclass="n">b</span><spanclass="o">=</span><spanclass="mi">2</span></code></pre></div></td></tr></table>',
+        )
+
     def test_markdown_in_template(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
@@ -101,11 +121,35 @@ footer
         with self.assertRaisesRegex(ValueError, expected_regex):
             template.render(context)
 
+    def test_markdown_nested_code_blocks_forced_null(self) -> None:
+        def patchfunc(vals: Any) -> Any:
+            vals[0].family.grandparent = None
+            return vals
+
+        with patch(
+            "zerver.lib.markdown.nested_code_blocks.NestedCodeBlocksRendererTreeProcessor.get_nested_code_blocks",
+            side_effect=patchfunc,
+        ):
+            template = get_template("tests/test_markdown.html")
+            context = {
+                "markdown_test_file": "zerver/tests/markdown/test_nested_code_blocks.md",
+            }
+            content = template.render(context)
+            content_sans_whitespace = content.replace(" ", "").replace("\n", "")
+            expected = (
+                'header<h1id="this-is-a-heading">Thisisaheading.</h1><ol><li>'
+                "<p>Alistitemwithanindentedcodeblock:</p><p><code>indentedcodeblockwithmultiplelines</code></p>"
+                '</li></ol><divclass="codehilite"><pre><span></span>'
+                "<code>non-indentedcodeblockwithmultiplelines</code></pre></div>footer"
+            )
+            self.assertEqual(content_sans_whitespace, expected)
+
     def test_markdown_nested_code_blocks(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_nested_code_blocks.md",
         }
+
         content = template.render(context)
 
         content_sans_whitespace = content.replace(" ", "").replace("\n", "")

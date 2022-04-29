@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from unittest import mock
 
 import orjson
@@ -7,6 +7,7 @@ import responses
 
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.outgoing_webhook import (
     GenericOutgoingWebhookService,
     SlackOutgoingWebhookService,
@@ -75,31 +76,39 @@ class DoRestCallTests(ZulipTestCase):
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
-        with mock.patch.object(
-            service_handler, "session"
-        ) as session, expect_send_response as mock_send:
-            session.post.return_value = ResponseMock(200, orjson.dumps(dict(content="whatever")))
-            with self.assertLogs(level="INFO") as logs:
-                do_rest_call("", mock_event, service_handler)
-            self.assert_length(logs.output, 1)
-            self.assertIn(
-                f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
-            )
-
-        self.assertTrue(mock_send.called)
-
-        for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
-            handler = service_class("token", bot_user, "service")
-            with mock.patch.object(handler, "session") as session:
-                session.post.return_value = ResponseMock(200, b"{}")
+        def _helper(content: Optional[str]) -> None:
+            expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
+            with mock.patch.object(
+                service_handler, "session"
+            ) as session, expect_send_response as mock_send:
+                session.post.return_value = ResponseMock(200, orjson.dumps(dict(content=content)))
                 with self.assertLogs(level="INFO") as logs:
-                    do_rest_call("", mock_event, handler)
+                    do_rest_call("", mock_event, service_handler)
                 self.assert_length(logs.output, 1)
                 self.assertIn(
                     f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
                 )
-                session.post.assert_called_once()
+
+            if content == "":
+                self.assertFalse(mock_send.called)
+            else:
+                self.assertTrue(mock_send.called)
+
+            for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
+                handler = service_class("token", bot_user, "service")
+                with mock.patch.object(handler, "session") as session:
+                    session.post.return_value = ResponseMock(200, b"{}")
+                    with self.assertLogs(level="INFO") as logs:
+                        do_rest_call("", mock_event, handler)
+                    self.assert_length(logs.output, 1)
+                    self.assertIn(
+                        f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
+                    )
+                    session.post.assert_called_once()
+
+        _helper("whatever")
+        _helper("")
+        _helper(None)
 
     def test_retry_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")
@@ -128,6 +137,33 @@ The webhook got a response with status code *500*.""",
 
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+
+    def test_bad_msg_type(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        mock_event["message"]["type"] = "unknown"
+        with mock.patch.object(service_handler, "session") as session, self.assertRaises(
+            JsonableError
+        ), self.assertLogs(level="INFO"):
+            session.post.return_value = ResponseMock(200)
+            url = "http://somewhere.com/api/call"
+            with mock.patch("zerver.lib.outgoing_webhook.get_message_url", return_value=url):
+                do_rest_call("", mock_event, service_handler)
+
+    def test_response_none(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        with mock.patch(
+            "zerver.lib.outgoing_webhook.GenericOutgoingWebhookService.make_request",
+            return_value=None,
+        ), self.assertLogs(level="INFO") as logs:
+            resp = do_rest_call("", mock_event, service_handler)
+            self.assertEqual(resp, None)
+        self.assert_length(logs.output, 1)
 
     def test_fail_request(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")

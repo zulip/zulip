@@ -4669,6 +4669,16 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                 dict(username=self.email, password=initial_password(self.email)),
             )
             self.assert_json_error_contains(result, "Invalid subdomain", 404)
+        do_create_realm(string_id="acme", name="acme")
+        acme_realm = get_realm("acme")
+        with mock.patch(
+            "zerver.views.development.dev_login.get_realm_from_request", return_value=acme_realm
+        ):
+            result = self.client_post(
+                "/api/v1/dev_fetch_api_key",
+                dict(username=self.email, password=initial_password(self.email)),
+            )
+            self.assert_json_error_contains(result, "Invalid subdomain", 404)
 
 
 class DevGetEmailsTest(ZulipTestCase):

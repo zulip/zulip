@@ -549,7 +549,7 @@ def makeExtension(*args: Any, **kwargs: None) -> FencedCodeExtension:
     return FencedCodeExtension(kwargs)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # nocoverage - can we remove this?
     import doctest
 
     doctest.testmod()

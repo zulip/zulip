@@ -106,6 +106,51 @@ class DocPageTest(ZulipTestCase):
                     ['<meta name="robots" content="noindex,nofollow" />'], result
                 )
 
+    def test_api_doc_undocumented_endpoint(self) -> None:
+        # nasty mocking to get down into the KeyError
+        with mock.patch(
+            "zerver.lib.markdown.api_arguments_table_generator.get_openapi_parameters",
+            side_effect=KeyError,
+        ):
+            with self.assertLogs(level="ERROR"):
+                self.get_doc("/api/get-streams", subdomain="")
+        with mock.patch(
+            "zerver.lib.markdown.api_arguments_table_generator.get_openapi_parameters",
+            side_effect=KeyError(
+                ("parameters"),
+            ),
+        ):
+            self.get_doc("/api/get-streams", subdomain="")
+
+    def test_api_doc_nonjson_response(self) -> None:
+        args = [
+            {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "prop1": {
+                            "default": {"myprop": "42"},
+                            "type": "object",
+                            "properties": {
+                                "prop1a": {
+                                    "default": {"myprop": "42"},
+                                    "type": "string",
+                                },
+                            },
+                        },
+                    },
+                },
+                "description": "foo",
+                "content": "foo",
+                "example": "foo",
+            }
+        ]
+        with mock.patch(
+            "zerver.lib.markdown.api_arguments_table_generator.get_openapi_parameters",
+            return_value=args,
+        ):
+            self._test("/api/send-message", "Parameters")
+
     def test_api_doc_endpoints(self) -> None:
         # We extract the set of /api/ endpoints to check by parsing
         # the /api/ page sidebar for links starting with /api/.
@@ -116,16 +161,22 @@ class DocPageTest(ZulipTestCase):
         # Validate that the parsing logic isn't broken, since if it
         # broke, the below would become a noop.
         self.assertGreater(len(endpoint_list), 70)
-
         for endpoint in endpoint_list:
             self._test(endpoint, "", doc_html_str=True)
 
-        result = self.client_get(
-            "/api/nonexistent-page",
-            follow=True,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-        )
-        self.assertEqual(result.status_code, 404)
+    def test_api_doc_404_endpoints(self) -> None:
+        def test_404(endpoint: str) -> None:
+            result = self.client_get(
+                endpoint,
+                follow=True,
+                HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+            )
+            self.assertEqual(result.status_code, 404)
+
+        # first do a sanity check, then check for 404s
+        self._test("/api/send-message", "steal away your hearts")
+        for endpoint in ["/api/nonexistent-page", "/api/api-doc-template"]:
+            test_404(endpoint)
 
     def test_doc_endpoints(self) -> None:
         self._test("/api/", "The Zulip API")
@@ -312,6 +363,18 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn("<strong>Manage streams</strong>", str(result.content))
         self.assertNotIn("/#streams", str(result.content))
+
+    def test_help_relative_links_for_all(self) -> None:
+        result = self.client_get("/help/browse-and-subscribe-to-streams")
+        self.assertIn('Go to <a href="/#streams/all">All streams</a>', str(result.content))
+        self.assertEqual(result.status_code, 200)
+
+    def test_help_relative_links_for_all_norel(self) -> None:
+        with mock.patch("zerver.models.Realm.SUBDOMAIN_FOR_ROOT_DOMAIN", "zulip"):
+            with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+                result = self.client_get("/help/browse-and-subscribe-to-streams")
+        self.assertIn("Click <strong>All streams</strong> in the upper left.", str(result.content))
+        self.assertEqual(result.status_code, 200)
 
 
 class IntegrationTest(ZulipTestCase):

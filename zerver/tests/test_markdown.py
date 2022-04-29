@@ -4,6 +4,7 @@ import re
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
+from xml.etree.ElementTree import Element, SubElement
 
 import orjson
 from django.conf import settings
@@ -35,8 +36,9 @@ from zerver.lib.markdown import (
     topic_links,
     url_embed_preview_enabled,
     url_to_a,
+    walk_tree,
 )
-from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
+from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor, OuterHandler
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
     FullNameInfo,
@@ -195,6 +197,91 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
+    def test_curl(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown(), run_content_validators=True)
+        markdown_input = [
+            "```curl",
+            "curl missing args",
+            "```",
+        ]
+        with self.assertRaises(MarkdownRenderingException):
+            processor.run(markdown_input)
+
+    def test_math(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown(), run_content_validators=True)
+        markdown_input = [
+            "$$O(n^2)$$",
+            "```math",
+            "\\int_a^b f(t)\\, dt = F(b) - F(a)",
+            "```",
+        ]
+        expected = ["$$O(n^2)$$", "", "\x02wzxhzdk:0\x03", "", ""]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
+    def test_spoiler(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown(), run_content_validators=True)
+        markdown_input = [
+            "```spoiler Spoiler header",
+            "Spoiler content. These lines won't be visible until the user expands the spoiler.",
+            "```",
+        ]
+        expected = [
+            "",
+            "\x02wzxhzdk:0\x03",
+            "",
+            "Spoiler header",
+            "",
+            "\x02wzxhzdk:1\x03",
+            "",
+            "Spoiler content. These lines won't be visible until the user expands the " "spoiler.",
+            "",
+            "\x02wzxhzdk:2\x03",
+            "",
+            "",
+        ]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
+    def test_python_code_hilite(self) -> None:
+        markdown_input = [
+            '```python hl_lines="1 3"',
+            "def fib(n):",
+            "    # TODO: base case",
+            "    return fib(n-1) + fib(n-2)",
+            "```",
+        ]
+        expected = """
+<div class="codehilite" data-code-language="Python"><pre><span></span><code><span class="k">def</span> <span class="nf">fib</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="c1"># TODO: base case</span>
+    <span class="k">return</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fib</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+        """.strip()
+
+        content = markdown_convert_wrapper("\n".join(markdown_input))
+        self.assertEqual(content, expected)
+
+    def test_code_format(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown())
+        result = processor.format_code(text="a=(5+5)\n", lang=None)
+        self.assertEqual("<pre><code>a=(5+5)\n\n</code></pre>", result)
+        result = processor.format_code(text="a=(5+5)\n", lang="python")
+        self.assertEqual(
+            '<pre data-code-language="Python"><code class="python">a=(5+5)\n\n' "</code></pre>",
+            result,
+        )
+
+        # coverage for a particular line in check_for_new_fence()
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "default_code_block_language", "python", acting_user=None)
+        output: List[str] = []
+        handler = OuterHandler(
+            processor, output, run_content_validators=False, default_language="python"
+        )
+        processor.handlers = []
+        handler.handle_line("```")
+        self.assertEqual("", "\n".join(output))
+
 
 def markdown_convert_wrapper(content: str) -> str:
     return markdown_convert(
@@ -284,6 +371,22 @@ class MarkdownMiscTest(ZulipTestCase):
             with self.assertLogs(level="ERROR") as m:
                 render_tex("random text")
             self.assertEqual(m.output, ["ERROR:root:Cannot find KaTeX for latex rendering!"])
+
+    def test_walk_tree_early_stop(self) -> None:
+        url = "http://foo.com"
+        div = Element("div")
+        img_a = SubElement(div, "a")
+        img_a.set("href", url + "/")
+        img_a.set("name", "foo1")
+        img_b = SubElement(div, "a")
+        img_b.set("href", url)
+        img_b.set("name", "foo2")
+        img_c = SubElement(div, "a")
+        img_c.set("href", url)
+        img_c.set("name", "foo3")
+        res = walk_tree(div, lambda elem: elem if (elem.get("href") == url) else None, True)
+        self.assert_length(res, 1)
+        self.assertEqual(res[0].get("name"), "foo2")
 
 
 class MarkdownListPreprocessorTest(ZulipTestCase):

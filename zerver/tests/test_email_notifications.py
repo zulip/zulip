@@ -18,6 +18,7 @@ from django_auth_ldap.config import LDAPSearch
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.email_notifications import (
+    do_send_missedmessage_events_reply_in_zulip,
     enqueue_welcome_emails,
     fix_emojis,
     fix_spoilers_in_html,
@@ -422,6 +423,32 @@ class TestMissedMessages(ZulipTestCase):
                 hamlet.id, [{"message_id": message.id, "trigger": "private_message"}]
             )
         m.assert_not_called()
+
+    def test_missed_message_badmatch(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        class _msgobj(object):
+            recipient_id = -1
+            topic = ""
+
+            def __init__(self, recipient_id: int, topic: str) -> None:
+                self.recipient_id = recipient_id
+                self.topic = topic
+
+            def topic_name(self) -> str:
+                return self.topic
+
+        self.assertRaises(
+            ValueError,
+            do_send_missedmessage_events_reply_in_zulip,
+            hamlet,
+            [
+                {"message": _msgobj(1, "topic1a")},
+                {"message": _msgobj(1, "topic1b")},
+                {"message": _msgobj(2, "topic2")},
+            ],
+            3,
+        )
 
     def normalize_string(self, s: str) -> str:
         s = s.strip()
@@ -1515,3 +1542,23 @@ class TestFollowupEmailDelay(ZulipTestCase):
         # Test date_joined == Friday
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
         self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))
+
+
+class TestCustomEmailSender(ZulipTestCase):
+    name = "Right Said Fred"
+    email = "ur@toosexy.com"
+
+    @override_settings(
+        WELCOME_EMAIL_SENDER={
+            "name": name,
+            "email": email,
+        }
+    )
+    def test_custom_email_sender(self) -> None:
+        hamlet = self.example_user("hamlet")
+        enqueue_welcome_emails(hamlet)
+        scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+        email_data = orjson.loads(scheduled_emails[0].data)
+        self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
+        self.assertEqual(email_data["from_name"], self.name)
+        self.assertEqual(email_data["from_address"], self.email)

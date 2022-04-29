@@ -2487,6 +2487,36 @@ class TestAddressee(ZulipTestCase):
         stream_id = result.stream_id()
         self.assertEqual(stream.id, stream_id)
 
+    def test_addressee_legacy_build_for_bad_num_streams(self) -> None:
+        realm = get_realm("zulip")
+        self.login("iago")
+        sender = self.example_user("iago")
+
+        with self.assertRaisesRegex(JsonableError, "Missing stream"):
+            Addressee.legacy_build(
+                sender=sender,
+                message_type_name="stream",
+                message_to=[],
+                topic_name="random_topic",
+                realm=realm,
+            )
+
+        self.subscribe(sender, "Denmark")
+        stream1 = get_stream("Denmark", realm)
+        self.subscribe(sender, "Scotland")
+        stream2 = get_stream("Scotland", realm)
+        with self.assertRaisesRegex(JsonableError, "Cannot send to multiple streams"):
+            Addressee.legacy_build(
+                sender=sender,
+                message_type_name="stream",
+                message_to=[stream1.id, stream2.id],
+                topic_name="random_topic",
+                realm=realm,
+            )
+
+        with self.assertRaisesRegex(JsonableError, "Missing topic"):
+            Addressee("stream", sender, stream1, "Denmark", stream1.id, None)
+
 
 class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:

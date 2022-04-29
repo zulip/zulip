@@ -48,6 +48,7 @@ target_fully_covered = [
     "corporate/tests/*.py",
     # As a project, we require 100% test coverage in the views files.
     "zerver/views/*.py",
+    "zerver/views/development/registration.py",
     "zproject/backends.py",
     "confirmation/*.py",
     "zerver/webhooks/*/*.py",
@@ -69,20 +70,9 @@ not_yet_fully_covered = [
     "analytics/views/stats.py",
     "analytics/views/support.py",
     # Major lib files should have 100% coverage
-    "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
-    "zerver/lib/cache.py",
-    "zerver/lib/cache_helpers.py",
-    "zerver/lib/i18n.py",
-    "zerver/lib/email_notifications.py",
     "zerver/lib/send_email.py",
-    "zerver/lib/url_preview/preview.py",
     "zerver/worker/queue_processors.py",
-    # Markdown sub-libs should have full coverage too; a lot are really close
-    "zerver/lib/markdown/api_arguments_table_generator.py",
-    "zerver/lib/markdown/fenced_code.py",
-    "zerver/lib/markdown/help_relative_links.py",
-    "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
     "zerver/filters.py",
     "zerver/middleware.py",
@@ -96,7 +86,6 @@ not_yet_fully_covered = [
     "zerver/lib/import_realm.py",
     "zerver/lib/logging_util.py",
     "zerver/lib/migrate.py",
-    "zerver/lib/outgoing_webhook.py",
     "zerver/lib/profile.py",
     "zerver/lib/queue.py",
     "zerver/lib/sqlalchemy_utils.py",

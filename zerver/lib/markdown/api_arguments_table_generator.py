@@ -105,7 +105,8 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                         # endpoint doesn't accept any parameters
                         if e.args != ("parameters",):
                             raise e
-                else:
+                else:  # nocoverage - legacy leftover from OpenAPI migration?
+                    # e.g. git log --full-history --  templates/zerver/api/arguments.json
                     with open(filename) as fp:
                         json_obj = json.load(fp)
                         arguments = json_obj[doc_name]
@@ -222,7 +223,6 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
         object_values = schema.get("properties", {})
         for value in object_values:
-
             description = ""
             if "description" in object_values[value]:
                 description = object_values[value]["description"]
