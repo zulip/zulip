@@ -254,10 +254,11 @@
 
     button {
         background: transparent;
+        color: inherit;
         font-size: 15px;
         font-weight: normal;
         line-height: 20px;
-        opacity: 0.6;
+        opacity: 0.7;
         border: 0;
         padding: 0;
         margin-left: 4px;
