@@ -281,6 +281,12 @@ def print_line(
         ts = match["date"] + ":" + match["time"]
     else:
         ts = match["time"]
+
+    if match["duration"].endswith("ms"):
+        duration = match["duration"][:-2]
+    else:
+        duration = str(int(float(match["duration"][:-1]) * 1000))
+
     code = int(match["code"])
     indicator = " "
     color = ""
@@ -312,6 +318,7 @@ def print_line(
 
     parts = [
         ts,
+        f"{duration:>5}ms",
         f"{user_id:7}" if not args.nginx and filter_type != FilterType.USER_ID else None,
         f"{match['ip']:39}" if filter_type != FilterType.CLIENT_IP else None,
         indicator + match["code"],
