@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-set -x
-set -e
+set -euxo pipefail
 
-PGROONGA_VERSION="2.2.8"
+version="2.3.6"
+sha256=fc68a66a216e304bb0e2ef627f767fff528f4fbf2bbda27e8cd8db1b7ba090b0
 
-cd "$(mktemp -d)"
+tmpdir="$(mktemp -d)"
+trap 'rm -r "$tmpdir"' EXIT
+cd "$tmpdir"
+tarball="pgroonga-$version.tar.gz"
+curl -fLO "https://packages.groonga.org/source/pgroonga/$tarball"
+sha256sum -c <<<"$sha256 $tarball"
+tar -xzf "$tarball"
+cd "pgroonga-$version"
 
-curl -fLO https://packages.groonga.org/source/pgroonga/pgroonga-"$PGROONGA_VERSION".tar.gz
-tar xf pgroonga-"$PGROONGA_VERSION".tar.gz
-cd pgroonga-"$PGROONGA_VERSION"
-
-make HAVE_MSGPACK=1
+make -j "$(nproc)" HAVE_MSGPACK=1
 make install
