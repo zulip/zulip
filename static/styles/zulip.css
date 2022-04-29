@@ -3090,12 +3090,6 @@ select.inline_select_topic_edit {
     }
 }
 
-#login_to_access_modal {
-    .modal__content p {
-        margin: 0;
-    }
-}
-
 #scroll-to-bottom-button-container {
     display: none;
     z-index: 3;
