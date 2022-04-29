@@ -5,6 +5,7 @@ import {narrow_error} from "./narrow_error";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 
 const SPECTATOR_STREAM_NARROW_BANNER = {
@@ -204,6 +205,7 @@ function pick_empty_narrow_banner() {
                 // in which you were never subscribed.
 
                 if (page_params.is_spectator) {
+                    spectators.login_to_access(true);
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
 

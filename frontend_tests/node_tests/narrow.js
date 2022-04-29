@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_function_call_disallowed_rewire, zrequire} = require("../zjsunit/namespace");
+const {with_function_call_disallowed_rewire, zrequire, mock_esm} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -15,6 +15,10 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
+
+mock_esm("../../static/js/spectators", {
+    login_to_access: () => {},
+});
 
 function empty_narrow_html(title, html, search_data) {
     const opts = {
