@@ -12,8 +12,7 @@ const SPECTATOR_STREAM_NARROW_BANNER = {
     title: "",
     html: $t_html(
         {
-            defaultMessage:
-                "This stream does not exist or is not <z-link>publicly accessible</z-link>.",
+            defaultMessage: "This is not a <z-link>publicly accessible</z-link> conversation.",
         },
         {
             "z-link": (content_html) => `<a href="/help/public-access-option">${content_html}</a>`,
@@ -66,15 +65,18 @@ function retrieve_search_query_data() {
 function pick_empty_narrow_banner() {
     const default_banner = {
         title: $t({defaultMessage: "Nothing's been sent here yet!"}),
-        html: $t_html(
-            {
-                defaultMessage: "Why not <z-link>start the conversation</z-link>?",
-            },
-            {
-                "z-link": (content_html) =>
-                    `<a href="#" class="empty_feed_compose_stream">${content_html}</a>`,
-            },
-        ),
+        // Spectators cannot start a conversation.
+        html: page_params.is_spectator
+            ? ""
+            : $t_html(
+                  {
+                      defaultMessage: "Why not <z-link>start the conversation</z-link>?",
+                  },
+                  {
+                      "z-link": (content_html) =>
+                          `<a href="#" class="empty_feed_compose_stream">${content_html}</a>`,
+                  },
+              ),
     };
     const empty_search_narrow_title = $t({defaultMessage: "No search results"});
 
@@ -132,7 +134,13 @@ function pick_empty_narrow_banner() {
             };
         }
 
-        if (page_params.is_spectator) {
+        if (
+            page_params.is_spectator &&
+            first_operator === "stream" &&
+            !stream_data.is_web_public_by_stream_name(first_operand)
+        ) {
+            // For non web-public streams, show `login_to_access` modal.
+            spectators.login_to_access(true);
             return SPECTATOR_STREAM_NARROW_BANNER;
         }
 
