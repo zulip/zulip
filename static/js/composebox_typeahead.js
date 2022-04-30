@@ -47,8 +47,10 @@ export let emoji_collection = [];
 export function update_emoji_data() {
     emoji_collection = [];
     for (const emoji_dict of emoji.emojis_by_name.values()) {
+        const {reaction_type} = emoji.get_emoji_details_by_name(emoji_dict.name);
         if (emoji_dict.is_realm_emoji === true) {
             emoji_collection.push({
+                reaction_type,
                 emoji_name: emoji_dict.name,
                 emoji_url: emoji_dict.url,
                 is_realm_emoji: true,
@@ -56,6 +58,7 @@ export function update_emoji_data() {
         } else {
             for (const alias of emoji_dict.aliases) {
                 emoji_collection.push({
+                    reaction_type,
                     emoji_name: alias,
                     emoji_code: emoji_dict.emoji_code,
                 });
