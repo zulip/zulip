@@ -177,6 +177,8 @@ def generate_emoji_collection() -> None:
         category = emoji_dict["category"]
         emoji_code = get_emoji_code(emoji_dict)
         sort_order = emoji_dict["sort_order"]
+        if category == "Component":
+            continue
         emoji_collection[category].append(
             {
                 "category": category,
