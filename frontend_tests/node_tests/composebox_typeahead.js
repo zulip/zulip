@@ -169,6 +169,7 @@ const emojis_by_name = new Map(
 const emoji_list = Array.from(emojis_by_name.values(), (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
+    reaction_type: "unicode_emoji",
 }));
 
 const me_slash = {
@@ -218,9 +219,25 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
+const name_to_codepoint = {};
+for (const [key, val] of emojis_by_name.entries()) {
+    name_to_codepoint[key] = val.emoji_code;
+}
+
+const emoji_codes = {
+    name_to_codepoint,
+    names: Array.from(emojis_by_name.keys()),
+    emoji_catalog: {},
+    emoticon_conversions: {},
+    codepoint_to_name: {},
+};
+
+emoji.initialize({
+    realm_emoji: {},
+    emoji_codes,
+});
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
-emoji.emojis = emoji_list;
 
 const alice = {
     email: "alice@zulip.com",
@@ -1532,18 +1549,22 @@ test("typeahead_results", () => {
         assert.deepEqual(returned, expected);
     }
     assert_emoji_matches("da", [
-        {emoji_name: "tada", emoji_code: "1f389"},
-        {emoji_name: "panda_face", emoji_code: "1f43c"},
+        {emoji_name: "tada", emoji_code: "1f389", reaction_type: "unicode_emoji"},
+        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
     ]);
     assert_emoji_matches("da_", []);
     assert_emoji_matches("da ", []);
-    assert_emoji_matches("panda ", [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
-    assert_emoji_matches("panda_", [{emoji_name: "panda_face", emoji_code: "1f43c"}]);
+    assert_emoji_matches("panda ", [
+        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
+    ]);
+    assert_emoji_matches("panda_", [
+        {emoji_name: "panda_face", emoji_code: "1f43c", reaction_type: "unicode_emoji"},
+    ]);
     assert_emoji_matches("japanese_post_", [
-        {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
+        {emoji_name: "japanese_post_office", emoji_code: "1f3e3", reaction_type: "unicode_emoji"},
     ]);
     assert_emoji_matches("japanese post ", [
-        {emoji_name: "japanese_post_office", emoji_code: "1f3e3"},
+        {emoji_name: "japanese_post_office", emoji_code: "1f3e3", reaction_type: "unicode_emoji"},
     ]);
     assert_emoji_matches("notaemoji", []);
 
