@@ -25,6 +25,7 @@ const emojis = [
     ...unicode_emojis.map(([emoji_code, emoji_name]) => ({
         emoji_name,
         emoji_code,
+        reaction_type: "unicode_emoji",
     })),
 ];
 
@@ -54,6 +55,10 @@ run_test("matches starting at non-first word, too", () => {
     assert_emoji_matches("ice_cream", ["ice_cream", "soft_ice_cream"]);
     assert_emoji_matches("blue_dia", ["large_blue_diamond", "small_blue_diamond"]);
     assert_emoji_matches("traffic_", ["horizontal_traffic_light", "traffic_light"]);
+});
+
+run_test("matches literal unicode emoji", () => {
+    assert_emoji_matches("🐼", ["panda_face"]);
 });
 
 run_test("get_emoji_matcher: spaces equivalent to underscores", () => {
