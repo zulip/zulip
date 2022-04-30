@@ -219,6 +219,19 @@ function get_rendered_emoji(section, index) {
     return undefined;
 }
 
+export function is_emoji_present_in_text(text, emoji_dict) {
+    // fetching emoji details to ensure emoji_code and reaction_type are present
+    const emoji_info = emoji.get_emoji_details_by_name(emoji_dict.name);
+    if (typeahead.is_unicode_emoji(emoji_info)) {
+        // convert emoji_dict to an actual emoji character
+        const parsed_emoji_code = typeahead.parse_unicode_emoji_code(emoji_info.emoji_code);
+
+        return text.includes(parsed_emoji_code);
+    }
+
+    return false;
+}
+
 function filter_emojis() {
     const $elt = $(".emoji-popover-filter").expectOne();
     const query = $elt.val().trim().toLowerCase();
@@ -234,7 +247,6 @@ function filter_emojis() {
                 continue;
             }
             const emojis = category.emojis;
-
             for (const emoji_dict of emojis) {
                 for (const alias of emoji_dict.aliases) {
                     const match = search_terms.every((search_term) => alias.includes(search_term));
@@ -242,6 +254,12 @@ function filter_emojis() {
                         search_results.push({...emoji_dict, emoji_name: alias});
                         break; // We only need the first matching alias per emoji.
                     }
+                }
+
+                // using query instead of search_terms because it's possible multiple emojis were input
+                // without being separated by spaces
+                if (is_emoji_present_in_text(query, emoji_dict)) {
+                    search_results.push({...emoji_dict, emoji_name: emoji_dict.name});
                 }
             }
         }

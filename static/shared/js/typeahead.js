@@ -81,13 +81,26 @@ export function clean_query_lowercase(query) {
     return query;
 }
 
+export const is_unicode_emoji = (emoji) =>
+    emoji.reaction_type === "unicode_emoji" && emoji.emoji_code;
+
+export const parse_unicode_emoji_code = (code) =>
+    code
+        .split("-")
+        .map((hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
+        .join("");
+
 export function get_emoji_matcher(query) {
     // replace spaces with underscores for emoji matching
     query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
 
     return function (emoji) {
-        return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
+        const matches_emoji_literal =
+            is_unicode_emoji(emoji) && parse_unicode_emoji_code(emoji.emoji_code) === query;
+        return (
+            matches_emoji_literal || query_matches_source_attrs(query, emoji, ["emoji_name"], "_")
+        );
     };
 }
 

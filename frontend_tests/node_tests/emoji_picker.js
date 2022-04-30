@@ -60,3 +60,33 @@ run_test("initialize", () => {
         total_emoji_in_categories - popular_emoji_count + zulip_emoji_count,
     );
 });
+
+run_test("is_emoji_present_in_text", () => {
+    const thermometer_emoji = {
+        name: "thermometer",
+        emoji_code: "1f321",
+        reaction_type: "unicode_emoji",
+    };
+    const headphones_emoji = {
+        name: "headphones",
+        emoji_code: "1f3a7",
+        reaction_type: "unicode_emoji",
+    };
+    assert.equal(emoji_picker.is_emoji_present_in_text("🌡", thermometer_emoji), true);
+    assert.equal(
+        emoji_picker.is_emoji_present_in_text("no emojis at all", thermometer_emoji),
+        false,
+    );
+    assert.equal(emoji_picker.is_emoji_present_in_text("😎", thermometer_emoji), false);
+    assert.equal(emoji_picker.is_emoji_present_in_text("😎🌡🎧", thermometer_emoji), true);
+    assert.equal(emoji_picker.is_emoji_present_in_text("😎🎧", thermometer_emoji), false);
+    assert.equal(emoji_picker.is_emoji_present_in_text("😎🌡🎧", headphones_emoji), true);
+    assert.equal(
+        emoji_picker.is_emoji_present_in_text("emojis with text 😎🌡🎧", thermometer_emoji),
+        true,
+    );
+    assert.equal(
+        emoji_picker.is_emoji_present_in_text("emojis with text no space😎🌡🎧", headphones_emoji),
+        true,
+    );
+});
