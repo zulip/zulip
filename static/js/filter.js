@@ -547,9 +547,11 @@ export class Filter {
         // is: private, pm-with:,
         // is: mentioned, is: resolved
         const term_types = this.sorted_term_types();
-        if (_.isEqual(term_types, ["pm-with"]) &&
+        if (
+            _.isEqual(term_types, ["pm-with"]) &&
             this.operands("pm-with").length === 1 &&
-            this.operands("pm-with")[0] === "") {
+            this.operands("pm-with")[0] === ""
+        ) {
             return false;
         }
         if (this.can_mark_messages_read()) {
