@@ -184,7 +184,6 @@ function message_matches_search_term(message, operator, operand) {
             if (!user_ids) {
                 return false;
             }
-
             return _.isEqual(operand_ids, user_ids);
         }
     }
@@ -547,13 +546,18 @@ export class Filter {
         // stream, stream + topic,
         // is: private, pm-with:,
         // is: mentioned, is: resolved
+        const term_types = this.sorted_term_types();
+        if (_.isEqual(term_types, ["pm-with"]) &&
+            this.operands("pm-with").length === 1 &&
+            this.operands("pm-with")[0] === "") {
+            return false;
+        }
         if (this.can_mark_messages_read()) {
             return true;
         }
         // that leaves us with checking:
         // is: starred
         // (which can_mark_messages_read_does not check as starred messages are always read)
-        const term_types = this.sorted_term_types();
 
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
