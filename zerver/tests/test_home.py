@@ -338,6 +338,7 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "insecure_desktop_app",
             "is_spectator",
+            "language_cookie_name",
             "language_list",
             "login_page",
             "needs_tutorial",
