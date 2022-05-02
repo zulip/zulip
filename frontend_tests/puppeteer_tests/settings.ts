@@ -303,8 +303,10 @@ async function test_alert_words_section(page: Page): Promise<void> {
 }
 
 async function change_language(page: Page, language_data_code: string): Promise<void> {
-    await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
-    await page.click("#user-display-settings .setting_default_language");
+    await page.waitForSelector("#user-display-settings .language_selection_button", {
+        visible: true,
+    });
+    await page.click("#user-display-settings .language_selection_button");
     await common.wait_for_micromodal_to_open(page);
     const language_selector = `a[data-code="${CSS.escape(language_data_code)}"]`;
     await page.click(language_selector);
@@ -317,10 +319,12 @@ async function check_language_setting_status(page: Page): Promise<void> {
 }
 
 async function assert_language_changed_to_chinese(page: Page): Promise<void> {
-    await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
+    await page.waitForSelector("#user-display-settings .language_selection_button", {
+        visible: true,
+    });
     const default_language = await common.get_text_from_selector(
         page,
-        "#user-display-settings .setting_default_language",
+        "#user-display-settings .language_selection_button",
     );
     assert.strictEqual(
         default_language,
@@ -346,7 +350,9 @@ async function test_default_language_setting(page: Page): Promise<void> {
     // Check that the saved indicator appears
     await check_language_setting_status(page);
     await page.click(".reload_link");
-    await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
+    await page.waitForSelector("#user-display-settings .language_selection_button", {
+        visible: true,
+    });
     await assert_language_changed_to_chinese(page);
     await test_i18n_language_precedence(page);
     await page.waitForSelector(display_settings_section, {visible: true});
@@ -363,7 +369,9 @@ async function test_default_language_setting(page: Page): Promise<void> {
     await page.waitForSelector("#user-display-settings .lang-time-settings-status", {
         visible: true,
     });
-    await page.waitForSelector("#user-display-settings .setting_default_language", {visible: true});
+    await page.waitForSelector("#user-display-settings .language_selection_button", {
+        visible: true,
+    });
 }
 
 async function test_notifications_section(page: Page): Promise<void> {

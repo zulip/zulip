@@ -2167,6 +2167,12 @@ div.focused_table {
     }
 }
 
+#gear-menu .zulip-icon-language {
+    position: relative;
+    top: 2.5px;
+    left: -0.5px;
+}
+
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;

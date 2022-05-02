@@ -11,13 +11,10 @@
             {{> settings_save_discard_widget section_name="lang-time-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
         {{#unless for_realm_settings}}
-        <div class="input-group">
-            <label class="inline-block title">{{t "Language" }}</label>
-            <button type="button" class="setting_default_language button btn-link rounded small inline-block">
-                <span class="default_language_name">{{default_language_name}}</span>
-                <i class="fa fa-pencil"></i>
-            </button>
-        </div>
+            {{> language_selection_widget
+              section_name="default_language_name"
+              setting_value=default_language_name
+              section_title=settings_label.default_language_settings_label }}
         {{/unless}}
 
         <div class="input-group">

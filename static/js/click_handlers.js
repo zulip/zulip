@@ -37,6 +37,7 @@ import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
+import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
 import * as spectators from "./spectators";
@@ -671,6 +672,10 @@ export function initialize() {
         popovers.hide_all();
     });
 
+    $("body").on("click", ".reload_link", () => {
+        window.location.reload();
+    });
+
     // COMPOSE
 
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
@@ -862,6 +867,12 @@ export function initialize() {
     });
 
     // GEAR MENU
+
+    $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        settings_display.launch_default_language_setting_modal();
+    });
 
     $("body").on("click", "#gear-menu .dark-theme", (e) => {
         // Allow propagation to close gear menu.
