@@ -4,14 +4,12 @@ import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
-import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
@@ -20,18 +18,12 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
-import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
-<<<<<<< HEAD
-import * as user_pill from "./user_pill";
-=======
-import * as ui_report from "./ui_report";
->>>>>>> 0fedeb51cc (profile_fields: Extract formatting profile fields fn.)
+import * as user_profile from "./user_profile";
 
 const section = {
     active: {},
@@ -505,95 +497,13 @@ function handle_reactivation($tbody) {
     });
 }
 
-export function show_edit_user_info_modal(user_id, from_user_info_popover) {
-    const person = people.get_by_user_id(user_id);
-
-    if (!person) {
-        return;
-    }
-
-    const user_email = settings_data.email_for_user_settings(person);
-
-    const html_body = render_admin_human_form({
-        user_id,
-        email: user_email,
-        full_name: person.full_name,
-        user_role_values: settings_config.user_role_values,
-        disable_role_dropdown: person.is_owner && !page_params.is_owner,
-    });
-
-    let fields_user_pills;
-
-    function set_role_dropdown_and_fields_user_pills() {
-        $("#user-role-select").val(person.role);
-        if (!page_params.is_owner) {
-            $("#user-role-select")
-                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-                .hide();
-        }
-
-        const element = "#edit-user-form .custom-profile-field-form";
-        $(element).html("");
-        settings_account.append_custom_profile_fields(element, user_id);
-        settings_account.initialize_custom_date_type_fields(element);
-        fields_user_pills = settings_account.initialize_custom_user_type_fields(
-            element,
-            user_id,
-            true,
-            false,
-        );
-
-        $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const user_id = $("#edit-user-form").data("user-id");
-            function handle_confirm() {
-                const url = "/json/users/" + encodeURIComponent(user_id);
-                dialog_widget.submit_api_request(channel.del, url);
-            }
-            const open_deactivate_modal_callback = () =>
-                confirm_deactivation(user_id, handle_confirm, true);
-            dialog_widget.close_modal(open_deactivate_modal_callback);
-        });
-    }
-
-    function submit_user_details() {
-        const role = Number.parseInt($("#user-role-select").val().trim(), 10);
-        const $full_name = $("#edit-user-form").find("input[name='full_name']");
-        const profile_data = custom_profile_fields_ui.get_human_profile_data(fields_user_pills);
-
-        const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-            profile_data: JSON.stringify(profile_data),
-        };
-        const opts = {
-            error_continuation() {
-                // Scrolling modal to top, to make error visible to user.
-                $("#edit-user-form")
-                    .closest(".simplebar-content-wrapper")
-                    .animate({scrollTop: 0}, "fast");
-            },
-        };
-        dialog_widget.submit_api_request(channel.patch, url, data, opts);
-    }
-
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage user"}),
-        html_body,
-        on_click: submit_user_details,
-        post_render: set_role_dropdown_and_fields_user_pills,
-        loading_spinner: from_user_info_popover,
-    });
-}
-
 function handle_human_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_edit_user_info_modal(user_id, false);
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user, 3);
     });
 }
 
