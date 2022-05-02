@@ -8,6 +8,7 @@ type UserGroup = {
     name: string;
     members: Set<number>;
     is_system_group: boolean;
+    subgroups: Set<number>;
 };
 
 // The members field is a number array which we convert
@@ -35,6 +36,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         name: user_group_raw.name,
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
+        subgroups: new Set(user_group_raw.subgroups),
     };
 
     user_group_name_dict.set(user_group.name, user_group);
