@@ -1128,7 +1128,7 @@ export function initialize() {
     });
 
     {
-        const sel = ".search-container, .streams-list, .subscriptions-header";
+        const sel = ".streams-list";
 
         $("#manage_streams_container").on("click", sel, (e) => {
             if ($(e.target).is(sel)) {
