@@ -42,6 +42,54 @@ function change_display_setting(data, $status_el, success_msg_html, sticky) {
     settings_ui.do_settings_change(channel.patch, "/json/settings", data, $status_el, opts);
 }
 
+function default_language_modal_post_render($container) {
+    $("#user_default_language_modal")
+        .find(".language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dialog_widget.close_modal();
+
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const data = {default_language: setting_value};
+
+            const new_language = $link.attr("data-name");
+            $container.find(".default_language_name").text(new_language);
+
+            change_display_setting(
+                data,
+                $container.find(".lang-time-settings-status"),
+                $t_html(
+                    {
+                        defaultMessage:
+                            "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                    },
+                    {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
+                ),
+                true,
+            );
+        });
+}
+
+export function launch_default_language_setting_modal($container) {
+    const html_body = render_dialog_default_language({
+        language_list: get_language_list_columns(user_settings.default_language),
+    });
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Select default language"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Close"}),
+        id: "user_default_language_modal",
+        close_on_submit: true,
+        focus_submit_on_open: true,
+        single_footer_button: true,
+        post_render: () => default_language_modal_post_render($container),
+        on_click: () => {},
+    });
+}
+
 export function set_up(settings_panel) {
     meta.loaded = true;
     const $container = $(settings_panel.container);
@@ -99,55 +147,10 @@ export function set_up(settings_panel) {
         }
     });
 
-    function default_language_modal_post_render() {
-        $("#user_default_language_modal")
-            .find(".language")
-            .on("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dialog_widget.close_modal();
-
-                const $link = $(e.target).closest("a[data-code]");
-                const setting_value = $link.attr("data-code");
-                const data = {default_language: setting_value};
-
-                const new_language = $link.attr("data-name");
-                $container.find(".default_language_name").text(new_language);
-
-                change_display_setting(
-                    data,
-                    $container.find(".lang-time-settings-status"),
-                    $t_html(
-                        {
-                            defaultMessage:
-                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-                        },
-                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
-                    ),
-                    true,
-                );
-            });
-    }
-
     $container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        const html_body = render_dialog_default_language({
-            language_list: get_language_list_columns(user_settings.default_language),
-        });
-
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Select default language"}),
-            html_body,
-            html_submit_button: $t_html({defaultMessage: "Close"}),
-            id: "user_default_language_modal",
-            close_on_submit: true,
-            focus_submit_on_open: true,
-            single_footer_button: true,
-            post_render: default_language_modal_post_render,
-            on_click: () => {},
-        });
+        launch_default_language_setting_modal($container);
     });
 
     $("body").on("click", ".reload_link", () => {
