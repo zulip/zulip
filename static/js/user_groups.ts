@@ -178,3 +178,26 @@ export function get_recursive_subgroups(target_group_id: number): Set<number> | 
     }
     return subgroup_ids;
 }
+
+export function is_user_in_group(user_group_id: number, user_id: number): boolean {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return false;
+    }
+    if (is_direct_member_of(user_id, user_group_id)) {
+        return true;
+    }
+
+    const subgroup_ids = get_recursive_subgroups(user_group_id);
+    if (subgroup_ids === undefined) {
+        return false;
+    }
+
+    for (const group_id of subgroup_ids) {
+        if (is_direct_member_of(user_id, group_id)) {
+            return true;
+        }
+    }
+    return false;
+}

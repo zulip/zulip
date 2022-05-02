@@ -183,3 +183,61 @@ run_test("get_recursive_subgroups", () => {
     assert.deepEqual(user_groups.get_recursive_subgroups(foo.id), undefined);
     assert.deepEqual(user_groups.get_recursive_subgroups(test.id), undefined);
 });
+
+run_test("is_user_in_group", () => {
+    const admins = {
+        name: "Admins",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        subgroups: new Set([4]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        subgroups: new Set([1, 3]),
+    };
+    const test = {
+        name: "Test",
+        id: 3,
+        members: new Set([4, 5]),
+        is_system_group: false,
+        subgroups: new Set([1]),
+    };
+    const foo = {
+        name: "Foo",
+        id: 4,
+        members: new Set([6, 7]),
+        is_system_group: false,
+        subgroups: new Set([]),
+    };
+    user_groups.add(admins);
+    user_groups.add(all);
+    user_groups.add(test);
+    user_groups.add(foo);
+
+    assert.equal(user_groups.is_user_in_group(admins.id, 1), true);
+    assert.equal(user_groups.is_user_in_group(admins.id, 6), true);
+    assert.equal(user_groups.is_user_in_group(admins.id, 3), false);
+
+    assert.equal(user_groups.is_user_in_group(all.id, 2), true);
+    assert.equal(user_groups.is_user_in_group(all.id, 1), true);
+    assert.equal(user_groups.is_user_in_group(all.id, 6), true);
+
+    assert.equal(user_groups.is_user_in_group(test.id, 4), true);
+    assert.equal(user_groups.is_user_in_group(test.id, 1), true);
+    assert.equal(user_groups.is_user_in_group(test.id, 6), true);
+    assert.equal(user_groups.is_user_in_group(test.id, 3), false);
+
+    assert.equal(user_groups.is_user_in_group(foo.id, 6), true);
+    assert.equal(user_groups.is_user_in_group(foo.id, 3), false);
+
+    blueslip.expect("error", "Could not find user group with ID 1111");
+    assert.equal(user_groups.is_user_in_group(1111, 3), false);
+
+    user_groups.add_subgroups(foo.id, [9999]);
+    blueslip.expect("error", "Could not find subgroup with ID 9999");
+    assert.equal(user_groups.is_user_in_group(admins.id, 6), false);
+});
