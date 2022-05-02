@@ -112,6 +112,30 @@ export function remove_members(user_group_id: number, user_ids: number[]): void 
     }
 }
 
+export function add_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        user_group.subgroups.add(subgroup_id);
+    }
+}
+
+export function remove_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        user_group.subgroups.delete(subgroup_id);
+    }
+}
+
 export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
     for (const user_group of params.realm_user_groups) {
         add(user_group);

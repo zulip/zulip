@@ -99,6 +99,15 @@ run_test("user_groups", () => {
     user_groups.remove_members(all.id, [1, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([2, 3, 5]));
 
+    user_groups.add_subgroups(all.id, [2, 3]);
+    assert.deepEqual(
+        user_groups.get_user_group_from_id(all.id).subgroups,
+        new Set([2, 3, 5, 4, 6]),
+    );
+
+    user_groups.remove_subgroups(all.id, [2, 4]);
+    assert.deepEqual(user_groups.get_user_group_from_id(all.id).subgroups, new Set([3, 5, 6]));
+
     assert.ok(user_groups.is_user_group(admins));
     const object = {
         name: "core",
@@ -112,7 +121,9 @@ run_test("user_groups", () => {
     blueslip.expect("error", "Could not find user group with ID -1");
     assert.equal(user_groups.is_member_of(-1, 15), false);
 
-    blueslip.expect("error", "Could not find user group with ID -9999", 2);
+    blueslip.expect("error", "Could not find user group with ID -9999", 4);
     user_groups.add_members(-9999);
     user_groups.remove_members(-9999);
+    user_groups.add_subgroups(-9999);
+    user_groups.remove_subgroups(-9999);
 });

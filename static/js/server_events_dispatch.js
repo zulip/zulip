@@ -754,6 +754,12 @@ export function dispatch_normal_event(event) {
                 case "remove_members":
                     user_groups.remove_members(event.group_id, event.user_ids);
                     break;
+                case "add_subgroups":
+                    user_groups.add_subgroups(event.group_id, event.subgroup_ids);
+                    break;
+                case "remove_subgroups":
+                    user_groups.remove_subgroups(event.group_id, event.subgroup_ids);
+                    break;
                 case "update":
                     user_groups.update(event);
                     break;
