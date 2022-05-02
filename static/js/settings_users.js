@@ -11,6 +11,7 @@ import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as custom_profile_fields_ui from "./custom_profile_fields_ui";
 import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
@@ -26,7 +27,11 @@ import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
+<<<<<<< HEAD
 import * as user_pill from "./user_pill";
+=======
+import * as ui_report from "./ui_report";
+>>>>>>> 0fedeb51cc (profile_fields: Extract formatting profile fields fn.)
 
 const section = {
     active: {},
@@ -389,42 +394,6 @@ function start_data_load() {
     populate_users();
 }
 
-function get_human_profile_data(fields_user_pills) {
-    /*
-        This formats custom profile field data to send to the server.
-        See render_admin_human_form and open_human_form
-        to see how the form is built.
-
-        TODO: Ideally, this logic would be cleaned up or deduplicated with
-        the settings_account.js logic.
-    */
-    const new_profile_data = [];
-    $("#edit-user-form .custom_user_field_value").each(function () {
-        // Remove duplicate datepicker input element generated flatpickr library
-        if (!$(this).hasClass("form-control")) {
-            new_profile_data.push({
-                id: Number.parseInt(
-                    $(this).closest(".custom_user_field").attr("data-field-id"),
-                    10,
-                ),
-                value: $(this).val(),
-            });
-        }
-    });
-    // Append user type field values also
-    for (const [field_id, field_pills] of fields_user_pills) {
-        if (field_pills) {
-            const user_ids = user_pill.get_user_ids(field_pills);
-            new_profile_data.push({
-                id: field_id,
-                value: user_ids,
-            });
-        }
-    }
-
-    return new_profile_data;
-}
-
 export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     const user = people.get_by_user_id(user_id);
     const opts = {
@@ -591,7 +560,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
     function submit_user_details() {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");
-        const profile_data = get_human_profile_data(fields_user_pills);
+        const profile_data = custom_profile_fields_ui.get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
         const data = {
