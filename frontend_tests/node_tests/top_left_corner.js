@@ -30,7 +30,7 @@ run_test("narrowing", ({override}) => {
 
     assert.ok(!pm_expanded);
     let filter = new Filter([{operator: "is", operand: "private"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    pm_list.handle_narrow_activated(filter);
     assert.ok(pm_expanded);
 
     const alice = {
@@ -49,23 +49,23 @@ run_test("narrowing", ({override}) => {
 
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    pm_list.handle_narrow_activated(filter);
     assert.ok(pm_expanded);
 
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "bob@example.com,alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    pm_list.handle_narrow_activated(filter);
     assert.ok(pm_expanded);
 
     pm_expanded = false;
     filter = new Filter([{operator: "pm-with", operand: "not@valid.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    pm_list.handle_narrow_activated(filter);
     assert.ok(!pm_expanded);
 
     pm_expanded = false;
     people.deactivate(alice);
     filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
+    pm_list.handle_narrow_activated(filter);
     assert.ok(pm_expanded);
 
     filter = new Filter([{operator: "is", operand: "mentioned"}]);
@@ -84,6 +84,7 @@ run_test("narrowing", ({override}) => {
 
     pm_closed = false;
     top_left_corner.handle_narrow_deactivated();
+    pm_list.handle_narrow_deactivated();
 
     assert.ok($(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
