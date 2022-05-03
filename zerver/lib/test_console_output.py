@@ -125,8 +125,8 @@ class WrappedIO(IO[bytes]):
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
-        return self.stream.__exit__(exc_type, exc_value, traceback)
+    ) -> None:
+        self.stream.__exit__(exc_type, exc_value, traceback)
 
 
 @contextmanager

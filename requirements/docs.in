@@ -12,4 +12,4 @@ sphinx
 sphinx-rtd-theme
 
 # Needed to build Markdown docs
-https://github.com/executablebooks/MyST-Parser/archive/0bc41ef82cdbcf3ccbf71a3a6caffe8ac2d1b1f3.zip#egg=MyST-Parser==0.17.0+git  # https://github.com/executablebooks/MyST-Parser/pull/525
+MyST-Parser

@@ -291,12 +291,7 @@ def send_email(
         raise EmailNotDeliveredException
 
 
-@backoff.on_exception(
-    backoff.expo,
-    OSError,
-    max_tries=MAX_CONNECTION_TRIES,
-    logger=None,  # type: ignore[arg-type] # https://github.com/gleb-chipiga/backoff-stubs/pull/2
-)
+@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
