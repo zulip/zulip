@@ -103,14 +103,23 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+if args.skip_tornado:
+    if args.less_graceful:
+        logging.warning("Ignored --less-graceful; --skip-tornado is always graceful.")
+        args.less_graceful = False
+    if args.skip_migrations:
+        logging.warning(
+            "Ignored --skip-migrations; all upgrades with --skip-tornado assert no migrations."
+        )
+        args.skip_migrations = False
+    if args.skip_puppet:
+        logging.warning(
+            "Ignored --skip-puppet; all upgrades with --skip-tornado assert no puppet changes."
+        )
+        args.skip_puppet = False
+
 if not args.skip_puppet and args.less_graceful:
     logging.warning("Ignored --less-graceful; all upgrades without --skip-puppet are ungraceful.")
-
-if not args.skip_puppet and args.skip_tornado:
-    logging.error(
-        "Cannot skip tornado restart unless we are skipping puppet!  Omit --skip-tornado, or add --skip-puppet."
-    )
-    sys.exit(1)
 
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
@@ -153,6 +162,10 @@ if args.skip_puppet and rabbitmq_dist_listen:
 
 def shutdown_server() -> None:
     global IS_SERVER_UP
+
+    if args.skip_tornado:
+        logging.info("Upgrade would require shutting down Zulip -- aborting!")
+        sys.exit(1)
 
     if IS_SERVER_UP:
         logging.info("Stopping Zulip...")
@@ -340,6 +353,10 @@ elif not args.skip_migrations:
         if line_str.startswith("[ ]"):
             migrations_needed = True
 
+if args.skip_tornado and migrations_needed:
+    logging.error("Would need to apply migrations -- aborting!")
+    sys.exit(1)
+
 # If we're skipping tornado restarts, we need to ensure we keep the
 # same cache prefix as we currently have.
 if args.skip_tornado:
@@ -356,14 +373,22 @@ if not migrations_needed:
 # mode and see if it will actually make any changes; if not, we can
 # skip it during the upgrade.  We omit this check if the server is
 # already stopped, since it's not better than just pressing on.
+has_puppet_changes = True
 if not args.skip_puppet and IS_SERVER_UP:
     logging.info("Pre-checking for puppet changes...")
     try_puppet = subprocess.run(
         ["./scripts/zulip-puppet-apply", "--noop", "--force"], stdout=subprocess.DEVNULL
     )
     if try_puppet.returncode == 0:
-        logging.info("No puppet changes found, skipping!")
+        if args.skip_tornado:
+            logging.info("Verified no Puppet changes are necessary.")
+        else:
+            logging.info("No puppet changes found, skipping!")
         args.skip_puppet = True
+        has_puppet_changes = False
+    elif args.skip_tornado:
+        logging.error("Would need to apply puppet changes -- aborting!")
+        sys.exit(1)
 
 # NOTE: Here begins the most likely critical period, where we may be
 # shutting down the server; we should strive to minimize the number of
@@ -434,6 +459,6 @@ if not args.skip_purge_old_deployments:
 else:
     logging.info("Skipping purging old deployments.")
 
-if args.skip_puppet:
+if args.skip_puppet and has_puppet_changes:
     logging.info("Showing un-applied Puppet changes:")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--noop", "--show_diff"])
