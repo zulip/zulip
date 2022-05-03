@@ -1,7 +1,7 @@
 import asyncio
 
 
-class NoAutoCreateEventLoopPolicy(asyncio.DefaultEventLoopPolicy):  # type: ignore[misc,valid-type]  # https://github.com/python/typeshed/issues/7452
+class NoAutoCreateEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
     """
     By default asyncio.get_event_loop() automatically creates an event
     loop for the main thread if one isn't currently installed.  Since

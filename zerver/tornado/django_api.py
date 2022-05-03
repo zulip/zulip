@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Container, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import urlparse
 
 import orjson
@@ -28,7 +28,7 @@ class TornadoAdapter(HTTPAdapter):
         stream: bool = False,
         timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = 0.5,
         verify: Union[bool, str] = True,
-        cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
+        cert: Union[None, bytes, str, Tuple[Union[bytes, str], Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
     ) -> Response:
         # Don't talk to Tornado through proxies, which only allow

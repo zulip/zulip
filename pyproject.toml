@@ -51,7 +51,6 @@ module = [
     "aioapns.*",
     "bitfield.*",
     "bmemcached.*",
-    "bson.*",
     "cairosvg.*",
     "circuitbreaker.*",
     "coverage.*",
