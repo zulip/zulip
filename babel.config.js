@@ -14,7 +14,7 @@ module.exports = {
         [
             "@babel/preset-env",
             {
-                corejs: "3.20",
+                corejs: "3.22",
                 shippedProposals: true,
                 useBuiltIns: "usage",
             },

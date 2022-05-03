@@ -107,7 +107,7 @@
     "eslint-plugin-formatjs": "^3.0.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-no-jquery": "^2.7.0",
-    "eslint-plugin-unicorn": "^41.0.0",
+    "eslint-plugin-unicorn": "^42.0.0",
     "jsdom": "^19.0.0",
     "mockdate": "^3.0.2",
     "node-fetch": "^2.6.1",
@@ -128,7 +128,7 @@
     "xvfb": "^0.4.0",
     "yaml": "^2.0.0-8",
     "yargs": "^17.1.1",
-    "yarn-deduplicate": "^3.0.0",
+    "yarn-deduplicate": "^5.0.0",
     "zulip-js": "^2.0.8"
   },
   "resolutions": {
