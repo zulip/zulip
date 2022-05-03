@@ -11392,7 +11392,7 @@ paths:
 
                           The [organization language][org-lang] for automated messages and invitation emails.
 
-                          [org-lang]: /help/change-the-default-language-for-your-organization
+                          [org-lang]: /help/configure-organization-language
                       realm_description:
                         type: string
                         description: |
