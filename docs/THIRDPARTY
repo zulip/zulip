@@ -33,10 +33,6 @@ Copyright: 2005 Francesc Guasch
 License: GPL-2.0
 Comment: Not linked.
 
-Files: puppet/zulip_ops/files/zulip-ec2-configure-interfaces
-Copyright: 2013-2017, Dropbox, Inc., Kandra Labs, Inc., and contributors
-License: Expat
-
 Files: scripts/setup/generate-self-signed-cert
 Copyright: 2003-2006 Thom May
            2006 Fabio M. Di Nitto
