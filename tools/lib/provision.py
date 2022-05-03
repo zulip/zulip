@@ -277,7 +277,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
 
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
-    print(WARNING + "RedHat support is still experimental.")
+    print(WARNING + "RedHat support is still experimental." + ENDC)
     run_as_root(["./scripts/lib/setup-yum-repo"])
 
     # Hack specific to unregistered RHEL system.  The moreutils
