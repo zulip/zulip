@@ -81,6 +81,11 @@ restart_parser = start_arg_parser(action="restart", add_help=False)
 
 parser = argparse.ArgumentParser(parents=[restart_parser])
 parser.add_argument("deploy_path", metavar="deploy_path", help="Path to deployment directory")
+parser.add_argument(
+    "--skip-restart",
+    action="store_true",
+    help="Configure, but do not restart into, the new version; aborts if any system-wide changes would happen.",
+)
 parser.add_argument("--skip-puppet", action="store_true", help="Skip doing puppet/apt upgrades.")
 parser.add_argument("--skip-migrations", action="store_true", help="Skip doing migrations.")
 parser.add_argument(
@@ -104,18 +109,30 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-if args.skip_tornado:
+# There are two reasons we might want to do a "minimal change" which
+# asserts puppet/database are unchanged: if we're setting up for a
+# post-upgrade manual restart (--skip-restart), or if we're only
+# restarting part of the system (--skip-tornado).
+minimal_change = args.skip_restart or args.skip_tornado
+if args.skip_restart and args.skip_tornado:
+    logging.warning("Ignored --skip-tornado; all upgrades with --skip-restart skip all restarts.")
+    args.skip_tornado = False
+if minimal_change:
+    if args.skip_restart:
+        flagname = "--skip-restart"
+    else:
+        flagname = "--skip-tornado"
     if args.less_graceful:
-        logging.warning("Ignored --less-graceful; --skip-tornado is always graceful.")
+        logging.warning("Ignored --less-graceful; %s is always graceful.", flagname)
         args.less_graceful = False
     if args.skip_migrations:
         logging.warning(
-            "Ignored --skip-migrations; all upgrades with --skip-tornado assert no migrations."
+            "Ignored --skip-migrations; all upgrades with %s assert no migrations.", flagname
         )
         args.skip_migrations = False
     if args.skip_puppet:
         logging.warning(
-            "Ignored --skip-puppet; all upgrades with --skip-tornado assert no puppet changes."
+            "Ignored --skip-puppet; all upgrades with %s assert no puppet changes.", flagname
         )
         args.skip_puppet = False
 
@@ -139,7 +156,7 @@ if os.path.exists("/var/lib/rabbitmq/.erlang.cookie"):
         cookie_size = len(cookie_fh.readline())
 else:
     logging.info("No RabbitMQ erlang cookie found, not auditing RabbitMQ security.")
-if args.skip_puppet and rabbitmq_dist_listen:
+if (minimal_change or args.skip_puppet) and rabbitmq_dist_listen:
     logging.error(
         "RabbitMQ is publicly-accessible on %s; this is a security vulnerability!",
         ", ".join(rabbitmq_dist_listen),
@@ -164,7 +181,7 @@ if args.skip_puppet and rabbitmq_dist_listen:
 def shutdown_server() -> None:
     global IS_SERVER_UP
 
-    if args.skip_tornado:
+    if minimal_change:
         logging.info("Upgrade would require shutting down Zulip -- aborting!")
         sys.exit(1)
 
@@ -208,7 +225,7 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     )
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])
 
-if not args.skip_puppet:
+if not (minimal_change or args.skip_puppet):
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
@@ -261,6 +278,9 @@ class_renames = {
 classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes"))
 new_classes = [class_renames.get(c, c) for c in classes if c != "zulip::base"]
 if classes != new_classes:
+    if minimal_change:
+        logging.error("Would need to adjust puppet classes -- aborting!")
+        sys.exit(1)
     logging.info("Adjusting Puppet classes for renames...")
     subprocess.check_call(
         [
@@ -282,6 +302,9 @@ if os.path.exists(emoji_path):
         emoji_data = f.read()
     emoji_sha = hashlib.sha1(emoji_data).hexdigest()
     if emoji_sha == "47033121dc20b376e0f86f4916969872ad22a293":
+        if minimal_change:
+            logging.error("Would need to delete images-google-64 -- aborting!")
+            sys.exit(1)
         shutil.rmtree("/home/zulip/prod-static/generated/emoji/images-google-64")
 
 # And then, building/installing the static assets.
@@ -353,7 +376,7 @@ elif not args.skip_migrations:
         if line_str.startswith("[ ]"):
             migrations_needed = True
 
-if args.skip_tornado and migrations_needed:
+if minimal_change and migrations_needed:
     logging.error("Would need to apply migrations -- aborting!")
     sys.exit(1)
 
@@ -380,71 +403,75 @@ if not args.skip_puppet and IS_SERVER_UP:
         ["./scripts/zulip-puppet-apply", "--noop", "--force"], stdout=subprocess.DEVNULL
     )
     if try_puppet.returncode == 0:
-        if args.skip_tornado:
+        if minimal_change:
             logging.info("Verified no Puppet changes are necessary.")
         else:
             logging.info("No puppet changes found, skipping!")
         args.skip_puppet = True
         has_puppet_changes = False
-    elif args.skip_tornado:
+    elif minimal_change:
         logging.error("Would need to apply puppet changes -- aborting!")
         sys.exit(1)
 
-# NOTE: Here begins the most likely critical period, where we may be
-# shutting down the server; we should strive to minimize the number of
-# steps that happen between here and the "Restarting Zulip" line
-# below.
 
-if rabbitmq_dist_listen:
-    shutdown_server()
-    logging.info("Shutting down rabbitmq to adjust its ports...")
-    subprocess.check_call(["/usr/sbin/service", "rabbitmq-server", "stop"])
-
-if cookie_size is not None and cookie_size == 20:
-    # Checking for a 20-character cookie is used as a signal that it
-    # was generated by Erlang's insecure randomizer, which only
-    # provides between 20 and 36 bits of entropy; were it 20
-    # characters long by a good randomizer, it would be 96 bits and
-    # more than sufficient.  We generate, using good randomness, a
-    # 255-character cookie, the max allowed length.
-    shutdown_server()
-    logging.info("Generating a secure erlang cookie...")
-    subprocess.check_call(["./scripts/setup/generate-rabbitmq-cookie"])
-
-if not args.skip_puppet:
-    # Puppet may adjust random services; to minimize risk of issues
-    # due to inconsistent state, we shut down the server first.
-    shutdown_server()
-    logging.info("Applying Puppet changes...")
-    subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
-    # Puppet may have reloaded supervisor, and in so doing started
-    # services; mark as potentially needing to stop the server.
-    IS_SERVER_UP = True
-
-if migrations_needed:
-    # Database migrations assume that they run on a database in
-    # quiesced state.
-    shutdown_server()
-    logging.info("Applying database migrations...")
-    subprocess.check_call(
-        ["./manage.py", "migrate", "--noinput", "--skip-checks"], preexec_fn=su_to_zulip
-    )
-
-logging.info("Restarting Zulip...")
-start_args = []
-if migrations_needed:
-    start_args.append("--fill-cache")
-if IS_SERVER_UP:
-    if args.skip_tornado:
-        start_args.append("--skip-tornado")
-    if args.less_graceful:
-        start_args.append("--less-graceful")
-    subprocess.check_call(["./scripts/restart-server", *start_args], preexec_fn=su_to_zulip)
+if args.skip_restart:
+    logging.info("Successfully configured in %s!", deploy_path)
 else:
-    subprocess.check_call(["./scripts/start-server", *start_args], preexec_fn=su_to_zulip)
+    # NOTE: Here begins the most likely critical period, where we may be
+    # shutting down the server; we should strive to minimize the number of
+    # steps that happen between here and the "Restarting Zulip" line
+    # below.
 
-logging.info("Upgrade complete!")
+    if rabbitmq_dist_listen:
+        shutdown_server()
+        logging.info("Shutting down rabbitmq to adjust its ports...")
+        subprocess.check_call(["/usr/sbin/service", "rabbitmq-server", "stop"])
+
+    if cookie_size is not None and cookie_size == 20:
+        # Checking for a 20-character cookie is used as a signal that it
+        # was generated by Erlang's insecure randomizer, which only
+        # provides between 20 and 36 bits of entropy; were it 20
+        # characters long by a good randomizer, it would be 96 bits and
+        # more than sufficient.  We generate, using good randomness, a
+        # 255-character cookie, the max allowed length.
+        shutdown_server()
+        logging.info("Generating a secure erlang cookie...")
+        subprocess.check_call(["./scripts/setup/generate-rabbitmq-cookie"])
+
+    if not args.skip_puppet:
+        # Puppet may adjust random services; to minimize risk of issues
+        # due to inconsistent state, we shut down the server first.
+        shutdown_server()
+        logging.info("Applying Puppet changes...")
+        subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
+        subprocess.check_call(["apt-get", "-y", "upgrade"])
+        # Puppet may have reloaded supervisor, and in so doing started
+        # services; mark as potentially needing to stop the server.
+        IS_SERVER_UP = True
+
+    if migrations_needed:
+        # Database migrations assume that they run on a database in
+        # quiesced state.
+        shutdown_server()
+        logging.info("Applying database migrations...")
+        subprocess.check_call(
+            ["./manage.py", "migrate", "--noinput", "--skip-checks"], preexec_fn=su_to_zulip
+        )
+
+    logging.info("Restarting Zulip...")
+    start_args = []
+    if migrations_needed:
+        start_args.append("--fill-cache")
+    if IS_SERVER_UP:
+        if args.skip_tornado:
+            start_args.append("--skip-tornado")
+        if args.less_graceful:
+            start_args.append("--less-graceful")
+        subprocess.check_call(["./scripts/restart-server", *start_args], preexec_fn=su_to_zulip)
+    else:
+        subprocess.check_call(["./scripts/start-server", *start_args], preexec_fn=su_to_zulip)
+
+    logging.info("Upgrade complete!")
 
 if args.audit_fts_indexes:
     logging.info("Correcting full-text search indexes for updated dictionary files")
