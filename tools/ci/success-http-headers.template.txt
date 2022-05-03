@@ -1,4 +1,4 @@
-HTTP/2 200 
+HTTP/2 200
 server: {nginx_version_string}
 content-type: application/json
 vary: Accept-Encoding
