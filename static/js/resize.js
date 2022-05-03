@@ -2,6 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
@@ -171,8 +172,7 @@ export function reset_compose_message_max_height(bottom_whitespace_height) {
         bottom_whitespace_height = h.bottom_whitespace_height;
     }
 
-    // Take properties of the whichever message area is visible.
-    const $visible_textarea = $("#compose-textarea:visible, #preview_message_area:visible");
+    const $visible_textarea = $("#compose-textarea, #preview_message_area");
     const compose_height = Number.parseInt($("#compose").outerHeight(), 10);
     const compose_textarea_height = Number.parseInt($visible_textarea.outerHeight(), 10);
     const compose_non_textarea_height = compose_height - compose_textarea_height;
@@ -196,7 +196,7 @@ export function resize_bottom_whitespace(h) {
     // reset_compose_message_max_height cannot compute the right
     // height correctly while compose is hidden. This is OK, because
     // we also resize compose every time it is opened.
-    if ($(".message_comp").is(":visible")) {
+    if (compose_state.composing()) {
         reset_compose_message_max_height(h.bottom_whitespace_height);
     }
 }
