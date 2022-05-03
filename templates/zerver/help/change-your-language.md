@@ -25,4 +25,4 @@ messages you receive.
 
 * [Configure organization language for automated messages and invitation emails][org-lang]
 
-[org-lang]: change-the-default-language-for-your-organization
+[org-lang]: /help/configure-organization-language

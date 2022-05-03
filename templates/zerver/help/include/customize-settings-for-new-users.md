@@ -6,5 +6,5 @@ Customize settings for new users to get them off to a great start.
 * [Set organization language for automated messages and invitation emails][org-lang],
   if it should be something other than American English.
 
-[org-lang]: /help/change-the-default-language-for-your-organization
+[org-lang]: /help/configure-organization-language
 [default-user-settings]: /help/configure-default-new-user-settings

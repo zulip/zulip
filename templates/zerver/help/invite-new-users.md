@@ -98,4 +98,4 @@ for invitations for the organization owners role.
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [Roles and permissions](/help/roles-and-permissions)
 
-[org-lang]: /help/change-the-default-language-for-your-organization
+[org-lang]: /help/configure-organization-language
