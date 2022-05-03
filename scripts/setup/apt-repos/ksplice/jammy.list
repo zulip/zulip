@@ -1,0 +1,2 @@
+deb http://www.ksplice.com/apt jammy ksplice
+deb-src http://www.ksplice.com/apt jammy ksplice
