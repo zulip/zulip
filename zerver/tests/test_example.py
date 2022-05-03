@@ -401,8 +401,9 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
         # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertLogs
         with self.settings(EMAIL_BACKEND="zproject.email_backends.EmailLogBackEnd"), self.settings(
             DEVELOPMENT_LOG_EMAILS=True
-        ), self.assertLogs(level="INFO") as logger:
-
+        ), self.assertLogs(level="INFO") as logger, mock.patch(
+            "zproject.email_backends.EmailLogBackEnd._do_send_messages", lambda *args: 1
+        ):
             result = self.client_get(
                 "/emails/generate/"
             )  # Generates emails and redirects to /emails/
