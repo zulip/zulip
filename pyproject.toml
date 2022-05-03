@@ -55,10 +55,10 @@ module = [
     "circuitbreaker.*",
     "coverage.*",
     "cssutils.*",
-    "defusedxml.*",
+    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
     "digitalocean.*",
     "disposable_email_domains.*",
-    "django.*",
+    "django.*", # https://github.com/zulip/zulip/issues/11560
     "django_auth_ldap.*",
     "django_bmemcached.*",
     "django_cte.*",
@@ -73,7 +73,7 @@ module = [
     "jsonref.*",
     "ldap.*",
     "markdown_include.*",
-    "moto.*",
+    "moto.*", # https://github.com/spulec/moto/issues/4944
     "netifaces.*",
     "onelogin.*",
     "openapi_core.*",
@@ -82,9 +82,9 @@ module = [
     "pyoembed.*",
     "pyuca.*",
     "re2.*",
-    "requests_oauthlib.*",
+    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
     "scim2_filter_parser.attr_paths",
-    "scrapy.*",
+    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
     "social_core.*",
     "social_django.*",
     "sourcemap.*",
@@ -92,6 +92,6 @@ module = [
     "tlds.*",
     "twitter.*",
     "two_factor.*",
-    "zxcvbn.*",
+    "zxcvbn.*", # https://github.com/dwolfhub/zxcvbn-python/issues/56
 ]
 ignore_missing_imports = true
