@@ -77,7 +77,6 @@ module = [
     "markdown_include.*",
     "moto.*",
     "natsort.*",
-    "netifaces.*",
     "onelogin.*",
     "openapi_core.*",
     "premailer.*",
