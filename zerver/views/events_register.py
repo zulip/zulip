@@ -85,6 +85,7 @@ def events_register_backend(
 
     ret = do_events_register(
         user_profile,
+        user_profile.realm,
         client,
         apply_markdown,
         client_gravatar,

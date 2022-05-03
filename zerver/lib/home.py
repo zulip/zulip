@@ -144,6 +144,7 @@ def build_page_params_for_home_page_load(
         assert client is not None
         register_ret = do_events_register(
             user_profile,
+            realm,
             client,
             apply_markdown=True,
             client_gravatar=True,

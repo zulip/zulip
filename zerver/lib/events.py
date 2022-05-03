@@ -1317,6 +1317,7 @@ def apply_event(
 
 def do_events_register(
     user_profile: UserProfile,
+    realm: Realm,
     user_client: Client,
     apply_markdown: bool = True,
     client_gravatar: bool = False,
@@ -1343,7 +1344,7 @@ def do_events_register(
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
 
-    if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
