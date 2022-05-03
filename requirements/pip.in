@@ -1,3 +1,3 @@
-pip<21.0  # Our hack for installing specific commits from Git requires --use-deprecated=legacy-resolver: https://github.com/pypa/pip/issues/5780
+pip<22.0  # Our hack for installing specific commits from Git requires --use-deprecated=legacy-resolver: https://github.com/pypa/pip/issues/5780
 setuptools
 wheel
