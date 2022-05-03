@@ -58,7 +58,7 @@ def add_context(event: "Event", hint: "Hint") -> Optional["Event"]:
 def setup_sentry(dsn: Optional[str], environment: str) -> None:
     if not dsn:
         return
-    sentry_sdk.init(
+    sentry_sdk.init(  # type: ignore[abstract] # https://github.com/getsentry/sentry-python/issues/1415
         dsn=dsn,
         environment=environment,
         release=ZULIP_VERSION,

@@ -11,13 +11,9 @@ alabaster==0.7.12 \
     --hash=sha256:446438bdcca0e05bd45ea2de1668c1d9b032e1a9154c2c259092d77031ddd359 \
     --hash=sha256:a661d72d58e6ea8a57f7a86e37d86716863ee5e92788398526d58b26a4e4dc02
     # via sphinx
-attrs==21.4.0 \
-    --hash=sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4 \
-    --hash=sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd
-    # via markdown-it-py
-babel==2.9.1 \
-    --hash=sha256:ab49e12b91d937cd11f0b67cb259a57ab4ad2b59ac7a3b41d6c06c0ac5b0def9 \
-    --hash=sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0
+babel==2.10.1 \
+    --hash=sha256:3f349e85ad3154559ac4930c3918247d319f21910d5ce4b25d439ed8693b98d2 \
+    --hash=sha256:98aeaca086133efb3e1e2aad0396987490c8425929ddbcfe0550184fdc54cd13
     # via sphinx
 certifi==2021.10.8 \
     --hash=sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872 \
@@ -46,15 +42,15 @@ importlib-metadata==4.11.3 \
     --hash=sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6 \
     --hash=sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539
     # via sphinx
-jinja2==3.1.0 \
-    --hash=sha256:a2f09a92f358b96b5f6ca6ecb4502669c4acb55d8733bbb2b2c9c4af5564c605 \
-    --hash=sha256:da424924c069a4013730d8dd010cbecac7e7bb752be388db3741688bffb48dc6
+jinja2==3.1.2 \
+    --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852 \
+    --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61
     # via
     #   myst-parser
     #   sphinx
-markdown-it-py==2.0.1 \
-    --hash=sha256:31974138ca8cafbcb62213f4974b29571b940e78364584729233f59b8dfdb8bd \
-    --hash=sha256:7b5c153ae1ab2cde00a33938bce68f3ad5d68fbe363f946de7d28555bed4e08a
+markdown-it-py==2.1.0 \
+    --hash=sha256:93de681e5c021a432c63147656fe21790bc01231e0cd2da73626f1aa3ac0fe27 \
+    --hash=sha256:cf7e59fed14b5ae17c0006eff14a2d9a00ed5f3a846148153899a0224e2c07da
     # via
     #   mdit-py-plugins
     #   myst-parser
@@ -104,24 +100,25 @@ mdit-py-plugins==0.3.0 \
     --hash=sha256:b1279701cee2dbf50e188d3da5f51fee8d78d038cdf99be57c6b9d1aa93b4073 \
     --hash=sha256:ecc24f51eeec6ab7eecc2f9724e8272c2fb191c2e93cf98109120c2cace69750
     # via myst-parser
-mdurl==0.1.0 \
-    --hash=sha256:40654d6dcb8d21501ed13c21cc0bd6fc42ff07ceb8be30029e5ae63ebc2ecfda \
-    --hash=sha256:94873a969008ee48880fb21bad7de0349fef529f3be178969af5817239e9b990
+mdurl==0.1.1 \
+    --hash=sha256:6a8f6804087b7128040b2fb2ebe242bdc2affaeaa034d5fc9feeed30b443651b \
+    --hash=sha256:f79c9709944df218a4cdb0fcc0b0c7ead2f44594e3e84dc566606f04ad749c20
     # via markdown-it-py
-https://github.com/executablebooks/MyST-Parser/archive/0bc41ef82cdbcf3ccbf71a3a6caffe8ac2d1b1f3.zip#egg=MyST-Parser==0.17.0+git \
-    --hash=sha256:5b213691ab441a291b4e07000efa0a10e652f8cc2a802274f0bde6b53b7b75fb
+myst-parser==0.17.2 \
+    --hash=sha256:1635ce3c18965a528d6de980f989ff64d6a1effb482e1f611b1bfb79e38f3d98 \
+    --hash=sha256:4c076d649e066f9f5c7c661bae2658be1ca06e76b002bb97f02a09398707686c
     # via -r requirements/docs.in
 packaging==21.3 \
     --hash=sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb \
     --hash=sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522
     # via sphinx
-pygments==2.11.2 \
-    --hash=sha256:44238f1b60a76d78fc8ca0528ee429702aae011c265fe6a8dd8b63049ae41c65 \
-    --hash=sha256:4e426f72023d88d03b2fa258de560726ce890ff3b630f88c21cbb8b2503b8c6a
+pygments==2.12.0 \
+    --hash=sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb \
+    --hash=sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519
     # via sphinx
-pyparsing==3.0.7 \
-    --hash=sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea \
-    --hash=sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484
+pyparsing==3.0.8 \
+    --hash=sha256:7bf433498c016c4314268d95df76c81b842a4cb2b276fa3312cfb1e1d85f6954 \
+    --hash=sha256:ef7b523f6356f763771559412c0d7134753f037822dad1b16945b7b846f7ad06
     # via packaging
 pytz==2022.1 \
     --hash=sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7 \
@@ -170,9 +167,9 @@ snowballstemmer==2.2.0 \
     --hash=sha256:09b16deb8547d3412ad7b590689584cd0fe25ec8db3be37788be3810cbf19cb1 \
     --hash=sha256:c8e1716e83cc398ae16824e5572ae04e0d9fc2c6b985fb0f900f5f0c96ecba1a
     # via sphinx
-sphinx==4.4.0 \
-    --hash=sha256:5da895959511473857b6d0200f56865ed62c31e8f82dd338063b84ec022701fe \
-    --hash=sha256:6caad9786055cb1fa22b4a365c1775816b876f91966481765d7d50e9f0dd35cc
+sphinx==4.5.0 \
+    --hash=sha256:7bf8ca9637a4ee15af412d1a1d9689fec70523a68ca9bb9127c2f3eeb344e2e6 \
+    --hash=sha256:ebf612653238bcc8f4359627a9b7ce44ede6fdd75d9d30f68255c7383d3a6226
     # via
     #   -r requirements/docs.in
     #   myst-parser
@@ -205,15 +202,15 @@ sphinxcontrib-serializinghtml==1.1.5 \
     --hash=sha256:352a9a00ae864471d3a7ead8d7d79f5fc0b57e8b3f95e9867eb9eb28999b92fd \
     --hash=sha256:aa5f6de5dfdf809ef505c4895e51ef5c9eac17d0f287933eb49ec495280b6952
     # via sphinx
-typing-extensions==4.1.1 \
-    --hash=sha256:1a9462dcc3347a79b1f1c0271fbe79e844580bb598bafa1ed208b94da3cdcd42 \
-    --hash=sha256:21c85e0fe4b9a155d0799430b0ad741cdce7e359660ccbd8b530613e8df88ce2
+typing-extensions==4.2.0 \
+    --hash=sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708 \
+    --hash=sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376
     # via myst-parser
 urllib3==1.26.9 \
     --hash=sha256:44ece4d53fb1706f667c9bd1c648f5469a2ec925fcf3a776667042d645472c14 \
     --hash=sha256:aabaf16477806a5e1dd19aa41f8c2b7950dd3c746362d7e3223dbe6de6ac448e
     # via requests
-zipp==3.7.0 \
-    --hash=sha256:9f50f446828eb9d45b267433fd3e9da8d801f614129124863f9c51ebceafb87d \
-    --hash=sha256:b47250dd24f92b7dd6a0a8fc5244da14608f3ca90a5efcd37a3b1642fac9a375
+zipp==3.8.0 \
+    --hash=sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad \
+    --hash=sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099
     # via importlib-metadata
