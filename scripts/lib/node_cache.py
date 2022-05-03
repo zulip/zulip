@@ -88,6 +88,8 @@ def do_yarn_install(
     # Copy the existing node_modules to speed up install
     if os.path.exists("node_modules") and not os.path.exists(cached_node_modules):
         shutil.copytree("node_modules/", cached_node_modules, symlinks=True)
+        if os.path.isdir(os.path.join(cached_node_modules, ".cache")):
+            shutil.rmtree(os.path.join(cached_node_modules, ".cache"))
     if os.environ.get("CUSTOM_CA_CERTIFICATES"):
         run([YARN_BIN, "config", "set", "cafile", os.environ["CUSTOM_CA_CERTIFICATES"]])
     run(
