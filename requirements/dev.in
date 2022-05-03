@@ -12,7 +12,7 @@ moto[s3]
 Twisted
 
 # Needed for documentation links test
-https://github.com/scrapy/scrapy/archive/c5b1ee810167266fcd259f263dbfc0fe0204761a.zip#egg=Scrapy==2.5.0+git  # aioapns requires h2 ≥ 4.0: https://github.com/scrapy/scrapy/pull/5113
+Scrapy
 
 # Needed to compute test coverage
 coverage<6.3  # https://github.com/nedbat/coveragepy/issues/1310
@@ -57,7 +57,7 @@ python-digitalocean
 pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
 
 # zulip's linting framework - zulint
-https://github.com/zulip/zulint/archive/9908540b7734b51f86ccabab706befc2ff33212a.zip#egg=zulint==0.0.1
+https://github.com/zulip/zulint/archive/80a613cca5ec35bc5add7f3c70916ce269a9d27c.zip#egg=zulint==0.0.1
 
 -r mypy.in
 
@@ -68,7 +68,7 @@ cairosvg
 python-debian
 
 # Pattern-based lint tool
-semgrep<0.85.0  # https://github.com/returntocorp/semgrep/issues/4827
+semgrep
 
 # Contains Pysa, a security-focused static analyzer
 pyre-check
