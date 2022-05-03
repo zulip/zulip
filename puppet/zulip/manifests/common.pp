@@ -123,6 +123,15 @@ class zulip::common {
       },
     },
 
+    # https://github.com/oliver006/redis_exporter/releases
+    'redis_exporter' => {
+      'version' => '1.37.0',
+      'sha256' => {
+        'amd64'   => 'c4d0554a378151eab3372235c40d3a9c8c40fd6f40d91d768830985df8a44744',
+        'aarch64' => '742047d938192894979c8370830891bb0fea3262b762e6c51c849a8e47ddfb7e',
+      },
+    },
+
     # https://github.com/timonwong/uwsgi_exporter/releases
     'uwsgi_exporter' => {
       'version' => '1.0.0',
