@@ -10,6 +10,7 @@ import hashlib
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -268,8 +269,6 @@ if os.path.exists(emoji_path):
         emoji_data = f.read()
     emoji_sha = hashlib.sha1(emoji_data).hexdigest()
     if emoji_sha == "47033121dc20b376e0f86f4916969872ad22a293":
-        import shutil
-
         shutil.rmtree("/home/zulip/prod-static/generated/emoji/images-google-64")
 
 # And then, building/installing the static assets.
@@ -340,6 +339,11 @@ elif not args.skip_migrations:
         line_str = ln.strip()
         if line_str.startswith("[ ]"):
             migrations_needed = True
+
+# If we're skipping tornado restarts, we need to ensure we keep the
+# same cache prefix as we currently have.
+if args.skip_tornado:
+    shutil.copyfile("../current/var/remote_cache_prefix", "./var/remote_cache_prefix")
 
 # If there are no migrations needed, we can fill the caches now,
 # instead of after they run.
