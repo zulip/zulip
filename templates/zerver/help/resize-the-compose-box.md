@@ -37,3 +37,5 @@ box also stretches automatically when you type a long message.
 ## Related articles
 
 * [Open the compose box](/help/open-the-compose-box)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Mastering the compose box](/help/mastering-the-compose-box)

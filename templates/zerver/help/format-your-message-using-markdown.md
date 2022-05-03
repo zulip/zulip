@@ -294,4 +294,7 @@ A summary of the formatting syntax is available in-app.
 ## Related articles
 
 * [Create a poll](/help/create-a-poll)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Resize the compose box](/help/resize-the-compose-box)
 * [Messaging tips & tricks](/help/messaging-tips)

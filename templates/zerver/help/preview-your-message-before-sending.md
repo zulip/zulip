@@ -11,3 +11,9 @@
 {end_tabs}
 
 Click the **pencil and paper** (<i class="fa fa-edit"></i>) icon to resume editing.
+
+## Related articles
+
+* [Format messages using Markdown](/help/format-your-message-using-markdown)
+* [Resize the compose box](/help/resize-the-compose-box)
+* [Mastering the compose box](/help/mastering-the-compose-box)
