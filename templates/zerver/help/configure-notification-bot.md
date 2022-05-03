@@ -71,4 +71,4 @@ these messages is "signups".
 [add-users-to-stream]: /help/add-or-remove-users-from-a-stream#add-users-to-a-stream
 [api-create-user]: https://zulip.com/api/create-user
 [new-stream-options]: /help/create-a-stream#stream-options
-[org-notifications-lang]: /help/change-the-default-language-for-your-organization
+[org-notifications-lang]: /help/configure-organization-notifications-language

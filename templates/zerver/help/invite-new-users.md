@@ -95,7 +95,7 @@ for invitations for the organization owners role.
 * [Restrict account creation](/help/restrict-account-creation)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Configure organization notifications language][org-notifications-language]
+* [Configure organization notifications language][org-notifications-lang]
 * [Roles and permissions](/help/roles-and-permissions)
 
-[org-notifications-language]: /help/change-the-default-language-for-your-organization
+[org-notifications-lang]: /help/configure-organization-notifications-language

@@ -6,9 +6,7 @@ support for new languages on **[Transifex](https://www.transifex.com/zulip/zulip
 
 If your organization has a primary language other than American
 English, an administrator should also [set the organization
-notifications language][change-org-lang].
-
-[change-org-lang]: change-the-default-language-for-your-organization
+notifications language][org-notifications-lang].
 
 ### Change your language
 
@@ -27,3 +25,5 @@ notifications language][change-org-lang].
 !!! tip ""
 
     You can always send and read messages in any language.
+
+[org-notifications-lang]: /help/configure-organization-notifications-language

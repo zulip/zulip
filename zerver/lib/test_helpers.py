@@ -480,6 +480,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "docs/(?P<path>.+)",
             "help/add-custom-emoji",
             "help/configure-who-can-add-custom-emoji",
+            "help/change-the-default-language-for-your-organization",
             "help/change-the-topic-of-a-message",
             "help/configure-missed-message-emails",
             "help/community-topic-edits",

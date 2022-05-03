@@ -919,6 +919,12 @@ urls += [
         "help/web-public-streams",
         RedirectView.as_view(url="/help/public-access-option", permanent=True),
     ),
+    path(
+        "help/change-the-default-language-for-your-organization",
+        RedirectView.as_view(
+            url="/help/configure-organization-notifications-language", permanent=True
+        ),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),

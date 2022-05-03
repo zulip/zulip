@@ -10902,7 +10902,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The [notifications language for the organization](/help/change-the-default-language-for-your-organization).
+                          The [notifications language for the organization](/help/configure-organization-notifications-language).
                       realm_description:
                         type: string
                         description: |
