@@ -1473,7 +1473,6 @@ test("navbar_helpers", () => {
         {operator: "topic", operand: "pink"},
     ];
     const pm_with = [{operator: "pm-with", operand: "joe@example.com"}];
-    const pm_with_missing_input = [{operator: "pm-with", operand: " "}];
     const group_pm = [{operator: "pm-with", operand: "joe@example.com,STEVE@foo.com"}];
     const group_pm_including_missing_person = [
         {operator: "pm-with", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
@@ -1580,13 +1579,6 @@ test("navbar_helpers", () => {
                 "/#narrow/pm-with/" + joe.user_id + "-" + joe.email.split("@")[0],
         },
         {
-            operator: pm_with_missing_input,
-            is_common_narrow: true,
-            icon: "envelope",
-            title: properly_separated_names([" "]),
-            redirect_url_with_search: "/#narrow/pm-with/undefined",
-        },
-        {
             operator: group_pm,
             is_common_narrow: true,
             icon: "envelope",
@@ -1650,10 +1642,6 @@ test("navbar_helpers", () => {
 
     let filter = new Filter(complex_operators_test_case.operator);
     assert.equal(filter.generate_redirect_url(), complex_operators_test_case.redirect_url);
-    assert.equal(filter.is_common_narrow(), false);
-
-    const pm_with_no_operand = [{operator: "pm-with", operand: ""}];
-    filter = new Filter(pm_with_no_operand);
     assert.equal(filter.is_common_narrow(), false);
 
     const stream_topic_search_operator = [
