@@ -1554,6 +1554,8 @@ class UserBaseSettings(models.Model):
     send_read_receipts: bool = models.BooleanField(default=True)
 
     display_settings_legacy = dict(
+        # Don't add anything new to this legacy dict.
+        # Instead, see `modern_settings` below.
         color_scheme=int,
         default_language=str,
         default_view=str,
@@ -1571,6 +1573,8 @@ class UserBaseSettings(models.Model):
     )
 
     notification_settings_legacy = dict(
+        # Don't add anything new to this legacy dict.
+        # Instead, see `modern_notification_settings` below.
         desktop_icon_count_display=int,
         email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
@@ -1593,22 +1597,29 @@ class UserBaseSettings(models.Model):
         wildcard_mentions_notify=bool,
     )
 
+    modern_settings = dict(
+        # Add new general settings here.
+        display_emoji_reaction_users=bool,
+        escape_navigates_to_default_view=bool,
+        send_private_typing_notifications=bool,
+        send_read_receipts=bool,
+        send_stream_typing_notifications=bool,
+    )
+
+    modern_notification_settings: Dict[str, Any] = dict(
+        # Add new notification settings here.
+    )
+
     notification_setting_types = {
-        **notification_settings_legacy
-    }  # Add new notifications settings here.
+        **notification_settings_legacy,
+        **modern_notification_settings,
+    }
 
     # Define the types of the various automatically managed properties
     property_types = {
         **display_settings_legacy,
         **notification_setting_types,
-        **dict(
-            # Add new general settings here.
-            display_emoji_reaction_users=bool,
-            escape_navigates_to_default_view=bool,
-            send_private_typing_notifications=bool,
-            send_read_receipts=bool,
-            send_stream_typing_notifications=bool,
-        ),
+        **modern_settings,
     }
 
     class Meta:
