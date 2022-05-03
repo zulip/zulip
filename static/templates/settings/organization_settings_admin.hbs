@@ -47,17 +47,13 @@
               list_placeholder=(t 'Filter streams')
               reset_button_text=(t '[Disable]')
               label=admin_settings_label.realm_signup_notifications_stream }}
-
-            <div class="input-group">
-                <label for="realm_default_language" class="dropdown-title">
-                    {{t "Notifications language" }}
-                    {{> ../help_link_widget link="/help/change-the-default-language-for-your-organization" }}
-                </label>
-                <select name="realm_default_language" class ="setting-widget prop-element" id="id_realm_default_language" data-setting-widget-type="string">
-                    {{#each language_list}}
-                        <option value='{{this.code}}'>{{this.name}}</option>
-                    {{/each}}
-                </select>
+            <div class="realm_default_language">
+                {{> language_selection_widget
+                  section_name="realm_default_language"
+                  setting_value=realm_default_language_name
+                  language_code=realm_default_language_code
+                  section_title=admin_settings_label.realm_default_language
+                  help_link_widget_link="/help/change-the-default-language-for-your-organization"}}
             </div>
         </div>
 

@@ -312,25 +312,6 @@ async function test_organization_profile(page: Page): Promise<void> {
     await page.waitForSelector(gravatar_selctor, {visible: true});
 }
 
-async function submit_default_user_settings(page: Page): Promise<void> {
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "#org-submit-notifications"),
-        "Save changes",
-    );
-    await page.click("#org-submit-notifications");
-    const saved_status = '#org-submit-notifications[data-status="saved"]';
-    await page.waitForSelector(saved_status, {hidden: true});
-}
-
-async function test_change_organization_default_language(page: Page): Promise<void> {
-    console.log("Changing realm default language");
-    await page.click("li[data-section='organization-settings']");
-    await page.waitForSelector("#id_realm_default_language", {visible: true});
-
-    await page.evaluate(() => $("#id_realm_default_language").val("de").trigger("change"));
-    await submit_default_user_settings(page);
-}
-
 async function test_authentication_methods(page: Page): Promise<void> {
     await page.click("li[data-section='auth-methods']");
     await page.waitForSelector(".method_row[data-method='Google'] input[type='checkbox'] + span", {
@@ -366,7 +347,6 @@ async function admin_test(page: Page): Promise<void> {
     await common.manage_organization(page);
     await test_change_new_stream_notifications_setting(page);
     await test_change_signup_notifications_stream(page);
-    await test_change_organization_default_language(page);
 
     await test_organization_permissions(page);
     // Currently, Firefox (with puppeteer) does not support file upload:

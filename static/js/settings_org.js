@@ -10,7 +10,7 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget} from "./dropdown_list_widget";
-import {$t, $t_html} from "./i18n";
+import {$t, $t_html, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -501,6 +501,15 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
         case "realm_default_code_block_language":
             default_code_language_widget.render(property_value);
             break;
+        case "realm_default_language":
+            $("#org-notifications .language_selection_widget .language_selection_button span").attr(
+                "data-language-code",
+                property_value,
+            );
+            $("#org-notifications .language_selection_widget .language_selection_button span").text(
+                get_language_name(property_value),
+            );
+            break;
         case "emojiset":
             // Because the emojiset widget has a unique radio button
             // structure, it needs custom reset code.
@@ -756,6 +765,11 @@ function check_property_changed(elem, for_realm_default_settings) {
             changed_val = get_email_notification_batching_setting_element_value();
             break;
         }
+        case "realm_default_language":
+            changed_val = $(
+                "#org-notifications .language_selection_widget .language_selection_button span",
+            ).attr("data-language-code");
+            break;
         default:
             if (current_val !== undefined) {
                 changed_val = get_input_element_value($elem, typeof current_val);
@@ -924,6 +938,9 @@ export function register_save_discard_widget_handlers(
                     signup_notifications_stream_widget.value(),
                     10,
                 );
+                data.default_language = $(
+                    "#org-notifications .language_selection_widget .language_selection_button span",
+                ).attr("data-language-code");
                 break;
             case "message_retention": {
                 const message_retention_setting_value = $(

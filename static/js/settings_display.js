@@ -6,6 +6,7 @@ import render_dialog_default_language from "../templates/default_language_modal.
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
 import * as emojisets from "./emojisets";
+import * as hash_util from "./hash_util";
 import {$t_html, get_language_list_columns, get_language_name} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -58,6 +59,26 @@ function spectator_default_language_modal_post_render() {
         });
 }
 
+function org_notification_default_language_modal_post_render() {
+    $("#language_selection_modal")
+        .find(".language")
+        .on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dialog_widget.close_modal();
+
+            const $link = $(e.target).closest("a[data-code]");
+            const setting_value = $link.attr("data-code");
+            const new_language = $link.attr("data-name");
+            const $language_element = $(
+                "#org-notifications .language_selection_widget .language_selection_button span",
+            );
+            $language_element.text(new_language);
+            $language_element.attr("data-language-code", setting_value);
+            settings_org.save_discard_widget_status_handler($("#org-notifications"));
+        });
+}
+
 function user_default_language_modal_post_render() {
     $("#language_selection_modal")
         .find(".language")
@@ -93,18 +114,26 @@ function user_default_language_modal_post_render() {
 function default_language_modal_post_render() {
     if (page_params.is_spectator) {
         spectator_default_language_modal_post_render();
+    } else if (hash_util.get_current_hash_category() === "organization") {
+        org_notification_default_language_modal_post_render();
     } else {
         user_default_language_modal_post_render();
     }
 }
 
 export function launch_default_language_setting_modal() {
+    let selected_language = user_settings.default_language;
+
+    if (hash_util.get_current_hash_category() === "organization") {
+        selected_language = page_params.realm_default_language;
+    }
+
     const html_body = render_dialog_default_language({
-        language_list: get_language_list_columns(user_settings.default_language),
+        language_list: get_language_list_columns(selected_language),
     });
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Select default language"}),
+        html_heading: $t_html({defaultMessage: "Select language"}),
         html_body,
         html_submit_button: $t_html({defaultMessage: "Close"}),
         id: "language_selection_modal",

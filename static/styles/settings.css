@@ -569,9 +569,19 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.language_selection_widget .language_selection_button {
-    text-decoration: none;
-    margin-left: 20px;
+.language_selection_widget {
+    .title {
+        margin-bottom: 3px;
+    }
+
+    .language_selection_button {
+        text-decoration: none;
+        color: hsl(0, 0%, 20%);
+
+        .fa.fa-pencil {
+            margin-left: 5px;
+        }
+    }
 }
 
 .remove-attachment {
