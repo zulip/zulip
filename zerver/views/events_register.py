@@ -1,10 +1,12 @@
-from typing import Dict, Optional, Sequence
+from typing import Dict, Optional, Sequence, Union
 
+from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.events import do_events_register
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
@@ -35,7 +37,7 @@ NarrowT = Sequence[Sequence[str]]
 @has_request_variables
 def events_register_backend(
     request: HttpRequest,
-    user_profile: UserProfile,
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
     apply_markdown: bool = REQ(default=False, json_validator=check_bool),
     client_gravatar: bool = REQ(default=True, json_validator=check_bool),
     slim_presence: bool = REQ(default=False, json_validator=check_bool),
@@ -71,11 +73,24 @@ def events_register_backend(
     ),
     queue_lifespan_secs: int = REQ(json_validator=check_int, default=0, documentation_pending=True),
 ) -> HttpResponse:
-    if all_public_streams and not user_profile.can_access_public_streams():
-        raise JsonableError(_("User not authorized for this query"))
+    if maybe_user_profile.is_authenticated:
+        user_profile = maybe_user_profile
+        assert isinstance(user_profile, UserProfile)
+        realm = user_profile.realm
 
-    all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
-    narrow = _default_narrow(user_profile, narrow)
+        if all_public_streams and not user_profile.can_access_public_streams():
+            raise JsonableError(_("User not authorized for this query"))
+
+        all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
+        narrow = _default_narrow(user_profile, narrow)
+    else:
+        user_profile = None
+        realm = get_valid_realm_from_request(request)
+
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError()
+
+        all_public_streams = False
 
     if client_capabilities is None:
         client_capabilities = {}
@@ -85,7 +100,7 @@ def events_register_backend(
 
     ret = do_events_register(
         user_profile,
-        user_profile.realm,
+        realm,
         client,
         apply_markdown,
         client_gravatar,

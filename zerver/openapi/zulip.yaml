@@ -9207,8 +9207,12 @@ paths:
                       msg: {}
                       queue_id:
                         type: string
+                        nullable: true
                         description: |
                           The ID of the queue that has been allocated for your client.
+
+                          Will be None only for unauthenticated access in realms that have
+                          enabled the [public access option](/help/public-access-option).
                       last_event_id:
                         type: integer
                         description: |

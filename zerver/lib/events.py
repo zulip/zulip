@@ -1316,7 +1316,7 @@ def apply_event(
 
 
 def do_events_register(
-    user_profile: UserProfile,
+    user_profile: Optional[UserProfile],
     realm: Realm,
     user_client: Client,
     apply_markdown: bool = True,
@@ -1355,6 +1355,33 @@ def do_events_register(
         event_types_set = set(event_types)
     else:
         event_types_set = None
+
+    if user_profile is None:
+        # TODO: Unify this with the below code path once if/when we
+        # support requesting an event queue for spectators.
+        #
+        # Doing so likely has a prerequisite of making this function's
+        # caller enforce client_gravatar=False,
+        # include_subscribers=False and include_streams=False.
+        ret = fetch_initial_state_data(
+            user_profile,
+            realm=realm,
+            event_types=event_types_set,
+            queue_id=None,
+            # Force client_gravatar=False for security reasons.
+            client_gravatar=False,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
+            user_settings_object=user_settings_object,
+            # slim_presence is a noop, because presence is not included.
+            slim_presence=True,
+            # Force include_subscribers=False for security reasons.
+            include_subscribers=False,
+            # Force include_streams=False for security reasons.
+            include_streams=False,
+        )
+
+        post_process_state(user_profile, ret, notification_settings_null=False)
+        return ret
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)

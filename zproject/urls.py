@@ -469,7 +469,7 @@ v1_api_and_json_patterns = [
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
-    rest_path("register", POST=events_register_backend),
+    rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
     rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
     # report -> zerver.views.report
