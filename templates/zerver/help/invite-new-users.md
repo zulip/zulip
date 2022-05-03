@@ -13,8 +13,13 @@ settings](/help/configure-default-new-user-settings) for new users.
 
 ## Send e-mail invitations
 
+Personal invitation links can be sent to individuals via email.
+Outgoing email invitations are translated and sent in the organization's
+[notifications language][org-notifications-language], so you may want
+to check (or update) that configuration before sending email invitations.
+
 !!! warn ""
-    You will only see an **Invite users** option if you
+    **Note**: You will only see an **Invite users** option if you
     [have permission](/help/restrict-account-creation#change-who-can-send-invitations)
     to invite users to the organization.
 
@@ -33,7 +38,6 @@ settings](/help/configure-default-new-user-settings) for new users.
 1. Click **Invite**.
 
 !!! warn ""
-
     **Note**: As an anti-spam measure, the number of email invites you can send in a day is
     limited on the Zulip Cloud Free plan. [Contact support](/help/contact-support)
     if you hit the limit and want to invite more users.
@@ -48,6 +52,10 @@ settings](/help/configure-default-new-user-settings) for new users.
 ## Create an invitation link
 
 {!admin-only.md!}
+
+Customized, reusable invitation links can be generated as well. To
+protect your organization, creating these reusable invitation links
+is always limited to administrators.
 
 {start_tabs}
 
@@ -87,4 +95,7 @@ for invitations for the organization owners role.
 * [Restrict account creation](/help/restrict-account-creation)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
+* [Configure organization notifications language][org-notifications-language]
 * [Roles and permissions](/help/roles-and-permissions)
+
+[org-notifications-language]: /help/change-the-default-language-for-your-organization
