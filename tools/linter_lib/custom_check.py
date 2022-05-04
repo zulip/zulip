@@ -663,6 +663,12 @@ html_rules: List["Rule"] = [
         "bad_lines": ['<img alt="{{ " />'],
     },
     {
+        "pattern": r"link=\"help/",
+        "description": "Relative links to Help Center should start with /help/",
+        "good_lines": ['link="/help/foo"'],
+        "bad_lines": ['link="help/foo"'],
+    },
+    {
         "pattern": r"\bon\w+ ?=",
         "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
