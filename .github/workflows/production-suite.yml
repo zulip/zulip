@@ -214,8 +214,8 @@ jobs:
           - docker_image: zulip/ci:bullseye-4.11
             name: 4.11 Version Upgrade
             os: bullseye
-          - docker_image: zulip/ci:bullseye-5.1
-            name: 5.1 Version Upgrade
+          - docker_image: zulip/ci:bullseye-5.2
+            name: 5.2 Version Upgrade
             os: bullseye
 
     name: ${{ matrix.name  }}
