@@ -546,7 +546,16 @@ export class Filter {
         // stream, stream + topic,
         // is: private, pm-with:,
         // is: mentioned, is: resolved
+<<<<<<< HEAD
 
+=======
+        const term_types = this.sorted_term_types();
+        if (_.isEqual(term_types, ["pm-with"]) &&
+            this.operands("pm-with").length === 1 &&
+            this.operands("pm-with")[0] === "") {
+            return false;
+        }
+>>>>>>> parent of 4678338ff0... provision: Improve search result empty pm-with.
         if (this.can_mark_messages_read()) {
             return true;
         }

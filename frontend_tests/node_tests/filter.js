@@ -1579,6 +1579,17 @@ test("navbar_helpers", () => {
                 "/#narrow/pm-with/" + joe.user_id + "-" + joe.email.split("@")[0],
         },
         {
+<<<<<<< HEAD
+=======
+            operator: pm_with_missing_input,
+            is_common_narrow: true,
+            icon: "envelope",
+            title: properly_separated_names([" "]),
+            redirect_url_with_search:
+                "/#narrow/pm-with/undefined",
+        },
+        {
+>>>>>>> parent of 4678338ff0... provision: Improve search result empty pm-with.
             operator: group_pm,
             is_common_narrow: true,
             icon: "envelope",
@@ -1644,6 +1655,13 @@ test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), complex_operators_test_case.redirect_url);
     assert.equal(filter.is_common_narrow(), false);
 
+<<<<<<< HEAD
+=======
+    const pm_with_no_operand = [{operator: "pm-with", operand: ""}];
+    filter = new Filter(pm_with_no_operand);
+    assert.equal(filter.is_common_narrow(), false);
+    
+>>>>>>> parent of 4678338ff0... provision: Improve search result empty pm-with.
     const stream_topic_search_operator = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "bar"},
