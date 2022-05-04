@@ -111,7 +111,7 @@ paths:
         This endpoint allows interactive bot writes to save the persistent state of
         their bots (e.g. for an RSVP bot, the RSVPs).
 
-        `PUT {{ api_url }}/v1/bot_storage/update_storage
+        `PUT {{ api_url }}/v1/bot_storage/update_storage`
 
         **Note** For a sufficiently complex bot, you want need your own database,
         but for simpler bots, we offer a convenient way for bot code to persistently store data.
@@ -119,10 +119,12 @@ paths:
         - name: storage
           in: query
           description: A map of values
-          required: True
-          example: {"storage": {"sampleKey": "value1"}}
-          schema:
-            type: object
+          required: False
+          content:
+            application/json:
+              schema:
+                type: object
+              example: {"key1": "value1", "key2": "value2"}
       responses:
         "201":
           description: Success.
@@ -132,6 +134,11 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                    example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
           content:
