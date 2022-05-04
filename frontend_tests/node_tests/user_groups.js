@@ -90,8 +90,8 @@ run_test("user_groups", () => {
     const groups_of_users_nomatch = user_groups.get_user_groups_of_user(user_id_not_in_any_group);
     assert.equal(groups_of_users_nomatch.length, 0);
 
-    assert.ok(!user_groups.is_member_of(admins.id, 4));
-    assert.ok(user_groups.is_member_of(admins.id, 3));
+    assert.ok(!user_groups.is_direct_member_of(admins.id, 4));
+    assert.ok(user_groups.is_direct_member_of(admins.id, 3));
 
     user_groups.add_members(all.id, [5, 4]);
     assert.deepEqual(user_groups.get_user_group_from_id(all.id).members, new Set([1, 2, 3, 5, 4]));
@@ -119,7 +119,7 @@ run_test("user_groups", () => {
     assert.equal(user_groups.get_realm_user_groups().length, 0);
 
     blueslip.expect("error", "Could not find user group with ID -1");
-    assert.equal(user_groups.is_member_of(-1, 15), false);
+    assert.equal(user_groups.is_direct_member_of(-1, 15), false);
 
     blueslip.expect("error", "Could not find user group with ID -9999", 4);
     user_groups.add_members(-9999);

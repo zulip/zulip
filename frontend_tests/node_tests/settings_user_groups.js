@@ -55,7 +55,7 @@ test_ui("can_edit", () => {
     assert.ok(!settings_user_groups.can_edit(1));
 
     settings_data.user_can_edit_user_groups = () => true;
-    user_groups.is_member_of = (group_id, user_id) => {
+    user_groups.is_direct_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
         return false;
@@ -71,7 +71,7 @@ test_ui("can_edit", () => {
 
     page_params.is_admin = false;
     page_params.is_moderator = false;
-    user_groups.is_member_of = (group_id, user_id) => {
+    user_groups.is_direct_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
         return true;

@@ -47,7 +47,7 @@ export function can_edit(group_id) {
         return true;
     }
 
-    return user_groups.is_member_of(group_id, people.my_current_user_id());
+    return user_groups.is_direct_member_of(group_id, people.my_current_user_id());
 }
 
 export function populate_user_groups() {
