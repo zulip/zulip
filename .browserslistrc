@@ -3,3 +3,6 @@
 last 2 versions
 Firefox ESR
 not dead and supports async-functions
+
+[test]
+current Node
