@@ -16,6 +16,8 @@ const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
 const zpage_params = require("./zpage_params");
 
+process.env.NODE_ENV = "test";
+
 const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
 global.DOMParser = dom.window.DOMParser;
 
