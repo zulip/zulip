@@ -153,3 +153,28 @@ export function get_user_groups_of_user(user_id: number): UserGroup[] {
     );
     return groups_of_user;
 }
+
+export function get_recursive_subgroups(target_group_id: number): Set<number> | undefined {
+    const target_user_group = user_group_by_id_dict.get(target_group_id);
+    if (target_user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${target_group_id}`);
+        return undefined;
+    }
+
+    // Correctness of this algorithm relying on the ES6 Set
+    // implementation having the property that a `for of` loop will
+    // visit all items that are added to the set during the loop.
+    const subgroup_ids = new Set(target_user_group.subgroups);
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        if (subgroup === undefined) {
+            blueslip.error(`Could not find subgroup with ID ${subgroup_id}`);
+            return undefined;
+        }
+
+        for (const direct_subgroup_id of subgroup.subgroups) {
+            subgroup_ids.add(direct_subgroup_id);
+        }
+    }
+    return subgroup_ids;
+}

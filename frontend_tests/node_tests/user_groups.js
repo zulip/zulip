@@ -127,3 +127,59 @@ run_test("user_groups", () => {
     user_groups.add_subgroups(-9999);
     user_groups.remove_subgroups(-9999);
 });
+
+run_test("get_recursive_subgroups", () => {
+    const admins = {
+        name: "Admins",
+        description: "foo",
+        id: 1,
+        members: new Set([1]),
+        is_system_group: false,
+        subgroups: new Set([4]),
+    };
+    const all = {
+        name: "Everyone",
+        id: 2,
+        members: new Set([2, 3]),
+        is_system_group: false,
+        subgroups: new Set([1, 3]),
+    };
+    const test = {
+        name: "Test",
+        id: 3,
+        members: new Set([3, 4, 5]),
+        is_system_group: false,
+        subgroups: new Set([2]),
+    };
+    const foo = {
+        name: "Foo",
+        id: 4,
+        members: new Set([6, 7]),
+        is_system_group: false,
+        subgroups: new Set([]),
+    };
+
+    user_groups.add(admins);
+    user_groups.add(all);
+    user_groups.add(test);
+    user_groups.add(foo);
+
+    // This test setup has a state that won't appear in real data: Groups 2 and 3
+    // each contain the other. We test this corner case because it is a simple way
+    // to verify whether our algorithm correctly avoids visiting groups multiple times
+    // when determining recursive subgroups.
+    // A test case that can occur in practice and would be problematic without this
+    // optimization is a tree where each layer connects to every node in the next layer.
+    assert.deepEqual(user_groups.get_recursive_subgroups(admins.id), new Set([4]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(all.id), new Set([4, 1, 2, 3]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(test.id), new Set([2, 4, 1, 3]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(foo.id), new Set([]));
+
+    blueslip.expect("error", "Could not find user group with ID 1111");
+    assert.deepEqual(user_groups.get_recursive_subgroups(1111), undefined);
+
+    user_groups.add_subgroups(foo.id, [9999]);
+    blueslip.expect("error", "Could not find subgroup with ID 9999", 2);
+    assert.deepEqual(user_groups.get_recursive_subgroups(foo.id), undefined);
+    assert.deepEqual(user_groups.get_recursive_subgroups(test.id), undefined);
+});
