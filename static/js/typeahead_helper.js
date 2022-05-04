@@ -363,17 +363,17 @@ export function sort_slash_commands(matches, query) {
 function activity_score(sub) {
     let stream_score = 0;
     if (sub.subscribed) {
-        // subscribed streams receive 2 points to avoid unsubscribed streams ranking higher than muted streams
-        stream_score += 2
+        // all subscribed streams receive 2 points to avoid unsubscribed streams ranking higher than muted streams
+        stream_score += 2;
     }
     if (!sub.is_muted) {
-        stream_score += 1
+        stream_score += 1;
     }
     if (sub.pin_to_top) {
-        stream_score += 1
+        stream_score += 1;
     }
     if (stream_data.is_active(sub)) {
-        stream_score += 1
+        stream_score += 1;
     }
     return stream_score;
 }

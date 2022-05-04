@@ -273,14 +273,14 @@ test("sort_streams", ({override_rewire}) => {
         },
         {
             stream_id: 404,
-            name: "Adeline",
+            name: "Adele",
             subscribed: true,
             is_muted: false,
             pin_to_top: true,
         },
     ];
     test_streams = th.sort_streams(test_streams, "a");
-    assert.deepEqual(test_streams[0].name, "Adeline"); // Subscribed and Pinned to the top
+    assert.deepEqual(test_streams[0].name, "Adele"); // Subscribed and Pinned to the top
     assert.deepEqual(test_streams[1].name, "Ace"); // Subscribed and Unmuted
     assert.deepEqual(test_streams[2].name, "Abba"); // Subscribed and Muted
     assert.deepEqual(test_streams[3].name, "Aaron"); // Unsubscribed
