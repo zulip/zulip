@@ -363,7 +363,7 @@ export function sort_slash_commands(matches, query) {
 function activity_score(sub) {
     let stream_score = 0;
     if (sub.subscribed) {
-        //subscribed streams receive 2 points to avoid unsubscribed streams ranking higher than muted streams
+        // subscribed streams receive 2 points to avoid unsubscribed streams ranking higher than muted streams
         stream_score += 2
     }
     if (!sub.is_muted) {

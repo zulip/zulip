@@ -248,7 +248,7 @@ test("sort_streams", ({override_rewire}) => {
     assert.deepEqual(test_streams[4].name, "New"); // Subscribed and no match
     assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 
-    //Test Streams Order: Pinned -> Subscribed (Unmuted) -> Subscribed (Muted) -> Unsubscribed
+    // Test Streams Order: Pinned -> Subscribed (Unmuted) -> Subscribed (Muted) -> Unsubscribed
     test_streams = [
         {
             stream_id: 401,
