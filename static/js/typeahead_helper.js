@@ -358,20 +358,25 @@ export function sort_slash_commands(matches, query) {
     return results.matches.concat(results.rest);
 }
 
-// Gives stream a score from 0 to 5 based on its activity
-// Pinned -> Subscribed (Unmuted) -> Subscribed (Muted) -> Unsubscribed
+// Gives stream a score from 0 to 6 based on its activity
+// Pinned (Unmuted) -> Subscribed (Unmuted) -> Subscribed (Muted) and [Pinned (Muted)] -> Unsubscribed
 function activity_score(sub) {
     let stream_score = 0;
-    if (sub.subscribed) {
-        // all subscribed streams receive 2 points to avoid unsubscribed streams ranking higher than muted streams
-        stream_score += 2;
-    }
     if (!sub.is_muted) {
         stream_score += 1;
+
+        if (sub.subscribed) {
+            stream_score += 1;
+        }
+        if (sub.pin_to_top) {
+            stream_score += 1;
+        }
     }
-    if (sub.pin_to_top) {
-        stream_score += 1;
+    if (sub.subscribed) {
+        // all subscribed streams receive 1 extra point to avoid unsubscribed streams ranking higher than muted streams
+        stream_score += 2;
     }
+
     if (stream_data.is_active(sub)) {
         stream_score += 1;
     }
