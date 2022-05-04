@@ -17,6 +17,41 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
+### 5.2 -- 2022-05-03
+
+- Fixed a performance regression in the UI, introduced in 5.0, when
+  opening the compose box.
+- Fixed a bug which could intermittently cause URL previews to fail,
+  if Zulip was being run in Docker or in low-memory environments.
+- Fixed an issue which would cause PostgreSQL 10 and PostgreSQL 11 to
+  attempt to write each WAL log to S3, even if S3 WAL
+  backups/replication were not configured.
+- Fixed an issue which prevented the SCIM integration from
+  deactivating users.
+- Fixed a bug that resulted in an “You unsubscribed” notice
+  incorrectly appearing when new messages arrived in a topic being
+  viewed via a “near” link.
+- Fixed digest emails being incorrectly sent if a user was deactivated
+  after the digest was enqueued but before it was processed.
+- Fixed warning about `EMAIL_HOST_PASSWORD` being unset when
+  explicitly set to empty.
+- Fixed incomplete tracebacks when timeouts happen during Markdown
+  rendering.
+- Fixed some older versions of Zulip Server not being considered when
+  comparing for the likely original version of `settings.py`.
+- Stopped using the `database_password` if it is set but
+  `database_user` is not.
+- Stopped trying to fix LetsEncrypt certificate configuration if they
+  were not currently in use.
+- Sorted and prettified the output of the
+  `check-database-compatibility` tool.
+- Split the large `zerver/lib/actions.py` file into many files under
+  `zerver/actions/`. This non-functional change was backported to
+  ensure it remains easy to backport other changes.
+- Updated documentation to reflect that current mobile apps are only
+  guaranteed to be compatible with Zulip Server 3.0 and later; they
+  may also work with earlier versions, with a degraded experience.
+
 ### 5.1 -- 2022-04-01
 
 - Fixed upgrade bug where preexisting animated emoji would still
