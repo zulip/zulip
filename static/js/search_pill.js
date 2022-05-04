@@ -14,9 +14,9 @@ export function get_search_string_from_item(item) {
     return item.display_value;
 }
 
-export function create_pills(pill_container) {
+export function create_pills($pill_container) {
     const pills = input_pill.create({
-        container: pill_container,
+        $container: $pill_container,
         create_item_from_text: create_item_from_search_string,
         get_text_from_item: get_search_string_from_item,
     });

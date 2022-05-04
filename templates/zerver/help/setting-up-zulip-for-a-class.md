@@ -150,8 +150,7 @@ A few settings to highlight:
 [default-code-block-language]: /help/code-blocks#default-code-block-language
 [code-playgrounds]: /help/code-blocks#code-playgrounds
 [email-address-visibility]: /help/restrict-visibility-of-email-addresses
-[who-can-invite]: /help/invite-new-users#change-who-can-send-invitations
-[who-can-join]: /help/allow-anyone-to-join-without-an-invitation
+[who-can-invite]: /help/restrict-account-creation#change-who-can-send-invitations
 
 ### Roles and permissions
 
@@ -174,7 +173,7 @@ how to assign roles and permissions for a class.
      These are the default permissions for new **Education
      (non-profit)** and **Education (for-profit)** organizations.
 
-- Set [who can invite new users](/help/invite-new-users#change-who-can-send-invitations).
+- Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins)
 - Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
   (Recommended: Admins only)
@@ -187,9 +186,10 @@ how to assign roles and permissions for a class.
   Admins and moderators for large classes)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)
-- Set [who can create and manage user groups](/help/restrict-user-group-management).
+- Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
+[user-group-permissions]: /help/user-groups#configure-who-can-create-and-manage-user-groups
 [move-between-streams]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
 
 #### Recommended roles and permissions for a department
@@ -203,7 +203,7 @@ how to assign roles and permissions for a class.
 
 ##### Settings
 
-- Set [who can invite new users](/help/invite-new-users#change-who-can-send-invitations).
+- Set [who can invite new users](/help/restrict-account-creation#change-who-can-send-invitations).
   (Recommended: Admins and moderators)
 - Set [who can access user email addresses](/help/restrict-visibility-of-email-addresses).
   (Recommended: Admins only)
@@ -216,7 +216,7 @@ how to assign roles and permissions for a class.
   (Recommended: Admins and moderators)
 - Set [who can move messages between streams][move-between-streams].
   (Recommended: Admins and moderators)
-- Set [who can create and manage user groups](/help/restrict-user-group-management).
+- Set [who can create and manage user groups][user-group-permissions].
   (Recommended: Admins and moderators)
 
 ## Create streams

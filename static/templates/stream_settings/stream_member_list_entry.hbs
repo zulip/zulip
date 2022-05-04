@@ -1,5 +1,7 @@
 <tr data-subscriber-id="{{user_id}}">
-    <td class="subscriber-name">{{name}}</td>
+    <td class="subscriber-name">
+        {{name}}{{#if is_current_user}} <span class="my_user_status">{{t "(you)"}}</span>{{/if}}
+    </td>
     {{#if show_email}}
     <td class="subscriber-email">{{email}}</td>
     {{else}}

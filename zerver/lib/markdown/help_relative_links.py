@@ -1,5 +1,5 @@
 import re
-from typing import Any, List, Match, Optional
+from typing import Any, List, Match
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -26,6 +26,7 @@ gear_info = {
     "plans": ["Plans and pricing", "/plans"],
     "billing": ["Billing", "/billing"],
     "invite": ["Invite users", "/#invite"],
+    "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
 gear_instructions = """
@@ -46,7 +47,7 @@ def gear_handle_match(key: str) -> str:
 
 stream_info = {
     "all": ["All streams", "/#streams/all"],
-    "subscribed": ["Your streams", "/#streams/subscribed"],
+    "subscribed": ["Subscribed streams", "/#streams/subscribed"],
 }
 
 stream_instructions_no_link = """
@@ -80,7 +81,7 @@ class RelativeLinksHelpExtension(Extension):
         )
 
 
-relative_help_links: Optional[bool] = None
+relative_help_links: bool = False
 
 
 def set_relative_help_links(value: bool) -> None:

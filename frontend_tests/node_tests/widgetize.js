@@ -35,16 +35,16 @@ const sample_events = [
 ];
 
 let events;
-let widget_elem;
+let $widget_elem;
 let is_event_handled;
 let is_widget_activated;
 
 const fake_poll_widget = {
     activate(data) {
         is_widget_activated = true;
-        widget_elem = data.elem;
-        assert.ok(widget_elem.hasClass("widget-content"));
-        widget_elem.handle_events = (e) => {
+        $widget_elem = data.$elem;
+        assert.ok($widget_elem.hasClass("widget-content"));
+        $widget_elem.handle_events = (e) => {
             is_event_handled = true;
             assert.notDeepStrictEqual(e, events);
             events.shift();
@@ -65,7 +65,7 @@ const widgetize = zrequire("widgetize");
 function test(label, f) {
     run_test(label, ({override}) => {
         events = [...sample_events];
-        widget_elem = undefined;
+        $widget_elem = undefined;
         is_event_handled = false;
         is_widget_activated = false;
         widgetize.clear_for_testing();
@@ -76,10 +76,10 @@ function test(label, f) {
 test("activate", ({override}) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
-    const row = $.create("<stub message row>");
-    row.attr("id", "zhome2909");
-    const message_content = $.create("#zhome2909");
-    row.set_find_results(".message_content", message_content);
+    const $row = $.create("<stub message row>");
+    $row.attr("id", "zhome2909");
+    const $message_content = $.create("#zhome2909");
+    $row.set_find_results(".message_content", $message_content);
 
     let narrow_active;
     override(narrow_state, "active", () => narrow_active);
@@ -94,16 +94,16 @@ test("activate", ({override}) => {
             assert.equal(data.msg_type, "widget");
             assert.equal(data.data, "test_data");
         },
-        row,
+        $row,
         widget_type: "poll",
     };
 
     let is_widget_elem_inserted;
 
-    message_content.append = (elem) => {
+    $message_content.append = ($elem) => {
         is_widget_elem_inserted = true;
-        assert.equal(elem, widget_elem);
-        assert.ok(elem.hasClass("widget-content"));
+        assert.equal($elem, $widget_elem);
+        assert.ok($elem.hasClass("widget-content"));
     };
 
     is_widget_elem_inserted = false;
@@ -111,19 +111,19 @@ test("activate", ({override}) => {
     is_event_handled = false;
     assert.ok(!widgetize.widget_contents.has(opts.message.id));
 
-    message_content.set_find_results(".widget-content", false);
+    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
     assert.ok(is_widget_activated);
     assert.ok(is_event_handled);
-    assert.equal(widgetize.widget_contents.get(opts.message.id), widget_elem);
+    assert.equal(widgetize.widget_contents.get(opts.message.id), $widget_elem);
 
     is_widget_elem_inserted = false;
     is_widget_activated = false;
     is_event_handled = false;
 
-    message_content.set_find_results(".widget-content", false);
+    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(is_widget_elem_inserted);
@@ -135,7 +135,7 @@ test("activate", ({override}) => {
     is_widget_activated = false;
     is_event_handled = false;
 
-    message_content.set_find_results(".widget-content", false);
+    $message_content.set_find_results(".widget-content", false);
     widgetize.activate(opts);
 
     assert.ok(!is_widget_elem_inserted);
@@ -171,7 +171,7 @@ test("activate", ({override}) => {
         message_id: 2001,
         sender_id: 102,
     };
-    widget_elem.handle_events = (e) => {
+    $widget_elem.handle_events = (e) => {
         is_event_handled = true;
         assert.deepEqual(e, [post_activate_event]);
     };
@@ -191,7 +191,7 @@ test("activate", ({override}) => {
     });
     override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
-        return row;
+        return $row;
     });
     widgetize.set_widgets_for_list();
 });

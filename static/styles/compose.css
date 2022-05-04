@@ -84,6 +84,13 @@
     opacity: 1;
 }
 
+.narrow_to_compose_recipient_current_view_help {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .compose_table {
     height: 100%;
     display: flex;
@@ -109,6 +116,22 @@
             position: relative;
             margin: 0 5px;
         }
+
+        a.narrow_to_compose_recipients {
+            background: transparent;
+            font-size: 18px;
+            padding: 1px;
+            line-height: 20px;
+            opacity: 0.7;
+            border: 0;
+            margin-left: 3px;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 
     .pm_recipient {
@@ -127,14 +150,17 @@
     #compose-lock-icon,
     #compose-globe-icon {
         position: relative;
-        left: 5px;
+        left: 6px;
+        top: 0.5px;
         width: 0;
     }
 
     #compose-globe-icon {
-        top: 1px;
         left: 4.5px;
-        padding-right: 2px;
+
+        .zulip-icon-globe {
+            font-size: 12px;
+        }
     }
 
     .message_header {
@@ -215,6 +241,8 @@
 }
 
 #compose-container {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     /* This should match the value for .app-main */
     max-width: 1400px;
@@ -230,17 +258,19 @@
 #compose_top_right {
     display: flex;
     align-items: center;
+    margin-bottom: auto;
 
     button {
         background: transparent;
-        font-size: 20px;
-        font-weight: bold;
+        font-size: 15px;
+        font-weight: normal;
         line-height: 20px;
         opacity: 0.6;
         border: 0;
         padding: 0;
         margin-left: 4px;
         vertical-align: unset;
+        text-shadow: none;
 
         &:hover {
             opacity: 1;
@@ -271,12 +301,13 @@
     position: absolute;
 }
 
-.compose_resolved_topic_close,
-.compose_invite_close,
-.compose_private_stream_alert_close {
+.compose_resolved_topic_user_controls .compose_resolved_topic_close,
+.compose_invite_user_controls .compose_invite_close,
+.compose_private_stream_alert_controls .compose_private_stream_alert_close {
     display: inline-block;
-    margin-top: 4px;
-
+    position: absolute;
+    margin-top: -2px;
+    margin-right: -2px;
     width: 10px;
 }
 
@@ -424,14 +455,15 @@ input.recipient_box {
     }
 
     &.lock-padding {
-        padding-left: 18px;
+        padding-left: 20px;
     }
 }
 
 #stream_message_recipient_topic.recipient_box {
-    width: calc(20% + 14px);
-    min-width: 120px;
-    max-width: 165px;
+    /* This width roughly corresponds to how long of a topic can appear in
+       the left sidebar with a single digit unread count without being
+       cut off. */
+    width: 175px;
 }
 
 #private_message_recipient.recipient_box {
@@ -550,14 +582,28 @@ input.recipient_box {
         line-height: 18px;
     }
 
+    .fa-eye {
+        position: relative;
+        top: -0.7px;
+    }
+
     .compose_control_menu {
         padding: 0 7px;
         font-size: 15px;
     }
 
     .compose_control_menu_wrapper {
+        opacity: 0.7;
         padding: 0;
         margin: 0;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        .compose_control_menu {
+            opacity: 1;
+        }
     }
 
     .hide-sm,
@@ -579,15 +625,14 @@ input.recipient_box {
         font-size: 15px;
         font-weight: 600;
         font-family: "Source Sans 3", sans-serif;
-        padding-left: 5px;
+        padding: 0 5px;
+        position: relative;
+        top: 0.7px;
     }
 
     .compose_help_button {
-        font-size: 21px;
-        line-height: 27px;
-        font-weight: 550;
-        padding: 0 5px;
-        margin: 0;
+        font-size: 20px;
+        line-height: 17px;
     }
 }
 
@@ -702,7 +747,9 @@ a.compose_control_button.hide {
 
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
-        width: calc(100% - 192px);
+        /* The max-width here is designed to allow this to share space with
+           the Stream input in small windows, without leaving empty space. */
+        max-width: calc(100% - 90px);
         min-width: 110px;
     }
 

@@ -443,8 +443,16 @@ $category-text: hsl(219, 23%, 33%);
 
         .button {
             padding: 11px 25px;
-            margin: 5px;
+            margin: 0 auto;
             font-size: 0.9em;
+        }
+    }
+    @media (max-width: 550px) {
+        .button {
+            display: flex;
+            flex-wrap: wrap;
+            width: 170px;
+            justify-content: center;
         }
     }
 
@@ -463,7 +471,8 @@ $category-text: hsl(219, 23%, 33%);
 
             .integration-lozenge {
                 width: 125px;
-                height: 170px;
+                height: auto;
+                padding: 0 5px 20px;
                 margin: 0 21px 20px;
                 order: 1;
 

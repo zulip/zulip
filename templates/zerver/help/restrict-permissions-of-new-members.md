@@ -2,8 +2,8 @@
 
 {!admin-only.md!}
 
-In large Zulips where
-[anyone can join](/help/allow-anyone-to-join-without-an-invitation), it can
+In large Zulip organizations where
+[anyone can join](/help/restrict-account-creation#set-whether-invitations-are-required-to-join), it can
 be useful to restrict what new members can do, to make it easier to cope
 with spammers and confused users.
 
@@ -12,21 +12,20 @@ past a certain **waiting period** threshold. After that they are **full members*
 You can configure how long the waiting period is, as well as which actions require
 being a full member.
 
-Currently, the following actions support limiting access to full members.
+Various actions support restricting access to full members, including
+[creating streams](/help/configure-who-can-create-streams),
+[inviting users to the organization](/help/invite-new-users),
+[adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
+and many more.
 
-- [Creating streams](/help/configure-who-can-create-streams)
-- [Adding users to streams](/help/configure-who-can-invite-to-streams)
-- [Restricting posting to a stream](/help/stream-sending-policy)
-- [Restricting inviting users to organization](/help/invite-new-users)
-- [Restricting adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji)
-
-### Set waiting period for new members
+## Set waiting period for new members
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-2. Under **Joining the organization**, configure **Waiting period before new members turn into full members**.
+1. Under **Joining the organization**, configure
+   **Waiting period before new members turn into full members**.
 
 {!save-changes.md!}
 

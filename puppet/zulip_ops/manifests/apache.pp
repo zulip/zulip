@@ -3,7 +3,7 @@ class zulip_ops::apache {
                       'apache2',
                       'libapache2-mod-wsgi',
                       ]
-  package { $apache_packages: ensure => 'installed' }
+  package { $apache_packages: ensure => installed }
   service { 'apache2':
     require => Package['apache2'],
   }

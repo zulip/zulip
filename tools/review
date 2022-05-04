@@ -12,7 +12,7 @@ def exit(message: str) -> None:
 
 
 def run(command: List[str]) -> None:
-    print("\n>>> " + " ".join(map(shlex.quote, command)))
+    print(f"\n>>> {shlex.join(command)}")
     subprocess.check_call(command)
 
 

@@ -21,8 +21,10 @@
     </form>
     {{/if}}
 
-    <input type="text" class="search" placeholder="{{t 'Filter streams' }}" aria-label="{{t 'Filter streams' }}"/>
-    <div class="clear-float"></div>
+    <div class="settings_panel_list_header">
+        <h3>{{t "Default streams"}}</h3>
+        <input type="text" class="search" placeholder="{{t 'Filter default streams' }}" aria-label="{{t 'Filter streams' }}"/>
+    </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table">

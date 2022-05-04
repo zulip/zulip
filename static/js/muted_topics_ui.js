@@ -69,11 +69,11 @@ export function mute_topic(stream_id, topic, from_hotkey) {
             // know what you did if you triggered muting with the
             // mouse.
             feedback_widget.show({
-                populate(container) {
+                populate($container) {
                     const rendered_html = render_topic_muted();
-                    container.html(rendered_html);
-                    container.find(".stream").text(stream_name);
-                    container.find(".topic").text(topic);
+                    $container.html(rendered_html);
+                    $container.find(".stream").text(stream_name);
+                    $container.find(".topic").text(topic);
                 },
                 on_undo() {
                     unmute_topic(stream_id, topic);

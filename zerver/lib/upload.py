@@ -27,8 +27,7 @@ from django.utils.translation import gettext as _
 from markupsafe import Markup as mark_safe
 from mypy_boto3_s3.client import S3Client
 from mypy_boto3_s3.service_resource import Bucket, Object
-from PIL import Image, ImageOps
-from PIL.GifImagePlugin import GifImageFile
+from PIL import GifImagePlugin, Image, ImageOps, PngImagePlugin
 from PIL.Image import DecompressionBombError
 
 from zerver.lib.avatar_hash import user_avatar_path
@@ -84,6 +83,14 @@ INLINE_MIME_TYPES = [
 # To come up with a s3 key we randomly generate a "directory". The
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
+
+
+# https://github.com/boto/botocore/issues/2644 means that the IMDS
+# request _always_ pulls from the environment.  Monkey-patch the
+# `should_bypass_proxies` function if we need to skip them, based
+# on S3_SKIP_PROXY.
+if settings.S3_SKIP_PROXY is True:  # nocoverage
+    botocore.utils.should_bypass_proxies = lambda url: True
 
 
 class RealmUploadQuotaError(JsonableError):
@@ -145,7 +152,8 @@ def resize_logo(image_data: bytes) -> bytes:
     return out.getvalue()
 
 
-def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
+def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
+    assert im.n_frames > 1
     frames = []
     duration_info = []
     disposals = []
@@ -157,21 +165,29 @@ def resize_gif(im: GifImageFile, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
         new_frame.paste(im, (0, 0), im.convert("RGBA"))
         new_frame = ImageOps.pad(new_frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
+        if im.info.get("duration") is None:  # nocoverage
+            raise BadImageError(_("Corrupt animated image."))
         duration_info.append(im.info["duration"])
-        disposals.append(
-            im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
-        )
+        if isinstance(im, GifImagePlugin.GifImageFile):
+            disposals.append(
+                im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
+            )
+        elif isinstance(im, PngImagePlugin.PngImageFile):
+            disposals.append(im.info.get("disposal", PngImagePlugin.APNG_DISPOSE_OP_NONE))
+        else:  # nocoverage
+            raise BadImageError(_("Unknown animated image format."))
     out = io.BytesIO()
     frames[0].save(
         out,
         save_all=True,
         optimize=False,
-        format="GIF",
+        format=im.format,
         append_images=frames[1:],
         duration=duration_info,
         disposal=disposals,
         loop=loop,
     )
+
     return out.getvalue()
 
 
@@ -186,12 +202,11 @@ def resize_emoji(
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
-        if image_format == "GIF":
-            assert isinstance(im, GifImageFile)
-            # There are a number of bugs in Pillow.GifImagePlugin which cause
-            # results in resized gifs being broken. To work around this we
-            # only resize under certain conditions to minimize the chance of
-            # creating ugly gifs.
+        if getattr(im, "n_frames", 1) > 1:
+            # There are a number of bugs in Pillow which cause results
+            # in resized images being broken. To work around this we
+            # only resize under certain conditions to minimize the
+            # chance of creating ugly images.
             should_resize = (
                 im.size[0] != im.size[1]  # not square
                 or im.size[0] > MAX_EMOJI_GIF_SIZE  # dimensions too large
@@ -209,7 +224,7 @@ def resize_emoji(
             still_image_data = out.getvalue()
 
             if should_resize:
-                image_data = resize_gif(im, size)
+                image_data = resize_animated(im, size)
 
             return image_data, True, still_image_data
         else:
@@ -378,7 +393,7 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
     return uploaded_file_name, uploaded_file_size, content_type
 
 
-def get_signed_upload_url(path: str) -> str:
+def get_signed_upload_url(path: str, download: bool = False) -> str:
     client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_KEY,
@@ -386,9 +401,16 @@ def get_signed_upload_url(path: str) -> str:
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
     )
+    params = {
+        "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
+        "Key": path,
+    }
+    if download:
+        params["ResponseContentDisposition"] = "attachment"
+
     return client.generate_presigned_url(
         ClientMethod="get_object",
-        Params={"Bucket": settings.S3_AUTH_UPLOADS_BUCKET, "Key": path},
+        Params=params,
         ExpiresIn=SIGNED_UPLOAD_URL_DURATION,
         HttpMethod="GET",
     )
@@ -1120,7 +1142,7 @@ def create_attachment(
         realm=realm,
         size=file_size,
     )
-    from zerver.lib.actions import notify_attachment_update
+    from zerver.actions.uploads import notify_attachment_update
 
     notify_attachment_update(user_profile, "add", attachment.to_dict())
     return True

@@ -53,39 +53,43 @@ function open_linkifier_edit_form(linkifier_id) {
     });
 
     function submit_linkifier_form() {
-        const change_linkifier_button = $(".dialog_submit_button");
-        change_linkifier_button.prop("disabled", true);
+        const $change_linkifier_button = $(".dialog_submit_button");
+        $change_linkifier_button.prop("disabled", true);
 
-        const modal = $("#dialog_widget_modal");
+        const $modal = $("#dialog_widget_modal");
         const url = "/json/realm/filters/" + encodeURIComponent(linkifier_id);
-        const pattern = modal.find("#edit-linkifier-pattern").val().trim();
-        const url_format_string = modal.find("#edit-linkifier-url-format-string").val().trim();
+        const pattern = $modal.find("#edit-linkifier-pattern").val().trim();
+        const url_format_string = $modal.find("#edit-linkifier-url-format-string").val().trim();
         const data = {pattern, url_format_string};
-        const pattern_status = modal.find("#edit-linkifier-pattern-status").expectOne();
-        const format_status = modal.find("#edit-linkifier-format-status").expectOne();
-        const dialog_error_element = modal.find("#dialog_error").expectOne();
+        const $pattern_status = $modal.find("#edit-linkifier-pattern-status").expectOne();
+        const $format_status = $modal.find("#edit-linkifier-format-status").expectOne();
+        const $dialog_error_element = $modal.find("#dialog_error").expectOne();
         const opts = {
             success_continuation() {
-                change_linkifier_button.prop("disabled", false);
+                $change_linkifier_button.prop("disabled", false);
                 dialog_widget.close_modal();
             },
             error_continuation(xhr) {
-                change_linkifier_button.prop("disabled", false);
+                $change_linkifier_button.prop("disabled", false);
                 const response_text = JSON.parse(xhr.responseText);
                 if (response_text.errors !== undefined) {
                     handle_linkifier_api_error(
                         xhr,
-                        pattern_status,
-                        format_status,
-                        dialog_error_element,
+                        $pattern_status,
+                        $format_status,
+                        $dialog_error_element,
                     );
                 } else {
                     // This must be `Linkifier not found` error.
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, dialog_error_element);
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $dialog_error_element,
+                    );
                 }
             },
             // Show the error message only on edit linkifier modal.
-            error_msg_element: $(),
+            $error_msg_element: $(),
         };
         settings_ui.do_settings_change(
             channel.patch,
@@ -127,8 +131,8 @@ export function populate_linkifiers(linkifiers_data) {
         return;
     }
 
-    const linkifiers_table = $("#admin_linkifiers_table").expectOne();
-    ListWidget.create(linkifiers_table, linkifiers_data, {
+    const $linkifiers_table = $("#admin_linkifiers_table").expectOne();
+    ListWidget.create($linkifiers_table, linkifiers_data, {
         name: "linkifiers_list",
         modifier(linkifier) {
             return render_admin_linkifier_list({
@@ -141,7 +145,7 @@ export function populate_linkifiers(linkifiers_data) {
             });
         },
         filter: {
-            element: linkifiers_table.closest(".settings-section").find(".search"),
+            $element: $linkifiers_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
                 return (
                     item.pattern.toLowerCase().includes(value) ||
@@ -149,16 +153,16 @@ export function populate_linkifiers(linkifiers_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar(linkifiers_table);
+                ui.reset_scrollbar($linkifiers_table);
             },
         },
-        parent_container: $("#linkifier-settings").expectOne(),
+        $parent_container: $("#linkifier-settings").expectOne(),
         init_sort: [sort_pattern],
         sort_fields: {
             pattern: sort_pattern,
             url: sort_url,
         },
-        simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
+        $simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
 }
 
@@ -176,12 +180,12 @@ export function build_page() {
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const btn = $(this);
+        const $btn = $(this);
 
         channel.del({
-            url: "/json/realm/filters/" + encodeURIComponent(btn.attr("data-linkifier-id")),
+            url: "/json/realm/filters/" + encodeURIComponent($btn.attr("data-linkifier-id")),
             error(xhr) {
-                ui_report.generic_row_button_error(xhr, btn);
+                ui_report.generic_row_button_error(xhr, $btn);
             },
             // There is no need for an on-success action here since the row is removed by
             // the `realm_linkifiers` event handler which builds the linkifier list again.
@@ -192,8 +196,8 @@ export function build_page() {
         e.preventDefault();
         e.stopPropagation();
 
-        const btn = $(this);
-        const linkifier_id = Number.parseInt(btn.attr("data-linkifier-id"), 10);
+        const $btn = $(this);
+        const linkifier_id = Number.parseInt($btn.attr("data-linkifier-id"), 10);
         open_linkifier_edit_form(linkifier_id);
     });
 
@@ -202,14 +206,14 @@ export function build_page() {
         .on("submit", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            const linkifier_status = $("#admin-linkifier-status");
-            const pattern_status = $("#admin-linkifier-pattern-status");
-            const format_status = $("#admin-linkifier-format-status");
-            const add_linkifier_button = $(".new-linkifier-form button");
-            add_linkifier_button.prop("disabled", true);
-            linkifier_status.hide();
-            pattern_status.hide();
-            format_status.hide();
+            const $linkifier_status = $("#admin-linkifier-status");
+            const $pattern_status = $("#admin-linkifier-pattern-status");
+            const $format_status = $("#admin-linkifier-format-status");
+            const $add_linkifier_button = $(".new-linkifier-form button");
+            $add_linkifier_button.prop("disabled", true);
+            $linkifier_status.hide();
+            $pattern_status.hide();
+            $format_status.hide();
             const linkifier = {};
 
             for (const obj of $(this).serializeArray()) {
@@ -222,20 +226,20 @@ export function build_page() {
                 success(data) {
                     $("#linkifier_pattern").val("");
                     $("#linkifier_format_string").val("");
-                    add_linkifier_button.prop("disabled", false);
+                    $add_linkifier_button.prop("disabled", false);
                     linkifier.id = data.id;
                     ui_report.success(
                         $t_html({defaultMessage: "Custom linkifier added!"}),
-                        linkifier_status,
+                        $linkifier_status,
                     );
                 },
                 error(xhr) {
-                    add_linkifier_button.prop("disabled", false);
+                    $add_linkifier_button.prop("disabled", false);
                     handle_linkifier_api_error(
                         xhr,
-                        pattern_status,
-                        format_status,
-                        linkifier_status,
+                        $pattern_status,
+                        $format_status,
+                        $linkifier_status,
                     );
                 },
             });

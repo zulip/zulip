@@ -16,12 +16,8 @@ from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Identifier
 
 from analytics.models import RealmCount, StreamCount, UserCount
-from zerver.lib.actions import (
-    UserMessageLite,
-    bulk_insert_ums,
-    do_change_avatar_fields,
-    do_change_realm_plan_type,
-)
+from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
@@ -32,6 +28,8 @@ from zerver.lib.server_initialization import create_internal_realm, server_initi
 from zerver.lib.streams import render_stream_description
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.upload import BadImageError, get_bucket, sanitize_name, upload_backend
+from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import (
     AlertWord,
@@ -739,6 +737,7 @@ def import_uploads(
     realm: Realm,
     import_dir: Path,
     processes: int,
+    default_user_profile_id: Optional[int] = None,
     processing_avatars: bool = False,
     processing_emojis: bool = False,
     processing_realm_icons: bool = False,
@@ -817,14 +816,17 @@ def import_uploads(
         if s3_uploads:
             key = bucket.Object(relative_path)
             metadata = {}
-            if processing_emojis and "user_profile_id" not in record:
-                # Exported custom emoji from tools like Slack don't have
-                # the data for what user uploaded them in `user_profile_id`.
-                pass
-            elif processing_realm_icons and "user_profile_id" not in record:
-                # Exported realm icons and logos from local export don't have
-                # the value of user_profile_id in the associated record.
-                pass
+            if "user_profile_id" not in record:
+                # This should never happen for uploads or avatars; if
+                # so, it is an error, default_user_profile_id will be
+                # None, and we assert.  For emoji / realm icons, we
+                # fall back to default_user_profile_id.
+                # default_user_profile_id can be None in Gitter
+                # imports, which do not create any owners; but Gitter
+                # does not have emoji which we would need to allocate
+                # a user to.
+                assert default_user_profile_id is not None
+                metadata["user_profile_id"] = str(default_user_profile_id)
             else:
                 user_profile_id = int(record["user_profile_id"])
                 # Support email gateway bot and other cross-realm messages
@@ -1179,6 +1181,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
         bulk_import_model(data, GroupGroupMembership)
 
+    # We expect Zulip server exports to contain these system groups,
+    # this logic here is needed to handle the imports from other services.
+    if not UserGroup.objects.filter(realm=realm, is_system_group=True).exists():
+        create_and_add_users_to_system_user_groups(realm, user_profiles)
+
     if "zerver_botstoragedata" in data:
         re_map_foreign_keys(
             data, "zerver_botstoragedata", "bot_profile", related_table="user_profile"
@@ -1239,18 +1246,39 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
-    import_uploads(realm, os.path.join(import_dir, "avatars"), processes, processing_avatars=True)
-    import_uploads(realm, os.path.join(import_dir, "uploads"), processes)
+    import_uploads(
+        realm,
+        os.path.join(import_dir, "avatars"),
+        processes,
+        default_user_profile_id=None,  # Fail if there is no user set
+        processing_avatars=True,
+    )
+    import_uploads(
+        realm,
+        os.path.join(import_dir, "uploads"),
+        processes,
+        default_user_profile_id=None,  # Fail if there is no user set
+    )
 
     # We need to have this check as the emoji files are only present in the data
     # importer from Slack
     # For Zulip export, this doesn't exist
     if os.path.exists(os.path.join(import_dir, "emoji")):
-        import_uploads(realm, os.path.join(import_dir, "emoji"), processes, processing_emojis=True)
+        import_uploads(
+            realm,
+            os.path.join(import_dir, "emoji"),
+            processes,
+            default_user_profile_id=first_user_profile.id if first_user_profile else None,
+            processing_emojis=True,
+        )
 
     if os.path.exists(os.path.join(import_dir, "realm_icons")):
         import_uploads(
-            realm, os.path.join(import_dir, "realm_icons"), processes, processing_realm_icons=True
+            realm,
+            os.path.join(import_dir, "realm_icons"),
+            processes,
+            default_user_profile_id=first_user_profile.id if first_user_profile else None,
+            processing_realm_icons=True,
         )
 
     sender_map = {user["id"]: user for user in data["zerver_userprofile"]}
@@ -1557,3 +1585,27 @@ def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     re_map_foreign_keys(data, "analytics_streamcount", "stream", related_table="stream")
     update_model_ids(StreamCount, data, "analytics_streamcount")
     bulk_import_model(data, StreamCount)
+
+
+def create_and_add_users_to_system_user_groups(
+    realm: Realm, user_profiles: List[UserProfile]
+) -> None:
+    role_system_groups_dict = create_system_user_groups_for_realm(realm)
+
+    full_members_system_group = UserGroup.objects.get(
+        name="@role:fullmembers",
+        realm=realm,
+        is_system_group=True,
+    )
+
+    usergroup_memberships = []
+    for user_profile in user_profiles:
+        user_group = role_system_groups_dict[user_profile.role]
+        usergroup_memberships.append(
+            UserGroupMembership(user_profile=user_profile, user_group=user_group)
+        )
+        if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
+            usergroup_memberships.append(
+                UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
+            )
+    UserGroupMembership.objects.bulk_create(usergroup_memberships)

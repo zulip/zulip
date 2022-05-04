@@ -2,18 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {
-    set_global,
-    with_function_call_disallowed_rewire,
-    zrequire,
-} = require("../zjsunit/namespace");
+const {with_function_call_disallowed_rewire, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-set_global("setTimeout", (f, delay) => {
-    assert.equal(delay, 0);
-    return f();
-});
 
 const muted_topics = zrequire("muted_topics");
 const muted_users = zrequire("muted_users");
@@ -87,8 +78,10 @@ run_test("basics", () => {
     assert.equal(mld.selected_idx(), 7);
 
     assert.equal(mld.first_unread_message_id(), 10);
+    assert.equal(mld.has_unread_messages(), true);
     mld.get(10).unread = false;
     assert.equal(mld.first_unread_message_id(), 15);
+    assert.equal(mld.has_unread_messages(), true);
 
     mld.clear();
     assert_contents(mld, []);
@@ -127,6 +120,7 @@ run_test("basics", () => {
     }
 
     assert.equal(mld.first_unread_message_id(), 145);
+    assert.equal(mld.has_unread_messages(), false);
 });
 
 run_test("muting", () => {

@@ -12,13 +12,13 @@ all related services will run.
 Contents:
 
 - [Requirements](#requirements)
-- [Step 0: Set up Git & GitHub](#step-0-set-up-git-github)
+- [Step 0: Set up Git & GitHub](#step-0-set-up-git--github)
 - [Step 1: Install prerequisites](#step-1-install-prerequisites)
 - [Step 2: Get Zulip code](#step-2-get-zulip-code)
 - [Step 3: Start the development environment](#step-3-start-the-development-environment)
 - [Step 4: Developing](#step-4-developing)
 - [Troubleshooting and common errors](#troubleshooting-and-common-errors)
-- [Specifying a Debian mirror](#specifying-a-debian-mirror)
+- [Specifying an Ubuntu mirror](#specifying-an-ubuntu-mirror)
 - [Specifying a proxy](#specifying-a-proxy)
 - [Customizing CPU and RAM allocation](#customizing-cpu-and-ram-allocation)
 
@@ -49,8 +49,8 @@ a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
-- **Ubuntu LTS**: 20.04
-  - or **Debian**: 10 "buster" or 11 "bullseye"
+- **Ubuntu LTS**: 20.04 or 22.04
+- **Debian**: 11
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
@@ -143,15 +143,12 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 #### Debian
 
-The setup for Debian is very similar to that [for Ubuntu
-above](#ubuntu), except that the `docker.io` package is only available
-in Debian 10 and later; for Debian 9, see [Docker CE for
-Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
+The setup for Debian is the same as that [for Ubuntu above](#ubuntu).
 
 #### Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2).
+We recommend using [WSL 2 for Windows development](setup-advanced.md#installing-directly-on-windows-10-with-wsl-2).
 :::
 
 1. Install [Git for Windows][git-bash], which installs _Git BASH_.
@@ -236,8 +233,8 @@ projects and to instead follow these instructions exactly.)
 2. Open Terminal (macOS/Linux) or Git BASH (Windows; must
    **run as an Administrator**).
 3. In Terminal/Git BASH,
-   [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
-   [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+   [clone your fork of the Zulip repository](../git/cloning.md#step-1b-clone-to-your-machine) and
+   [connect the Zulip upstream repository](../git/cloning.md#step-1c-connect-your-fork-to-zulip-upstream):
 
 ```bash
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -285,7 +282,7 @@ vagrant up --provider=docker
 The first time you run this command it will take some time because vagrant
 does the following:
 
-- downloads the base Debian 10 virtual machine image (for macOS and Windows)
+- downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
   or container (for Linux)
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
@@ -324,7 +321,7 @@ $ vagrant ssh
 You should see output that starts like this:
 
 ```console
-Linux debian-10 4.19.0-18-amd64 #1 SMP Debian 4.19.208-1 (2021-09-29) x86_64
+Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-107-generic x86_64)
 ```
 
 Congrats, you're now inside the Zulip development environment!
@@ -337,7 +334,7 @@ provisioning failed and you should look at the
 Next, start the Zulip server:
 
 ```console
-(zulip-py3-venv) vagrant@debian-10:/srv/zulip
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -485,7 +482,7 @@ From the window where run-dev.py is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
 ^C
 KeyboardInterrupt
-(zulip-py3-venv) vagrant@debian-10:/srv/zulip$ exit
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
@@ -523,7 +520,7 @@ christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
 
-(zulip-py3-venv) vagrant@debian-10:/srv/zulip
+(zulip-py3-venv) vagrant@vagrant:/srv/zulip
 $ ./tools/run-dev.py
 ```
 
@@ -788,8 +785,8 @@ by rebooting the guest via `vagrant halt; vagrant up`.
 
 The `vagrant up` command basically does the following:
 
-- Downloads a Debian image and starts it using a Vagrant provider.
-- Uses `vagrant ssh` to connect to that Debian guest, and then runs
+- Downloads an Ubuntu image and starts it using a Vagrant provider.
+- Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
   `tools/provision`, which has a lot of subcommands that are
   executed via Python's `subprocess` module. These errors mean that
   one of those subcommands failed.
@@ -830,7 +827,7 @@ Likely causes are:
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
    gigabytes of RAM, which is the minimum Zulip
-   [requires](../development/setup-vagrant.html#requirements). If
+   [requires](#requirements). If
    not, go to your VM settings and increase the RAM, then restart
    the VM.
 
@@ -903,11 +900,11 @@ vagrant ssh -- 'sudo modinfo -F version vboxsf'
 
 The bug has not been fixed upstream as of this writing, but you may be
 able to work around it by downgrading VirtualBox Guest Additions to
-6.0.4. To do this, create a `~/.zulip-vagrant-config` file and add
+5.2.44. To do this, create a `~/.zulip-vagrant-config` file and add
 this line:
 
 ```text
-VBOXADD_VERSION 6.0.4
+VBOXADD_VERSION 5.2.44
 ```
 
 Then run these commands (yes, reload is needed twice):
@@ -918,18 +915,18 @@ vagrant reload
 vagrant reload --provision
 ```
 
-### Specifying a Debian mirror
+### Specifying an Ubuntu mirror
 
 Bringing up a development environment for the first time involves
-downloading many packages from the Debian archive. The Debian cloud
-images use the global mirror `http://deb.debian.org/debian` by
+downloading many packages from the Ubuntu archive. The Ubuntu cloud
+images use the global mirror `http://archive.ubuntu.com/ubuntu/` by
 default, but you may find that you can speed up the download by using
 a local mirror closer to your location. To do this, create
 `~/.zulip-vagrant-config` and add a line like this, replacing the URL
 as appropriate:
 
 ```text
-DEBIAN_MIRROR http://ftp.us.debian.org/debian
+UBUNTU_MIRROR http://us.archive.ubuntu.com/ubuntu/
 ```
 
 ### Specifying a proxy
@@ -1041,7 +1038,7 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[install-advanced]: ../development/setup-advanced.md
+[install-advanced]: setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md
@@ -1049,4 +1046,4 @@ remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 [git-bash]: https://git-for-windows.github.io/
 [bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.md
-[ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork

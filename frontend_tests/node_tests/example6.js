@@ -17,11 +17,13 @@ run_test("explore make_stub", ({override}) => {
     // Let's say you have to test the following code.
 
     const app = {
+        /* istanbul ignore next */
         notify_server_of_deposit(deposit_amount) {
             // simulate difficulty
             throw new Error(`We cannot report this value without wifi: ${deposit_amount}`);
         },
 
+        /* istanbul ignore next */
         pop_up_fancy_confirmation_screen(deposit_amount, label) {
             // simulate difficulty
             throw new Error(`We cannot make a ${label} dialog for amount ${deposit_amount}`);

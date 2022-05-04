@@ -10,14 +10,12 @@ from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
 
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_add_alert_words,
-    do_change_user_setting,
-    do_create_realm,
-    do_remove_realm_emoji,
-    do_set_realm_property,
-)
+from zerver.actions.alert_words import do_add_alert_words
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.realm_emoji import do_remove_realm_emoji
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
@@ -471,16 +469,13 @@ class MarkdownTest(ZulipTestCase):
                 href = "http://" + url
             return payload % (f'<a href="{href}">{url}</a>',)
 
-        with mock.patch(
-            "zerver.lib.url_preview.preview.link_embed_data_from_cache", return_value=None
-        ):
-            for inline_url, reference, url in linkify_tests:
-                try:
-                    match = replaced(reference, url, phrase=inline_url)
-                except TypeError:
-                    match = reference
-                converted = markdown_convert_wrapper(inline_url)
-                self.assertEqual(match, converted)
+        for inline_url, reference, url in linkify_tests:
+            try:
+                match = replaced(reference, url, phrase=inline_url)
+            except TypeError:
+                match = reference
+            converted = markdown_convert_wrapper(inline_url)
+            self.assertEqual(match, converted)
 
     def test_inline_file(self) -> None:
         msg = "Check out this file file:///Volumes/myserver/Users/Shared/pi.py"
@@ -1322,13 +1317,13 @@ class MarkdownTest(ZulipTestCase):
 
         flush_per_request_caches()
 
-        content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.example.com/ticket/16) today."
+        content = "We should fix #224 #336 #446 and #115, but not issue#124 or #1124z or [trac #15](https://trac.example.com/ticket/16) today."
         converted = markdown_convert(content, message_realm=realm, message=msg)
         converted_topic = topic_links(realm.id, msg.topic_name())
 
         self.assertEqual(
             converted.rendered_content,
-            '<p>We should fix <a href="https://trac.example.com/ticket/224">#224</a> and <a href="https://trac.example.com/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>',
+            '<p>We should fix <a href="https://trac.example.com/ticket/224">#224</a> <a href="https://trac.example.com/ticket/336">#336</a> <a href="https://trac.example.com/ticket/446">#446</a> and <a href="https://trac.example.com/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>',
         )
         self.assertEqual(
             converted_topic, [{"url": "https://trac.example.com/ticket/444", "text": "#444"}]
@@ -1341,6 +1336,17 @@ class MarkdownTest(ZulipTestCase):
             [
                 {"url": "https://trac.example.com/ticket/444", "text": "#444"},
                 {"url": "https://google.com", "text": "https://google.com"},
+            ],
+        )
+
+        msg.set_topic_name("#444 #555 #666")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/444", "text": "#444"},
+                {"url": "https://trac.example.com/ticket/555", "text": "#555"},
+                {"url": "https://trac.example.com/ticket/666", "text": "#666"},
             ],
         )
 
@@ -1474,7 +1480,7 @@ class MarkdownTest(ZulipTestCase):
             converted.rendered_content,
             '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>',
         )
-        # Both the links should be generated in topics.
+        # But both the links should be generated in topics.
         self.assertEqual(
             converted_topic,
             [
@@ -2358,7 +2364,6 @@ class MarkdownTest(ZulipTestCase):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
-                    "message_id": msg_id,
                     "content": content,
                 },
             )
@@ -2429,12 +2434,11 @@ class MarkdownTest(ZulipTestCase):
     def test_system_user_group_mention(self) -> None:
         desdemona = self.example_user("desdemona")
         iago = self.example_user("iago")
-        shiva = self.example_user("shiva")
         hamlet = self.example_user("hamlet")
-        moderators_group = create_user_group(
-            "Moderators", [iago, shiva], get_realm("zulip"), is_system_group=True
+        moderators_group = UserGroup.objects.get(
+            realm=iago.realm, name="@role:moderators", is_system_group=True
         )
-        content = "@*Moderators* @**King Hamlet** test message"
+        content = "@*role:moderators* @**King Hamlet** test message"
 
         # Owner cannot mention a system user group.
         msg = Message(sender=desdemona, sending_client=get_client("test"))

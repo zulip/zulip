@@ -6,27 +6,26 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation
-from zerver.lib.actions import (
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
+from zerver.actions.message_send import get_recipient_info
+from zerver.actions.muted_users import do_mute_user
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import (
     change_user_is_active,
-    create_users,
     do_change_can_create_users,
     do_change_user_role,
-    do_create_multiuse_invite_link,
-    do_create_user,
     do_deactivate_user,
     do_delete_user,
-    do_invite_users,
-    do_mute_user,
-    do_reactivate_user,
-    do_set_realm_property,
-    get_recipient_info,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
+from zerver.lib.bulk_create import create_users
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
@@ -45,8 +44,9 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
 )
-from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.user_topics import add_topic_mute
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -61,6 +61,7 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    UserGroupMembership,
     UserHotspot,
     UserProfile,
     check_valid_user_ids,
@@ -213,7 +214,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -223,7 +224,7 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -235,7 +236,7 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -276,7 +277,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -287,7 +288,7 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -520,17 +521,32 @@ class PermissionTest(ZulipTestCase):
 
         user_profile = self.example_user(user_email)
         old_role = user_profile.role
+        old_system_group = get_system_user_group_for_user(user_profile)
 
         self.assertTrue(self.check_property_for_role(user_profile, old_role))
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=old_system_group
+            ).exists()
+        )
 
         req = dict(role=orjson.dumps(new_role).decode())
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        num_events = 3
+        if UserProfile.ROLE_MEMBER in [old_role, new_role]:
+            num_events = 4
+        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
         user_profile = self.example_user(user_email)
         self.assertTrue(self.check_property_for_role(user_profile, new_role))
+        system_group = get_system_user_group_for_user(user_profile)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_profile=user_profile, user_group=system_group
+            ).exists()
+        )
 
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], user_profile.id)
@@ -779,12 +795,12 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
-        invite_expires_in_days = 4
+        invite_expires_in_minutes = 4 * 24 * 60
         do_invite_users(
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
@@ -793,7 +809,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events, expected_num_events=8):
+                with self.tornado_redirected_to_list(events, expected_num_events=10):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -803,8 +819,8 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 84)
-        self.assert_length(cache_tries, 27)
+        self.assert_length(queries, 90)
+        self.assert_length(cache_tries, 29)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1445,40 +1461,62 @@ class ActivateTest(ZulipTestCase):
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             iago,
             ["new1@zulip.com", "new2@zulip.com"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
         do_invite_users(
             desdemona,
             ["new3@zulip.com", "new4@zulip.com"],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+
+        do_invite_users(
+            iago,
+            ["new5@zulip.com"],
+            [],
+            invite_expires_in_minutes=None,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+        )
+        do_invite_users(
+            desdemona,
+            ["new6@zulip.com"],
+            [],
+            invite_expires_in_minutes=None,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
 
         iago_multiuse_key = do_create_multiuse_invite_link(
-            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
         ).split("/")[-2]
         desdemona_multiuse_key = do_create_multiuse_invite_link(
-            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_days
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], invite_expires_in_minutes
+        ).split("/")[-2]
+
+        iago_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            iago, PreregistrationUser.INVITE_AS["MEMBER"], None
+        ).split("/")[-2]
+        desdemona_never_expire_multiuse_key = do_create_multiuse_invite_link(
+            desdemona, PreregistrationUser.INVITE_AS["MEMBER"], None
         ).split("/")[-2]
 
         self.assertEqual(
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=iago)
             ).count(),
-            2,
+            3,
         )
         self.assertEqual(
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=desdemona)
             ).count(),
-            2,
+            3,
         )
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
@@ -1487,6 +1525,14 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
             > timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
         )
 
         do_deactivate_user(iago, acting_user=None)
@@ -1503,7 +1549,7 @@ class ActivateTest(ZulipTestCase):
             filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(referred_by=desdemona)
             ).count(),
-            2,
+            3,
         )
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
@@ -1512,6 +1558,33 @@ class ActivateTest(ZulipTestCase):
         self.assertTrue(
             Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
             > timezone_now()
+        )
+        self.assertTrue(
+            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+            <= timezone_now()
+        )
+        self.assertIsNone(
+            Confirmation.objects.get(
+                confirmation_key=desdemona_never_expire_multiuse_key
+            ).expiry_date
+        )
+
+    def test_clear_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        session_key = self.client.session.session_key
+        self.assertTrue(session_key)
+
+        result = self.client_get("/json/users")
+        self.assert_json_success(result)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
+
+        do_deactivate_user(user, acting_user=None)
+        self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
+
+        result = self.client_get("/json/users")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
         )
 
     def test_clear_scheduled_jobs(self) -> None:
@@ -2145,7 +2218,7 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
 
-        do_delete_user(hamlet)
+        do_delete_user(hamlet, acting_user=None)
 
         replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
 

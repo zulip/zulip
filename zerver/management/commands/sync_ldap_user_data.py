@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from typing import Any, List
 
 from django.conf import settings
+from django.core.management.base import CommandError
 from django.db import transaction
 
 from zerver.lib.logging_util import log_to_file
@@ -76,5 +77,18 @@ class Command(ZulipBaseCommand):
             realm = self.get_realm(options)
             user_profiles = self.get_users(options, realm, is_bot=False, include_deactivated=True)
         else:
-            user_profiles = UserProfile.objects.select_related().filter(is_bot=False)
+            user_profile_query = UserProfile.objects.select_related().filter(is_bot=False)
+
+            if not user_profile_query.exists():
+                # This case provides a special error message if one
+                # tries setting up LDAP sync before creating a realm.
+                raise CommandError("Zulip server contains no users. Have you created a realm?")
+            user_profiles = list(user_profile_query)
+
+        if len(user_profiles) == 0:
+            # We emphasize that this error is purely about the
+            # command-line parameters, since this has nothing to do
+            # with your LDAP configuration.
+            raise CommandError("Zulip server contains no users matching command-line parameters.")
+
         sync_ldap_user_data(user_profiles, not options["force"])

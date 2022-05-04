@@ -136,10 +136,6 @@ run_test("get_edit_event_orig_topic", () => {
     assert.equal(util.get_edit_event_orig_topic({orig_subject: "lunch"}), "lunch");
 });
 
-run_test("get_edit_event_prev_topic", () => {
-    assert.equal(util.get_edit_event_prev_topic({prev_subject: "dinner"}), "dinner");
-});
-
 run_test("is_mobile", () => {
     window.navigator = {userAgent: "Android"};
     assert.ok(util.is_mobile());
@@ -286,12 +282,18 @@ run_test("clean_user_content_links", () => {
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png">upload</a> ' +
                 '<a href="http://localhost:NNNN">invalid</a> ' +
                 '<a href="javascript:alert(1)">unsafe</a> ' +
-                '<a href="/#fragment" target="_blank">fragment</a>',
+                '<a href="/#fragment" target="_blank">fragment</a>' +
+                '<div class="message_inline_image">' +
+                '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
+                "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/file.png" target="_blank" rel="noopener noreferrer" title="translated: Download file.png">upload</a> ' +
             "<a>invalid</a> " +
             "<a>unsafe</a> " +
-            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>',
+            '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
+            '<div class="message_inline_image">' +
+            '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
+            "</div>",
     );
 });

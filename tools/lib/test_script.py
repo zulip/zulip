@@ -114,6 +114,10 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
             ),
             default=file,
         )
+
+        if not os.path.isfile(file):
+            raise Exception(f"Cannot find a matching file for '{file}' in '{test_dir}'")
+
         test_files.append(os.path.abspath(file))
 
     if not test_files:

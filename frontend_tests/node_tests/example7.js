@@ -91,8 +91,6 @@ run_test("unread_ops", ({override, override_rewire}) => {
 
     // We don't want recent topics to process message for this test.
     override_rewire(recent_topics_util, "is_visible", () => false);
-    // Show message_viewport as not visible so that messages will be stored as unread.
-    override(message_viewport, "is_visible_and_focused", () => false);
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.
@@ -114,6 +112,7 @@ run_test("unread_ops", ({override, override_rewire}) => {
     override(message_lists.home, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
+    override(unread_ui, "notify_messages_remain_unread", () => {});
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;
@@ -127,6 +126,7 @@ run_test("unread_ops", ({override, override_rewire}) => {
     // toggle it easily from within the test (and avoid complicated
     // data setup).
     override(message_lists.current, "can_mark_messages_read", () => can_mark_messages_read);
+    override(message_lists.current, "has_unread_messages", () => true);
 
     // First, test for a message list that cannot read messages.
     can_mark_messages_read = false;

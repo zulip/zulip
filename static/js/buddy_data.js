@@ -181,7 +181,7 @@ export function info_for(user_id) {
     const user_circle_status = status_description(user_id);
 
     return {
-        href: hash_util.pm_with_uri(person.email),
+        href: hash_util.pm_with_url(person.email),
         name: person.full_name,
         user_id,
         my_user_status,

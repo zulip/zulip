@@ -47,7 +47,7 @@ def copy_default_settings(
     target_profile.save()
 
     if settings_source.avatar_source == UserProfile.AVATAR_FROM_USER:
-        from zerver.lib.actions import do_change_avatar_fields
+        from zerver.actions.user_settings import do_change_avatar_fields
 
         do_change_avatar_fields(
             target_profile,
@@ -84,6 +84,7 @@ def create_user_profile(
     is_mirror_dummy: bool,
     tos_version: Optional[str],
     timezone: Optional[str],
+    default_language: str = "en",
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     enter_sends: bool = False,
     force_id: Optional[int] = None,
@@ -116,7 +117,7 @@ def create_user_profile(
         tutorial_status=tutorial_status,
         enter_sends=enter_sends,
         onboarding_steps=orjson.dumps([]).decode(),
-        default_language=realm.default_language,
+        default_language=default_language,
         delivery_email=email,
         **extra_kwargs,
     )
@@ -143,6 +144,7 @@ def create_user(
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
+    default_language: str = "en",
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
@@ -162,6 +164,7 @@ def create_user(
         is_mirror_dummy,
         tos_version,
         timezone,
+        default_language,
         force_id=force_id,
         force_date_joined=force_date_joined,
     )
@@ -177,7 +180,7 @@ def create_user(
     # If a source profile was specified, we copy settings from that
     # user.  Note that this is positioned in a way that overrides
     # other arguments passed in, which is correct for most defaults
-    # like timezone where the source profile likely has a better value
+    # like time zone where the source profile likely has a better value
     # than the guess. As we decide on details like avatars and full
     # names for this feature, we may want to move it.
     if source_profile is not None:

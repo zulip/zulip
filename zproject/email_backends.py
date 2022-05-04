@@ -82,11 +82,19 @@ class EmailLogBackEnd(EmailBackend):
 
             email_message.to = [get_forward_address()]
 
+    # This wrapper function exists to allow tests easily to mock the
+    # step of trying to send the emails. Previously, we had mocked
+    # Django's connection.send_messages(), which caused unexplained
+    # test failures when running test-backend at very high
+    # concurrency.
+    def _do_send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
+        return super().send_messages(email_messages)  # nocoverage
+
     def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
         num_sent = len(email_messages)
         if get_forward_address():
             self.prepare_email_messages_for_forwarding(email_messages)
-            num_sent = super().send_messages(email_messages)
+            num_sent = self._do_send_messages(email_messages)
 
         if settings.DEVELOPMENT_LOG_EMAILS:
             for email in email_messages:

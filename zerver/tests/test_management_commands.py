@@ -13,7 +13,8 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
-from zerver.lib.actions import do_add_reaction, do_create_user
+from zerver.actions.create_user import do_create_user
+from zerver.actions.reactions import do_add_reaction
 from zerver.lib.management import ZulipBaseCommand, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
@@ -381,7 +382,7 @@ class TestPasswordRestEmail(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("reset your password", outbox[0].body)
 

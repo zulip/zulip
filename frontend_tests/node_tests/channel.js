@@ -399,19 +399,18 @@ test("while_reloading", () => {
 
     assert.equal(channel.get({ignore_reload: false}), undefined);
 
-    let orig_success_called = false;
-    let orig_error_called = false;
-
     test_with_mock_ajax({
         run_code() {
             channel.del({
                 url: "/json/endpoint",
                 ignore_reload: true,
+                /* istanbul ignore next */
                 success() {
-                    orig_success_called = true;
+                    throw new Error("unexpected success");
                 },
+                /* istanbul ignore next */
                 error() {
-                    orig_error_called = true;
+                    throw new Error("unexpected error");
                 },
             });
         },
@@ -419,11 +418,9 @@ test("while_reloading", () => {
         check_ajax_options(options) {
             blueslip.expect("log", "Ignoring DELETE /json/endpoint response while reloading");
             options.simulate_success();
-            assert.ok(!orig_success_called);
 
             blueslip.expect("log", "Ignoring DELETE /json/endpoint error response while reloading");
             options.simulate_error();
-            assert.ok(!orig_error_called);
         },
     });
 });

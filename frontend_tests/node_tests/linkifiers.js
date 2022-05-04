@@ -7,9 +7,12 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
 const linkifiers = zrequire("linkifiers");
-const marked = zrequire("../third/marked/lib/marked");
 
 linkifiers.initialize([]);
+
+function get_linkifier_regexes() {
+    return Array.from(linkifiers.get_linkifier_map().keys());
+}
 
 run_test("python_to_js_linkifier", () => {
     // The only way to reach python_to_js_linkifier is indirectly, hence the call
@@ -26,7 +29,7 @@ run_test("python_to_js_linkifier", () => {
             id: 20,
         },
     ]);
-    let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
+    let actual_value = get_linkifier_regexes();
     let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
@@ -37,7 +40,7 @@ run_test("python_to_js_linkifier", () => {
             id: 30,
         },
     ]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
+    actual_value = get_linkifier_regexes();
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
@@ -52,7 +55,7 @@ run_test("python_to_js_linkifier", () => {
             id: 40,
         },
     ]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
+    actual_value = get_linkifier_regexes();
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
 });

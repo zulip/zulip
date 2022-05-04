@@ -1,3 +1,8 @@
+/* The height of the settings header (including tab switcher). */
+$settings_header_height: 45px;
+/* The width of the settings sidebar. */
+$settings_sidebar_width: 250px;
+
 label {
     margin: 0;
 
@@ -8,14 +13,18 @@ label {
 
 label,
 h4,
-h3 {
+h3,
+/* We need settings-section-title here because some legacy settings
+   widgets use a <div> with this class for their heading. */
+.settings-section-title {
     a {
         color: inherit;
     }
 
     .fa-question-circle-o {
         top: 1px;
-        opacity: 0.4;
+        /* This should match .settings-info-icon. */
+        opacity: 0.6;
         position: relative;
 
         &:hover {
@@ -24,8 +33,32 @@ h3 {
     }
 }
 
-h3 .fa-question-circle-o {
-    left: 5px;
+/* TODO: This should ideally be added to help_link_widget.hbs,
+   allowing us to deduplicate at least the opacity CSS with the
+   fa-question-circle-o logic above. */
+.settings-info-icon {
+    padding-left: 3px;
+    opacity: 0.6;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.email-change-form,
+.user-name-section {
+    .settings-info-icon {
+        position: relative;
+        top: 2px;
+        left: 1px;
+    }
+}
+
+h3,
+.settings-section-title {
+    .fa-question-circle-o {
+        left: 5px;
+    }
 }
 
 .new-style {
@@ -107,9 +140,28 @@ h3 .fa-question-circle-o {
     }
 }
 
-.user-avatar-section {
-    float: right;
+.profile-settings-form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap-reverse;
+}
 
+.profile-main-panel {
+    margin-right: 20px;
+}
+
+.profile-side-panel {
+    margin-right: 10px;
+}
+
+.user-details-title {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.user-avatar-section {
     .avatar-controls {
         margin-top: 20px;
         box-shadow: none;
@@ -218,20 +270,6 @@ td .button {
     box-shadow: none;
 }
 
-.settings-info-icon {
-    padding-left: 3px;
-    opacity: 0.9;
-}
-
-.email-change-form,
-.user-name-section {
-    .settings-info-icon {
-        position: relative;
-        top: 2px;
-        left: 1px;
-    }
-}
-
 .settings-section {
     display: none;
     width: calc(100% - 40px);
@@ -330,13 +368,6 @@ td .button {
             width: 1%;
             white-space: nowrap;
         }
-    }
-
-    input[type="text"].search {
-        float: right;
-        margin: 2px 5px 2px 0;
-        padding: 2px 5px;
-        font-size: 0.9em;
     }
 
     #admin_page_users_loading_indicator,
@@ -468,7 +499,7 @@ td .button {
 }
 
 .dependent-block {
-    margin: -5px 0 15px 35px;
+    margin: -5px 0 15px 23px;
 }
 
 .dependent-inline-block {
@@ -513,6 +544,16 @@ input[type="checkbox"] {
 .notification-settings-form {
     .subsection-header h3 {
         display: inline-block;
+    }
+}
+
+#stream-specific-notify-table .unmute_stream {
+    position: relative;
+    left: 3px;
+
+    &:hover {
+        color: hsl(0, 0%, 20%);
+        cursor: pointer;
     }
 }
 
@@ -625,6 +666,10 @@ input[type="checkbox"] {
             .filter-icon i {
                 padding-right: 0;
             }
+
+            label {
+                cursor: default;
+            }
         }
 
         td:first-child {
@@ -673,13 +718,6 @@ input[type="checkbox"] {
     text-align: right;
 }
 
-#account-settings-status {
-    text-align: center;
-    width: 50%;
-    margin: auto;
-    margin-bottom: 20px;
-}
-
 .add-new-emoji-box,
 .add-new-user-group-box,
 .add-new-alert-word-box,
@@ -700,6 +738,7 @@ input[type="checkbox"] {
     input[type="text"] {
         padding: 6px;
     }
+    margin-bottom: 15px;
 }
 
 .add-new-emoji-box #emoji-file-name {
@@ -725,6 +764,7 @@ input[type="checkbox"] {
     button {
         margin-left: calc(10em + 20px) !important;
     }
+    margin-bottom: 15px;
 }
 
 .grey-box .wrapper {
@@ -737,7 +777,7 @@ input[type="checkbox"] {
         cursor: move;
 
         .fa-ellipsis-v {
-            color: hsl(0, 0, 75%);
+            color: hsl(0, 0%, 75%);
             position: relative;
             top: 1px;
 
@@ -972,7 +1012,7 @@ input[type="checkbox"] {
     }
 }
 
-#alert_words_list {
+#alert-words-table {
     margin: 0;
 
     li {
@@ -991,7 +1031,7 @@ input[type="checkbox"] {
     }
 }
 
-#alert_words_list,
+#alert-words-table,
 #attachments_list {
     .edit-attachment-buttons {
         position: absolute;
@@ -1297,11 +1337,6 @@ input[type="checkbox"] {
         line-height: 1.2;
     }
 
-    input.search {
-        font-size: 0.9rem;
-        margin: 10px 0 20px;
-    }
-
     .form-sidebar {
         position: absolute;
         top: 45px;
@@ -1363,13 +1398,23 @@ input[type="checkbox"] {
         }
     }
 
-    .sidebar {
+    .sidebar-wrapper {
         float: left;
         position: relative;
-        width: 250px;
+        width: $settings_sidebar_width;
         height: 100%;
+
+        .tab-container {
+            box-sizing: border-box;
+            height: $settings_header_height;
+            padding: 6px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
+    }
+
+    .sidebar {
+        height: calc(100% - $settings_header_height);
         overflow-y: auto;
-        border-top-left-radius: 4px;
         border-right: 1px solid hsl(0, 0%, 93%);
 
         .header {
@@ -1453,11 +1498,6 @@ input[type="checkbox"] {
             display: none;
         }
 
-        .tab-container {
-            padding: 6px;
-            border-bottom: 1px solid hsl(0, 0%, 87%);
-        }
-
         .normal-settings-list,
         .org-settings-list {
             position: relative;
@@ -1517,15 +1557,15 @@ input[type="checkbox"] {
 
     .content-wrapper {
         position: absolute;
-        left: 251px;
-        /* the width of the settings sidebar this is right of is 250px + 1px border. */
-        width: calc(100% - 250px - 1px);
+        left: $settings_sidebar_width;
+        width: calc(100% - $settings_sidebar_width);
         height: 100%;
         overflow: hidden;
 
         .settings-header {
             width: 100%;
-            height: 43px;
+            height: $settings_header_height;
+            box-sizing: border-box;
             border-bottom: 1px solid hsl(0, 0%, 87%);
 
             h1 .section {
@@ -1538,7 +1578,7 @@ input[type="checkbox"] {
         #settings_content {
             position: relative;
             width: 100%;
-            height: calc(100% - 45px);
+            height: calc(100% - $settings_header_height);
 
             float: left;
             overflow-y: auto;
@@ -1567,7 +1607,8 @@ input[type="checkbox"] {
         }
 
         textarea {
-            width: 320px;
+            width: max(206px, 25vw);
+            max-width: 320px;
             height: 80px;
         }
 
@@ -1731,8 +1772,6 @@ input[type="checkbox"] {
                     hsl(200, 100%, 40%),
                     hsl(200, 100%, 35%)
                 );
-                background-repeat: repeat-x;
-                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
         }
     }
@@ -1868,14 +1907,12 @@ input[type="checkbox"] {
 }
 
 .admin_exports_table {
-    margin-top: 20px;
     margin-bottom: 20px;
 }
 
 @media (width < $lg_min) {
     .user-avatar-section,
     .realm-icon-section {
-        float: none;
         display: block;
     }
 
@@ -1896,6 +1933,12 @@ input[type="checkbox"] {
 /* This value needs to match with the same in subscriptions.css, as
    we have some shared styles declared there */
 @media (width < $md_min) {
+    .profile-settings-form {
+        .user-avatar-section {
+            flex: 100%;
+        }
+    }
+
     #settings_overlay_container {
         /* this variable allows JavaScript to detect this media query */
         --single-column: yes;
@@ -1925,12 +1968,11 @@ input[type="checkbox"] {
             }
         }
 
-        .sidebar {
-            float: left;
-            position: relative;
-            width: 250px;
-            height: 100%;
+        .sidebar-wrapper {
+            width: 100%;
+        }
 
+        .sidebar {
             li.active {
                 /* Don't highlight the active section in the settings list. */
                 background: inherit;
@@ -2014,5 +2056,20 @@ input[type="checkbox"] {
     #edit-linkifier-pattern-status,
     #edit-linkifier-format-status {
         margin-top: 10px;
+    }
+}
+
+.settings_panel_list_header {
+    position: relative;
+
+    h3 {
+        display: inline-block;
+    }
+
+    input.search {
+        float: right;
+        font-size: 1em;
+        max-width: 160px;
+        margin-top: 12px;
     }
 }

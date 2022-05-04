@@ -34,17 +34,31 @@ export function convert_enter_to_click(e: JQuery.KeyDownEvent): void {
     }
 }
 
-export function update_unread_count_in_dom(unread_count_elem: JQuery, count: number): void {
+export function update_unread_count_in_dom($unread_count_elem: JQuery, count: number): void {
     // This function is used to update unread count in top left corner
     // elements.
-    const unread_count_span = unread_count_elem.find(".unread_count");
+    const $unread_count_span = $unread_count_elem.find(".unread_count");
 
     if (count === 0) {
-        unread_count_span.hide();
-        unread_count_span.text("");
+        $unread_count_span.hide();
+        $unread_count_span.text("");
         return;
     }
 
-    unread_count_span.show();
-    unread_count_span.text(count);
+    $unread_count_span.show();
+    $unread_count_span.text(count);
+}
+
+/**
+ * Parse HTML and return a DocumentFragment.
+ *
+ * Like any consumer of HTML, this function must only be given input
+ * from trusted producers of safe HTML, such as auto-escaping
+ * templates; violating this expectation will introduce bugs that are
+ * likely to be security vulnerabilities.
+ */
+export function parse_html(html: string): DocumentFragment {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    return template.content;
 }

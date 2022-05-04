@@ -1,7 +1,7 @@
 <td>
     <label class="checkbox">
         <input type="checkbox" name="{{setting_name}}" id="{{prefix}}{{setting_name}}"
-          {{#if is_disabled}}disabled="disabled"{{/if}}
+          {{#if (or is_muted is_disabled)}} disabled {{/if}}
           {{#if is_checked}}checked="checked"{{/if}} data-setting-widget-type="boolean"
           class="{{setting_name}}{{#unless is_disabled}} prop-element{{/unless}}"/>
         <span></span>

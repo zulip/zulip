@@ -1,14 +1,14 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, TypedDict, Union, cast
 
+import dateutil.parser as date_parser
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -18,7 +18,11 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key_id,
 )
-from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
+from zerver.lib.exceptions import (
+    JsonableError,
+    OrganizationAdministratorRequired,
+    OrganizationOwnerRequired,
+)
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileDataElementValue
 from zerver.models import (
@@ -28,6 +32,7 @@ from zerver.models import (
     Service,
     UserProfile,
     get_realm_user_dicts,
+    get_user,
     get_user_profile_by_id_in_realm,
 )
 
@@ -238,6 +243,35 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         raise JsonableError(_("No such bot"))
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
+
+    if target.can_create_users and not user_profile.is_realm_owner:
+        # Organizations owners are required to administer a bot with
+        # the can_create_users permission. User creation via the API
+        # is a permission not available even to organization owners by
+        # default, because it can be abused to send spam. Requiring an
+        # owner is intended to ensure organizational responsibility
+        # for use of this permission.
+        raise OrganizationOwnerRequired()
+
+    return target
+
+
+def access_user_common(
+    target: UserProfile,
+    user_profile: UserProfile,
+    allow_deactivated: bool,
+    allow_bots: bool,
+    for_admin: bool,
+) -> UserProfile:
+    if target.is_bot and not allow_bots:
+        raise JsonableError(_("No such user"))
+    if not target.is_active and not allow_deactivated:
+        raise JsonableError(_("User is deactivated"))
+    if not for_admin:
+        # Administrative access is not required just to read a user.
+        return target
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
     return target
 
 
@@ -258,16 +292,25 @@ def access_user_by_id(
         target = get_user_profile_by_id_in_realm(target_user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if target.is_bot and not allow_bots:
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
+
+
+def access_user_by_email(
+    user_profile: UserProfile,
+    email: str,
+    *,
+    allow_deactivated: bool = False,
+    allow_bots: bool = False,
+    for_admin: bool,
+) -> UserProfile:
+
+    try:
+        target = get_user(email, user_profile.realm)
+    except UserProfile.DoesNotExist:
         raise JsonableError(_("No such user"))
-    if not target.is_active and not allow_deactivated:
-        raise JsonableError(_("User is deactivated"))
-    if not for_admin:
-        # Administrative access is not required just to read a user.
-        return target
-    if not user_profile.can_admin_user(target):
-        raise JsonableError(_("Insufficient permission"))
-    return target
+
+    return access_user_common(target, user_profile, allow_deactivated, allow_bots, for_admin)
 
 
 class Accounts(TypedDict):
@@ -395,6 +438,14 @@ def format_user_row(
         is_active=row["is_active"],
         date_joined=row["date_joined"].isoformat(),
     )
+
+    if acting_user is None:
+        # Remove data about other users which are not useful to spectators
+        # or can reveal personal information about a user.
+        # Only send day level precision date_joined data to spectators.
+        del result["is_billing_admin"]
+        del result["timezone"]
+        result["date_joined"] = str(date_parser.parse(result["date_joined"]).date())
 
     # Zulip clients that support using `GET /avatar/{user_id}` as a
     # fallback if we didn't send an avatar URL in the user object pass
@@ -559,3 +610,7 @@ def get_raw_user_data(
             custom_profile_field_data=custom_profile_field_data,
         )
     return result
+
+
+def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
+    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)

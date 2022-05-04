@@ -1,0 +1,333 @@
+#!/usr/bin/env python3
+
+import argparse
+import gzip
+import os
+import re
+import sys
+from enum import Enum, auto
+from typing import Callable, TextIO
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ZULIP_PATH)
+from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
+
+
+def parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Search logfiles for an IP or hostname, ignoring commonly-fetched URLs."
+    )
+    log_selection = parser.add_argument_group("File selection")
+    log_selection_options = log_selection.add_mutually_exclusive_group()
+    log_selection_options.add_argument(
+        "--log-files",
+        "-n",
+        help="Number of log files to search",
+        choices=range(1, 16),
+        type=int,
+    )
+    log_selection_options.add_argument(
+        "--all-logs",
+        "-A",
+        help="Parse all logfiles, not just most recent",
+        action="store_true",
+    )
+    log_selection_options.add_argument(
+        "--min-hours",
+        "-H",
+        help="Estimated minimum number of hours; includes previous log file, if estimated less than this",
+        type=int,
+        choices=range(0, 24),
+        default=3,
+    )
+    log_selection.add_argument(
+        "--nginx",
+        "-N",
+        help="Parse from NGINX logs, not server.log",
+        action="store_true",
+    )
+
+    filtering = parser.add_argument_group("Filtering")
+    filtering.add_argument("filter", help="IP address or hostname to search for")
+    filtering.add_argument(
+        "--all-lines",
+        "-L",
+        help="Show all matching lines; equivalent to -suemtpr",
+        action="store_true",
+    )
+    filtering.add_argument("--static", "-s", help="Include static file paths", action="store_true")
+    filtering.add_argument("--uploads", "-u", help="Include file upload paths", action="store_true")
+    filtering.add_argument("--events", "-e", help="Include event fetch paths", action="store_true")
+    filtering.add_argument("--messages", "-m", help="Include message paths", action="store_true")
+    filtering.add_argument(
+        "--typing",
+        "-t",
+        help="Include typing notification path",
+        action="store_true",
+    )
+    filtering.add_argument("--presence", "-p", help="Include presence paths", action="store_true")
+    filtering.add_argument(
+        "--report", "-r", help="Include timing report paths", action="store_true"
+    )
+
+    output = parser.add_argument_group("Output")
+    output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
+    return parser
+
+
+def maybe_gzip(logfile_name: str) -> TextIO:
+    if logfile_name.endswith(".gz"):
+        return gzip.open(logfile_name, "rt")
+    return open(logfile_name, "r")
+
+
+NGINX_LOG_LINE_RE = re.compile(
+    r"""
+      (?P<ip> \S+ ) \s+
+      - \s+
+      (?P<user> \S+ ) \s+
+      \[
+         (?P<date> \d+/\w+/\d+ )
+         :
+         (?P<time> \d+:\d+:\d+ )
+         \s+ \+0000
+      \] \s+
+      "
+         (?P<method> \S+ )
+         \s+
+         (?P<path> [^"]+ )
+         \s+
+         (?P<http_version> HTTP/[^"]+ )
+      " \s+
+      (?P<code> \d+ ) \s+
+      (?P<bytes> \d+ ) \s+
+      "(?P<referer> [^"]* )" \s+
+      "(?P<user_agent> [^"]* )" \s+
+      (?P<hostname> \S+ ) \s+
+      (?P<duration> \S+ )
+    """,
+    re.X,
+)
+
+PYTHON_LOG_LINE_RE = re.compile(
+    r"""
+      (?P<date> \d+-\d+-\d+ ) \s+
+      (?P<time> \d+:\d+:\d+\.\d+ ) \s+
+      INFO \s+  # All access log lines are INFO
+      \[ (?P<source> zr(:\d+)?) \] \s+
+      (?P<ip>
+        \d{1,3}(\.\d{1,3}){3}
+      | ([a-f0-9:]+:+){1,7}[a-f0-9]*
+      ) \s+
+      (?P<method> [A-Z]+ ) \s+
+      (?P<code> \d+ ) \s+
+      (?P<duration> \S+ ) \s+ # This can be "217ms" or "1.7s"
+      ( \( [^)]+ \) \s+ )*
+      (?P<path> /\S* ) \s+
+      .*   # Multiple extra things can go here
+      \(
+        (?P<user>
+           ( (?P<user_id> \d+ ) | unauth )
+           @
+           (?P<hostname> \S+ )
+         | zulip-server:\S+
+         | scim-client:\S+
+         | internal
+        ) \s+ via \s+ (?P<user_agent> .* )
+      \)
+    """,
+    re.X,
+)
+
+
+class FilterType(Enum):
+    HOSTNAME = auto()
+    CLIENT_IP = auto()
+    USER_ID = auto()
+
+
+def main() -> None:
+    args = parser().parse_args()
+
+    if args.nginx:
+        base_path = "/var/log/nginx/access.log"
+    else:
+        base_path = "/var/log/zulip/server.log"
+
+    logfile_names = [base_path]
+    if args.all_logs:
+        logfile_count = 15
+    elif args.log_files is not None:
+        logfile_count = args.log_files
+    else:
+        # Detect if there was a logfile rotation in the last
+        # (min-hours)-ish hours, and if so include the previous
+        # logfile as well.
+        logfile_count = 1
+        try:
+            current_size = os.path.getsize(base_path)
+            past_size = os.path.getsize(base_path + ".1")
+            if current_size < (args.min_hours / 24.0) * past_size:
+                logfile_count = 2
+        except FileNotFoundError:
+            pass
+    for n in range(1, logfile_count):
+        logname = f"{base_path}.{n}"
+        if n > 1:
+            logname += ".gz"
+        logfile_names.append(logname)
+
+    # The heuristics below are not intended to be precise -- they
+    # certainly count things as "IPv4" or "IPv6" addresses that are
+    # invalid.  However, we expect the input here to already be
+    # reasonably well-formed.
+    filter = args.filter
+
+    if re.match(r"\d+$", filter):
+        if args.nginx:
+            raise parser().error("Cannot parse user-ids with nginx logs; try without --nginx")
+        string_filter = lambda m: m["user_id"] == filter
+        filter_type = FilterType.USER_ID
+    elif re.match(r"\d{1,3}(\.\d{1,3}){3}$", filter):
+        string_filter = lambda m: m["ip"] == filter
+        filter_type = FilterType.CLIENT_IP
+    elif re.match(r"([a-f0-9:]+:+){1,7}[a-f0-9]+$", filter):
+        string_filter = lambda m: m["ip"] == filter
+        filter_type = FilterType.CLIENT_IP
+    elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter.lower()):
+        filter = filter.lower()
+        if args.nginx:
+            string_filter = lambda m: m["hostname"].startswith(filter + ".")
+        else:
+            string_filter = lambda m: m["hostname"] == filter
+        filter_type = FilterType.HOSTNAME
+    elif re.match(r"[a-z0-9-]+(\.[a-z0-9-]+)+$", filter.lower()) and re.search(
+        r"[a-z-]", filter.lower()
+    ):
+        if not args.nginx:
+            raise parser().error("Cannot parse full domains with Python logs; try --nginx")
+        filter = filter.lower()
+        string_filter = lambda m: m["hostname"] == filter
+        filter_type = FilterType.HOSTNAME
+    else:
+        raise RuntimeError(f"Can't parse {filter} as an IP or hostname.")
+    assert filter_type is not None
+
+    for logfile_name in reversed(logfile_names):
+        with maybe_gzip(logfile_name) as logfile:
+            for logline in logfile:
+                # As a performance optimization, just do a substring
+                # check before we parse the line fully
+                if filter not in logline.lower():
+                    continue
+
+                if args.nginx:
+                    match = NGINX_LOG_LINE_RE.match(logline)
+                else:
+                    match = PYTHON_LOG_LINE_RE.match(logline)
+                if match is None:
+                    # We expect other types of loglines in the Python logfiles
+                    if args.nginx:
+                        print(f"! Failed to parse:\n{logline}", file=sys.stderr)
+                    continue
+                if passes_filters(string_filter, match, args):
+                    print_line(
+                        match,
+                        args,
+                        filter_type=filter_type,
+                    )
+
+
+def passes_filters(
+    string_filter: Callable[[re.Match], bool],  # type: ignore[type-arg]  # Requires Python 3.9
+    match: re.Match,  # type: ignore[type-arg]  # Requires Python 3.9
+    args: argparse.Namespace,
+) -> bool:
+    if not string_filter(match):
+        return False
+
+    if args.all_lines:
+        return True
+
+    path = match["path"]
+    if path.startswith("/static/") and not args.static:
+        return False
+    if path.startswith("/user_uploads/") and not args.uploads:
+        return False
+    if re.match(r"/(json|api/v1)/events($|\?|/)", path) and not args.events:
+        return False
+    if path in ("/api/v1/typing", "/json/typing") and not args.typing:
+        return False
+    if re.match(r"/(json|api/v1)/messages($|\?|/)", path) and not args.messages:
+        return False
+    if path in ("/api/v1/users/me/presence", "/json/users/me/presence") and not args.messages:
+        return False
+    if path.startswith(("/api/v1/report/", "/json/report/")) and not args.report:
+        return False
+
+    return True
+
+
+def print_line(
+    match: re.Match,  # type: ignore[type-arg]  # Requires Python 3.9
+    args: argparse.Namespace,
+    filter_type: FilterType,
+) -> None:
+    if args.full_line:
+        print(match.group(0))
+        return
+
+    if args.all_logs or args.log_files is not None and args.log_files > 1:
+        ts = match["date"] + ":" + match["time"]
+    else:
+        ts = match["time"]
+
+    if match["duration"].endswith("ms"):
+        duration = match["duration"][:-2]
+    else:
+        duration = str(int(float(match["duration"][:-1]) * 1000))
+
+    code = int(match["code"])
+    indicator = " "
+    color = ""
+    if code == 401:
+        indicator = ":"
+        color = CYAN
+    elif code == 499:
+        indicator = "-"
+        color = GRAY
+    elif code >= 400 and code < 499:
+        indicator = ">"
+        color = OKBLUE
+    elif code >= 500 and code <= 599:
+        indicator = "!"
+        color = FAIL
+    url = f"{BOLD}{match['path']}"
+    if filter_type != FilterType.HOSTNAME:
+        hostname = match["hostname"]
+        if not args.nginx:
+            if hostname == "root":
+                hostname = "zulip.com"
+            else:
+                hostname += ".zulipchat.com"
+        url = "https://" + hostname + url
+
+    user_id = ""
+    if not args.nginx and match["user_id"] is not None:
+        user_id = match["user_id"] + "@"
+
+    parts = [
+        ts,
+        f"{duration:>5}ms",
+        f"{user_id:7}" if not args.nginx and filter_type != FilterType.USER_ID else None,
+        f"{match['ip']:39}" if filter_type != FilterType.CLIENT_IP else None,
+        indicator + match["code"],
+        f"{match['method']:6}",
+        url,
+    ]
+
+    print(color + " ".join([p for p in parts if p is not None]) + ENDC)
+
+
+if __name__ == "__main__":
+    main()

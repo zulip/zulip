@@ -14,9 +14,11 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
 )
+from uuid import UUID, uuid4
 
 import django.contrib.auth
 import orjson
@@ -24,20 +26,29 @@ import re2
 from bitfield import BitField
 from bitfield.types import BitHandler
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    AnonymousUser,
+    PermissionsMixin,
+    UserManager,
+)
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
-from django.db.models import CASCADE, Manager, Q, Sum
+from django.db.backends.base.base import BaseDatabaseWrapper
+from django.db.models import CASCADE, Exists, F, Manager, OuterRef, Q, Sum
+from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.sql.compiler import SQLCompiler
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
-from typing_extensions import TypedDict
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -68,7 +79,7 @@ from zerver.lib.cache import (
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -80,7 +91,9 @@ from zerver.lib.types import (
     ProfileData,
     ProfileDataElementBase,
     ProfileDataElementValue,
+    RealmPlaygroundDict,
     RealmUserValidator,
+    UnspecifiedValue,
     UserFieldElement,
     Validator,
 )
@@ -108,6 +121,30 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: Optional[int]
     still_url: Optional[str]
+
+
+@models.Field.register_lookup
+class AndZero(models.Lookup):
+    lookup_name = "andz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} = 0", lhs_params + rhs_params
+
+
+@models.Field.register_lookup
+class AndNonZero(models.Lookup):
+    lookup_name = "andnz"
+
+    def as_sql(
+        self, compiler: SQLCompiler, connection: BaseDatabaseWrapper
+    ) -> Tuple[str, List[object]]:  # nocoverage # currently only used in migrations
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -236,7 +273,9 @@ class Realm(models.Model):
     deactivated: bool = models.BooleanField(default=False)
 
     # Redirect URL if the Realm has moved to another server
-    deactivated_redirect = models.URLField(max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True)
+    deactivated_redirect: Optional[str] = models.URLField(
+        max_length=MAX_REALM_REDIRECT_URL_LENGTH, null=True
+    )
 
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
@@ -247,7 +286,7 @@ class Realm(models.Model):
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
         flags=AUTHENTICATION_FLAGS,
-        default=2 ** 31 - 1,
+        default=2**31 - 1,
     )
 
     # Allow users to access web-public streams without login. This
@@ -409,7 +448,7 @@ class Realm(models.Model):
     MESSAGE_CONTENT_DELETE_LIMIT_SPECIAL_VALUES_MAP = {
         "unlimited": None,
     }
-    message_content_delete_limit_seconds: int = models.PositiveIntegerField(
+    message_content_delete_limit_seconds: Optional[int] = models.PositiveIntegerField(
         default=DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS, null=True
     )
 
@@ -735,13 +774,15 @@ class Realm(models.Model):
     def __str__(self) -> str:
         return f"<Realm: {self.string_id} {self.id}>"
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_realm_emoji_uncached(self)
+    def get_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_realm_emoji_uncached(realm)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, EmojiInfo]:
-        return get_active_realm_emoji_uncached(self)
+    def get_active_emoji(realm) -> Dict[str, EmojiInfo]:
+        return get_active_realm_emoji_uncached(realm)
 
     def get_admin_users_and_bots(
         self, include_realm_owners: bool = True
@@ -841,9 +882,11 @@ class Realm(models.Model):
         # it as gibibytes (GiB) to be a bit more generous in case of confusion.
         return self.upload_quota_gb << 30
 
+    # `realm` instead of `self` here to make sure the parameters of the cache key
+    # function matches the original method.
     @cache_with_key(get_realm_used_upload_space_cache_key, timeout=3600 * 24 * 7)
-    def currently_used_upload_space_bytes(self) -> int:
-        used_space = Attachment.objects.filter(realm=self).aggregate(Sum("size"))["size__sum"]
+    def currently_used_upload_space_bytes(realm) -> int:
+        used_space = Attachment.objects.filter(realm=realm).aggregate(Sum("size"))["size__sum"]
         if used_space is None:
             return 0
         return used_space
@@ -893,11 +936,20 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
-    def web_public_streams_enabled(self) -> bool:
+    def web_public_streams_available_for_realm(self) -> bool:
+        if self.string_id in settings.WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS:
+            return True
+
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:
             # To help protect against accidentally web-public streams in
             # self-hosted servers, we require the feature to be enabled at
             # the server level before it is available to users.
+            return False
+
+        return True
+
+    def web_public_streams_enabled(self) -> bool:
+        if not self.web_public_streams_available_for_realm():
             return False
 
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
@@ -1019,7 +1071,7 @@ class EmailContainsPlusError(Exception):
     pass
 
 
-def get_realm_domains(realm: Realm) -> List[Dict[str, str]]:
+def get_realm_domains(realm: Realm) -> List[Dict[str, Union[str, bool]]]:
     return list(realm.realmdomain_set.values("domain", "allow_subdomains"))
 
 
@@ -1341,11 +1393,11 @@ class RealmPlayground(models.Model):
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
 
 
-def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
-    playgrounds: List[Dict[str, Union[int, str]]] = []
+def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
+    playgrounds: List[RealmPlaygroundDict] = []
     for playground in RealmPlayground.objects.filter(realm=realm).all():
         playgrounds.append(
-            dict(
+            RealmPlaygroundDict(
                 id=playground.id,
                 name=playground.name,
                 pygments_language=playground.pygments_language,
@@ -1402,7 +1454,7 @@ class UserBaseSettings(models.Model):
     """
 
     # UI settings
-    enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
+    enter_sends: bool = models.BooleanField(default=False)
 
     # display settings
     left_side_userlist: bool = models.BooleanField(default=False)
@@ -1415,6 +1467,7 @@ class UserBaseSettings(models.Model):
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
+    display_emoji_reaction_users: bool = models.BooleanField(default=True)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
     starred_message_counts: bool = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
@@ -1494,7 +1547,7 @@ class UserBaseSettings(models.Model):
     presence_enabled: bool = models.BooleanField(default=True)
 
     # Whether or not the user wants to sync their drafts.
-    enable_drafts_synchronization = models.BooleanField(default=True)
+    enable_drafts_synchronization: bool = models.BooleanField(default=True)
 
     # Privacy settings
     send_stream_typing_notifications: bool = models.BooleanField(default=True)
@@ -1551,6 +1604,7 @@ class UserBaseSettings(models.Model):
         **notification_setting_types,
         **dict(
             # Add new general settings here.
+            display_emoji_reaction_users=bool,
             escape_navigates_to_default_view=bool,
             send_private_typing_notifications=bool,
             send_read_receipts=bool,
@@ -1574,7 +1628,7 @@ class RealmUserDefault(UserBaseSettings):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    realm: Realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
@@ -1648,6 +1702,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     date_joined: datetime.datetime = models.DateTimeField(default=timezone_now)
     tos_version: Optional[str] = models.CharField(null=True, max_length=10)
     api_key: str = models.CharField(max_length=API_KEY_LENGTH)
+
+    # A UUID generated on user creation. Introduced primarily to
+    # provide a unique key for a user for the mobile push
+    # notifications bouncer that will not have collisions after doing
+    # a data export and then import.
+    uuid: UUID = models.UUIDField(default=uuid4, unique=True)
 
     # Whether the user has access to server-level administrator pages, like /activity
     is_staff: bool = models.BooleanField(default=False)
@@ -1732,7 +1792,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
-    # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
+    # A time zone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
     # like a safe choice.
@@ -2034,6 +2094,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
         super().set_password(password)
 
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_userprofile_email_idx"),
+        ]
+
 
 class PasswordTooWeakError(Exception):
     pass
@@ -2056,6 +2121,31 @@ class UserGroup(models.Model):
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
+
+    # We do not have "Full members" and "Everyone on the internet" group here since there isn't a
+    # separate role value for full members and spectators.
+    SYSTEM_USER_GROUP_ROLE_MAP = {
+        UserProfile.ROLE_REALM_OWNER: {
+            "name": "@role:owners",
+            "description": "Owners of this organization",
+        },
+        UserProfile.ROLE_REALM_ADMINISTRATOR: {
+            "name": "@role:administrators",
+            "description": "Administrators of this organization, including owners",
+        },
+        UserProfile.ROLE_MODERATOR: {
+            "name": "@role:moderators",
+            "description": "Moderators of this organization, including administrators",
+        },
+        UserProfile.ROLE_MEMBER: {
+            "name": "@role:members",
+            "description": "Members of this organization, not including guests",
+        },
+        UserProfile.ROLE_GUEST: {
+            "name": "@role:everyone",
+            "description": "Everyone in this organization, including guests",
+        },
+    }
 
     class Meta:
         unique_together = (("realm", "name"),)
@@ -2142,20 +2232,44 @@ class PreregistrationUser(models.Model):
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
+    # The UserProfile created upon completion of the registration
+    # for this PregistrationUser
+    created_user: Optional[UserProfile] = models.ForeignKey(
+        UserProfile, null=True, related_name="+", on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(Upper("email"), name="upper_preregistration_email_idx"),
+        ]
+
 
 def filter_to_valid_prereg_users(
     query: QuerySet,
-    invite_expires_in_days: Optional[int] = None,
+    invite_expires_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
 ) -> QuerySet:
+    """
+    If invite_expires_in_days is specified, we return only those PreregistrationUser
+    objects that were created at most that many days in the past.
+    """
     active_value = confirmation_settings.STATUS_ACTIVE
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[active_value, revoked_value])
-    if invite_expires_in_days:
-        lowest_datetime = timezone_now() - datetime.timedelta(days=invite_expires_in_days)
+    if invite_expires_in_minutes is None:
+        # Since invite_expires_in_minutes is None, we're invitation will never
+        # expire, we do not need to check anything else and can simply return
+        # after excluding objects with active and revoked status.
+        return query
+
+    assert invite_expires_in_minutes is not None
+    if not isinstance(invite_expires_in_minutes, UnspecifiedValue):
+        lowest_datetime = timezone_now() - datetime.timedelta(minutes=invite_expires_in_minutes)
         return query.filter(invited_at__gte=lowest_datetime)
     else:
-        return query.filter(confirmation__expiry_date__gte=timezone_now())
+        return query.filter(
+            Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
+        )
 
 
 class MultiuseInvite(models.Model):
@@ -2274,8 +2388,8 @@ class Stream(models.Model):
             "policy_name": gettext_lazy("Public, protected history"),
         },
     }
-    invite_only: Optional[bool] = models.BooleanField(null=True, default=False)
-    history_public_to_subscribers: bool = models.BooleanField(default=False)
+    invite_only: bool = models.BooleanField(default=False)
+    history_public_to_subscribers: bool = models.BooleanField(default=True)
 
     # Whether this stream's content should be published by the web-public archive features
     is_web_public: bool = models.BooleanField(default=False)
@@ -2357,17 +2471,17 @@ class Stream(models.Model):
     # * "deactivated" streams are filtered from the API entirely.
     # * "realm" and "recipient" are not exposed to clients via the API.
     API_FIELDS = [
-        "name",
-        "id",
+        "date_created",
         "description",
-        "rendered_description",
+        "first_message_id",
+        "history_public_to_subscribers",
+        "id",
         "invite_only",
         "is_web_public",
-        "stream_post_policy",
-        "history_public_to_subscribers",
-        "first_message_id",
         "message_retention_days",
-        "date_created",
+        "name",
+        "rendered_description",
+        "stream_post_policy",
     ]
 
     @staticmethod
@@ -2387,6 +2501,11 @@ class Stream(models.Model):
             result[field_name] = getattr(self, field_name)
         result["is_announcement_only"] = self.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
         return result
+
+    class Meta:
+        indexes = [
+            models.Index(Upper("name"), name="upper_stream_name_idx"),
+        ]
 
 
 post_save.connect(flush_stream, sender=Stream)
@@ -2433,6 +2552,7 @@ class UserTopic(models.Model):
         unique_together = ("user_profile", "stream", "topic_name")
 
         indexes = [
+            models.Index("stream", Upper("topic_name"), name="zerver_mutedtopic_stream_topic"),
             # This index is designed to optimize queries fetching the
             # set of users who have special policy for a stream,
             # e.g. for the send-message code paths.
@@ -2453,8 +2573,8 @@ class UserTopic(models.Model):
 
 
 class MutedUser(models.Model):
-    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
-    muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
     date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
 
     class Meta:
@@ -2696,6 +2816,7 @@ class ArchivedMessage(AbstractMessage):
 
 class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    search_tsvector: Optional[str] = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
         """
@@ -2771,6 +2892,25 @@ class Message(AbstractMessage):
         if content.startswith("/me "):
             return True
         return False
+
+    class Meta:
+        indexes = [
+            GinIndex("search_tsvector", fastupdate=False, name="zerver_message_search_tsvector"),
+            models.Index(Upper("subject"), name="upper_subject_idx"),
+            models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
+            models.Index(
+                "recipient",
+                Upper("subject"),
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_upper_subject",
+            ),
+            models.Index(
+                "recipient",
+                "subject",
+                F("id").desc(nulls_last=True),
+                name="zerver_message_recipient_subject",
+            ),
+        ]
 
 
 def get_context_for_message(message: Message) -> Sequence[Message]:
@@ -3081,6 +3221,55 @@ class AbstractUserMessage(models.Model):
 class UserMessage(AbstractUserMessage):
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
 
+    class Meta(AbstractUserMessage.Meta):
+        indexes = [
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.starred.mask),
+                name="zerver_usermessage_starred_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask),
+                name="zerver_usermessage_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andz=AbstractUserMessage.flags.read.mask),
+                name="zerver_usermessage_unread_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.has_alert_word.mask),
+                name="zerver_usermessage_has_alert_word_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.mentioned.mask)
+                | Q(flags__andnz=AbstractUserMessage.flags.wildcard_mentioned.mask),
+                name="zerver_usermessage_wildcard_mentioned_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(flags__andnz=AbstractUserMessage.flags.is_private.mask),
+                name="zerver_usermessage_is_private_message_id",
+            ),
+            models.Index(
+                "user_profile",
+                "message",
+                condition=Q(
+                    flags__andnz=AbstractUserMessage.flags.active_mobile_push_notification.mask
+                ),
+                name="zerver_usermessage_active_mobile_push_notification_id",
+            ),
+        ]
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
@@ -3110,7 +3299,7 @@ class AbstractAttachment(models.Model):
     # then its path_id will be a/b/abc/temp_file.py.
     path_id: str = models.TextField(db_index=True, unique=True)
     owner: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
-    realm: Optional[Realm] = models.ForeignKey(Realm, blank=True, null=True, on_delete=CASCADE)
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
     create_time: datetime.datetime = models.DateTimeField(
         default=timezone_now,
@@ -3119,18 +3308,23 @@ class AbstractAttachment(models.Model):
     # Size of the uploaded file, in bytes
     size: int = models.IntegerField()
 
-    # The two fields below lets us avoid looking up the corresponding
-    # messages/streams to check permissions before serving these files.
+    # The two fields below serve as caches to let us avoid looking up
+    # the corresponding messages/streams to check permissions before
+    # serving these files.
+    #
+    # For both fields, the `null` state is used when a change in
+    # message permissions mean that we need to determine their proper
+    # value.
 
     # Whether this attachment has been posted to a public stream, and
     # thus should be available to all non-guest users in the
     # organization (even if they weren't a recipient of a message
     # linking to it).
-    is_realm_public: bool = models.BooleanField(default=False)
+    is_realm_public: Optional[bool] = models.BooleanField(default=False, null=True)
     # Whether this attachment has been posted to a web-public stream,
     # and thus should be available to everyone on the internet, even
     # if the person isn't logged in.
-    is_web_public: bool = models.BooleanField(default=False)
+    is_web_public: Optional[bool] = models.BooleanField(default=False, null=True)
 
     class Meta:
         abstract = True
@@ -3146,7 +3340,9 @@ class ArchivedAttachment(AbstractAttachment):
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    messages: Manager = models.ManyToManyField(ArchivedMessage)
+    messages: Manager = models.ManyToManyField(
+        ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
+    )
 
 
 class Attachment(AbstractAttachment):
@@ -3163,7 +3359,7 @@ class Attachment(AbstractAttachment):
             "path_id": self.path_id,
             "size": self.size,
             # convert to JavaScript-style UNIX timestamp so we can take
-            # advantage of client timezones.
+            # advantage of client time zones.
             "create_time": int(time.mktime(self.create_time.timetuple()) * 1000),
             "messages": [
                 {
@@ -3179,11 +3375,73 @@ post_save.connect(flush_used_upload_space_cache, sender=Attachment)
 post_delete.connect(flush_used_upload_space_cache, sender=Attachment)
 
 
-def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
+def validate_attachment_request_for_spectator_access(
+    realm: Realm, attachment: Attachment
+) -> Optional[bool]:
+    if attachment.realm != realm:
+        return False
+
+    # Update cached is_web_public property, if necessary.
+    if attachment.is_web_public is None:
+        # Fill the cache in a single query. This is important to avoid
+        # a potential race condition between checking and setting,
+        # where the attachment could have been moved again.
+        Attachment.objects.filter(id=attachment.id, is_web_public__isnull=True).update(
+            is_web_public=Exists(
+                Message.objects.filter(
+                    attachment=OuterRef("id"),
+                    recipient__stream__invite_only=False,
+                    recipient__stream__is_web_public=True,
+                ),
+            ),
+        )
+        attachment.refresh_from_db()
+
+    if not attachment.is_web_public:
+        return False
+
+    if settings.RATE_LIMITING:
+        try:
+            from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
+
+            rate_limit_spectator_attachment_access_by_file(attachment.path_id)
+        except RateLimited:
+            return False
+
+    return True
+
+
+def validate_attachment_request(
+    maybe_user_profile: Union[UserProfile, AnonymousUser],
+    path_id: str,
+    realm: Optional[Realm] = None,
+) -> Optional[bool]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
     except Attachment.DoesNotExist:
         return None
+
+    if isinstance(maybe_user_profile, AnonymousUser):
+        assert realm is not None
+        return validate_attachment_request_for_spectator_access(realm, attachment)
+
+    user_profile = maybe_user_profile
+    assert isinstance(user_profile, UserProfile)
+
+    # Update cached is_realm_public property, if necessary.
+    if attachment.is_realm_public is None:
+        # Fill the cache in a single query. This is important to avoid
+        # a potential race condition between checking and setting,
+        # where the attachment could have been moved again.
+        Attachment.objects.filter(id=attachment.id, is_realm_public__isnull=True).update(
+            is_realm_public=Exists(
+                Message.objects.filter(
+                    attachment=OuterRef("id"),
+                    recipient__stream__invite_only=False,
+                ),
+            ),
+        )
+        attachment.refresh_from_db()
 
     if user_profile == attachment.owner:
         # If you own the file, you can access it.
@@ -3259,7 +3517,7 @@ class Subscription(models.Model):
     role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
 
     # Whether this user had muted this stream.
-    is_muted: Optional[bool] = models.BooleanField(null=True, default=False)
+    is_muted: bool = models.BooleanField(default=False)
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color: str = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
@@ -3306,21 +3564,21 @@ class Subscription(models.Model):
     # * "is_muted" often needs to be copied to not "in_home_view" for
     #   backwards-compatibility.
     API_FIELDS = [
-        "color",
-        "is_muted",
-        "pin_to_top",
         "audible_notifications",
+        "color",
         "desktop_notifications",
         "email_notifications",
+        "is_muted",
+        "pin_to_top",
         "push_notifications",
-        "wildcard_mentions_notify",
         "role",
+        "wildcard_mentions_notify",
     ]
 
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600 * 24 * 7)
-def get_user_profile_by_id(uid: int) -> UserProfile:
-    return UserProfile.objects.select_related().get(id=uid)
+def get_user_profile_by_id(user_profile_id: int) -> UserProfile:
+    return UserProfile.objects.select_related().get(id=user_profile_id)
 
 
 def get_user_profile_by_email(email: str) -> UserProfile:
@@ -3486,6 +3744,21 @@ def active_non_guest_user_ids(realm_id: int) -> List[int]:
         .values_list("id", flat=True)
     )
     return list(query)
+
+
+def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
+    is_private_bot = (
+        user_profile.default_sending_stream
+        and user_profile.default_sending_stream.invite_only
+        or user_profile.default_events_register_stream
+        and user_profile.default_events_register_stream.invite_only
+    )
+    if is_private_bot:
+        return {user_profile.bot_owner_id}
+    else:
+        users = {user.id for user in user_profile.realm.get_human_admin_users()}
+        users.add(user_profile.bot_owner_id)
+        return users
 
 
 def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
@@ -3901,6 +4174,7 @@ class AbstractRealmAuditLog(models.Model):
     USER_REACTIVATED = 104
     USER_ROLE_CHANGED = 105
     USER_DELETED = 106
+    USER_DELETED_PRESERVING_MESSAGES = 107
 
     USER_SOFT_ACTIVATED = 120
     USER_SOFT_DEACTIVATED = 121
@@ -3934,6 +4208,11 @@ class AbstractRealmAuditLog(models.Model):
     REALM_CREATED = 215
     REALM_DEFAULT_USER_SETTINGS_CHANGED = 216
     REALM_ORG_TYPE_CHANGED = 217
+    REALM_DOMAIN_ADDED = 218
+    REALM_DOMAIN_CHANGED = 219
+    REALM_DOMAIN_REMOVED = 220
+    REALM_PLAYGROUND_ADDED = 221
+    REALM_PLAYGROUND_REMOVED = 222
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
@@ -4082,7 +4361,7 @@ class CustomProfileField(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name: str = models.CharField(max_length=NAME_MAX_LENGTH)
-    hint: Optional[str] = models.CharField(max_length=HINT_MAX_LENGTH, default="", null=True)
+    hint: str = models.CharField(max_length=HINT_MAX_LENGTH, default="")
     order: int = models.IntegerField(default=0)
 
     SHORT_TEXT = 1
@@ -4144,12 +4423,12 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this null.  Fields of type SELECT store the
+    # DATE, URL, and USER leave this empty.  Fields of type SELECT store the
     # choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.
     # See https://www.postgresql.org/docs/9.0/static/datatype-character.html
-    field_data: Optional[str] = models.TextField(default="", null=True)
+    field_data: str = models.TextField(default="")
 
     class Meta:
         unique_together = ("realm", "name")

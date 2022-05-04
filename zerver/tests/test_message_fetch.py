@@ -13,12 +13,10 @@ from sqlalchemy.types import Integer
 
 from analytics.lib.counts import COUNT_STATS
 from analytics.models import RealmCount
-from zerver.lib.actions import (
-    do_claim_attachments,
-    do_deactivate_user,
-    do_set_realm_property,
-    do_update_message,
-)
+from zerver.actions.message_edit import do_update_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import MentionBackend, MentionData
@@ -35,10 +33,10 @@ from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
-from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
 from zerver.lib.upload import create_attachment
 from zerver.lib.url_encoding import near_message_url
+from zerver.lib.user_topics import set_topic_mutes
 from zerver.models import (
     Attachment,
     Message,
@@ -1565,7 +1563,7 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", dict(rome_web_public_get_params))
         self.assert_json_success(result)
 
-        # Cannot access non web-public stream even with `streams:web-public` narrow.
+        # Cannot access non-web-public stream even with `streams:web-public` narrow.
         scotland_web_public_get_params: Dict[str, Union[int, str, bool]] = {
             **get_params,
             "narrow": orjson.dumps(
@@ -1583,7 +1581,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def setup_web_public_test(self, num_web_public_message: int = 1) -> None:
         """
-        Send N+2 messages, N in a web-public stream, then one in a non web-public stream
+        Send N+2 messages, N in a web-public stream, then one in a non-web-public stream
         and then a private message.
         """
         user_profile = self.example_user("iago")
@@ -1601,7 +1599,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 user_profile, web_public_stream.name, content="web-public message"
             )
         self.send_stream_message(
-            user_profile, non_web_public_stream.name, content="non web-public message"
+            user_profile, non_web_public_stream.name, content="non-web-public message"
         )
         self.send_personal_message(
             user_profile, self.example_user("hamlet"), content="private message"
@@ -3860,7 +3858,9 @@ class MessageHasKeywordsTest(ZulipTestCase):
         msg_id = self.send_stream_message(hamlet, "Denmark", body, "test")
         msg = Message.objects.get(id=msg_id)
 
-        with mock.patch("zerver.lib.actions.do_claim_attachments", wraps=do_claim_attachments) as m:
+        with mock.patch(
+            "zerver.actions.uploads.do_claim_attachments", wraps=do_claim_attachments
+        ) as m:
             self.update_message(
                 msg, f"[link](http://{hamlet.realm.host}/user_uploads/{dummy_path_ids[0]})"
             )

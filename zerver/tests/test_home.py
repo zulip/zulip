@@ -13,7 +13,9 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import change_user_is_active, do_change_realm_plan_type, do_create_user
+from zerver.actions.create_user import do_create_user
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.home import (
     get_billing_info,
@@ -163,6 +165,7 @@ class HomeTest(ZulipTestCase):
         "realm_night_logo_url",
         "realm_non_active_users",
         "realm_notifications_stream_id",
+        "realm_org_type",
         "realm_password_auth_enabled",
         "realm_plan_type",
         "realm_playgrounds",
@@ -245,7 +248,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 44)
+        self.assert_length(queries, 46)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
@@ -308,46 +311,22 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(set(actual_keys), set(expected_keys))
 
     def test_logged_out_home(self) -> None:
-        # Redirect to login on first request.
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+
+        # Redirect to login if spectator access is disabled.
         result = self.client_get("/")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
 
-        # Tell server that user wants to log in anonymously
-        # Redirects to load webapp.
-        realm = get_realm("zulip")
-        result = self.client_post("/", {"prefers_web_public_view": "true"})
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
-        self.assertEqual(realm.enable_spectator_access, True)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zulip.testserver")
-
-        # Disable spectator login. Since Realm.enable_spectator_access
-        # is False, the login should fail.
-        realm.enable_spectator_access = False
-        realm.save()
-
-        result = self.client_post("/", {"prefers_web_public_view": "true"})
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
-        self.assertEqual(realm.enable_spectator_access, False)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
-
-        # Enable spectator login.
-        realm.enable_spectator_access = True
-        realm.save()
-
-        result = self.client_post("/", {"prefers_web_public_view": "true"})
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
-        self.assertEqual(realm.enable_spectator_access, True)
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zulip.testserver")
-
-        # Always load the web app from then on directly
+        # Load webapp directly if spectator access is enabled.
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
 
+        # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
+        self.assertEqual(page_params["is_spectator"], True)
         actual_keys = sorted(str(k) for k in page_params.keys())
         removed_keys = [
             "custom_profile_field_types",
@@ -358,12 +337,27 @@ class HomeTest(ZulipTestCase):
         ]
         expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
         self.assertEqual(actual_keys, expected_keys)
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), True)
 
-        # Web-public session key should clear once user is logged in
-        self.login("hamlet")
-        self.client_get("/")
-        self.assertEqual(self.client.session.get("prefers_web_public_view"), None)
+        # Test information passed to client about users.
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            sorted(page_params["realm_users"][0].keys()),
+            [
+                "avatar_url",
+                "avatar_version",
+                "date_joined",
+                "email",
+                "full_name",
+                "is_admin",
+                "is_bot",
+                "is_guest",
+                "is_owner",
+                "role",
+                "user_id",
+            ],
+        )
+        date_length = len("YYYY-MM-DD")
+        self.assert_length(page_params["realm_users"][0]["date_joined"], date_length)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
@@ -397,7 +391,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 41)
+            self.assert_length(queries, 43)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -428,7 +422,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 39)
+        self.assert_length(queries2, 41)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()

@@ -81,6 +81,7 @@ export interface DisplaySettings {
     };
 }
 
+/* istanbul ignore next */
 export const get_all_display_settings = (): DisplaySettings => ({
     settings: {
         user_display_settings: [
@@ -440,6 +441,71 @@ export const user_role_values = {
     },
 };
 
+export const all_org_type_values = {
+    // When org_type was added to the database model, 'unspecified'
+    // was the default for existing organizations. To discourage
+    // organizations keeping (or selecting) it as an option, we
+    // use an empty string for its description.
+    unspecified: {
+        code: 0,
+        description: "",
+    },
+    business: {
+        code: 10,
+        description: $t({defaultMessage: "Business"}),
+    },
+    opensource: {
+        code: 20,
+        description: $t({defaultMessage: "Open-source project"}),
+    },
+    education_nonprofit: {
+        code: 30,
+        description: $t({defaultMessage: "Education (non-profit)"}),
+    },
+    education: {
+        code: 35,
+        description: $t({defaultMessage: "Education (for-profit)"}),
+    },
+    research: {
+        code: 40,
+        description: $t({defaultMessage: "Research"}),
+    },
+    event: {
+        code: 50,
+        description: $t({defaultMessage: "Event or conference"}),
+    },
+    nonprofit: {
+        code: 60,
+        description: $t({defaultMessage: "Non-profit (registered)"}),
+    },
+    government: {
+        code: 70,
+        description: $t({defaultMessage: "Government"}),
+    },
+    political_group: {
+        code: 80,
+        description: $t({defaultMessage: "Political group"}),
+    },
+    community: {
+        code: 90,
+        description: $t({defaultMessage: "Community"}),
+    },
+    personal: {
+        code: 100,
+        description: $t({defaultMessage: "Personal"}),
+    },
+    other: {
+        code: 1000,
+        description: $t({defaultMessage: "Other"}),
+    },
+};
+
+// Remove the 'unspecified' org_type for dropdown menu options
+// when an org_type other than 'unspecified' has been selected.
+export const defined_org_type_values = Object.fromEntries(
+    Object.entries(all_org_type_values).slice(1),
+);
+
 export const expires_in_values = {
     // Backend support for this configuration is not available yet.
     // hour: {
@@ -448,31 +514,39 @@ export const expires_in_values = {
     //     default: false,
     // },
     day: {
-        value: 1,
+        value: 24 * 60,
         description: $t({defaultMessage: "1 day"}),
         default: false,
     },
     threeDays: {
-        value: 3,
+        value: 3 * 24 * 60,
         description: $t({defaultMessage: "3 days"}),
         default: false,
     },
     tenDays: {
-        value: 10,
+        value: 10 * 24 * 60,
         description: $t({defaultMessage: "10 days"}),
         default: true,
     },
     thirtyDays: {
-        value: 30,
+        value: 30 * 24 * 60,
         description: $t({defaultMessage: "30 days"}),
         default: false,
     },
-    // Backend support for this configuration is not available yet.
-    // never: {
-    //     value: "never",
-    //     description: $t({defaultMessage: "Never expires"}),
-    //     default: false,
-    // }
+    never: {
+        // Ideally we'd just store `null`, not the string `"null"`, but
+        // .val() will read null back as `""`.  Custom logic in
+        // get_common_invitation_data converts this back to `null`
+        // before sending to the server.
+        value: "null",
+        description: $t({defaultMessage: "Never expires"}),
+        default: false,
+    },
+    custom: {
+        value: "custom",
+        description: $t({defaultMessage: "Custom"}),
+        default: false,
+    },
 };
 
 const user_role_array = Object.values(user_role_values);
@@ -492,6 +566,12 @@ export const display_settings_labels = {
             defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
         }),
     ),
+    display_emoji_reaction_users: new Handlebars.SafeString(
+        $t_html({
+            defaultMessage:
+                "Display names of reacting users when few users have reacted to a message.",
+        }),
+    ),
     escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
 };
 
@@ -503,7 +583,7 @@ export const notification_settings_labels = {
         defaultMessage: "Include content of private messages in desktop notifications",
     }),
     desktop_icon_count_display: $t({
-        defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
+        defaultMessage: "Unread count badge (appears in desktop sidebar and browser tab)",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
     enable_login_emails: $t({

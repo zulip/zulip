@@ -104,12 +104,12 @@ run_test("narrowing", ({override_rewire}) => {
 });
 
 run_test("update_count_in_dom", () => {
-    function make_elem(elem, count_selector) {
-        const count = $(count_selector);
-        elem.set_find_results(".unread_count", count);
-        count.set_parent(elem);
+    function make_elem($elem, count_selector) {
+        const $count = $(count_selector);
+        $elem.set_find_results(".unread_count", $count);
+        $count.set_parent($elem);
 
-        return elem;
+        return $elem;
     }
 
     const counts = {

@@ -176,5 +176,5 @@ git rebase --continue
 ```
 
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[zulip-git-guide-fetch-pr]: ../git/collaborate.html#check-out-a-pull-request-locally
-[zulip-git-guide-ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[zulip-git-guide-fetch-pr]: collaborate.md#check-out-a-pull-request-locally
+[zulip-git-guide-ci]: cloning.md#step-3-configure-continuous-integration-for-your-fork

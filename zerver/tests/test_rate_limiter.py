@@ -1,5 +1,6 @@
 import secrets
 import time
+from abc import ABC, abstractmethod
 from typing import Dict, List, Tuple, Type
 from unittest import mock
 
@@ -34,9 +35,7 @@ class RateLimitedTestObject(RateLimitedObject):
         return self._rules
 
 
-class RateLimiterBackendBase(ZulipTestCase):
-    __unittest_skip__ = True
-
+class RateLimiterBackendBase(ZulipTestCase, ABC):
     def setUp(self) -> None:
         self.requests_record: Dict[str, List[float]] = {}
 
@@ -84,6 +83,7 @@ class RateLimiterBackendBase(ZulipTestCase):
 
         return self.api_calls_left_from_history(history, max_window, max_calls, now)
 
+    @abstractmethod
     def api_calls_left_from_history(
         self, history: List[float], max_window: int, max_calls: int, now: float
     ) -> Tuple[int, float]:
@@ -151,7 +151,6 @@ class RateLimiterBackendBase(ZulipTestCase):
 
 
 class RedisRateLimiterBackendTest(RateLimiterBackendBase):
-    __unittest_skip__ = False
     backend = RedisRateLimiterBackend
 
     def api_calls_left_from_history(
@@ -177,7 +176,6 @@ class RedisRateLimiterBackendTest(RateLimiterBackendBase):
 
 
 class TornadoInMemoryRateLimiterBackendTest(RateLimiterBackendBase):
-    __unittest_skip__ = False
     backend = TornadoInMemoryRateLimiterBackend
 
     def api_calls_left_from_history(
@@ -244,3 +242,7 @@ class RateLimitedObjectsTest(ZulipTestCase):
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
         self.assertEqual(obj.get_rules(), [(1, 9999)])
+
+
+# Don't load the base class as a test: https://bugs.python.org/issue17519.
+del RateLimiterBackendBase

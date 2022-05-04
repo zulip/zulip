@@ -22,11 +22,11 @@ function two_column_mode() {
 
 export class SettingsPanelMenu {
     constructor(opts) {
-        this.main_elem = opts.main_elem;
+        this.$main_elem = opts.$main_elem;
         this.hash_prefix = opts.hash_prefix;
-        this.curr_li = this.main_elem.children("li").eq(0);
+        this.$curr_li = this.$main_elem.children("li").eq(0);
 
-        this.main_elem.on("click", "li[data-section]", (e) => {
+        this.$main_elem.on("click", "li[data-section]", (e) => {
             const section = $(e.currentTarget).attr("data-section");
 
             this.activate_section_or_default(section);
@@ -39,32 +39,32 @@ export class SettingsPanelMenu {
     }
 
     show() {
-        this.main_elem.show();
+        this.$main_elem.show();
         const section = this.current_tab();
         if (two_column_mode()) {
             // In one column mode want to show the settings list, not the first settings section.
             this.activate_section_or_default(section);
         }
-        this.curr_li.trigger("focus");
+        this.$curr_li.trigger("focus");
     }
 
     hide() {
-        this.main_elem.hide();
+        this.$main_elem.hide();
     }
 
     current_tab() {
-        return this.curr_li.data("section");
+        return this.$curr_li.data("section");
     }
 
     li_for_section(section) {
-        const li = $(`#settings_overlay_container li[data-section='${CSS.escape(section)}']`);
-        return li;
+        const $li = $(`#settings_overlay_container li[data-section='${CSS.escape(section)}']`);
+        return $li;
     }
 
     set_key_handlers(toggler) {
         const {vim_left, vim_right, vim_up, vim_down} = keydown_util;
         keydown_util.handle({
-            elem: this.main_elem,
+            $elem: this.$main_elem,
             handlers: {
                 ArrowLeft: toggler.maybe_go_left,
                 ArrowRight: toggler.maybe_go_right,
@@ -82,20 +82,20 @@ export class SettingsPanelMenu {
     }
 
     prev() {
-        this.curr_li.prevAll(":visible:first").trigger("focus").trigger("click");
+        this.$curr_li.prevAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
     next() {
-        this.curr_li.nextAll(":visible:first").trigger("focus").trigger("click");
+        this.$curr_li.nextAll(":visible").first().trigger("focus").trigger("click");
         return true;
     }
 
     enter_panel() {
-        const panel = this.get_panel();
-        const panel_elem = panel.find("input:visible,button:visible,select:visible").first();
+        const $panel = this.get_panel();
+        const $panel_elem = $panel.find("input:visible,button:visible,select:visible").first();
 
-        panel_elem.trigger("focus");
+        $panel_elem.trigger("focus");
         return true;
     }
 
@@ -115,10 +115,10 @@ export class SettingsPanelMenu {
             }
         }
 
-        this.curr_li = this.li_for_section(section);
+        this.$curr_li = this.li_for_section(section);
 
-        this.main_elem.children("li").removeClass("active");
-        this.curr_li.addClass("active");
+        this.$main_elem.children("li").removeClass("active");
+        this.$curr_li.addClass("active");
 
         const settings_section_hash = "#" + this.hash_prefix + section;
 
@@ -141,20 +141,20 @@ export class SettingsPanelMenu {
     }
 
     get_panel() {
-        const section = this.curr_li.data("section");
+        const section = this.$curr_li.data("section");
         const sel = `[data-name='${CSS.escape(section)}']`;
-        const panel = $(".settings-section" + sel);
-        return panel;
+        const $panel = $(".settings-section" + sel);
+        return $panel;
     }
 }
 
 export function initialize() {
     normal_settings = new SettingsPanelMenu({
-        main_elem: $(".normal-settings-list"),
+        $main_elem: $(".normal-settings-list"),
         hash_prefix: "settings/",
     });
     org_settings = new SettingsPanelMenu({
-        main_elem: $(".org-settings-list"),
+        $main_elem: $(".org-settings-list"),
         hash_prefix: "organization/",
     });
 }

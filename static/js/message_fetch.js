@@ -8,7 +8,6 @@ import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
-import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
@@ -50,10 +49,7 @@ function process_result(data, opts) {
         narrow_banner.show_empty_narrow_message();
     }
 
-    messages = messages.map((message) => {
-        message_store.set_message_booleans(message);
-        return message_helper.process_new_message(message);
-    });
+    messages = messages.map((message) => message_helper.process_new_message(message));
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
@@ -431,6 +427,12 @@ export function initialize(home_view_loaded) {
         }
 
         if (data.found_newest) {
+            if (page_params.is_spectator) {
+                // Since for spectators, this is the main fetch, we
+                // hide the Recent Topics loading indicator here.
+                recent_topics_ui.hide_loading_indicator();
+            }
+
             // See server_events.js for this callback.
             home_view_loaded();
             start_backfilling_messages();
@@ -472,6 +474,10 @@ export function initialize(home_view_loaded) {
     if (page_params.is_spectator) {
         // Since spectators never have old unreads, we can skip the
         // hacky fetch below for them (which would just waste resources).
+
+        // This optimization requires a bit of duplicated loading
+        // indicator code, here and hiding logic in hide_more.
+        recent_topics_ui.show_loading_indicator();
         return;
     }
 
@@ -500,10 +506,16 @@ export function initialize(home_view_loaded) {
         filter: new Filter([{operator: "in", operand: "home"}]),
         excludes_muted_topics: true,
     });
+    // TODO: Ideally we'd have loading indicators for recent topics at
+    // both top and bottom be managed by load_messages, but that
+    // likely depends on other reorganizations of the early loading
+    // sequence.
+    recent_topics_ui.show_loading_indicator();
     load_messages({
         anchor: "newest",
         num_before: consts.recent_topics_initial_fetch_size,
         num_after: 0,
         msg_list: recent_topics_message_list,
+        cont: recent_topics_ui.hide_loading_indicator,
     });
 }

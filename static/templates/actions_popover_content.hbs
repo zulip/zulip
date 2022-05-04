@@ -69,23 +69,6 @@
         </a>
     </li>
     {{/if}}
-    {{#if can_mute_topic}}
-    <li>
-        <a class="popover_mute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}" tabindex="0">
-            <i class="fa fa-bell-slash" aria-hidden="true"></i>
-            {{#tr}}Mute the topic <b>{topic}</b>{{/tr}} <span class="hotkey-hint">(M)</span>
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if can_unmute_topic}}
-    <li>
-        <a class="popover_unmute_topic" data-msg-stream-id="{{stream_id}}" data-msg-topic="{{topic}}" tabindex="0">
-            <i class="fa fa-bell" aria-hidden="true"></i>
-            {{#tr}}Unmute the topic <b>{topic}</b>{{/tr}}
-        </a>
-    </li>
-    {{/if}}
 
     {{#if should_display_add_reaction_option}}
     <li>

@@ -46,7 +46,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Dark theme](/help/dark-theme)
 * [Change your language](/help/change-your-language)
-* [Change your timezone](/help/change-your-timezone)
+* [Change your time zone](/help/change-your-timezone)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Configure default view](/help/configure-default-view)
@@ -104,6 +104,8 @@
 * [Rename a topic](/help/rename-a-topic)
 * [Resolve a topic](/help/resolve-a-topic)
 * [Move content to another topic](/help/move-content-to-another-topic)
+* [Move content to another stream](/help/move-content-to-another-stream)
+* [Delete a topic](/help/delete-a-topic)
 * [Manage inactive streams](/help/manage-inactive-streams)
 
 ## Notifications
@@ -126,6 +128,7 @@
 
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
+* [Organization type](/help/organization-type)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
@@ -143,11 +146,11 @@
 ## Users
 * [Roles and permissions](/help/roles-and-permissions)
 * [Invite new users](/help/invite-new-users)
-* [Allow anyone to join](/help/allow-anyone-to-join-without-an-invitation)
+* [Restrict account creation](/help/restrict-account-creation)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Add custom profile fields](/help/add-custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Set default language for new users](/help/change-the-default-language-for-your-organization)
+* [Configure organization notifications language](/help/change-the-default-language-for-your-organization)
 * [User groups](/help/user-groups)
 * [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
 * [Change a user's role](/help/change-a-users-role)
@@ -158,6 +161,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
+* [Public access option](/help/public-access-option)
 * [Stream posting policy](/help/stream-sending-policy)
 * [Restrict stream creation](/help/configure-who-can-create-streams)
 * [Restrict stream invitation](/help/configure-who-can-invite-to-streams)
@@ -167,20 +171,17 @@
 * [Change a stream's description](/help/change-the-stream-description)
 * [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Delete or archive a stream](/help/archive-a-stream)
-* [Move content to another stream](/help/move-content-to-another-stream)
-* [Delete a topic](/help/delete-a-topic)
 
 ## Organization settings
 * [Custom emoji](/help/custom-emoji)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
-* [Restrict topic editing](/help/configure-who-can-edit-topics)
 * [Require topics in stream messages](/help/require-topics)
 * [Restrict private messages](/help/restrict-private-messages)
-* [Restrict user group management](/help/restrict-user-group-management)
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-* [Block image and link previews](/help/allow-image-link-previews)
+* [Restrict topic editing](/help/configure-who-can-edit-topics)
+* [Restrict message editing](/help/configure-message-editing-and-deletion)
 * [Disable message edit history](/help/disable-message-edit-history)
-* [Manage editing of old messages](/help/configure-message-editing-and-deletion)
+* [Block image and link previews](/help/allow-image-link-previews)
 * [Hide message content in emails](/help/hide-message-content-in-emails)
 * [Message retention policy](/help/message-retention-policy)
 * [Weekly digest emails](/help/digest-emails)
@@ -196,4 +197,5 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Support
+* [View Zulip version](/help/view-zulip-version)
 * [Contact support](/help/contact-support)

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_function_call_disallowed_rewire, zrequire} = require("../zjsunit/namespace");
+const {with_function_call_disallowed_rewire, zrequire, mock_esm} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -15,6 +15,10 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
+
+mock_esm("../../static/js/spectators", {
+    login_to_access: () => {},
+});
 
 function empty_narrow_html(title, html, search_data) {
     const opts = {
@@ -171,14 +175,14 @@ run_test("uris", () => {
     people.add_active_user(me);
     people.initialize_current_user(me.user_id);
 
-    let uri = hash_util.pm_with_uri(ray.email);
-    assert.equal(uri, "#narrow/pm-with/22-ray");
+    let url = hash_util.pm_with_url(ray.email);
+    assert.equal(url, "#narrow/pm-with/22-ray");
 
-    uri = hash_util.huddle_with_uri("22,23");
-    assert.equal(uri, "#narrow/pm-with/22,23-group");
+    url = hash_util.huddle_with_url("22,23");
+    assert.equal(url, "#narrow/pm-with/22,23-group");
 
-    uri = hash_util.by_sender_uri(ray.email);
-    assert.equal(uri, "#narrow/sender/22-ray");
+    url = hash_util.by_sender_url(ray.email);
+    assert.equal(url, "#narrow/sender/22-ray");
 
     let emails = hash_util.decode_operand("pm-with", "22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");
@@ -215,7 +219,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         empty_narrow_html("translated: This stream does not exist or is private."),
     );
 
-    // for non sub public stream
+    // for non-subbed public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
@@ -228,7 +232,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         ),
     );
 
-    // for non web public stream for spectator
+    // for non-web-public stream for spectator
     page_params.is_spectator = true;
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
@@ -237,7 +241,7 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/web-public-streams">web-public</a>.',
+            'translated HTML: This is not a <a href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
     );
 
@@ -251,8 +255,21 @@ run_test("show_empty_narrow_message", ({mock_template}) => {
         $(".empty_feed_notice_main").html(),
         empty_narrow_html(
             "",
-            'translated HTML: This stream does not exist or is not <a href="https://zulip.com/help/web-public-streams">web-public</a>.',
+            'translated HTML: This is not a <a href="/help/public-access-option">publicly accessible</a> conversation.',
         ),
+    );
+
+    // for web-public stream for spectator
+    stream_data.add_sub({name: "web-public-stream", stream_id: 1231, is_web_public: true});
+    set_filter([
+        ["stream", "web-public-stream"],
+        ["topic", "foo"],
+    ]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html("translated: Nothing's been sent here yet!", ""),
     );
     page_params.is_spectator = false;
 
@@ -449,7 +466,6 @@ run_test("show_empty_narrow_message_with_search", ({mock_template}) => {
 });
 
 run_test("hide_empty_narrow_message", () => {
-    $(".empty_feed_notice_main").html("<div class='empty_feed_notice'>Nothing here</div>");
     narrow_banner.hide_empty_narrow_message();
     assert.equal($(".empty_feed_notice").text(), "never-been-set");
 });

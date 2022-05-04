@@ -4,7 +4,7 @@ Git is a powerful yet complex version control system. Even for contributors
 experienced at using version control, it can be confusing. The good news is
 that nearly all Git actions add information to the Git database, rather than
 removing it. As such, it's hard to make Git perform actions that you can't
-undo. However, git can't undo what it doesn't know about, so it's a good
+undo. However, Git can't undo what it doesn't know about, so it's a good
 practice to frequently commit your changes and frequently push your commits to
 your remote repository.
 
@@ -59,7 +59,7 @@ e5f8211 HEAD@{0}: pull upstream main: Merge made by the 'recursive' strategy.
 13bea0e HEAD@{1}: commit: test commit for docs.
 ```
 
-Reflog output will be long. The most recent git refs will be listed at the top.
+Reflog output will be long. The most recent Git refs will be listed at the top.
 In the example above `e5f8211 HEAD@{0}:` is the merge commit made automatically
 by `git pull` and `13bea0e HEAD@{1}:` is the last commit I made before running
 `git pull`, the commit that I want to rollback to.
@@ -81,7 +81,7 @@ committed, use `git reset --merge <commit>` instead.
 :::
 
 You can also use the relative reflog `HEAD@{1}` instead of the commit hash,
-just keep in mind that this changes as you run git commands.
+just keep in mind that this changes as you run Git commands.
 
 Now when you look at the output of `git reflog`, you should see that the tip of your branch points to your
 last commit `13bea0e` before the merge:
@@ -145,10 +145,10 @@ $ git cherry-pick 67aea58
  create mode 100644 test4.txt
 ```
 
-## Recover from a git rebase failure
+## Recover from a `git rebase` failure
 
 One situation in which `git rebase` will fail and require you to intervene is
-when your change, which git will try to re-apply on top of new commits from
+when your change, which Git will try to re-apply on top of new commits from
 which ever branch you are rebasing on top of, is to code that has been changed
 by those new commits.
 
@@ -275,8 +275,8 @@ keep,** you'll need to use `git log FETCH_HEAD` to identify that hashes of the
 commits you want to keep and then `git cherry-pick <commit>` those commits into
 whichever branch you need to update.
 
-[clone-to-your-machine]: ../git/cloning.html#step-1b-clone-to-your-machine
-[connect-upstream]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
+[clone-to-your-machine]: cloning.md#step-1b-clone-to-your-machine
+[connect-upstream]: cloning.md#step-1c-connect-your-fork-to-zulip-upstream
 [gitbook-advanced-merging]: https://git-scm.com/book/en/v2/Git-Tools-Advanced-Merging#_advanced_merging
 [gitbook-basic-merge-conflicts]: https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merge-Conflicts
 [gitbook-git-cherry-pick]: https://git-scm.com/docs/git-cherry-pick

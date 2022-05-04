@@ -9,6 +9,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -162,7 +163,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 def api_librato_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(converter=orjson.loads, default={}),
+    payload: Dict[str, Any] = REQ(json_validator=check_dict(), default={}),
 ) -> HttpResponse:
     try:
         attachments = orjson.loads(request.body).get("attachments", [])

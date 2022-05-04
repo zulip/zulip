@@ -9,7 +9,7 @@ const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespa
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
+const template = fs.readFileSync("templates/corporate/billing.html", "utf8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
@@ -136,14 +136,12 @@ run_test("licensechange", ({override, override_rewire}) => {
     assert.ok(confirm_license_modal_shown);
 
     override(helpers, "is_valid_input", () => false);
-    let prevent_default_called = false;
     const event = {
-        prevent_default: () => {
-            prevent_default_called = true;
+        preventDefault: /* istanbul ignore next */ () => {
+            throw new Error("unexpected preventDefault call");
         },
     };
     update_licenses_button_click_handler(event);
-    assert.ok(!prevent_default_called);
 
     const update_next_renewal_licenses_button_click_handler = $(
         "#update-licenses-at-next-renewal-button",

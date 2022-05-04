@@ -8,7 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.models import installation_epoch
-from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day, floor_to_hour, verify_UTC
+from zerver.lib.timestamp import TimeZoneNotUTCException, floor_to_day, floor_to_hour, verify_UTC
 from zerver.models import Realm
 
 states = {
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 last_fill = installation_epoch()
             try:
                 verify_UTC(last_fill)
-            except TimezoneNotUTCException:
+            except TimeZoneNotUTCException:
                 return {"status": 2, "message": f"FillState not in UTC for {property}"}
 
             if stat.frequency == CountStat.DAY:

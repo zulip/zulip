@@ -29,7 +29,7 @@ class zulip::profile::base {
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
         # Accurate time is essential
-        'ntp',
+        'chrony',
         # Used for tools like sponge
         'moreutils',
         # Nagios monitoring plugins
@@ -49,7 +49,7 @@ class zulip::profile::base {
         'curl',
         'jq',
         'crudini',
-        'ntp',
+        'chrony',
         'moreutils',
         'nmap-ncat',
         'nagios-plugins',  # there is no dummy package on CentOS 7
@@ -60,7 +60,9 @@ class zulip::profile::base {
       fail('osfamily not supported')
     }
   }
-  package { $base_packages: ensure => 'installed' }
+  package { 'ntp': ensure => purged, before => Package['chrony'] }
+  service { 'chrony': require => Package['chrony'] }
+  package { $base_packages: ensure => installed }
 
   group { 'zulip':
     ensure => present,
@@ -76,21 +78,21 @@ class zulip::profile::base {
   }
 
   file { '/etc/zulip':
-    ensure => 'directory',
+    ensure => directory,
     mode   => '0644',
     owner  => 'zulip',
     group  => 'zulip',
-    links  => 'follow',
+    links  => follow,
   }
   file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
-    ensure  => 'file',
+    ensure  => file,
     require => File['/etc/zulip'],
     mode    => '0644',
     owner   => 'zulip',
     group   => 'zulip',
   }
   file { '/etc/zulip/zulip-secrets.conf':
-    ensure  => 'file',
+    ensure  => file,
     require => File['/etc/zulip'],
     mode    => '0640',
     owner   => 'zulip',
@@ -113,7 +115,7 @@ class zulip::profile::base {
   }
 
   file { '/var/log/zulip':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0640',

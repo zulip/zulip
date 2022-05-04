@@ -1,19 +1,19 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
-
 import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import {buddy_list} from "./buddy_list";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
@@ -77,7 +77,7 @@ export function dispatch_normal_event(event) {
     switch (event.type) {
         case "alert_words":
             alert_words.set_words(event.alert_words);
-            alert_words_ui.render_alert_words_ui();
+            alert_words_ui.rerender_alert_words_ui();
             break;
 
         case "attachment":
@@ -214,6 +214,7 @@ export function dispatch_normal_event(event) {
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
+                org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
@@ -334,7 +335,9 @@ export function dispatch_normal_event(event) {
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
-                    blueslip.info("ignoring bot deletion for live UI update");
+                    bot_data.del(event.bot.user_id);
+                    settings_bots.render_bots();
+                    settings_users.redraw_bots_list();
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
@@ -423,6 +426,8 @@ export function dispatch_normal_event(event) {
                 case "remove":
                     people.deactivate(event.person);
                     stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
+                    settings_users.update_view_on_deactivate(event.person.user_id);
+                    buddy_list.maybe_remove_key({key: event.person.user_id});
                     break;
                 case "update":
                     user_events.update_person(event.person);
@@ -602,6 +607,7 @@ export function dispatch_normal_event(event) {
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
+                "display_emoji_reaction_users",
                 "starred_message_counts",
                 "send_stream_typing_notifications",
                 "send_private_typing_notifications",
@@ -682,6 +688,10 @@ export function dispatch_normal_event(event) {
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();
             }
+
+            if (event.property === "display_emoji_reaction_users") {
+                message_live_update.rerender_messages_view();
+            }
             if (event.property === "escape_navigates_to_default_view") {
                 $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
             }
@@ -716,7 +726,14 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "read":
-                    unread_ops.process_read_messages_event(event.messages);
+                    if (event.op === "add") {
+                        unread_ops.process_read_messages_event(event.messages);
+                    } else {
+                        unread_ops.process_unread_messages_event({
+                            message_ids: event.messages,
+                            message_details: event.message_details,
+                        });
+                    }
                     break;
             }
             break;

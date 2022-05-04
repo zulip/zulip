@@ -1,17 +1,22 @@
 # Status and availability
 
-Status and availability let your teammates know roughly how quickly you'll
-be responding to messages.
+Status and availability let everyone know roughly how quickly you'll be
+responding to messages.
 
-A **status** is a customizable message visible to all team members. A
-typical status might be "in a meeting", "on vacation", or "visiting SF next week".
+A **status** is a customizable emoji, along with a short message. A typical
+status might be "📅 In a meeting" or "🏠 Working remotely". To make them easy to
+notice, status emoji are shown next to your name in the sidebars, message feed,
+and compose box.
 
-Your **availability** is a colored dot (like <span class="indicator green solid"></span>)
-that indicates if you're currently active on Zulip, idle,
-offline, or unavailable. If you're not current active, Zulip also lets your
-teammates know when you were last active.
+Your **availability** is a colored dot (like <span class="indicator green
+solid"></span>) that indicates if you're currently active on Zulip, idle,
+offline, or unavailable.
 
-## Set a status
+## Statuses
+
+### Set a status
+
+You can set a status emoji, status message, or both.
 
 {start_tabs}
 
@@ -21,15 +26,24 @@ teammates know when you were last active.
 
 1. Click **Set a status**.
 
-1. Set a status messages and click **Save**.
+1. Click to select one of the common statuses, *or* choose any emoji and/or
+   write a short message.
+
+1. Click **Save**.
 
 {end_tabs}
 
-You can view anyone else's status by hovering over their name in the left or
-right sidebar, or by clicking their name or avatar in the main message feed. If
-they haven't set a status, no status will appear.
+### View a status
 
-## About availability
+Status emoji are shown next to a user's name in the sidebars, message feed,
+and compose box.
+
+You can view status messages by hovering over your or anyone else's name in the
+left or right sidebar, or by clicking the user's name or avatar in the main
+message feed. If someone hasn't set a message as part of their status, then no
+status message will appear.
+
+## Availability
 
 There are four possible availabilities:
 
@@ -51,7 +65,7 @@ You can see when someone was last recorded as active by hovering over
 their name in the left or right sidebar (even if the user is marked as
 unavailable).
 
-## Set yourself as unavailable
+### Set yourself as unavailable
 
 {start_tabs}
 
@@ -65,7 +79,7 @@ unavailable).
 
 You can use the same menu to mark yourself available again as well.
 
-## Disable updating availability
+### Disable updating availability
 
 Zulip supports the privacy option of never updating the availability
 information for your account.  The result is that you will always
@@ -97,3 +111,17 @@ Typing notifications are only sent while one is actively editing text
 in the compose box, and they disappear if typing is paused for about
 15 seconds.  Just having the compose box open will not send a typing
 notification.
+
+### Disable typing notifications
+
+If you'd prefer that others not know whether you're typing, you can
+configure Zulip to not send typing notifications.
+
+{start_tabs}
+
+{settings_tab|account-and-privacy}
+
+1. Under **Privacy**, toggle **Let recipients see when I'm typing
+   private messages**.
+
+{end_tabs}

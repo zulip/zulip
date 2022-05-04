@@ -302,18 +302,20 @@ class TornadoQueueClient(QueueClient[Channel]):
             "TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_connection_closed(
         self, connection: pika.connection.Connection, reason: Exception
     ) -> None:
+        if self.connection is None:
+            return
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning(
             "TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs...",
             retry_secs,
         )
-        ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
+        ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
         assert self.connection is not None
@@ -335,6 +337,7 @@ class TornadoQueueClient(QueueClient[Channel]):
     def close(self) -> None:
         if self.connection is not None:
             self.connection.close()
+            self.connection = None
 
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
         def set_qos(frame: Any) -> None:
@@ -393,28 +396,20 @@ class TornadoQueueClient(QueueClient[Channel]):
         )
 
 
-queue_client: Optional[Union[SimpleQueueClient, TornadoQueueClient]] = None
+thread_data = threading.local()
 
 
 def get_queue_client() -> Union[SimpleQueueClient, TornadoQueueClient]:
-    global queue_client
-    if queue_client is None:
-        if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
-            queue_client = TornadoQueueClient()
-        elif settings.USING_RABBITMQ:
-            queue_client = SimpleQueueClient()
-        else:
+    if not hasattr(thread_data, "queue_client"):
+        if not settings.USING_RABBITMQ:
             raise RuntimeError("Cannot get a queue client without USING_RABBITMQ")
+        thread_data.queue_client = SimpleQueueClient()
 
-    return queue_client
+    return thread_data.queue_client
 
 
-# We using a simple lock to prevent multiple RabbitMQ messages being
-# sent to the SimpleQueueClient at the same time; this is a workaround
-# for an issue with the pika BlockingConnection where using
-# BlockingConnection for multiple queues causes the channel to
-# randomly close.
-queue_lock = threading.RLock()
+def set_queue_client(queue_client: Union[SimpleQueueClient, TornadoQueueClient]) -> None:
+    thread_data.queue_client = queue_client
 
 
 def queue_json_publish(
@@ -422,16 +417,15 @@ def queue_json_publish(
     event: Dict[str, Any],
     processor: Optional[Callable[[Any], None]] = None,
 ) -> None:
-    with queue_lock:
-        if settings.USING_RABBITMQ:
-            get_queue_client().json_publish(queue_name, event)
-        elif processor:
-            processor(event)
-        else:
-            # Must be imported here: A top section import leads to circular imports
-            from zerver.worker.queue_processors import get_worker
+    if settings.USING_RABBITMQ:
+        get_queue_client().json_publish(queue_name, event)
+    elif processor:
+        processor(event)
+    else:
+        # Must be imported here: A top section import leads to circular imports
+        from zerver.worker.queue_processors import get_worker
 
-            get_worker(queue_name).consume_single_event(event)
+        get_worker(queue_name).consume_single_event(event)
 
 
 def retry_event(

@@ -114,18 +114,15 @@ def get_safe_redirect_to(url: str, redirect_host: str) -> str:
 
 def create_preregistration_user(
     email: str,
-    request: HttpRequest,
+    realm: Optional[Realm],
     realm_creation: bool = False,
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
 ) -> PreregistrationUser:
-    realm = None
-    if not realm_creation:
-        try:
-            realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
-            pass
+    assert not (realm_creation and realm is not None)
+    assert not (realm is None and not realm_creation)
+
     return PreregistrationUser.objects.create(
         email=email,
         realm_creation=realm_creation,
@@ -181,8 +178,14 @@ def maybe_send_to_registration(
             request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
         )
 
+    try:
+        # TODO: This should use get_realm_from_request, but a bunch of tests
+        # rely on mocking get_subdomain here, so they'll need to be tweaked first.
+        realm: Optional[Realm] = get_realm(get_subdomain(request))
+    except Realm.DoesNotExist:
+        realm = None
+
     multiuse_obj: Optional[MultiuseInvite] = None
-    realm: Optional[Realm] = None
     from_multiuse_invite = False
     if multiuse_object_key:
         from_multiuse_invite = True
@@ -192,13 +195,11 @@ def maybe_send_to_registration(
             return render_confirmation_key_error(request, exception)
 
         assert multiuse_obj is not None
-        realm = multiuse_obj.realm
+        if realm != multiuse_obj.realm:
+            return render(request, "confirmation/link_does_not_exist.html", status=404)
+
         invited_as = multiuse_obj.invited_as
     else:
-        try:
-            realm = get_realm(get_subdomain(request))
-        except Realm.DoesNotExist:
-            pass
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
     form = HomepageForm({"email": email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
@@ -226,7 +227,7 @@ def maybe_send_to_registration(
         except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email,
-                request,
+                realm,
                 password_required=password_required,
                 full_name=full_name,
                 full_name_validated=full_name_validated,
@@ -959,6 +960,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
         "realm_name",
         "realm_icon",
         "realm_description",
+        "realm_web_public_access_enabled",
         "external_authentication_methods",
     ]:
         if context[settings_item] is not None:

@@ -27,8 +27,8 @@ from .config import get_secret
 ## appear on 404 pages, is used as the sender's address for many automated
 ## emails, and is advertised as a support address. An email address like
 ## support@example.com is totally reasonable, as is admin@example.com.
-## Do not put a display name; e.g. 'support@example.com', not
-## 'Zulip Support <support@example.com>'.
+## Do not put a display name; e.g. "support@example.com", not
+## "Zulip Support <support@example.com>".
 ZULIP_ADMINISTRATOR = "zulip-admin@example.com"
 
 ## The user-accessible Zulip hostname for this installation, e.g.
@@ -46,17 +46,17 @@ EXTERNAL_HOST = "zulip.example.com"
 ## details, see the Django documentation:
 ## https://docs.djangoproject.com/en/3.2/ref/settings/#allowed-hosts
 ##
-## Zulip automatically adds to this list 'localhost', '127.0.0.1', and
+## Zulip automatically adds to this list "localhost", "127.0.0.1", and
 ## patterns representing EXTERNAL_HOST and subdomains of it.  If you are
 ## accessing your server by other hostnames, list them here.
 ##
 ## Note that these should just be hostnames, without port numbers.
-# ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
+# ALLOWED_HOSTS = ["zulip-alias.example.com", "192.0.2.1"]
 
 ## If EXTERNAL_HOST is not a valid domain name (e.g. an IP address),
 ## set FAKE_EMAIL_DOMAIN below to a domain that Zulip can use when
 ## generating (fake) email addresses for bots, dummy users, etc.
-# FAKE_EMAIL_DOMAIN = 'fake-domain.example.com'
+# FAKE_EMAIL_DOMAIN = "fake-domain.example.com"
 
 
 ################
@@ -72,8 +72,8 @@ EXTERNAL_HOST = "zulip.example.com"
 ##   https://zulip.readthedocs.io/en/latest/production/email.html
 
 ## EMAIL_HOST and EMAIL_HOST_USER are generally required.
-# EMAIL_HOST = 'smtp.example.com'
-# EMAIL_HOST_USER = ''
+# EMAIL_HOST = "smtp.example.com"
+# EMAIL_HOST_USER = ""
 
 ## Passwords and secrets are not stored in this file.  The password
 ## for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
@@ -97,14 +97,14 @@ EXTERNAL_HOST = "zulip.example.com"
 ## contain confirmation links (where the security problem fixed by
 ## ADD_TOKENS_TO_NOREPLY_ADDRESS does not exist), as well as for
 ## confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
-# NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
+# NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
 ## Many countries and bulk mailers require certain types of email to display
 ## a physical mailing address to comply with anti-spam legislation.
 ## Non-commercial and non-public-facing installations are unlikely to need
 ## this setting.
 ## The address should have no newlines.
-# PHYSICAL_ADDRESS = ''
+# PHYSICAL_ADDRESS = ""
 
 
 ################
@@ -141,15 +141,15 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 ## initial realm and user.
 AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     "zproject.backends.EmailAuthBackend",  # Email and password; just requires SMTP setup
-    # 'zproject.backends.GoogleAuthBackend',  # Google auth, setup below
-    # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
-    # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
-    # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
-    # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
-    # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
-    # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
-    # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
-    # 'zproject.backends.GenericOpenIdConnectBackend',  # Generic OIDC integration, setup below
+    # "zproject.backends.GoogleAuthBackend",  # Google auth, setup below
+    # "zproject.backends.GitHubAuthBackend",  # GitHub auth, setup below
+    # "zproject.backends.GitLabAuthBackend",  # GitLab auth, setup below
+    # "zproject.backends.AzureADAuthBackend",  # Microsoft Azure Active Directory auth, setup below
+    # "zproject.backends.AppleAuthBackend",  # Apple auth, setup below
+    # "zproject.backends.SAMLAuthBackend",  # SAML, setup below
+    # "zproject.backends.ZulipLDAPAuthBackend",  # LDAP, setup below
+    # "zproject.backends.ZulipRemoteUserBackend",  # Local SSO, setup docs on readthedocs
+    # "zproject.backends.GenericOpenIdConnectBackend",  # Generic OIDC integration, setup below
 )
 
 ## LDAP integration.
@@ -273,19 +273,23 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## "APIs & Services" > "Credentials", and create a "Project" which will
 ## correspond to your Zulip instance.
 ##
-## (2) Navigate to "APIs & services" > "Library", and find the
-## "Identity Toolkit API".  Choose "Enable".
+## (2) Go to "Oauth consent screen" and create a consent screen,
+## authorizing your domain and enabling the .../auth/userinfo.email,
+## .../auth/userinfo.profile and openid scopes.  If all of your users
+## share a Google Workspace, you can select the "Internal" user type
+## during Oauth screen creation to limit authentication via this
+## backend to users within your Google Workspace organization.
 ##
 ## (3) Return to "Credentials", and select "Create credentials".
-## Choose "OAuth client ID", and follow prompts to create a consent
-## screen.  Fill in "Authorized redirect URIs" with a value like
+## Choose "OAuth client ID", and fill in the app name as desired
+## and "Authorized redirect URIs" with a value like
 ##   https://zulip.example.com/complete/google/
 ## based on your value for EXTERNAL_HOST.
 ##
 ## (4) You should get a client ID and a client secret. Copy them.
 ## Use the client ID as `SOCIAL_AUTH_GOOGLE_KEY` here, and put the
 ## client secret in zulip-secrets.conf as `social_auth_google_secret`.
-# SOCIAL_AUTH_GOOGLE_KEY = <your client ID from Google>
+# SOCIAL_AUTH_GOOGLE_KEY = "<your client ID from Google>"
 
 ########
 ## GitLab OAuth.
@@ -305,8 +309,8 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## zulip-secrets.conf as `social_auth_gitlab_secret`.
 ## (5) If you are self-hosting GitLab, provide the URL of the
 ## GitLab server as SOCIAL_AUTH_GITLAB_API_URL here.
-# SOCIAL_AUTH_GITLAB_KEY = <your Application ID from GitLab>
-# SOCIAL_AUTH_GITLAB_API_URL = https://gitlab.example.com
+# SOCIAL_AUTH_GITLAB_KEY = "<your Application ID from GitLab>"
+# SOCIAL_AUTH_GITLAB_API_URL = "https://gitlab.example.com"
 
 ########
 ## GitHub OAuth.
@@ -324,14 +328,14 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## showing a client ID and a client secret.  Use the client ID as
 ## `SOCIAL_AUTH_GITHUB_KEY` here, and put the client secret in
 ## zulip-secrets.conf as `social_auth_github_secret`.
-# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
+# SOCIAL_AUTH_GITHUB_KEY = "<your client ID from GitHub>"
 
 ## (3) Optionally, you can configure the GitHub integration to only
 ## allow members of a particular GitHub team or organization to log
 ## into your Zulip server through GitHub authentication.  To enable
 ## this, set one of the two parameters below:
-# SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
-# SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+# SOCIAL_AUTH_GITHUB_TEAM_ID = "<your team id>"
+# SOCIAL_AUTH_GITHUB_ORG_NAME = "<your org name>"
 
 ## (4) If you are serving multiple Zulip organizations on different
 ## subdomains, you need to set SOCIAL_AUTH_SUBDOMAIN.  You can set it
@@ -340,7 +344,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## subdomain; if you're using this setting, the "Callback URL" should be e.g.:
 ##   https://auth.zulip.example.com/complete/github/
 #
-# SOCIAL_AUTH_SUBDOMAIN = 'auth'
+# SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 ########
 ## Generic OpenID Connect (OIDC).  See also documentation here:
@@ -514,7 +518,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
 ## (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
-# SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ''
+# SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ""
 
 ########
 ## SSO via REMOTE_USER.
@@ -538,9 +542,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Valid values for REMOTE_POSTGRES_SSLMODE are documented in the
 ## "SSL Mode Descriptions" table in
 ##   https://www.postgresql.org/docs/9.5/static/libpq-ssl.html
-# REMOTE_POSTGRES_HOST = 'dbserver.example.com'
-# REMOTE_POSTGRES_PORT = '5432'
-# REMOTE_POSTGRES_SSLMODE = 'require'
+# REMOTE_POSTGRES_HOST = "dbserver.example.com"
+# REMOTE_POSTGRES_PORT = "5432"
+# REMOTE_POSTGRES_SSLMODE = "require"
 
 ########
 ## RabbitMQ configuration.
@@ -549,8 +553,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## but Zulip also supports connecting to RabbitMQ over the network;
 ## to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
 # RABBITMQ_HOST = "127.0.0.1"
-## To use another RabbitMQ user than the default 'zulip', set RABBITMQ_USERNAME here.
-# RABBITMQ_USERNAME = 'zulip'
+## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
+# RABBITMQ_USERNAME = "zulip"
 
 ########
 ## Redis configuration.
@@ -558,7 +562,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## By default, Zulip connects to Redis running locally on the machine,
 ## but Zulip also supports connecting to Redis over the network;
 ## to use a remote Redis instance, set REDIS_HOST here.
-# REDIS_HOST = '127.0.0.1'
+# REDIS_HOST = "127.0.0.1"
 ## For a different Redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
 ## If you set redis_password in zulip-secrets.conf, Zulip will use that password
@@ -573,8 +577,8 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Format HOST:PORT
 # MEMCACHED_LOCATION = 127.0.0.1:11211
 ## To authenticate to memcached, set memcached_password in zulip-secrets.conf,
-## and optionally change the default username 'zulip@localhost' here.
-# MEMCACHED_USERNAME = 'zulip@localhost'
+## and optionally change the default username "zulip@localhost" here.
+# MEMCACHED_USERNAME = "zulip@localhost"
 
 
 ################
@@ -619,7 +623,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 # BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
-# SENTRY_DSN = 'https://bbb@bbb.ingest.sentry.io/1235'
+# SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1235"
 
 ## If True, each log message in the server logs will identify the
 ## Python module where it came from.  Useful for tracking down a
@@ -641,14 +645,13 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## Controls the Zoom video call integration.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
-#
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom client ID>
+# VIDEO_ZOOM_CLIENT_ID = "<your Zoom client ID>"
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify
 ## your own Jitsi Meet server, or if you'd like to disable the
 ## integration, set JITSI_SERVER_URL = None.
-# JITSI_SERVER_URL = 'https://jitsi.example.com'
+# JITSI_SERVER_URL = "https://jitsi.example.com"
 
 ## Controls the BigBlueButton video call integration.  You must also
 ## set big_blue_button_secret in zulip-secrets.conf.
@@ -666,7 +669,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## notification bouncer server to the mobile apps.  See
 ## https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 ## for information on how to sign up for and configure this.
-# PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'
+# PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"
 
 ## Whether to redact the content of push notifications.  This is less
 ## usable, but avoids sending message content over the wire.  In the
@@ -717,6 +720,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_AVATAR_BUCKET = ""
 # S3_REGION = None
 # S3_ENDPOINT_URL = None
+# S3_SKIP_PROXY = True
 
 ## Maximum allowed size of uploaded files, in megabytes.  This value is
 ## capped at 80MB in the nginx configuration, because the file upload
@@ -743,11 +747,11 @@ ENABLE_GRAVATAR = True
 ## To override the default avatar image if ENABLE_GRAVATAR is False, place your
 ## custom default avatar image at /home/zulip/local-static/default-avatar.png
 ## and uncomment the following line.
-# DEFAULT_AVATAR_URI = '/local-static/default-avatar.png'
+# DEFAULT_AVATAR_URI = "/local-static/default-avatar.png"
 
-## The default CAMO_URI of '/external_content/' is served by the camo
+## The default CAMO_URI of "/external_content/" is served by the camo
 ## setup in the default Zulip nginx configuration.  Setting CAMO_URI
-## to '' will disable the Camo integration.
+## to "" will disable the Camo integration.
 CAMO_URI = "/external_content/"
 
 ## Controls the tutorial popups for new users.

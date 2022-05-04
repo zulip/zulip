@@ -37,7 +37,7 @@ To configure the delay for message notification emails:
 
 {settings_tab|notifications}
 
-1. Under **Other notification settings**, select the desired time period from the
+1. Under **Email message notifications**, select the desired time period from the
    **Delay before sending message notification emails** dropdown.
 
 {end_tabs}
@@ -52,7 +52,7 @@ name of the organization in the subject line of your message notification emails
 
 {settings_tab|notifications}
 
-1. Under **Email message notifications**, select
+1. Under **Email message notifications**, toggle
    **Include organization name in subject of message notification emails**.
 
 {end_tabs}

@@ -7,7 +7,7 @@ contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations)
 with other services and applications (see [the directory structure
-guide](../overview/directory-structure.md)).
+guide](directory-structure.md)).
 
 [Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
 mobile Zulip client supporting both iOS and Android, written in
@@ -108,9 +108,9 @@ feed.
 
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
-[templates](../subsystems/html-css.html#html-templates),
-[directory structure](../overview/directory-structure.md), and
-[the static asset pipeline](../subsystems/html-css.html#static-asset-pipeline).
+[templates](../subsystems/html-css.md#html-templates),
+[directory structure](directory-structure.md), and
+[the static asset pipeline](../subsystems/html-css.md#static-asset-pipeline).
 
 [jinja2]: http://jinja.pocoo.org/
 [handlebars]: https://handlebarsjs.com/

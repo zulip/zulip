@@ -21,6 +21,7 @@ from typing import (
     Pattern,
     Set,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
 )
@@ -45,10 +46,9 @@ from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from soupsieve import escape as css_escape
 from tlds import tld_set
-from typing_extensions import TypedDict
 
 from zerver.lib import mention as mention
-from zerver.lib.cache import NotFoundInCache, cache_with_key
+from zerver.lib.cache import cache_with_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.exceptions import MarkdownRenderingException
@@ -63,7 +63,7 @@ from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.timezone import common_timezones
 from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
-from zerver.lib.url_preview import preview as link_preview
+from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import EmojiInfo, Message, Realm, linkifiers_for_realm
 
 ReturnT = TypeVar("ReturnT")
@@ -242,7 +242,7 @@ def get_web_link_regex() -> Pattern[str]:
     nested_paren_chunk = nested_paren_chunk % (inner_paren_contents,)
 
     file_links = r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r""
-    REGEX = fr"""
+    REGEX = rf"""
         (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                              # (Double-negative lookbehind to allow start-of-string)
         (?P<url>             # Main group
@@ -628,7 +628,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def add_a(
         self,
         root: Element,
-        url: str,
+        image_url: str,
         link: str,
         title: Optional[str] = None,
         desc: Optional[str] = None,
@@ -660,17 +660,19 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if (
             settings.THUMBNAIL_IMAGES
             and (not already_thumbnailed)
-            and user_uploads_or_external(url)
+            and user_uploads_or_external(image_url)
         ):
             # See docs/thumbnailing.md for some high-level documentation.
             #
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
-            url = url.lstrip("/")
-            img.set("src", "/thumbnail?" + urlencode({"url": url, "size": "thumbnail"}))
-            img.set("data-src-fullsize", "/thumbnail?" + urlencode({"url": url, "size": "full"}))
+            image_url = image_url.lstrip("/")
+            img.set("src", "/thumbnail?" + urlencode({"url": image_url, "size": "thumbnail"}))
+            img.set(
+                "data-src-fullsize", "/thumbnail?" + urlencode({"url": image_url, "size": "full"})
+            )
         else:
-            img.set("src", url)
+            img.set("src", image_url)
 
         if class_attr == "message_inline_ref":
             summary_div = SubElement(div, "div")
@@ -680,49 +682,44 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             desc_div = SubElement(summary_div, "desc")
             desc_div.set("class", "message_inline_image_desc")
 
-    def add_oembed_data(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> bool:
-        oembed_resource_type = extracted_data.get("type", "")
-        title = extracted_data.get("title")
-
-        if oembed_resource_type == "photo":
-            image = extracted_data.get("image")
-            if image:
-                self.add_a(root, image, link, title=title)
-                return True
-
-        elif oembed_resource_type == "video":
-            html = extracted_data["html"]
-            image = extracted_data["image"]
-            title = extracted_data.get("title")
-            description = extracted_data.get("description")
-            self.add_a(
-                root,
-                image,
-                link,
-                title,
-                description,
-                "embed-video message_inline_image",
-                html,
-                already_thumbnailed=True,
-            )
-            return True
-
-        return False
-
-    def add_embed(self, root: Element, link: str, extracted_data: Dict[str, Any]) -> None:
-        oembed = extracted_data.get("oembed", False)
-        if oembed and self.add_oembed_data(root, link, extracted_data):
+    def add_oembed_data(self, root: Element, link: str, extracted_data: UrlOEmbedData) -> None:
+        if extracted_data.image is None:
+            # Don't add an embed if an image is not found
             return
 
-        img_link = extracted_data.get("image")
-        if not img_link:
+        if extracted_data.type == "photo":
+            self.add_a(
+                root,
+                image_url=extracted_data.image,
+                link=link,
+                title=extracted_data.title,
+            )
+
+        elif extracted_data.type == "video":
+            self.add_a(
+                root,
+                image_url=extracted_data.image,
+                link=link,
+                title=extracted_data.title,
+                desc=extracted_data.description,
+                class_attr="embed-video message_inline_image",
+                data_id=extracted_data.html,
+                already_thumbnailed=True,
+            )
+
+    def add_embed(self, root: Element, link: str, extracted_data: UrlEmbedData) -> None:
+        if isinstance(extracted_data, UrlOEmbedData):
+            self.add_oembed_data(root, link, extracted_data)
+            return
+
+        if extracted_data.image is None:
             # Don't add an embed if an image is not found
             return
 
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        img_link = get_camo_url(img_link)
+        img_link = get_camo_url(extracted_data.image)
         img = SubElement(container, "a")
         img.set("style", "background-image: url(" + css_escape(img_link) + ")")
         img.set("href", link)
@@ -731,19 +728,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
 
-        title = extracted_data.get("title")
-        if title:
+        if extracted_data.title:
             title_elm = SubElement(data_container, "div")
             title_elm.set("class", "message_embed_title")
             a = SubElement(title_elm, "a")
             a.set("href", link)
-            a.set("title", title)
-            a.text = title
-        description = extracted_data.get("description")
-        if description:
+            a.set("title", extracted_data.title)
+            a.text = extracted_data.title
+        if extracted_data.description:
             description_elm = SubElement(data_container, "div")
             description_elm.set("class", "message_embed_description")
-            description_elm.text = description
+            description_elm.text = extracted_data.description
 
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
@@ -861,10 +856,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(2)
 
-    def youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
-        title = extracted_data.get("title")
-        if title is not None:
-            return f"YouTube - {title}"
+    def youtube_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
+        if extracted_data.title is not None:
+            return f"YouTube - {extracted_data.title}"
         return None
 
     def youtube_image(self, url: str) -> Optional[str]:
@@ -890,10 +884,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(5)
 
-    def vimeo_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
-        title = extracted_data.get("title")
-        if title is not None:
-            return f"Vimeo - {title}"
+    def vimeo_title(self, extracted_data: UrlEmbedData) -> Optional[str]:
+        if extracted_data.title is not None:
+            return f"Vimeo - {extracted_data.title}"
         return None
 
     def twitter_text(
@@ -1148,7 +1141,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         (url, text) = found_url.result
         actual_url = self.get_actual_image_url(url)
         self.add_a(
-            info["parent"], actual_url, url, title=info["title"], insertion_index=info["index"]
+            info["parent"],
+            image_url=actual_url,
+            link=url,
+            title=info["title"],
+            insertion_index=info["index"],
         )
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
@@ -1181,12 +1178,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         yt_id = self.youtube_id(url)
         self.add_a(
             info["parent"],
-            yt_image,
-            url,
-            None,
-            None,
-            "youtube-video message_inline_image",
-            yt_id,
+            image_url=yt_image,
+            link=url,
+            class_attr="youtube-video message_inline_image",
+            data_id=yt_id,
             insertion_index=info["index"],
             already_thumbnailed=True,
         )
@@ -1291,8 +1286,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     # Not making use of title and description of images
                 self.add_a(
                     root,
-                    dropbox_image["image"],
-                    url,
+                    image_url=dropbox_image["image"],
+                    link=url,
                     title=dropbox_image.get("title"),
                     desc=dropbox_image.get("desc", ""),
                     class_attr=class_attr,
@@ -1337,29 +1332,32 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if not self.md.url_embed_preview_enabled:
                 continue
 
-            try:
-                extracted_data = link_preview.link_embed_data_from_cache(url)
-            except NotFoundInCache:
+            if self.md.url_embed_data is None or url not in self.md.url_embed_data:
                 self.md.zulip_rendering_result.links_for_preview.add(url)
                 continue
 
-            if extracted_data:
-                if youtube is not None:
-                    title = self.youtube_title(extracted_data)
-                    if title is not None:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
-                    continue
-                self.add_embed(root, url, extracted_data)
-                if self.vimeo_id(url):
-                    title = self.vimeo_title(extracted_data)
-                    if title:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
+            # Existing but being None means that we did process the
+            # URL, but it was not valid to preview.
+            extracted_data = self.md.url_embed_data[url]
+            if extracted_data is None:
+                continue
+
+            if youtube is not None:
+                title = self.youtube_title(extracted_data)
+                if title is not None:
+                    if url == text:
+                        found_url.family.child.text = title
+                    else:
+                        found_url.family.child.text = text
+                continue
+            self.add_embed(root, url, extracted_data)
+            if self.vimeo_id(url):
+                title = self.vimeo_title(extracted_data)
+                if title:
+                    if url == text:
+                        found_url.family.child.text = title
+                    else:
+                        found_url.family.child.text = text
 
 
 class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
@@ -1404,7 +1402,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
         return time_element
 
 
-# All of our emojis(non ZWJ sequences) belong to one of these Unicode blocks:
+# All of our emojis (excluding ZWJ sequences) belong to one of these Unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
 # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
 # \U0001f300-\U0001f5ff - Miscellaneous Symbols and Pictographs
@@ -1739,7 +1737,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
         copy = lines[:]
         for i in range(len(lines) - 1):
             # Ignore anything that is inside a fenced code block but not quoted.
-            # We ignore all lines where some parent is a non quote code block.
+            # We ignore all lines where some parent is a non-quote code block.
             m = FENCE_RE.match(lines[i])
             if m:
                 fence_str = m.group("fence")
@@ -1785,7 +1783,7 @@ def prepare_linkifier_pattern(source: str) -> str:
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
-    return fr"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
+    return rf"""(?P<{BEFORE_CAPTURE_GROUP}>^|\s|['"\(,:<])(?P<{OUTER_CAPTURE_GROUP}>{source})(?P<{AFTER_CAPTURE_GROUP}>$|[^\pL\pN])"""
 
 
 # Given a regular expression pattern, linkifies groups that match it
@@ -2114,6 +2112,7 @@ class Markdown(markdown.Markdown):
     zulip_rendering_result: Optional[MessageRenderingResult]
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]]
 
     def __init__(
         self,
@@ -2365,9 +2364,21 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
             # here on an invalid regex would spam the logs with every
             # message sent; simply move on.
             continue
-        for m in pattern.finditer(topic_name):
+        pos = 0
+        while pos < len(topic_name):
+            m = pattern.search(topic_name, pos)
+            if m is None:
+                break
+
             match_details = m.groupdict()
             match_text = match_details[OUTER_CAPTURE_GROUP]
+
+            # Adjust the start point of the match for the next
+            # iteration -- we rewind the non-word character at the
+            # end, if there was one, so a potential next match can
+            # also use it.
+            pos = m.end() - len(match_details[AFTER_CAPTURE_GROUP])
+
             # We format the linkifier's url string using the matched text.
             # Also, we include the matched text in the response, so that our clients
             # don't have to implement any logic of their own to get back the text.
@@ -2440,6 +2451,7 @@ def do_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2495,6 +2507,7 @@ def do_convert(
     _md_engine.url_embed_preview_enabled = url_embed_preview_enabled(
         message, message_realm, no_previews
     )
+    _md_engine.url_embed_data = url_embed_data
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     if message_realm is not None:
@@ -2598,6 +2611,7 @@ def markdown_convert(
     message_realm: Optional[Realm] = None,
     sent_by_bot: bool = False,
     translate_emoticons: bool = False,
+    url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]] = None,
     mention_data: Optional[MentionData] = None,
     email_gateway: bool = False,
     no_previews: bool = False,
@@ -2610,6 +2624,7 @@ def markdown_convert(
         message_realm,
         sent_by_bot,
         translate_emoticons,
+        url_embed_data,
         mention_data,
         email_gateway,
         no_previews=no_previews,

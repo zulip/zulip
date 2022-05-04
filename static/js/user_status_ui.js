@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
 import render_set_status_overlay from "../templates/set_status_overlay.hbs";
 import render_status_emoji_selector from "../templates/status_emoji_selector.hbs";
 
 import * as dialog_widget from "./dialog_widget";
+import * as emoji from "./emoji";
 import {$t, $t_html} from "./i18n";
 import * as people from "./people";
 import * as user_status from "./user_status";
@@ -79,7 +79,7 @@ export function update_button() {
     old_status_text = old_status_text.trim();
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
     const new_status_text = input_field().val().trim();
-    const button = submit_button();
+    const $button = submit_button();
 
     if (
         old_status_text === new_status_text &&
@@ -87,9 +87,9 @@ export function update_button() {
         old_emoji_info.reaction_type === selected_emoji_info.reaction_type &&
         old_emoji_info.emoji_code === selected_emoji_info.emoji_code
     ) {
-        button.prop("disabled", true);
+        $button.prop("disabled", true);
     } else {
-        button.prop("disabled", false);
+        $button.prop("disabled", false);
     }
 }
 
@@ -102,8 +102,8 @@ export function toggle_clear_message_button() {
 }
 
 export function clear_message() {
-    const field = input_field();
-    field.val("");
+    const $field = input_field();
+    $field.val("");
     $("#clear_status_message_button").prop("disabled", true);
 }
 
@@ -125,12 +125,12 @@ function user_status_post_render() {
     const old_status_text = user_status.get_status_text(user_id);
     const old_emoji_info = user_status.get_status_emoji(user_id) || {};
     set_selected_emoji_info(old_emoji_info);
-    const field = input_field();
-    field.val(old_status_text);
+    const $field = input_field();
+    $field.val(old_status_text);
     toggle_clear_message_button();
 
-    const button = submit_button();
-    button.prop("disabled", true);
+    const $button = submit_button();
+    $button.prop("disabled", true);
 
     $("#set_user_status_modal .user-status-value").on("click", (event) => {
         event.stopPropagation();
@@ -167,6 +167,10 @@ function user_status_post_render() {
 
 export function initialize() {
     default_status_messages_and_emoji_info = [
+        {
+            status_text: $t({defaultMessage: "Busy"}),
+            emoji: emoji.get_emoji_details_by_name("working_on_it"),
+        },
         {
             status_text: $t({defaultMessage: "In a meeting"}),
             emoji: emoji.get_emoji_details_by_name("calendar"),

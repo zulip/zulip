@@ -7,6 +7,7 @@ import re
 import secrets
 import time
 import urllib
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Type
 from unittest import mock
@@ -39,18 +40,16 @@ from social_django.storage import BaseDjangoStorage
 from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.lib.actions import (
-    change_user_is_active,
-    do_create_realm,
-    do_create_user,
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.invites import do_invite_users
+from zerver.actions.realm_settings import (
     do_deactivate_realm,
-    do_deactivate_user,
-    do_invite_users,
     do_reactivate_realm,
-    do_reactivate_user,
     do_set_realm_property,
-    ensure_stream,
 )
+from zerver.actions.user_settings import do_change_password
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
@@ -64,6 +63,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.storage import static_path
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_s3_buckets,
@@ -91,6 +91,7 @@ from zerver.models import (
     PreregistrationUser,
     Realm,
     RealmDomain,
+    Stream,
     UserProfile,
     clear_supported_auth_backends_cache,
     email_to_username,
@@ -671,6 +672,11 @@ class RateLimitAuthenticationTests(ZulipTestCase):
                     # But the third attempt goes over the limit:
                     with self.assertRaises(RateLimited):
                         attempt_authentication(username, wrong_password)
+
+                    # Resetting the password also clears the rate-limit
+                    do_change_password(expected_user_profile, correct_password)
+                    self.assertIsNone(attempt_authentication(username, wrong_password))
+
             finally:
                 # Clean up to avoid affecting other tests.
                 RateLimitedAuthenticationByUsername(username).clear_history()
@@ -824,7 +830,7 @@ class DesktopFlowTestingLib(ZulipTestCase):
         return AESGCM(key).decrypt(iv, ciphertext, b"").decode()
 
 
-class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
+class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
     """This is a base class for testing social-auth backends. These
     methods are often overridden by subclasses:
 
@@ -834,10 +840,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         get_account_data_dict() - Return the data returned by the user info endpoint
                                   according to the respective backend.
     """
-
-    # Don't run base class tests, make sure to set it to False
-    # in subclass otherwise its tests will not run.
-    __unittest_skip__ = True
 
     BACKEND_CLASS: "Type[SocialAuthMixin]"
     LOGIN_URL: str
@@ -849,9 +851,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     CLIENT_KEY_SETTING: str
     CLIENT_SECRET_SETTING: str
 
-    # Functions that subclasses must implement.
+    @abstractmethod
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
-        ...
+        raise NotImplementedError
 
     def setUp(self) -> None:
         super().setUp()
@@ -1503,7 +1505,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [], invite_expires_in_days=2)
+        do_invite_users(iago, [email], [], invite_expires_in_minutes=2 * 24 * 60)
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1553,9 +1555,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
@@ -1580,6 +1582,48 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.stage_two_of_registration(
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+        )
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_social_auth_registration_using_multiuse_invite_realm_validation(self) -> None:
+        """If the user doesn't exist yet, social auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        realm.invite_required = True
+        realm.save()
+
+        streams: List[Stream] = []
+
+        # Generate an invitation for a different realm than the one we'll attempt to join:
+        lear_realm = get_realm("lear")
+        multiuse_obj = MultiuseInvite.objects.create(
+            realm=lear_realm, referred_by=UserProfile.objects.filter(realm=lear_realm).first()
+        )
+        multiuse_obj.streams.set(streams)
+        validity_in_minutes = 2 * 24 * 60
+        create_confirmation_link(
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
+        )
+        multiuse_confirmation = Confirmation.objects.all().last()
+        assert multiuse_confirmation is not None
+        multiuse_object_key = multiuse_confirmation.confirmation_key
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+
+        # Now we try to use the invitation for the lear realm to join the zulip realm,
+        # which should fail.
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain=subdomain,
+            is_signup=True,
+            expect_choose_email_screen=True,
+            multiuse_object_key=multiuse_object_key,
+        )
+
+        result = self.client_get(result.url)
+        self.assert_in_response(
+            "Whoops. We couldn't find your confirmation link in the system.", result
         )
 
     def test_social_auth_registration_without_is_signup(self) -> None:
@@ -1796,15 +1840,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         email = self.nonreg_email("alice")
         name = "Alice Jones"
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             iago,
             [email],
             [],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
             invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
-        now = timezone_now() + datetime.timedelta(days=invite_expires_in_days + 1)
+        now = timezone_now() + datetime.timedelta(days=3)
 
         subdomain = "zulip"
         realm = get_realm("zulip")
@@ -1823,8 +1867,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
 
 class SAMLAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = SAMLAuthBackend
     LOGIN_URL = "/accounts/login/social/saml/test_idp"
     SIGNUP_URL = "/accounts/register/social/saml/test_idp"
@@ -2902,8 +2944,6 @@ class AppleAuthMixin:
 
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
-    __unittest_skip__ = False
-
     LOGIN_URL = "/accounts/login/social/apple"
     SIGNUP_URL = "/accounts/register/social/apple"
 
@@ -3033,8 +3073,6 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
 
 class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
-    __unittest_skip__ = False
-
     SIGNUP_URL = "/complete/apple/"
     LOGIN_URL = "/complete/apple/"
 
@@ -3241,8 +3279,6 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
 
 
 class GenericOpenIdConnectTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
@@ -3454,8 +3490,6 @@ class GenericOpenIdConnectTest(SocialAuthBase):
 
 
 class GitHubAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GitHubAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITHUB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITHUB_SECRET"
@@ -3975,8 +4009,6 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
 
 class GitLabAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GitLabAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITLAB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITLAB_SECRET"
@@ -3996,8 +4028,6 @@ class GitLabAuthBackendTest(SocialAuthBase):
 
 
 class GoogleAuthBackendTest(SocialAuthBase):
-    __unittest_skip__ = False
-
     BACKEND_CLASS = GoogleAuthBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GOOGLE_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GOOGLE_SECRET"
@@ -4290,9 +4320,9 @@ class GoogleAuthBackendTest(SocialAuthBase):
         referrer = self.example_user("hamlet")
         multiuse_obj = MultiuseInvite.objects.create(realm=realm, referred_by=referrer)
         multiuse_obj.streams.set(streams)
-        validity_in_days = 2
+        validity_in_minutes = 2 * 24 * 60
         create_confirmation_link(
-            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_days=validity_in_days
+            multiuse_obj, Confirmation.MULTIUSE_INVITE, validity_in_minutes=validity_in_minutes
         )
         multiuse_confirmation = Confirmation.objects.all().last()
         assert multiuse_confirmation is not None
@@ -4800,6 +4830,7 @@ class FetchAuthBackends(ZulipTestCase):
                     ("zulip_merge_base", check_string),
                     ("zulip_feature_level", check_int),
                     ("push_notifications_enabled", check_bool),
+                    ("realm_web_public_access_enabled", check_bool),
                     ("msg", check_string),
                     ("result", check_string),
                     *extra_fields,
@@ -6090,7 +6121,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.assertEqual(hamlet.full_name, "Full Name")
 
     def test_same_full_name(self) -> None:
-        with mock.patch("zerver.lib.actions.do_change_full_name") as fn:
+        with mock.patch("zerver.actions.user_settings.do_change_full_name") as fn:
             self.perform_ldap_sync(self.example_user("hamlet"))
             fn.assert_not_called()
 
@@ -6207,7 +6238,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         self.change_ldap_user_attr("hamlet", "cn", "Second Hamlet")
         expected_call_args = [hamlet2, "Second Hamlet", None]
         with self.settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
-            with mock.patch("zerver.lib.actions.do_change_full_name") as f:
+            with mock.patch("zerver.actions.user_settings.do_change_full_name") as f:
                 self.perform_ldap_sync(hamlet2)
                 f.assert_called_once_with(*expected_call_args)
 
@@ -6555,7 +6586,7 @@ class TestRequireEmailFormatUsernames(ZulipTestCase):
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
@@ -6585,10 +6616,12 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         self.assert_in_response(f'value="{confirmation_key}" name="key"', result)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
-        rf = RequestFactory()
+        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
         request = rf.get("/")
         request.session = {}
         request.user = None
+
+        realm = get_realm("zulip")
 
         # Creating a mock Django form in order to keep the test simple.
         # This form will be returned by the create_homepage_form function
@@ -6599,7 +6632,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         email = self.example_email("hamlet")
-        user = PreregistrationUser(email=email)
+        user = PreregistrationUser(email=email, realm=realm)
         user.save()
         create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 
@@ -6730,3 +6763,7 @@ class LDAPBackendTest(ZulipTestCase):
             warn_log.output,
             ["WARNING:django_auth_ldap:('Realm is None', 1) while authenticating hamlet"],
         )
+
+
+# Don't load the base class as a test: https://bugs.python.org/issue17519.
+del SocialAuthBase

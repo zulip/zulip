@@ -1,32 +1,27 @@
-{{! Client-side Mustache template for rendering users in the stream creation modal.}}
-
-<div id="copy-from-stream-expand-collapse" class="add-user-label">
-    <i class="toggle fa fa-caret-right" aria-hidden="true"></i>
-    <span class="control-label">
-        {{t "Copy from stream" }}
-    </span>
+<div class="subscriber_list_add float-left">
+    {{> add_subscribers_form}}
 </div>
-
-<div id="stream-checkboxes">
-    {{#each streams}}
-        <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}">
-            <input type="checkbox" name="stream" />
-            <span></span>
-            {{this.name}} ( <i class="fa fa-user" aria-hidden="true"></i> {{this.subscriber_count}})
-        </label>
-    {{/each}}
-</div>
-
 <br />
-<input class="add-user-list-filter" name="user_list_filter" type="text"
-  autocomplete="off" placeholder="{{t 'Filter' }}" />
 
+{{t "Do you want to add everyone?"}}
+<button class="add_all_users_to_stream small button rounded sea-green">{{t 'Add all users'}}</button>
 
-<div>
-    <a draggable="false" class="subs_set_all_users" tabindex="0">{{t "Check all" }}</a> |
-    <a draggable="false" class="subs_unset_all_users" tabindex="0">{{t "Uncheck all" }}</a>
+<div class="create_stream_subscriber_list_header">
+    <h4 class="stream_setting_subsection_title">{{t 'Subscribers' }}</h4>
+    <input class="add-user-list-filter" name="user_list_filter" type="text"
+      autocomplete="off" placeholder="{{t 'Filter subscribers' }}" />
 </div>
 
-<div id="user-checkboxes-simplebar-wrapper" data-simplebar>
-    <div id="user-checkboxes"></div>
+<div class="subscriber-list-box">
+    <div class="subscriber_list_container" data-simplebar>
+        <table class="subscriber-list table table-striped">
+            <thead class="table-sticky-headers">
+                <th>{{t "Name" }}</th>
+                <th>{{t "Email" }}</th>
+                <th>{{t "User ID" }}</th>
+                <th>{{t "Action" }}</th>
+            </thead>
+            <tbody id="create_stream_subscribers" class="subscriber_table"></tbody>
+        </table>
+    </div>
 </div>

@@ -148,6 +148,14 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    #scroll-to-bottom-button-container {
+        background: transparent;
+
+        span {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
     #compose_buttons
         .reply_button_container
         .compose_reply_button
@@ -269,6 +277,14 @@ body.dark-theme {
         &:focus,
         &:active {
             background-color: hsla(0, 0%, 0%, 0.15);
+        }
+    }
+
+    .rendered_markdown .message_inline_image {
+        background: hsla(0, 0%, 100%, 0.03);
+
+        &:hover {
+            background: hsla(0, 0%, 100%, 0.15);
         }
     }
 
@@ -466,6 +482,16 @@ body.dark-theme {
         }
     }
 
+    #gear-menu {
+        .dark-theme {
+            display: none;
+        }
+
+        .light-theme {
+            display: block;
+        }
+    }
+
     .nav .dropdown-menu::after,
     .popover.bottom .arrow {
         border-bottom-color: hsl(235, 18%, 7%);
@@ -483,6 +509,7 @@ body.dark-theme {
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
     #message_edit_tooltip,
@@ -500,6 +527,7 @@ body.dark-theme {
         color: hsl(236, 33%, 80%);
     }
 
+    .narrow_to_compose_recipients:hover,
     .expand_composebox_button:hover,
     .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
@@ -599,6 +627,10 @@ body.dark-theme {
     .btn-recent-selected,
     #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
+
+        &[data-sort]:hover {
+            background-color: hsl(211, 29%, 14%) !important;
+        }
     }
 
     #recent_topics_table td a {
@@ -626,7 +658,7 @@ body.dark-theme {
     #settings_page .settings-header,
     #settings_page .form-sidebar .title,
     #settings_page .sidebar li.active,
-    #settings_page .sidebar .tab-container,
+    #settings_page .sidebar-wrapper .tab-container,
     .table-striped tbody tr:nth-child(even) td,
     .table-striped tbody tr:nth-child(odd) th,
     .modal-footer,
@@ -653,8 +685,8 @@ body.dark-theme {
     #subscription_overlay .subsection-parent div,
     #subscription_overlay .radio-input-parent,
     #stream_privacy_modal .radio-input-parent,
-    #settings_page .sidebar,
-    #settings_page .sidebar *,
+    #settings_page .sidebar-wrapper,
+    #settings_page .sidebar-wrapper *,
     table,
     table th,
     table td {
@@ -941,7 +973,7 @@ body.dark-theme {
 
     .alert-box {
         .alert.alert-error::before {
-            color: 1px solid hsl(0, 75%, 65%);
+            color: hsl(0, 75%, 65%);
         }
 
         .stacktrace {
@@ -1090,7 +1122,7 @@ body.dark-theme {
     }
 
     #out-of-view-notification {
-        border: 1px solid 1px solid hsl(144, 45%, 62%);
+        border: 1px solid hsl(144, 45%, 62%);
     }
 
     #bots_lists_navbar .active a {
@@ -1113,8 +1145,11 @@ body.dark-theme {
         color: hsl(200, 79%, 66%);
     }
 
-    #loading_older_messages_indicator path {
-        fill: hsl(0, 0%, 100%);
+    #loading_older_messages_indicator,
+    #recent_topics_loading_messages_indicator {
+        path {
+            fill: hsl(0, 0%, 100%);
+        }
     }
 
     .small_square_button {
@@ -1133,7 +1168,8 @@ body.dark-theme {
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
-    .auto-select:focus {
+    .auto-select:focus,
+    [role="button"]:focus {
         outline-color: hsl(0, 0%, 67%);
     }
 
@@ -1183,6 +1219,12 @@ body.dark-theme {
     keep the color of the icon same even when the setting is disabled. */
     #id_realm_enable_spectator_access_label a {
         color: hsl(236, 33%, 90%);
+    }
+
+    #stream-specific-notify-table .unmute_stream {
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
     }
 }
 

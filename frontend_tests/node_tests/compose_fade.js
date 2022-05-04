@@ -19,6 +19,7 @@ mock_jquery((selector) => {
                     return "lunch";
                 },
             };
+        /* istanbul ignore next */
         default:
             throw new Error(`Unknown selector ${selector}`);
     }

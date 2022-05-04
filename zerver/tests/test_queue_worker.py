@@ -613,24 +613,24 @@ class WorkerTest(ZulipTestCase):
         PreregistrationUser.objects.create(
             email=self.nonreg_email("bob"), referred_by=inviter, realm=inviter.realm
         )
-        invite_expires_in_days = 4
+        invite_expires_in_minutes = 4 * 24 * 60
         data: List[Dict[str, Any]] = [
             dict(
                 prereg_id=prereg_alice.id,
                 referrer_id=inviter.id,
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             ),
             dict(
                 prereg_id=prereg_alice.id,
                 referrer_id=inviter.id,
                 email_language="en",
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             ),
             # Nonexistent prereg_id, as if the invitation was deleted
             dict(
                 prereg_id=-1,
                 referrer_id=inviter.id,
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             ),
         ]
         for element in data:
@@ -639,7 +639,7 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = queue_processors.ConfirmationEmailWorker()
             worker.setup()
-            with patch("zerver.lib.actions.send_email"), patch(
+            with patch("zerver.actions.user_settings.send_email"), patch(
                 "zerver.worker.queue_processors.send_future_email"
             ) as send_mock:
                 worker.start()

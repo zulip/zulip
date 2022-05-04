@@ -79,14 +79,14 @@ except OSError:
 distro_info = parse_os_release()
 vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
-if vendor == "debian" and os_version == "10":  # buster
-    POSTGRESQL_VERSION = "11"
-elif vendor == "debian" and os_version == "11":  # bullseye
+if vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish
     POSTGRESQL_VERSION = "13"
+elif vendor == "ubuntu" and os_version == "22.04":  # jammy
+    POSTGRESQL_VERSION = "14"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
 elif vendor == "fedora" and os_version == "33":
@@ -174,14 +174,13 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
         f"postgresql-server-dev-{POSTGRESQL_VERSION}",
         "libgroonga-dev",
         "libmsgpack-dev",
-        "clang-9",
-        "llvm-9-dev",
+        "clang",
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
     DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
     # The below condition is required since libappindicator is
-    # not available for bullseye (sid). "libgroonga1" is an
+    # not available for Debian 11. "libgroonga1" is an
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
@@ -278,7 +277,7 @@ def install_apt_deps(deps_to_install: List[str]) -> None:
 
 
 def install_yum_deps(deps_to_install: List[str]) -> None:
-    print(WARNING + "RedHat support is still experimental.")
+    print(WARNING + "RedHat support is still experimental." + ENDC)
     run_as_root(["./scripts/lib/setup-yum-repo"])
 
     # Hack specific to unregistered RHEL system.  The moreutils
@@ -287,7 +286,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     #
     # Error: Package: moreutils-0.49-2.el7.x86_64 (epel)
     #        Requires: perl(IPC::Run)
-    yum_extra_flags = []  # type: List[str]
+    yum_extra_flags: List[str] = []
     if vendor == "rhel":
         exitcode, subs_status = subprocess.getstatusoutput("sudo subscription-manager status")
         if exitcode == 1:
@@ -397,6 +396,24 @@ def main(options: argparse.Namespace) -> "NoReturn":
             hash_file.write(new_apt_dependencies_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
+
+    # Binary-patch ARM64 assembly bug in OpenSSL 1.1.1b through 1.1.1h.
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=989604
+    # https://bugs.launchpad.net/ubuntu/+source/openssl/+bug/1951279
+    try:
+        with open("/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1", "rb") as fb:
+            if b"\xbf#\x03\xd5\xfd\x07E\xf8" in fb.read():
+                run_as_root(
+                    [
+                        "sed",
+                        "-i",
+                        r"s/\(\xbf#\x03\xd5\)\(\xfd\x07E\xf8\)/\2\1/",
+                        "/usr/lib/aarch64-linux-gnu/libcrypto.so.1.1",
+                    ],
+                    env={**os.environ, "LC_ALL": "C"},
+                )
+    except FileNotFoundError:
+        pass
 
     # Here we install node.
     proxy_env = [

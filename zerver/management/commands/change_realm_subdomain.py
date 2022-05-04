@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_change_realm_subdomain
+from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.lib.management import ZulipBaseCommand
 
 

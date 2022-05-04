@@ -93,7 +93,6 @@ RATE_LIMITING_AUTHENTICATE = False
 # real app.
 USING_RABBITMQ = False
 
-# Disable use of memcached for caching
 CACHES["database"] = {
     "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     "LOCATION": "zulip-database-test-cache",
@@ -113,9 +112,6 @@ if PUPPETEER_TESTS:
 else:
     WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-test.json")
 WEBPACK_BUNDLES = "webpack-bundles/"
-
-# Don't auto-restart Tornado server during automated tests
-AUTORELOAD = False
 
 if not PUPPETEER_TESTS:
     # Use local memory cache for backend tests.

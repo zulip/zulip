@@ -50,7 +50,7 @@ checklist of things one must do before making a PyPI release:
    See [the tag][example-tag] and [the commit][example-commit] for the 0.8.1 release
    to see an example.
 
-Now it is time to [update the dependencies](../subsystems/dependencies) in the
+Now it is time to [update the dependencies](dependencies) in the
 [Zulip server repository][zulip-repo]:
 
 1. Increment `PROVISION_VERSION` in `version.py`. A minor version bump should suffice in

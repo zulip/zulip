@@ -65,10 +65,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
 
     if (save_narrow) {
-        const row = message_lists.home.selected_row();
+        const $row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
-            if (row.length > 0) {
-                url += "+offset=" + row.offset().top;
+            if ($row.length > 0) {
+                url += "+offset=" + $row.offset().top;
             }
         } else {
             url += "+offset=" + message_lists.home.pre_narrow_offset;
@@ -77,9 +77,9 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
             if (narrow_pointer !== -1) {
                 url += "+narrow_pointer=" + narrow_pointer;
             }
-            const narrow_row = message_list.narrowed.selected_row();
-            if (narrow_row.length > 0) {
-                url += "+narrow_offset=" + narrow_row.offset().top;
+            const $narrow_row = message_list.narrowed.selected_row();
+            if ($narrow_row.length > 0) {
+                url += "+narrow_offset=" + $narrow_row.offset().top;
             }
         }
     }
@@ -107,13 +107,11 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
 export function initialize() {
-    const location = window.location.toString();
-    const hash_fragment = location.slice(location.indexOf("#") + 1);
-
-    // hash_fragment should be e.g. `reload:12345123412312`
-    if (hash_fragment.search("reload:") !== 0) {
+    // location.hash should be e.g. `#reload:12345123412312`
+    if (!location.hash.startsWith("#reload:")) {
         return;
     }
+    const hash_fragment = location.hash.slice("#".length);
 
     // Using the token, recover the saved pre-reload data from local
     // storage.  Afterwards, we clear the reload entry from local
@@ -131,7 +129,7 @@ export function initialize() {
     }
     ls.remove(hash_fragment);
 
-    fragment = fragment.replace(/^reload:/, "");
+    [, fragment] = /^#reload:(.*)/.exec(fragment);
     const keyvals = fragment.split("+");
     const vars = {};
 

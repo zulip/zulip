@@ -19,19 +19,19 @@ const user_groups = zrequire("user_groups");
 // set global test variables.
 let sort_recipients_called = false;
 let sort_streams_called = false;
-const fake_rendered_person = $.create("fake-rendered-person");
-const fake_rendered_stream = $.create("fake-rendered-stream");
-const fake_rendered_group = $.create("fake-rendered-group");
+const $fake_rendered_person = $.create("fake-rendered-person");
+const $fake_rendered_stream = $.create("fake-rendered-stream");
+const $fake_rendered_group = $.create("fake-rendered-group");
 
 mock_esm("../../static/js/typeahead_helper", {
     render_person() {
-        return fake_rendered_person;
+        return $fake_rendered_person;
     },
     render_user_group() {
-        return fake_rendered_group;
+        return $fake_rendered_group;
     },
     render_stream() {
-        return fake_rendered_stream;
+        return $fake_rendered_stream;
     },
     sort_streams() {
         sort_streams_called = true;
@@ -113,20 +113,20 @@ run_test("set_up", ({mock_template}) => {
         return html;
     });
     let input_pill_typeahead_called = false;
-    const fake_input = $.create(".input");
-    fake_input.before = noop;
+    const $fake_input = $.create(".input");
+    $fake_input.before = noop;
 
-    const container = $.create(".pill-container");
-    container.find = () => fake_input;
+    const $container = $.create(".pill-container");
+    $container.find = () => $fake_input;
 
-    const pill_widget = input_pill.create({
-        container,
+    const $pill_widget = input_pill.create({
+        $container,
         create_item_from_text: noop,
         get_text_from_item: noop,
     });
 
     let opts = {};
-    fake_input.typeahead = (config) => {
+    $fake_input.typeahead = (config) => {
         assert.equal(config.items, 5);
         assert.ok(config.fixed);
         assert.ok(config.dropup);
@@ -154,7 +154,7 @@ run_test("set_up", ({mock_template}) => {
                 // Test stream highlighter for widgets that allow stream pills.
                 assert.equal(
                     config.highlighter.call(fake_stream_this, denmark),
-                    fake_rendered_stream,
+                    $fake_rendered_stream,
                 );
             }
             if (opts.user_group && opts.user) {
@@ -162,17 +162,17 @@ run_test("set_up", ({mock_template}) => {
                 // then we should check that each of them rendered correctly.
                 assert.equal(
                     config.highlighter.call(fake_group_this, testers),
-                    fake_rendered_group,
+                    $fake_rendered_group,
                 );
-                assert.equal(config.highlighter.call(fake_person_this, me), fake_rendered_person);
+                assert.equal(config.highlighter.call(fake_person_this, me), $fake_rendered_person);
             }
             if (opts.user && !opts.user_group) {
-                assert.equal(config.highlighter.call(fake_person_this, me), fake_rendered_person);
+                assert.equal(config.highlighter.call(fake_person_this, me), $fake_rendered_person);
             }
             if (!opts.user && opts.user_group) {
                 assert.equal(
                     config.highlighter.call(fake_group_this, testers),
-                    fake_rendered_group,
+                    $fake_rendered_group,
                 );
             }
         })();
@@ -288,7 +288,7 @@ run_test("set_up", ({mock_template}) => {
                 // updater in pill_typeahead.
 
                 function number_of_pills() {
-                    const pills = pill_widget.items();
+                    const pills = $pill_widget.items();
                     return pills.length;
                 }
                 assert.equal(number_of_pills(), 0);
@@ -307,7 +307,7 @@ run_test("set_up", ({mock_template}) => {
     };
 
     function test_pill_typeahead(opts) {
-        pill_typeahead.set_up(fake_input, pill_widget, opts);
+        pill_typeahead.set_up($fake_input, $pill_widget, opts);
         assert.ok(input_pill_typeahead_called);
     }
 
@@ -339,6 +339,6 @@ run_test("set_up", ({mock_template}) => {
     opts = {};
     input_pill_typeahead_called = false;
     blueslip.expect("error", "Unspecified possible item types");
-    pill_typeahead.set_up(fake_input, pill_widget, {});
+    pill_typeahead.set_up($fake_input, $pill_widget, {});
     assert.ok(!input_pill_typeahead_called);
 });

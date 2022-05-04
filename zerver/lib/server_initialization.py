@@ -18,7 +18,7 @@ def server_initialized() -> bool:
 
 
 def create_internal_realm() -> None:
-    from zerver.lib.actions import do_change_can_forge_sender
+    from zerver.actions.users import do_change_can_forge_sender
 
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM, name="System bot realm")
     RealmAuditLog.objects.create(

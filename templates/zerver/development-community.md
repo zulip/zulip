@@ -113,7 +113,7 @@ topic to a different stream](/help/move-content-to-another-stream).
   Zulip.
 - [#production help](https://chat.zulip.org/#narrow/stream/31-production-help) is
   for all questions related to [self-hosting
-  Zulip](https://zulip.readthedocs.io/en/latest/production/install.html).
+  Zulip](/self-hosting/).
 - [#zulip
   cloud](https://chat.zulip.org/#narrow/stream/387-zulip-cloud) is for
   all conversations about the [Zulip Cloud](https://zulip.com/plans/)

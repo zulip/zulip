@@ -2,8 +2,8 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.realm_emoji import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.decorator import require_member_or_admin
-from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
@@ -47,9 +47,7 @@ def upload_emoji(
             )
         )
 
-    realm_emoji = check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
-    if realm_emoji is None:
-        raise JsonableError(_("Image file upload failed."))
+    check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
     return json_success(request)
 
 

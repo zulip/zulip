@@ -194,7 +194,7 @@ test("filter_user_ids", ({override}) => {
 });
 
 test("click on user header to toggle display", ({override}) => {
-    const user_filter = $(".user-list-filter");
+    const $user_filter = $(".user-list-filter");
 
     override(popovers, "hide_all", () => {});
     override(popovers, "hide_all_except_sidebars", () => {});
@@ -205,11 +205,11 @@ test("click on user header to toggle display", ({override}) => {
 
     assert.ok(!$("#user_search_section").hasClass("notdisplayed"));
 
-    user_filter.val("bla");
+    $user_filter.val("bla");
 
     $("#userlist-header").trigger("click");
     assert.ok($("#user_search_section").hasClass("notdisplayed"));
-    assert.equal(user_filter.val(), "");
+    assert.equal($user_filter.val(), "");
 
     $(".user-list-filter").closest = (selector) => {
         assert.equal(selector, ".app-main [class^='column-']");

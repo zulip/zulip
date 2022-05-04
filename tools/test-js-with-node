@@ -44,7 +44,10 @@ def make_set(files: List[str]) -> Set[str]:
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = make_set(
     [
+        "frontend_tests/node_tests/event_status.js",
+        "frontend_tests/zjsunit/mdiff.js",
         "static/js/about_zulip.js",
+        "static/js/add_subscribers_pill.js",
         "static/js/admin.js",
         "static/js/alert_popup.ts",
         "static/js/archive.js",
@@ -69,7 +72,7 @@ EXEMPT_FILES = make_set(
         "static/js/copy_and_paste.js",
         "static/js/csrf.ts",
         "static/js/css_variables.js",
-        "static/js/dark_theme.ts",
+        "static/js/dark_theme.js",
         "static/js/debug.js",
         "static/js/deprecated_feature_notice.js",
         "static/js/desktop_integration.js",
@@ -86,6 +89,7 @@ EXEMPT_FILES = make_set(
         "static/js/gear_menu.js",
         "static/js/giphy.js",
         "static/js/global.d.ts",
+        "static/js/hash_util.js",
         "static/js/hashchange.js",
         "static/js/hbs.d.ts",
         "static/js/hotkey.js",
@@ -119,6 +123,7 @@ EXEMPT_FILES = make_set(
         "static/js/overlays.js",
         "static/js/padded_widget.ts",
         "static/js/page_params.ts",
+        "static/js/pm_list.js",
         "static/js/pm_list_dom.js",
         "static/js/poll_widget.js",
         "static/js/popover_menus.js",
@@ -166,14 +171,17 @@ EXEMPT_FILES = make_set(
         "static/js/stream_bar.js",
         "static/js/stream_color.js",
         "static/js/stream_create.js",
+        "static/js/stream_create_subscribers.js",
         "static/js/stream_edit.js",
+        "static/js/stream_edit_subscribers.js",
         "static/js/stream_list.js",
         "static/js/stream_muting.js",
         "static/js/stream_popover.js",
+        "static/js/stream_settings_containers.js",
         "static/js/stream_settings_ui.js",
-        "static/js/stream_subscribers_ui.js",
         "static/js/stream_ui_updates.js",
         "static/js/submessage.js",
+        "static/js/subscriber_api.js",
         "static/js/timerender.ts",
         "static/js/tippyjs.js",
         "static/js/todo_widget.js",
@@ -367,14 +375,16 @@ def read_coverage() -> Any:
 
 
 def enforce_proper_coverage(coverage_json: Any) -> bool:
-    all_js_files = set(
-        glob.glob("static/js/*.js")
-        + glob.glob("static/js/*.ts")
-        + glob.glob("static/shared/js/*.js")
-        + glob.glob("static/shared/js/*.ts")
-        + glob.glob("static/js/billing/*.js"),
-    )
-    enforce_fully_covered = all_js_files - EXEMPT_FILES
+    all_js_files = {
+        *glob.glob("frontend_tests/node_tests/*.js"),
+        *glob.glob("frontend_tests/zjsunit/*.js"),
+        *glob.glob("static/js/*.js"),
+        *glob.glob("static/js/*.ts"),
+        *glob.glob("static/shared/js/*.js"),
+        *glob.glob("static/shared/js/*.ts"),
+        *glob.glob("static/js/billing/*.js"),
+    }
+    enforce_fully_covered = sorted(all_js_files - EXEMPT_FILES)
 
     coverage_lost = False
     for relative_path in enforce_fully_covered:

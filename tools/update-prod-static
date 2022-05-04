@@ -41,7 +41,7 @@ run(["./tools/setup/generate_zulip_bots_static_files.py"])
 # Build pygments data
 run(["./tools/setup/build_pygments_data"])
 
-# Build timezones data
+# Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
 # Create webpack bundle

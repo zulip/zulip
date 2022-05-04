@@ -1,10 +1,10 @@
 import $ from "jquery";
 
-import * as emoji from "../shared/js/emoji";
 import render_message_reaction from "../templates/message_reaction.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -204,26 +204,26 @@ export function get_reaction_title_data(message_id, local_id) {
 }
 
 export function get_reaction_section(message_id) {
-    const message_element = $(".message_table").find(`[zid='${CSS.escape(message_id)}']`);
-    const section = message_element.find(".message_reactions");
-    return section;
+    const $message_element = $(".message_table").find(`[zid='${CSS.escape(message_id)}']`);
+    const $section = $message_element.find(".message_reactions");
+    return $section;
 }
 
 export function find_reaction(message_id, local_id) {
-    const reaction_section = get_reaction_section(message_id);
-    const reaction = reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
-    return reaction;
+    const $reaction_section = get_reaction_section(message_id);
+    const $reaction = $reaction_section.find(`[data-reaction-id='${CSS.escape(local_id)}']`);
+    return $reaction;
 }
 
 export function get_add_reaction_button(message_id) {
-    const reaction_section = get_reaction_section(message_id);
-    const add_button = reaction_section.find(".reaction_button");
-    return add_button;
+    const $reaction_section = get_reaction_section(message_id);
+    const $add_button = $reaction_section.find(".reaction_button");
+    return $add_button;
 }
 
-export function set_reaction_count(reaction, count) {
-    const count_element = reaction.find(".message_reaction_count");
-    count_element.text(count);
+export function set_reaction_count($reaction, count) {
+    const $count_element = $reaction.find(".message_reaction_count");
+    $count_element.text(count);
 }
 
 export function add_reaction(event) {
@@ -292,15 +292,15 @@ view.update_existing_reaction = function ({
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
     const local_id = get_local_reaction_id({reaction_type, emoji_code});
-    const reaction = find_reaction(message_id, local_id);
+    const $reaction = find_reaction(message_id, local_id);
 
-    set_reaction_count(reaction, user_list.length);
+    set_reaction_count($reaction, user_list.length);
 
     const new_label = generate_title(emoji_name, user_list);
-    reaction.attr("aria-label", new_label);
+    $reaction.attr("aria-label", new_label);
 
     if (user_id === page_params.user_id) {
-        reaction.addClass("reacted");
+        $reaction.addClass("reacted");
     }
 };
 
@@ -332,11 +332,11 @@ view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_cod
         context.class = "message_reaction";
     }
 
-    const new_reaction = $(render_message_reaction(context));
+    const $new_reaction = $(render_message_reaction(context));
 
     // Now insert it before the add button.
-    const reaction_button_element = get_add_reaction_button(message_id);
-    new_reaction.insertBefore(reaction_button_element);
+    const $reaction_button_element = get_add_reaction_button(message_id);
+    $new_reaction.insertBefore($reaction_button_element);
 };
 
 export function remove_reaction(event) {
@@ -393,12 +393,12 @@ view.remove_reaction = function ({
     emoji_code,
 }) {
     const local_id = get_local_reaction_id({reaction_type, emoji_code});
-    const reaction = find_reaction(message_id, local_id);
+    const $reaction = find_reaction(message_id, local_id);
 
     if (user_list.length === 0) {
         // If this user was the only one reacting for this emoji, we simply
         // remove the reaction and exit.
-        reaction.remove();
+        $reaction.remove();
         return;
     }
 
@@ -407,14 +407,14 @@ view.remove_reaction = function ({
     // "reacted" class.
 
     const new_label = generate_title(emoji_name, user_list);
-    reaction.attr("aria-label", new_label);
+    $reaction.attr("aria-label", new_label);
 
     // If the user is the current user, turn off the "reacted" class.
 
-    set_reaction_count(reaction, user_list.length);
+    set_reaction_count($reaction, user_list.length);
 
     if (user_id === page_params.user_id) {
-        reaction.removeClass("reacted");
+        $reaction.removeClass("reacted");
     }
 };
 

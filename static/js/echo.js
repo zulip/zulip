@@ -35,21 +35,21 @@ let waiting_for_ack = new Map();
 // These retry spinner functions return true if and only if the
 // spinner already is in the requested state, which can be used to
 // avoid sending duplicate requests.
-function show_retry_spinner(row) {
-    const retry_spinner = row.find(".refresh-failed-message");
+function show_retry_spinner($row) {
+    const $retry_spinner = $row.find(".refresh-failed-message");
 
-    if (!retry_spinner.hasClass("rotating")) {
-        retry_spinner.toggleClass("rotating", true);
+    if (!$retry_spinner.hasClass("rotating")) {
+        $retry_spinner.toggleClass("rotating", true);
         return false;
     }
     return true;
 }
 
-function hide_retry_spinner(row) {
-    const retry_spinner = row.find(".refresh-failed-message");
+function hide_retry_spinner($row) {
+    const $retry_spinner = $row.find(".refresh-failed-message");
 
-    if (retry_spinner.hasClass("rotating")) {
-        retry_spinner.toggleClass("rotating", false);
+    if ($retry_spinner.hasClass("rotating")) {
+        $retry_spinner.toggleClass("rotating", false);
         return false;
     }
     return true;
@@ -67,9 +67,9 @@ function failed_message_success(message_id) {
     ui.show_failed_message_success(message_id);
 }
 
-function resend_message(message, row) {
+function resend_message(message, $row) {
     message.content = message.raw_content;
-    if (show_retry_spinner(row)) {
+    if (show_retry_spinner($row)) {
         // retry already in in progress
         return;
     }
@@ -84,7 +84,7 @@ function resend_message(message, row) {
         const message_id = data.id;
         const locally_echoed = true;
 
-        hide_retry_spinner(row);
+        hide_retry_spinner($row);
 
         compose.send_message_success(local_id, message_id, locally_echoed);
 
@@ -95,7 +95,7 @@ function resend_message(message, row) {
     function on_error(response) {
         message_send_error(message.id, response);
         setTimeout(() => {
-            hide_retry_spinner(row);
+            hide_retry_spinner($row);
         }, 300);
         blueslip.log("Manual resend of message failed");
     }
@@ -173,10 +173,6 @@ export function insert_local_message(message_request, local_id_float) {
     // Keep this in sync with changes to compose.create_message_object
     const message = {...message_request};
 
-    // Locally delivered messages cannot be unread (since we sent them), nor
-    // can they alert the user.
-    message.unread = false;
-
     message.raw_content = message.content;
 
     // NOTE: This will parse synchronously. We're not using the async pipeline
@@ -196,6 +192,7 @@ export function insert_local_message(message_request, local_id_float) {
     waiting_for_ack.set(message.local_id, message);
 
     message.display_recipient = build_display_recipient(message);
+
     insert_message(message);
     return message;
 }
@@ -470,8 +467,8 @@ export function initialize() {
         $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
             popovers.hide_all();
-            const row = $(this).closest(".message_row");
-            const local_id = rows.local_echo_id(row);
+            const $row = $(this).closest(".message_row");
+            const local_id = rows.local_echo_id($row);
             // Message should be waiting for ack and only have a local id,
             // otherwise send would not have failed
             const message = waiting_for_ack.get(local_id);
@@ -482,7 +479,7 @@ export function initialize() {
                 );
                 return;
             }
-            callback(message, row);
+            callback(message, $row);
         });
     }
 

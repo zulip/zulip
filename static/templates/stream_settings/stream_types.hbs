@@ -1,8 +1,8 @@
 <div class="input-group stream-privacy-values">
     <div class="alert stream-privacy-status"></div>
-    <h4>{{t 'Who can access the stream?'}}
+    <label>{{t 'Who can access the stream?'}}
         {{> ../help_link_widget link="/help/stream-permissions" }}
-    </h4>
+    </label>
     {{#each stream_privacy_policy_values}}
         <div class="radio-input-parent">
             <label class="radio">
@@ -13,25 +13,35 @@
     {{/each}}
 </div>
 
+{{#if ask_to_announce_stream}}
+    <div id="announce-new-stream">
+        <label class="checkbox">
+            <input type="checkbox" name="announce" value="announce" checked />
+            <span></span>
+            {{t "Announce stream" }}
+        </label>
+        <span class="fa fa-question-circle settings-info-icon" aria-hidden="true" id="announce-stream-docs"></span>
+    </div>
+{{/if}}
+
 <div class="input-group">
-    <h4>{{t 'Who can post to the stream?'}}
+    <label class="dropdown-title">{{t 'Who can post to the stream?'}}
         {{> ../help_link_widget link="/help/stream-sending-policy" }}
-    </h4>
-    {{#each stream_post_policy_values}}
-        <div class="radio-input-parent">
-            <label class="radio">
-                <input type="radio" name="stream-post-policy" value="{{ this.code }}" {{#if (eq this.code ../stream_post_policy) }}checked{{/if}} />
-                {{ this.description }}
-            </label>
-        </div>
-    {{/each}}
+    </label>
+    <select name="stream-post-policy" class="stream_post_policy_setting prop-element">
+        {{#each stream_post_policy_values}}
+            <option value="{{this.code}}" {{#if (eq this.code ../stream_post_policy) }}selected{{/if}}>
+                {{ this.description}}
+            </option>
+        {{/each}}
+    </select>
 </div>
 
 {{#if (or is_owner is_stream_edit)}}
 <div>
-    <h4>{{t "Message retention for stream" }}
+    <label class="stream-title">{{t "Message retention for stream" }}
         {{> ../help_link_widget link="/help/message-retention-policy" }}
-    </h4>
+    </label>
 
     {{> ../settings/upgrade_tip_widget}}
 
@@ -40,7 +50,7 @@
             <i class="fa fa-info-circle settings-info-icon stream_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change stream message retention policy.' }}"></i>
         </div>
         <select name="stream_message_retention_setting"
-          class="stream_message_retention_setting" class="prop-element"
+          class="stream_message_retention_setting prop-element"
           {{#if disable_message_retention_setting}}disabled{{/if}}>
             <option value="realm_default">{{#tr}}Use organization level settings {org_level_message_retention_setting}{{/tr}}</option>
             <option value="unlimited">{{t 'Retain forever' }}</option>

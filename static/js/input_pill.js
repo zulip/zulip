@@ -14,7 +14,7 @@ export function random_id() {
 }
 
 export function create(opts) {
-    if (!opts.container) {
+    if (!opts.$container) {
         blueslip.error("Pill needs container.");
         return undefined;
     }
@@ -34,8 +34,8 @@ export function create(opts) {
     const store = {
         pills: [],
         pill_config: opts.pill_config,
-        $parent: opts.container,
-        $input: opts.container.find(".input").expectOne(),
+        $parent: opts.$container,
+        $input: opts.$container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
     };

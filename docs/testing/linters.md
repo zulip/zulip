@@ -65,14 +65,14 @@ but it is good practice to run lint checks locally.
 
 :::{important}
 We provide a
-[Git pre-commit hook](../git/zulip-tools.html#set-up-git-repo-script)
+[Git pre-commit hook](../git/zulip-tools.md#set-up-git-repo-script)
 that can automatically run `tools/lint` on just the files that
 changed (in a few 100ms) whenever you make a commit. This can save
 you a lot of time, by automatically detecting linter errors as you
 make them.
 :::
 
-**Note:** The linters only check files that git tracks. Remember to `git add`
+**Note:** The linters only check files that Git tracks. Remember to `git add`
 new files before running lint checks.
 
 Our linting tools generally support the ability to lint files
@@ -101,7 +101,7 @@ find limitations in either the Zulip home-grown stuff or our third party
 tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
-with tests. The [Zulip test documentation](../testing/testing.md)
+with tests. The [Zulip test documentation](testing.md)
 describes our test system in detail.
 
 ## Lint checks
@@ -120,7 +120,7 @@ following checks:
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
 - Running `mypy` to check static types in Python code. Our
-  [documentation on using mypy](../testing/mypy.md) covers mypy in
+  [documentation on using mypy](mypy.md) covers mypy in
   more detail.
 - Running `tsc` to compile TypeScript code. Our [documentation on
   TypeScript](typescript.md) covers TypeScript in more detail.

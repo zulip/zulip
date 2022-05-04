@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
 from zerver.decorator import require_realm_admin
-from zerver.lib.actions import do_add_realm_playground, do_remove_realm_playground
 from zerver.lib.exceptions import JsonableError, ValidationFailureError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -46,6 +46,7 @@ def add_realm_playground(
     try:
         playground_id = do_add_realm_playground(
             realm=user_profile.realm,
+            acting_user=user_profile,
             name=name.strip(),
             pygments_language=pygments_language.strip(),
             url_prefix=url_prefix.strip(),
@@ -61,5 +62,5 @@ def delete_realm_playground(
     request: HttpRequest, user_profile: UserProfile, playground_id: int
 ) -> HttpResponse:
     realm_playground = access_playground_by_id(user_profile.realm, playground_id)
-    do_remove_realm_playground(user_profile.realm, realm_playground)
+    do_remove_realm_playground(user_profile.realm, realm_playground, acting_user=user_profile)
     return json_success(request)

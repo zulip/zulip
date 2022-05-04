@@ -350,7 +350,7 @@ test("quote_and_reply", ({override, override_rewire}) => {
         sender_full_name: "Steve Stephenson",
         sender_id: 90,
     };
-    hash_util.by_conversation_and_time_uri = () =>
+    hash_util.by_conversation_and_time_url = () =>
         "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado";
 
     let success_function;
@@ -390,6 +390,7 @@ test("quote_and_reply", ({override, override_rewire}) => {
         raw_content: "Testing.",
     };
 
+    /* istanbul ignore next */
     function whiny_get() {
         assert.fail("channel.get should not be used if raw_content is present");
     }

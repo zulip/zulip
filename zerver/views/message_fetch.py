@@ -31,11 +31,11 @@ from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
-from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import is_spectator_compatible, is_web_public_narrow
+from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -53,8 +53,8 @@ from zerver.lib.topic import (
     topic_column_sa,
     topic_match_sa,
 )
-from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.types import Validator
+from zerver.lib.user_topics import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import (
     check_bool,
@@ -291,7 +291,7 @@ class NarrowBuilder:
             base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.realm).filter(
-                name__iregex=fr"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
+                name__iregex=rf"^(un)*{self._pg_re_escape(base_stream_name)}(\.d)*$"
             )
             recipient_ids = [matching_stream.recipient_id for matching_stream in matching_streams]
             cond = column("recipient_id", Integer).in_(recipient_ids)
@@ -303,7 +303,7 @@ class NarrowBuilder:
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
         if operand == "public":
-            # Get all both subscribed and non subscribed public streams
+            # Get all both subscribed and non-subscribed public streams
             # but exclude any private subscribed streams.
             recipient_queryset = get_public_streams_queryset(self.realm)
         elif operand == "web-public":
@@ -600,7 +600,7 @@ def get_search_fields(
     }
 
 
-def narrow_parameter(json: str) -> OptionalNarrowListT:
+def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
 
     data = orjson.loads(json)
     if not isinstance(data, list):
@@ -968,7 +968,7 @@ def get_messages_backend(
         #
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
         # that we are not leaking any secure data (private messages and
-        # non web-public-stream messages) via this path.
+        # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError()
         if not is_web_public_narrow(narrow):

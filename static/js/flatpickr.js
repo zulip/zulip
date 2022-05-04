@@ -4,15 +4,16 @@ import $ from "jquery";
 
 import {get_keydown_hotkey} from "./hotkey";
 import {$t} from "./i18n";
+import {user_settings} from "./user_settings";
 
 function is_numeric_key(key) {
     return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].includes(key);
 }
 
 export function show_flatpickr(element, callback, default_timestamp, options = {}) {
-    const flatpickr_input = $("<input id='#timestamp_flatpickr'>");
+    const $flatpickr_input = $("<input>", {id: "#timestamp_flatpickr"});
 
-    const instance = flatpickr_input.flatpickr({
+    const instance = $flatpickr_input.flatpickr({
         mode: "single",
         enableTime: true,
         clickOpens: false,
@@ -28,6 +29,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         dateFormat: "Z",
         formatDate: (date) => formatISO(date),
         disableMobile: true,
+        time_24hr: user_settings.twenty_four_hour_time,
         onKeyDown: (selectedDates, dateStr, instance, event) => {
             if (is_numeric_key(event.key)) {
                 // Don't attempt to get_keydown_hotkey for numeric inputs
@@ -59,9 +61,9 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         ...options,
     });
 
-    const container = $($(instance.innerContainer).parent());
+    const $container = $($(instance.innerContainer).parent());
 
-    container.on("keydown", (e) => {
+    $container.on("keydown", (e) => {
         if (is_numeric_key(e.key)) {
             // Let users type numeric values
             return true;
@@ -83,7 +85,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
                 return true; // use flatpickr default implementation
             }
             $(element).toggleClass("has_popover");
-            container.find(".flatpickr-confirm").trigger("click");
+            $container.find(".flatpickr-confirm").trigger("click");
         }
 
         if (hotkey.name === "escape") {
@@ -106,8 +108,8 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         return true;
     });
 
-    container.on("click", ".flatpickr-confirm", () => {
-        callback(flatpickr_input.val());
+    $container.on("click", ".flatpickr-confirm", () => {
+        callback($flatpickr_input.val());
         instance.close();
         instance.destroy();
     });

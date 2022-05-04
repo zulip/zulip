@@ -1,7 +1,19 @@
 <div id="compose-content">
+    {{!-- scroll to bottom button is not part of compose but
+    helps us align it at various screens sizes with
+    minimal css and no JS. We keep it `position: absolute` to prevent
+    it changing compose box layout in any way. --}}
+    <div id="scroll-to-bottom-button-container">
+        <div id="scroll-to-bottom-button-clickable-area" data-tooltip-template-id="scroll-to-bottom-button-tooltip">
+            <div id="scroll-to-bottom-button">
+                <i class="fa fa-chevron-down"></i>
+            </div>
+        </div>
+        <template id="scroll-to-bottom-button-tooltip">{{t 'Scroll to bottom' }} <span class="hotkey-hint">({{{scroll_to_bottom_key_html}}})</span></template>
+    </div>
     <div id="compose_controls" class="new-style">
         <div id="compose_buttons">
-            <span class="new_message_button reply_button_container">
+            <span class="new_message_button reply_button_container ">
                 <button type="button" class="button small rounded compose_reply_button"
                   id="left_bar_compose_reply_button_big"
                   title="{{t 'Reply to selected message' }} (r)">
@@ -31,11 +43,6 @@
                 </button>
             </span>
             {{/unless}}
-            <span class="new_message_button only-visible-for-spectators">
-                <a class="no-underline button small rounded float-left" href="/login">
-                    {{t 'Log in to send messages' }}
-                </a>
-            </span>
         </div>
     </div>
     <div class="message_comp">
@@ -56,9 +63,10 @@
                 <div class="compose_table">
                     <div id="compose_top">
                         <div id="compose_top_right" class="order-2">
-                            <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" data-tippy-content="{{t 'Expand compose' }}"></button>
-                            <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
-                            <button type="button" class="close" id='compose_close' data-tippy-content="{{t 'Cancel compose' }}  <span class='hotkey-hint'>(Esc)</span>">&times;</button>
+                            <button type="button" class="expand_composebox_button fa fa-chevron-up" aria-label="{{t 'Expand compose' }}" title="{{t 'Expand compose' }}"></button>
+                            <button type="button" class="collapse_composebox_button fa fa-chevron-down" aria-label="{{t 'Collapse compose' }}" data-tippy-content="{{t 'Collapse compose' }}"></button>
+                            <button type="button" class="close fa fa-times" id='compose_close' data-tooltip-template-id="compose_close_tooltip"></button>
+                            <template id="compose_close_tooltip">{{t 'Cancel compose' }} <span class="hotkey-hint">(Esc)</span></template>
                         </div>
                         <div id="stream-message" class="order-1">
                             <div class="stream-selection-header-colorblock message_header_stream left_part" tab-index="-1"></div>
@@ -67,8 +75,10 @@
                                     <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
                                 </span>
                                 <span id="compose-globe-icon">
-                                    <i class="fa fa-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
+                                    <i class="zulip-icon zulip-icon-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
                                 </span>
+                                <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0">
+                                </a>
                                 <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
                                 <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
@@ -131,3 +141,5 @@
         </div>
     </div>
 </div>
+
+<template id="add-global-time-tooltip">{{#tr}}Add global time<br />Everyone sees global times in their own time zone.{{/tr}}</template>

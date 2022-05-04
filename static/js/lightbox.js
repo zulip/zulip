@@ -1,5 +1,5 @@
-import panzoom from "@panzoom/panzoom";
 import $ from "jquery";
+import panzoom from "panzoom";
 
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
@@ -21,26 +21,49 @@ export class PanZoomControl {
     constructor(container) {
         this.container = container;
         this.panzoom = panzoom(this.container, {
-            disablePan: true,
-            disableZoom: true,
-            cursor: "auto",
+            smoothScroll: false,
+            // Ideally we'd set `bounds` here, but that feature is
+            // currently broken upstream.  See
+            // https://github.com/anvaka/panzoom/issues/112.
+            maxZoom: 100,
+            minZoom: 0.1,
+            filterKey() {
+                // Disable the library's built in keybindings
+                return true;
+            },
         });
-
         // The following events are necessary to prevent the click event
         // firing where the user "unclicks" at the end of the drag, which
         // was causing accidental overlay closes in some situations.
-        this.container.addEventListener("panzoomstart", () => {
+        this.panzoom.on("pan", () => {
             // Marks this overlay as needing to stay open.
             $("#lightbox_overlay").data("noclose", true);
+
+            // Enable the panzoom reset button.
+            $("#lightbox_overlay .lightbox-zoom-reset").removeClass("disabled");
         });
 
-        this.container.addEventListener("panzoomend", () => {
+        this.panzoom.on("panend", (e) => {
+            // Check if the image has been panned out of view.
+            this.constrainImage(e);
+
             // Don't remove the noclose attribute on this overlay until after paint,
             // otherwise it will be removed too early and close the lightbox
             // unintentionally.
             setTimeout(() => {
                 $("#lightbox_overlay").data("noclose", false);
             }, 0);
+        });
+
+        this.panzoom.on("zoom", (e) => {
+            // Check if the image has been zoomed out of view.
+            // We are using the zoom event instead of zoomend because the zoomend
+            // event does not fire when using the scroll wheel or pinch to zoom.
+            // https://github.com/anvaka/panzoom/issues/250
+            this.constrainImage(e);
+
+            // Enable the panzoom reset button.
+            $("#lightbox_overlay .lightbox-zoom-reset").removeClass("disabled");
         });
 
         // key bindings
@@ -66,27 +89,83 @@ export class PanZoomControl {
         });
     }
 
+    constrainImage(e) {
+        // Instead of using panzoom's built in bounds option which was buggy
+        // at the time of this writing, we act on pan/zoom events and move the
+        // image back in to view if it is moved beyond the image-preview container.
+        // See https://github.com/anvaka/panzoom/issues/112 for upstream discussion.
+
+        const {scale, x, y} = e.getTransform();
+        const image_width = $(".zoom-element > img")[0].clientWidth * scale;
+        const image_height = $(".zoom-element > img")[0].clientHeight * scale;
+        const zoom_element_width = $(".zoom-element")[0].clientWidth * scale;
+        const zoom_element_height = $(".zoom-element")[0].clientHeight * scale;
+        const max_translate_x = $(".image-preview")[0].clientWidth;
+        const max_translate_y = $(".image-preview")[0].clientHeight;
+
+        // When the image is dragged out of the image-preview container
+        // (max_translate) it will be "snapped" back so that the number
+        // of pixels set below will remain visible in the dimension it was dragged.
+        const return_buffer = 50 * scale;
+        // Move the image if it gets within this many pixels of the edge.
+        const border = 20;
+
+        const zoom_border_width = (zoom_element_width - image_width) / 2 + image_width;
+        const zoom_border_height = (zoom_element_height - image_height) / 2 + image_height;
+        const modified_x = x + zoom_border_width;
+        const modified_y = y + zoom_border_height;
+
+        if (modified_x < 0 + border) {
+            // Image has been dragged beyond the LEFT of the view.
+            const move_by = modified_x * -1;
+            e.moveBy(move_by + return_buffer, 0, false);
+        } else if (modified_x - image_width > max_translate_x - border) {
+            // Image has been dragged beyond the RIGHT of the view.
+            const move_by = modified_x - max_translate_x - image_width;
+            e.moveBy(-move_by - return_buffer, 0, false);
+        }
+
+        if (modified_y < 0 + border) {
+            // Image has been dragged beyond the TOP of the view.
+            const move_by = modified_y * -1;
+            e.moveBy(0, move_by + return_buffer, false);
+        } else if (modified_y - image_height > max_translate_y - border) {
+            // Image has been dragged beyond the BOTTOM of the view.
+            const move_by = modified_y - max_translate_y - image_height;
+            e.moveBy(0, -move_by - return_buffer, false);
+        }
+    }
+
     reset() {
-        this.panzoom.reset();
-    }
-
-    disablePanZoom() {
-        this.container.removeEventListener("wheel", this.panzoom.zoomWithWheel);
-        this.panzoom.setOptions({disableZoom: true, disablePan: true, cursor: "auto"});
-        this.reset();
-    }
-
-    enablePanZoom() {
-        this.panzoom.setOptions({disableZoom: false, disablePan: false, cursor: "move"});
-        this.container.addEventListener("wheel", this.panzoom.zoomWithWheel);
+        // To reset the panzoom state, we want to:
+        // Reset zoom to the initial state.
+        this.panzoom.zoomAbs(0, 0, 1);
+        // Re-center the image.
+        this.panzoom.moveTo(0, 0);
+        // Always ensure that the overlay is available for click to close.
+        // This way we don't rely on the above events firing panend,
+        // of which there is some anecdotal evidence that suggests they
+        // might be prone to race conditions.
+        $("#lightbox_overlay").data("noclose", false);
+        // Disable the lightbox reset button to reflect the state that
+        // the image has not been panned or zoomed.
+        $("#lightbox_overlay .lightbox-zoom-reset").addClass("disabled");
     }
 
     zoomIn() {
-        this.panzoom.zoomIn();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 1.5);
     }
 
     zoomOut() {
-        this.panzoom.zoomOut();
+        const w = $(".image-preview").width();
+        const h = $(".image-preview").height();
+        this.panzoom.smoothZoom(w / 2, h / 2, 0.5);
+    }
+
+    isActive() {
+        return $(".image-preview .zoom-element img").length > 0;
     }
 }
 
@@ -104,12 +183,12 @@ export function render_lightbox_list_images(preview_source) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
 
-            const node = $("<div></div>", {
+            const $node = $("<div>", {
                 class: className,
                 "data-src": src,
             }).css({backgroundImage: "url(" + src + ")"});
 
-            $image_list.append(node);
+            $image_list.append($node);
 
             // We parse the data for each image to show in the list,
             // while we still have its original DOM element handy, so
@@ -124,24 +203,43 @@ function display_image(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(".player-container").hide();
-    $(".image-actions, .image-description, .download, .lightbox-canvas-trigger").show();
+    $(".image-preview, .image-actions, .image-description, .download, .lightbox-zoom-reset").show();
 
-    const img_container = $("#lightbox_overlay .image-preview > .zoom-element");
+    const $img_container = $("#lightbox_overlay .image-preview > .zoom-element");
     const img = new Image();
     img.src = payload.source;
-    img_container.html(img).show();
+    $img_container.html(img).show();
 
-    $(".image-description .title").text(payload.title || "N/A");
-    $(".image-description .user").text(payload.user);
+    const filename = payload.url?.split("/").pop();
+    $(".image-description .title")
+        .text(payload.title || "N/A")
+        .attr("aria-label", payload.title || "N/A")
+        .prop("data-filename", filename || "N/A");
+    $(".image-description .user").text(payload.user).prop("title", payload.user);
 
-    $(".image-actions .open, .image-actions .download").attr("href", payload.source);
+    $(".image-actions .open").attr("href", payload.source);
+
+    const url = new URL(payload.source, window.location.href);
+    const same_origin = url.origin === window.location.origin;
+    if (same_origin && url.pathname.startsWith("/user_uploads/")) {
+        // Switch to the "download" handler, so S3 URLs set their Content-Disposition
+        url.pathname = "/user_uploads/download/" + url.pathname.slice("/user_uploads/".length);
+        $(".image-actions .download").attr("href", url.href);
+    } else if (same_origin) {
+        $(".image-actions .download").attr("href", payload.source);
+    } else {
+        // If it's not same-origin, and we don't know how to tell the remote service to put a
+        // content-disposition on it, the download can't possibly download, just show -- so hide the
+        // element.
+        $(".image-actions .download").hide();
+    }
 }
 
 function display_video(payload) {
     render_lightbox_list_images(payload.preview);
 
     $(
-        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-canvas-trigger",
+        "#lightbox_overlay .image-preview, .image-description, .download, .lightbox-zoom-reset",
     ).hide();
 
     let source;
@@ -163,16 +261,16 @@ function display_video(payload) {
             break;
     }
 
-    const iframe = $("<iframe></iframe>");
-    iframe.attr(
+    const $iframe = $("<iframe>");
+    $iframe.attr(
         "sandbox",
         "allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts",
     );
-    iframe.attr("src", source);
-    iframe.attr("frameborder", 0);
-    iframe.attr("allowfullscreen", true);
+    $iframe.attr("src", source);
+    $iframe.attr("frameborder", 0);
+    $iframe.attr("allowfullscreen", true);
 
-    $("#lightbox_overlay .player-container").html(iframe).show();
+    $("#lightbox_overlay .player-container").html($iframe).show();
     $(".image-actions .open").attr("href", payload.url);
 }
 
@@ -202,7 +300,7 @@ export function build_open_image_function(on_close) {
                 // the lightbox.  A better fix will be to check a
                 // `data-thumbnail-src` attribute that we add to the
                 // canvas elements.
-                $preview_src = $preview_src.replace(/.{4}$/, "thumbnail");
+                $preview_src = $preview_src.slice(0, -"full".length) + "thumbnail";
                 payload = asset_map.get($preview_src);
             }
             if (payload === undefined) {
@@ -222,7 +320,7 @@ export function build_open_image_function(on_close) {
 
         overlays.open_overlay({
             name: "lightbox",
-            overlay: $("#lightbox_overlay"),
+            $overlay: $("#lightbox_overlay"),
             on_close,
         });
 
@@ -278,11 +376,11 @@ export function show_from_selected_message() {
 // retrieve the metadata from the DOM and store into the asset_map.
 export function parse_image_data(image) {
     const $image = $(image);
-    const $preview_src = $image.attr("src");
+    const preview_src = $image.attr("src");
 
-    if (asset_map.has($preview_src)) {
+    if (asset_map.has(preview_src)) {
         // check if image's data is already present in asset_map.
-        return asset_map.get($preview_src);
+        return asset_map.get(preview_src);
     }
 
     // if wrapped in the .youtube-video class, it will be length = 1, and therefore
@@ -295,24 +393,24 @@ export function parse_image_data(image) {
     const is_compose_preview_image = $image.closest("#compose .preview_content").length === 1;
 
     const $parent = $image.parent();
-    let $type;
-    let $source;
-    const $url = $parent.attr("href");
+    let type;
+    let source;
+    const url = $parent.attr("href");
     if (is_youtube_video) {
-        $type = "youtube-video";
-        $source = $parent.attr("data-id");
+        type = "youtube-video";
+        source = $parent.attr("data-id");
     } else if (is_vimeo_video) {
-        $type = "vimeo-video";
-        $source = $parent.attr("data-id");
+        type = "vimeo-video";
+        source = $parent.attr("data-id");
     } else if (is_embed_video) {
-        $type = "embed-video";
-        $source = $parent.attr("data-id");
+        type = "embed-video";
+        source = $parent.attr("data-id");
     } else {
-        $type = "image";
+        type = "image";
         if ($image.attr("data-src-fullsize")) {
-            $source = $image.attr("data-src-fullsize");
+            source = $image.attr("data-src-fullsize");
         } else {
-            $source = $preview_src;
+            source = preview_src;
         }
     }
     let sender_full_name;
@@ -330,14 +428,14 @@ export function parse_image_data(image) {
     }
     const payload = {
         user: sender_full_name,
-        title: $parent.attr("title"),
-        type: $type,
-        preview: $preview_src,
-        source: $source,
-        url: $url,
+        title: $parent.attr("aria-label") || $parent.attr("href"),
+        type,
+        preview: preview_src,
+        source,
+        url,
     };
 
-    asset_map.set($preview_src, payload);
+    asset_map.set(preview_src, payload);
     return payload;
 }
 
@@ -364,8 +462,9 @@ export function initialize() {
         $(".player-container iframe").remove();
         is_open = false;
         document.activeElement.blur();
-        pan_zoom_control.disablePanZoom();
-        $(".lightbox-canvas-trigger").removeClass("enabled");
+        if (pan_zoom_control.isActive()) {
+            pan_zoom_control.reset();
+        }
     };
 
     const open_image = build_open_image_function(reset_lightbox_state);
@@ -426,22 +525,12 @@ export function initialize() {
         }
     });
 
-    $("#lightbox_overlay").on("click", ".lightbox-canvas-trigger", function () {
-        const $img = $("#lightbox_overlay").find(".image-preview img");
-        open_image($img);
-
-        if ($(this).hasClass("enabled")) {
-            pan_zoom_control.disablePanZoom();
-            $(this).removeClass("enabled");
-        } else {
-            pan_zoom_control.enablePanZoom();
-            $(this).addClass("enabled");
+    $("#lightbox_overlay").on("click", ".lightbox-zoom-reset", () => {
+        if (!$("#lightbox_overlay .lightbox-zoom-reset").hasClass("disabled")) {
+            const $img = $("#lightbox_overlay").find(".image-preview img");
+            open_image($img);
+            pan_zoom_control.reset();
         }
-    });
-
-    $("#lightbox_overlay .image-preview").on("dblclick", "img, canvas", (e) => {
-        $("#lightbox_overlay .lightbox-canvas-trigger").trigger("click");
-        e.preventDefault();
     });
 
     $("#lightbox_overlay .player-container").on("click", function () {
@@ -453,6 +542,15 @@ export function initialize() {
 
     $("#lightbox_overlay").on("click", ".image-info-wrapper, .center", (e) => {
         if ($(e.target).is(".image-info-wrapper, .center")) {
+            reset_lightbox_state();
+            overlays.close_overlay("lightbox");
+        }
+    });
+
+    $("#lightbox_overlay .image-preview").on("click", (e) => {
+        // Ensure that the click isn't on the image itself, and that
+        // the window isn't marked as disabled to click to close.
+        if (!$(e.target).is("img") && !$("#lightbox_overlay").data("noclose")) {
             reset_lightbox_state();
             overlays.close_overlay("lightbox");
         }

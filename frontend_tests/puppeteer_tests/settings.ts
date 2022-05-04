@@ -47,7 +47,6 @@ async function test_change_full_name(page: Page): Promise<void> {
 }
 
 async function test_change_password(page: Page): Promise<void> {
-    await page.click('[data-section="account-and-privacy"]');
     await page.click("#change_password");
 
     const change_password_button_selector = "#change_password_modal .dialog_submit_button";
@@ -64,6 +63,7 @@ async function test_change_password(page: Page): Promise<void> {
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
+    await page.click('[data-section="account-and-privacy"]');
     const show_change_api_key_selector = "#api_key_button";
     await page.click(show_change_api_key_selector);
 
@@ -228,6 +228,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
+    await page.click(".add-a-new-bot-tab");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
@@ -397,12 +398,16 @@ async function settings_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_settings(page);
     await test_change_full_name(page);
-    await test_change_password(page);
-    await test_get_api_key(page);
     await test_alert_words_section(page);
     await test_your_bots_section(page);
     await test_default_language_setting(page);
     await test_notifications_section(page);
+    await test_get_api_key(page);
+    await test_change_password(page);
+    // test_change_password should be the very last test, because it
+    // replaces your session, which can lead to some nondeterministic
+    // failures in test code after it, involving `GET /events`
+    // returning a 401. (We reset the test database after each file).
 }
 
 common.run_test(settings_tests);

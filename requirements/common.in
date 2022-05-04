@@ -5,7 +5,7 @@
 # Django itself
 Django[argon2]==3.2.*
 
-# needed for Literal, TypedDict
+# needed for NotRequired, ParamSpec
 typing-extensions
 
 # Needed for rendering backend templates
@@ -13,7 +13,7 @@ Jinja2
 
 # Needed for Markdown processing
 Markdown
-importlib-metadata;python_version<"3.10"  # for Markdown
+importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
 
@@ -74,7 +74,7 @@ django-bmemcached
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil
 
-# Needed for timezone work
+# Needed for time zone work
 pytz
 
 # Needed for Redis
@@ -84,7 +84,7 @@ redis
 sourcemap
 
 # Tornado used for server->client push system
-tornado==4.*  # https://github.com/zulip/zulip/issues/8913
+tornado
 
 # Fast JSON parser
 orjson
@@ -112,8 +112,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip==0.8.1+git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.8.1.zip#egg=zulip_bots==0.8.1+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip_bots==0.8.2+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns
@@ -121,6 +121,7 @@ py3dns
 # Install Python Social Auth
 social-auth-app-django
 social-auth-core[azuread,openidconnect,saml]
+python3-saml
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -159,7 +160,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-openapi-schema-validator<0.2.0  # https://github.com/p1c2u/openapi-spec-validator/issues/135
+importlib-resources ; python_version < "3.9"  # for jsonschema
 
 # For reporting errors to sentry.io
 sentry-sdk

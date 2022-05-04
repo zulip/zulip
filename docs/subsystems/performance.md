@@ -20,7 +20,7 @@ First, a few notes on philosophy.
   design/implementation work to make requests fast over the operational
   work of running 2-5x as much hardware to handle the same load.
 
-See also [scalability for production users](../production/requirements.html#scalability).
+See also [scalability for production users](../production/requirements.md#scalability).
 
 ## Load profiles
 
@@ -38,7 +38,7 @@ of load profiles:
   example for this, with more than 15K total user accounts, of which
   only several hundred have logged in during the last few weeks.
   Zulip has many important optimizations, including [soft
-  deactivation](../subsystems/sending-messages.html#soft-deactivation)
+  deactivation](sending-messages.md#soft-deactivation)
   to ensure idle users have minimal impact on both server-side
   scalability and request latency.
 - Fulltime teams, like your typical corporate Zulip installation,
@@ -114,7 +114,7 @@ is negligible.
 ### Tornado
 
 Zulip's Tornado-based [real-time push
-system](../subsystems/events-system.md), and in particular
+system](events-system.md), and in particular
 `GET /events`, accounts for something like 50% of all HTTP requests to
 a production Zulip server. Despite `GET /events` being extremely
 high-volume, the typical request takes 1-3ms to process, and doesn't
@@ -149,7 +149,7 @@ thousands of concurrent users.
 presence information and return the information for all other active
 users in the organization, account for about 36% of all HTTP requests
 on production Zulip servers. See
-[presence](../subsystems/presence.md) for details on this system and
+[presence](presence.md) for details on this system and
 how it's optimized. For this article, it's important to know that
 presence is one of the most important scalability concerns for any
 chat system, because it cannot be cached long, and is structurally a
@@ -249,7 +249,7 @@ it does a large number of these requests:
   zulip.com, this can result in a thundering herd effect for both `/`
   and `GET /messages`. A great deal of care has been taking in
   designing this [auto-reload
-  system](../subsystems/hashchange-system.html#server-initiated-reloads)
+  system](hashchange-system.md#server-initiated-reloads)
   to spread most of that herd over several minutes.
 
 Typical requests consume 20-100ms to process, much of which is waiting
@@ -295,7 +295,7 @@ as it navigates around the app.
 
 ### Sending and editing messages
 
-[Sending new messages](../subsystems/sending-messages.md) (including
+[Sending new messages](sending-messages.md) (including
 incoming webhooks) represents less than 0.5% of total request volume.
 That this number is small should not be surprising even though sending
 messages is intuitively the main feature of a chat service: a message
@@ -303,7 +303,7 @@ sent to 50 users triggers ~50 `GET /events` requests.
 
 A typical message-send request takes 20-70ms, with more expensive
 requests typically resulting from [Markdown
-rendering](../subsystems/markdown.md) of more complex syntax. As a
+rendering](markdown.md) of more complex syntax. As a
 result, these requests are not material to Zulip's scalability.
 Editing messages and adding emoji reactions are very similar to
 sending them for the purposes of performance and scalability, since
@@ -335,7 +335,7 @@ scalability of a Zulip server.
 The above doesn't cover all of the work that a production Zulip server
 does; various tasks like sending outgoing emails or recording the data
 that powers [/stats](https://zulip.com/help/analytics) are run by
-[queue processors](../subsystems/queuing.md) and cron jobs, not in
+[queue processors](queuing.md) and cron jobs, not in
 response to incoming HTTP requests. In practice, all of these have
 been written such that they are immaterial to total load and thus
 architectural scalability, though we do from time to time need to do
@@ -358,7 +358,7 @@ Python/CPU time (being harder to scale horizontally).
 
 Most optimizations to make an endpoint cheaper will start with
 optimizing the database queries and/or employing
-[caching](../subsystems/caching.md), and then continue as needed with
+[caching](caching.md), and then continue as needed with
 profiling of the Python code and any memcached queries.
 
 For a handful of the critical code paths listed above, we further
@@ -367,7 +367,7 @@ for narrow sections; typically this is sufficient to result in the
 database query time dominating that spent by the Python application
 server process.
 
-Zulip's [server logs](../subsystems/logging.md) are designed to
+Zulip's [server logs](logging.md) are designed to
 provide insight when a request consumes significant database or
 memcached resources, which is useful both in development and in
 production.

@@ -93,12 +93,12 @@ export class UserSearch {
     }
 
     expand_column() {
-        const column = this.$input.closest(".app-main [class^='column-']");
-        if (!column.hasClass("expanded")) {
+        const $column = this.$input.closest(".app-main [class^='column-']");
+        if (!$column.hasClass("expanded")) {
             popovers.hide_all();
-            if (column.hasClass("column-left")) {
+            if ($column.hasClass("column-left")) {
                 stream_popover.show_streamlist_sidebar();
-            } else if (column.hasClass("column-right")) {
+            } else if ($column.hasClass("column-right")) {
                 popovers.show_userlist_sidebar();
             }
         }

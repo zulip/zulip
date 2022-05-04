@@ -8,11 +8,19 @@ class zulip::common {
       $supervisor_system_conf_dir = '/etc/supervisor/conf.d'
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
-      $supervisor_start = '/etc/init.d/supervisor start'
-      # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
-      # "restart" is actually "stop" under sysvinit
-      $supervisor_reload = '/etc/init.d/supervisor restart && (/etc/init.d/supervisor start || /bin/true) && /etc/init.d/supervisor status'
-      $supervisor_status = '/etc/init.d/supervisor status'
+      $supervisor_start = '/usr/sbin/service supervisor start'
+      $supervisor_reload = @(EOT)
+        # The init script's timeout waiting for supervisor is shorter
+        # than supervisor's timeout waiting for its programs, so we need
+        # to ask supervisor to stop its programs first.
+        supervisorctl stop all &&
+        service supervisor restart &&
+        # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=877086
+        # "restart" is actually "stop" under sysvinit
+        { service supervisor start || true; } &&
+        service supervisor status
+        | EOT
+      $supervisor_status = '/usr/sbin/service supervisor status'
     }
     'RedHat': {
       $nagios_plugins = 'nagios-plugins'
@@ -52,38 +60,39 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.17.6',
+      'version' => '1.18.1',
       'sha256' => {
-        'amd64'   => '231654bbf2dab3d86c1619ce799e77b03d96f9b50770297c8f4dff8836fc8ca2',
-        'aarch64' => '82c1a033cce9bc1b47073fd6285233133040f0378439f3c4659fe77cc534622a',
+        'amd64'   => 'b3b815f47ababac13810fc6021eb73d65478e0b2db4b09d348eefad9581a2334',
+        'aarch64' => '56a91851c97fb4697077abbca38860f735c32b38993ff79b088dac46e4735633',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => '96dc8b043d3f22dcb65a9c2ccf22e3794e2da3a1',
+      'version' => 'dbb816b62b790432414db7cafbb4583d5092c601',
       # Source code, so arch-invariant sha256
-      'sha256' => 'c2b8080999c3ba9e2b509f8d4cf300922557e7c070fb16ac7d1ea220416f8660',
+      'sha256' => '3c02676af074bf7c18a29343e0824cb87da4837bf7bbe2837ac81c254f813c32',
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version' => '1.1.1-rc',
-      'sha256' => {
-        'amd64' => 'eed4de63c2657add6e0fe70f8c0fbe62a4a54405b9bfc801b1912b6c4f2c7107',
-        # No aarch64 builds
+      'version'       => '1.1.3-rc-with-build',
+      'sha256'        => {
+        'amd64' => '109a80f4c019e0f1d52602e90d2a181eb844494ece2d099a149cf9204b71113e',
+        # aarch64 builds from source, below
       },
+      # This is a Git commit hash, not a sha256sum, for when building from source.
+      'git_commit_id' => '52f990fe87679ee4651fe3fb7629a2ac799f50c6',
     },
-
 
     ### zulip_ops packages
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.3.6',
+      'version' => '8.5.0',
       'sha256' => {
-        'amd64'   => 'f2047de7ec42243ddedb95b16e6b5704cb12ec775b07ebf0adc67db00a52c459',
-        'aarch64' => 'd7dfdc1d08499f19b84b51f878d5380ba293468cf753420ce25caf423fb7231a',
+        'amd64'   => 'ad5e858e2255d69da45f83f9571cf741c6867ed8ccede5ad42e90079119b98aa',
+        'aarch64' => '6e906e0902b88314cd8f5a49c11140398981a7643b268dc04632fc30667581ae',
       },
     },
 
@@ -96,12 +105,30 @@ class zulip::common {
       },
     },
 
+    # https://github.com/ncabatoff/process-exporter/releases
+    'process_exporter' => {
+      'version' => '0.7.10',
+      'sha256' => {
+        'amd64'   => '52503649649c0be00e74e8347c504574582b95ad428ff13172d658e82b3da1b5',
+        'aarch64' => 'b377e673558bd0d51f5f771c2b3b3be44b60fcac0689709f47d8c7ca8136f6f5',
+      }
+    },
+
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.33.1',
+      'version' => '2.35.0',
       'sha256' => {
-        'amd64'   => '55de29727fc4d3977d3400c54fa222ebb52755bd0201936f1e1052fea6f2b44b',
-        'aarch64' => '21d89df7a98882a1a872bd3210aeaac3915a7f7be9f2ad28c986c80ad64ee77d',
+        'amd64'   => 'e4546960688d1c85530ec3a93e109d15b540f3251e1f4736d0d9735e1e857faf',
+        'aarch64' => '3ebe0c533583a9ab03363a80aa629edd8e0cc42da3583e33958eb7abe74d4cd2',
+      },
+    },
+
+    # https://github.com/oliver006/redis_exporter/releases
+    'redis_exporter' => {
+      'version' => '1.37.0',
+      'sha256' => {
+        'amd64'   => 'c4d0554a378151eab3372235c40d3a9c8c40fd6f40d91d768830985df8a44744',
+        'aarch64' => '742047d938192894979c8370830891bb0fea3262b762e6c51c849a8e47ddfb7e',
       },
     },
 

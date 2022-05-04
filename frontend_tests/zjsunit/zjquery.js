@@ -23,16 +23,15 @@ function verify_selector_for_zulip(selector) {
         selector.includes(".") ||
         (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
 
-    if (!is_valid) {
+    assert.ok(
+        is_valid,
         // Check if selector has only english alphabets and space.
         // Then, the user is probably trying to use a tag as a selector
         // like $('div a').
-        if (/^[ A-Za-z]+$/.test(selector)) {
-            throw new Error("Selector too broad! Use id, class or attributes of target instead.");
-        } else {
-            throw new Error("Invalid selector: " + selector + " Use $.create() maybe?");
-        }
-    }
+        /^[ A-Za-z]+$/.test(selector)
+            ? "Selector too broad! Use id, class or attributes of target instead."
+            : `Invalid selector: ${selector}. Use $.create() maybe?`,
+    );
 }
 
 function make_zjquery() {
@@ -43,8 +42,8 @@ function make_zjquery() {
     const fn = {};
 
     function new_elem(selector, create_opts) {
-        const elem = FakeElement(selector, {...create_opts});
-        Object.assign(elem, fn);
+        const $elem = FakeElement(selector, {...create_opts});
+        Object.assign($elem, fn);
 
         // Create a proxy handler to detect missing stubs.
         //
@@ -56,15 +55,16 @@ function make_zjquery() {
                 // Handle the special case of equality checks, which
                 // we can infer by assert.equal trying to access the
                 // "stack" key.
-                if (key === "stack") {
-                    const error =
-                        "\nInstead of doing equality checks on a full object, " +
-                        'do `assert_equal(foo.selector, ".some_class")\n';
-                    throw new Error(error);
-                }
+                assert.notEqual(
+                    key,
+                    "stack",
+                    "\nInstead of doing equality checks on a full object, " +
+                        'do `assert.equal($foo.selector, ".some_class")\n',
+                );
 
                 const val = target[key];
 
+                /* istanbul ignore if */
                 if (val === undefined && typeof key !== "symbol" && key !== "inspect") {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
@@ -76,7 +76,7 @@ function make_zjquery() {
             },
         };
 
-        const proxy = new Proxy(elem, handler);
+        const proxy = new Proxy($elem, handler);
 
         return proxy;
     }
@@ -85,16 +85,17 @@ function make_zjquery() {
 
     const zjquery = function (arg, arg2) {
         if (typeof arg === "function") {
-            if (initialize_function) {
-                throw new Error(`
+            assert.ok(
+                !initialize_function,
+                `
                     We are trying to avoid the $(...) mechanism
                     for initializing modules in our codebase,
                     and the code that you are compiling/running
                     has tried to do this twice.  Please either
                     clean up the real code or reduce the scope
                     of what you are testing in this test module.
-                `);
-            }
+                `,
+            );
             initialize_function = arg;
             return undefined;
         }
@@ -116,12 +117,15 @@ function make_zjquery() {
             return arg.to_$();
         }
 
-        if (arg2 !== undefined) {
-            throw new Error("We only use one-argument variations of $(...) in Zulip code.");
-        }
+        assert.equal(
+            arg2,
+            undefined,
+            "We only use one-argument variations of $(...) in Zulip code.",
+        );
 
         const selector = arg;
 
+        /* istanbul ignore if */
         if (typeof selector !== "string") {
             console.info(arg);
             throw new Error("zjquery does not know how to wrap this object yet");
@@ -130,8 +134,8 @@ function make_zjquery() {
         verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
-            const elem = new_elem(selector);
-            elems.set(selector, elem);
+            const $elem = new_elem(selector);
+            elems.set(selector, $elem);
         }
         return elems.get(selector);
     };
@@ -146,19 +150,16 @@ function make_zjquery() {
 
     zjquery.create = function (name, opts) {
         assert.ok(!elems.has(name), "You already created an object with this name!!");
-        const elem = new_elem(name, opts);
-        elems.set(name, elem);
+        const $elem = new_elem(name, opts);
+        elems.set(name, $elem);
 
-        return elem;
+        return $elem;
     };
 
-    zjquery.trim = function (s) {
-        return s;
-    };
-
+    /* istanbul ignore next */
     zjquery.state = function () {
         // useful for debugging
-        let res = Array.from(elems.values(), (v) => v.debug());
+        let res = Array.from(elems.values(), ($v) => $v.debug());
 
         res = res.map((v) => [v.selector, v.value, v.shown]);
 
@@ -169,6 +170,7 @@ function make_zjquery() {
 
     zjquery.Event = FakeEvent;
 
+    /* istanbul ignore next */
     fn.popover = () => {
         throw new Error(`
             Do not try to test $.fn.popover code unless
@@ -186,6 +188,7 @@ function make_zjquery() {
                 return true;
             }
 
+            /* istanbul ignore next */
             throw new Error(`
                 Please don't use node tests to test code
                 that extends $.fn unless you really know
@@ -209,6 +212,7 @@ function make_zjquery() {
     };
 
     zjquery.validator = {
+        /* istanbul ignore next */
         addMethod() {
             throw new Error("You must create your own $.validator.addMethod stub.");
         },
@@ -229,6 +233,7 @@ const $ = new Proxy(make_zjquery(), {
             return true;
         }
 
+        /* istanbul ignore next */
         throw new Error(`
             Please don't modify $.${prop} if you are using zjquery.
 
@@ -250,4 +255,4 @@ const $ = new Proxy(make_zjquery(), {
     },
 });
 
-module.exports = $;
+module.exports = $; // eslint-disable-line no-jquery/variable-pattern

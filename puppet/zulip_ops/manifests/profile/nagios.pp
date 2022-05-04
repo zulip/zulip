@@ -7,7 +7,7 @@ class zulip_ops::profile::nagios {
                       # For sending outgoing email
                       'msmtp',
                       ]
-  package { $nagios_packages: ensure => 'installed' }
+  package { $nagios_packages: ensure => installed }
   $nagios_alert_email = zulipconf('nagios', 'alert_email', undef)
   $nagios_test_email = zulipconf('nagios', 'test_email', undef)
   $nagios_pager_email = zulipconf('nagios', 'pager_email', undef)

@@ -15,6 +15,7 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
+from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
@@ -238,5 +239,10 @@ def build_page_params_for_home_page_load(
         page_params["user_settings"]["enable_desktop_notifications"] = False
 
     page_params["translation_data"] = get_language_translation_data(request_language)
+
+    if user_profile is None:
+        # Get rendered version of realm description which is displayed in right
+        # sidebar for spectator.
+        page_params["realm_description"] = get_realm_rendered_description(realm)
 
     return register_ret["queue_id"], page_params

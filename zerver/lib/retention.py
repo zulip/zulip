@@ -89,6 +89,8 @@ models_with_message_key: List[Dict[str, Any]] = [
     },
 ]
 
+EXCLUDE_FIELDS = {Message._meta.get_field("search_tsvector")}
+
 
 @transaction.atomic(savepoint=False)
 def move_rows(
@@ -104,8 +106,9 @@ def move_rows(
         # Use base_model's db_table unless otherwise specified.
         src_db_table = base_model._meta.db_table
 
-    src_fields = [Identifier(src_db_table, field.column) for field in base_model._meta.fields]
-    dst_fields = [Identifier(field.column) for field in base_model._meta.fields]
+    fields = [field for field in base_model._meta.fields if field not in EXCLUDE_FIELDS]
+    src_fields = [Identifier(src_db_table, field.column) for field in fields]
+    dst_fields = [Identifier(field.column) for field in fields]
     sql_args = {
         "src_fields": SQL(",").join(src_fields),
         "dst_fields": SQL(",").join(dst_fields),

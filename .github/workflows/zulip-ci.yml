@@ -15,26 +15,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        include_documentation_tests: [false]
+        include_frontend_tests: [false]
         include:
           # Base images are built using `tools/ci/Dockerfile.prod.template`.
           # The comments at the top explain how to build and upload these images.
-          # Debian 10 ships with Python 3.7.3.
-          - docker_image: zulip/ci:buster
-            name: Debian 10 Buster (Python 3.7, backend + frontend)
-            os: buster
-            include_frontend_tests: true
-          # Focal ships with Python 3.8.2.
+          # Ubuntu 20.04 ships with Python 3.8.10.
           - docker_image: zulip/ci:focal
-            name: Ubuntu 20.04 Focal (Python 3.8, backend)
+            name: Ubuntu 20.04 (Python 3.8, backend + frontend)
             os: focal
-            is_focal: true
-            include_frontend_tests: false
-          # Bullseye ships with Python 3.9.2.
+            include_frontend_tests: true
+          # Debian 11 ships with Python 3.9.2.
           - docker_image: zulip/ci:bullseye
-            name: Debian 11 Bullseye (Python 3.9, backend)
+            name: Debian 11 (Python 3.9, backend + documentation)
             os: bullseye
-            is_bullseye: true
-            include_frontend_tests: false
+            include_documentation_tests: true
+          # Ubuntu 22.04 ships with Python 3.10.4.
+          - docker_image: zulip/ci:jammy
+            name: Ubuntu 22.04 (Python 3.10, backend)
+            os: jammy
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}
@@ -126,8 +125,9 @@ jobs:
         run: |
           source tools/ci/activate-venv
 
-          # Currently our compiled requirements files will differ for different python versions
-          # so we will run test-locked-requirements only for Debian 10.
+          # Currently our compiled requirements files will differ for different
+          # Python versions, so we will run test-locked-requirements only on the
+          # platform with the oldest one.
           # ./tools/test-locked-requirements
           # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
           #
@@ -139,7 +139,15 @@ jobs:
           ./tools/setup/optimize-svg --check
           ./tools/setup/generate_integration_bots_avatars.py --check-missing
 
+          # Ban check-database-compatibility.py from transitively
+          # relying on static/generated, because it might not be
+          # up-to-date at that point in upgrade-zulip-stage-2.
+          chmod 000 static/generated
+          ./scripts/lib/check-database-compatibility.py
+          chmod 755 static/generated
+
       - name: Run documentation and api tests
+        if: ${{ matrix.include_documentation_tests }}
         run: |
           source tools/ci/activate-venv
           # In CI, we only test links we control in test-documentation to avoid flakes
@@ -187,7 +195,7 @@ jobs:
           fi
 
       - name: Test locked requirements
-        if: ${{ matrix.os == 'buster' }}
+        if: ${{ matrix.os == 'focal' }}
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
           ./tools/test-locked-requirements
@@ -211,7 +219,6 @@ jobs:
           retention-days: 60
 
       - name: Check development database build
-        if: ${{ matrix.is_focal || matrix.is_bullseye }}
         run: ./tools/ci/setup-backend
 
       - name: Report status

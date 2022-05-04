@@ -3,7 +3,6 @@ import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
 import generated_pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
 import render_compose from "../templates/compose.hbs";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
@@ -25,8 +24,10 @@ import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
+import * as dark_theme from "./dark_theme";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import * as emoji from "./emoji";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
@@ -37,6 +38,7 @@ import * as i18n from "./i18n";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
+import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
@@ -62,6 +64,7 @@ import * as realm_playground from "./realm_playground";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults";
 import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
+import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as scroll_bar from "./scroll_bar";
@@ -82,9 +85,9 @@ import * as starred_messages from "./starred_messages";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
 import * as stream_settings_ui from "./stream_settings_ui";
-import * as stream_subscribers_ui from "./stream_subscribers_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
@@ -107,24 +110,24 @@ import * as user_status_ui from "./user_status_ui";
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-let current_message_hover;
+let $current_message_hover;
 function message_unhover() {
-    if (current_message_hover === undefined) {
+    if ($current_message_hover === undefined) {
         return;
     }
-    current_message_hover.find("span.edit_content").html("");
-    current_message_hover = undefined;
+    $current_message_hover.find("span.edit_content").html("");
+    $current_message_hover = undefined;
 }
 
-function message_hover(message_row) {
-    const id = rows.id(message_row);
-    if (current_message_hover && rows.id(current_message_hover) === id) {
+function message_hover($message_row) {
+    const id = rows.id($message_row);
+    if ($current_message_hover && rows.id($current_message_hover) === id) {
         return;
     }
 
-    const message = message_lists.current.get(rows.id(message_row));
+    const message = message_lists.current.get(rows.id($message_row));
     message_unhover();
-    current_message_hover = message_row;
+    $current_message_hover = $message_row;
 
     // Locally echoed messages have !is_topic_editable and thus go
     // through this code path.
@@ -140,7 +143,7 @@ function message_hover(message_row) {
         is_editable: is_message_editable && !message.status_message,
         msg_id: id,
     };
-    message_row.find(".edit_content").html(render_edit_content_button(args));
+    $message_row.find(".edit_content").html(render_edit_content_button(args));
 }
 
 function initialize_left_sidebar() {
@@ -158,23 +161,28 @@ function initialize_right_sidebar() {
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
+    if (page_params.is_spectator) {
+        rendered_markdown.update_elements(
+            $(".right-sidebar .realm-description .rendered_markdown"),
+        );
+    }
 
     $("#user_presences").on("mouseenter", ".user_sidebar_entry", (e) => {
-        const status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if (status_emoji.length) {
-            const animated_url = status_emoji.data("animated-url");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        if ($status_emoji.length) {
+            const animated_url = $status_emoji.data("animated-url");
             if (animated_url) {
-                status_emoji.attr("src", animated_url);
+                $status_emoji.attr("src", animated_url);
             }
         }
     });
 
     $("#user_presences").on("mouseleave", ".user_sidebar_entry", (e) => {
-        const status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
-        if (status_emoji.length) {
-            const still_url = status_emoji.data("still-url");
+        const $status_emoji = $(e.target).closest(".user_sidebar_entry").find("img.status_emoji");
+        if ($status_emoji.length) {
+            const still_url = $status_emoji.data("still-url");
             if (still_url) {
-                status_emoji.attr("src", still_url);
+                $status_emoji.attr("src", still_url);
             }
         }
     });
@@ -195,6 +203,11 @@ function initialize_compose_box() {
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
+            scroll_to_bottom_key_html: common.has_mac_keyboard()
+                ? "Fn + <span class='tooltip_right_arrow'>→</span>"
+                : "End",
+            narrow_to_compose_recipients_key_html:
+                (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .",
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
@@ -226,9 +239,9 @@ export function initialize_kitchen_sink_stuff() {
         message_viewport.set_last_movement_direction(delta);
     }, 50);
 
-    message_viewport.message_pane.on("wheel", (e) => {
+    message_viewport.$message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_active() && !recent_topics_util.is_visible()) {
+        if (!overlays.is_overlay_or_modal_open() && !recent_topics_util.is_visible()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -244,13 +257,13 @@ export function initialize_kitchen_sink_stuff() {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
-        const self = ui.get_scroll_element($(this));
-        const scroll = self.scrollTop();
+        const $self = ui.get_scroll_element($(this));
+        const scroll = $self.scrollTop();
         const delta = e.originalEvent.deltaY;
 
         // The -1 fudge factor is important here due to rounding errors.  Better
         // to err on the side of not scrolling.
-        const max_scroll = self.prop("scrollHeight") - self.innerHeight() - 1;
+        const max_scroll = $self.prop("scrollHeight") - $self.innerHeight() - 1;
 
         e.stopPropagation();
         if ((delta < 0 && scroll <= 0) || (delta > 0 && scroll >= max_scroll)) {
@@ -288,8 +301,8 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     $("#main_div").on("mouseover", ".message_table .message_row", function () {
-        const row = $(this).closest(".message_row");
-        message_hover(row);
+        const $row = $(this).closest(".message_row");
+        message_hover($row);
     });
 
     $("#main_div").on("mouseleave", ".message_table .message_row", () => {
@@ -297,17 +310,34 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#main_div").on("mouseover", ".sender_info_hover", function () {
-        const row = $(this).closest(".message_row");
-        row.addClass("sender_name_hovered");
+        const $row = $(this).closest(".message_row");
+        $row.addClass("sender_name_hovered");
     });
 
     $("#main_div").on("mouseout", ".sender_info_hover", function () {
-        const row = $(this).closest(".message_row");
-        row.removeClass("sender_name_hovered");
+        const $row = $(this).closest(".message_row");
+        $row.removeClass("sender_name_hovered");
     });
 
+    function handle_video_preview_mouseenter($elem) {
+        // Set image height and css vars for play button position, if not done already
+        const setPosition = !$elem.data("entered-before");
+        if (setPosition) {
+            const imgW = $elem.find("img")[0].width;
+            const imgH = $elem.find("img")[0].height;
+            // Ensure height doesn't change on mouse enter
+            $elem.css("height", `${imgH}px`);
+            // variables to set play button position
+            const marginLeft = (imgW - 30) / 2;
+            const marginTop = (imgH - 26) / 2;
+            $elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
+            $elem.data("entered-before", true);
+        }
+        $elem.addClass("fa fa-play");
+    }
+
     $("#main_div").on("mouseenter", ".youtube-video a", function () {
-        $(this).addClass("fa fa-play");
+        handle_video_preview_mouseenter($(this));
     });
 
     $("#main_div").on("mouseleave", ".youtube-video a", function () {
@@ -315,21 +345,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#main_div").on("mouseenter", ".embed-video a", function () {
-        const elem = $(this);
-        // Set image height and css vars for play button position, if not done already
-        const setPosition = !elem.data("entered-before");
-        if (setPosition) {
-            const imgW = elem.find("img")[0].width;
-            const imgH = elem.find("img")[0].height;
-            // Ensure height doesn't change on mouse enter
-            elem.css("height", `${imgH}px`);
-            // variables to set play button position
-            const marginLeft = (imgW - 30) / 2;
-            const marginTop = (imgH - 26) / 2;
-            elem.css("--margin-left", `${marginLeft}px`).css("--margin-top", `${marginTop}px`);
-            elem.data("entered-before", true);
-        }
-        elem.addClass("fa fa-play");
+        handle_video_preview_mouseenter($(this));
     });
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
@@ -364,13 +380,13 @@ export function initialize_kitchen_sink_stuff() {
             // If the message list is empty, don't do anything
             return;
         }
-        const row = event.msg_list.get_row(event.id);
+        const $row = event.msg_list.get_row(event.id);
         $(".selected_message").removeClass("selected_message");
-        row.addClass("selected_message");
+        $row.addClass("selected_message");
 
         if (event.then_scroll) {
-            if (row.length === 0) {
-                const row_from_dom = message_lists.current.get_row(event.id);
+            if ($row.length === 0) {
+                const $row_from_dom = message_lists.current.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected_id: event.previously_selected_id,
@@ -387,7 +403,7 @@ export function initialize_kitchen_sink_stuff() {
                             .map((message) => message.id)
                             .sort(),
                     ),
-                    found_in_dom: row_from_dom.length,
+                    found_in_dom: $row_from_dom.length,
                 });
             }
             if (event.target_scroll_offset !== undefined) {
@@ -396,7 +412,7 @@ export function initialize_kitchen_sink_stuff() {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                message_viewport.recenter_view(row, {
+                message_viewport.recenter_view($row, {
                     from_scroll: event.from_scroll,
                     force_center: event.previously_selected_id === -1,
                 });
@@ -541,6 +557,16 @@ export function initialize_everything() {
     const user_settings_params = pop_fields("user_settings");
     const realm_settings_defaults_params = pop_fields("realm_user_settings_defaults");
 
+    if (page_params.is_spectator) {
+        const ls = localstorage();
+        const preferred_theme = ls.get("spectator-theme-preference");
+        if (preferred_theme === "dark") {
+            dark_theme.enable();
+        } else if (preferred_theme === "light") {
+            dark_theme.disable();
+        }
+    }
+
     i18n.initialize(i18n_params);
     tippyjs.initialize();
     popover_menus.initialize();
@@ -590,7 +616,7 @@ export function initialize_everything() {
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
-    stream_subscribers_ui.initialize();
+    stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
     muted_topics.initialize();
@@ -637,6 +663,8 @@ export function initialize_everything() {
 
     // All overlays must be initialized before hashchange.js
     hashchange.initialize();
+    resize.initialize();
+
     unread_ui.initialize();
     activity.initialize();
     emoji_picker.initialize();

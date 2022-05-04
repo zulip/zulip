@@ -22,7 +22,7 @@ import {user_settings} from "./user_settings";
 
 export let settings_label;
 
-$("body").ready(() => {
+$(() => {
     $("#settings_overlay_container").on("click", (e) => {
         if (!overlays.is_modal_open()) {
             return;
@@ -98,6 +98,7 @@ export function build_page() {
         user_can_change_avatar: settings_data.user_can_change_avatar(),
         user_role_text: people.get_user_type(page_params.user_id),
         default_language_name: settings_display.user_default_language_name,
+        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         settings_object: user_settings,
     });
 

@@ -1,11 +1,11 @@
 class zulip::supervisor {
   $supervisor_service = $zulip::common::supervisor_service
 
-  package { 'supervisor': ensure => 'installed' }
+  package { 'supervisor': ensure => installed }
 
   $system_conf_dir = $zulip::common::supervisor_system_conf_dir
   file { $system_conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
@@ -16,7 +16,7 @@ class zulip::supervisor {
   $should_purge = $facts['leave_supervisor'] != 'true'
   # lint:endignore
   file { $conf_dir:
-    ensure  => 'directory',
+    ensure  => directory,
     require => Package['supervisor'],
     owner   => 'root',
     group   => 'root',
@@ -91,6 +91,7 @@ class zulip::supervisor {
     }
     exec { 'supervisor-restart':
       refreshonly => true,
+      provider    => shell,
       command     => $zulip::common::supervisor_reload,
       require     => Service[$supervisor_service],
     }

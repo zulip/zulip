@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import asyncio
 import os
 import pwd
 import signal
 import subprocess
 import sys
-from typing import Any, Callable, Generator, List, Sequence
+from typing import List, Sequence
 from urllib.parse import urlunparse
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -16,8 +17,8 @@ from tools.lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
-from tornado import gen, httpclient, httputil, web
-from tornado.ioloop import IOLoop
+from tornado import httpclient, httputil, web
+from tornado.platform.asyncio import AsyncIOMainLoop
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
@@ -84,8 +85,10 @@ if options.test:
     settings_module = "zproject.test_settings"
     # Don't auto-reload when running Puppeteer tests
     runserver_args = ["--noreload"]
+    tornado_autoreload = []
 else:
     settings_module = "zproject.settings"
+    tornado_autoreload = ["-m", "tornado.autoreload"]
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
@@ -134,6 +137,8 @@ def server_processes() -> List[List[str]]:
         [
             "env",
             "PYTHONUNBUFFERED=1",
+            "python3",
+            *tornado_autoreload,
             "./manage.py",
             "runtornado",
             *manage_args,
@@ -193,22 +198,7 @@ def transform_url(protocol: str, path: str, query: str, target_port: int, target
     return newpath
 
 
-@gen.engine
-def fetch_request(
-    url: str, callback: Any, **kwargs: Any
-) -> "Generator[Callable[..., Any], Any, None]":
-    # use large timeouts to handle polling requests
-    req = httpclient.HTTPRequest(
-        url,
-        connect_timeout=240.0,
-        request_timeout=240.0,
-        decompress_response=False,
-        **kwargs,
-    )
-    client = httpclient.AsyncHTTPClient()
-    # wait for response
-    response = yield gen.Task(client.fetch, req)
-    callback(response)
+client: httpclient.AsyncHTTPClient
 
 
 class BaseHandler(web.RequestHandler):
@@ -248,24 +238,9 @@ class BaseHandler(web.RequestHandler):
     def delete(self) -> None:
         pass
 
-    def handle_response(self, response: Any) -> None:
-        if response.error and not isinstance(response.error, httpclient.HTTPError):
-            self.set_status(500)
-            self.write("Internal server error:\n" + str(response.error))
-        else:
-            self.set_status(response.code, response.reason)
-            self._headers = httputil.HTTPHeaders()  # clear tornado default header
-
-            for header, v in response.headers.get_all():
-                # some header appear multiple times, eg 'Set-Cookie'
-                if header.lower() != "transfer-encoding":
-                    self.add_header(header, v)
-            if response.body:
-                self.write(response.body)
-        self.finish()
-
-    @web.asynchronous
-    def prepare(self) -> None:
+    async def prepare(self) -> None:
+        assert self.request.method is not None
+        assert self.request.remote_ip is not None
         if "X-REAL-IP" not in self.request.headers:
             self.request.headers["X-REAL-IP"] = self.request.remote_ip
         if "X-FORWARDED_PORT" not in self.request.headers:
@@ -278,22 +253,35 @@ class BaseHandler(web.RequestHandler):
             self.target_host,
         )
         try:
-            fetch_request(
+            request = httpclient.HTTPRequest(
                 url=url,
-                callback=self.handle_response,
                 method=self.request.method,
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
                 body=getattr(self.request, "body"),
                 allow_nonstandard_methods=True,
+                # use large timeouts to handle polling requests
+                connect_timeout=240.0,
+                request_timeout=240.0,
+                # https://github.com/tornadoweb/tornado/issues/2743
+                decompress_response=False,
             )
-        except httpclient.HTTPError as e:
-            if hasattr(e, "response") and e.response:
-                self.handle_response(e.response)
-            else:
-                self.set_status(500)
-                self.write("Internal server error:\n" + str(e))
-                self.finish()
+            response = await client.fetch(request, raise_error=False)
+
+            self.set_status(response.code, response.reason)
+            self._headers = httputil.HTTPHeaders()  # clear tornado default header
+
+            for header, v in response.headers.get_all():
+                # some header appear multiple times, eg 'Set-Cookie'
+                if header.lower() != "transfer-encoding":
+                    self.add_header(header, v)
+            if response.body:
+                self.write(response.body)
+            self.finish()
+        except (ConnectionError, httpclient.HTTPError) as e:
+            self.set_status(500)
+            self.write("Internal server error:\n" + str(e))
+            self.finish()
 
 
 class WebPackHandler(BaseHandler):
@@ -310,25 +298,19 @@ class TornadoHandler(BaseHandler):
 
 class Application(web.Application):
     def __init__(self, enable_logging: bool = False) -> None:
-        handlers = [
-            (r"/json/events.*", TornadoHandler),
-            (r"/api/v1/events.*", TornadoHandler),
-            (r"/webpack.*", WebPackHandler),
-            (r"/.*", DjangoHandler),
-        ]
-        super().__init__(handlers, enable_logging=enable_logging)
+        super().__init__(
+            [
+                (r"/json/events.*", TornadoHandler),
+                (r"/api/v1/events.*", TornadoHandler),
+                (r"/webpack.*", WebPackHandler),
+                (r"/.*", DjangoHandler),
+            ],
+            enable_logging=enable_logging,
+        )
 
-    def log_request(self, handler: BaseHandler) -> None:
+    def log_request(self, handler: web.RequestHandler) -> None:
         if self.settings["enable_logging"]:
             super().log_request(handler)
-
-
-def shutdown_handler(*args: Any, **kwargs: Any) -> None:
-    io_loop = IOLoop.instance()
-    if io_loop._callbacks:
-        io_loop.call_later(1, shutdown_handler)
-    else:
-        io_loop.stop()
 
 
 def print_listeners() -> None:
@@ -360,7 +342,12 @@ def print_listeners() -> None:
 
 children = []
 
-try:
+
+async def serve() -> None:
+    global client
+
+    AsyncIOMainLoop().install()
+
     if options.test:
         do_one_time_webpack_compile()
     else:
@@ -369,6 +356,7 @@ try:
     for cmd in server_processes():
         children.append(subprocess.Popen(cmd))
 
+    client = httpclient.AsyncHTTPClient()
     app = Application(enable_logging=options.enable_tornado_logging)
     try:
         app.listen(proxy_port, address=options.interface)
@@ -379,10 +367,14 @@ try:
 
     print_listeners()
 
-    ioloop = IOLoop.instance()
+
+loop = asyncio.new_event_loop()
+
+try:
+    loop.run_until_complete(serve())
     for s in (signal.SIGINT, signal.SIGTERM):
-        signal.signal(s, shutdown_handler)
-    ioloop.start()
+        loop.add_signal_handler(s, loop.stop)
+    loop.run_forever()
 finally:
     for child in children:
         child.terminate()

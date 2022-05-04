@@ -7,9 +7,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const message_edit = mock_esm("../../static/js/message_edit");
 const message_store = mock_esm("../../static/js/message_store");
 
+const resolved_topic = zrequire("../shared/js/resolved_topic");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {Filter} = zrequire("../js/filter");
@@ -685,7 +685,7 @@ test("predicate_basics", () => {
     assert.ok(predicate({}));
 
     predicate = get_predicate([["is", "resolved"]]);
-    const resolved_topic_name = message_edit.RESOLVED_TOPIC_PREFIX + "foo";
+    const resolved_topic_name = resolved_topic.resolve_name("foo");
     assert.ok(predicate({type: "stream", topic: resolved_topic_name}));
     assert.ok(!predicate({topic: resolved_topic_name}));
     assert.ok(!predicate({type: "stream", topic: "foo"}));

@@ -50,10 +50,14 @@
         </form>
         {{/if}}
 
-        <input type="text" class="search" placeholder="{{t 'Filter code playgrounds' }}" aria-label="{{t 'Filter code playgrounds' }}"/>
+        <div class="settings_panel_list_header">
+            <h3>{{t "Code playgrounds"}}</h3>
+            <input type="text" class="search" placeholder="{{t 'Filter code playgrounds' }}" aria-label="{{t 'Filter code playgrounds' }}"/>
+        </div>
+
         <div class="progressive-table-wrapper" data-simplebar>
             <table class="table table-condensed table-striped wrapped-table admin_playgrounds_table">
-                <thead>
+                <thead class="table-sticky-headers">
                     <th class="active" data-sort="pygments_language">{{t "Language" }}</th>
                     <th data-sort="playground_name">{{t "Name" }}</th>
                     <th data-sort="url">{{t "URL prefix" }}</th>

@@ -42,7 +42,7 @@ export function rerender() {
         $("#realm-icon-upload-widget .image-delete-button").hide();
         // Need to clear input because of a small edge case
         // where you try to upload the same image you just deleted.
-        const file_input = $("#realm-icon-upload-widget .image_file_input");
-        file_input.val("");
+        const $file_input = $("#realm-icon-upload-widget .image_file_input");
+        $file_input.val("");
     }
 }

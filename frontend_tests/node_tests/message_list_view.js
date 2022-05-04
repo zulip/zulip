@@ -6,13 +6,10 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {user_settings} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
-
-user_settings.twenty_four_hour_time = false;
 
 mock_esm("../../static/js/message_lists", {home: "stub"});
 
@@ -25,9 +22,6 @@ mock_esm("../../static/js/timerender", {
         return [{outerHTML: String(time1.getTime()) + " - " + String(time2.getTime())}];
     },
     stringify_time(time) {
-        if (user_settings.twenty_four_hour_time) {
-            return time.toString("HH:mm");
-        }
         return time.toString("h:mm TT");
     },
 });
@@ -73,10 +67,16 @@ test("msg_moved_var", () => {
         message_context = {
             ...message_context,
         };
-        message_context.msg = {
-            last_edit_timestamp: (next_timestamp += 1),
-            ...message,
-        };
+        if ("edit_history" in message) {
+            message_context.msg = {
+                last_edit_timestamp: (next_timestamp += 1),
+                ...message,
+            };
+        } else {
+            message_context.msg = {
+                ...message,
+            };
+        }
         return message_context;
     }
 
@@ -96,50 +96,80 @@ test("msg_moved_var", () => {
     function assert_moved_false(message_container) {
         assert.equal(message_container.moved, false);
     }
+    function assert_moved_undefined(message_container) {
+        assert.equal(message_container.moved, undefined);
+    }
 
     (function test_msg_moved_var() {
         const messages = [
-            // no edits: Not moved.
-            build_message_context(),
-            // stream changed: Move
+            // no edit history: NO LABEL
+            build_message_context({}),
+            // stream changed: MOVED
             build_message_context({
-                edit_history: [{prev_stream: "test_stream", timestamp: 1000, user_id: 1}],
+                edit_history: [{prev_stream: 1, timestamp: 1000, user_id: 1}],
             }),
-            // topic changed: Move
+            // topic changed (not resolved/unresolved): MOVED
             build_message_context({
-                edit_history: [{prev_subject: "test_topic", timestamp: 1000, user_id: 1}],
+                edit_history: [
+                    {prev_topic: "test_topic", topic: "new_topic", timestamp: 1000, user_id: 1},
+                ],
             }),
-            // content edited: Edit
+            // content edited: EDITED
             build_message_context({
                 edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
             }),
-            // stream and topic edited: Move
+            // stream and topic edited: MOVED
             build_message_context({
                 edit_history: [
-                    {prev_stream: "test_stream", timestamp: 1000, user_id: 1},
-                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
+                    {
+                        prev_stream: 1,
+                        prev_topic: "test_topic",
+                        topic: "new_topic",
+                        timestamp: 1000,
+                        user_id: 1,
+                    },
                 ],
             }),
-            // topic and content changed: Edit
+            // topic and content changed: EDITED
             build_message_context({
                 edit_history: [
-                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
-                    {prev_content: "test_content", timestamp: 1001, user_id: 1},
+                    {
+                        prev_topic: "test_topic",
+                        topic: "new_topic",
+                        prev_content: "test_content",
+                        timestamp: 1000,
+                        user_id: 1,
+                    },
                 ],
             }),
-            // stream and content changed: Edit
+            // only topic resolved: NO LABEL
             build_message_context({
                 edit_history: [
-                    {prev_content: "test_content", timestamp: 1000, user_id: 1},
-                    {prev_stream: "test_stream", timestamp: 1001, user_id: 1},
+                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1000, user_id: 1},
                 ],
             }),
-            // topic, stream, and content changed: Edit
+            // only topic unresolved: NO LABEL
             build_message_context({
                 edit_history: [
-                    {prev_topic: "test_topic", timestamp: 1000, user_id: 1},
-                    {prev_stream: "test_stream", timestamp: 1001, user_id: 1},
+                    {prev_topic: "✔ test_topic", topic: "test_topic", timestamp: 1000, user_id: 1},
+                ],
+            }),
+            // multiple edit history logs, with at least one content edit: EDITED
+            build_message_context({
+                edit_history: [
+                    {prev_stream: 1, timestamp: 1000, user_id: 1},
+                    {prev_topic: "old_topic", topic: "test_topic", timestamp: 1001, user_id: 1},
                     {prev_content: "test_content", timestamp: 1002, user_id: 1},
+                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1003, user_id: 1},
+                ],
+            }),
+            // multiple edit history logs with no content edit: MOVED
+            build_message_context({
+                edit_history: [
+                    {prev_stream: 1, timestamp: 1000, user_id: 1},
+                    {prev_topic: "old_topic", topic: "test_topic", timestamp: 1001, user_id: 1},
+                    {prev_topic: "test_topic", topic: "✔ test_topic", timestamp: 1002, user_id: 1},
+                    {prev_topic: "✔ test_topic", topic: "test_topic", timestamp: 1003, user_id: 1},
                 ],
             }),
         ];
@@ -154,8 +184,8 @@ test("msg_moved_var", () => {
 
         const result = list._message_groups[0].message_containers;
 
-        // no edits: false
-        assert_moved_false(result[0]);
+        // no edit history: undefined
+        assert_moved_undefined(result[0]);
         // stream changed: true
         assert_moved_true(result[1]);
         // topic changed: true
@@ -166,10 +196,14 @@ test("msg_moved_var", () => {
         assert_moved_true(result[4]);
         // topic and content changed: false
         assert_moved_false(result[5]);
-        // stream and content changed: false
-        assert_moved_false(result[6]);
-        // topic, stream, and content changed: false
-        assert_moved_false(result[7]);
+        // only topic resolved: undefined
+        assert_moved_undefined(result[6]);
+        // only topic unresolved: undefined
+        assert_moved_undefined(result[7]);
+        // multiple edits with content edit: false
+        assert_moved_false(result[8]);
+        // multiple edits without content edit: true
+        assert_moved_true(result[9]);
     })();
 });
 
@@ -189,6 +223,7 @@ test("msg_edited_vars", () => {
         message_context.msg = {
             is_me_message: false,
             last_edit_timestamp: (next_timestamp += 1),
+            edit_history: [{prev_content: "test_content", timestamp: 1000, user_id: 1}],
             ...message,
         };
         return message_context;

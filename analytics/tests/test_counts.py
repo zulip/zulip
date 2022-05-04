@@ -32,24 +32,28 @@ from analytics.models import (
     UserCount,
     installation_epoch,
 )
-from zerver.lib.actions import (
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
-    do_create_realm,
     do_create_user,
-    do_deactivate_user,
-    do_invite_users,
-    do_mark_all_as_read,
-    do_mark_stream_messages_as_read,
     do_reactivate_user,
+)
+from zerver.actions.invites import (
+    do_invite_users,
     do_resend_user_invite_email,
     do_revoke_user_invite,
-    do_update_message_flags,
-    update_user_activity_interval,
 )
+from zerver.actions.message_flags import (
+    do_mark_all_as_read,
+    do_mark_stream_messages_as_read,
+    do_update_message_flags,
+)
+from zerver.actions.user_activity import update_user_activity_interval
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import InvitationError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
+from zerver.lib.timestamp import TimeZoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -275,7 +279,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = self.make_dummy_count_stat("test stat")
         with self.assertRaises(ValueError):
             process_count_stat(stat, installation_epoch() + 65 * self.MINUTE)
-        with self.assertRaises(TimezoneNotUTCException):
+        with self.assertRaises(TimeZoneNotUTCException):
             process_count_stat(stat, installation_epoch().replace(tzinfo=None))
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
@@ -1367,12 +1371,12 @@ class TestLoggingCountStats(AnalyticsTestCase):
         user = self.create_user(email="first@domain.tld")
         stream, _ = self.create_stream_with_recipient()
 
-        invite_expires_in_days = 2
+        invite_expires_in_minutes = 2 * 24 * 60
         do_invite_users(
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(2)
 
@@ -1382,7 +1386,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
             user,
             ["user1@domain.tld", "user2@domain.tld"],
             [stream],
-            invite_expires_in_days=invite_expires_in_days,
+            invite_expires_in_minutes=invite_expires_in_minutes,
         )
         assertInviteCountEquals(4)
 
@@ -1392,7 +1396,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
         except InvitationError:
             pass
@@ -1404,7 +1408,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
-                invite_expires_in_days=invite_expires_in_days,
+                invite_expires_in_minutes=invite_expires_in_minutes,
             )
         except InvitationError:
             pass
@@ -1431,8 +1435,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         self.subscribe(user2, stream.name)
 
         self.send_personal_message(user1, user2)
-        client = get_client("website")
-        do_mark_all_as_read(user2, client)
+        do_mark_all_as_read(user2)
         self.assertEqual(
             1,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[
@@ -1463,7 +1466,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
         )
 
         message = self.send_stream_message(user2, stream.name)
-        do_update_message_flags(user1, client, "add", "read", [message])
+        do_update_message_flags(user1, "add", "read", [message])
         self.assertEqual(
             4,
             UserCount.objects.filter(property=read_count_property).aggregate(Sum("value"))[

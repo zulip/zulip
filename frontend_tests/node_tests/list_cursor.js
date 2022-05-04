@@ -34,8 +34,8 @@ function basic_conf({first_key, prev_key, next_key}) {
 run_test("misc errors", ({override}) => {
     const conf = basic_conf({
         first_key: () => undefined,
-        prev_key: () => undefined,
-        next_key: () => undefined,
+        prev_key: /* istanbul ignore next */ () => undefined,
+        next_key: /* istanbul ignore next */ () => undefined,
     });
 
     const cursor = new ListCursor(conf);
@@ -64,18 +64,18 @@ run_test("single item list", ({override}) => {
     const valid_key = "42";
 
     const conf = basic_conf({
-        first_key: () => valid_key,
+        first_key: /* istanbul ignore next */ () => valid_key,
         next_key: () => undefined,
         prev_key: () => undefined,
     });
     const cursor = new ListCursor(conf);
 
-    const li_stub = {
+    const $li_stub = {
         length: 1,
         addClass: () => {},
     };
 
-    override(conf.list, "find_li", () => li_stub);
+    override(conf.list, "find_li", () => $li_stub);
     override(cursor, "adjust_scroll", () => {});
 
     cursor.go_to(valid_key);
@@ -91,7 +91,7 @@ run_test("single item list", ({override}) => {
 
 run_test("multiple item list", ({override}) => {
     const conf = basic_conf({
-        first_key: () => 1,
+        first_key: /* istanbul ignore next */ () => 1,
         next_key: (key) => (key < 3 ? key + 1 : undefined),
         prev_key: (key) => (key > 1 ? key - 1 : undefined),
     });

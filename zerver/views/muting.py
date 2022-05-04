@@ -6,7 +6,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_mute_topic, do_mute_user, do_unmute_topic, do_unmute_user
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
+from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -17,8 +18,8 @@ from zerver.lib.streams import (
     access_stream_for_unmute_topic_by_name,
     check_for_exactly_one_stream_arg,
 )
-from zerver.lib.topic_mutes import topic_is_muted
 from zerver.lib.user_mutes import get_mute_object
+from zerver.lib.user_topics import topic_is_muted
 from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
@@ -106,7 +107,11 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
     if get_mute_object(user_profile, muted_user) is not None:
         raise JsonableError(_("User already muted"))
 
-    do_mute_user(user_profile, muted_user, date_muted)
+    try:
+        do_mute_user(user_profile, muted_user, date_muted)
+    except IntegrityError:
+        raise JsonableError(_("User already muted"))
+
     return json_success(request)
 
 

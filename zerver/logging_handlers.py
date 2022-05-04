@@ -4,7 +4,7 @@ import os
 import platform
 import subprocess
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Protocol, runtime_checkable
 from urllib.parse import SplitResult
 
 from django.conf import settings
@@ -12,7 +12,6 @@ from django.http import HttpRequest
 from django.utils.translation import override as override_language
 from django.views.debug import get_exception_reporter_filter
 from sentry_sdk import capture_exception
-from typing_extensions import Protocol, runtime_checkable
 
 from version import ZULIP_VERSION
 from zerver.lib.logging_util import find_log_caller_module

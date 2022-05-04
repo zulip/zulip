@@ -1,19 +1,20 @@
 {{#render_subscribers}}
 <div class="subscriber_list_settings_container" {{#unless can_access_subscribers}}style="display: none"{{/unless}}>
+    <h4 class="stream_setting_subsection_title">
+        {{t "Add subscribers" }}
+    </h4>
     <div class="subscriber_list_settings">
-        <h3 class="stream_setting_subsection_title float-left">
-            {{t "Stream membership" }}
-        </h3>
-        <div class="subscriber-search float-right">
-            <input type="text" class="search" placeholder="{{t 'Search subscribers' }}" />
-        </div>
         <div class="subscriber_list_add float-left">
-            <form>
-                {{> add_subscribers_form}}
-            </form>
+            {{> add_subscribers_form}}
             <div class="stream_subscription_request_result"></div>
         </div>
         <div class="clear-float"></div>
+    </div>
+    <div>
+        <h4 class="inline-block stream_setting_subsection_title">{{t "Subscribers"}}</h4>
+        <span class="subscriber-search float-right">
+            <input type="text" class="search" placeholder="{{t 'Filter subscribers' }}" />
+        </span>
     </div>
     <div class="subscriber-list-box">
         <div class="subscriber_list_container" data-simplebar>

@@ -4,7 +4,7 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import Callable, Dict, Optional, Sequence, Set, Tuple, TypeVar, Union, cast, overload
+from typing import Callable, Dict, Optional, Sequence, Set, TypeVar, Union, cast, overload
 
 import django_otp
 import orjson
@@ -24,6 +24,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
 from two_factor.utils import default_device
+from typing_extensions import ParamSpec
 
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import (
@@ -67,21 +68,8 @@ webhook_logger = logging.getLogger("zulip.zerver.webhooks")
 webhook_unsupported_events_logger = logging.getLogger("zulip.zerver.webhooks.unsupported")
 webhook_anomalous_payloads_logger = logging.getLogger("zulip.zerver.webhooks.anomalous")
 
-FuncT = TypeVar("FuncT", bound=Callable[..., object])
-
-
-def cachify(method: FuncT) -> FuncT:
-    dct: Dict[Tuple[object, ...], object] = {}
-
-    def cache_wrapper(*args: object) -> object:
-        tup = tuple(args)
-        if tup in dct:
-            return dct[tup]
-        result = method(*args)
-        dct[tup] = result
-        return result
-
-    return cast(FuncT, cache_wrapper)  # https://github.com/python/mypy/issues/1927
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 
 def update_user_activity(
@@ -542,15 +530,7 @@ def web_public_view(
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
-
-    NOTE: This function == zulip_login_required in a production environment as
-          web_public_view path has only been enabled for development purposes
-          currently.
     """
-    if not settings.DEVELOPMENT:
-        # Coverage disabled because DEVELOPMENT is always true in development.
-        return zulip_login_required(view_func, redirect_field_name, login_url)  # nocoverage
-
     actual_decorator = lambda view_func: zulip_otp_required(
         redirect_field_name=redirect_field_name, login_url=login_url
     )(add_logging_data(view_func))
@@ -865,24 +845,26 @@ def internal_notify_view(
     return _wrapped_view_func
 
 
-def to_utc_datetime(timestamp: str) -> datetime.datetime:
+def to_utc_datetime(var_name: str, timestamp: str) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
 
-def statsd_increment(counter: str, val: int = 1) -> Callable[[FuncT], FuncT]:
+def statsd_increment(
+    counter: str, val: int = 1
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Increments a statsd counter on completion of the
     decorated function.
 
     Pass the name of the counter to this decorator-returning function."""
 
-    def wrapper(func: FuncT) -> FuncT:
+    def wrapper(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(func)
-        def wrapped_func(*args: object, **kwargs: object) -> object:
+        def wrapped_func(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             ret = func(*args, **kwargs)
             statsd.incr(counter, val)
             return ret
 
-        return cast(FuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
+        return wrapped_func
 
     return wrapper
 

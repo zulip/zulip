@@ -31,7 +31,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list) {
+function maybe_add_narrowed_messages(messages, msg_list, callback) {
     const ids = [];
 
     for (const elem of messages) {
@@ -64,16 +64,18 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             }
 
             // This second call to process_new_message in the
-            // insert_new_messages code path helps in very rare race
+            // insert_new_messages code path is designed to replace
+            // our slightly stale message object with the latest copy
+            // from the message_store. This helps in very rare race
             // conditions, where e.g. the current user's name was
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
-            // message.  Arguably, it's counterproductive complexity.
+            // message.
             new_messages = new_messages.map((message) =>
                 message_helper.process_new_message(message),
             );
 
-            message_util.add_new_messages(new_messages, msg_list);
+            callback(new_messages, msg_list);
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -83,7 +85,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 if (msg_list === message_lists.current) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list);
+                    maybe_add_narrowed_messages(messages, msg_list, callback);
                 }
             }, 5000);
         },
@@ -111,7 +113,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
             render_info = message_util.add_new_messages(messages, message_list.narrowed);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed);
+            maybe_add_narrowed_messages(
+                messages,
+                message_list.narrowed,
+                message_util.add_new_messages,
+            );
         }
     } else {
         // we're in the home view, so update its list
@@ -169,9 +175,9 @@ export function update_messages(events) {
             msg.is_me_message = event.is_me_message;
         }
 
-        const row = message_lists.current.get_row(event.message_id);
-        if (row.length > 0) {
-            message_edit.end_message_row_edit(row);
+        const $row = message_lists.current.get_row(event.message_id);
+        if ($row.length > 0) {
+            message_edit.end_message_row_edit($row);
         }
 
         const new_topic = util.get_edit_event_topic(event);
@@ -180,7 +186,37 @@ export function update_messages(events) {
 
         const old_stream = sub_store.get(event.stream_id);
 
-        // A topic edit may affect multiple messages, listed in
+        // Save the content edit to the front end msg.edit_history
+        // before topic edits to ensure that combined topic / content
+        // edits have edit_history logged for both before any
+        // potential narrowing as part of the topic edit loop.
+        if (event.orig_content !== undefined) {
+            if (page_params.realm_allow_edit_history) {
+                // Note that we do this for topic edits separately, below.
+                // If an event changed both content and topic, we'll generate
+                // two client-side events, which is probably good for display.
+                const edit_history_entry = {
+                    user_id: event.user_id,
+                    prev_content: event.orig_content,
+                    prev_rendered_content: event.orig_rendered_content,
+                    prev_rendered_content_version: event.prev_rendered_content_version,
+                    timestamp: event.edit_timestamp,
+                };
+                // Add message's edit_history in message dict
+                // For messages that are edited, edit_history needs to
+                // be added to message in frontend.
+                if (msg.edit_history === undefined) {
+                    msg.edit_history = [];
+                }
+                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+            }
+            message_content_edited = true;
+
+            // Update raw_content, so that editing a few times in a row is fast.
+            msg.raw_content = event.content;
+        }
+
+        // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
         topic_edited = new_topic !== undefined;
@@ -219,7 +255,7 @@ export function update_messages(events) {
             ) {
                 changed_compose = true;
                 compose_state.topic(new_topic);
-                compose_validate.warn_if_topic_resolved();
+                compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
 
@@ -230,18 +266,23 @@ export function update_messages(events) {
                      * messages that were moved are displayed as such
                      * without a browser reload. */
                     const edit_history_entry = {
-                        edited_by: event.edited_by,
-                        prev_topic: orig_topic,
-                        prev_stream: event.stream_id,
+                        user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
+                    if (stream_changed) {
+                        edit_history_entry.stream = event.new_stream_id;
+                        edit_history_entry.prev_stream = event.stream_id;
+                    }
+                    if (topic_edited) {
+                        edit_history_entry.topic = new_topic;
+                        edit_history_entry.prev_topic = orig_topic;
+                    }
                     if (msg.edit_history === undefined) {
                         msg.edit_history = [];
                     }
                     msg.edit_history = [edit_history_entry].concat(msg.edit_history);
                 }
                 msg.last_edit_timestamp = event.edit_timestamp;
-                delete msg.last_edit_timestr;
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
@@ -351,50 +392,47 @@ export function update_messages(events) {
             // this should be a loop over all valid message_list_data
             // objects, without the rerender (which will naturally
             // happen in the following code).
-            if (!changed_narrow) {
+            if (!changed_narrow && current_filter) {
                 let message_ids_to_remove = [];
-                if (current_filter && current_filter.can_apply_locally()) {
+                if (current_filter.can_apply_locally()) {
                     const predicate = current_filter.predicate();
                     message_ids_to_remove = event_messages.filter((msg) => !predicate(msg));
                     message_ids_to_remove = message_ids_to_remove.map((msg) => msg.id);
+                    // We filter out messages that do not belong to the message
+                    // list and then pass these to the remove messages codepath.
+                    // While we can pass all our messages to the add messages
+                    // codepath as the filtering is done within the method.
+                    message_lists.current.remove_and_rerender(message_ids_to_remove);
+                    message_lists.current.add_messages(event_messages);
+                } else {
+                    // Remove existing message that were updated, since
+                    // they may not be a part of the filter now. Also,
+                    // this will help us rerender them via
+                    // maybe_add_narrowed_messages, if they were
+                    // simply updated.
+                    const updated_messages = event_messages.filter(
+                        (msg) => message_lists.current.data.get(msg.id) !== undefined,
+                    );
+                    message_lists.current.remove_and_rerender(
+                        updated_messages.map((msg) => msg.id),
+                    );
+                    // For filters that cannot be processed locally, ask server.
+                    maybe_add_narrowed_messages(
+                        event_messages,
+                        message_lists.current,
+                        message_util.add_messages,
+                    );
                 }
-                // We filter out messages that do not belong to the message
-                // list and then pass these to the remove messages codepath.
-                // While we can pass all our messages to the add messages
-                // codepath as the filtering is done within the method.
-                message_lists.current.remove_and_rerender(message_ids_to_remove);
-                message_lists.current.add_messages(event_messages);
             }
         }
 
-        if (event.orig_content !== undefined) {
-            if (page_params.realm_allow_edit_history) {
-                // Note that we do this for topic edits separately, above.
-                // If an event changed both content and topic, we'll generate
-                // two client-side events, which is probably good for display.
-                const edit_history_entry = {
-                    edited_by: event.edited_by,
-                    prev_content: event.orig_content,
-                    prev_rendered_content: event.orig_rendered_content,
-                    prev_rendered_content_version: event.prev_rendered_content_version,
-                    timestamp: event.edit_timestamp,
-                };
-                // Add message's edit_history in message dict
-                // For messages that are edited, edit_history needs to
-                // be added to message in frontend.
-                if (msg.edit_history === undefined) {
-                    msg.edit_history = [];
-                }
-                msg.edit_history = [edit_history_entry].concat(msg.edit_history);
-            }
-            message_content_edited = true;
-
-            // Update raw_content, so that editing a few times in a row is fast.
-            msg.raw_content = event.content;
+        // Mark the message as edited for the UI. The rendering_only
+        // flag is used to indicated update_message events that are
+        // triggered by server latency optimizations, not user
+        // interactions; these should not generate edit history updates.
+        if (!event.rendering_only) {
+            msg.last_edit_timestamp = event.edit_timestamp;
         }
-
-        msg.last_edit_timestamp = event.edit_timestamp;
-        delete msg.last_edit_timestr;
 
         notifications.received_messages([msg]);
         alert_words.process_message(msg);

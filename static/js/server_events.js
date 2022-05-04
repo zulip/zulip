@@ -6,7 +6,6 @@ import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
 import * as message_lists from "./message_lists";
-import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
@@ -110,10 +109,6 @@ function get_events_success(events) {
         try {
             messages = echo.process_from_server(messages);
             if (messages.length > 0) {
-                for (const message of messages) {
-                    message_store.set_message_booleans(message);
-                }
-
                 const sent_by_this_client = messages.some((msg) =>
                     sent_messages.messages.has(msg.local_id),
                 );

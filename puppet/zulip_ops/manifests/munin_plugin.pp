@@ -7,7 +7,7 @@ define zulip_ops::munin_plugin {
   }
 
   file { "/etc/munin/plugins/${name}":
-    ensure  => 'link',
+    ensure  => link,
     require => File["/usr/local/munin/lib/plugins/${title}"],
     target  => "/usr/local/munin/lib/plugins/${title}",
     notify  => Service['munin-node'],

@@ -11,7 +11,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
+const template = fs.readFileSync("templates/corporate/upgrade.html", "utf8");
 const dom = new JSDOM(template, {
     pretendToBeVisual: true,
     url: "http://zulip.zulipdev.com/upgrade/#billing",
@@ -52,8 +52,8 @@ run_test("create_ajax_request", ({override}) => {
         make_indicator: 0,
     };
 
-    loading.make_indicator = (loading_indicator, config) => {
-        assert.equal(loading_indicator.selector, form_loading_indicator);
+    loading.make_indicator = ($loading_indicator, config) => {
+        assert.equal($loading_indicator.selector, form_loading_indicator);
         assert.equal(config.text, "Processing ...");
         assert.equal(config.abs_positioned, true);
         state.make_indicator += 1;

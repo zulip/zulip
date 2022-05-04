@@ -3,7 +3,7 @@ class zulip::camo (String $listen_address = '0.0.0.0') {
   # can be removed once one must have upgraded through Zulip 5.0 or
   # higher to get to the next release.
   package { 'camo':
-    ensure => 'purged',
+    ensure => purged,
   }
 
   $version = $zulip::common::versions['go-camo']['version']

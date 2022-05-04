@@ -12,13 +12,13 @@ import {$t} from "./i18n";
 
 export function message(
     response_html: string,
-    status_box: JQuery,
+    $status_box: JQuery,
     cls = "alert",
     remove_after?: number,
 ): void {
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via $t_html when interpolating data.
-    status_box
+    $status_box
         .removeClass(common.status_classes)
         .addClass(cls)
         .html(response_html)
@@ -26,10 +26,10 @@ export function message(
         .fadeTo(0, 1);
     if (remove_after !== undefined) {
         setTimeout(() => {
-            status_box.fadeOut(400);
+            $status_box.fadeOut(400);
         }, remove_after);
     }
-    status_box.addClass("show");
+    $status_box.addClass("show");
 }
 
 export function error(
@@ -60,25 +60,23 @@ export function client_error(
     message(response_html, status_box, "alert-error", remove_after);
 }
 
-export function success(response_html: string, status_box: JQuery, remove_after?: number): void {
-    message(response_html, status_box, "alert-success", remove_after);
+export function success(response_html: string, $status_box: JQuery, remove_after?: number): void {
+    message(response_html, $status_box, "alert-success", remove_after);
 }
 
 export function generic_embed_error(error_html: string): void {
-    const $alert = $("<div class='alert home-error-bar'></div>");
-    const $exit = "<div class='exit'></div>";
+    const $alert = $("<div>", {class: "alert home-error-bar show"});
+    const $exit = $("<div>", {class: "exit"});
 
-    $(".alert-box").append(
-        $alert.html($exit + "<div class='content'>" + error_html + "</div>").addClass("show"),
-    );
+    $(".alert-box").append($alert.append($exit, $("<div>", {class: "content"}).html(error_html)));
 }
 
-export function generic_row_button_error(xhr: JQuery.jqXHR, btn: JQuery): void {
+export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void {
     if (xhr.status >= 400 && xhr.status < 500) {
         const $error = $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg);
-        btn.closest("td").empty().append($error);
+        $btn.closest("td").empty().append($error);
     } else {
-        btn.text($t({defaultMessage: "Failed!"}));
+        $btn.text($t({defaultMessage: "Failed!"}));
     }
 }
 

@@ -90,11 +90,11 @@ the selector and then calls browser_history.go_to_location.
 const scroll_positions = new Map();
 
 export function update_org_settings_menu_item() {
-    const item = $(".admin-menu-item").expectOne();
+    const $item = $(".admin-menu-item").expectOne();
     if (page_params.is_admin) {
-        item.find("span").text($t({defaultMessage: "Manage organization"}));
+        $item.find("span").text($t({defaultMessage: "Manage organization"}));
     } else {
-        item.find("span").text($t({defaultMessage: "Organization settings"}));
+        $item.find("span").text($t({defaultMessage: "Organization settings"}));
     }
 }
 

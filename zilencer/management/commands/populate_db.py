@@ -18,26 +18,23 @@ from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
-from zerver.lib.actions import (
-    STREAM_ASSIGNMENT_COLORS,
-    build_message_send_dict,
-    check_add_realm_emoji,
-    do_change_user_role,
-    do_create_realm,
-    do_send_messages,
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.custom_profile_fields import (
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_add_realm_default_custom_profile_field,
 )
+from zerver.actions.message_send import build_message_send_dict, do_send_messages
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
-from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
@@ -57,6 +54,8 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    UserGroup,
+    UserGroupMembership,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -97,7 +96,7 @@ def clear_database() -> None:
     # With `zproject.test_settings`, we aren't using real memcached
     # and; we only need to flush memcached if we're populating a
     # database that would be used with it (i.e. zproject.dev_settings).
-    if default_cache["BACKEND"] == "django_bmemcached.memcached.BMemcached":
+    if default_cache["BACKEND"] == "zerver.lib.singleton_bmemcached.SingletonBMemcached":
         bmemcached.Client(
             (default_cache["LOCATION"],),
             **default_cache["OPTIONS"],
@@ -193,6 +192,14 @@ class Command(BaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "-n", "--num-messages", type=int, default=500, help="The number of messages to create."
+        )
+
+        parser.add_argument(
+            "-o",
+            "--oldest-message-days",
+            type=int,
+            default=5,
+            help="The start of the time range where messages could have been sent.",
         )
 
         parser.add_argument(
@@ -301,7 +308,7 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our three default realms
-            # Could in theory be done via zerver.lib.actions.do_create_realm, but
+            # Could in theory be done via zerver.actions.create_realm.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             create_internal_realm()
             zulip_realm = do_create_realm(
@@ -467,6 +474,44 @@ class Command(BaseCommand):
 
             create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
 
+            # Add time zones to some users. Ideally, this would be
+            # done in the initial create_users calls, but the
+            # tuple-based interface for that function doesn't support
+            # doing so.
+            def assign_time_zone_by_delivery_email(delivery_email: str, new_time_zone: str) -> None:
+                u = get_user_by_delivery_email(delivery_email, zulip_realm)
+                u.timezone = new_time_zone
+                u.save(update_fields=["timezone"])
+
+            # Note: Hamlet keeps default time zone of "".
+            assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
+            assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("iago@zulip.com", "US/Eastern")
+            assign_time_zone_by_delivery_email("desdemona@zulip.com", "Canada/Newfoundland")
+            assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
+            assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
+            assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+
+            users = UserProfile.objects.filter(realm=zulip_realm)
+            # All users in development environment are full members initially because
+            # waiting period threshold is 0. Groups of Iago, Dedemona, Shiva and
+            # Polonius will be updated according to their role in do_change_user_role.
+            full_members_user_group = UserGroup.objects.get(
+                realm=zulip_realm, name="@role:fullmembers", is_system_group=True
+            )
+            members_user_group = UserGroup.objects.get(
+                realm=zulip_realm, name="@role:members", is_system_group=True
+            )
+            user_group_memberships = []
+            for user_profile in list(users):
+                for group in [full_members_user_group, members_user_group]:
+                    user_group_membership = UserGroupMembership(
+                        user_group=group, user_profile=user_profile
+                    )
+                    user_group_memberships.append(user_group_membership)
+            UserGroupMembership.objects.bulk_create(user_group_memberships)
+
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
             iago.is_staff = True
@@ -507,7 +552,9 @@ class Command(BaseCommand):
             for i in range(options["extra_bots"]):
                 zulip_realm_bots.append((f"Extra Bot {i}", f"extrabot{i}@zulip.com"))
 
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(
+                zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
+            )
 
             zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
@@ -769,15 +816,6 @@ class Command(BaseCommand):
         # Generate a new set of test data.
         create_test_data()
 
-        # prepopulate the URL preview/embed data for the links present
-        # in the config.generate_data.json data set.  This makes it
-        # possible for populate_db to run happily without Internet
-        # access.
-        with open("zerver/tests/fixtures/docs_url_preview_data.json", "rb") as f:
-            urls_with_preview_data = orjson.loads(f.read())
-            for url in urls_with_preview_data:
-                cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
-
         if options["delete"]:
             if options["test_suite"]:
                 # Create test users; the MIT ones are needed to test
@@ -895,7 +933,7 @@ class Command(BaseCommand):
             count = options["num_messages"] // threads
             if i < options["num_messages"] % threads:
                 count += 1
-            jobs.append((count, personals_pairs, options, random.randint(0, 10 ** 10)))
+            jobs.append((count, personals_pairs, options, random.randint(0, 10**10)))
 
         for job in jobs:
             generate_and_send_messages(job)
@@ -911,7 +949,10 @@ class Command(BaseCommand):
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                 ]
                 create_users(
-                    zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT
+                    zulip_realm,
+                    internal_zulip_users_nosubs,
+                    bot_type=UserProfile.DEFAULT_BOT,
+                    bot_owner=desdemona,
                 )
 
             mark_all_messages_as_read()
@@ -922,16 +963,16 @@ class Command(BaseCommand):
 
 def mark_all_messages_as_read() -> None:
     """
-    We want to keep these two flags intact after we
-    create messages:
+    We want to keep these flags mostly intact after we create
+    messages. The is_private flag, for example, would be bad to overwrite.
 
-        has_alert_word
-        is_private
+    So we're careful to only toggle the read flag.
 
-    But we will mark all messages as read to save a step for users.
+    We exclude marking messages as read for bots, since bots, by
+    default, never mark messages as read.
     """
     # Mark all messages as read
-    UserMessage.objects.all().update(
+    UserMessage.objects.filter(user_profile__is_bot=False).update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
@@ -1042,7 +1083,9 @@ def generate_and_send_messages(
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data["subject"] = message.subject
 
-        message.date_sent = choose_date_sent(num_messages, tot_messages, options["threads"])
+        message.date_sent = choose_date_sent(
+            num_messages, tot_messages, options["oldest_message_days"], options["threads"]
+        )
         messages.append(message)
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
@@ -1129,25 +1172,32 @@ def bulk_create_reactions(all_messages: List[Message]) -> None:
     Reaction.objects.bulk_create(reactions)
 
 
-def choose_date_sent(num_messages: int, tot_messages: int, threads: int) -> datetime:
+def choose_date_sent(
+    num_messages: int, tot_messages: int, oldest_message_days: int, threads: int
+) -> datetime:
     # Spoofing time not supported with threading
     if threads != 1:
         return timezone_now()
 
-    # Distrubutes 80% of messages starting from 5 days ago, over a period
-    # of 3 days. Then, distributes remaining messages over past 24 hours.
+    # We want to ensure that:
+    # (1) some messages are sent in the last 4 hours,
+    # (2) there are some >24hr gaps between adjacent messages, and
+    # (3) a decent bulk of messages in the last day so you see adjacent messages with the same date.
+    # So we distribute 80% of messages starting from oldest_message_days days ago, over a period
+    # of the first min(oldest_message_days-2, 1) of those days. Then, distributes remaining messages
+    # over the past 24 hours.
     amount_in_first_chunk = int(tot_messages * 0.8)
     amount_in_second_chunk = tot_messages - amount_in_first_chunk
+
     if num_messages < amount_in_first_chunk:
-        # Distribute starting from 5 days ago, over a period
-        # of 3 days:
-        spoofed_date = timezone_now() - timezone_timedelta(days=5)
-        interval_size = 3 * 24 * 60 * 60 / amount_in_first_chunk
+        spoofed_date = timezone_now() - timezone_timedelta(days=oldest_message_days)
+        num_days_for_first_chunk = min(oldest_message_days - 2, 1)
+        interval_size = num_days_for_first_chunk * 24 * 60 * 60 / amount_in_first_chunk
         lower_bound = interval_size * num_messages
         upper_bound = interval_size * (num_messages + 1)
 
     else:
-        # We're in the last 20% of messages, distribute them over the last 24 hours:
+        # We're in the last 20% of messages, so distribute them over the last 24 hours:
         spoofed_date = timezone_now() - timezone_timedelta(days=1)
         interval_size = 24 * 60 * 60 / amount_in_second_chunk
         lower_bound = interval_size * (num_messages - amount_in_first_chunk)

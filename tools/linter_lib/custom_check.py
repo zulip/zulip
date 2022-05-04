@@ -216,6 +216,10 @@ js_rules = RuleList(
             "good_lines": ["assert.ok(...)"],
             "bad_lines": ["assert(...)"],
         },
+        {
+            "pattern": r"allowHTML|(?i:data-tippy-allowHTML)",
+            "description": "Never use Tippy.js allowHTML; for an HTML tooltip, get a DocumentFragment with ui_util.parse_html.",
+        },
         *whitespace_rules,
     ],
 )
@@ -253,7 +257,7 @@ python_rules = RuleList(
             "description": "Always pass update_fields when saving user_profile objects",
             "exclude_line": {
                 (
-                    "zerver/lib/actions.py",
+                    "zerver/actions/bots.py",
                     "user_profile.save()  # Can't use update_fields because of how the foreign key works.",
                 ),
             },
@@ -278,6 +282,10 @@ python_rules = RuleList(
             "description": "Use the assert_length helper instead of assertEqual(len(..), ..).",
             "good_lines": ["assert_length(data, 2)"],
             "bad_lines": ["assertEqual(len(data), 2)"],
+            "exclude_line": {
+                ("zerver/tests/test_decorators.py", "self.assertEqual(len(x), 2)"),
+                ("zerver/tests/test_decorators.py", 'self.assertEqual(len(x["b"]), 3)'),
+            },
         },
         {
             "pattern": "assertTrue[(]len[(][^ ]*[)]",
@@ -366,12 +374,11 @@ python_rules = RuleList(
         },
         {
             "pattern": "get_stream[(]",
-            "include_only": {"zerver/views/", "zerver/lib/actions.py"},
+            "include_only": {"zerver/views/", "zerver/actions/"},
             "exclude_line": {
                 # This one in check_message is kinda terrible, since it's
                 # how most instances are written, but better to exclude something than nothing
-                ("zerver/lib/actions.py", "stream = get_stream(stream_name, realm)"),
-                ("zerver/lib/actions.py", 'return get_stream("signups", realm)'),
+                ("zerver/actions/message_send.py", "stream = get_stream(stream_name, realm)"),
             },
             "description": "Please use access_stream_by_*() to fetch Stream objects",
         },
@@ -499,7 +506,6 @@ bash_rules = RuleList(
             "include_only": {"scripts/"},
             "exclude": {
                 "scripts/lib/install",
-                "scripts/setup/configure-rabbitmq",
             },
         },
         *whitespace_rules[0:1],
@@ -723,6 +729,10 @@ html_rules: List["Rule"] = [
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
+    },
+    {
+        "pattern": r"(?i:data-tippy-allowHTML)",
+        "description": "Never use data-tippy-allowHTML; for an HTML tooltip, set data-tooltip-template-id to the id of a <template>.",
     },
 ]
 

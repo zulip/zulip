@@ -172,25 +172,107 @@ Please follow the same guidelines as described above: find an issue labeled
 
 ### Working on an issue
 
-- You're encouraged to ask questions on how to best implement or debug your
-  changes -- the Zulip maintainers are excited to answer questions to help
-  you stay unblocked and working efficiently. You can ask questions in the
-  [Zulip development community](https://zulip.com/development-community/),
-  or on the GitHub issue or pull request.
-- We encourage early pull requests for work in progress. Prefix the title of
-  work in progress pull requests with `[WIP]`, and remove the prefix when
-  you think it might be mergeable and want it to be reviewed.
-- After updating a PR, add a comment to the GitHub thread mentioning that it
-  is ready for another review. GitHub only notifies maintainers of the
-  changes when you post a comment, so if you don't, your PR will likely be
-  neglected by accident!
+You're encouraged to ask questions on how to best implement or debug your
+changes -- the Zulip maintainers are excited to answer questions to help you
+stay unblocked and working efficiently. You can ask questions in the [Zulip
+development community](https://zulip.com/development-community/), or on the
+GitHub issue or pull request.
 
-It's OK if your first issue takes you a while; that's normal! You'll be
-able to work a lot faster as you build experience.
+To get early feedback on any UI changes, we encourage you to post screenshots of
+your work in the [#design
+stream](https://chat.zulip.org/#narrow/stream/101-design) in the [Zulip
+development community](https://zulip.com/development-community/)
 
 For more advice, see [What makes a great Zulip
 contributor?](https://zulip.readthedocs.io/en/latest/overview/contributing.html#what-makes-a-great-zulip-contributor)
 below.
+
+### Submitting a pull request
+
+When you believe your code is ready, follow the [guide on how to review
+code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
+to review your own work. You can often find things you missed by taking a step
+back to look over your work before asking others to do so. Catching mistakes
+yourself will help your PRs be merged faster, and folks will appreciate the
+quality and professionalism of your work.
+
+Then, submit your changes. Carefully reading our [Git guide][git-guide], and in
+particular the section on [making a pull request][git-guide-make-pr],
+will help avoid many common mistakes.
+
+Once you are satisfied with the quality of your PR, follow the
+[guidelines on asking for a code
+review](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#asking-for-a-code-review)
+to request a review. If you are not sure what's best, simply post a
+comment on the main GitHub thread for your PR clearly indicating that
+it is ready for review, and the project maintainers will take a look
+and follow up with next steps.
+
+It's OK if your first issue takes you a while; that's normal! You'll be
+able to work a lot faster as you build experience.
+
+If it helps your workflow, you can submit a work-in-progress pull
+request before your work is ready for review. Simply prefix the title
+of work in progress pull requests with `[WIP]`, and then remove the
+prefix when you think it's time for someone else to review your work.
+
+[git-guide]: https://zulip.readthedocs.io/en/latest/git/
+[git-guide-make-pr]: https://zulip.readthedocs.io/en/latest/git/pull-requests.html
+
+### Stages of a pull request
+
+Your pull request will likely go through several stages of review.
+
+1. If your PR makes user-facing changes, the UI and user experience may be
+   reviewed early on, without reference to the code. You will get feedback on
+   any user-facing bugs in the implementation. To minimize the number of review
+   round-trips, make sure to [thoroughly
+   test](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#manual-testing)
+   your own PR prior to asking for review.
+2. There may be choices made in the implementation that the reviewer
+   will ask you to revisit. This process will go more smoothly if you
+   specifically call attention to the decisions you made while
+   drafting the PR and any points about which you are uncertain. The
+   PR description and comments on your own PR are good ways to do this.
+3. Oftentimes, seeing an initial implementation will make it clear that the
+   product design for a feature needs to be revised, or that additional changes
+   are needed. The reviewer may therefore ask you to amend or change the
+   implementation. Some changes may be blockers for getting the PR merged, while
+   others may be improvements that can happen afterwards. Feel free to ask if
+   it's unclear which type of feedback you're getting. (Follow-ups can be a
+   great next issue to work on!)
+4. In addition to any UI/user experience review, all PRs will go through one or
+   more rounds of code review. Your code may initially be [reviewed by other
+   contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
+   This helps us make good use of project maintainers' time, and helps you make
+   progress on the PR by getting more frequent feedback. A project maintainer
+   may leave a comment asking someone with expertise in the area you're working
+   on to review your work.
+5. Final code review and integration for server and webapp PRs is generally done
+   by `@timabbott`.
+
+#### How to help move the review process forward
+
+The key to keeping your review moving through the review process is to:
+
+- Address _all_ the feedback to the best of your ability.
+- Make it clear when the requested changes have been made
+  and you believe it's time for another look.
+- Make it as easy as possible to review the changes you made.
+
+In order to do this, when you believe you have addressed the previous round of
+feedback on your PR as best you can, post an comment asking reviewers to take
+another look. Your comment should make it easy to understand what has been done
+and what remains by:
+
+- Summarizing the changes made since the last review you received.
+- Highlighting remaining questions or decisions, with links to any relevant
+  chat.zulip.org threads.
+- Providing updated screenshots and information on manual testing if
+  appropriate.
+
+The easier it is to review your work, the more likely you are to receive quick
+feedback.
 
 ### Beyond the first issue
 
@@ -225,25 +307,18 @@ labels.
   1. **Double-check that you have addressed all the feedback**, including any comments
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
-  2. If all the feedback has been addressed, did you leave a comment explaining that
-     you have done so and **requesting another review**? If not, it may not be a
-     clear to project maintainers that your PR is ready for another look.
-  3. It is common for PRs to require **multiple rounds of review**. For example,
-     prior to getting code review from project maintainers, you may receive
-     feedback on the UI (without regard for the implementation), and your code
-     may be [reviewed by other
-     contributors](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html).
-     This helps us make good use of project maintainers' time, and helps you
-     make progress on the PR by getting more frequent feedback.
+  2. If all the feedback has been addressed, did you [leave a
+     comment](https://zulip.readthedocs.io/en/latest/overview/contributing.html#how-to-help-move-the-review-process-forward)
+     explaining that you have done so and **requesting another review**? If not,
+     it may not be clear to project maintainers or reviewers that your PR is
+     ready for another look.
+  3. There may be a pause between initial rounds of review for your PR and final
+     review by project maintainers. This is normal, and we encourage you to **work
+     on other issues** while you wait.
   4. If you think the PR is ready and haven't seen any updates for a couple
-     of weeks, it can be helpful to post a **comment summarizing your
-     understanding of the state of the review process**. Your comment should
-     make it easy to understand what has been done and what remains by:
-     - Summarizing the changes made since the last review you received.
-     - Highlighting remaining questions or decisions, with links to any
-       relevant chat.zulip.org threads.
-     - Providing updated screenshots and information on manual testing if
-       appropriate.
+     of weeks, it can be helpful to **leave another comment**. Summarize the
+     overall state of the review process and your work, and indicate that you
+     are waiting for a review.
   5. Finally, **Zulip project maintainers are people too**! They may be busy
      with other work, and sometimes they might even take a vacation. ;) It can
      occasionally take a few weeks for a PR in the final stages of the review
@@ -263,11 +338,9 @@ experience, these are the best predictors of success:
   [this essay][good-questions-blog] for some good advice.
 - Learning and practicing
   [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
-- Submitting carefully tested code. This generally means checking your work
-  through a combination of automated tests and manually clicking around the
-  UI trying to find bugs in your work. See
-  [things to look for](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#things-to-look-for)
-  for additional ideas.
+- Submitting carefully tested code. See our [detailed guide on how to review
+  code](https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html#how-to-review-code)
+  (yours or someone else's).
 - Posting
   [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
   for frontend changes.
@@ -278,7 +351,8 @@ experience, these are the best predictors of success:
 - Being responsive to feedback on pull requests. This means incorporating or
   responding to all suggested changes, and leaving a note if you won't be
   able to address things within a few days.
-- Being helpful and friendly on chat.zulip.org.
+- Being helpful and friendly on the [Zulip community
+  server](https://zulip.com/development-community/).
 
 [good-questions-blog]: https://jvns.ca/blog/good-questions/
 

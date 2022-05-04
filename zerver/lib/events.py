@@ -8,17 +8,12 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.lib.actions import (
+from zerver.actions.default_streams import (
     default_stream_groups_to_dicts_sorted,
-    do_get_streams,
-    gather_subscriptions_helper,
-    get_available_notification_sounds,
     get_default_streams_for_realm,
-    get_owned_bot_dicts,
-    get_web_public_streams,
-    get_web_public_subs,
     streams_to_dicts_sorted,
 )
+from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
@@ -28,6 +23,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
+    add_message_to_unread_msgs,
     aggregate_unread_data,
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
@@ -43,14 +39,17 @@ from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.streams import do_get_streams, get_web_public_streams
+from zerver.lib.subscription_info import gather_subscriptions_helper, get_web_public_subs
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
-from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_topics import get_topic_mutes
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
     MAX_TOPIC_NAME_LENGTH,
@@ -287,6 +286,7 @@ def fetch_initial_state_data(
         state["server_generation"] = settings.SERVER_GENERATION
         state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
+        state["realm_org_type"] = realm.org_type
         state["realm_plan_type"] = realm.plan_type
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.PLAN_TYPE_LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
@@ -297,7 +297,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
-        state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
+        state["server_web_public_streams_enabled"] = realm.web_public_streams_available_for_realm()
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
@@ -1157,6 +1157,14 @@ def apply_event(
         if "raw_unread_msgs" in state and event["flag"] == "read" and event["op"] == "add":
             for remove_id in event["messages"]:
                 remove_message_id_from_unread_mgs(state["raw_unread_msgs"], remove_id)
+        if event["flag"] == "read" and event["op"] == "remove":
+            for message_id_str, message_details in event["message_details"].items():
+                add_message_to_unread_msgs(
+                    user_profile.id,
+                    state["raw_unread_msgs"],
+                    int(message_id_str),
+                    message_details,
+                )
         if event["flag"] == "starred" and "starred_messages" in state:
             if event["op"] == "add":
                 state["starred_messages"] += event["messages"]
@@ -1207,7 +1215,7 @@ def apply_event(
         assert event["notification_name"] in UserProfile.notification_settings_legacy
         state[event["notification_name"]] = event["setting"]
     elif event["type"] == "user_settings":
-        # timezone setting is not included in property_types dict because
+        # time zone setting is not included in property_types dict because
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
@@ -1238,6 +1246,17 @@ def apply_event(
                     members = set(user_group["members"])
                     user_group["members"] = list(members - set(event["user_ids"]))
                     user_group["members"].sort()
+        elif event["op"] == "add_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    user_group["subgroups"].extend(event["subgroup_ids"])
+                    user_group["subgroups"].sort()
+        elif event["op"] == "remove_subgroups":
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    subgroups = set(user_group["subgroups"])
+                    user_group["subgroups"] = list(subgroups - set(event["subgroup_ids"]))
+                    user_group["subgroups"].sort()
         elif event["op"] == "remove":
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]

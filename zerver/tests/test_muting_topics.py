@@ -6,7 +6,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.topic_mutes import (
+from zerver.lib.user_topics import (
     add_topic_mute,
     get_topic_mutes,
     remove_topic_mute,

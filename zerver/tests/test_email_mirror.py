@@ -11,12 +11,9 @@ import orjson
 from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.lib.actions import (
-    do_change_stream_post_policy,
-    do_deactivate_realm,
-    do_deactivate_user,
-    ensure_stream,
-)
+from zerver.actions.realm_settings import do_deactivate_realm
+from zerver.actions.streams import do_change_stream_post_policy
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.email_mirror import (
     create_missed_message_address,
     filter_footer,
@@ -37,6 +34,7 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.send_email import FromAddress
+from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, most_recent_usermessage
 from zerver.models import (
@@ -850,7 +848,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([othello.id]).decode(),
             },
         )
@@ -895,7 +892,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
         )
@@ -949,7 +945,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -989,7 +984,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_email_response_for_auth_failures",
-                "client": "test suite",
                 "to": "announce",
             },
         )
@@ -1034,7 +1028,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1080,7 +1073,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1117,7 +1109,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1155,7 +1146,6 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "client": "test suite",
                 "to": "Denmark",
             },
         )
@@ -1188,7 +1178,6 @@ class TestEmptyGatewaySetting(ZulipTestCase):
         payload = dict(
             type="private",
             content="test_receive_missed_message_email_messages",
-            client="test suite",
             to=orjson.dumps([cordelia.id, iago.id]).decode(),
         )
         result = self.client_post("/json/messages", payload)
@@ -1358,7 +1347,6 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_receive_missed_message_email_messages",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.id, iago.id]).decode(),
             },
         )
@@ -1624,7 +1612,6 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
             {
                 "type": "private",
                 "content": "test_redact_email_message",
-                "client": "test suite",
                 "to": orjson.dumps([cordelia.email, iago.email]).decode(),
             },
         )

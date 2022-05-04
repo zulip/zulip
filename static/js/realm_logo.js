@@ -14,13 +14,13 @@ export function build_realm_logo_widget(upload_function, is_night) {
         logo_source = page_params.realm_night_logo_source;
     }
 
-    const delete_button_elem = $(logo_section_id + " .image-delete-button");
-    const file_input_elem = $(logo_section_id + " .image_file_input");
-    const file_input_error_elem = $(logo_section_id + " .image_file_input_error");
-    const upload_button_elem = $(logo_section_id + " .image_upload_button");
+    const $delete_button_elem = $(logo_section_id + " .image-delete-button");
+    const $file_input_elem = $(logo_section_id + " .image_file_input");
+    const $file_input_error_elem = $(logo_section_id + " .image_file_input_error");
+    const $upload_button_elem = $(logo_section_id + " .image_upload_button");
 
     const get_file_input = function () {
-        return file_input_elem.expectOne();
+        return $file_input_elem.expectOne();
     };
 
     if (!page_params.is_admin) {
@@ -28,13 +28,13 @@ export function build_realm_logo_widget(upload_function, is_night) {
     }
 
     if (logo_source === "D") {
-        delete_button_elem.hide();
+        $delete_button_elem.hide();
     } else {
-        delete_button_elem.show();
+        $delete_button_elem.show();
     }
 
     const data = {night: JSON.stringify(is_night)};
-    delete_button_elem.on("click", (e) => {
+    $delete_button_elem.on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         channel.del({
@@ -45,27 +45,27 @@ export function build_realm_logo_widget(upload_function, is_night) {
 
     return upload_widget.build_direct_upload_widget(
         get_file_input,
-        file_input_error_elem.expectOne(),
-        upload_button_elem.expectOne(),
+        $file_input_error_elem.expectOne(),
+        $upload_button_elem.expectOne(),
         upload_function,
         page_params.max_logo_file_size_mib,
     );
 }
 
-function change_logo_delete_button(logo_source, logo_delete_button, file_input) {
+function change_logo_delete_button(logo_source, $logo_delete_button, $file_input) {
     if (logo_source === "U") {
-        logo_delete_button.show();
+        $logo_delete_button.show();
     } else {
-        logo_delete_button.hide();
+        $logo_delete_button.hide();
         // Need to clear input because of a small edge case
         // where you try to upload the same image you just deleted.
-        file_input.val("");
+        $file_input.val("");
     }
 }
 
 export function render() {
-    const file_input = $("#realm-day-logo-upload-widget .image_file_input");
-    const night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
+    const $file_input = $("#realm-day-logo-upload-widget .image_file_input");
+    const $night_file_input = $("#realm-night-logo-upload-widget .realm-logo-file-input");
     $("#realm-day-logo-upload-widget .image-block").attr("src", page_params.realm_logo_url);
 
     if (page_params.realm_night_logo_source === "D" && page_params.realm_logo_source !== "D") {
@@ -91,11 +91,11 @@ export function render() {
     change_logo_delete_button(
         page_params.realm_logo_source,
         $("#realm-day-logo-upload-widget .image-delete-button"),
-        file_input,
+        $file_input,
     );
     change_logo_delete_button(
         page_params.realm_night_logo_source,
         $("#realm-night-logo-upload-widget .image-delete-button"),
-        night_file_input,
+        $night_file_input,
     );
 }

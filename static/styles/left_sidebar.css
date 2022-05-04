@@ -31,12 +31,23 @@ $topic_resolve_width: 13px;
     font-weight: 800;
     min-width: $left_col_size;
     text-align: center;
+
+    .zulip-icon.zulip-icon-globe {
+        font-size: 12px;
+        position: relative;
+        top: 1px;
+    }
 }
 
 /* Ideally we'd handle hashtags using an <i> and just have a single rule here. */
 .stream-privacy span.hashtag,
 #left-sidebar .filter-icon i {
     padding-right: 3px;
+
+    &.fa-lock {
+        position: relative;
+        top: 1px;
+    }
 }
 
 .pm_left_col {
@@ -52,6 +63,7 @@ $topic_resolve_width: 13px;
 li.show-more-topics {
     a {
         font-size: 12px;
+        margin-left: $topic_resolve_width;
     }
 }
 

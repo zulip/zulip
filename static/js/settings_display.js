@@ -44,21 +44,23 @@ function change_display_setting(data, $status_el, success_msg_html, sticky) {
 
 export function set_up(settings_panel) {
     meta.loaded = true;
-    const container = $(settings_panel.container);
+    const $container = $(settings_panel.container);
     const settings_object = settings_panel.settings_object;
     const for_realm_settings = settings_panel.for_realm_settings;
 
-    container.find(".advanced-settings-status").hide();
+    $container.find(".advanced-settings-status").hide();
 
     // Select current values for enum/select type fields. For boolean
     // fields, the current value is set automatically in the template.
-    container.find(".setting_demote_inactive_streams").val(settings_object.demote_inactive_streams);
-    container.find(".setting_color_scheme").val(settings_object.color_scheme);
-    container.find(".setting_default_view").val(settings_object.default_view);
-    container
+    $container
+        .find(".setting_demote_inactive_streams")
+        .val(settings_object.demote_inactive_streams);
+    $container.find(".setting_color_scheme").val(settings_object.color_scheme);
+    $container.find(".setting_default_view").val(settings_object.default_view);
+    $container
         .find(".setting_twenty_four_hour_time")
         .val(JSON.stringify(settings_object.twenty_four_hour_time));
-    container
+    $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
 
@@ -70,17 +72,19 @@ export function set_up(settings_panel) {
 
     // Common handler for sending requests to the server when an input
     // element is changed.
-    container.on("change", "input[type=checkbox], select", function (e) {
-        const input_elem = $(e.currentTarget);
-        const setting = input_elem.attr("name");
+    $container.on("change", "input[type=checkbox], select", function (e) {
+        const $input_elem = $(e.currentTarget);
+        const setting = $input_elem.attr("name");
         const data = {};
         data[setting] = settings_org.get_input_element_value(this);
-        const status_element = input_elem.closest(".subsection-parent").find(".alert-notification");
+        const $status_element = $input_elem
+            .closest(".subsection-parent")
+            .find(".alert-notification");
 
         if (["left_side_userlist"].includes(setting)) {
             change_display_setting(
                 data,
-                status_element,
+                $status_element,
                 $t_html(
                     {
                         defaultMessage:
@@ -91,7 +95,7 @@ export function set_up(settings_panel) {
                 true,
             );
         } else {
-            change_display_setting(data, status_element);
+            change_display_setting(data, $status_element);
         }
     });
 
@@ -108,11 +112,11 @@ export function set_up(settings_panel) {
                 const data = {default_language: setting_value};
 
                 const new_language = $link.attr("data-name");
-                container.find(".default_language_name").text(new_language);
+                $container.find(".default_language_name").text(new_language);
 
                 change_display_setting(
                     data,
-                    container.find(".lang-time-settings-status"),
+                    $container.find(".lang-time-settings-status"),
                     $t_html(
                         {
                             defaultMessage:
@@ -125,7 +129,7 @@ export function set_up(settings_panel) {
             });
     }
 
-    container.find(".setting_default_language").on("click", (e) => {
+    $container.find(".setting_default_language").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -150,14 +154,14 @@ export function set_up(settings_panel) {
         window.location.reload();
     });
 
-    container.find(".setting_emojiset_choice").on("click", function () {
+    $container.find(".setting_emojiset_choice").on("click", function () {
         const data = {emojiset: $(this).val()};
         const current_emojiset = settings_object.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
-        const spinner = container.find(".theme-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: settings_ui.strings.saving});
+        const $spinner = $container.find(".theme-settings-status").expectOne();
+        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
 
         channel.patch({
             url: "/json/settings",
@@ -167,7 +171,7 @@ export function set_up(settings_panel) {
                 ui_report.error(
                     settings_ui.strings.failure_html,
                     xhr,
-                    container.find(".theme-settings-status").expectOne(),
+                    $container.find(".theme-settings-status").expectOne(),
                 );
             },
         });
@@ -183,15 +187,15 @@ export async function report_emojiset_change(settings_panel) {
     // update in all active browser windows.
     await emojisets.select(settings_panel.settings_object.emojiset);
 
-    const spinner = $(settings_panel.container).find(".theme-settings-status");
-    if (spinner.length) {
-        loading.destroy_indicator(spinner);
+    const $spinner = $(settings_panel.container).find(".theme-settings-status");
+    if ($spinner.length) {
+        loading.destroy_indicator($spinner);
         ui_report.success(
             $t_html({defaultMessage: "Emoji set changed successfully!"}),
-            spinner.expectOne(),
+            $spinner.expectOne(),
         );
-        spinner.expectOne();
-        settings_ui.display_checkmark(spinner);
+        $spinner.expectOne();
+        settings_ui.display_checkmark($spinner);
     }
 }
 
@@ -199,20 +203,20 @@ export function update_page(property) {
     if (!overlays.settings_open()) {
         return;
     }
-    const container = $(user_settings_panel.container);
+    const $container = $(user_settings_panel.container);
     let value = user_settings[property];
 
     // The default_language button text updates to the language
     // name and not the value of the user_settings property.
     if (property === "default_language") {
-        container.find(".default_language_name").text(user_default_language_name);
+        $container.find(".default_language_name").text(user_default_language_name);
         return;
     }
 
     // settings_org.set_input_element_value doesn't support radio
     // button widgets like this one.
     if (property === "emojiset") {
-        container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
+        $container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }
 
@@ -223,8 +227,8 @@ export function update_page(property) {
         value = value.toString();
     }
 
-    const input_elem = container.find(`[name=${CSS.escape(property)}]`);
-    settings_org.set_input_element_value(input_elem, value);
+    const $input_elem = $container.find(`[name=${CSS.escape(property)}]`);
+    settings_org.set_input_element_value($input_elem, value);
 }
 
 export function initialize() {

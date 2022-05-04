@@ -17,12 +17,19 @@ to a stream][configure-invites].
 
 1. Select a stream.
 
-1. Under **Stream membership**, enter a name or email address. The typeahead
+{!select-stream-view-subscribers.md!}
+
+1. Under **Add subscribers**, enter a name or email address. The typeahead
    will only include users who aren't already subscribed to the stream.
 
 1. Click **Add**.
 
 {end_tabs}
+
+!!! tip ""
+
+      To add users in bulk, you can copy members from an
+      existing stream or [user group](/help/user-groups).
 
 ## Remove users from a stream
 
@@ -39,10 +46,34 @@ including streams the admin is not subscribed to.
 
 1. Select a stream.
 
-1. Under **Stream membership**, find the user you would like to remove.
+{!select-stream-view-subscribers.md!}
 
-1. Click **Unsubscribe** to the right of their email address.
+1. Under **Subscribers**, find the user you would like to remove.
+
+1. Click the **Unsubscribe** button in that row.
 
 {end_tabs}
 
 [configure-invites]: /help/configure-who-can-invite-to-streams
+
+### From a user's profile (alternate method)
+
+This method is useful if you need to remove one user from multiple streams.
+
+{start_tabs}
+
+1. Hover over a user's name in the right sidebar.
+
+1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to
+   the right of their name.
+
+1. Click **View full profile**.
+
+1. Select the **Streams** tab.
+
+1. Under **Subscribed streams**, find the stream you would like
+   to remove the user from.
+
+1. Click the **Unsubscribe** button in that row.
+
+{end_tabs}

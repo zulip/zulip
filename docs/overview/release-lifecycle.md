@@ -92,7 +92,7 @@ The Zulip server and clients apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
-  code to support any Zulip server since 2.1.0. (They may also work
+  code to support any Zulip server since 3.0. (They may also work
   with older versions, with a degraded experience).
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
@@ -108,7 +108,7 @@ release series except in rare cases involving a security issue or
 critical bug just after publishing a major release.
 
 [blog-major-releases]: https://blog.zulip.com/tag/major-releases/
-[upgrade-from-git]: ../production/upgrade-or-modify.html#upgrading-from-a-git-repository
+[upgrade-from-git]: ../production/upgrade-or-modify.md#upgrading-from-a-git-repository
 
 ### Security releases
 
@@ -184,7 +184,7 @@ GitHub issue. Please an include an explanation of your use case: such
 details can be extremely helpful in designing appropriately general
 solutions, and also helps us identify cases where an existing solution
 can solve your problem. See [Reporting
-issues](contributing.html#reporting-issues) for more details.
+issues](contributing.md#reporting-issues) for more details.
 
 ## Client apps
 
@@ -227,10 +227,10 @@ core community, like the Python and JavaScript bindings, are released
 independently as needed.
 
 [electron]: https://www.electronjs.org/
-[upgrading-to-main]: ../production/upgrade-or-modify.html#upgrading-to-main
-[os-upgrade]: ../production/upgrade-or-modify.html#upgrading-the-operating-system
+[upgrading-to-main]: ../production/upgrade-or-modify.md#upgrading-to-main
+[os-upgrade]: ../production/upgrade-or-modify.md#upgrading-the-operating-system
 [chat-zulip-org]: https://zulip.com/development-community/
-[fork-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
+[fork-zulip]: ../production/upgrade-or-modify.md#modifying-zulip
 [zulip-server]: https://github.com/zulip/zulip
 [mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22

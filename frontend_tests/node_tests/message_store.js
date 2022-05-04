@@ -110,7 +110,6 @@ test("process_new_message", () => {
         is_me_message: false,
         id: 2067,
     };
-    message_store.set_message_booleans(message);
     message_helper.process_new_message(message);
 
     assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
@@ -153,7 +152,6 @@ test("process_new_message", () => {
         id: 2068,
     };
 
-    message_store.set_message_booleans(message);
     message_helper.process_new_message(message);
     assert.deepEqual(message.stream, message.display_recipient);
     assert.equal(message.reply_to, "denise@example.com");
@@ -307,7 +305,6 @@ test("update_property", () => {
         id: 101,
     };
     for (const message of [message1, message2]) {
-        message_store.set_message_booleans(message);
         message_helper.process_new_message(message);
     }
 

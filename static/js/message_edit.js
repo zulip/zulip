@@ -1,7 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import _ from "lodash";
 
+import * as resolved_topic from "../shared/js/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
@@ -33,12 +33,12 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
+import * as util from "./util";
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
-export const RESOLVED_TOPIC_PREFIX = "✔ ";
 
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
@@ -186,6 +186,53 @@ export function get_deletability(message) {
     return false;
 }
 
+export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {
+    /*  Checks to see if a stream_id and a topic match any historical
+        stream_id and topic state in the message's edit history.
+
+        Does not check the message's current stream_id and topic for
+        a match to the stream_id and topic parameters.
+     */
+    const narrow_dict = {stream_id, topic};
+    const message_dict = {stream_id: message.stream_id, topic: message.topic};
+
+    if (!message.edit_history) {
+        // If message edit history is disabled in the organization,
+        // the client does not have the information locally to answer
+        // this question correctly.
+        return false;
+    }
+
+    for (const edit_history_event of message.edit_history) {
+        if (!edit_history_event.prev_stream && !edit_history_event.prev_topic) {
+            // Message was not moved in this edit event.
+            continue;
+        }
+
+        if (edit_history_event.prev_stream) {
+            // This edit event changed the stream.  We expect the
+            // following to be true due to the invariants of the edit
+            // history data structure:
+            // edit_history_event.stream === message_dict.stream_id
+            message_dict.stream_id = edit_history_event.prev_stream;
+        }
+
+        if (edit_history_event.prev_topic) {
+            // This edit event changed the topic.  We expect the
+            // following to be true due to the invariants of the edit
+            // history data structure:
+            // util.lower_same(edit_history_event.topic, message_dict.topic)
+            message_dict.topic = edit_history_event.prev_topic;
+        }
+
+        if (util.same_stream_and_topic(narrow_dict, message_dict)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function update_message_topic_editing_pencil() {
     if (page_params.realm_allow_message_editing) {
         $(".on_hover_topic_edit, .always_visible_topic_edit").show();
@@ -194,45 +241,45 @@ export function update_message_topic_editing_pencil() {
     }
 }
 
-export function hide_message_edit_spinner(row) {
-    row.find(".loader").hide();
-    row.find(".message_edit_save span").show();
-    row.find(".message_edit_save").removeClass("disable-btn");
-    row.find(".message_edit_cancel").removeClass("disable-btn");
+export function hide_message_edit_spinner($row) {
+    $row.find(".loader").hide();
+    $row.find(".message_edit_save span").show();
+    $row.find(".message_edit_save").removeClass("disable-btn");
+    $row.find(".message_edit_cancel").removeClass("disable-btn");
 }
 
-export function show_message_edit_spinner(row) {
+export function show_message_edit_spinner($row) {
     const using_dark_theme = settings_data.using_dark_theme();
-    loading.show_button_spinner(row.find(".loader"), using_dark_theme);
-    row.find(".message_edit_save span").hide();
-    row.find(".message_edit_save").addClass("disable-btn");
-    row.find(".message_edit_cancel").addClass("disable-btn");
+    loading.show_button_spinner($row.find(".loader"), using_dark_theme);
+    $row.find(".message_edit_save span").hide();
+    $row.find(".message_edit_save").addClass("disable-btn");
+    $row.find(".message_edit_cancel").addClass("disable-btn");
 }
 
-export function show_topic_edit_spinner(row) {
-    const spinner = row.find(".topic_edit_spinner");
-    loading.make_indicator(spinner);
-    spinner.css({height: ""});
+export function show_topic_edit_spinner($row) {
+    const $spinner = $row.find(".topic_edit_spinner");
+    loading.make_indicator($spinner);
+    $spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
     $(".topic_edit_spinner").show();
 }
 
 export function end_if_focused_on_inline_topic_edit() {
-    const focused_elem = $(".topic_edit_form").find(":focus");
-    if (focused_elem.length === 1) {
-        focused_elem.trigger("blur");
-        const recipient_row = focused_elem.closest(".recipient_row");
-        end_inline_topic_edit(recipient_row);
+    const $focused_elem = $(".topic_edit_form").find(":focus");
+    if ($focused_elem.length === 1) {
+        $focused_elem.trigger("blur");
+        const $recipient_row = $focused_elem.closest(".recipient_row");
+        end_inline_topic_edit($recipient_row);
     }
 }
 
 export function end_if_focused_on_message_row_edit() {
-    const focused_elem = $(".message_edit").find(":focus");
-    if (focused_elem.length === 1) {
-        focused_elem.trigger("blur");
-        const row = focused_elem.closest(".message_row");
-        end_message_row_edit(row);
+    const $focused_elem = $(".message_edit").find(":focus");
+    if ($focused_elem.length === 1) {
+        $focused_elem.trigger("blur");
+        const $row = $focused_elem.closest(".message_row");
+        end_message_row_edit($row);
     }
 }
 
@@ -242,9 +289,9 @@ function handle_message_row_edit_keydown(e) {
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
-                    const row = $(".message_edit_content:focus").closest(".message_row");
-                    const message_edit_save_button = row.find(".message_edit_save");
-                    if (message_edit_save_button.prop("disabled")) {
+                    const $row = $(".message_edit_content:focus").closest(".message_row");
+                    const $message_edit_save_button = $row.find(".message_edit_save");
+                    if ($message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled
                         // we need to disable save on pressing Enter
                         // Prevent default to avoid new-line on pressing
@@ -252,7 +299,7 @@ function handle_message_row_edit_keydown(e) {
                         e.preventDefault();
                         return;
                     }
-                    save_message_row_edit(row);
+                    save_message_row_edit($row);
                     e.stopPropagation();
                     e.preventDefault();
                 } else {
@@ -268,8 +315,8 @@ function handle_message_row_edit_keydown(e) {
             ) {
                 // Enter should save the topic edit, as long as it's
                 // not being used to accept typeahead.
-                const row = $(e.target).closest(".message_row");
-                save_message_row_edit(row);
+                const $row = $(e.target).closest(".message_row");
+                save_message_row_edit($row);
                 e.stopPropagation();
             }
             return;
@@ -284,7 +331,7 @@ function handle_message_row_edit_keydown(e) {
 }
 
 function handle_inline_topic_edit_keydown(e) {
-    let row;
+    let $row;
     switch (e.key) {
         case "Enter": // Handle Enter key in the recipient bar/inline topic edit form
             if ($(".typeahead:visible").length > 0) {
@@ -292,8 +339,8 @@ function handle_inline_topic_edit_keydown(e) {
                 e.preventDefault();
                 return;
             }
-            row = $(e.target).closest(".recipient_row");
-            save_inline_topic_edit(row);
+            $row = $(e.target).closest(".recipient_row");
+            save_inline_topic_edit($row);
             e.stopPropagation();
             e.preventDefault();
             return;
@@ -321,31 +368,31 @@ function timer_text(seconds_left) {
     return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
-function create_copy_to_clipboard_handler(row, source, message_id) {
+function create_copy_to_clipboard_handler($row, source, message_id) {
     const clipboard = new ClipboardJS(source, {
         target: () =>
             document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
     });
 
     clipboard.on("success", () => {
-        end_message_row_edit(row);
-        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
-        row.find(".alert-msg").css("display", "block");
-        row.find(".alert-msg").delay(1000).fadeOut(300);
+        end_message_row_edit($row);
+        $row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
+        $row.find(".alert-msg").css("display", "block");
+        $row.find(".alert-msg").delay(1000).fadeOut(300);
         if ($(".tooltip").is(":visible")) {
             $(".tooltip").hide();
         }
     });
 }
 
-function edit_message(row, raw_content) {
+function edit_message($row, raw_content) {
     let stream_widget;
-    row.find(".message_reactions").hide();
-    condense.hide_message_expander(row);
-    condense.hide_message_condenser(row);
-    const content_top = row.find(".message_top_line")[0].getBoundingClientRect().top;
+    $row.find(".message_reactions").hide();
+    condense.hide_message_expander($row);
+    condense.hide_message_condenser($row);
+    const content_top = $row.find(".message_top_line")[0].getBoundingClientRect().top;
 
-    const message = message_lists.current.get(rows.id(row));
+    const message = message_lists.current.get(rows.id($row));
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -354,7 +401,7 @@ function edit_message(row, raw_content) {
     // been able to click it at the time the mouse entered the message_row. Also
     // a buffer in case their computer is slow, or stalled for a second, etc
     // If you change this number also change edit_limit_buffer in
-    // zerver.lib.actions.check_update_message
+    // zerver.actions.message_edit.check_update_message
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
     const max_file_upload_size = page_params.max_file_upload_size_mib;
@@ -388,7 +435,7 @@ function edit_message(row, raw_content) {
         on_update: set_propagate_selector_display,
     };
 
-    const form = $(
+    const $form = $(
         render_message_edit_form({
             is_stream: message.type === "stream",
             message_id: message.id,
@@ -408,57 +455,58 @@ function edit_message(row, raw_content) {
         }),
     );
 
-    const edit_obj = {form, raw_content};
+    const edit_obj = {$form, raw_content};
     currently_editing_messages.set(message.id, edit_obj);
-    message_lists.current.show_edit_message(row, edit_obj);
+    message_lists.current.show_edit_message($row, edit_obj);
 
-    form.on("keydown", handle_message_row_edit_keydown);
+    $form.on("keydown", handle_message_row_edit_keydown);
 
-    form.find(".message-edit-feature-group .video_link").toggle(
-        compose.compute_show_video_chat_button(),
-    );
-    upload.feature_check($(`#edit_form_${CSS.escape(rows.id(row))} .compose_upload_file`));
+    $form
+        .find(".message-edit-feature-group .video_link")
+        .toggle(compose.compute_show_video_chat_button());
+    upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
-    const stream_header_colorblock = row.find(".stream_header_colorblock");
-    const message_edit_content = row.find("textarea.message_edit_content");
-    const message_edit_topic = row.find("input.message_edit_topic");
-    const message_edit_topic_propagate = row.find("select.message_edit_topic_propagate");
-    const message_edit_breadcrumb_messages = row.find("div.message_edit_breadcrumb_messages");
-    const message_edit_countdown_timer = row.find(".message_edit_countdown_timer");
-    const copy_message = row.find(".copy_message");
+    const $stream_header_colorblock = $row.find(".stream_header_colorblock");
+    const $message_edit_content = $row.find("textarea.message_edit_content");
+    const $message_edit_topic = $row.find("input.message_edit_topic");
+    const $message_edit_topic_propagate = $row.find("select.message_edit_topic_propagate");
+    const $message_edit_breadcrumb_messages = $row.find("div.message_edit_breadcrumb_messages");
+    const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
+    const $copy_message = $row.find(".copy_message");
 
     if (is_stream_editable) {
         stream_widget = new DropdownListWidget(opts);
+        stream_widget.setup();
     }
-    stream_bar.decorate(message.stream, stream_header_colorblock, false);
+    stream_bar.decorate(message.stream, $stream_header_colorblock, false);
 
     switch (editability) {
         case editability_types.NO:
-            message_edit_content.attr("readonly", "readonly");
-            message_edit_topic.attr("readonly", "readonly");
-            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
+            $message_edit_content.attr("readonly", "readonly");
+            $message_edit_topic.attr("readonly", "readonly");
+            create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.NO_LONGER:
             // You can currently only reach this state in non-streams. If that
             // changes (e.g. if we stop allowing topics to be modified forever
             // in streams), then we'll need to disable
             // row.find('input.message_edit_topic') as well.
-            message_edit_content.attr("readonly", "readonly");
-            message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
-            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
+            $message_edit_content.attr("readonly", "readonly");
+            $message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
+            create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.TOPIC_ONLY:
-            message_edit_content.attr("readonly", "readonly");
+            $message_edit_content.attr("readonly", "readonly");
             // Hint why you can edit the topic but not the message content
-            message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
-            create_copy_to_clipboard_handler(row, copy_message[0], message.id);
+            $message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
+            create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.FULL: {
-            copy_message.remove();
-            const edit_id = `#edit_form_${CSS.escape(rows.id(row))} .message_edit_content`;
+            $copy_message.remove();
+            const edit_id = `#edit_form_${CSS.escape(rows.id($row))} .message_edit_content`;
             const listeners = resize.watch_manual_resize(edit_id);
             if (listeners) {
-                currently_editing_messages.get(rows.id(row)).listeners = listeners;
+                currently_editing_messages.get(rows.id($row)).listeners = listeners;
             }
             composebox_typeahead.initialize_compose_typeahead(edit_id);
             compose_ui.handle_keyup(null, $(edit_id).expectOne());
@@ -477,7 +525,7 @@ function edit_message(row, raw_content) {
         editability !== editability_types.NO &&
         page_params.realm_message_content_edit_limit_seconds > 0
     ) {
-        row.find(".message-edit-timer-control-group").show();
+        $row.find(".message-edit-timer-control-group").show();
     }
 
     // add timer
@@ -487,7 +535,7 @@ function edit_message(row, raw_content) {
     ) {
         // Give them at least 10 seconds.
         // If you change this number also change edit_limit_buffer in
-        // zerver.lib.actions.check_update_message
+        // zerver.actions.message_edit.check_update_message
         const min_seconds_to_edit = 10;
         let seconds_left =
             page_params.realm_message_content_edit_limit_seconds +
@@ -497,50 +545,50 @@ function edit_message(row, raw_content) {
         // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
-        const message_edit_save = row.find("button.message_edit_save");
+        const $message_edit_save = $row.find("button.message_edit_save");
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
-        message_edit_countdown_timer.text(timer_text(seconds_left));
+        $message_edit_countdown_timer.text(timer_text(seconds_left));
         const countdown_timer = setInterval(() => {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                message_edit_content.prop("readonly", "readonly");
+                $message_edit_content.prop("readonly", "readonly");
                 if (message.type === "stream") {
-                    message_edit_topic.prop("readonly", "readonly");
-                    message_edit_topic_propagate.hide();
-                    message_edit_breadcrumb_messages.hide();
+                    $message_edit_topic.prop("readonly", "readonly");
+                    $message_edit_topic_propagate.hide();
+                    $message_edit_breadcrumb_messages.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
-                message_edit_save.addClass("disabled");
-                message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
+                $message_edit_save.addClass("disabled");
+                $message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
-                message_edit_countdown_timer.text(timer_text(seconds_left));
+                $message_edit_countdown_timer.text(timer_text(seconds_left));
             }
         }, 1000);
     }
 
     if (!is_editable) {
-        row.find(".message_edit_close").trigger("focus");
+        $row.find(".message_edit_close").trigger("focus");
     } else if (message.type === "stream" && message.topic === compose.empty_topic_placeholder()) {
-        message_edit_topic.val("");
-        message_edit_topic.trigger("focus");
+        $message_edit_topic.val("");
+        $message_edit_topic.trigger("focus");
     } else if (editability === editability_types.TOPIC_ONLY) {
-        row.find(".message_edit_topic").trigger("focus");
+        $row.find(".message_edit_topic").trigger("focus");
     } else {
-        message_edit_content.trigger("focus");
+        $message_edit_content.trigger("focus");
         // Put cursor at end of input.
-        const contents = message_edit_content.val();
-        message_edit_content.val("");
-        message_edit_content.val(contents);
+        const contents = $message_edit_content.val();
+        $message_edit_content.val("");
+        $message_edit_content.val(contents);
     }
 
     // Scroll to keep the top of the message content text in the same
     // place visually, adjusting for border and padding.
-    const edit_top = message_edit_content[0].getBoundingClientRect().top;
+    const edit_top = $message_edit_content[0].getBoundingClientRect().top;
     const scroll_by = edit_top - content_top + 5 - 14;
 
     edit_obj.scrolled_by = scroll_by;
@@ -559,26 +607,26 @@ function edit_message(row, raw_content) {
             Number.parseInt(stream_widget.value(), 10),
         );
 
-        stream_bar.decorate(stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, $stream_header_colorblock, false);
     }
 
     function set_propagate_selector_display() {
         update_stream_header_colorblock();
-        const new_topic = message_edit_topic.val();
+        const new_topic = $message_edit_topic.val();
         const new_stream_id = is_stream_editable
             ? Number.parseInt(stream_widget.value(), 10)
             : null;
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = is_stream_editable ? new_stream_id !== original_stream_id : false;
-        message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
-        message_edit_breadcrumb_messages.toggle(is_stream_edited);
+        $message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
+        $message_edit_breadcrumb_messages.toggle(is_stream_edited);
 
         if (is_stream_edited) {
             /* Reinitialize the typeahead component with content for the new stream. */
             const new_stream_name = sub_store.get(new_stream_id).name;
-            message_edit_topic.data("typeahead").unlisten();
+            $message_edit_topic.data("typeahead").unlisten();
             composebox_typeahead.initialize_topic_edit_typeahead(
-                message_edit_topic,
+                $message_edit_topic,
                 new_stream_name,
                 true,
             );
@@ -586,43 +634,43 @@ function edit_message(row, raw_content) {
     }
 
     if (!message.locally_echoed) {
-        message_edit_topic.on("keyup", () => {
+        $message_edit_topic.on("keyup", () => {
             set_propagate_selector_display();
         });
     }
-    composebox_typeahead.initialize_topic_edit_typeahead(message_edit_topic, message.stream, true);
+    composebox_typeahead.initialize_topic_edit_typeahead($message_edit_topic, message.stream, true);
 }
 
-function start_edit_maintaining_scroll(row, content) {
-    edit_message(row, content);
-    const row_bottom = row.height() + row.offset().top;
+function start_edit_maintaining_scroll($row, content) {
+    edit_message($row, content);
+    const row_bottom = $row.height() + $row.offset().top;
     const composebox_top = $("#compose").offset().top;
     if (row_bottom > composebox_top) {
         message_viewport.scrollTop(message_viewport.scrollTop() + row_bottom - composebox_top);
     }
 }
 
-function start_edit_with_content(row, content, edit_box_open_callback) {
-    start_edit_maintaining_scroll(row, content);
+function start_edit_with_content($row, content, edit_box_open_callback) {
+    start_edit_maintaining_scroll($row, content);
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
 
     upload.setup_upload({
         mode: "edit",
-        row: rows.id(row),
+        row: rows.id($row),
     });
 }
 
-export function start(row, edit_box_open_callback) {
-    const message = message_lists.current.get(rows.id(row));
+export function start($row, edit_box_open_callback) {
+    const message = message_lists.current.get(rows.id($row));
     if (message === undefined) {
-        blueslip.error("Couldn't find message ID for edit " + rows.id(row));
+        blueslip.error("Couldn't find message ID for edit " + rows.id($row));
         return;
     }
 
     if (message.raw_content) {
-        start_edit_with_content(row, message.raw_content, edit_box_open_callback);
+        start_edit_with_content($row, message.raw_content, edit_box_open_callback);
         return;
     }
 
@@ -633,7 +681,7 @@ export function start(row, edit_box_open_callback) {
         success(data) {
             if (message_lists.current === msg_list) {
                 message.raw_content = data.raw_content;
-                start_edit_with_content(row, message.raw_content, edit_box_open_callback);
+                start_edit_with_content($row, message.raw_content, edit_box_open_callback);
             }
         },
     });
@@ -641,10 +689,10 @@ export function start(row, edit_box_open_callback) {
 
 export function toggle_resolve_topic(message_id, old_topic_name) {
     let new_topic_name;
-    if (old_topic_name.startsWith(RESOLVED_TOPIC_PREFIX)) {
-        new_topic_name = _.trimStart(old_topic_name, RESOLVED_TOPIC_PREFIX);
+    if (resolved_topic.is_resolved(old_topic_name)) {
+        new_topic_name = resolved_topic.unresolve_name(old_topic_name);
     } else {
-        new_topic_name = RESOLVED_TOPIC_PREFIX + old_topic_name;
+        new_topic_name = resolved_topic.resolve_name(old_topic_name);
     }
 
     const request = {
@@ -660,21 +708,21 @@ export function toggle_resolve_topic(message_id, old_topic_name) {
     });
 }
 
-export function start_inline_topic_edit(recipient_row) {
-    const form = $(render_topic_edit_form());
-    message_lists.current.show_edit_topic_on_recipient_row(recipient_row, form);
-    form.on("keydown", handle_inline_topic_edit_keydown);
+export function start_inline_topic_edit($recipient_row) {
+    const $form = $(render_topic_edit_form());
+    message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
+    $form.on("keydown", handle_inline_topic_edit_keydown);
     $(".topic_edit_spinner").hide();
-    const msg_id = rows.id_for_recipient_row(recipient_row);
+    const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     let topic = message.topic;
     if (topic === compose.empty_topic_placeholder()) {
         topic = "";
     }
-    const inline_topic_edit_input = form.find(".inline_topic_edit");
-    inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
+    const $inline_topic_edit_input = $form.find(".inline_topic_edit");
+    $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
     composebox_typeahead.initialize_topic_edit_typeahead(
-        inline_topic_edit_input,
+        $inline_topic_edit_input,
         message.stream,
         false,
     );
@@ -684,12 +732,12 @@ export function is_editing(id) {
     return currently_editing_messages.has(id);
 }
 
-export function end_inline_topic_edit(row) {
-    message_lists.current.hide_edit_topic_on_recipient_row(row);
+export function end_inline_topic_edit($row) {
+    message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-export function end_message_row_edit(row) {
-    const message = message_lists.current.get(rows.id(row));
+export function end_message_row_edit($row) {
+    const message = message_lists.current.get(rows.id($row));
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
         const original_scrollTop = message_viewport.scrollTop();
@@ -706,49 +754,49 @@ export function end_message_row_edit(row) {
         }
 
         currently_editing_messages.delete(message.id);
-        message_lists.current.hide_edit_message(row);
+        message_lists.current.hide_edit_message($row);
         message_viewport.scrollTop(original_scrollTop - scroll_by);
 
         compose.abort_video_callbacks(message.id);
     }
-    if (row.find(".condensed").length !== 0) {
-        condense.show_message_expander(row);
+    if ($row.find(".condensed").length !== 0) {
+        condense.show_message_expander($row);
     } else {
-        condense.show_message_condenser(row);
+        condense.show_message_condenser($row);
     }
-    row.find(".message_reactions").show();
+    $row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
-    row.find(".message_edit").trigger("blur");
+    $row.find(".message_edit").trigger("blur");
     // We should hide the editing typeahead if it is visible
-    row.find("input.message_edit_topic").trigger("blur");
+    $row.find("input.message_edit_topic").trigger("blur");
 }
 
-export function save_inline_topic_edit(row) {
+export function save_inline_topic_edit($row) {
     const msg_list = message_lists.current;
-    let message_id = rows.id_for_recipient_row(row);
+    let message_id = rows.id_for_recipient_row($row);
     const message = message_lists.current.get(message_id);
 
     const old_topic = message.topic;
-    const new_topic = row.find(".inline_topic_edit").val();
+    const new_topic = $row.find(".inline_topic_edit").val();
     const topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
     if (!topic_changed) {
         // this means the inline_topic_edit was opened and submitted without
         // changing anything, therefore, we should just close the inline topic edit.
-        end_inline_topic_edit(row);
+        end_inline_topic_edit($row);
         return;
     }
 
-    show_topic_edit_spinner(row);
+    show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
         if (topic_changed) {
             echo.edit_locally(message, {new_topic});
-            row = message_lists.current.get_row(message_id);
+            $row = message_lists.current.get_row(message_id);
         }
-        end_inline_topic_edit(row);
+        end_inline_topic_edit($row);
         return;
     }
 
@@ -762,34 +810,34 @@ export function save_inline_topic_edit(row) {
         url: "/json/messages/" + message.id,
         data: request,
         success() {
-            const spinner = row.find(".topic_edit_spinner");
-            loading.destroy_indicator(spinner);
+            const $spinner = $row.find(".topic_edit_spinner");
+            loading.destroy_indicator($spinner);
         },
         error(xhr) {
-            const spinner = row.find(".topic_edit_spinner");
-            loading.destroy_indicator(spinner);
+            const $spinner = $row.find(".topic_edit_spinner");
+            loading.destroy_indicator($spinner);
             if (msg_list === message_lists.current) {
-                message_id = rows.id_for_recipient_row(row);
+                message_id = rows.id_for_recipient_row($row);
                 const message = channel.xhr_error_message(
                     $t({defaultMessage: "Error saving edit"}),
                     xhr,
                 );
-                row.find(".edit_error").text(message).css("display", "inline-block");
+                $row.find(".edit_error").text(message).css("display", "inline-block");
             }
         },
     });
 }
 
-export function save_message_row_edit(row) {
+export function save_message_row_edit($row) {
     const msg_list = message_lists.current;
-    let message_id = rows.id(row);
+    let message_id = rows.id($row);
     const message = message_lists.current.get(message_id);
     const can_edit_stream =
         message.is_stream && settings_data.user_can_move_messages_between_streams();
     let changed = false;
     let edit_locally_echoed = false;
 
-    const new_content = row.find(".message_edit_content").val();
+    const new_content = $row.find(".message_edit_content").val();
     let topic_changed = false;
     let new_topic;
     const old_topic = message.topic;
@@ -798,15 +846,15 @@ export function save_message_row_edit(row) {
     let new_stream_id;
     const old_stream_id = message.stream_id;
 
-    show_message_edit_spinner(row);
+    show_message_edit_spinner($row);
 
     if (message.type === "stream") {
-        new_topic = row.find(".message_edit_topic").val();
+        new_topic = $row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
         if (can_edit_stream) {
-            const dropdown_list_widget_value_elem = $(`#id_select_move_stream_${message_id}`);
-            new_stream_id = Number.parseInt(dropdown_list_widget_value_elem.data("value"), 10);
+            const $dropdown_list_widget_value_elem = $(`#id_select_move_stream_${message_id}`);
+            new_stream_id = Number.parseInt($dropdown_list_widget_value_elem.data("value"), 10);
             stream_changed = new_stream_id !== old_stream_id;
         }
     }
@@ -820,9 +868,9 @@ export function save_message_row_edit(row) {
                 new_topic,
                 new_stream_id,
             });
-            row = message_lists.current.get_row(message_id);
+            $row = message_lists.current.get_row(message_id);
         }
-        end_message_row_edit(row);
+        end_message_row_edit($row);
         return;
     }
 
@@ -830,11 +878,11 @@ export function save_message_row_edit(row) {
 
     if (topic_changed || stream_changed) {
         const selected_topic_propagation =
-            row.find("select.message_edit_topic_propagate").val() || "change_later";
-        const send_notification_to_old_thread = row
+            $row.find("select.message_edit_topic_propagate").val() || "change_later";
+        const send_notification_to_old_thread = $row
             .find(".send_notification_to_old_thread")
             .is(":checked");
-        const send_notification_to_new_thread = row
+        const send_notification_to_new_thread = $row
             .find(".send_notification_to_new_thread")
             .is(":checked");
         request.propagate_mode = selected_topic_propagation;
@@ -858,7 +906,7 @@ export function save_message_row_edit(row) {
 
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        end_message_row_edit(row);
+        end_message_row_edit($row);
         return;
     }
 
@@ -899,8 +947,8 @@ export function save_message_row_edit(row) {
 
         echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
-        row = message_lists.current.get_row(message_id);
-        end_message_row_edit(row);
+        $row = message_lists.current.get_row(message_id);
+        end_message_row_edit($row);
     }
 
     channel.patch({
@@ -911,11 +959,11 @@ export function save_message_row_edit(row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
-            hide_message_edit_spinner(row);
+            hide_message_edit_spinner($row);
         },
         error(xhr) {
             if (msg_list === message_lists.current) {
-                message_id = rows.id(row);
+                message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
                     const echoed_message = message_store.get(message_id);
@@ -933,28 +981,28 @@ export function save_message_row_edit(row) {
                         alerted: echo_data.alerted,
                     });
 
-                    row = message_lists.current.get_row(message_id);
+                    $row = message_lists.current.get_row(message_id);
                     if (!is_editing(message_id)) {
                         // Return to the message editing open UI state with the edited content.
-                        start_edit_maintaining_scroll(row, echo_data.raw_content);
+                        start_edit_maintaining_scroll($row, echo_data.raw_content);
                     }
                 }
 
-                hide_message_edit_spinner(row);
+                hide_message_edit_spinner($row);
                 const message = channel.xhr_error_message(
                     $t({defaultMessage: "Error saving edit"}),
                     xhr,
                 );
-                row.find(".edit_error").text(message).show();
+                $row.find(".edit_error").text(message).show();
             }
         },
     });
     // The message will automatically get replaced via message_list.update_message.
 }
 
-export function maybe_show_edit(row, id) {
+export function maybe_show_edit($row, id) {
     if (currently_editing_messages.has(id)) {
-        message_lists.current.show_edit_message(row, currently_editing_messages.get(id));
+        message_lists.current.show_edit_message($row, currently_editing_messages.get(id));
     }
 }
 
@@ -975,8 +1023,8 @@ export function edit_last_sent_message() {
         return;
     }
 
-    const msg_row = message_lists.current.get_row(msg.id);
-    if (!msg_row) {
+    const $msg_row = message_lists.current.get_row(msg.id);
+    if (!$msg_row) {
         // This should never happen, since we got the message above
         // from message_lists.current.
         blueslip.error("Could not find row for id " + msg.id);
@@ -987,7 +1035,7 @@ export function edit_last_sent_message() {
 
     // Finally do the real work!
     compose_actions.cancel();
-    start(msg_row, () => {
+    start($msg_row, () => {
         $(".message_edit_content").trigger("focus");
     });
 }
@@ -1042,8 +1090,8 @@ export function delete_topic(stream_id, topic_name) {
 export function handle_narrow_deactivated() {
     for (const [idx, elem] of currently_editing_messages) {
         if (message_lists.current.get(idx) !== undefined) {
-            const row = message_lists.current.get_row(idx);
-            message_lists.current.show_edit_message(row, elem);
+            const $row = message_lists.current.get_row(idx);
+            message_lists.current.show_edit_message($row, elem);
         }
     }
 }

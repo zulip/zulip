@@ -6,7 +6,8 @@ import orjson
 from django.conf import settings
 from django.test import override_settings
 
-from zerver.lib.actions import do_create_user, get_service_bot_events
+from zerver.actions.create_user import do_create_user
+from zerver.actions.message_send import get_service_bot_events
 from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot_config
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
@@ -452,7 +453,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         )
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_stream_mention_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
@@ -478,7 +479,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.send_stream_message(self.user_profile, "Denmark", content)
         self.assertTrue(mock_queue_json_publish.called)
 
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_stream_message_without_mention(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -487,7 +488,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_stream_mention_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -495,7 +496,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_personal_message_from_user(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -525,7 +526,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertTrue(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_personal_message_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:
@@ -535,7 +536,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertFalse(mock_queue_json_publish.called)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_trigger_on_huddle_message_from_user(self, mock_queue_json_publish: mock.Mock) -> None:
         self.second_bot_profile.bot_type = self.bot_profile.bot_type
         self.second_bot_profile.save()
@@ -563,7 +564,7 @@ class TestServiceBotEventTriggers(ZulipTestCase):
         self.assertEqual(mock_queue_json_publish.call_count, 2)
 
     @for_all_bot_types
-    @patch_queue_publish("zerver.lib.actions.queue_json_publish")
+    @patch_queue_publish("zerver.actions.message_send.queue_json_publish")
     def test_no_trigger_on_huddle_message_from_bot(
         self, mock_queue_json_publish: mock.Mock
     ) -> None:

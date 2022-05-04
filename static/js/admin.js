@@ -20,8 +20,8 @@ const admin_settings_label = {
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
-    realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
-    realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
+    realm_notifications_stream: $t({defaultMessage: "New stream notifications"}),
+    realm_signup_notifications_stream: $t({defaultMessage: "New user notifications"}),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
@@ -34,7 +34,7 @@ const admin_settings_label = {
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",
     }),
-    realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks:"}),
+    realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks"}),
 
     // Organization permissions
     realm_name_changes_disabled: $t({defaultMessage: "Prevent users from changing their name"}),
@@ -80,6 +80,7 @@ export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
+        realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
@@ -160,6 +161,9 @@ export function build_page() {
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
         disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
+        can_sort_by_email: settings_data.show_email(),
+        realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
+        realm_org_type_values: settings_org.get_org_type_dropdown_options(),
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

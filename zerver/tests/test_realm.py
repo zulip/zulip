@@ -1,5 +1,6 @@
 import datetime
 import re
+from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Union
 from unittest import mock
 
@@ -8,19 +9,18 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.lib.actions import (
+from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
+from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
     do_change_realm_plan_type,
-    do_change_realm_subdomain,
-    do_create_realm,
     do_deactivate_realm,
-    do_deactivate_stream,
     do_scrub_realm,
     do_send_realm_reactivation_email,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
+from zerver.actions.streams import do_deactivate_stream
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -34,6 +34,8 @@ from zerver.models import (
     RealmUserDefault,
     ScheduledEmail,
     Stream,
+    UserGroup,
+    UserGroupMembership,
     UserMessage,
     UserProfile,
     get_realm,
@@ -49,9 +51,9 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
     def test_realm_creation_ensures_internal_realms(self) -> None:
-        with mock.patch("zerver.lib.actions.server_initialized", return_value=False):
+        with mock.patch("zerver.actions.create_realm.server_initialized", return_value=False):
             with mock.patch(
-                "zerver.lib.actions.create_internal_realm"
+                "zerver.actions.create_realm.create_internal_realm"
             ) as mock_create_internal, self.assertLogs(level="INFO") as info_logs:
                 do_create_realm("testrealm", "Test Realm")
                 mock_create_internal.assert_called_once()
@@ -380,7 +382,7 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),
-            fr"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
         )
         self.assertIn("Reactivate your Zulip organization", outbox[0].subject)
         self.assertIn("Dear former administrators", outbox[0].body)
@@ -847,6 +849,10 @@ class RealmTest(ZulipTestCase):
             self.assertEqual(realm.has_web_public_streams(), False)
             self.assertEqual(realm.web_public_streams_enabled(), False)
 
+            with self.settings(WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS=["zulip"]):
+                self.assertEqual(realm.has_web_public_streams(), True)
+                self.assertEqual(realm.web_public_streams_enabled(), True)
+
         realm.enable_spectator_access = False
         realm.save()
         self.assertEqual(realm.has_web_public_streams(), False)
@@ -883,6 +889,143 @@ class RealmTest(ZulipTestCase):
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             self.assertEqual(realm.web_public_streams_enabled(), False)
             self.assertEqual(realm.has_web_public_streams(), False)
+
+    def test_creating_realm_creates_system_groups(self) -> None:
+        realm = do_create_realm("realm_string_id", "realm name")
+        system_user_groups = UserGroup.objects.filter(realm=realm, is_system_group=True)
+
+        self.assert_length(system_user_groups, 7)
+        user_group_names = [group.name for group in system_user_groups]
+        expected_system_group_names = [
+            "@role:owners",
+            "@role:administrators",
+            "@role:moderators",
+            "@role:fullmembers",
+            "@role:members",
+            "@role:everyone",
+            "@role:internet",
+        ]
+        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
+
+    def test_changing_waiting_period_updates_system_groups(self) -> None:
+        realm = get_realm("zulip")
+        members_system_group = UserGroup.objects.get(
+            realm=realm, name="@role:members", is_system_group=True
+        )
+        full_members_system_group = UserGroup.objects.get(
+            realm=realm, name="@role:fullmembers", is_system_group=True
+        )
+
+        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 6)
+        self.assert_length(
+            UserGroupMembership.objects.filter(user_group=full_members_system_group), 6
+        )
+        self.assertEqual(realm.waiting_period_threshold, 0)
+
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
+
+        hamlet.date_joined = timezone_now() - timedelta(days=50)
+        hamlet.save()
+        othello.date_joined = timezone_now() - timedelta(days=75)
+        othello.save()
+        prospero.date_joined = timezone_now() - timedelta(days=150)
+        prospero.save()
+        do_set_realm_property(realm, "waiting_period_threshold", 100, acting_user=None)
+
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
+
+        do_set_realm_property(realm, "waiting_period_threshold", 70, acting_user=None)
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=members_system_group, user_profile=prospero
+            ).exists()
+        )
+        self.assertFalse(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=hamlet
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=othello
+            ).exists()
+        )
+        self.assertTrue(
+            UserGroupMembership.objects.filter(
+                user_group=full_members_system_group, user_profile=prospero
+            ).exists()
+        )
 
 
 class RealmAPITest(ZulipTestCase):
@@ -976,6 +1119,26 @@ class RealmAPITest(ZulipTestCase):
         for prop in Realm.property_types:
             with self.subTest(property=prop):
                 self.do_test_realm_update_api(prop)
+
+    # Not in Realm.property_types because org_type has
+    # a unique RealmAuditLog event_type.
+    def test_update_realm_org_type(self) -> None:
+        vals = [t["id"] for t in Realm.ORG_TYPES.values()]
+
+        self.set_up_db("org_type", vals[0])
+
+        for val in vals[1:]:
+            realm = self.update_with_api("org_type", val)
+            self.assertEqual(getattr(realm, "org_type"), val)
+
+        realm = self.update_with_api("org_type", vals[0])
+        self.assertEqual(getattr(realm, "org_type"), vals[0])
+
+        # Now we test an invalid org_type id.
+        invalid_org_type = 1
+        assert invalid_org_type not in vals
+        result = self.client_patch("/json/realm", {"org_type": invalid_org_type})
+        self.assert_json_error(result, "Invalid org_type")
 
     def update_with_realm_default_api(self, name: str, val: Any) -> None:
         if not isinstance(val, str):

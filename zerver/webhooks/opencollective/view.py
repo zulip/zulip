@@ -28,7 +28,7 @@ def api_opencollective_webhook(
 
     if name == "Incognito":  # Incognito donation
         body = f"An **Incognito** member donated **{amount}**! :tada:"
-    else:  # non - Incognito donation
+    else:  # non-Incognito donation
         body = f"@_**{name}** donated **{amount}**! :tada:"
 
     topic = "New Member"

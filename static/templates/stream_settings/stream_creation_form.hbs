@@ -5,49 +5,30 @@
         <div id="stream_creating_indicator"></div>
         <div class="stream-creation-body">
             <section class="block">
-                <div class="stream-title">
+                <label for="create_stream_name">
                     {{t "Stream name" }}
-                </div>
+                </label>
                 <input type="text" name="stream_name" id="create_stream_name"
                   placeholder="{{t 'Stream name' }}" value="" autocomplete="off" maxlength="{{ max_name_length }}" />
                 <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
             <section class="block">
-                <div class="stream-title">
+                <label for="create_stream_description">
                     {{t "Stream description" }}
-                </div>
+                </label>
                 <input type="text" name="stream_description" id="create_stream_description"
                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_description_length }}" />
             </section>
             <section class="block" id="make-invite-only">
-                <div class="stream-title">
-                    {{t "Stream permissions" }}
-                </div>
-                <div class="stream-creation-info">
-                    {{#tr}}
-                        These settings are explained in detail in the <z-link>help center</z-link>.
-                        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/stream-permissions">{{> @partial-block }}</a>{{/inline}}
-                    {{/tr}}
-                </div>
-
                 <div class="stream-types">
                     {{> stream_types
                       stream_post_policy=stream_post_policy_values.everyone.code
                       is_stream_edit=false }}
                 </div>
-
-                <div id="announce-new-stream">
-                    <label class="checkbox">
-                        <input type="checkbox" name="announce" value="announce" checked />
-                        <span></span>
-                        {{t "Announce stream" }}
-                    </label>
-                    <span class="fa fa-question-circle settings-info-icon" aria-hidden="true" id="announce-stream-docs"></span>
-                </div>
             </section>
             <section class="block">
-                <label class="stream-title" for="people_to_add">
-                    {{t "People to add" }}
+                <label for="people_to_add">
+                    <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
                 </label>
                 <div id="stream_subscription_error" class="stream_creation_error"></div>
                 <div class="controls" id="people_to_add"></div>

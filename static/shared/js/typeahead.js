@@ -37,34 +37,17 @@ export function remove_diacritics(s) {
 function query_matches_string(query, source_str, split_char) {
     source_str = remove_diacritics(source_str);
 
-    // If query doesn't contain a separator, we just want an exact
-    // match where query is a substring of one of the target characters.
-    if (query.indexOf(split_char) > 0) {
-        // If there's a whitespace character in the query, then we
-        // require a perfect prefix match (e.g. for 'ab cd ef',
-        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-        // ef', etc.).
-        const queries = query.split(split_char);
-        const sources = source_str.split(split_char);
-        let i;
-
-        for (i = 0; i < queries.length - 1; i += 1) {
-            if (sources[i] !== queries[i]) {
-                return false;
-            }
-        }
-
-        // This block is effectively a final iteration of the last
-        // loop.  What differs is that for the last word, a
-        // partial match at the beginning of the word is OK.
-        if (sources[i] === undefined) {
-            return false;
-        }
-        return sources[i].startsWith(queries[i]);
+    if (!query.includes(split_char)) {
+        // If query is a single token (doesn't contain a separator),
+        // the match can be anywhere in the string.
+        return source_str.includes(query);
     }
 
-    // For a single token, the match can be anywhere in the string.
-    return source_str.includes(query);
+    // If there is a separator character in the query, then we
+    // require the match to start at the start of a token.
+    // (E.g. for 'ab cd ef', query could be 'ab c' or 'cd ef',
+    // but not 'b cd ef'.)
+    return source_str.startsWith(query) || source_str.includes(split_char + query);
 }
 
 // This function attempts to match a query with source's attributes.
@@ -99,8 +82,8 @@ export function clean_query_lowercase(query) {
 }
 
 export function get_emoji_matcher(query) {
-    // replaces spaces with underscores for emoji matching
-    query = query.split(" ").join("_");
+    // replace spaces with underscores for emoji matching
+    query = query.replace(/ /g, "_");
     query = clean_query_lowercase(query);
 
     return function (emoji) {
@@ -148,11 +131,13 @@ export function triage(query, objs, get_item = (x) => x) {
 }
 
 export function sort_emojis(objs, query) {
-    const lowerQuery = query.toLowerCase();
+    // replace spaces with underscores for emoji matching
+    query = query.replace(/ /g, "_");
+    query = query.toLowerCase();
 
     function decent_match(name) {
         const pieces = name.toLowerCase().split("_");
-        return pieces.some((piece) => piece.startsWith(lowerQuery));
+        return pieces.some((piece) => piece.startsWith(query));
     }
 
     const popular_set = new Set(popular_emojis);

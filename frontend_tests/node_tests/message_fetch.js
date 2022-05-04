@@ -21,6 +21,8 @@ mock_esm("../../static/js/message_list_view", {
 
 mock_esm("../../static/js/recent_topics_ui", {
     process_messages: noop,
+    show_loading_indicator: noop,
+    hide_loading_indicator: noop,
 });
 mock_esm("../../static/js/ui_report", {
     hide_error: noop,
@@ -29,7 +31,6 @@ mock_esm("../../static/js/ui_report", {
 const channel = mock_esm("../../static/js/channel");
 const message_helper = mock_esm("../../static/js/message_helper");
 const message_lists = mock_esm("../../static/js/message_lists");
-const message_store = mock_esm("../../static/js/message_store");
 const message_util = mock_esm("../../static/js/message_util");
 const pm_list = mock_esm("../../static/js/pm_list");
 const stream_list = mock_esm("../../static/js/stream_list", {
@@ -92,17 +93,13 @@ function config_fake_channel(conf) {
         // There's a separate call with anchor="newest" that happens
         // unconditionally; do basic verification of that call.
         if (opts.data.anchor === "newest") {
-            if (!called_with_newest_flag) {
-                called_with_newest_flag = true;
-                assert.equal(opts.data.num_after, 0);
-                return;
-            }
-            throw new Error("Only one 'newest' call allowed");
+            assert.ok(!called_with_newest_flag, "Only one 'newest' call allowed");
+            called_with_newest_flag = true;
+            assert.equal(opts.data.num_after, 0);
+            return;
         }
 
-        if (called && !conf.can_call_again) {
-            throw new Error("only use this for one call");
-        }
+        assert.ok(!called || conf.can_call_again, "only use this for one call");
         if (!conf.can_call_again) {
             assert.equal(self.success, undefined);
         }
@@ -117,13 +114,12 @@ function config_fake_channel(conf) {
 function config_process_results(messages) {
     const self = {};
 
-    const messages_processed_for_bools = [];
+    const messages_processed_for_new = [];
 
-    message_store.set_message_booleans = (message) => {
-        messages_processed_for_bools.push(message);
+    message_helper.process_new_message = (message) => {
+        messages_processed_for_new.push(message);
+        return message;
     };
-
-    message_helper.process_new_message = (message) => message;
 
     message_util.do_unread_count_updates = (arg) => {
         assert.deepEqual(arg, messages);
@@ -139,7 +135,7 @@ function config_process_results(messages) {
     pm_list.update_private_messages = noop;
 
     self.verify = () => {
-        assert.deepEqual(messages_processed_for_bools, messages);
+        assert.deepEqual(messages_processed_for_new, messages);
     };
 
     return self;

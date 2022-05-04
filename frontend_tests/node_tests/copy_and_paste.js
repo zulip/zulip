@@ -21,15 +21,15 @@ const copy_and_paste = zrequire("copy_and_paste");
 
 // Super stripped down version of the code in the drag-mock library
 // https://github.com/andywer/drag-mock/blob/6d46c7c0ffd6a4d685e6612a90cd58cda80f30fc/src/DataTransfer.js
-const DataTransfer = function () {
-    this.dataByFormat = {};
-};
-DataTransfer.prototype.getData = function (dataFormat) {
-    return this.dataByFormat[dataFormat];
-};
-DataTransfer.prototype.setData = function (dataFormat, data) {
-    this.dataByFormat[dataFormat] = data;
-};
+class DataTransfer {
+    dataByFormat = {};
+    getData(dataFormat) {
+        return this.dataByFormat[dataFormat];
+    }
+    setData(dataFormat, data) {
+        this.dataByFormat[dataFormat] = data;
+    }
+}
 
 const createPasteEvent = function () {
     const clipboardData = new DataTransfer();

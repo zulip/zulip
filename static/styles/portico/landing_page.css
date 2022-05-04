@@ -4197,6 +4197,13 @@ nav {
         }
     }
 
+    .feature-icon {
+        img,
+        div.quote {
+            width: 100px;
+        }
+    }
+
     .topics-image {
         border: solid 2px hsl(0, 0%, 60%);
     }
@@ -4420,7 +4427,7 @@ nav {
     }
 }
 
-.for-education.pricing-model {
+.solutions-page .pricing-model {
     .padded-content {
         padding-bottom: 10px;
     }
@@ -4429,52 +4436,57 @@ nav {
         display: flex;
         flex-flow: row wrap;
         justify-content: center;
+    }
 
-        .pricing-details {
-            color: inherit;
-            font-style: inherit;
-        }
+    .price-box {
+        margin: 10px;
+    }
+}
 
-        .price-box {
-            margin: 10px;
-            height: 625px;
+.for-education.pricing-model {
+    .pricing-details {
+        color: inherit;
+        font-style: inherit;
+    }
 
-            .bottom {
-                height: 275px;
+    .price-box {
+        height: 625px;
 
-                .standard-register-button {
-                    margin-top: 10px;
+        .bottom {
+            height: 275px;
+
+            .standard-register-button {
+                margin-top: 10px;
+            }
+
+            .free-text {
+                margin-top: 90px;
+
+                .pricing-details {
+                    font-size: 34px;
                 }
 
-                .free-text {
-                    margin-top: 90px;
+                a {
+                    margin-top: 76px;
+                }
+            }
 
-                    .pricing-details {
-                        font-size: 34px;
-                    }
+            .standard-price-box {
+                flex-flow: row wrap;
+                height: 90px;
+                font-size: 15px;
 
-                    a {
-                        margin-top: 76px;
-                    }
+                &:first-child {
+                    padding-bottom: 10px;
                 }
 
-                .standard-price-box {
-                    flex-flow: row wrap;
-                    height: 90px;
-                    font-size: 15px;
-
-                    &:first-child {
-                        padding-bottom: 10px;
-                    }
-
-                    p {
-                        padding: 0;
-                        margin: 0 0 -10px;
-                        width: 100%;
-                        text-align: center;
-                        font-weight: 550;
-                        color: hsl(169, 46%, 33%);
-                    }
+                p {
+                    padding: 0;
+                    margin: 0 0 -10px;
+                    width: 100%;
+                    text-align: center;
+                    font-weight: 550;
+                    color: hsl(169, 46%, 33%);
                 }
             }
         }
@@ -4594,6 +4606,162 @@ nav {
                 margin: 10px calc(5vw - 10px);
                 width: clamp(130px, 40vw, 200px);
                 font-size: 13px;
+            }
+        }
+    }
+}
+
+.self-hosting-page {
+    p {
+        font-size: 18px !important;
+    }
+
+    .hero-buttons {
+        margin-top: 30px;
+    }
+
+    .alternative-features {
+        .feature-container {
+            padding: 30px;
+
+            &:nth-child(even) {
+                background: hsl(171, 49%, 39%, 0.21);
+                border-radius: 10px;
+            }
+        }
+
+        .feature-icon img {
+            width: 100%;
+        }
+    }
+
+    .triangle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 150px 100vw 0 0;
+        border-color: hsl(0, 0%, 100%) transparent transparent transparent;
+    }
+
+    .quote {
+        position: relative;
+        margin: 0;
+        margin-top: 50px;
+        padding: 50px;
+        padding-top: 200px;
+        border-radius: 0;
+        background: linear-gradient(
+            145deg,
+            hsl(191, 56%, 55%),
+            hsl(169, 65%, 42%)
+        );
+
+        blockquote {
+            max-width: 700px;
+            margin: auto;
+            font-size: 24px;
+
+            .author {
+                font-size: 18px;
+            }
+        }
+    }
+
+    .feature-grid {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+        background: hsl(171, 49%, 39%, 0.21);
+        padding: 50px 0;
+
+        .feature-row {
+            display: flex;
+            flex-direction: row;
+            max-width: 1000px;
+            margin: auto;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+
+            .feature-box {
+                display: flex;
+                justify-content: flex-start;
+                align-items: flex-start;
+                flex-direction: column;
+                width: 40vw;
+                height: 350px;
+                box-shadow: 0 1px 1px 0 hsla(193, 100%, 7.1%, 0.3),
+                    1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15),
+                    -1px 1px 1px 0 hsla(193, 100%, 7.1%, 0.15);
+
+                background: hsl(0, 0%, 100%);
+                text-align: left;
+                margin: 10px 0;
+                padding: 50px 30px 0;
+                border-top: 5px solid hsl(171, 49%, 39%);
+
+                @media (width < 1000px) {
+                    height: 400px;
+                }
+
+                h1 {
+                    font-weight: 550;
+                    font-size: clamp(24px, 2.5vw, 32px);
+                }
+
+                .feature-icon {
+                    align-self: center;
+
+                    img {
+                        max-width: 100px;
+                    }
+                }
+            }
+
+            @media (width < 768px) {
+                flex-direction: column;
+
+                .feature-box {
+                    width: 75vw !important;
+                    height: calc(600px - 35vw);
+                }
+            }
+        }
+    }
+
+    .for-education.pricing-model .pricing-container .price-box {
+        height: 525px;
+
+        .bottom {
+            height: 150px;
+        }
+    }
+
+    .feature-end {
+        margin: 0;
+
+        .feature-pricing {
+            padding: 50px;
+            background: linear-gradient(
+                180deg,
+                hsl(191, 56%, 55%),
+                hsl(169, 65%, 42%)
+            );
+
+            @media (width <= 540px) {
+                padding: 50px 0;
+
+                .price-box {
+                    padding-bottom: 50px;
+                }
+            }
+
+            h1 {
+                color: hsl(0, 0%, 100%);
             }
         }
     }

@@ -33,12 +33,9 @@ import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
-from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    do_change_avatar_fields,
-    do_create_user,
-    notify_created_bot,
-)
+from zerver.actions.create_user import do_create_user, notify_created_bot
+from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,

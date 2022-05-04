@@ -13,7 +13,7 @@ export function do_unread_count_updates(messages) {
     resize.resize_page_components();
 }
 
-function add_messages(messages, msg_list, opts) {
+export function add_messages(messages, msg_list, opts) {
     if (!messages) {
         return undefined;
     }

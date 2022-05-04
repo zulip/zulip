@@ -10,13 +10,11 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    do_add_linkifier,
-    do_add_reaction,
-    do_add_realm_playground,
-    do_create_user,
-    update_user_presence,
-)
+from zerver.actions.create_user import do_create_user
+from zerver.actions.presence import update_user_presence
+from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_linkifiers import do_add_linkifier
+from zerver.actions.realm_playgrounds import do_add_realm_playground
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -302,7 +300,7 @@ def remove_realm_playground() -> Dict[str, object]:
         pygments_language="Python",
         url_prefix="https://python.example.com",
     )
-    playground_id = do_add_realm_playground(get_realm("zulip"), **playground_info)
+    playground_id = do_add_realm_playground(get_realm("zulip"), acting_user=None, **playground_info)
     return {
         "playground_id": playground_id,
     }

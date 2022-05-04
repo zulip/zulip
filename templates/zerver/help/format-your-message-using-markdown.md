@@ -62,9 +62,11 @@ Numbered lists
 
 ## Links
 
-Zulip auto-linkifies URLs and valid stream names. You can also add a
-[custom linkifier](/help/add-a-custom-linkifier) to link
+Zulip auto-linkifies URLs and [valid stream (and topic) names][link-to-conversation].
+You can also add a [custom linkifier](/help/add-a-custom-linkifier) to link
 patterns like `#1234` to your ticketing system.
+
+[link-to-conversation]: /help/link-to-a-message-or-conversation
 
 ```
 Auto-detected URL: zulip.com
@@ -208,11 +210,11 @@ the variant that only contains the user ID).
 
 ## Global times
 
-When collaborating with people in another timezone, you often need to
-express a specific time clearly. Rather than typing out your timezone
+When collaborating with people in another time zone, you often need to
+express a specific time clearly. Rather than typing out your time zone
 and having everyone translate the time in their heads, in Zulip, you
 can mention a time, and it'll be displayed to each user in their own
-timezone (just like the timestamps on Zulip messages).
+time zone (just like the timestamps on Zulip messages).
 
 A date picker will appear once you type `<time`.
 
@@ -285,7 +287,7 @@ A summary of the formatting syntax is available in-app.
 
 {!start-composing.md!}
 
-1. Click help at the bottom of the compose box.
+1. Click <i class="fa fa-question"></i> at the bottom of the compose box.
 
 {end_tabs}
 

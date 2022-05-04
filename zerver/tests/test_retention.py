@@ -5,13 +5,11 @@ from unittest import mock
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    do_add_submessage,
-    do_create_realm,
-    do_delete_messages,
-    do_set_realm_property,
-    internal_send_private_message,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.submessage import do_add_submessage
 from zerver.lib.retention import (
     archive_messages,
     clean_archived_data,
@@ -702,9 +700,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.assertEqual(
                 set(attachment_id_to_message_ids[attachment_id]),
                 set(
-                    ArchivedMessage.objects.filter(
-                        archivedattachment__id=attachment_id
-                    ).values_list("id", flat=True)
+                    ArchivedMessage.objects.filter(attachment__id=attachment_id).values_list(
+                        "id", flat=True
+                    )
                 ),
             )
 

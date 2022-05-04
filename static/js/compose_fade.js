@@ -46,25 +46,25 @@ export function set_focused_recipient(msg_type) {
 }
 
 function display_messages_normally() {
-    const table = rows.get_table(message_lists.current.table_name);
-    table.find(".recipient_row").removeClass("message-fade");
+    const $table = rows.get_table(message_lists.current.table_name);
+    $table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
     floating_recipient_bar.update();
 }
 
-function change_fade_state(elt, should_fade_group) {
+function change_fade_state($elt, should_fade_group) {
     if (should_fade_group) {
-        elt.addClass("message-fade");
+        $elt.addClass("message-fade");
     } else {
-        elt.removeClass("message-fade");
+        $elt.removeClass("message-fade");
     }
 }
 
 function fade_messages() {
     let i;
     let first_message;
-    let first_row;
+    let $first_row;
     let should_fade_group = false;
     const visible_groups = message_viewport.visible_groups(false);
 
@@ -72,8 +72,8 @@ function fade_messages() {
 
     // Update the visible messages first, before the compose box opens
     for (i = 0; i < visible_groups.length; i += 1) {
-        first_row = rows.first_message_in_group(visible_groups[i]);
-        first_message = message_lists.current.get(rows.id(first_row));
+        $first_row = rows.first_message_in_group(visible_groups[i]);
+        first_message = message_lists.current.get(rows.id($first_row));
         should_fade_group = compose_fade_helper.should_fade_message(first_message);
 
         change_fade_state($(visible_groups[i]), should_fade_group);
@@ -99,11 +99,11 @@ function fade_messages() {
             // Note: The below algorithm relies on the fact that all_elts is
             // sorted as it would be displayed in the message view
             for (i = 0; i < all_groups.length; i += 1) {
-                const group_elt = $(all_groups[i]);
+                const $group_elt = $(all_groups[i]);
                 should_fade_group = compose_fade_helper.should_fade_message(
-                    rows.recipient_from_group(group_elt),
+                    rows.recipient_from_group($group_elt),
                 );
-                change_fade_state(group_elt, should_fade_group);
+                change_fade_state($group_elt, should_fade_group);
             }
 
             floating_recipient_bar.update();
@@ -115,14 +115,14 @@ function fade_messages() {
 }
 
 const user_fade_config = {
-    get_user_id(li) {
-        return buddy_list.get_key_from_li({li});
+    get_user_id($li) {
+        return buddy_list.get_key_from_li({$li});
     },
-    fade(li) {
-        return li.addClass("user-fade");
+    fade($li) {
+        return $li.addClass("user-fade");
     },
-    unfade(li) {
-        return li.removeClass("user-fade");
+    unfade($li) {
+        return $li.removeClass("user-fade");
     },
 };
 
@@ -180,9 +180,9 @@ export function update_rendered_message_groups(message_groups, get_element) {
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
     for (const message_group of message_groups) {
-        const elt = get_element(message_group);
+        const $elt = get_element(message_group);
         const first_message = message_group.message_containers[0].msg;
         const should_fade = compose_fade_helper.should_fade_message(first_message);
-        change_fade_state(elt, should_fade);
+        change_fade_state($elt, should_fade);
     }
 }

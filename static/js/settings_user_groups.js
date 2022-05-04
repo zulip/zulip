@@ -28,8 +28,8 @@ export function reload() {
         return;
     }
 
-    const user_groups_section = $("#user-groups").expectOne();
-    user_groups_section.html("");
+    const $user_groups_section = $("#user-groups").expectOne();
+    $user_groups_section.html("");
     populate_user_groups();
 }
 
@@ -49,11 +49,11 @@ export function can_edit(group_id) {
 }
 
 export function populate_user_groups() {
-    const user_groups_section = $("#user-groups").expectOne();
+    const $user_groups_section = $("#user-groups").expectOne();
     const user_groups_array = user_groups.get_realm_user_groups();
 
     for (const data of user_groups_array) {
-        user_groups_section.append(
+        $user_groups_section.append(
             render_admin_user_group_list({
                 user_group: {
                     name: data.name,
@@ -67,14 +67,14 @@ export function populate_user_groups() {
             show_user_status_emoji: false,
         };
 
-        const pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
-        const pills = user_pill.create_pills(pill_container, pill_config);
+        const $pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
+        const pills = user_pill.create_pills($pill_container, pill_config);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
         }
 
-        const userg = $(`div.user-group[id="${CSS.escape(data.id)}"]`);
+        const $userg = $(`div.user-group[id="${CSS.escape(data.id)}"]`);
         for (const user_id of data.members) {
             const user = people.get_by_user_id(user_id);
             user_pill.append_user(user, pills);
@@ -84,20 +84,20 @@ export function populate_user_groups() {
             if (can_edit(group_id)) {
                 return;
             }
-            userg.find(".name").attr("contenteditable", "false");
-            userg.find(".description").attr("contenteditable", "false");
-            userg.addClass("ntm");
-            pill_container.find(".input").attr("contenteditable", "false");
-            pill_container.find(".input").css("display", "none");
-            pill_container.addClass("not-editable");
-            pill_container.off("keydown", ".pill");
-            pill_container.off("keydown", ".input");
-            pill_container.off("click");
-            pill_container.on("click", (e) => {
+            $userg.find(".name").attr("contenteditable", "false");
+            $userg.find(".description").attr("contenteditable", "false");
+            $userg.addClass("ntm");
+            $pill_container.find(".input").attr("contenteditable", "false");
+            $pill_container.find(".input").css("display", "none");
+            $pill_container.addClass("not-editable");
+            $pill_container.off("keydown", ".pill");
+            $pill_container.off("keydown", ".input");
+            $pill_container.off("click");
+            $pill_container.on("click", (e) => {
                 e.stopPropagation();
             });
-            pill_container.find(".pill").on("mouseenter", () => {
-                pill_container.find(".pill").find(".exit").css("opacity", "0.5");
+            $pill_container.find(".pill").on("mouseenter", () => {
+                $pill_container.find(".pill").find(".exit").css("opacity", "0.5");
             });
         }
         update_membership(data.id);
@@ -113,9 +113,9 @@ export function populate_user_groups() {
             const name = $(`#user-groups #${CSS.escape(data.id)} .name`)
                 .text()
                 .trim();
-            const user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
+            const $user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
 
-            if (user_group_status.is(":visible")) {
+            if ($user_group_status.is(":visible")) {
                 return false;
             }
 
@@ -133,28 +133,32 @@ export function populate_user_groups() {
             if (!can_edit(data.id)) {
                 return;
             }
-            const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
-            const saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
-            const save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
+            const $cancel_button = $(
+                `#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`,
+            );
+            const $saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
+            const $save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
 
-            if (is_user_group_changed() && !cancel_button.is(":visible")) {
-                saved_button.fadeOut(0);
-                cancel_button.css({display: "inline-block", opacity: "0"}).fadeTo(400, 1);
-                save_instructions.css({display: "block", opacity: "0"}).fadeTo(400, 1);
-            } else if (!is_user_group_changed() && cancel_button.is(":visible")) {
-                cancel_button.fadeOut();
-                save_instructions.fadeOut();
+            if (is_user_group_changed() && !$cancel_button.is(":visible")) {
+                $saved_button.fadeOut(0);
+                $cancel_button.css({display: "inline-block", opacity: "0"}).fadeTo(400, 1);
+                $save_instructions.css({display: "block", opacity: "0"}).fadeTo(400, 1);
+            } else if (!is_user_group_changed() && $cancel_button.is(":visible")) {
+                $cancel_button.fadeOut();
+                $save_instructions.fadeOut();
             }
         }
 
         function show_saved_button() {
-            const cancel_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`);
-            const saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
-            const save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
-            if (!saved_button.is(":visible")) {
-                cancel_button.fadeOut(0);
-                save_instructions.fadeOut(0);
-                saved_button
+            const $cancel_button = $(
+                `#user-groups #${CSS.escape(data.id)} .save-status.btn-danger`,
+            );
+            const $saved_button = $(`#user-groups #${CSS.escape(data.id)} .save-status.sea-green`);
+            const $save_instructions = $(`#user-groups #${CSS.escape(data.id)} .save-instructions`);
+            if (!$saved_button.is(":visible")) {
+                $cancel_button.fadeOut(0);
+                $save_instructions.fadeOut(0);
+                $saved_button
                     .css({display: "inline-block", opacity: "0"})
                     .fadeTo(400, 1)
                     .delay(2000)
@@ -185,7 +189,7 @@ export function populate_user_groups() {
         }
 
         function save_name_desc() {
-            const user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
+            const $user_group_status = $(`#user-groups #${CSS.escape(data.id)} .user-group-status`);
             const group_data = user_groups.get_user_group_from_id(data.id);
             const description = $(`#user-groups #${CSS.escape(data.id)} .description`)
                 .text()
@@ -205,13 +209,13 @@ export function populate_user_groups() {
                     description,
                 },
                 success() {
-                    user_group_status.hide();
+                    $user_group_status.hide();
                     setTimeout(show_saved_button, 200);
                 },
                 error(xhr) {
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
                     update_cancel_button();
                     $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
                     $(`#user-groups #${CSS.escape(data.id)} .description`).text(
@@ -274,10 +278,10 @@ export function populate_user_groups() {
             update_cancel_button();
         });
 
-        const input = pill_container.children(".input");
+        const $input = $pill_container.children(".input");
         if (can_edit(data.id)) {
             const opts = {update_func: update_cancel_button, user: true};
-            pill_typeahead.set_up(input, pills, opts);
+            pill_typeahead.set_up($input, pills, opts);
         }
 
         if (can_edit(data.id)) {
@@ -286,7 +290,7 @@ export function populate_user_groups() {
                 // the DOM.
                 update_cancel_button();
                 setTimeout(() => {
-                    input.trigger("focus");
+                    $input.trigger("focus");
                 }, 100);
             });
         }
@@ -303,7 +307,7 @@ export function set_up() {
             e.preventDefault();
             e.stopPropagation();
 
-            const user_group_status = $("#admin-user-group-status");
+            const $user_group_status = $("#admin-user-group-status");
 
             const group = {
                 members: JSON.stringify([people.my_current_user_id()]),
@@ -320,18 +324,18 @@ export function set_up() {
                 url: "/json/user_groups/create",
                 data: group,
                 success() {
-                    user_group_status.hide();
+                    $user_group_status.hide();
                     ui_report.success(
                         $t_html({defaultMessage: "User group added!"}),
-                        user_group_status,
+                        $user_group_status,
                     );
                     $("form.admin-user-group-form input[type='text']").val("");
                 },
                 error(xhr) {
-                    user_group_status.hide();
+                    $user_group_status.hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
                 },
             });
         });
@@ -342,7 +346,7 @@ export function set_up() {
             return;
         }
         const user_group = user_groups.get_user_group_from_id(group_id);
-        const btn = $(this);
+        const $btn = $(this);
 
         function delete_user_group() {
             channel.del({
@@ -351,7 +355,7 @@ export function set_up() {
                     id: group_id,
                 },
                 error() {
-                    btn.text($t({defaultMessage: "Failed!"}));
+                    $btn.text($t({defaultMessage: "Failed!"}));
                 },
             });
         }

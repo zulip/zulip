@@ -2,13 +2,10 @@ import orjson
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
-from zerver.lib.actions import (
-    do_change_realm_domain,
-    do_change_user_role,
-    do_create_realm,
-    do_remove_realm_domain,
-    do_set_realm_property,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.realm_domains import do_change_realm_domain, do_remove_realm_domain
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import do_change_user_role
 from zerver.lib.domains import validate_domain
 from zerver.lib.email_validation import email_allowed_for_realm
 from zerver.lib.test_classes import ZulipTestCase
@@ -143,7 +140,7 @@ class RealmDomainTest(ZulipTestCase):
         with self.assertRaises(DomainNotAllowedForRealmError):
             email_allowed_for_realm("user@test3.test1.com", realm2)
 
-        do_change_realm_domain(realm_domain, True)
+        do_change_realm_domain(realm_domain, True, acting_user=None)
         email_allowed_for_realm("user@test1.com", realm1)
         email_allowed_for_realm("user@test2.test1.com", realm1)
         with self.assertRaises(DomainNotAllowedForRealmError):

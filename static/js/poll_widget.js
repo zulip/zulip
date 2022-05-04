@@ -9,7 +9,7 @@ import {$t} from "./i18n";
 import * as people from "./people";
 
 export function activate({
-    elem,
+    $elem,
     callback,
     extra_data: {question = "", options = []} = {},
     message,
@@ -26,8 +26,8 @@ export function activate({
     });
 
     function update_edit_controls() {
-        const has_question = elem.find("input.poll-question").val().trim() !== "";
-        elem.find("button.poll-question-check").toggle(has_question);
+        const has_question = $elem.find("input.poll-question").val().trim() !== "";
+        $elem.find("button.poll-question-check").toggle(has_question);
     }
 
     function render_question() {
@@ -39,26 +39,26 @@ export function activate({
         const waiting = !is_my_poll && !has_question;
         const author_help = is_my_poll && !has_question;
 
-        elem.find(".poll-question-header").toggle(!input_mode);
-        elem.find(".poll-question-header").text(question);
-        elem.find(".poll-edit-question").toggle(can_edit);
+        $elem.find(".poll-question-header").toggle(!input_mode);
+        $elem.find(".poll-question-header").text(question);
+        $elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
-        elem.find(".poll-question-bar").toggle(input_mode);
-        elem.find(".poll-option-bar").toggle(can_vote);
+        $elem.find(".poll-question-bar").toggle(input_mode);
+        $elem.find(".poll-option-bar").toggle(can_vote);
 
-        elem.find(".poll-please-wait").toggle(waiting);
+        $elem.find(".poll-please-wait").toggle(waiting);
 
-        elem.find(".poll-author-help").toggle(author_help);
+        $elem.find(".poll-author-help").toggle(author_help);
     }
 
     function start_editing() {
         poll_data.set_input_mode();
 
         const question = poll_data.get_question();
-        elem.find("input.poll-question").val(question);
+        $elem.find("input.poll-question").val(question);
         render_question();
-        elem.find("input.poll-question").trigger("focus");
+        $elem.find("input.poll-question").trigger("focus");
     }
 
     function abort_edit() {
@@ -67,8 +67,8 @@ export function activate({
     }
 
     function submit_question() {
-        const poll_question_input = elem.find("input.poll-question");
-        let new_question = poll_question_input.val().trim();
+        const $poll_question_input = $elem.find("input.poll-question");
+        let new_question = $poll_question_input.val().trim();
         const old_question = poll_data.get_question();
 
         // We should disable the button for blank questions,
@@ -92,8 +92,8 @@ export function activate({
     }
 
     function submit_option() {
-        const poll_option_input = elem.find("input.poll-option");
-        const option = poll_option_input.val().trim();
+        const $poll_option_input = $elem.find("input.poll-option");
+        const option = $poll_option_input.val().trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
@@ -104,7 +104,7 @@ export function activate({
             return;
         }
 
-        poll_option_input.val("").trigger("focus");
+        $poll_option_input.val("").trigger("focus");
 
         const data = poll_data.handle.new_option.outbound(option);
         callback(data);
@@ -117,14 +117,14 @@ export function activate({
 
     function build_widget() {
         const html = render_widgets_poll_widget();
-        elem.html(html);
+        $elem.html(html);
 
-        elem.find("input.poll-question").on("keyup", (e) => {
+        $elem.find("input.poll-question").on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
         });
 
-        elem.find("input.poll-question").on("keydown", (e) => {
+        $elem.find("input.poll-question").on("keydown", (e) => {
             e.stopPropagation();
 
             if (e.key === "Enter") {
@@ -138,28 +138,28 @@ export function activate({
             }
         });
 
-        elem.find(".poll-edit-question").on("click", (e) => {
+        $elem.find(".poll-edit-question").on("click", (e) => {
             e.stopPropagation();
             start_editing();
         });
 
-        elem.find("button.poll-question-check").on("click", (e) => {
+        $elem.find("button.poll-question-check").on("click", (e) => {
             e.stopPropagation();
             submit_question();
         });
 
-        elem.find("button.poll-question-remove").on("click", (e) => {
+        $elem.find("button.poll-question-remove").on("click", (e) => {
             e.stopPropagation();
             abort_edit();
         });
 
-        elem.find("button.poll-option").on("click", (e) => {
+        $elem.find("button.poll-option").on("click", (e) => {
             e.stopPropagation();
             check_option_button();
             submit_option();
         });
 
-        elem.find("input.poll-option").on("keyup", (e) => {
+        $elem.find("input.poll-option").on("keyup", (e) => {
             e.stopPropagation();
             check_option_button();
 
@@ -176,19 +176,18 @@ export function activate({
     }
 
     function check_option_button() {
-        const poll_option_input = elem.find("input.poll-option");
-        const option = poll_option_input.val().trim();
+        const $poll_option_input = $elem.find("input.poll-option");
+        const option = $poll_option_input.val().trim();
         const options = poll_data.get_widget_data().options;
 
         if (poll_data.is_option_present(options, option)) {
-            elem.find("button.poll-option").attr("disabled", true);
-            elem.find("button.poll-option").attr(
-                "title",
-                $t({defaultMessage: "Option already present."}),
-            );
+            $elem.find("button.poll-option").attr("disabled", true);
+            $elem
+                .find("button.poll-option")
+                .attr("title", $t({defaultMessage: "Option already present."}));
         } else {
-            elem.find("button.poll-option").attr("disabled", false);
-            elem.find("button.poll-option").removeAttr("title");
+            $elem.find("button.poll-option").attr("disabled", false);
+            $elem.find("button.poll-option").removeAttr("title");
         }
     }
 
@@ -196,9 +195,10 @@ export function activate({
         const widget_data = poll_data.get_widget_data();
 
         const html = render_widgets_poll_widget_results(widget_data);
-        elem.find("ul.poll-widget").html(html);
+        $elem.find("ul.poll-widget").html(html);
 
-        elem.find("button.poll-vote")
+        $elem
+            .find("button.poll-vote")
             .off("click")
             .on("click", (e) => {
                 e.stopPropagation();
@@ -207,7 +207,7 @@ export function activate({
             });
     }
 
-    elem.handle_events = function (events) {
+    $elem.handle_events = function (events) {
         for (const event of events) {
             poll_data.handle_event(event.sender_id, event.data);
         }

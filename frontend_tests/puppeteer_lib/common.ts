@@ -331,8 +331,8 @@ class CommonUtils {
                     return false;
                 }
 
-                const row = zulip_test.last_visible_row();
-                if (zulip_test.row_id(row) !== last_msg.id) {
+                const $row = zulip_test.last_visible_row();
+                if (zulip_test.row_id($row) !== last_msg.id) {
                     return false;
                 }
 
@@ -343,7 +343,7 @@ class CommonUtils {
                 don't add the star icon until the server
                 responds.
             */
-                return row.find(".star").length === 1;
+                return $row.find(".star").length === 1;
             },
             {},
             content,
@@ -461,6 +461,16 @@ class CommonUtils {
         // the test with --interactive there will be duplicates.
         const last_n_messages = rendered_messages.slice(-messages.length);
         assert.deepStrictEqual(last_n_messages, messages);
+    }
+
+    async open_streams_modal(page: Page): Promise<void> {
+        const all_streams_selector = "#add-stream-link";
+        await page.waitForSelector(all_streams_selector, {visible: true});
+        await page.click(all_streams_selector);
+
+        await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
+        const url = await this.page_url_with_fragment(page);
+        assert.ok(url.includes("#streams/all"));
     }
 
     async manage_organization(page: Page): Promise<void> {

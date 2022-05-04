@@ -1,6 +1,6 @@
 import orjson
 
-from zerver.lib.actions import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
 from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
@@ -217,7 +217,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "new ALERT for you",
             },
         )
@@ -230,7 +229,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(original_message.id),
             {
-                "message_id": original_message.id,
                 "content": "sorry false alarm",
             },
         )

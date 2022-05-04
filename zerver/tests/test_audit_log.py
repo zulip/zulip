@@ -6,47 +6,64 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import StreamCount
-from zerver.lib.actions import (
-    bulk_add_subscriptions,
-    bulk_remove_subscriptions,
-    do_activate_mirror_dummy_user,
-    do_change_avatar_fields,
+from zerver.actions.bots import (
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_change_icon_source,
-    do_change_password,
-    do_change_subscription_property,
-    do_change_tos_version,
-    do_change_user_delivery_email,
-    do_change_user_role,
-    do_change_user_setting,
+)
+from zerver.actions.create_user import (
+    do_activate_mirror_dummy_user,
     do_create_user,
-    do_deactivate_realm,
-    do_deactivate_stream,
-    do_deactivate_user,
-    do_reactivate_realm,
     do_reactivate_user,
-    do_regenerate_api_key,
-    do_rename_stream,
+)
+from zerver.actions.realm_domains import (
+    do_add_realm_domain,
+    do_change_realm_domain,
+    do_remove_realm_domain,
+)
+from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_playgrounds import do_add_realm_playground, do_remove_realm_playground
+from zerver.actions.realm_settings import (
+    do_deactivate_realm,
+    do_reactivate_realm,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_signup_notifications_stream,
-    get_streams_traffic,
 )
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    bulk_remove_subscriptions,
+    do_change_subscription_property,
+    do_deactivate_stream,
+    do_rename_stream,
+)
+from zerver.actions.user_settings import (
+    do_change_avatar_fields,
+    do_change_password,
+    do_change_tos_version,
+    do_change_user_delivery_email,
+    do_change_user_setting,
+    do_regenerate_api_key,
+)
+from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.message import get_last_message_id
+from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.types import RealmPlaygroundDict
 from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    RealmPlayground,
     Recipient,
     Subscription,
     UserProfile,
     get_realm,
+    get_realm_domains,
+    get_realm_playgrounds,
     get_stream,
 )
 
@@ -658,3 +675,129 @@ class TestRealmAuditLog(ZulipTestCase):
                 1,
             )
             self.assertEqual(getattr(user, setting), value)
+
+    def test_realm_domain_entries(self) -> None:
+        user = self.example_user("iago")
+        initial_domains = get_realm_domains(user.realm)
+
+        now = timezone_now()
+        realm_domain = do_add_realm_domain(user.realm, "zulip.org", False, acting_user=user)
+        added_domain: Dict[str, Union[str, bool]] = {
+            "domain": "zulip.org",
+            "allow_subdomains": False,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains + [added_domain],
+            "added_domain": added_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_change_realm_domain(realm_domain, True, acting_user=user)
+        changed_domain: Dict[str, Union[str, bool]] = {
+            "domain": "zulip.org",
+            "allow_subdomains": True,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains + [changed_domain],
+            "changed_domain": changed_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        do_remove_realm_domain(realm_domain, acting_user=user)
+        removed_domain = {
+            "domain": "zulip.org",
+            "allow_subdomains": True,
+        }
+        expected_extra_data = {
+            "realm_domains": initial_domains,
+            "removed_domain": removed_domain,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_DOMAIN_REMOVED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+    def test_realm_playground_entries(self) -> None:
+        user = self.example_user("iago")
+        intial_playgrounds = get_realm_playgrounds(user.realm)
+        now = timezone_now()
+        playground_id = do_add_realm_playground(
+            user.realm,
+            acting_user=user,
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
+        added_playground = RealmPlaygroundDict(
+            id=playground_id,
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
+        expected_extra_data = {
+            "realm_playgrounds": intial_playgrounds + [added_playground],
+            "added_playground": added_playground,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_PLAYGROUND_ADDED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )
+
+        now = timezone_now()
+        realm_playground = RealmPlayground.objects.get(id=playground_id)
+        do_remove_realm_playground(
+            user.realm,
+            realm_playground,
+            acting_user=user,
+        )
+        removed_playground = {
+            "name": "Python playground",
+            "pygments_language": "Python",
+            "url_prefix": "https://python.example.com",
+        }
+        expected_extra_data = {
+            "realm_playgrounds": intial_playgrounds,
+            "removed_playground": removed_playground,
+        }
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=user.realm,
+                event_type=RealmAuditLog.REALM_PLAYGROUND_REMOVED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(expected_extra_data).decode(),
+            ).count(),
+            1,
+        )

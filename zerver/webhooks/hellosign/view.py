@@ -1,11 +1,11 @@
 from typing import Any, Dict, List
 
-import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -14,7 +14,7 @@ WAS_JUST_SIGNED_BY = "was just signed by {signed_recipients}"
 BODY = "The `{contract_title}` document {actions}."
 
 
-def get_message_body(payload: Dict[str, Dict[str, Any]]) -> str:
+def get_message_body(payload: Dict[str, Any]) -> str:
     contract_title = payload["signature_request"]["title"]
     recipients: Dict[str, List[str]] = {}
     signatures = payload["signature_request"]["signatures"]
@@ -59,7 +59,7 @@ def get_recipients_text(recipients: List[str]) -> str:
 def api_hellosign_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Dict[str, Any]] = REQ(whence="json", converter=orjson.loads),
+    payload: Dict[str, Any] = REQ(whence="json", json_validator=check_dict()),
 ) -> HttpResponse:
     if "signature_request" in payload:
         body = get_message_body(payload)

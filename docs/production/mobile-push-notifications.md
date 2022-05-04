@@ -18,7 +18,7 @@ support forwarding push notifications to a central push notification
 forwarding service. Accessing this service requires outgoing HTTPS
 access to the public Internet; if that is restricted by a proxy, you
 will need to [configure Zulip to use your outgoing HTTP
-proxy](../production/deployment.html#customizing-the-outgoing-http-proxy)
+proxy](deployment.md#customizing-the-outgoing-http-proxy)
 first.
 
 You can enable this for your Zulip server as follows:
@@ -27,7 +27,7 @@ You can enable this for your Zulip server as follows:
    `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line
    in your `/etc/zulip/settings.py` file (i.e. remove the `#` at the
    start of the line), and [restart your Zulip
-   server](../production/settings.html#making-changes). If you
+   server](settings.md#making-changes). If you
    installed your Zulip server with a version older than 1.6, you'll
    need to add the line (it won't be there to uncomment).
 
@@ -115,7 +115,7 @@ to these terms.
 We've designed this push notification bouncer service with security
 and privacy in mind:
 
-- A central design goal of the the Push Notification Service is to
+- A central design goal of the Push Notification Service is to
   avoid any message content being stored or logged by the service,
   even in error cases.
 - The Push Notification Service only stores the necessary metadata for
@@ -237,7 +237,7 @@ the app stores yourself.
 If you've done that work, the Zulip server configuration for sending
 push notifications through the new app is quite straightforward:
 
-- Create a
+- Create an
   [FCM push notifications](https://firebase.google.com/docs/cloud-messaging)
   key in the Google Developer console and set `android_gcm_api_key` in
   `/etc/zulip/zulip-secrets.conf` to that key.

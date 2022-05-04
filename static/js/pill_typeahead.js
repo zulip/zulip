@@ -21,7 +21,7 @@ function group_matcher(query, item) {
     return false;
 }
 
-export function set_up(input, pills, opts) {
+export function set_up($input, pills, opts) {
     if (!opts.user && !opts.user_group && !opts.stream) {
         blueslip.error("Unspecified possible item types");
         return;
@@ -30,7 +30,7 @@ export function set_up(input, pills, opts) {
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
 
-    input.typeahead({
+    $input.typeahead({
         items: 5,
         fixed: true,
         dropup: true,
@@ -126,7 +126,7 @@ export function set_up(input, pills, opts) {
                 user_pill.append_user(item, pills);
             }
 
-            input.trigger("focus");
+            $input.trigger("focus");
             if (opts.update_func) {
                 opts.update_func();
             }

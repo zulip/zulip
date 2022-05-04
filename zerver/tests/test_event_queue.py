@@ -5,7 +5,8 @@ from unittest import mock
 import orjson
 from django.http import HttpRequest, HttpResponse
 
-from zerver.lib.actions import do_change_subscription_property, do_mute_topic
+from zerver.actions.streams import do_change_subscription_property
+from zerver.actions.user_topics import do_mute_topic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, mock_queue_publish
 from zerver.lib.user_groups import create_user_group, remove_user_from_user_group

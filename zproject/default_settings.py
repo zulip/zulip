@@ -1,5 +1,5 @@
 import os
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
 
 from scripts.lib.zulip_tools import deport
 
@@ -7,7 +7,6 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
-    from typing_extensions import TypedDict
 
     from zerver.lib.types import SAMLIdPConfigDict
 
@@ -137,6 +136,7 @@ S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION: Optional[str] = None
 S3_ENDPOINT_URL: Optional[str] = None
+S3_SKIP_PROXY = True
 LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
@@ -261,6 +261,8 @@ OPEN_REALM_CREATION = False
 
 # Whether it's possible to create web-public streams on this server.
 WEB_PUBLIC_STREAMS_ENABLED = False
+# Temporary setting during web-public streams beta.
+WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS: List[str] = []
 
 # Setting for where the system bot users are.  Likely has no
 # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
@@ -466,7 +468,7 @@ OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
 
 # Maximum length of message content allowed.
 # Any message content exceeding this limit will be truncated.
-# See: `_internal_prep_message` function in zerver/lib/actions.py.
+# See: `_internal_prep_message` function in zerver/actions/message_send.py.
 MAX_MESSAGE_LENGTH = 10000
 
 # The maximum number of drafts to send in the response to /register.

@@ -3,16 +3,25 @@
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="login_to_access_modal_label">
             <header class="modal__header">
                 <h1 class="modal__title" id="login_to_access_modal_label">
-                    {{t "Login required" }}
+                    {{#tr}}
+                    Join {realm_name}
+                    {{/tr}}
                 </h1>
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
             </header>
             <main class="modal__content">
+                {{#if empty_narrow}}
                 <p>
                     {{#tr}}
-                        Since you are not logged in, you can only view messages in
-                        <z-link>web-public streams</z-link>.
-                        {{#*inline "z-link"}}<a target="_blank" href="https://zulipchat.com/help/stream-permissions">{{> @partial-block}}</a>{{/inline}}
+                        This is not a <z-link>publicly accessible</z-link> conversation.
+                        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/public-access-option">{{> @partial-block}}</a>{{/inline}}
+                    {{/tr}}
+                </p>
+                {{/if}}
+                <p>
+                    {{#tr}}
+                        You can fully access this community and participate in conversations
+                        by creating a Zulip account in this organization.
                     {{/tr}}
                 </p>
             </main>

@@ -13,7 +13,7 @@ class TestChoosePubDate(ZulipTestCase):
         """
         tot_messages = 1000000
         datetimes_list = [
-            choose_date_sent(i, tot_messages, 1)
+            choose_date_sent(i, tot_messages, 5, 1)
             for i in range(1, tot_messages, tot_messages // 100)
         ]
 
@@ -22,3 +22,13 @@ class TestChoosePubDate(ZulipTestCase):
             self.assertTrue(
                 datetimes_list[i] - datetimes_list[i - 1] > timezone_timedelta(minutes=5)
             )
+
+
+class TestUserTimeZones(ZulipTestCase):
+    def test_timezones_assigned_to_users(self) -> None:
+        othello = self.example_user("othello")
+        self.assertEqual(othello.timezone, "US/Pacific")
+        shiva = self.example_user("shiva")
+        self.assertEqual(shiva.timezone, "Asia/Kolkata")
+        cordelia = self.example_user("cordelia")
+        self.assertEqual(cordelia.timezone, "UTC")

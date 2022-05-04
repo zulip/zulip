@@ -1,5 +1,3 @@
-import $ from "jquery";
-
 import {all_messages_data} from "./all_messages_data";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
@@ -7,6 +5,8 @@ import * as message_util from "./message_util";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import * as settings_notifications from "./settings_notifications";
+import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 
 export function update_is_muted(sub, value) {
@@ -16,7 +16,7 @@ export function update_is_muted(sub, value) {
         let msg_offset;
         let saved_ypos;
         // Save our current scroll position
-        if (overlays.is_active()) {
+        if (overlays.is_active() || overlays.is_modal_open()) {
             saved_ypos = message_viewport.scrollTop();
         } else if (
             message_lists.home === message_lists.current &&
@@ -31,7 +31,7 @@ export function update_is_muted(sub, value) {
         message_util.add_old_messages(all_messages_data.all_messages(), message_lists.home);
 
         // Ensure we're still at the same scroll position
-        if (overlays.is_active()) {
+        if (overlays.is_overlay_or_modal_open()) {
             message_viewport.scrollTop(saved_ypos);
         } else if (message_lists.home === message_lists.current) {
             // We pass use_closest to handle the case where the
@@ -59,12 +59,7 @@ export function update_is_muted(sub, value) {
         }
     }, 0);
 
+    settings_notifications.update_muted_stream_state(sub);
+    stream_edit.update_muting_rendering(sub);
     stream_list.set_in_home_view(sub.stream_id, !sub.is_muted);
-
-    const is_muted_checkbox = $(
-        `.subscription_settings[data-stream-id='${CSS.escape(
-            sub.stream_id,
-        )}'] #sub_is_muted_setting .sub_setting_control`,
-    );
-    is_muted_checkbox.prop("checked", value);
 }

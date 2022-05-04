@@ -2,12 +2,9 @@
 
 {!admin-only.md!}
 
-By default, anyone other than guests can add other users to streams. However, you can restrict this to:
-
-* Organization administrators
-* Organization administrators and moderators
-* Organization administrators and all members
-* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
+By default, anyone other than guests can add other users to streams. However,
+you can restrict the ability to do so to specific
+[roles](/help/roles-and-permissions).
 
 ### Manage who can add users to streams
 
@@ -20,3 +17,8 @@ By default, anyone other than guests can add other users to streams. However, yo
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
+* [Roles and permissions](/help/roles-and-permissions)

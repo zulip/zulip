@@ -10,7 +10,7 @@ const channel = mock_esm("../../static/js/channel");
 
 const user_status = zrequire("user_status");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
-const emoji = zrequire("../shared/js/emoji");
+const emoji = zrequire("emoji");
 
 const emoji_params = {
     realm_emoji: {

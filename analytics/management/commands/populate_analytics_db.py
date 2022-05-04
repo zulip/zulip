@@ -16,8 +16,10 @@ from analytics.models import (
     StreamCount,
     UserCount,
 )
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_user_role, do_create_realm
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
+from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserProfile
 

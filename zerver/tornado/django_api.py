@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Container, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 from urllib.parse import urlparse
 
 import orjson
@@ -28,7 +28,7 @@ class TornadoAdapter(HTTPAdapter):
         stream: bool = False,
         timeout: Union[None, float, Tuple[float, float], Tuple[float, None]] = 0.5,
         verify: Union[bool, str] = True,
-        cert: Union[None, bytes, str, Container[Union[bytes, str]]] = None,
+        cert: Union[None, bytes, str, Tuple[Union[bytes, str], Union[bytes, str]]] = None,
         proxies: Optional[Mapping[str, str]] = None,
     ) -> Response:
         # Don't talk to Tornado through proxies, which only allow
@@ -149,7 +149,7 @@ def send_notification_http(realm: Realm, data: Mapping[str, Any]) -> None:
 # The core function for sending an event from Django to Tornado (which
 # will then push it to web and mobile clients for the target users).
 # By convention, send_event should only be called from
-# zerver/lib/actions.py, which helps make it easy to find event
+# zerver/actions/*.py, which helps make it easy to find event
 # generation code.
 #
 # Every call point should be covered by a test in `test_events.py`,

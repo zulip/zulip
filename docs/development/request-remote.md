@@ -70,13 +70,13 @@ Once your remote dev instance is ready:
 
 Once you've confirmed you can connect to your remote server, take a look at:
 
-- [developing remotely](../development/remote.md) for tips on using the remote dev
+- [developing remotely](remote.md) for tips on using the remote dev
   instance, and
 - our [Git & GitHub guide](../git/index.md) to learn how to use Git with Zulip.
 
 Next, read the following to learn more about developing for Zulip:
 
-- [Using the development environment](../development/using.md)
+- [Using the development environment](using.md)
 - [Testing](../testing/testing.md)
 
 [github-join]: https://github.com/join

@@ -69,6 +69,16 @@ exports.test_streams = {
 
 const streams = exports.test_streams;
 
+// TODO: we want to validate this better with check-schema.
+// The data should mostly be representative here, but we don't
+// really exercise it in our tests yet.
+const message_detail = {
+    type: "stream",
+    mentioned: false,
+    sender_id: test_user.id,
+    stream_id: streams.devel.test_id,
+};
+
 exports.test_realm_emojis = {
     101: {
         id: "101",
@@ -330,6 +340,13 @@ exports.fixtures = {
         op: "update",
         property: "notifications_stream_id",
         value: 42,
+    },
+
+    realm__update__org_type: {
+        type: "realm",
+        op: "update",
+        property: "org_type",
+        value: 50,
     },
 
     realm__update__signup_notifications_stream_id: {
@@ -674,6 +691,16 @@ exports.fixtures = {
         all: false,
     },
 
+    update_message_flags__read_remove: {
+        type: "update_message_flags",
+        op: "remove",
+        operation: "remove",
+        flag: "read",
+        messages: [888],
+        message_details: {888: message_detail},
+        all: false,
+    },
+
     update_message_flags__starred_add: {
         type: "update_message_flags",
         op: "add",
@@ -701,6 +728,7 @@ exports.fixtures = {
             description: "mobile folks",
             members: [1],
             is_system_group: false,
+            subgroups: [2],
         },
     },
 
@@ -788,6 +816,13 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "dense_mode",
+        value: true,
+    },
+
+    user_settings__display_emoji_reaction_users: {
+        type: "user_settings",
+        op: "update",
+        property: "display_emoji_reaction_users",
         value: true,
     },
 

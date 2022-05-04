@@ -299,7 +299,7 @@ alternatives first:
 ### Avoid `cast()`
 
 The [`cast`
-function](https://mypy.readthedocs.io/en/stable/casts.html) lets you
+function](https://mypy.readthedocs.io/en/stable/type_narrowing.html#casts) lets you
 provide an annotation that Mypy will not verify. Obviously, this is
 completely unsafe in general.
 
@@ -504,7 +504,7 @@ unfortunately give up some type safety by falling back to
 ## Troubleshooting advice
 
 All of our linters, including mypy, are designed to only check files
-that have been added in git (this is by design, since it means you
+that have been added in Git (this is by design, since it means you
 have untracked files in your Zulip checkout safely). So if you get a
 `mypy` error like this after adding a new file that is referenced by
 the existing codebase:

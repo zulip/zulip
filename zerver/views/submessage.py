@@ -4,7 +4,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import do_add_submessage, verify_submessage_sender
+from zerver.actions.submessage import do_add_submessage, verify_submessage_sender
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
 from zerver.lib.request import REQ, has_request_variables

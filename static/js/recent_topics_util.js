@@ -21,8 +21,7 @@ export function is_in_focus() {
         is_visible() &&
         !compose_state.composing() &&
         !popovers.any_active() &&
-        !overlays.is_active() &&
-        !overlays.is_modal_open() &&
+        !overlays.is_overlay_or_modal_open() &&
         !$(".home-page-input").is(":focus")
     );
 }

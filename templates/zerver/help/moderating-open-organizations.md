@@ -1,7 +1,7 @@
 # Moderating open organizations
 
 An **open organization** is one where
-[anyone can join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
+[anyone can join without an invitation](/help/restrict-account-creation#set-whether-invitations-are-required-to-join).
 Moderation is a big part of making an open community work.
 
 ## Prevention
@@ -9,7 +9,7 @@ Moderation is a big part of making an open community work.
 Zulip has many features designed to simplify moderation by preventing
 problematic behavior:
 
-* [Disallow disposable email addresses](/help/allow-anyone-to-join-without-an-invitation)
+* [Disallow disposable email addresses](/help/restrict-account-creation#dont-allow-disposable-domains)
   or [require users to log in via GitHub or GitLab](/help/configure-authentication-methods).
 * Restrict who can [create streams](/help/configure-who-can-create-streams),
   [create bots](/help/restrict-bot-creation), [send private
@@ -53,13 +53,11 @@ organization's policy choices.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
   [delete custom emoji](/help/custom-emoji#delete-custom-emoji).
 
-## In the works
+## Public access option
 
-* **Delete spammer**. This will wipe the user from your Zulip, by deleting
-  all their messages and reactions, banning them, etc.
-* **New users join as guests**. This will allow users joining via open
-  registration to have extremely limited permissions by default, but still
-  enough permissions to ask the core team a question or to get a feel for your
-  community.
-* **Public archive**. This will give a read-only view of selected streams,
-  removing the need in some organizations for having open registration.
+{!web-public-streams-intro.md!}
+
+## Related articles
+
+* [Setting up your organization](/help/getting-your-organization-started-with-zulip)
+* [Public access option](/help/public-access-option)

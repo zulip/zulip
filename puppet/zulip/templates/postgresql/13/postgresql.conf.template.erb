@@ -818,14 +818,17 @@ effective_io_concurrency = <%= @effective_io_concurrency %>
 listen_addresses = <%= @listen_addresses %>
 <% end -%>
 
-<% if @replication != '' || (@replication_primary != '' && @replication_user != '') -%>
-# Replication
+<% if @s3_backups_bucket != '' -%>
+# Streaming backups and replication
 max_wal_senders = 5
 archive_mode = on
 archive_command = '/usr/bin/timeout 10m /usr/local/bin/env-wal-g wal-push %p'
 restore_command = '/usr/local/bin/env-wal-g wal-fetch "%f" "%p"'
 <% if @replication_primary != '' && @replication_user != '' -%>
-primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user %>'
+primary_conninfo = 'host=<%= @replication_primary %> user=<%= @replication_user -%>
+<% if @replication_password != '' %> password=<%= @replication_password %><% end -%>
+<% if @ssl_mode != '' %> sslmode=<%= @ssl_mode %><% end -%>
+'
 <% end -%>
 <% end -%>
 

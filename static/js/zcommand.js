@@ -1,12 +1,11 @@
 import $ from "jquery";
 
-import marked from "../third/marked/lib/marked";
-
 import * as channel from "./channel";
 import * as common from "./common";
 import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
+import * as markdown from "./markdown";
 import * as scroll_bar from "./scroll_bar";
 
 /*
@@ -65,9 +64,9 @@ export function switch_to_light_theme() {
         on_success(data) {
             dark_theme.disable();
             feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -87,9 +86,9 @@ export function switch_to_dark_theme() {
         on_success(data) {
             dark_theme.enable();
             feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -109,9 +108,9 @@ export function enter_fluid_mode() {
         on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({
@@ -131,9 +130,9 @@ export function enter_fixed_mode() {
         on_success(data) {
             scroll_bar.set_layout_width();
             feedback_widget.show({
-                populate(container) {
-                    const rendered_msg = marked(data.msg).trim();
-                    container.html(rendered_msg);
+                populate($container) {
+                    const rendered_msg = markdown.parse_non_message(data.msg);
+                    $container.html(rendered_msg);
                 },
                 on_undo() {
                     send({

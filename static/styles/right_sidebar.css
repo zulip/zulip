@@ -137,6 +137,7 @@
 
     &.user-with-count .unread_count {
         display: block;
+        margin-left: 4px;
     }
 }
 
@@ -254,8 +255,7 @@
         margin-bottom: 10px;
     }
 
-    ul,
-    ol {
-        margin-left: 0;
+    hr {
+        width: 90%;
     }
 }

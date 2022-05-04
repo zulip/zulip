@@ -23,7 +23,7 @@ the development environment][authentication-dev-server].
 - After making changes, you'll often want to run the
   [linters](../testing/linters.md) and relevant [test
   suites](../testing/testing.md). Consider using our [Git pre-commit
-  hook](../git/zulip-tools.html#set-up-git-repo-script) to
+  hook](../git/zulip-tools.md#set-up-git-repo-script) to
   automatically lint whenever you make a commit.
 - All of our test suites are designed to support quickly testing just
   a single file or test case, which you should take advantage of to
@@ -93,7 +93,7 @@ See the mobile project's documentation on [using a development server
 for mobile development][mobile-dev-server].
 
 [rest-api]: https://zulip.com/api/rest
-[authentication-dev-server]: ./authentication.md
+[authentication-dev-server]: authentication.md
 [django-runserver]: https://docs.djangoproject.com/en/3.2/ref/django-admin/#runserver
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md

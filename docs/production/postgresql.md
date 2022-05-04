@@ -10,7 +10,7 @@ included with the base operating system (E.g. PostgreSQL 12 on Ubuntu
 PostgreSQL releases [upgrade to PostgreSQL 14][upgrade-postgresql], as
 we may drop support for older PostgreSQL in a future release.
 
-[upgrade-postgresql]: ../production/upgrade-or-modify.html#upgrading-postgresql
+[upgrade-postgresql]: upgrade-or-modify.md#upgrading-postgresql
 
 #### Remote PostgreSQL database
 

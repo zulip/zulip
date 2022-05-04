@@ -1,7 +1,8 @@
 import time
-from typing import Optional, Sequence
+from typing import Callable, Optional, Sequence, TypeVar
 
 import orjson
+from asgiref.sync import async_to_sync
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -20,10 +21,19 @@ from zerver.models import Client, UserProfile, get_client, get_user_profile_by_i
 from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
 from zerver.tornado.exceptions import BadEventQueueIdError
 
+T = TypeVar("T")
+
+
+def in_tornado_thread(f: Callable[[], T]) -> T:
+    async def wrapped() -> T:
+        return f()
+
+    return async_to_sync(wrapped)()
+
 
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
-    process_notification(orjson.loads(request.POST["data"]))
+    in_tornado_thread(lambda: process_notification(orjson.loads(request.POST["data"])))
     return json_success(request)
 
 
@@ -39,7 +49,7 @@ def cleanup_event_queue(
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
-    client.cleanup()
+    in_tornado_thread(client.cleanup)
     return json_success(request)
 
 
@@ -65,9 +75,9 @@ def get_events_backend(
     # user_client is intended only for internal Django=>Tornado requests
     # and thus shouldn't be documented for external use.
     user_client: Optional[Client] = REQ(
-        converter=get_client, default=None, intentionally_undocumented=True
+        converter=lambda var_name, s: get_client(s), default=None, intentionally_undocumented=True
     ),
-    last_event_id: Optional[int] = REQ(converter=int, default=None),
+    last_event_id: Optional[int] = REQ(json_validator=check_int, default=None),
     queue_id: Optional[str] = REQ(default=None),
     # apply_markdown, client_gravatar, all_public_streams, and various
     # other parameters are only used when registering a new queue via this
@@ -153,7 +163,7 @@ def get_events_backend(
             user_settings_object=user_settings_object,
         )
 
-    result = fetch_events(events_query)
+    result = in_tornado_thread(lambda: fetch_events(events_query))
     if "extra_log_data" in result:
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None

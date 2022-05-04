@@ -32,6 +32,8 @@ ENDC = "\033[0m"
 BLACKONYELLOW = "\x1b[0;30;43m"
 WHITEONRED = "\x1b[0;37;41m"
 BOLDRED = "\x1B[1;31m"
+BOLD = "\x1b[1m"
+GRAY = "\x1b[90m"
 
 GREEN = "\x1b[32m"
 YELLOW = "\x1b[33m"
@@ -227,19 +229,14 @@ def release_deployment_lock() -> None:
 
 def run(args: Sequence[str], **kwargs: Any) -> None:
     # Output what we're doing in the `set -x` style
-    print("+ {}".format(" ".join(map(shlex.quote, args))), flush=True)
+    print(f"+ {shlex.join(args)}", flush=True)
 
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
         print(
-            WHITEONRED
-            + "Error running a subcommand of {}: {}".format(
-                sys.argv[0],
-                " ".join(map(shlex.quote, args)),
-            )
-            + ENDC
+            WHITEONRED + f"Error running a subcommand of {sys.argv[0]}: {shlex.join(args)}" + ENDC
         )
         print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
@@ -258,7 +255,7 @@ def log_management_command(cmd: Sequence[str], log_path: str) -> None:
     logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
 
-    logger.info("Ran %s", " ".join(map(shlex.quote, cmd)))
+    logger.info("Ran %s", shlex.join(cmd))
 
 
 def get_environment() -> str:
@@ -421,7 +418,7 @@ def parse_os_release() -> Dict[str, str]:
     developers, but we avoid using it, as it is not available on
     RHEL-based platforms.
     """
-    distro_info = {}  # type: Dict[str, str]
+    distro_info: Dict[str, str] = {}
     with open("/etc/os-release") as fp:
         for line in fp:
             line = line.strip()
@@ -567,7 +564,7 @@ def get_config_file() -> configparser.RawConfigParser:
 
 
 def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
-    return shlex.split(get_config(config_file, "deployment", "deploy_options", "").strip())
+    return shlex.split(get_config(config_file, "deployment", "deploy_options", ""))
 
 
 def run_psql_as_postgres(
@@ -575,20 +572,7 @@ def run_psql_as_postgres(
     sql_query: str,
 ) -> None:
     dbname = get_config(config_file, "postgresql", "database_name", "zulip")
-    subcmd = " ".join(
-        map(
-            shlex.quote,
-            [
-                "psql",
-                "-v",
-                "ON_ERROR_STOP=1",
-                "-d",
-                dbname,
-                "-c",
-                sql_query,
-            ],
-        )
-    )
+    subcmd = shlex.join(["psql", "-v", "ON_ERROR_STOP=1", "-d", dbname, "-c", sql_query])
     subprocess.check_call(["su", "postgres", "-c", subcmd])
 
 
@@ -663,7 +647,7 @@ def listening_publicly(port: int) -> List[str]:
     lines = (
         subprocess.check_output(
             ["/bin/ss", "-Hnl", filter],
-            universal_newlines=True,
+            text=True,
             # Hosts with IPv6 disabled will get "RTNETLINK answers: Invalid
             # argument"; eat stderr to hide that
             stderr=subprocess.DEVNULL,

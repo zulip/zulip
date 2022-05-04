@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar, cast
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar
 from unittest.mock import Mock, patch
 
 import orjson
@@ -22,6 +22,7 @@ from django.http import HttpResponse
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
+from typing_extensions import ParamSpec
 
 from corporate.lib.stripe import (
     DEFAULT_INVOICE_DAYS_UNTIL_DUE,
@@ -80,15 +81,14 @@ from corporate.models import (
     get_current_plan_by_realm,
     get_customer_by_realm,
 )
-from zerver.lib.actions import (
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import (
     do_activate_mirror_dummy_user,
-    do_create_realm,
     do_create_user,
-    do_deactivate_realm,
-    do_deactivate_user,
-    do_reactivate_realm,
     do_reactivate_user,
 )
+from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
@@ -104,6 +104,8 @@ from zerver.models import (
 from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
 
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 STRIPE_FIXTURES_DIR = "corporate/tests/stripe_fixtures"
 
@@ -191,7 +193,7 @@ def read_stripe_fixture(
             requestor.interpret_response(
                 fixture["http_body"], fixture["http_status"], fixture["headers"]
             )
-        return stripe.util.convert_to_stripe_object(fixture)  # type: ignore[attr-defined] # missing from stubs
+        return stripe.util.convert_to_stripe_object(fixture)
 
     return _read_stripe_fixture
 
@@ -334,12 +336,10 @@ MOCKED_STRIPE_FUNCTION_NAMES = [
 
 
 def mock_stripe(
-    tested_timestamp_fields: Sequence[str] = [], generate: Optional[bool] = None
-) -> Callable[[CallableT], CallableT]:
-    def _mock_stripe(decorated_function: CallableT) -> CallableT:
+    tested_timestamp_fields: Sequence[str] = [], generate: bool = settings.GENERATE_STRIPE_FIXTURES
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
+    def _mock_stripe(decorated_function: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         generate_fixture = generate
-        if generate_fixture is None:
-            generate_fixture = settings.GENERATE_STRIPE_FIXTURES
         if generate_fixture:  # nocoverage
             assert stripe.api_key
         for mocked_function_name in MOCKED_STRIPE_FUNCTION_NAMES:
@@ -350,17 +350,14 @@ def mock_stripe(
                 )  # nocoverage
             else:
                 side_effect = read_stripe_fixture(decorated_function.__name__, mocked_function_name)
-            decorated_function = cast(
-                CallableT,
-                patch(
-                    mocked_function_name,
-                    side_effect=side_effect,
-                    autospec=mocked_function_name.endswith(".refresh"),
-                )(decorated_function),
-            )
+            decorated_function = patch(
+                mocked_function_name,
+                side_effect=side_effect,
+                autospec=mocked_function_name.endswith(".refresh"),
+            )(decorated_function)
 
         @wraps(decorated_function)
-        def wrapped(*args: object, **kwargs: object) -> object:
+        def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             if generate_fixture:  # nocoverage
                 delete_fixture_data(decorated_function)
                 val = decorated_function(*args, **kwargs)
@@ -369,7 +366,7 @@ def mock_stripe(
             else:
                 return decorated_function(*args, **kwargs)
 
-        return cast(CallableT, wrapped)
+        return wrapped
 
     return _mock_stripe
 
@@ -3860,7 +3857,7 @@ class StripeWebhookEndpointTest(ZulipTestCase):
             "data": {"object": {"object": "checkout.session", "id": "stripe_session_id"}},
         }
 
-        expected_error_message = fr"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version(1991-02-20)."
+        expected_error_message = rf"Mismatch between billing system Stripe API version({STRIPE_API_VERSION}) and Stripe webhook event API version(1991-02-20)."
         with self.assertLogs("corporate.stripe", "ERROR") as error_log:
             self.client_post(
                 "/stripe/webhook/",

@@ -8,7 +8,7 @@ from typing import Iterable, List
 
 
 def expand_reqs_helper(fpath: str) -> List[str]:
-    result = []  # type: List[str]
+    result: List[str] = []
 
     with open(fpath) as f:
         for line in f:

@@ -107,9 +107,9 @@ export function schedule_message(request = compose.create_message_object()) {
 }
 
 export function do_set_reminder_for_message(message_id, timestamp) {
-    const row = $(`[zid='${CSS.escape(message_id)}']`);
+    const $row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
-        row.find(".alert-msg")
+        $row.find(".alert-msg")
             .text($t({defaultMessage: "Reminder not set!"}))
             .css("display", "block")
             .css("color", "#b94a48")
@@ -137,7 +137,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
         return;
     }
 
-    const link_to_msg = hash_util.by_conversation_and_time_uri(message);
+    const link_to_msg = hash_util.by_conversation_and_time_url(message);
     const reminder_msg_content =
         message.raw_content + "\n\n[Link to conversation](" + link_to_msg + ")";
     let reminder_message = {
@@ -155,7 +155,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
     reminder_message.to_user_ids = people.email_list_to_user_ids_string(emails);
 
     function success() {
-        row.find(".alert-msg")
+        $row.find(".alert-msg")
             .text($t({defaultMessage: "Reminder set!"}))
             .css("display", "block")
             .delay(1000)

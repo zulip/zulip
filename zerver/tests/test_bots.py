@@ -8,11 +8,9 @@ from django.core import mail
 from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-from zerver.lib.actions import (
-    do_change_stream_permission,
-    do_deactivate_user,
-    do_set_realm_property,
-)
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.users import do_change_can_create_users, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
@@ -166,7 +164,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -332,7 +330,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -424,7 +422,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -498,7 +496,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=2):
+        with self.tornado_redirected_to_list(events, expected_num_events=4):
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")
@@ -1028,6 +1026,45 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, get_realm("zulip"))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
+    def test_patch_bot_owner_of_bot_with_can_create_users(self) -> None:
+        """
+        can_create_users is granted to organizations upon approval, and thus
+        should be thought of as something that only organization owners should
+        have control over.
+        """
+        cordelia = self.example_user("cordelia")
+
+        self.login("hamlet")
+        self.create_bot()
+
+        bot_realm = get_realm("zulip")
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_user = get_user(bot_email, bot_realm)
+
+        do_change_can_create_users(bot_user, True)
+
+        self.logout()
+        # iago is an ordinary organization administrator, and thus doesn't have
+        # sufficient permissions to change ownership of this bot.
+        self.login("iago")
+        bot_info = {
+            "bot_owner_id": cordelia.id,
+        }
+        result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
+        self.assert_json_error(
+            result,
+            "Must be an organization owner",
+        )
+
+        self.logout()
+        # desdemona is the organization owner and should be allowed to change the bot's ownership.
+        self.login("desdemona")
+        result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
+        self.assert_json_success(result)
+
+        bot_user.refresh_from_db()
+        self.assertEqual(bot_user.bot_owner, cordelia)
+
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -1408,7 +1445,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "short_name": "hambot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://foo.bar.com").decode(),
-            "service_interface": Service.GENERIC,
+            "interface_type": Service.GENERIC,
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)

@@ -167,6 +167,7 @@ from zerver.views.typing import send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
+    serve_file_download_backend,
     serve_file_url_backend,
     serve_local_file_unauthed,
     upload_file_backend,
@@ -175,7 +176,11 @@ from zerver.views.user_groups import (
     add_user_group,
     delete_user_group,
     edit_user_group,
+    get_is_user_group_member,
+    get_subgroups_of_user_group,
     get_user_group,
+    get_user_group_members,
+    update_subgroups_of_user_group,
     update_user_group_backend,
 )
 from zerver.views.user_settings import (
@@ -370,9 +375,20 @@ v1_api_and_json_patterns = [
     rest_path("user_groups", GET=get_user_group),
     rest_path("user_groups/create", POST=add_user_group),
     rest_path("user_groups/<int:user_group_id>", PATCH=edit_user_group, DELETE=delete_user_group),
-    rest_path("user_groups/<int:user_group_id>/members", POST=update_user_group_backend),
+    rest_path(
+        "user_groups/<int:user_group_id>/members",
+        GET=get_user_group_members,
+        POST=update_user_group_backend,
+    ),
+    rest_path(
+        "user_groups/<int:user_group_id>/subgroups",
+        POST=update_subgroups_of_user_group,
+        GET=get_subgroups_of_user_group,
+    ),
+    rest_path(
+        "user_groups/<int:user_group_id>/members/<int:user_id>", GET=get_is_user_group_member
+    ),
     # users/me -> zerver.views.user_settings
-    rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
     rest_path("users/me/avatar", POST=set_avatar_backend, DELETE=delete_avatar_backend),
     # users/me/hotspots -> zerver.views.hotspots
     rest_path(
@@ -633,6 +649,11 @@ i18n_urls = [
     path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
     path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
     path(
+        "case-studies/asciidoctor/",
+        landing_view,
+        {"template_name": "zerver/asciidoctor-case-study.html"},
+    ),
+    path(
         "for/communities/",
         landing_view,
         {"template_name": "zerver/for-communities.html"},
@@ -642,6 +663,8 @@ i18n_urls = [
         "for/working-groups-and-communities/",
         RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
+    path("use-cases/", landing_view, {"template_name": "zerver/use-cases.html"}),
+    path("self-hosting/", landing_view, {"template_name": "zerver/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
 ]
 
@@ -669,12 +692,19 @@ urls += [
         name="local_file_unauthed",
     ),
     rest_path(
+        "user_uploads/download/<realm_id_str>/<path:filename>",
+        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
+    ),
+    rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
-        GET=(serve_file_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     # This endpoint redirects to camo; it requires an exception for the
     # same reason.
-    rest_path("thumbnail", GET=(backend_serve_thumbnail, {"override_api_url_scheme"})),
+    rest_path(
+        "thumbnail",
+        GET=(backend_serve_thumbnail, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+    ),
     # Avatars have the same constraint because their URLs are included
     # in API data structures used by both the mobile and web clients.
     rest_path(
@@ -723,6 +753,11 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
+    # The endpoint for regenerating and obtaining a new API key
+    # should only be available by authenticating with the current
+    # API key - as we consider access to the API key sensitive
+    # and just having a logged-in session should be insufficient.
+    rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
 ]
 
 # View for uploading messages from email mirror
@@ -870,6 +905,10 @@ urls += [
     path(
         "help/night-mode",
         RedirectView.as_view(url="/help/dark-theme", permanent=True),
+    ),
+    path(
+        "help/web-public-streams",
+        RedirectView.as_view(url="/help/public-access-option", permanent=True),
     ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),

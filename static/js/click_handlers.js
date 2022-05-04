@@ -17,6 +17,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_error from "./compose_error";
 import * as compose_state from "./compose_state";
 import {media_breakpoints_num} from "./css_variables";
+import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
@@ -26,9 +27,11 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
+import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -36,10 +39,12 @@ import * as rows from "./rows";
 import * as server_events from "./server_events";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
+import * as spectators from "./spectators";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 import * as ui_util from "./ui_util";
+import {parse_html} from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_profile from "./user_profile";
 import * as util from "./util";
@@ -97,49 +102,49 @@ export function initialize() {
         initialize_long_tap();
     }
 
-    function is_clickable_message_element(target) {
+    function is_clickable_message_element($target) {
         // This function defines all the elements within a message
         // body that have UI behavior other than starting a reply.
 
         // Links should be handled by the browser.
-        if (target.closest("a").length > 0) {
+        if ($target.closest("a").length > 0) {
             return true;
         }
 
         // Forms for message editing contain input elements
-        if (target.is("textarea") || target.is("input")) {
+        if ($target.is("textarea") || $target.is("input")) {
             return true;
         }
 
         // Widget for adjusting the height of a message.
-        if (target.is("div.message_length_controller")) {
+        if ($target.is("div.message_length_controller")) {
             return true;
         }
 
         // Inline image and twitter previews.
-        if (target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
+        if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
             return true;
         }
 
         // UI elements for triggering message editing or viewing edit history.
-        if (target.is("i.edit_content_button") || target.is(".message_edit_notice")) {
+        if ($target.is("i.edit_content_button") || $target.is(".message_edit_notice")) {
             return true;
         }
 
         // For spoilers, allow clicking either the header or elements within it
-        if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
+        if ($target.is(".spoiler-header") || $target.parents(".spoiler-header").length > 0) {
             return true;
         }
 
         // Ideally, this should be done via ClipboardJS, but it doesn't support
         // feature of stopPropagation once clicked.
         // See https://github.com/zenorocha/clipboard.js/pull/475
-        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
+        if ($target.is(".copy_codeblock") || $target.parents(".copy_codeblock").length > 0) {
             return true;
         }
 
         // Don't select message on clicking message control buttons.
-        if (target.parents(".message_controls").length > 0) {
+        if ($target.parents(".message_controls").length > 0) {
             return true;
         }
 
@@ -165,8 +170,8 @@ export function initialize() {
             return;
         }
 
-        const row = $(this).closest(".message_row");
-        const id = rows.id(row);
+        const $row = $(this).closest(".message_row");
+        const id = rows.id($row);
 
         if (message_edit.is_editing(id)) {
             // Clicks on a message being edited shouldn't trigger a reply.
@@ -209,6 +214,11 @@ export function initialize() {
         e.stopPropagation();
         popovers.hide_all();
 
+        if (page_params.is_spectator) {
+            spectators.login_to_access();
+            return;
+        }
+
         const message_id = rows.id($(this).closest(".message_row"));
         const message = message_store.get(message_id);
         message_flags.toggle_starred_and_update_server(message);
@@ -216,6 +226,12 @@ export function initialize() {
 
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
+
+        if (page_params.is_spectator) {
+            spectators.login_to_access();
+            return;
+        }
+
         emoji_picker.hide_emoji_popover();
         const local_id = $(this).attr("data-reaction-id");
         const message_id = rows.get_message_id(this);
@@ -241,54 +257,61 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_url(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
     });
 
+    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        navigate.to_end();
+    });
+
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
-        const row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
-        message_lists.current.select_id(rows.id(row));
-        message_edit.start(row);
+        const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        message_lists.current.select_id(rows.id($row));
+        message_edit.start($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.start_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.start_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_save", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.save_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.save_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".topic_edit_cancel", function (e) {
-        const recipient_row = $(this).closest(".recipient_row");
-        message_edit.end_inline_topic_edit(recipient_row);
+        const $recipient_row = $(this).closest(".recipient_row");
+        message_edit.end_inline_topic_edit($recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.save_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.save_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.end_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_close", function (e) {
-        const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
+        const $row = $(this).closest(".message_row");
+        message_edit.end_message_row_edit($row);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -299,8 +322,8 @@ export function initialize() {
     });
     $(".message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
-        const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
-        $(send_status).stop(true).fadeOut(200);
+        const $send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
+        $($send_status).stop(true).fadeOut(200);
     });
     $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
@@ -311,44 +334,44 @@ export function initialize() {
 
     $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-        const row = rows.get_closest_row(e.target);
-        const $msg_edit_content = row.find(".message_edit_content");
+        const $row = rows.get_closest_row(e.target);
+        const $msg_edit_content = $row.find(".message_edit_content");
         const content = $msg_edit_content.val();
         $msg_edit_content.hide();
-        row.find(".markdown_preview").hide();
-        row.find(".undo_markdown_preview").show();
-        row.find(".preview_message_area").show();
+        $row.find(".markdown_preview").hide();
+        $row.find(".undo_markdown_preview").show();
+        $row.find(".preview_message_area").show();
 
         compose.render_and_show_preview(
-            row.find(".markdown_preview_spinner"),
-            row.find(".preview_content"),
+            $row.find(".markdown_preview_spinner"),
+            $row.find(".preview_content"),
             content,
         );
     });
 
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-        const row = rows.get_closest_row(e.target);
-        row.find(".message_edit_content").show();
-        row.find(".undo_markdown_preview").hide();
-        row.find(".preview_message_area").hide();
-        row.find(".preview_content").empty();
-        row.find(".markdown_preview").show();
+        const $row = rows.get_closest_row(e.target);
+        $row.find(".message_edit_content").show();
+        $row.find(".undo_markdown_preview").hide();
+        $row.find(".preview_message_area").hide();
+        $row.find(".preview_content").empty();
+        $row.find(".markdown_preview").show();
     });
 
     // RESOLVED TOPICS
     $("body").on("click", ".message_header .on_hover_topic_resolve", (e) => {
         e.stopPropagation();
-        const recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row(recipient_row);
+        const $recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
 
     $("body").on("click", ".message_header .on_hover_topic_unresolve", (e) => {
         e.stopPropagation();
-        const recipient_row = $(e.target).closest(".recipient_row");
-        const message_id = rows.id_for_recipient_row(recipient_row);
+        const $recipient_row = $(e.target).closest(".recipient_row");
+        const message_id = rows.id_for_recipient_row($recipient_row);
         const topic_name = $(e.target).attr("data-topic-name");
         message_edit.toggle_resolve_topic(message_id, topic_name);
     });
@@ -375,6 +398,13 @@ export function initialize() {
     });
 
     // RECENT TOPICS
+
+    $("#recent_topics_table").on("click", ".participant_profile", function (e) {
+        const participant_user_id = Number.parseInt($(this).attr("data-user-id"), 10);
+        e.stopPropagation();
+        const user = people.get_by_user_id(participant_user_id);
+        popovers.show_user_info_popover(this, user);
+    });
 
     $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
@@ -414,6 +444,11 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        if (page_params.is_spectator) {
+            // Filter buttons are disabled for spectator.
+            return;
+        }
+
         recent_topics_ui.change_focused_element($(e.target), "click");
         recent_topics_ui.set_filter(e.currentTarget.dataset.filter);
         recent_topics_ui.update_filters_view();
@@ -431,9 +466,9 @@ export function initialize() {
         e.stopPropagation();
         // The element's parent may re-render while it is being passed to
         // other functions, so, we get topic_key first.
-        const topic_row = $(e.target).closest("tr");
-        const topic_key = topic_row.attr("id").slice("recent_topics:".length - 1);
-        const topic_row_index = topic_row.index();
+        const $topic_row = $(e.target).closest("tr");
+        const topic_key = $topic_row.attr("id").slice("recent_topics:".length - 1);
+        const topic_row_index = $topic_row.index();
         recent_topics_ui.focus_clicked_element(
             topic_row_index,
             recent_topics_ui.COLUMNS.topic,
@@ -461,8 +496,8 @@ export function initialize() {
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
-        const group = rows.get_closest_group(narrow_link_elem);
-        const msg_id = rows.id_for_recipient_row(group);
+        const $group = rows.get_closest_group(narrow_link_elem);
+        const msg_id = rows.id_for_recipient_row($group);
 
         const nearest = message_lists.current.get(msg_id);
         const selected = message_lists.current.selected_message();
@@ -492,6 +527,12 @@ export function initialize() {
 
     // SIDEBARS
 
+    $(".right-sidebar .login_button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = hash_util.build_login_link();
+    });
+
     $("#userlist-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -517,9 +558,9 @@ export function initialize() {
     $("#user_presences")
         .expectOne()
         .on("click", ".selectable_sidebar_block", (e) => {
-            const li = $(e.target).parents("li");
+            const $li = $(e.target).parents("li");
 
-            activity.narrow_for_user({li});
+            activity.narrow_for_user({$li});
 
             e.preventDefault();
             e.stopPropagation();
@@ -527,7 +568,7 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
-    function do_render_buddy_list_tooltip(elem, title_data) {
+    function do_render_buddy_list_tooltip($elem, title_data) {
         let placement = "left";
         let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -535,15 +576,14 @@ export function initialize() {
             // This will default to "bottom" placement for this tooltip.
             placement = "auto";
         }
-        tippy(elem[0], {
+        tippy($elem[0], {
             // Quickly display and hide right sidebar tooltips
             // so that they don't stick and overlap with
             // each other.
             delay: 0,
-            content: render_buddy_list_tooltip_content(title_data),
+            content: () => parse_html(render_buddy_list_tooltip_content(title_data)),
             arrow: true,
             placement,
-            allowHTML: true,
             showOnCreate: true,
             onHidden: (instance) => {
                 instance.destroy();
@@ -581,22 +621,22 @@ export function initialize() {
     // BUDDY LIST TOOLTIPS
     $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
         e.stopPropagation();
-        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
-        const user_id_string = elem.attr("data-user-id");
+        const $elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = $elem.attr("data-user-id");
         const title_data = buddy_data.get_title_data(user_id_string, false);
-        do_render_buddy_list_tooltip(elem.parent(), title_data);
+        do_render_buddy_list_tooltip($elem.parent(), title_data);
     });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
         e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const user_ids_string = elem.attr("data-user-ids-string");
+        const $elem = $(e.currentTarget);
+        const user_ids_string = $elem.attr("data-user-ids-string");
         // This converts from 'true' in the DOM to true.
-        const is_group = JSON.parse(elem.attr("data-is-group"));
+        const is_group = JSON.parse($elem.attr("data-is-group"));
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
-        do_render_buddy_list_tooltip(elem, title_data);
+        do_render_buddy_list_tooltip($elem, title_data);
     });
 
     // MISC
@@ -767,16 +807,14 @@ export function initialize() {
         hotspots.close_hotspot_icon(this);
 
         // show popover
-        const hotspot_name = $(e.target)
-            .closest(".hotspot-icon")
-            .attr("id")
-            .replace("hotspot_", "")
-            .replace("_icon", "");
+        const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
+            $(e.target).closest(".hotspot-icon").attr("id"),
+        );
         const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
         overlays.open_overlay({
             name: overlay_name,
-            overlay: $(`#${CSS.escape(overlay_name)}`),
+            $overlay: $(`#${CSS.escape(overlay_name)}`),
             on_close: function () {
                 // close popover
                 $(this).css({display: "block"});
@@ -800,7 +838,7 @@ export function initialize() {
 
         const overlay_name = $(this).closest(".hotspot.overlay").attr("id");
 
-        const hotspot_name = overlay_name.replace("hotspot_", "").replace("_overlay", "");
+        const [, hotspot_name] = /^hotspot_(.*)_overlay$/.exec(overlay_name);
 
         // Comment below to disable marking hotspots as read in production
         hotspots.post_hotspot_as_read(hotspot_name);
@@ -821,6 +859,20 @@ export function initialize() {
         // TODO: Remove this once Bootstrap is upgraded.
         // See: https://github.com/zulip/zulip/pull/18720
         $(".modal.in").removeClass("in");
+    });
+
+    // GEAR MENU
+
+    $("body").on("click", "#gear-menu .dark-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.enable();
+    });
+
+    $("body").on("click", "#gear-menu .light-theme", (e) => {
+        // Allow propagation to close gear menu.
+        e.preventDefault();
+        dark_theme.disable();
     });
 
     // MAIN CLICK HANDLER

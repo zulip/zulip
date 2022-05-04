@@ -85,7 +85,8 @@ pre {
      */
     font-family: "Source Sans 3", sans-serif !important;
 
-    .tippy-box {
+    /* Affects all tippy tooltips not using any theme. */
+    .tippy-box:not([data-theme]) {
         background-color: hsl(0, 0%, 12%);
 
         &[data-placement^="top"] {
@@ -460,7 +461,8 @@ button:focus,
 .new-style label.checkbox input[type="checkbox"]:focus ~ span,
 i.fa:focus,
 i.zulip-icon:focus,
-.auto-select:focus {
+.auto-select:focus,
+[role="button"]:focus {
     outline: 2px solid hsl(215, 47%, 50%);
     /* TODO: change solid to auto once the Chromium bug #1105822 is fixed */
 }
@@ -659,6 +661,10 @@ strong {
     color: inherit;
 }
 
+#gear-menu .light-theme {
+    display: none;
+}
+
 /* .dropdown-menu from v2.3.2
    + https://github.com/zulip/zulip/commit/7a3a3be7e547d3e8f0ed00820835104867f2433d
    basic idea of this fix is to remove decorations from :hover and apply them only
@@ -687,8 +693,6 @@ strong {
                     hsl(200, 100%, 40%),
                     hsl(200, 100%, 35%)
                 );
-                background-repeat: repeat-x;
-                filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
             /* styles defined for user_circle here only deal with positioning of user_presence_circle
             in typeahead list in order to ensure they are rendered correctly in in all screen sizes.
@@ -715,9 +719,7 @@ strong {
             hsl(200, 100%, 40%),
             hsl(200, 100%, 35%)
         );
-        background-repeat: repeat-x;
         outline: 0;
-        filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
 
         .user_circle_empty {
             border-color: hsl(0, 0%, 25%);
@@ -733,9 +735,8 @@ strong {
 li.actual-dropdown-menu > a:focus {
     color: hsl(0, 0%, 100%);
     text-decoration: none;
-    background-color: none;
+    background-color: transparent;
     background-image: none;
-    background-repeat: repeat-x;
     filter: none;
     outline: 0;
 }
@@ -1083,7 +1084,12 @@ td.pointer {
 
     .recipient-row-stream-icon {
         font-size: 12px;
-        line-height: 17px;
+        line-height: 12px;
+    }
+
+    .zulip-icon.zulip-icon-globe {
+        position: relative;
+        top: 1px;
     }
 
     &:hover {
@@ -1136,6 +1142,20 @@ td.pointer {
 .recipient_bar_icon {
     padding-left: 2px;
     padding-right: 2px;
+}
+
+#mark_as_read_turned_off_banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    #mark_as_read_turned_off_content {
+        margin: 0;
+    }
+
+    .mark_as_read_close {
+        margin-top: 6px;
+    }
 }
 
 .summary_row {
@@ -1266,6 +1286,7 @@ td.pointer {
 .unread_marker {
     display: block;
     position: absolute;
+    height: 100%;
     left: 2px;
     top: 0;
     opacity: 0;
@@ -1352,15 +1373,7 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.on_hover_topic_edit,
-.on_hover_topic_read {
-    opacity: 0.2;
-}
-
-.always_visible_topic_edit {
-    opacity: 0.7;
-}
-
+.always_visible_topic_edit,
 .on_hover_topic_unmute {
     opacity: 0.7;
 
@@ -1370,6 +1383,8 @@ td.pointer {
     }
 }
 
+.on_hover_topic_edit,
+.on_hover_topic_read,
 .on_hover_topic_unresolve,
 .on_hover_topic_resolve,
 .on_hover_topic_mute {
@@ -1378,15 +1393,6 @@ td.pointer {
     &:hover {
         cursor: pointer;
         opacity: 0.7;
-    }
-}
-
-.on_hover_topic_edit,
-.always_visible_topic_edit,
-.on_hover_topic_read {
-    &:hover {
-        cursor: pointer;
-        opacity: 1;
     }
 }
 
@@ -1725,6 +1731,12 @@ div.focused_table {
         display: none;
     }
 
+    .zulip-icon.zulip-icon-globe {
+        font-size: 14px;
+        position: relative;
+        top: 1px;
+    }
+
     .sub_count,
     .stream,
     & > span {
@@ -1751,6 +1763,11 @@ div.focused_table {
         .fa {
             margin: 0 3px 0 5px;
 
+            &.fa-lock {
+                position: relative;
+                top: 0.5px;
+            }
+
             .fa-envelope {
                 font-size: 14px;
                 margin: 0 5px;
@@ -1770,6 +1787,12 @@ div.focused_table {
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
         padding-right: calc(3px + 10px);
+    }
+
+    .divider {
+        color: hsl(0, 0%, 88%);
+        font-size: 20px;
+        margin: 0 3px;
     }
 
     .sub_count,
@@ -2289,12 +2312,7 @@ div.floating_recipient {
     color: hsl(0, 0%, 100%);
 }
 
-#user-checkboxes-simplebar-wrapper {
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-#user-checkboxes {
+#create_stream_subscribers {
     margin-top: 10px;
 
     .checkbox {
@@ -2305,24 +2323,6 @@ div.floating_recipient {
             float: none;
         }
     }
-}
-
-#stream-checkboxes {
-    margin-top: 10px;
-    display: none;
-
-    .checkbox {
-        display: block;
-    }
-
-    input[type="checkbox"] {
-        margin: 5px 0;
-        float: none;
-    }
-}
-
-#copy-from-stream-expand-collapse {
-    cursor: pointer;
 }
 
 .sub_button_row {
@@ -2472,6 +2472,17 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 1px;
 }
 
+#custom-invite-expiration-time {
+    #custom-expiration-time-input {
+        width: 5ch;
+        margin-right: 15px;
+    }
+
+    #custom-expiration-time-unit {
+        width: auto;
+    }
+}
+
 .empty_feed_notice {
     padding: 3em 1em;
     text-align: center;
@@ -2498,11 +2509,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     emoji's width decreases and causes it to break. */
     min-width: 16px;
     /* In most contexts, status emoji appear immediately after a name
-      field with no margin. Position the status emoji with 2px of left
+      field with no margin. Position the status emoji with 3px of left
       margin to space it from the name, and set no right margin so
       that any components to the right appear equally distant as they
       would be from a name. */
-    margin-left: 2px;
+    margin-left: 3px;
     margin-right: 0;
 }
 
@@ -3038,7 +3049,7 @@ select.inline_select_topic_edit {
 
     .include-sender .message_controls {
         background: none !important;
-        padding: none !important;
+        padding: 0 !important;
         border: none !important;
     }
 
@@ -3085,8 +3096,63 @@ select.inline_select_topic_edit {
     }
 }
 
-#login_to_access_modal {
-    .modal__content p {
-        margin: 0;
+#scroll-to-bottom-button-container {
+    display: none;
+    z-index: 3;
+    position: absolute;
+    bottom: 41px;
+    right: 0;
+
+    #scroll-to-bottom-button-clickable-area {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover #scroll-to-bottom-button {
+            background: hsl(240, 96%, 68%);
+        }
+
+        #scroll-to-bottom-button {
+            text-align: center;
+            width: 40px;
+            height: 40px;
+            background: hsl(240, 96%, 68%, 0.5);
+            border-radius: 50%;
+
+            i {
+                color: hsl(0, 0%, 100%);
+                margin: 0 auto;
+                font-size: 21px;
+                position: relative;
+                top: 8px;
+            }
+        }
+    }
+}
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
     }
 }

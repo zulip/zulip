@@ -1,16 +1,14 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-import atexit
 import copy
 import logging
 import os
 import random
-import signal
-import sys
 import time
 import traceback
 from collections import deque
 from dataclasses import asdict
+from functools import lru_cache
 from typing import (
     AbstractSet,
     Any,
@@ -22,11 +20,11 @@ from typing import (
     List,
     Mapping,
     MutableMapping,
-    NoReturn,
     Optional,
     Sequence,
     Set,
     Tuple,
+    TypedDict,
     Union,
     cast,
 )
@@ -35,10 +33,9 @@ import orjson
 import tornado.ioloop
 from django.conf import settings
 from django.utils.translation import gettext as _
-from typing_extensions import TypedDict
+from tornado import autoreload
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
-from zerver.decorator import cachify
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
@@ -46,7 +43,6 @@ from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
-from zerver.tornado.autoreload import add_reload_hook
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.handlers import (
@@ -250,7 +246,7 @@ class ClientDescriptor:
             heartbeat_event = create_heartbeat_event()
             self.add_event(heartbeat_event)
 
-        ioloop = tornado.ioloop.IOLoop.instance()
+        ioloop = tornado.ioloop.IOLoop.current()
         interval = HEARTBEAT_MIN_FREQ_SECS + random.randint(0, 10)
         if self.client_type_name != "API: heartbeat test":
             self._timeout_handle = ioloop.call_later(interval, timeout_callback)
@@ -269,7 +265,7 @@ class ClientDescriptor:
         self.current_handler_id = None
         self.current_client_name = None
         if self._timeout_handle is not None:
-            ioloop = tornado.ioloop.IOLoop.instance()
+            ioloop = tornado.ioloop.IOLoop.current()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
 
@@ -604,25 +600,10 @@ def send_restart_events(immediate: bool = False) -> None:
             client.add_event(event)
 
 
-def handle_sigterm(server: tornado.httpserver.HTTPServer) -> NoReturn:
-    logging.warning("Got SIGTERM, shutting down...")
-    server.stop()
-    tornado.ioloop.IOLoop.instance().stop()
-    sys.exit(1)
-
-
-def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
-    ioloop = tornado.ioloop.IOLoop.instance()
-
+async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
     if not settings.TEST_SUITE:
         load_event_queues(port)
-        atexit.register(dump_event_queues, port)
-        # Make sure we dump event queues even if we exit via signal
-        signal.signal(
-            signal.SIGTERM,
-            lambda signum, frame: ioloop.add_callback_from_signal(handle_sigterm, server),
-        )
-        add_reload_hook(lambda: dump_event_queues(port))
+        autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
     try:
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
@@ -630,9 +611,7 @@ def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) -> None:
         pass
 
     # Set up event queue garbage collection
-    pc = tornado.ioloop.PeriodicCallback(
-        lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS, ioloop
-    )
+    pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
     pc.start()
 
     send_restart_events(immediate=settings.DEVELOPMENT)
@@ -938,7 +917,7 @@ def process_message_event(
     message_type: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
-    @cachify
+    @lru_cache(maxsize=None)
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
         return MessageDict.finalize_payload(
             wide_dict,
@@ -1129,50 +1108,62 @@ def process_message_update_event(
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
 
+    # TODO/compatibility: Modern `update_message` events contain the
+    # rendering_only key, which indicates whether the update is a link
+    # preview rendering update (not a human action). However, because
+    # events may be in the notify_tornado queue at the time we
+    # upgrade, we need the below logic to compute rendering_only based
+    # on the `user_id` key not being present in legacy events that
+    # would have had rendering_only set. Remove this check when one
+    # can no longer directly update from 4.x to main.
+    if "rendering_only" in event_template:
+        rendering_only_update = event_template["rendering_only"]
+    else:
+        rendering_only_update = "user_id" not in event_template
+
     for user_data in users:
         user_profile_id = user_data["id"]
-
-        if "user_id" in event_template:
-            # The user we'll get here will be the sender if the message's
-            # content was edited, and the editor for topic edits. That's
-            # the correct "acting_user" for both cases.
-            acting_user_id = event_template["user_id"]
-        else:
-            # Events without a `user_id` field come from the do_update_embedded_data
-            # code path, and represent just rendering previews; there should be no
-            # real content changes.
-            # It doesn't really matter what we set `acting_user_id` in this case,
-            # because we know this event isn't meant to send notifications.
-            acting_user_id = user_profile_id
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
         for key in user_data.keys():
             if key != "id":
                 user_event[key] = user_data[key]
 
-        flags: Collection[str] = user_event["flags"]
-        user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
-            user_id=user_profile_id,
-            flags=flags,
-            private_message=(stream_name is None),
-            online_push_user_ids=online_push_user_ids,
-            pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
-            pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
-            stream_push_user_ids=stream_push_user_ids,
-            stream_email_user_ids=stream_email_user_ids,
-            wildcard_mention_user_ids=wildcard_mention_user_ids,
-            muted_sender_user_ids=muted_sender_user_ids,
-            all_bot_user_ids=all_bot_user_ids,
-        )
+        # Events where `rendering_only_update` is True come from the
+        # do_update_embedded_data code path, and represent rendering
+        # previews; there should be no real content changes.
+        # Therefore, we know only events where `rendering_only_update`
+        # is False possibly send notifications.
+        if not rendering_only_update:
 
-        maybe_enqueue_notifications_for_message_update(
-            user_notifications_data=user_notifications_data,
-            message_id=message_id,
-            acting_user_id=acting_user_id,
-            private_message=(stream_name is None),
-            presence_idle=(user_profile_id in presence_idle_user_ids),
-            prior_mentioned=(user_profile_id in prior_mention_user_ids),
-        )
+            # The user we'll get here will be the sender if the message's
+            # content was edited, and the editor for topic edits. That's
+            # the correct "acting_user" for both cases.
+            acting_user_id = event_template["user_id"]
+
+            flags: Collection[str] = user_event["flags"]
+            user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_profile_id,
+                flags=flags,
+                private_message=(stream_name is None),
+                online_push_user_ids=online_push_user_ids,
+                pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
+                pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+                stream_push_user_ids=stream_push_user_ids,
+                stream_email_user_ids=stream_email_user_ids,
+                wildcard_mention_user_ids=wildcard_mention_user_ids,
+                muted_sender_user_ids=muted_sender_user_ids,
+                all_bot_user_ids=all_bot_user_ids,
+            )
+
+            maybe_enqueue_notifications_for_message_update(
+                user_notifications_data=user_notifications_data,
+                message_id=message_id,
+                acting_user_id=acting_user_id,
+                private_message=(stream_name is None),
+                presence_idle=(user_profile_id in presence_idle_user_ids),
+                prior_mentioned=(user_profile_id in prior_mention_user_ids),
+            )
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event(user_event):

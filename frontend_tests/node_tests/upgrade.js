@@ -11,7 +11,7 @@ const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
-const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
+const template = fs.readFileSync("templates/corporate/upgrade.html", "utf8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 const location = set_global("location", {});
@@ -63,6 +63,7 @@ run_test("initialize", ({override_rewire}) => {
                     };
                     success_callback();
                     break;
+                /* istanbul ignore next */
                 default:
                     throw new Error("Unhandled case");
             }
@@ -84,9 +85,6 @@ run_test("initialize", ({override_rewire}) => {
 
     $("input[type=radio][name=schedule]:checked").val = () =>
         document.querySelector("input[type=radio][name=schedule]:checked").value;
-
-    $("#autopay-form").data = (key) =>
-        document.querySelector("#autopay-form").getAttribute("data-" + key);
 
     const initialize_function = $.get_initialize_function();
     initialize_function();

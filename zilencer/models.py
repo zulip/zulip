@@ -63,10 +63,18 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
     server: RemoteZulipServer = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device
-    user_id: int = models.BigIntegerField(db_index=True)
+    user_id: int = models.BigIntegerField(null=True)
+    user_uuid: UUID = models.UUIDField(null=True)
 
     class Meta:
-        unique_together = ("server", "user_id", "kind", "token")
+        unique_together = [
+            # These indexes rely on the property that in Postgres,
+            # NULL != NULL in the context of unique indexes, so multiple
+            # rows with the same values in these columns can exist
+            # if one of them is NULL.
+            ("server", "user_id", "kind", "token"),
+            ("server", "user_uuid", "kind", "token"),
+        ]
 
     def __str__(self) -> str:
         return f"<RemotePushDeviceToken {self.server} {self.user_id}>"

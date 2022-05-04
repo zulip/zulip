@@ -80,7 +80,10 @@ function update_last_full_update(end_times) {
         month: "long",
         day: "numeric",
     });
-    const locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
+    const locale_time = update_time.toLocaleTimeString(undefined, {
+        hour: "numeric",
+        minute: "numeric",
+    });
 
     $("#id_last_full_update").text(locale_time + " on " + locale_date);
     $("#id_last_full_update").closest(".last-update").show();
@@ -537,14 +540,14 @@ function populate_messages_sent_by_client(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button(button) {
+    function set_user_button($button) {
         $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
-    function set_time_button(button) {
+    function set_time_button($button) {
         $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
     $("#pie_messages_sent_by_client button").on("click", function () {
@@ -667,14 +670,14 @@ function populate_messages_sent_by_message_type(data) {
     draw_plot();
 
     // Click handlers
-    function set_user_button(button) {
+    function set_user_button($button) {
         $("#pie_messages_sent_by_type button[data-user]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
-    function set_time_button(button) {
+    function set_time_button($button) {
         $("#pie_messages_sent_by_type button[data-time]").removeClass("selected");
-        button.addClass("selected");
+        $button.addClass("selected");
     }
 
     $("#pie_messages_sent_by_type button").on("click", function () {

@@ -6,28 +6,32 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
 
-from zerver.context_processors import get_valid_realm_from_request
-from zerver.decorator import require_member_or_admin, require_realm_admin
-from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
-from zerver.lib.actions import (
-    check_change_bot_full_name,
-    check_change_full_name,
-    check_remove_custom_profile_field_value,
-    do_change_avatar_fields,
+from zerver.actions.bots import (
     do_change_bot_owner,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
-    do_change_user_role,
-    do_create_user,
-    do_deactivate_user,
-    do_reactivate_user,
+)
+from zerver.actions.create_user import do_create_user, do_reactivate_user, notify_created_bot
+from zerver.actions.custom_profile_fields import (
+    check_remove_custom_profile_field_value,
+    do_update_user_custom_profile_data_if_changed,
+)
+from zerver.actions.user_settings import (
+    check_change_bot_full_name,
+    check_change_full_name,
+    do_change_avatar_fields,
     do_regenerate_api_key,
+)
+from zerver.actions.users import (
+    do_change_user_role,
+    do_deactivate_user,
     do_update_bot_config_data,
     do_update_outgoing_webhook_service,
-    do_update_user_custom_profile_data_if_changed,
-    notify_created_bot,
 )
+from zerver.context_processors import get_valid_realm_from_request
+from zerver.decorator import require_member_or_admin, require_realm_admin
+from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.email_validation import email_allowed_for_realm
@@ -36,16 +40,19 @@ from zerver.lib.exceptions import (
     JsonableError,
     MissingAuthenticationError,
     OrganizationOwnerRequired,
+    RateLimited,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
+from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_response_from_error, json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.types import ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
     access_bot_by_id,
+    access_user_by_email,
     access_user_by_id,
     add_service,
     check_bot_creation_policy,
@@ -82,7 +89,6 @@ from zerver.models import (
     Service,
     Stream,
     UserProfile,
-    get_user,
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
     get_user_including_cross_realm,
@@ -247,6 +253,15 @@ def avatar(
         # interact with fake email addresses anyway.
         if is_email:
             raise MissingAuthenticationError()
+
+        if settings.RATE_LIMITING:
+            try:
+                unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
+                rate_limit_spectator_attachment_access_by_file(unique_avatar_key)
+            except RateLimited:
+                return json_response_from_error(
+                    RateLimited(_("Too many attempts, please try after some time."))
+                )
     else:
         realm = maybe_user_profile.realm
 
@@ -544,14 +559,12 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success(request, data={"bots": list(map(bot_info, bot_profiles))})
 
 
-@has_request_variables
-def get_members_backend(
-    request: HttpRequest,
+def get_user_data(
     user_profile: UserProfile,
-    user_id: Optional[int] = None,
-    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
-    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
-) -> HttpResponse:
+    include_custom_profile_fields: bool,
+    client_gravatar: bool,
+    target_user: Optional[UserProfile] = None,
+) -> Dict[str, Any]:
     """
     The client_gravatar field here is set to True by default assuming that clients
     can compute their own gravatars, which saves bandwidth. This is more important of
@@ -563,11 +576,6 @@ def get_members_backend(
         # If email addresses are only available to administrators,
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
-    target_user = None
-    if user_id is not None:
-        target_user = access_user_by_id(
-            user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
-        )
 
     members = get_raw_user_data(
         realm,
@@ -582,6 +590,25 @@ def get_members_backend(
         data: Dict[str, Any] = {"user": members[target_user.id]}
     else:
         data = {"members": [members[k] for k in members]}
+
+    return data
+
+
+@has_request_variables
+def get_members_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    user_id: Optional[int] = None,
+    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=True),
+) -> HttpResponse:
+    target_user = None
+    if user_id is not None:
+        target_user = access_user_by_id(
+            user_profile, user_id, allow_deactivated=True, allow_bots=True, for_admin=False
+        )
+
+    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
 
     return json_success(request, data)
 
@@ -629,7 +656,18 @@ def create_user_backend(
     if not check_password_strength(password):
         raise JsonableError(PASSWORD_TOO_WEAK_ERROR)
 
-    target_user = do_create_user(email, password, realm, full_name, acting_user=user_profile)
+    target_user = do_create_user(
+        email,
+        password,
+        realm,
+        full_name,
+        # Explicitly set tos_version=None. For servers that have
+        # configured Terms of Service, this means that users created
+        # via this mechanism will be prompted to accept the Terms of
+        # Service on first login.
+        tos_version=None,
+        acting_user=user_profile,
+    )
     return json_success(request, data={"user_id": target_user.id})
 
 
@@ -675,13 +713,9 @@ def get_user_by_email(
     include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
     client_gravatar: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
-    realm = user_profile.realm
+    target_user = access_user_by_email(
+        user_profile, email, allow_deactivated=True, allow_bots=True, for_admin=False
+    )
 
-    target_user = None
-    if email is not None:
-        try:
-            target_user = get_user(email, realm)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("No such user"))
-
-    return get_members_backend(request, user_profile, user_id=target_user.id)
+    data = get_user_data(user_profile, include_custom_profile_fields, client_gravatar, target_user)
+    return json_success(request, data)

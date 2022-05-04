@@ -171,3 +171,12 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)
+
+
+def create_users(
+    realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int] = None
+) -> None:
+    user_set = set()
+    for full_name, email in name_list:
+        user_set.add((email, full_name, True))
+    bulk_create_users(realm, user_set, bot_type)

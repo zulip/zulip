@@ -13,8 +13,16 @@ const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-set_global("document", {});
+set_global("document", {
+    querySelector: () => {},
+});
 set_global("navigator", {});
+set_global(
+    "ResizeObserver",
+    class ResizeObserver {
+        observe() {}
+    },
+);
 
 const fake_now = 555;
 
@@ -29,7 +37,7 @@ const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const stream_subscribers_ui = mock_esm("../../static/js/stream_subscribers_ui");
+const subscriber_api = mock_esm("../../static/js/subscriber_api");
 const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
@@ -136,10 +144,6 @@ test_ui("send_message", ({override, override_rewire}) => {
         stub_state.reify_message_id_checked = 0;
         return stub_state;
     }
-
-    set_global("setTimeout", (func) => {
-        func();
-    });
 
     override(server_events, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
@@ -277,8 +281,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", (spinner) => {
-        assert.equal(spinner.selector, "#compose-send-button .loader");
+    override(loading, "show_button_spinner", ($spinner) => {
+        assert.equal($spinner.selector, "#compose-send-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -325,8 +329,8 @@ test_ui("finish", ({override, override_rewire}) => {
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
-    override(loading, "show_button_spinner", (spinner) => {
-        assert.equal(spinner.selector, "#compose-send-button .loader");
+    override(loading, "show_button_spinner", ($spinner) => {
+        assert.equal($spinner.selector, "#compose-send-button .loader");
         show_button_spinner_called = true;
     });
 
@@ -421,10 +425,15 @@ test_ui("initialize", ({override, override_rewire}) => {
     });
 
     let xmlhttprequest_checked = false;
-    set_global("XMLHttpRequest", function () {
-        this.upload = true;
-        xmlhttprequest_checked = true;
-    });
+    set_global(
+        "XMLHttpRequest",
+        class XMLHTTPRequest {
+            upload = true;
+            constructor() {
+                xmlhttprequest_checked = true;
+            }
+        },
+    );
     $("#compose .compose_upload_file").addClass("notdisplayed");
 
     page_params.max_file_upload_size_mib = 512;
@@ -495,6 +504,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
 
     let set_focused_recipient_checked = false;
     let update_all_called = false;
+    let update_narrow_to_recipient_visibility_called = false;
 
     override_rewire(compose_fade, "set_focused_recipient", (msg_type) => {
         assert.equal(msg_type, "private");
@@ -505,15 +515,23 @@ test_ui("update_fade", ({override, override_rewire}) => {
         update_all_called = true;
     });
 
+    override(compose_actions, "update_narrow_to_recipient_visibility", () => {
+        update_narrow_to_recipient_visibility_called = true;
+    });
+
     compose_state.set_message_type(false);
     keyup_handler_func();
     assert.ok(!set_focused_recipient_checked);
     assert.ok(!update_all_called);
+    assert.ok(update_narrow_to_recipient_visibility_called);
+
+    update_narrow_to_recipient_visibility_called = false;
 
     compose_state.set_message_type("private");
     keyup_handler_func();
     assert.ok(set_focused_recipient_checked);
     assert.ok(update_all_called);
+    assert.ok(update_narrow_to_recipient_visibility_called);
 });
 
 test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
@@ -544,27 +562,28 @@ test_ui("on_events", ({override, override_rewire}) => {
     override(rendered_markdown, "update_elements", () => {});
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        const container = $.create("fake " + container_sel);
+        const $container = $.create("fake " + container_sel);
         let container_removed = false;
 
-        container.remove = () => {
+        $container.remove = () => {
             container_removed = true;
         };
 
-        const target = $.create("fake click target (" + target_sel + ")");
+        const $target = $.create("fake click target (" + target_sel + ")");
 
-        target.set_parents_result(parent, container);
+        $target.set_parents_result(parent, $container);
 
         const event = {
             preventDefault: noop,
             stopPropagation: noop,
-            target,
+            // FIXME: event.target should not be a jQuery object
+            target: $target,
         };
 
         const helper = {
             event,
-            container,
-            target,
+            $container,
+            $target,
             container_was_removed: () => container_removed,
         };
 
@@ -613,9 +632,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         };
         people.add_active_user(mentioned);
 
-        let invite_user_to_stream_called = false;
-        override(stream_subscribers_ui, "invite_user_to_stream", (user_ids, sub, success) => {
-            invite_user_to_stream_called = true;
+        override(subscriber_api, "add_user_ids_to_stream", (user_ids, sub, success) => {
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
             success(); // This will check success callback path.
@@ -627,16 +644,18 @@ test_ui("on_events", ({override, override_rewire}) => {
             ".compose_invite_user",
         );
 
-        helper.container.data = (field) => {
-            if (field === "user-id") {
-                return "34";
+        helper.$container.data = (field) => {
+            switch (field) {
+                case "user-id":
+                    return "34";
+                case "stream-id":
+                    return "102";
+                /* istanbul ignore next */
+                default:
+                    throw new Error(`Unknown field ${field}`);
             }
-            if (field === "stream-id") {
-                return "102";
-            }
-            throw new Error(`Unknown field ${field}`);
         };
-        helper.target.prop("disabled", false);
+        helper.$target.prop("disabled", false);
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub(subscription);
@@ -652,7 +671,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         assert.ok(helper.container_was_removed());
         assert.ok(!$("#compose_invite_users").visible());
-        assert.ok(invite_user_to_stream_called);
         assert.ok(all_invite_children_called);
     })();
 
@@ -731,9 +749,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
-        $("#compose .file_input").clone = (param) => {
-            assert.ok(param);
-        };
         let compose_file_input_clicked = false;
         $("#compose .file_input").on("click", () => {
             compose_file_input_clicked = true;
@@ -809,8 +824,8 @@ test_ui("on_events", ({override, override_rewire}) => {
 
             function test(func, param) {
                 let destroy_indicator_called = false;
-                override(loading, "destroy_indicator", (spinner) => {
-                    assert.equal(spinner, $("#compose .markdown_preview_spinner"));
+                override(loading, "destroy_indicator", ($spinner) => {
+                    assert.equal($spinner, $("#compose .markdown_preview_spinner"));
                     destroy_indicator_called = true;
                 });
                 setup_mock_markdown_contains_backend_only_syntax(current_message, true);
@@ -847,8 +862,8 @@ test_ui("on_events", ({override, override_rewire}) => {
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
 
-        override(loading, "make_indicator", (spinner) => {
-            assert.equal(spinner.selector, "#compose .markdown_preview_spinner");
+        override(loading, "make_indicator", ($spinner) => {
+            assert.equal($spinner.selector, "#compose .markdown_preview_spinner");
             make_indicator_called = true;
         });
 

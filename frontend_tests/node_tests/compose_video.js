@@ -14,18 +14,29 @@ const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
+set_global("document", {
+    querySelector: () => {},
+});
 set_global("navigator", {});
+set_global(
+    "ResizeObserver",
+    class ResizeObserver {
+        observe() {}
+    },
+);
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");
+const compose_closed = zrequire("compose_closed_ui");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
-    const elem = $("#below-compose-content .video_link");
-    elem.toggle = (show) => {
+    const $elem = $("#below-compose-content .video_link");
+    $elem.toggle = (show) => {
+        /* istanbul ignore if */
         if (show) {
-            elem.show();
+            $elem.show();
         } else {
-            elem.hide();
+            $elem.hide();
         }
     };
 }
@@ -67,42 +78,44 @@ test("videos", ({override, override_rewire}) => {
     compose.initialize();
 
     (function test_no_provider_video_link_compose_clicked() {
-        let called = false;
-
-        const textarea = $.create("target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
-        override_rewire(compose_ui, "insert_syntax_and_focus", () => {
-            called = true;
-        });
+        override_rewire(
+            compose_ui,
+            "insert_syntax_and_focus",
+            /* istanbul ignore next */
+            () => {
+                throw new Error("unexpected insert_syntax_and_focus call");
+            },
+        );
 
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
         handler(ev);
-        assert.ok(!called);
     })();
 
     (function test_jitsi_video_link_compose_clicked() {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("jitsi-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("jitsi-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -133,14 +146,14 @@ test("videos", ({override, override_rewire}) => {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("zoom-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("zoom-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -179,14 +192,14 @@ test("videos", ({override, override_rewire}) => {
         let syntax_to_insert;
         let called = false;
 
-        const textarea = $.create("bbb-target-stub");
-        textarea.set_parents_result(".message_edit_form", []);
+        const $textarea = $.create("bbb-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
             stopPropagation: () => {},
             target: {
-                to_$: () => textarea,
+                to_$: () => $textarea,
             },
         };
 
@@ -201,8 +214,11 @@ test("videos", ({override, override_rewire}) => {
         page_params.realm_video_chat_provider =
             realm_available_video_chat_providers.big_blue_button.id;
 
+        compose_closed.get_recipient_label = () => "a";
+
         channel.get = (options) => {
             assert.equal(options.url, "/json/calls/bigbluebutton/create");
+            assert.equal(options.data.meeting_name, "a meeting");
             options.success({
                 url: "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
             });

@@ -46,8 +46,8 @@ export function populate_playgrounds(playgrounds_data) {
         return;
     }
 
-    const playgrounds_table = $("#admin_playgrounds_table").expectOne();
-    ListWidget.create(playgrounds_table, playgrounds_data, {
+    const $playgrounds_table = $("#admin_playgrounds_table").expectOne();
+    ListWidget.create($playgrounds_table, playgrounds_data, {
         name: "playgrounds_list",
         modifier(playground) {
             return render_admin_playground_list({
@@ -61,7 +61,7 @@ export function populate_playgrounds(playgrounds_data) {
             });
         },
         filter: {
-            element: playgrounds_table.closest(".settings-section").find(".search"),
+            $element: $playgrounds_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
                 return (
                     item.name.toLowerCase().includes(value) ||
@@ -69,16 +69,16 @@ export function populate_playgrounds(playgrounds_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar(playgrounds_table);
+                ui.reset_scrollbar($playgrounds_table);
             },
         },
-        parent_container: $("#playground-settings").expectOne(),
+        $parent_container: $("#playground-settings").expectOne(),
         init_sort: [sort_pygments_language],
         sort_fields: {
             pygments_language: sort_pygments_language,
             playground_name: sort_playground_name,
         },
-        simplebar_container: $("#playground-settings .progressive-table-wrapper"),
+        $simplebar_container: $("#playground-settings .progressive-table-wrapper"),
     });
 }
 
@@ -94,12 +94,12 @@ function build_page() {
     $(".admin_playgrounds_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        const btn = $(this);
+        const $btn = $(this);
 
         channel.del({
-            url: "/json/realm/playgrounds/" + encodeURIComponent(btn.attr("data-playground-id")),
+            url: "/json/realm/playgrounds/" + encodeURIComponent($btn.attr("data-playground-id")),
             error(xhr) {
-                ui_report.generic_row_button_error(xhr, btn);
+                ui_report.generic_row_button_error(xhr, $btn);
             },
             // There is no need for an on-success action here since the row is removed by the
             // `realm_playgrounds` events handler which builds the playground list again.
@@ -111,10 +111,10 @@ function build_page() {
         .on("submit", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const playground_status = $("#admin-playground-status");
-            const add_playground_button = $(".new-playground-form button");
-            add_playground_button.prop("disabled", true);
-            playground_status.hide();
+            const $playground_status = $("#admin-playground-status");
+            const $add_playground_button = $(".new-playground-form button");
+            $add_playground_button.prop("disabled", true);
+            $playground_status.hide();
             const data = {
                 name: $("#playground_name").val(),
                 pygments_language: $("#playground_pygments_language").val(),
@@ -127,10 +127,10 @@ function build_page() {
                     $("#playground_pygments_language").val("");
                     $("#playground_name").val("");
                     $("#playground_url_prefix").val("");
-                    add_playground_button.prop("disabled", false);
+                    $add_playground_button.prop("disabled", false);
                     ui_report.success(
                         $t_html({defaultMessage: "Custom playground added!"}),
-                        playground_status,
+                        $playground_status,
                         3000,
                     );
                     // FIXME: One thing to note here is that the "view code in playground"
@@ -144,21 +144,21 @@ function build_page() {
                     // take this up later.
                 },
                 error(xhr) {
-                    add_playground_button.prop("disabled", false);
+                    $add_playground_button.prop("disabled", false);
                     ui_report.error(
                         $t_html({defaultMessage: "Failed"}),
                         xhr,
-                        playground_status,
+                        $playground_status,
                         3000,
                     );
                 },
             });
         });
 
-    const search_pygments_box = $("#playground_pygments_language");
+    const $search_pygments_box = $("#playground_pygments_language");
     let language_labels = new Map();
 
-    search_pygments_box.typeahead({
+    $search_pygments_box.typeahead({
         source(query) {
             language_labels = realm_playground.get_pygments_typeahead_list(query);
             return Array.from(language_labels.keys());
@@ -175,8 +175,8 @@ function build_page() {
         },
     });
 
-    search_pygments_box.on("click", (e) => {
-        search_pygments_box.typeahead("lookup").trigger("select");
+    $search_pygments_box.on("click", (e) => {
+        $search_pygments_box.typeahead("lookup").trigger("select");
         e.preventDefault();
         e.stopPropagation();
     });

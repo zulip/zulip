@@ -2,7 +2,9 @@ import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 
+import * as resolved_topic from "../shared/js/resolved_topic";
 import render_bookend from "../templates/bookend.hbs";
+import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
@@ -18,7 +20,7 @@ import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as message_viewport from "./message_viewport";
+import * as $message_viewport from "./message_viewport";
 import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
@@ -56,25 +58,50 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function message_was_only_moved(message) {
-    // Returns true if the message has had its stream/topic edited
-    // (i.e. the message was moved), but its content has not been
-    // edited.
+function analyze_edit_history(message) {
+    // Returns a dict of booleans that describe the message's history:
+    //   * edited: if the message has had its content edited
+    //   * moved: if the message has had its stream/topic edited
+    //   * resolve_toggled: if the message has had a topic resolve/unresolve edit
+    let edited = false;
     let moved = false;
+    let resolve_toggled = false;
+
     if (message.edit_history !== undefined) {
         for (const edit_history_event of message.edit_history) {
             if (edit_history_event.prev_content) {
-                return false;
+                edited = true;
             }
-            if (
-                util.get_edit_event_prev_topic(edit_history_event) ||
-                edit_history_event.prev_stream
-            ) {
+
+            if (edit_history_event.prev_stream) {
+                moved = true;
+            }
+
+            if (edit_history_event.prev_topic) {
+                // We know it has a topic edit. Now we need to determine if
+                // it was a true move or a resolve/unresolve.
+                if (
+                    resolved_topic.is_resolved(edit_history_event.topic) &&
+                    edit_history_event.topic.slice(2) === edit_history_event.prev_topic
+                ) {
+                    // Resolved.
+                    resolve_toggled = true;
+                    continue;
+                }
+                if (
+                    resolved_topic.is_resolved(edit_history_event.prev_topic) &&
+                    edit_history_event.prev_topic.slice(2) === edit_history_event.topic
+                ) {
+                    // Unresolved.
+                    resolve_toggled = true;
+                    continue;
+                }
+                // Otherwise, it is a real topic rename/move.
                 moved = true;
             }
         }
     }
-    return moved;
+    return {edited, moved, resolve_toggled};
 }
 
 function render_group_display_date(group, message_container) {
@@ -184,7 +211,7 @@ function populate_group_from_message_container(group, message_container) {
         } else {
             group.stream_id = sub.stream_id;
         }
-        group.topic_is_resolved = group.topic.startsWith(message_edit.RESOLVED_TOPIC_PREFIX);
+        group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
         group.topic_muted = muted_topics.is_topic_muted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
@@ -240,8 +267,11 @@ export class MessageListView {
     }
 
     _add_msg_edited_vars(message_container) {
-        // This adds variables to message_container object which calculate bools for
-        // checking position of "EDITED" label as well as the edited timestring
+        // This function computes data on whether the message was edited
+        // and in what ways, as well as where the "EDITED" or "MOVED"
+        // label should be located, and adds it to the message_container
+        // object.
+        //
         // The bools can be defined only when the message is edited
         // (or when the `last_edit_timestr` is defined). The bools are:
         //   * `edited_in_left_col`      -- when label appears in left column.
@@ -251,18 +281,29 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        if (last_edit_timestr !== undefined) {
-            message_container.last_edit_timestr = last_edit_timestr;
-            message_container.edited_in_left_col = !include_sender && !is_hidden;
-            message_container.edited_alongside_sender = include_sender && !status_message;
-            message_container.edited_status_msg = include_sender && status_message;
-            message_container.moved = message_was_only_moved(message_container.msg);
-        } else {
+        const edit_history_details = analyze_edit_history(message_container.msg);
+
+        if (
+            last_edit_timestr === undefined ||
+            !(edit_history_details.moved || edit_history_details.edited)
+        ) {
+            // For messages whose edit history at most includes
+            // resolving topics, we don't display an EDITED/MOVED
+            // notice at all. (The message actions popover will still
+            // display an edit history option, so you can see when it
+            // was marked as resolved if you need to).
             delete message_container.last_edit_timestr;
             message_container.edited_in_left_col = false;
             message_container.edited_alongside_sender = false;
             message_container.edited_status_msg = false;
+            return;
         }
+
+        message_container.last_edit_timestr = last_edit_timestr;
+        message_container.edited_in_left_col = !include_sender && !is_hidden;
+        message_container.edited_alongside_sender = include_sender && !status_message;
+        message_container.edited_status_msg = include_sender && status_message;
+        message_container.moved = edit_history_details.moved && !edit_history_details.edited;
     }
 
     set_calculated_message_container_variables(message_container, is_revealed) {
@@ -399,10 +440,10 @@ export class MessageListView {
                 }
 
                 if (message_container.msg.stream) {
-                    message_container.stream_url = hash_util.by_stream_uri(
+                    message_container.stream_url = hash_util.by_stream_url(
                         message_container.msg.stream_id,
                     );
-                    message_container.topic_url = hash_util.by_stream_topic_uri(
+                    message_container.topic_url = hash_util.by_stream_topic_url(
                         message_container.msg.stream_id,
                         message_container.msg.topic,
                     );
@@ -571,10 +612,10 @@ export class MessageListView {
         return message_actions;
     }
 
-    _put_row(row) {
-        // row is a jQuery object wrapping one message row
-        if (row.hasClass("message_row")) {
-            this._rows.set(rows.id(row), row);
+    _put_row($row) {
+        // $row is a jQuery object wrapping one message row
+        if ($row.hasClass("message_row")) {
+            this._rows.set(rows.id($row), $row);
         }
     }
 
@@ -587,13 +628,23 @@ export class MessageListView {
         }
 
         for (const dom_row of $message_rows) {
-            const row = $(dom_row);
-            this._put_row(row);
-            this._post_process_single_row(row);
+            const $row = $(dom_row);
+            this._put_row($row);
+            this._post_process_single_row($row);
+        }
+
+        if (page_params.is_spectator) {
+            // For images that fail to load due to being rate limited or being denied access
+            // by server in general, we tell user to login to be able to view the image.
+            $message_rows.find(".message_inline_image img").on("error", (e) => {
+                $(e.target)
+                    .closest(".message_inline_image")
+                    .replaceWith(render_login_to_view_image_button());
+            });
         }
     }
 
-    _post_process_single_row(row) {
+    _post_process_single_row($row) {
         // For message formatting that requires some post-processing
         // (and is not possible to handle solely via CSS), this is
         // where we modify the content.  It is a goal to minimize how
@@ -601,19 +652,19 @@ export class MessageListView {
         // we should implement features with the Markdown processor,
         // HTML and CSS.
 
-        if (row.length !== 1) {
+        if ($row.length !== 1) {
             blueslip.error("programming error--expected single element");
         }
 
-        const content = row.find(".message_content");
+        const $content = $row.find(".message_content");
 
-        rendered_markdown.update_elements(content);
+        rendered_markdown.update_elements($content);
 
-        const id = rows.id(row);
-        message_edit.maybe_show_edit(row, id);
+        const id = rows.id($row);
+        message_edit.maybe_show_edit($row, id);
 
         submessage.process_submessages({
-            row,
+            $row,
             message_id: id,
         });
     }
@@ -652,14 +703,14 @@ export class MessageListView {
 
         const list = this.list; // for convenience
         const table_name = this.table_name;
-        const table = rows.get_table(table_name);
+        const $table = rows.get_table(table_name);
         let orig_scrolltop_offset;
 
         // If we start with the message feed scrolled up (i.e.
         // the bottom message is not visible), then we will respect
         // the user's current position after rendering, rather
         // than auto-scrolling.
-        const started_scrolled_up = message_viewport.is_scrolled_up();
+        const started_scrolled_up = $message_viewport.is_scrolled_up();
 
         // The messages we are being asked to render are shared with between
         // all messages lists. To prevent having both list views overwriting
@@ -672,7 +723,7 @@ export class MessageListView {
                 message.starred_status = $t({defaultMessage: "Star"});
             }
 
-            message.url = hash_util.by_conversation_and_time_uri(message);
+            message.url = hash_util.by_conversation_and_time_url(message);
 
             return {msg: message};
         });
@@ -701,10 +752,10 @@ export class MessageListView {
         const new_message_groups = this.build_message_groups(message_containers, this.table_name);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         let new_dom_elements = [];
-        let rendered_groups;
-        let dom_messages;
-        let last_message_row;
-        let last_group_row;
+        let $rendered_groups;
+        let $dom_messages;
+        let $last_message_row;
+        let $last_group_row;
 
         for (const message_container of message_containers) {
             this.message_containers.set(message_container.msg.id, message_container);
@@ -714,22 +765,22 @@ export class MessageListView {
         if (message_actions.prepend_groups.length > 0) {
             save_scroll_position();
 
-            rendered_groups = this._render_group({
+            $rendered_groups = this._render_group({
                 message_groups: message_actions.prepend_groups,
                 use_match_properties: this.list.is_search(),
                 table_name: this.table_name,
             });
 
-            dom_messages = rendered_groups.find(".message_row");
-            new_dom_elements = new_dom_elements.concat(rendered_groups);
+            $dom_messages = $rendered_groups.find(".message_row");
+            new_dom_elements = new_dom_elements.concat($rendered_groups);
 
-            this._post_process(dom_messages);
+            this._post_process($dom_messages);
 
             // The date row will be included in the message groups or will be
             // added in a rerendered in the group below
-            table.find(".recipient_row").first().prev(".date_row").remove();
-            table.prepend(rendered_groups);
-            condense.condense_and_collapse(dom_messages);
+            $table.find(".recipient_row").first().prev(".date_row").remove();
+            $table.prepend($rendered_groups);
+            condense.condense_and_collapse($dom_messages);
         }
 
         // Rerender message groups
@@ -737,22 +788,22 @@ export class MessageListView {
             save_scroll_position();
 
             for (const message_group of message_actions.rerender_groups) {
-                const old_message_group = $(`#${CSS.escape(message_group.message_group_id)}`);
+                const $old_message_group = $(`#${CSS.escape(message_group.message_group_id)}`);
                 // Remove the top date_row, we'll re-add it after rendering
-                old_message_group.prev(".date_row").remove();
+                $old_message_group.prev(".date_row").remove();
 
-                rendered_groups = this._render_group({
+                $rendered_groups = this._render_group({
                     message_groups: [message_group],
                     use_match_properties: this.list.is_search(),
                     table_name: this.table_name,
                 });
 
-                dom_messages = rendered_groups.find(".message_row");
+                $dom_messages = $rendered_groups.find(".message_row");
                 // Not adding to new_dom_elements it is only used for autoscroll
 
-                this._post_process(dom_messages);
-                old_message_group.replaceWith(rendered_groups);
-                condense.condense_and_collapse(dom_messages);
+                this._post_process($dom_messages);
+                $old_message_group.replaceWith($rendered_groups);
+                condense.condense_and_collapse($dom_messages);
             }
         }
 
@@ -767,8 +818,8 @@ export class MessageListView {
             const targets = message_actions.rerender_messages_next_same_sender;
 
             for (const message_container of targets) {
-                const row = this.get_row(message_container.msg.id);
-                $(row)
+                const $row = this.get_row(message_container.msg.id);
+                $($row)
                     .find("div.messagebox")
                     .toggleClass("next_is_same_sender", message_container.next_is_same_sender);
             }
@@ -776,19 +827,19 @@ export class MessageListView {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            last_message_row = table.find(".message_row").last().expectOne();
-            last_group_row = rows.get_message_recipient_row(last_message_row);
-            dom_messages = $(
+            $last_message_row = $table.find(".message_row").last().expectOne();
+            $last_group_row = rows.get_message_recipient_row($last_message_row);
+            $dom_messages = $(
                 message_actions.append_messages
                     .map((message_container) => this._get_message_template(message_container))
                     .join(""),
             ).filter(".message_row");
 
-            this._post_process(dom_messages);
-            last_group_row.append(dom_messages);
+            this._post_process($dom_messages);
+            $last_group_row.append($dom_messages);
 
-            condense.condense_and_collapse(dom_messages);
-            new_dom_elements = new_dom_elements.concat(dom_messages);
+            condense.condense_and_collapse($dom_messages);
+            new_dom_elements = new_dom_elements.concat($dom_messages);
         }
 
         // Add new message groups to the end
@@ -796,16 +847,16 @@ export class MessageListView {
             // Remove the trailing bookend; it'll be re-added after we do our rendering
             this.clear_trailing_bookend();
 
-            rendered_groups = this._render_group({
+            $rendered_groups = this._render_group({
                 message_groups: message_actions.append_groups,
                 use_match_properties: this.list.is_search(),
                 table_name: this.table_name,
             });
 
-            dom_messages = rendered_groups.find(".message_row");
-            new_dom_elements = new_dom_elements.concat(rendered_groups);
+            $dom_messages = $rendered_groups.find(".message_row");
+            new_dom_elements = new_dom_elements.concat($rendered_groups);
 
-            this._post_process(dom_messages);
+            this._post_process($dom_messages);
 
             // This next line is a workaround for a weird scrolling
             // bug on Chrome.  Basically, in Chrome 64, we had a
@@ -819,10 +870,10 @@ export class MessageListView {
             // additional fetches (from bottom_whitespace ending up in
             // the view).  During debugging, we found that this adding
             // this next line seems to prevent the Chrome bug from firing.
-            message_viewport.scrollTop();
+            $message_viewport.scrollTop();
 
-            table.append(rendered_groups);
-            condense.condense_and_collapse(dom_messages);
+            $table.append($rendered_groups);
+            condense.condense_and_collapse($dom_messages);
         }
 
         restore_scroll_position();
@@ -851,8 +902,8 @@ export class MessageListView {
                 // of rows.js from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                const message_row = this.get_row(message_group.message_containers[0].msg.id);
-                return rows.get_message_recipient_row(message_row);
+                const $message_row = this.get_row(message_group.message_containers[0].msg.id);
+                return rows.get_message_recipient_row($message_row);
             };
 
             compose_fade.update_rendered_message_groups(new_message_groups, get_element);
@@ -880,23 +931,23 @@ export class MessageListView {
     _new_messages_height(rendered_elems) {
         let new_messages_height = 0;
 
-        for (const elem of rendered_elems.reverse()) {
+        for (const $elem of rendered_elems.reverse()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
-            if (elem.is("div")) {
-                new_messages_height += elem.height();
+            if ($elem.is("div")) {
+                new_messages_height += $elem.height();
             }
         }
 
         return new_messages_height;
     }
 
-    _scroll_limit(selected_row, viewport_info) {
+    _scroll_limit($selected_row, viewport_info) {
         // This scroll limit is driven by the TOP of the feed, and
         // it's the max amount that we can scroll down (or "skooch
         // up" the messages) before knocking the selected message
         // out of the feed.
-        const selected_row_top = selected_row.offset().top;
+        const selected_row_top = $selected_row.offset().top;
         let scroll_limit = selected_row_top - viewport_info.visible_top;
 
         if (scroll_limit < 0) {
@@ -916,11 +967,11 @@ export class MessageListView {
         //
         // returns `true` if we need the user to scroll
 
-        const selected_row = this.selected_row();
-        const last_visible = rows.last_visible();
+        const $selected_row = this.selected_row();
+        const $last_visible = rows.last_visible();
 
         // Make sure we have a selected row and last visible row. (defensive)
-        if (!(selected_row && selected_row.length > 0 && last_visible)) {
+        if (!($selected_row && $selected_row.length > 0 && $last_visible)) {
             return false;
         }
 
@@ -947,8 +998,8 @@ export class MessageListView {
             return false;
         }
 
-        const info = message_viewport.message_viewport_info();
-        const scroll_limit = this._scroll_limit(selected_row, info);
+        const info = $message_viewport.message_viewport_info();
+        const scroll_limit = this._scroll_limit($selected_row, info);
 
         // This next decision is fairly debatable.  For a big message that
         // would push the pointer off the screen, we do a partial autoscroll,
@@ -973,7 +1024,7 @@ export class MessageListView {
             // (Even if we are somewhat constrained here, the message may
             // still end up being visible, so we do some arithmetic.)
             scroll_amount = scroll_limit;
-            const offset = message_viewport.offset_from_bottom(last_visible);
+            const offset = $message_viewport.offset_from_bottom($last_visible);
 
             // For determining whether we need to show the user a "you
             // need to scroll down" notification, the obvious check
@@ -997,7 +1048,7 @@ export class MessageListView {
 
         // Ok, we are finally ready to actually scroll.
         if (scroll_amount > 0) {
-            message_viewport.system_initiated_animate_scroll(scroll_amount);
+            $message_viewport.system_initiated_animate_scroll(scroll_amount);
         }
 
         return need_user_to_scroll;
@@ -1066,10 +1117,10 @@ export class MessageListView {
         // old_offset is the number of pixels between the top of the
         // viewable window and the selected message
         let old_offset;
-        const selected_row = this.selected_row();
-        const selected_in_view = selected_row.length > 0;
+        const $selected_row = this.selected_row();
+        const selected_in_view = $selected_row.length > 0;
         if (selected_in_view) {
-            old_offset = selected_row.offset().top;
+            old_offset = $selected_row.offset().top;
         }
         if (discard_rendering_state) {
             // If we know that the existing render is invalid way
@@ -1078,12 +1129,12 @@ export class MessageListView {
             this.clear_rendering_state(true);
             this.update_render_window(this.list.selected_idx(), false);
         }
-        return this.rerender_with_target_scrolltop(selected_row, old_offset);
+        return this.rerender_with_target_scrolltop($selected_row, old_offset);
     }
 
     set_message_offset(offset) {
-        const msg = this.selected_row();
-        message_viewport.scrollTop(message_viewport.scrollTop() + msg.offset().top - offset);
+        const $msg = this.selected_row();
+        $message_viewport.scrollTop($message_viewport.scrollTop() + $msg.offset().top - offset);
     }
 
     rerender_with_target_scrolltop(selected_row, target_offset) {
@@ -1130,16 +1181,16 @@ export class MessageListView {
             return;
         }
 
-        const first_row = this.get_row(message_containers[0].msg.id);
+        const $first_row = this.get_row(message_containers[0].msg.id);
 
         // We may not have the row if the stream or topic was muted
-        if (first_row.length === 0) {
+        if ($first_row.length === 0) {
             return;
         }
 
-        const recipient_row = rows.get_message_recipient_row(first_row);
-        const header = recipient_row.find(".message_header");
-        const message_group_id = recipient_row.attr("id");
+        const $recipient_row = rows.get_message_recipient_row($first_row);
+        const $header = $recipient_row.find(".message_header");
+        const message_group_id = $recipient_row.attr("id");
 
         // Since there might be multiple dates within the message
         // group, it's important to look up the original/full message
@@ -1158,23 +1209,23 @@ export class MessageListView {
         // rerendering rather than looking up the original version.
         populate_group_from_message_container(group, group.message_containers[0]);
 
-        const rendered_recipient_row = $(render_recipient_row(group));
+        const $rendered_recipient_row = $(render_recipient_row(group));
 
-        header.replaceWith(rendered_recipient_row);
+        $header.replaceWith($rendered_recipient_row);
     }
 
     _rerender_message(message_container, {message_content_edited, is_revealed}) {
-        const row = this.get_row(message_container.msg.id);
+        const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
         this.set_calculated_message_container_variables(message_container, is_revealed);
 
-        const rendered_msg = $(this._get_message_template(message_container));
+        const $rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
-            rendered_msg.addClass("fade-in-message");
+            $rendered_msg.addClass("fade-in-message");
         }
-        this._post_process(rendered_msg);
-        row.replaceWith(rendered_msg);
+        this._post_process($rendered_msg);
+        $row.replaceWith($rendered_msg);
 
         if (was_selected) {
             this.list.select_id(message_container.msg.id);
@@ -1281,20 +1332,20 @@ export class MessageListView {
     }
 
     get_row(id) {
-        const row = this._rows.get(id);
+        const $row = this._rows.get(id);
 
-        if (row === undefined) {
+        if ($row === undefined) {
             // For legacy reasons we need to return an empty
             // jQuery object here.
             return $(undefined);
         }
 
-        return row;
+        return $row;
     }
 
     clear_trailing_bookend() {
-        const trailing_bookend = rows.get_table(this.table_name).find(".trailing_bookend");
-        trailing_bookend.remove();
+        const $trailing_bookend = rows.get_table(this.table_name).find(".trailing_bookend");
+        $trailing_bookend.remove();
     }
 
     render_trailing_bookend(
@@ -1307,7 +1358,7 @@ export class MessageListView {
     ) {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
-        const rendered_trailing_bookend = $(
+        const $rendered_trailing_bookend = $(
             render_bookend({
                 stream_name,
                 can_toggle_subscription,
@@ -1318,7 +1369,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
             }),
         );
-        rows.get_table(this.table_name).append(rendered_trailing_bookend);
+        rows.get_table(this.table_name).append($rendered_trailing_bookend);
     }
 
     selected_row() {
@@ -1331,13 +1382,13 @@ export class MessageListView {
 
     change_message_id(old_id, new_id) {
         if (this._rows.has(old_id)) {
-            const row = this._rows.get(old_id);
+            const $row = this._rows.get(old_id);
             this._rows.delete(old_id);
 
-            row.attr("zid", new_id);
-            row.attr("id", this.table_name + new_id);
-            row.removeClass("local");
-            this._rows.set(new_id, row);
+            $row.attr("zid", new_id);
+            $row.attr("id", this.table_name + new_id);
+            $row.removeClass("local");
+            this._rows.set(new_id, $row);
         }
 
         if (this.message_containers.has(old_id)) {

@@ -4,14 +4,15 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
-from zerver.lib.actions import (
-    create_users,
-    do_add_reaction,
+from zerver.actions.create_realm import setup_realm_internal_bots
+from zerver.actions.message_send import (
     do_send_messages,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
+from zerver.actions.reactions import do_add_reaction
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
@@ -29,27 +30,6 @@ def missing_any_realm_internal_bots() -> bool:
     return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
 
 
-def setup_realm_internal_bots(realm: Realm) -> None:
-    """Create this realm's internal bots.
-
-    This function is idempotent; it does nothing for a bot that
-    already exists.
-    """
-    internal_bots = [
-        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
-        for bot in settings.REALM_INTERNAL_BOTS
-    ]
-    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    bots = UserProfile.objects.filter(
-        realm=realm,
-        email__in=[bot_info[1] for bot_info in internal_bots],
-        bot_owner__isnull=True,
-    )
-    for bot in bots:
-        bot.bot_owner = bot
-        bot.save()
-
-
 def create_if_missing_realm_internal_bots() -> None:
     """This checks if there is any realm internal bot missing.
 
@@ -62,40 +42,45 @@ def create_if_missing_realm_internal_bots() -> None:
 
 def send_initial_pms(user: UserProfile) -> None:
     organization_setup_text = ""
-    if user.is_realm_admin:
-        help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-        organization_setup_text = (
-            " " + _("We also have a guide for [Setting up your organization]({help_url}).")
-        ).format(help_url=help_url)
 
-    welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
-    demo_org_warning = ""
-    if user.realm.demo_organization_scheduled_deletion_date is not None:
-        demo_org_warning = (
-            _(
-                "Note that this is a [demo organization]({demo_org_help_url}) and will be "
-                "**automatically deleted** in 30 days."
+    # We need to override the language in this code path, because it's
+    # called from account registration, which is a pre-account API
+    # request and thus may not have the user's language context yet.
+    with override_language(user.default_language):
+        if user.is_realm_admin:
+            help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+            organization_setup_text = (
+                " " + _("We also have a guide for [Setting up your organization]({help_url}).")
+            ).format(help_url=help_url)
+
+        welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
+        demo_org_warning = ""
+        if user.realm.demo_organization_scheduled_deletion_date is not None:
+            demo_org_warning = (
+                _(
+                    "Note that this is a [demo organization]({demo_org_help_url}) and will be "
+                    "**automatically deleted** in 30 days."
+                )
+                + "\n\n"
             )
-            + "\n\n"
+
+        content = "".join(
+            [
+                welcome_msg + " ",
+                _("This is a private message from me, Welcome Bot.") + "\n\n",
+                _(
+                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+                ),
+                "{organization_setup_text}" + "\n\n",
+                "{demo_org_warning}",
+                _(
+                    "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
+                )
+                + "\n\n",
+                _("Here are a few messages I understand:") + " ",
+                bot_commands(),
+            ]
         )
-
-    content = "".join(
-        [
-            welcome_msg + " ",
-            _("This is a private message from me, Welcome Bot.") + "\n\n",
-            _(
-                "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-            ),
-            "{organization_setup_text}" + "\n\n",
-            "{demo_org_warning}",
-            _(
-                "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
-            )
-            + "\n\n",
-            _("Here are a few messages I understand:") + " ",
-            bot_commands(),
-        ]
-    )
 
     content = content.format(
         organization_setup_text=organization_setup_text,

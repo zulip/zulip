@@ -1,6 +1,6 @@
 <div id="profile-settings" class="settings-section show" data-name="profile">
     <div class="profile-settings-form">
-        <div class="inline-block">
+        <div class="profile-main-panel inline-block">
             <h3 class="inline-block hide" id="user-profile-header">{{t "Profile" }}</h3>
             <div id="user_details_section">
                 <form class="form-horizontal full-name-change-form">
@@ -18,14 +18,6 @@
                         </div>
                     </div>
                 </form>
-
-                <div class="input-group grid">
-                    <span class="title">{{t "Role" }}: {{user_role_text}}</span>
-                </div>
-
-                <div class="input-group grid">
-                    <span class="title">{{t "Joined" }}: {{date_joined_text}}</span>
-                </div>
 
                 <form class="form-horizontal timezone-setting-form">
                     <div class="input-group grid">
@@ -52,22 +44,30 @@
                 </button>
             </div>
         </div>
-        <div class="inline-block user-avatar-section">
-            <h3>
-                {{t "Profile picture" }}
-                <i class="fa fa-question-circle change_name_tooltip tippy-zulip-tooltip settings-info-icon"
-                  {{#if user_can_change_avatar}}style="display:none"{{/if}}
-                  data-tippy-content="{{t 'Avatar changes are disabled in this organization.' }}">
-                </i>
-            </h3>
-            {{> image_upload_widget
-              widget = "user-avatar"
-              upload_text = (t "Upload new profile picture")
-              delete_text = (t "Delete profile picture")
-              is_editable_by_current_user = user_can_change_avatar
-              image = page_params.avatar_url_medium}}
-            <div id="user-avatar-source">
-                <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
+
+        <div class="profile-side-panel">
+            <div class="inline-block user-avatar-section">
+                {{> image_upload_widget
+                  widget = "user-avatar"
+                  upload_text = (t "Upload new profile picture")
+                  delete_text = (t "Delete profile picture")
+                  disabled_text = (t "Avatar changes are disabled in this organization")
+                  is_editable_by_current_user = user_can_change_avatar
+                  image = page_params.avatar_url_medium}}
+                <div id="user-avatar-source">
+                    <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
+                </div>
+            </div>
+            <div class="user-details">
+                <div class="input-group">
+                    <span class="user-details-title">{{t "Role" }}:</span>
+                    <span class="user-details-desc">{{user_role_text}}</span>
+                </div>
+
+                <div class="input-group">
+                    <span class="user-details-title">{{t "Joined" }}: </span>
+                    <span class="user-details-desc">{{date_joined_text}}</span>
+                </div>
             </div>
         </div>
     </div>

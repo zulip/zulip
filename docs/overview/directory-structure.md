@@ -23,7 +23,7 @@ paths will be familiar to Django developers.
 
 - `zerver/lib/*.py` Most library code.
 
-- `zerver/lib/actions.py` Most code doing writes to user-facing
+- `zerver/actions/*.py` Most code doing writes to user-facing
   database tables lives here. In particular, we have a policy that
   all code calling `send_event` to trigger [pushing data to
   clients](../subsystems/events-system.md) must live here.
@@ -66,8 +66,8 @@ templating systems.
 
 - `node_modules/` Third-party JavaScript installed via `yarn`.
 
-- `static/assets/` For assets not to be served to the web (e.g. the system to
-  generate our favicons).
+- `static/shared/icons/` Icons placed in this directory are compiled
+  into an icon font.
 
 ---
 

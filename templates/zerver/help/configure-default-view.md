@@ -57,7 +57,7 @@ and will not affect the behavior of the `Ctrl+[` shortcut.
 
 {settings_tab|display-settings}
 
-1. Under **Advanced**, check or uncheck **Escape key navigates to
+1. Under **Advanced**, toggle **Escape key navigates to
 default view**, as desired.
 
 {end_tabs}

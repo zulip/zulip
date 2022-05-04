@@ -11,17 +11,27 @@ export function set_words(words) {
 }
 
 export function get_word_list() {
-    // People usually only have a couple alert
-    // words, so it's cheap to be defensive
-    // here and give a copy of the list to
-    // our caller (in case they want to sort it
-    // or something).
-    return [...my_alert_words];
+    // Returns a array of objects
+    // (with each alert_word as value and 'word' as key to the object.)
+    const words = [];
+    for (const word of my_alert_words) {
+        words.push({word});
+    }
+    return words;
 }
 
 export function has_alert_word(word) {
     return my_alert_words.includes(word);
 }
+
+const alert_regex_replacements = new Map([
+    ["&", "&amp;"],
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    // Accept quotes with or without HTML escaping
+    ['"', '(?:"|&quot;)'],
+    ["'", "(?:'|&#39;)"],
+]);
 
 export function process_message(message) {
     // Parsing for alert words is expensive, so we rely on the host
@@ -31,7 +41,9 @@ export function process_message(message) {
     }
 
     for (const word of my_alert_words) {
-        const clean = _.escapeRegExp(word);
+        const clean = _.escapeRegExp(word).replace(/["&'<>]/g, (c) =>
+            alert_regex_replacements.get(c),
+        );
         const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
@@ -48,7 +60,7 @@ export function process_message(message) {
                 const check_string = pre_match + match.slice(0, -1);
                 const in_tag = check_string.lastIndexOf("<") > check_string.lastIndexOf(">");
                 // Matched word is inside a HTML tag so don't perform any highlighting.
-                if (in_tag === true) {
+                if (in_tag) {
                     return before + word + after;
                 }
                 return before + "<span class='alert-word'>" + word + "</span>" + after;

@@ -7,12 +7,6 @@ from tools.lib.capitalization import check_capitalization, get_safe_text, is_cap
 
 class GetSafeTextTestCase(TestCase):
     def test_get_safe_text(self) -> None:
-        string = "Messages in __page_params.product_name__ go to a stream and have a topic."
-        safe_text = get_safe_text(string)
-        self.assertEqual(
-            safe_text, "Messages in __page_params_product_name__ go to a stream and have a topic."
-        )
-
         string = "Zulip Zulip. Zulip some text!"
         safe_text = get_safe_text(string)
         self.assertEqual(safe_text, "Zulip zulip. Zulip some text!")
@@ -28,10 +22,6 @@ class GetSafeTextTestCase(TestCase):
         string = "Zulip Zulip, Zulip some text!"
         safe_text = get_safe_text(string)
         self.assertEqual(safe_text, "Zulip zulip, zulip some text!")
-
-        string = "Some text 25MiB"
-        safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, "Some text 25mib")
 
         string = "Not Ignored Phrase"
         safe_text = get_safe_text(string)
@@ -57,18 +47,6 @@ class GetSafeTextTestCase(TestCase):
         string = "Edited (__last_edit_timestr__)"
         safe_text = get_safe_text(string)
         self.assertEqual(safe_text, string)
-
-        string = "iPhone application"
-        safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, "Iphone application")
-
-        string = "One two etc. three"
-        safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, "One two etc_ three")
-
-        string = "One two etc. three.      four"
-        safe_text = get_safe_text(string)
-        self.assertEqual(safe_text, "One two etc_ three. four")
 
 
 class IsCapitalizedTestCase(TestCase):
@@ -129,17 +107,10 @@ class CheckCapitalizationTestCase(TestCase):
             "Zulip Zulip? Zulip some text!",
             "Zulip Zulip! Zulip some text!",
             "Zulip Zulip, Zulip some text!",
-            "Some number 25MiB",
             "Not Ignored Phrase",
             "Not ignored phrase",
             "Some text with realm in it",
             "Realm in capital case",
-            (
-                '<p class="bot-settings-note padded-container"> Looking for our '
-                '<a href="/integrations" target="_blank">Integrations</a> or '
-                '<a href="/api" target="_blank">API</a> '
-                "documentation? </p>"
-            ),
         ]
         errored, ignored, banned = check_capitalization(strings)
         self.assertEqual(errored, ["Not Ignored Phrase"])
@@ -151,13 +122,6 @@ class CheckCapitalizationTestCase(TestCase):
                     "Zulip Zulip? Zulip some text!",
                     "Zulip Zulip! Zulip some text!",
                     "Zulip Zulip, Zulip some text!",
-                    "Some number 25MiB",
-                    (
-                        '<p class="bot-settings-note padded-container"> Looking '
-                        'for our <a href="/integrations" target="_blank">'
-                        'Integrations</a> or <a href="/api" '
-                        'target="_blank">API</a> documentation? </p>'
-                    ),
                 ]
             ),
         )

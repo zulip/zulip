@@ -12,10 +12,10 @@ class zulip::app_frontend_base {
     # package already includes the client.  This may get us a more
     # recent client than the database server is configured to be,
     # ($zulip::postgresql_common::version), but they're compatible.
-    zulip::safepackage { 'postgresql-client': ensure => 'installed' }
+    zulip::safepackage { 'postgresql-client': ensure => installed }
   }
   # For Slack import
-  zulip::safepackage { 'unzip': ensure => 'installed' }
+  zulip::safepackage { 'unzip': ensure => installed }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package[$zulip::common::nginx],
@@ -161,17 +161,17 @@ class zulip::app_frontend_base {
     mode   => '0755',
   }
   file { '/home/zulip/logs':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
   }
   file { '/home/zulip/prod-static':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
   }
   file { '/home/zulip/deployments':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
   }
@@ -189,14 +189,14 @@ class zulip::app_frontend_base {
   }
 
   file { '/var/log/zulip/queue_error':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0640',
   }
 
   file { '/var/log/zulip/queue_stats':
-    ensure => 'directory',
+    ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0640',

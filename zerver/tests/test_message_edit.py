@@ -8,22 +8,26 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import (
-    do_add_reaction,
-    do_change_realm_plan_type,
-    do_change_stream_post_policy,
-    do_change_user_role,
-    do_deactivate_stream,
+from zerver.actions.message_edit import (
+    check_update_message,
     do_delete_messages,
-    do_set_realm_property,
     do_update_message,
-    get_topic_messages,
     get_user_info_for_message_updates,
 )
+from zerver.actions.reactions import do_add_reaction
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.streams import do_change_stream_post_policy, do_deactivate_stream
+from zerver.actions.users import do_change_user_role
 from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
-from zerver.lib.topic import LEGACY_PREV_TOPIC, RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, TOPIC_NAME
+from zerver.lib.user_topics import (
+    get_topic_mutes,
+    get_users_muting_topic,
+    set_topic_mutes,
+    topic_is_muted,
+)
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
@@ -304,18 +308,59 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         self.check_topic(msg_id, topic_name="edited")
 
-    def test_fetch_raw_message(self) -> None:
+    def test_fetch_message_from_id(self) -> None:
         self.login("hamlet")
         msg_id = self.send_personal_message(
             from_user=self.example_user("hamlet"),
             to_user=self.example_user("cordelia"),
-            content="**before** edit",
+            content="Personal message",
         )
-        result = self.client_get(f"/json/messages/{msg_id}")
+        result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "**before** edit")
+        self.assertEqual(result.json()["raw_content"], "Personal message")
+        self.assertEqual(result.json()["message"]["id"], msg_id)
+        self.assertEqual(result.json()["message"]["flags"], [])
+
+        # Send message to web-public stream where hamlet is not subscribed.
+        # This will test case of user having no `UserMessage` but having access
+        # to message.
+        web_public_stream = self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("cordelia"), web_public_stream.name)
+        web_public_stream_msg_id = self.send_stream_message(
+            self.example_user("cordelia"), web_public_stream.name, content="web-public message"
+        )
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+        self.assertEqual(result.json()["message"]["flags"], ["read", "historical"])
+
+        # Spectator should be able to fetch message in web-public stream.
+        self.logout()
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+
+        # Verify default is apply_markdown=True
+        self.assertEqual(result.json()["message"]["content"], "<p>web-public message</p>")
+
+        # Verify apply_markdown=False works correctly.
+        result = self.client_get(
+            "/json/messages/" + str(web_public_stream_msg_id), {"apply_markdown": "false"}
+        )
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["content"], "web-public message")
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
 
         # Test error cases
+        self.login("hamlet")
         result = self.client_get("/json/messages/999999")
         self.assert_json_error(result, "Invalid message(s)")
 
@@ -340,7 +385,7 @@ class EditMessageTest(EditMessageTestCase):
         non_web_public_stream = self.make_stream("non-web-public-stream")
         self.subscribe(user_profile, non_web_public_stream.name)
         non_web_public_stream_msg_id = self.send_stream_message(
-            user_profile, non_web_public_stream.name, content="non web-public message"
+            user_profile, non_web_public_stream.name, content="non-web-public message"
         )
 
         # Generate a private message to use in verification.
@@ -370,6 +415,7 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
         self.assert_json_success(result)
         self.assertEqual(result.json()["raw_content"], "web-public message")
+        self.assertEqual(result.json()["message"]["flags"], ["read"])
 
         # Verify LIMITED plan type does not allow web-public access.
         do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -709,9 +755,16 @@ class EditMessageTest(EditMessageTestCase):
         history data structures."""
         self.login("hamlet")
         hamlet = self.example_user("hamlet")
+        stream_1 = self.make_stream("stream 1")
+        stream_2 = self.make_stream("stream 2")
+        stream_3 = self.make_stream("stream 3")
+        self.subscribe(hamlet, stream_1.name)
+        self.subscribe(hamlet, stream_2.name)
+        self.subscribe(hamlet, stream_3.name)
         msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Denmark", topic_name="topic 1", content="content 1"
+            self.example_user("hamlet"), "stream 1", topic_name="topic 1", content="content 1"
         )
+
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
@@ -741,10 +794,29 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 1")
+        self.assertEqual(history[0]["prev_topic"], "topic 1")
+        self.assertEqual(history[0]["topic"], "topic 2")
         self.assertEqual(history[0]["user_id"], hamlet.id)
-        self.assertEqual(set(history[0].keys()), {"timestamp", LEGACY_PREV_TOPIC, "user_id"})
+        self.assertEqual(
+            set(history[0].keys()),
+            {"timestamp", "prev_topic", "topic", "user_id"},
+        )
 
+        self.login("iago")
+        result = self.client_patch(
+            f"/json/messages/{msg_id}",
+            {
+                "stream_id": stream_2.id,
+            },
+        )
+        self.assert_json_success(result)
+        history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]["prev_stream"], stream_1.id)
+        self.assertEqual(history[0]["stream"], stream_2.id)
+        self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(set(history[0].keys()), {"timestamp", "prev_stream", "stream", "user_id"})
+
+        self.login("hamlet")
         result = self.client_patch(
             f"/json/messages/{msg_id}",
             {
@@ -755,13 +827,15 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]["prev_content"], "content 2")
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 2")
+        self.assertEqual(history[0]["prev_topic"], "topic 2")
+        self.assertEqual(history[0]["topic"], "topic 3")
         self.assertEqual(history[0]["user_id"], hamlet.id)
         self.assertEqual(
             set(history[0].keys()),
             {
                 "timestamp",
-                LEGACY_PREV_TOPIC,
+                "prev_topic",
+                "topic",
                 "prev_content",
                 "user_id",
                 "prev_rendered_content",
@@ -785,20 +859,50 @@ class EditMessageTest(EditMessageTestCase):
             f"/json/messages/{msg_id}",
             {
                 "topic": "topic 4",
+                "stream_id": stream_3.id,
             },
         )
         self.assert_json_success(result)
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+        self.assertEqual(history[0]["stream"], stream_3.id)
         self.assertEqual(history[0]["user_id"], self.example_user("iago").id)
+        self.assertEqual(
+            set(history[0].keys()),
+            {
+                "timestamp",
+                "prev_topic",
+                "topic",
+                "prev_stream",
+                "stream",
+                "user_id",
+            },
+        )
 
+        # Now, we verify that all of the edits stored in the message.edit_history
+        # have the correct data structure
         history = orjson.loads(Message.objects.get(id=msg_id).edit_history)
-        self.assertEqual(history[0][LEGACY_PREV_TOPIC], "topic 3")
-        self.assertEqual(history[2][LEGACY_PREV_TOPIC], "topic 2")
-        self.assertEqual(history[3][LEGACY_PREV_TOPIC], "topic 1")
+
+        self.assertEqual(history[0]["prev_topic"], "topic 3")
+        self.assertEqual(history[0]["topic"], "topic 4")
+        self.assertEqual(history[0]["stream"], stream_3.id)
+        self.assertEqual(history[0]["prev_stream"], stream_2.id)
+
         self.assertEqual(history[1]["prev_content"], "content 3")
+
+        self.assertEqual(history[2]["prev_topic"], "topic 2")
+        self.assertEqual(history[2]["topic"], "topic 3")
         self.assertEqual(history[2]["prev_content"], "content 2")
-        self.assertEqual(history[4]["prev_content"], "content 1")
+
+        self.assertEqual(history[3]["stream"], stream_2.id)
+        self.assertEqual(history[3]["prev_stream"], stream_1.id)
+
+        self.assertEqual(history[4]["prev_topic"], "topic 1")
+        self.assertEqual(history[4]["topic"], "topic 2")
+
+        self.assertEqual(history[5]["prev_content"], "content 1")
 
         # Now, we verify that the edit history data sent back has the
         # correct filled-out fields
@@ -811,35 +915,49 @@ class EditMessageTest(EditMessageTestCase):
         i = 0
         for entry in message_history:
             expected_entries = {"content", "rendered_content", "topic", "timestamp", "user_id"}
-            if i in {0, 2, 3}:
+            if i in {0, 2, 4}:
                 expected_entries.add("prev_topic")
-            if i in {1, 2, 4}:
+                expected_entries.add("topic")
+            if i in {1, 2, 5}:
                 expected_entries.add("prev_content")
                 expected_entries.add("prev_rendered_content")
                 expected_entries.add("content_html_diff")
+            if i in {0, 3}:
+                expected_entries.add("prev_stream")
+                expected_entries.add("stream")
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
-        self.assert_length(message_history, 6)
-        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        self.assert_length(message_history, 7)
         self.assertEqual(message_history[0]["topic"], "topic 4")
-        self.assertEqual(message_history[1]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["topic"], "topic 3")
-        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
-        self.assertEqual(message_history[3]["topic"], "topic 2")
-        self.assertEqual(message_history[3]["prev_topic"], "topic 1")
-        self.assertEqual(message_history[4]["topic"], "topic 1")
-
+        self.assertEqual(message_history[0]["prev_topic"], "topic 3")
+        self.assertEqual(message_history[0]["stream"], stream_3.id)
+        self.assertEqual(message_history[0]["prev_stream"], stream_2.id)
         self.assertEqual(message_history[0]["content"], "content 4")
+
+        self.assertEqual(message_history[1]["topic"], "topic 3")
         self.assertEqual(message_history[1]["content"], "content 4")
         self.assertEqual(message_history[1]["prev_content"], "content 3")
+
+        self.assertEqual(message_history[2]["topic"], "topic 3")
+        self.assertEqual(message_history[2]["prev_topic"], "topic 2")
         self.assertEqual(message_history[2]["content"], "content 3")
         self.assertEqual(message_history[2]["prev_content"], "content 2")
-        self.assertEqual(message_history[3]["content"], "content 2")
-        self.assertEqual(message_history[4]["content"], "content 2")
-        self.assertEqual(message_history[4]["prev_content"], "content 1")
 
-        self.assertEqual(message_history[5]["content"], "content 1")
+        self.assertEqual(message_history[3]["topic"], "topic 2")
+        self.assertEqual(message_history[3]["stream"], stream_2.id)
+        self.assertEqual(message_history[3]["prev_stream"], stream_1.id)
+        self.assertEqual(message_history[3]["content"], "content 2")
+
+        self.assertEqual(message_history[4]["topic"], "topic 2")
+        self.assertEqual(message_history[4]["prev_topic"], "topic 1")
+        self.assertEqual(message_history[4]["content"], "content 2")
+
         self.assertEqual(message_history[5]["topic"], "topic 1")
+        self.assertEqual(message_history[5]["content"], "content 2")
+        self.assertEqual(message_history[5]["prev_content"], "content 1")
+
+        self.assertEqual(message_history[6]["content"], "content 1")
+        self.assertEqual(message_history[6]["topic"], "topic 1")
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(
@@ -862,7 +980,7 @@ class EditMessageTest(EditMessageTestCase):
         ) -> None:
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
@@ -880,7 +998,7 @@ class EditMessageTest(EditMessageTestCase):
             old_content = message.content
             new_topic = "topic" + unique_str
             new_content = "content" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             if not topic_only:
                 params_dict["content"] = new_content
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
@@ -948,7 +1066,7 @@ class EditMessageTest(EditMessageTestCase):
         def do_edit_message_assert_success(id_: int, unique_str: str, acting_user: str) -> None:
             self.login(acting_user)
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
             self.assert_json_success(result)
             self.check_topic(id_, topic_name=new_topic)
@@ -961,7 +1079,7 @@ class EditMessageTest(EditMessageTestCase):
             old_topic = message.topic_name()
             old_content = message.content
             new_topic = "topic" + unique_str
-            params_dict = {"message_id": id_, "topic": new_topic}
+            params_dict = {"topic": new_topic}
             result = self.client_patch(f"/json/messages/{id_}", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
@@ -1043,7 +1161,7 @@ class EditMessageTest(EditMessageTestCase):
         message.save()
         do_edit_message_assert_success(id_, "D", "cordelia")
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_edit_topic_public_history_stream(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1125,7 +1243,249 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id]))
         do_update_message_topic_success(hamlet, message, "Change again", users_to_be_notified)
 
-    @mock.patch("zerver.lib.actions.send_event")
+    @mock.patch("zerver.actions.message_edit.send_event")
+    def test_edit_muted_topic(self, mock_send_event: mock.MagicMock) -> None:
+        stream_name = "Stream 123"
+        stream = self.make_stream(stream_name)
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        self.subscribe(hamlet, stream_name)
+        self.login_user(hamlet)
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="Topic1", content="Hello World"
+        )
+
+        self.subscribe(cordelia, stream_name)
+        self.login_user(cordelia)
+        self.subscribe(aaron, stream_name)
+        self.login_user(aaron)
+
+        already_muted_topic = "Already muted topic"
+        muted_topics = [
+            [stream_name, "Topic1"],
+            [stream_name, "Topic2"],
+            [stream_name, already_muted_topic],
+        ]
+        set_topic_mutes(hamlet, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        # Returns the users that need to be notified when a message topic is changed
+        def notify(user_id: int) -> Dict[str, Any]:
+            um = UserMessage.objects.get(message=message_id)
+            if um.user_profile_id == user_id:
+                return {
+                    "id": user_id,
+                    "flags": um.flags_list(),
+                }
+
+            else:
+                return {
+                    "id": user_id,
+                    "flags": ["read"],
+                }
+
+        users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
+        change_all_topic_name = "Topic 1 edited"
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=hamlet,
+                message_id=message_id,
+                stream_id=None,
+                topic_name=change_all_topic_name,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            # This code path adds 9 (1 + 4/user with muted topics) to
+            # the number of database queries for moving a topic.
+            self.assert_length(queries, 18)
+
+        for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
+            for user in users_to_be_notified:
+                if muting_user.id == user["id"]:
+                    user["muted_topics"] = get_topic_mutes(muting_user)
+                    break
+
+        self.assertFalse(topic_is_muted(hamlet, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "Topic1"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic1"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, "Topic2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "Topic2"))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(cordelia, stream.id, change_all_topic_name))
+        self.assertFalse(topic_is_muted(aaron, stream.id, change_all_topic_name))
+
+        change_later_topic_name = "Topic 1 edited again"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_later_topic_name,
+            propagate_mode="change_later",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_all_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        # Make sure we safely handle the case of the new topic being already muted.
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=already_muted_topic,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+        self.assertTrue(topic_is_muted(hamlet, stream.id, already_muted_topic))
+
+        change_one_topic_name = "Topic 1 edited change_one"
+        check_update_message(
+            user_profile=hamlet,
+            message_id=message_id,
+            stream_id=None,
+            topic_name=change_one_topic_name,
+            propagate_mode="change_one",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+            content=None,
+        )
+        self.assertTrue(topic_is_muted(hamlet, stream.id, change_one_topic_name))
+        self.assertFalse(topic_is_muted(hamlet, stream.id, change_later_topic_name))
+
+        # Move topic between two public streams.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_public_stream = self.make_stream("New public stream")
+        self.subscribe(desdemona, new_public_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 31)
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "New topic"))
+
+        # Move topic to a private stream.
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic", content="Hello World"
+        )
+        new_private_stream = self.make_stream("New private stream", invite_only=True)
+        self.subscribe(desdemona, new_private_stream.name)
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_private_stream.id,
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 33)
+
+        # Cordelia is not subscribed to the private stream, so
+        # Cordelia should have had the topic unmuted, while Desdemona
+        # should have had her muted topic record moved.
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic"))
+        self.assertTrue(topic_is_muted(desdemona, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(cordelia, new_private_stream.id, "New topic"))
+        self.assertFalse(topic_is_muted(aaron, new_private_stream.id, "New topic"))
+
+        # Move topic between two public streams with change in topic name.
+        desdemona = self.example_user("desdemona")
+        message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="New topic 2", content="Hello World"
+        )
+        self.login_user(desdemona)
+        muted_topics = [
+            [stream_name, "New topic 2"],
+        ]
+        set_topic_mutes(desdemona, muted_topics)
+        set_topic_mutes(cordelia, muted_topics)
+
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=message_id,
+                stream_id=new_public_stream.id,
+                topic_name="changed topic name",
+                propagate_mode="change_all",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 31)
+
+        self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic 2"))
+        self.assertFalse(topic_is_muted(aaron, stream.id, "New topic 2"))
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+
+        # Moving only half the messages doesn't move MutedTopic records.
+        second_message_id = self.send_stream_message(
+            hamlet, stream_name, topic_name="changed topic name", content="Second message"
+        )
+        with queries_captured() as queries:
+            check_update_message(
+                user_profile=desdemona,
+                message_id=second_message_id,
+                stream_id=new_public_stream.id,
+                topic_name="final topic name",
+                propagate_mode="change_later",
+                send_notification_to_old_thread=False,
+                send_notification_to_new_thread=False,
+                content=None,
+            )
+            self.assert_length(queries, 25)
+
+        self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
+        self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "changed topic name"))
+        self.assertFalse(topic_is_muted(desdemona, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(cordelia, new_public_stream.id, "final topic name"))
+        self.assertFalse(topic_is_muted(aaron, new_public_stream.id, "final topic name"))
+
+    @mock.patch("zerver.actions.message_edit.send_event")
     def test_wildcard_mention(self, mock_send_event: mock.MagicMock) -> None:
         stream_name = "Macbeth"
         hamlet = self.example_user("hamlet")
@@ -1870,7 +2230,7 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(queries, 52)
+        self.assert_length(queries, 53)
         self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
@@ -2527,7 +2887,7 @@ class DeleteMessageTest(ZulipTestCase):
         message = self.get_last_message()
 
         with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.lib.actions.send_event") as m:
+            with mock.patch("zerver.actions.message_edit.send_event") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )

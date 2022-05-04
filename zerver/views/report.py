@@ -1,7 +1,7 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 import logging
 import subprocess
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 from urllib.parse import SplitResult
 
 from django.conf import settings
@@ -19,7 +19,14 @@ from zerver.lib.response import json_success
 from zerver.lib.storage import static_path
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
-from zerver.lib.validator import check_bool, check_dict, to_non_negative_int
+from zerver.lib.validator import (
+    WildValue,
+    check_bool,
+    check_dict,
+    check_string,
+    to_non_negative_int,
+    to_wild_value,
+)
 from zerver.models import UserProfile
 
 js_source_map: Optional[SourceMap] = None
@@ -184,10 +191,11 @@ def report_error(
 @require_POST
 @has_request_variables
 def report_csp_violations(
-    request: HttpRequest, csp_report: Dict[str, Any] = REQ(argument_type="body")
+    request: HttpRequest,
+    csp_report: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
-        return csp_report.get(csp_report_attr, "")
+        return csp_report.get(csp_report_attr, "").tame(check_string)
 
     logging.warning(
         "CSP violation in document('%s'). "

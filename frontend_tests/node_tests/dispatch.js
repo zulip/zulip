@@ -87,6 +87,7 @@ page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+const emoji = zrequire("emoji");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
 const message_helper = zrequire("message_helper");
@@ -95,8 +96,6 @@ const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
 const compose_pm_pill = zrequire("compose_pm_pill");
-
-const emoji = zrequire("../shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
 
@@ -126,11 +125,11 @@ run_test("alert_words", ({override}) => {
     assert.ok(!alert_words.has_alert_word("fire"));
     assert.ok(!alert_words.has_alert_word("lunch"));
 
-    override(alert_words_ui, "render_alert_words_ui", noop);
+    override(alert_words_ui, "rerender_alert_words_ui", noop);
     const event = event_fixtures.alert_words;
     dispatch(event);
 
-    assert.deepEqual(alert_words.get_word_list(), ["fire", "lunch"]);
+    assert.deepEqual(alert_words.get_word_list(), [{word: "fire"}, {word: "lunch"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
 });
@@ -393,6 +392,10 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(page_params.realm_name, "new_realm_name");
 
+    event = event_fixtures.realm__update__org_type;
+    dispatch(event);
+    assert_same(page_params.realm_org_type, 50);
+
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
 
@@ -498,10 +501,20 @@ run_test("realm_bot remove", ({override}) => {
     admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
-run_test("realm_bot delete", () => {
+run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
-    // We don't handle live updates for delete events, this is a noop.
+    const bot_stub = make_stub();
+    const admin_stub = make_stub();
+    override(bot_data, "del", bot_stub.f);
+    override(settings_bots, "render_bots", () => {});
+    override(settings_users, "redraw_bots_list", admin_stub.f);
+
     dispatch(event);
+    assert.equal(bot_stub.num_calls, 1);
+    const args = bot_stub.get_args("user_id");
+    assert_same(args.user_id, event.bot.user_id);
+
+    assert.equal(admin_stub.num_calls, 1);
 });
 
 run_test("realm_bot update", ({override}) => {
@@ -609,6 +622,7 @@ run_test("realm_user", ({override}) => {
 
     event = event_fixtures.realm_user__remove;
     override(stream_events, "remove_deactivated_user_from_all_streams", noop);
+    override(settings_users, "update_view_on_deactivate", noop);
     dispatch(event);
 
     // We don't actually remove the person, we just deactivate them.
@@ -731,6 +745,11 @@ run_test("user_settings", ({override, override_rewire}) => {
     user_settings.translate_emoticons = false;
     dispatch(event);
     assert_same(user_settings.translate_emoticons, true);
+
+    event = event_fixtures.user_settings__display_emoji_reaction_users;
+    user_settings.display_emoji_reaction_users = false;
+    dispatch(event);
+    assert_same(user_settings.display_emoji_reaction_users, true);
 
     event = event_fixtures.user_settings__high_contrast_mode;
     user_settings.high_contrast_mode = false;
@@ -871,6 +890,20 @@ run_test("update_message (read)", ({override}) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("message_ids");
     assert_same(args.message_ids, [999]);
+});
+
+run_test("update_message (unread)", ({override}) => {
+    const event = event_fixtures.update_message_flags__read_remove;
+
+    const stub = make_stub();
+    override(unread_ops, "process_unread_messages_event", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const {args} = stub.get_args("args");
+    assert.deepEqual(args, {
+        message_ids: event.messages,
+        message_details: event.message_details,
+    });
 });
 
 run_test("update_message (add star)", ({override, override_rewire}) => {

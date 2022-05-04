@@ -153,6 +153,7 @@ class DocPageTest(ZulipTestCase):
         if settings.ZILENCER_ENABLED:
             self._test("/apps/", "Apps for every platform.")
         self._test("/features/", "Beautiful messaging")
+        self._test("/use-cases/", "Use cases and customer stories")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
         self._test("/development-community/", "Zulip development community")
         self._test("/why-zulip/", "Why Zulip?")
@@ -164,9 +165,11 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/rust/", "Rust programming language")
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
+        self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
         self._test("/for/research/", "for research")
         self._test("/for/business/", "Communication efficiency represents")
         self._test("/for/communities/", "Zulip for communities")
+        self._test("/self-hosting/", "Self-host Zulip")
         self._test("/security/", "TLS encryption")
         self._test("/attribution/", "Attributions")
         self._test("/devlogin/", "Normal users", landing_page=False)
@@ -301,7 +304,7 @@ class HelpTest(ZulipTestCase):
 
     def test_help_relative_links_for_stream(self) -> None:
         result = self.client_get("/help/message-a-stream-by-email")
-        self.assertIn('<a href="/#streams/subscribed">Your streams</a>', str(result.content))
+        self.assertIn('<a href="/#streams/subscribed">Subscribed streams</a>', str(result.content))
         self.assertEqual(result.status_code, 200)
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):

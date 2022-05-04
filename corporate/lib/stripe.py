@@ -5,7 +5,7 @@ import secrets
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
 
 import orjson
 import stripe
@@ -17,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
+from typing_extensions import ParamSpec
 
 from corporate.models import (
     Customer,
@@ -45,7 +46,8 @@ billing_logger = logging.getLogger("corporate.stripe")
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger("stripe"), BILLING_LOG_PATH)
 
-CallableT = TypeVar("CallableT", bound=Callable[..., object])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 MIN_INVOICED_LICENSES = 30
 MAX_INVOICED_LICENSES = 1000
@@ -243,9 +245,9 @@ class InvalidTier(Exception):
         super().__init__(self.message)
 
 
-def catch_stripe_errors(func: CallableT) -> CallableT:
+def catch_stripe_errors(func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
     @wraps(func)
-    def wrapped(*args: object, **kwargs: object) -> object:
+    def wrapped(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
         try:
             return func(*args, **kwargs)
         # See https://stripe.com/docs/api/python#error_handling, though
@@ -279,7 +281,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                 )
             raise BillingError("other stripe error")
 
-    return cast(CallableT, wrapped)
+    return wrapped
 
 
 @catch_stripe_errors
@@ -323,7 +325,7 @@ def do_create_stripe_customer(user: UserProfile, payment_method: Optional[str] =
         customer, created = Customer.objects.update_or_create(
             realm=realm, defaults={"stripe_customer_id": stripe_customer.id}
         )
-        from zerver.lib.actions import do_make_user_billing_admin
+        from zerver.actions.users import do_make_user_billing_admin
 
         do_make_user_billing_admin(user)
     return customer
@@ -746,7 +748,7 @@ def process_initial_upgrade(
         )
         stripe.Invoice.finalize_invoice(stripe_invoice)
 
-    from zerver.lib.actions import do_change_realm_plan_type
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=user)
 
@@ -969,7 +971,8 @@ def update_sponsorship_status(
 
 
 def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    from zerver.lib.actions import do_change_realm_plan_type, internal_send_private_message
+    from zerver.actions.message_send import internal_send_private_message
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
@@ -1018,7 +1021,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 
 
 def process_downgrade(plan: CustomerPlan) -> None:
-    from zerver.lib.actions import do_change_realm_plan_type
+    from zerver.actions.realm_settings import do_change_realm_plan_type
 
     assert plan.customer.realm is not None
     do_change_realm_plan_type(plan.customer.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)

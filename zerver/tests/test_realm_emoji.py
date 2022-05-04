@@ -1,15 +1,14 @@
 from unittest import mock
 
-from zerver.lib.actions import (
-    check_add_realm_emoji,
-    do_change_user_role,
-    do_create_realm,
-    do_create_user,
-    do_set_realm_property,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
+from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.upload import BadImageError
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
 
 
@@ -271,6 +270,18 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_emoji", {"f1": fp1, "f2": fp2})
         self.assert_json_error(result, "You must upload exactly one file.")
 
+    def test_emoji_upload_success(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.gif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_success(result)
+
+    def test_emoji_upload_resize_success(self) -> None:
+        self.login("iago")
+        with get_test_image_file("still_large_img.gif") as fp:
+            result = self.client_post("/json/realm/emoji/my_emoji", {"file": fp})
+        self.assert_json_success(result)
+
     def test_emoji_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp:
@@ -308,11 +319,13 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_failed_file_upload(self) -> None:
         self.login("iago")
-        with mock.patch("zerver.lib.upload.write_local_file", side_effect=Exception()):
+        with mock.patch(
+            "zerver.lib.upload.write_local_file", side_effect=BadImageError(msg="Broken")
+        ):
             with get_test_image_file("img.png") as fp1:
                 emoji_data = {"f1": fp1}
                 result = self.client_post("/json/realm/emoji/my_emoji", info=emoji_data)
-        self.assert_json_error(result, "Image file upload failed.")
+        self.assert_json_error(result, "Broken")
 
     def test_check_admin_realm_emoji(self) -> None:
         # Test that an user A is able to remove a realm emoji uploaded by him

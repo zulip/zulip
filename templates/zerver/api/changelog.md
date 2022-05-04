@@ -18,8 +18,103 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 6.0
+
+**Feature level 128**
+
+* [`POST /register`](/api/register-queue), [`GET
+  /events`](/api/get-events), `PATCH /realm`: Added
+  `org_type` realm setting.
+
+**Feature level 127**
+
+* [`GET /user_groups`](/api/get-user-groups),[`POST
+  /register`](/api/register-queue): Added `subgroups` field,
+  which is a list of IDs of all the subgroups of the user group, to
+  user group objects.
+* [`GET /events`](/api/get-events): Added new `user_group` events
+  operations for live updates to subgroups (`add_subgroups` and
+  `remove_subgroups`).
+* [`PATCH /user_groups/{user_group_id}/subgroups`](/api/update-user-group-subgroups):
+  Added new endpoint for updating subgroups of a user group.
+* [`GET /user_groups/{user_group_id}/members/{user_id}`](/api/get-is-user-group-member):
+  Added new endpoint for checking whether a given user is member of a
+  given user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-members):
+  Added new endpoint to get members of a user group.
+* [`GET /user_groups/{user_group_id}/members`](/api/get-user-group-subgroups):
+  Added new endpoint to get subgroups of a user group.
+
+**Feature level 126**
+
+* `POST /invites`, `POST /invites/multiuse`: Replaced `invite_expires_in_days`
+  parameter with `invite_expires_in_minutes`.
+
+**Feature level 125**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `display_emoji_reaction_users` display setting,
+  controlling whether to display the names of users with emoji reactions.
+
+Feature levels 123-124 are reserved for future use in 5.x maintenance
+releases.
+
 ## Changes in Zulip 5.0
 
+**Feature level 122**
+
+No changes; feature level used for Zulip 5.0 release.
+
+**Feature level 121**
+
+* [`GET /events`](/api/get-events): Added `message_details` field
+  appearing in message flag update events when marking previously read
+  messages as unread.
+
+**Feature level 120**
+
+* [`GET /messages/{message_id}`](/api/get-message): This endpoint
+  now sends the full message details. Previously, it only returned
+  the message's raw Markdown content.
+
+**Feature level 119**
+
+* [`POST /register`](/api/register-queue): The `unread_msgs` section
+  of the response now prefers `other_user_id` over the poorly named
+  `sender_id` field in the `pms` dictionaries. This change is
+  motivated by the possibility that a message you yourself sent to
+  another user could be marked as unread.
+
+**Feature level 118**
+
+* [`GET /messages`](/api/get-messages), [`GET
+  /events`](/api/get-events): Improved the format of the
+  `edit_history` object within message objects. Entries for stream
+  edits now include a both a `prev_stream` and `stream` field to
+  indicate the previous and current stream IDs. Entries for topic
+  edits now include both a `prev_topic` and `topic` field to indicate
+  the previous and current topic, replacing the `prev_subject`
+  field. These changes substantially simplify client complexity for
+  processing historical message edits.
+
+* [`GET messages/{message_id}/history`](/api/get-message-history):
+  Added `stream` field to message history `snapshot` indicating
+  the updated stream ID of messages moved to a new stream.
+
+**Feature level 117**
+
+* `POST /invites`, `POST /invites/multiuse`: Added support for passing
+  `null` as the `invite_expires_in_days` parameter to request an
+  invitation that never expires.
+
+**Feature level 116**
+
+* [`GET /server_settings`](/api/get-server-settings): Added
+  `realm_web_public_access_enabled` as a realm-specific server setting,
+  which can be used by clients to detect whether the realm allows and
+  has at least one [web-public stream](/help/public-access-option).
 
 **Feature level 115**
 
@@ -169,6 +264,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added new endpoint to update default values of user settings in a realm.
+* `POST /invites`, `POST /invites/multiuse`: Added
+  `invite_expires_in_days` parameter encoding the number days before
+  the invitation should expire.
 
 **Feature level 95**
 
@@ -273,8 +371,8 @@ format used by the Zulip server that they are interacting with.
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
 * [`POST /register`](/api/register-queue): Added `emoji_name`,
   `emoji_code`, and `reaction_type` fields to `user_status` objects.
-* `POST /users/me/status`: Added support for new `emoji_name`,
-  `emoji_code`, and `reaction_type` parameters.
+* [`POST /users/me/status`](/api/update-status): Added support for new
+  `emoji_name`, `emoji_code`, and `reaction_type` parameters.
 
 **Feature level 85**
 
@@ -427,8 +525,8 @@ No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 61**
 
-* Added support for inviting users as moderators to the invitation
-  endpoints.
+* `POST /invites`, `POST /invites/multiuse`: Added support for
+  inviting users as moderators.
 
 **Feature level 60**
 

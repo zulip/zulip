@@ -13,25 +13,25 @@ import botocore.exceptions
 import orjson
 from django.conf import settings
 from django.http.response import StreamingHttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
 
 import zerver.lib.upload
-from zerver.lib.actions import (
-    do_change_icon_source,
-    do_change_logo_source,
-    do_change_realm_plan_type,
-    do_create_realm,
-    do_delete_old_unclaimed_attachments,
-    do_set_realm_property,
-    internal_send_private_message,
-)
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.message_send import internal_send_private_message
+from zerver.actions.realm_icon import do_change_icon_source
+from zerver.actions.realm_logo import do_change_logo_source
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.uploads import do_delete_old_unclaimed_attachments
+from zerver.actions.user_settings import do_delete_avatar_image
 from zerver.lib.avatar import avatar_url, get_avatar_field
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.cache import cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
@@ -210,6 +210,12 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # requests; they will be first authenticated and redirected
         self.assert_streaming_content(self.client_get(uri), b"zulip!")
 
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        result = self.client_get(download_uri)
+        self.assert_streaming_content(result, b"zulip!")
+        self.assertIn("attachment;", result.headers["Content-Disposition"])
+
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name="zulip.txt")
         self.assertEqual(entry.is_claimed(), False)
@@ -234,7 +240,52 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_streaming_content(self.client_get(url_only_url), b"zulip!")
         # The original uri shouldn't work when logged out:
         result = self.client_get(uri)
-        self.assertEqual(result.status_code, 401)
+        self.assertEqual(result.status_code, 403)
+
+    @override_settings(RATE_LIMITING=True)
+    def test_serve_file_unauthed(self) -> None:
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip_web_public.txt"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        uri = result.json()["uri"]
+        self.assert_json_success(result)
+
+        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+        # Deny file access for non-web-public stream
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        host = self.example_user("hamlet").realm.host
+        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
+        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+
+        self.logout()
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 403)
+
+        # Allow file access for web-public stream
+        self.login("hamlet")
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("hamlet"), "web-public-stream")
+        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
+        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+
+        self.logout()
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 200)
+        remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+
+        # Deny file access since rate limited
+        add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+        response = self.client_get(uri)
+        self.assertEqual(response.status_code, 403)
+        remove_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+
+        # Deny random file access
+        response = self.client_get(
+            "/user_uploads/2/71/QYB7LA-ULMYEad-QfLMxmI2e/zulip-non-existent.txt"
+        )
+        self.assertEqual(response.status_code, 404)
 
     def test_serve_local_file_unauthed_invalid_token(self) -> None:
         result = self.client_get("/user_uploads/temporary/badtoken/file.png")
@@ -288,9 +339,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.logout()
         response = self.client_get(uri)
-        self.assert_json_error(
-            response, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.assertEqual(response.status_code, 403)
+        self.assert_in_response("<p>You are not authorized to view this file.</p>", response)
 
     def test_removed_file_download(self) -> None:
         """
@@ -472,7 +522,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
@@ -492,7 +541,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "message_id": msg_id,
                 "content": new_body,
             },
         )
@@ -563,6 +611,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             password = initial_password(email)
             if password is not None:
                 self.register(email, password, subdomain=realm_id)
+                # self.register has the side-effect of ending up with a logged in session
+                # for the new user. We don't want that in these tests.
+                self.logout()
             return get_user_by_delivery_email(email, get_realm(realm_id))
 
         test_subdomain = "uploadtest.example.com"
@@ -605,6 +656,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(uri, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
         self.assert_in_response("You are not authorized to view this file.", response)
+
+        # Verify that cross-realm access to files for spectators is denied.
+        self.logout()
+        response = self.client_get(uri, subdomain=test_subdomain)
+        self.assertEqual(response.status_code, 403)
 
     def test_file_download_authorization_invite_only(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -814,7 +870,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_serve_local(self) -> None:
         def check_xsend_links(
-            name: str, name_str_for_test: str, content_disposition: str = ""
+            name: str,
+            name_str_for_test: str,
+            content_disposition: str = "",
+            download: bool = False,
         ) -> None:
             with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
                 _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
@@ -825,6 +884,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 uri = result.json()["uri"]
                 fp_path_id = re.sub("/user_uploads/", "", uri)
                 fp_path = os.path.split(fp_path_id)[0]
+                if download:
+                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
                 response = self.client_get(uri)
                 _get_sendfile.cache_clear()
                 assert settings.LOCAL_UPLOADS_DIR is not None
@@ -851,6 +912,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         check_xsend_links("zulip.html", "zulip.html", 'filename="zulip.html"')
         check_xsend_links("zulip.sh", "zulip.sh", 'filename="zulip.sh"')
         check_xsend_links("zulip.jpeg", "zulip.jpeg")
+        check_xsend_links(
+            "zulip.jpeg", "zulip.jpeg", download=True, content_disposition='filename="zulip.jpeg"'
+        )
         check_xsend_links("áéБД.pdf", "%C3%A1%C3%A9%D0%91%D0%94.pdf")
         check_xsend_links("zulip", "zulip", 'filename="zulip"')
 
@@ -1118,6 +1182,18 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             status_code=401,
         )
 
+        with self.settings(RATE_LIMITING=True):
+            # Allow unauthenticated/spectator requests by ID for a reasonable number of requests.
+            add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+            response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+            self.assertEqual(302, response.status_code)
+            remove_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
+
+            # Deny file access since rate limited
+            add_ratelimit_rule(86400, 0, domain="spectator_attachment_access_by_file")
+            response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+            self.assertEqual(429, response.status_code)
+
     def test_non_valid_user_avatar(self) -> None:
 
         # It's debatable whether we should generate avatars for non-users,
@@ -1221,7 +1297,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(avatar_original_path_id))
         self.assertTrue(os.path.isfile(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertFalse(os.path.isfile(avatar_path_id))
@@ -1302,46 +1378,47 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
-        # Test an image larger than max is resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((50, 50), im.size)
-            self.assertTrue(is_animated)
-            assert still_img_data
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+        for img_format in ("gif", "png"):
+            animated_large_img_data = read_test_image_file(f"animated_large_img.{img_format}")
 
-        # Test an image file larger than max is resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((50, 50), im.size)
-            self.assertTrue(is_animated)
-            assert still_img_data is not None
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+            def test_resize(size: int = 50) -> None:
+                resized_img_data, is_animated, still_img_data = resize_emoji(
+                    animated_large_img_data, size=50
+                )
+                im = Image.open(io.BytesIO(resized_img_data))
+                self.assertEqual((size, size), im.size)
+                self.assertTrue(is_animated)
+                assert still_img_data
+                still_image = Image.open(io.BytesIO(still_img_data))
+                self.assertEqual((50, 50), still_image.size)
 
-        # Test an image smaller than max and smaller than file size max is not resized
-        animated_large_img_data = read_test_image_file("animated_large_img.gif")
-        with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
-            resized_img_data, is_animated, still_img_data = resize_emoji(
-                animated_large_img_data, size=50
-            )
-            im = Image.open(io.BytesIO(resized_img_data))
-            self.assertEqual((256, 256), im.size)
-            self.assertTrue(is_animated)
+            # Test an image larger than max is resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 128):
+                test_resize()
 
-            # We unconditionally resize the still_image
-            assert still_img_data is not None
-            still_image = Image.open(io.BytesIO(still_img_data))
-            self.assertEqual((50, 50), still_image.size)
+            # Test an image file larger than max is resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_FILE_SIZE_BYTES", 3 * 1024 * 1024):
+                test_resize()
+
+            # Test an image smaller than max and smaller than file size max is not resized
+            with patch("zerver.lib.upload.MAX_EMOJI_GIF_SIZE", 512):
+                test_resize(size=256)
+
+        # Test a non-animated GIF image which does need to be resized
+        still_large_img_data = read_test_image_file("still_large_img.gif")
+        resized_img_data, is_animated, no_still_data = resize_emoji(still_large_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
+        self.assertFalse(is_animated)
+        assert no_still_data is None
+
+        # Test a non-animated and non-animatable image format which needs to be resized
+        still_large_img_data = read_test_image_file("img.jpg")
+        resized_img_data, is_animated, no_still_data = resize_emoji(still_large_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
+        self.assertFalse(is_animated)
+        assert no_still_data is None
 
     def tearDown(self) -> None:
         destroy_uploads()
@@ -1933,6 +2010,15 @@ class S3Test(ZulipTestCase):
         key = path[1:]
         self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
 
+        # Check the download endpoint
+        download_uri = uri.replace("/user_uploads/", "/user_uploads/download/")
+        response = self.client_get(download_uri)
+        redirect_url = response["Location"]
+        path = urllib.parse.urlparse(redirect_url).path
+        assert path.startswith("/")
+        key = path[1:]
+        self.assertEqual(b"zulip!", bucket.Object(key).get()["Body"].read())
+
         # Now try the endpoint that's supposed to return a temporary URL for access
         # to the file.
         result = self.client_get("/json" + uri)
@@ -2048,7 +2134,7 @@ class S3Test(ZulipTestCase):
         self.assertIsNotNone(bucket.Object(avatar_original_image_path_id))
         self.assertIsNotNone(bucket.Object(avatar_medium_path_id))
 
-        zerver.lib.actions.do_delete_avatar_image(user, acting_user=user)
+        do_delete_avatar_image(user, acting_user=user)
 
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
@@ -2280,17 +2366,17 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 class DecompressionBombTests(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.test_urls = {
-            "/json/users/me/avatar": "Image size exceeds limit.",
-            "/json/realm/logo": "Image size exceeds limit.",
-            "/json/realm/icon": "Image size exceeds limit.",
-            "/json/realm/emoji/bomb_emoji": "Image file upload failed.",
-        }
+        self.test_urls = [
+            "/json/users/me/avatar",
+            "/json/realm/logo",
+            "/json/realm/icon",
+            "/json/realm/emoji/bomb_emoji",
+        ]
 
     def test_decompression_bomb(self) -> None:
         self.login("iago")
         with get_test_image_file("bomb.png") as fp:
-            for url, error_string in self.test_urls.items():
+            for url in self.test_urls:
                 fp.seek(0, 0)
                 if url == "/json/realm/logo":
                     result = self.client_post(
@@ -2298,4 +2384,4 @@ class DecompressionBombTests(ZulipTestCase):
                     )
                 else:
                     result = self.client_post(url, {"f1": fp})
-                self.assert_json_error(result, error_string)
+                self.assert_json_error(result, "Image size exceeds limit.")

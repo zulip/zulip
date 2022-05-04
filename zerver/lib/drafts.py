@@ -6,10 +6,10 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.lib.actions import recipient_for_user_profiles
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.message import normalize_body, truncate_topic
+from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.types import ViewFuncT

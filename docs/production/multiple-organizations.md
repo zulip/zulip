@@ -55,7 +55,7 @@ the homepage for the server is a copy of the Zulip homepage.
 You'll need to install an SSL certificate valid for all the
 (sub)domains you're using your Zulip server with. You can get an SSL
 certificate covering several domains for free by using
-[our Certbot wrapper tool](../production/ssl-certificates.html#after-zulip-is-already-installed),
+[our Certbot wrapper tool](ssl-certificates.md#after-zulip-is-already-installed),
 though if you're going to host a large number of organizations, you
 may want to get a wildcard certificate. You can also get a wildcard
 certificate for

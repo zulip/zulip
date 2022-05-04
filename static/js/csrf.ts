@@ -4,8 +4,8 @@ export let csrf_token: string | undefined;
 
 $(() => {
     // This requires that we used Jinja2's {% csrf_input %} somewhere on the page.
-    const csrf_input = $('input[name="csrfmiddlewaretoken"]');
-    csrf_token = csrf_input.attr("value");
+    const $csrf_input = $('input[name="csrfmiddlewaretoken"]');
+    csrf_token = $csrf_input.attr("value");
     if (csrf_token === undefined) {
         return;
     }

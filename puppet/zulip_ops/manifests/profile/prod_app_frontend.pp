@@ -13,7 +13,7 @@ class zulip_ops::profile::prod_app_frontend {
   }
 
   file { '/etc/nginx/sites-enabled/zulip':
-    ensure  => 'link',
+    ensure  => link,
     require => Package['nginx-full'],
     target  => '/etc/nginx/sites-available/zulip',
     notify  => Service['nginx'],

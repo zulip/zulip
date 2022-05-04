@@ -495,7 +495,17 @@ class UserChangesTest(ZulipTestCase):
         for api_key in old_api_keys:
             self.assertEqual(get_user_profile_by_api_key(api_key).email, email)
 
+        # First verify this endpoint is not registered in the /json/... path
+        # to prevent access with only a session.
         result = self.client_post("/json/users/me/api_key/regenerate")
+        self.assertEqual(result.status_code, 404)
+
+        # A logged-in session doesn't allow access to an /api/v1/ endpoint
+        # of course.
+        result = self.client_post("/api/v1/users/me/api_key/regenerate")
+        self.assertEqual(result.status_code, 401)
+
+        result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
         self.assert_json_success(result)
         new_api_key = result.json()["api_key"]
         self.assertNotIn(new_api_key, old_api_keys)

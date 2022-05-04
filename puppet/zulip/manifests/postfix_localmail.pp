@@ -8,7 +8,7 @@ class zulip::postfix_localmail {
   }
   $postfix_mailname = zulipconf('postfix', 'mailname', $fqdn)
   package { $postfix_packages:
-    ensure  => 'installed',
+    ensure  => installed,
     require => File['/etc/mailname'],
   }
 

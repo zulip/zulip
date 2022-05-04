@@ -31,8 +31,8 @@ async function copy_messages(
             $("body").trigger(new $.Event("keydown", {which: 67, ctrlKey: true}));
 
             // find temp div with copied text
-            const temp_div = $("#copytempdiv");
-            return temp_div
+            const $temp_div = $("#copytempdiv");
+            return $temp_div
                 .children("p")
                 .get()
                 .map((p) => p.textContent!);

@@ -44,13 +44,16 @@ SOURCES_FILE=/etc/apt/sources.list.d/$LIST.list
 PREF_FILE=/etc/apt/preferences.d/$LIST.pref
 STAMP_FILE=/etc/apt/sources.list.d/$LIST.list.apt-update-in-progress
 
-ZULIP_SCRIPTS="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
-LIST_PATH="$ZULIP_SCRIPTS/setup/apt-repos/$LIST"
+# All paths, for purposes of hashing, should be relative to the deploy
+# root.
+cd "$(dirname "$0")/../.."
+
+LIST_PATH="scripts/setup/apt-repos/$LIST"
 if ! [ -d "$LIST_PATH" ]; then
     echo "Not a valid value for --list: '$LIST'"
     echo ""
     echo "Valid values are:"
-    ls -1 "$ZULIP_SCRIPTS/setup/apt-repos/"
+    ls -1 "scripts/setup/apt-repos/"
     exit 1
 fi
 
@@ -66,7 +69,7 @@ EOF
     exit 1
 fi
 
-DEPENDENCIES_HASH="$(sha256sum "$LIST_PATH"/?(*.asc|"$release.list"|"$LIST.pref"|custom.sh) "$ZULIP_SCRIPTS/lib/setup-apt-repo")"
+DEPENDENCIES_HASH="$(sha256sum "$LIST_PATH"/?(*.asc|"$release.list"|"$LIST.pref"|custom.sh) "scripts/lib/setup-apt-repo")"
 DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
 touch "$DEPENDENCIES_HASH_FILE"

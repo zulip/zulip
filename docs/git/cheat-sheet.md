@@ -112,5 +112,5 @@ See also [fixing commits][fix-commit]
   - `git status`: show the working tree status, unstaged and staged files
 
 [fix-commit]: fixing-commits.md
-[git-config-clone]: cloning.html#step-1b-clone-to-your-machine
-[git-overview]: ./overview.md
+[git-config-clone]: cloning.md#step-1b-clone-to-your-machine
+[git-overview]: overview.md

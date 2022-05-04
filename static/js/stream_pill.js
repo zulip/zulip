@@ -54,6 +54,7 @@ export function get_user_ids(pill_widget) {
     user_ids = Array.from(new Set(user_ids));
 
     user_ids = user_ids.filter(Boolean);
+    user_ids.sort((a, b) => a - b);
     return user_ids;
 }
 

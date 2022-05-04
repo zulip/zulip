@@ -14,12 +14,12 @@ import * as ui_util from "./ui_util";
 export let is_using_input_method = false;
 
 export function narrow_or_search_for_term(search_string) {
-    const search_query_box = $("#search_query");
+    const $search_query_box = $("#search_query");
     if (is_using_input_method) {
         // Neither narrow nor search when using input tools as
         // `updater` is also triggered when 'enter' is triggered
         // while using input tool
-        return search_query_box.val();
+        return $search_query_box.val();
     }
     ui_util.change_tab_to("#message_feed_container");
 
@@ -44,17 +44,17 @@ export function narrow_or_search_for_term(search_string) {
     // Narrowing will have already put some operators in the search box,
     // so leave the current text in.
     if (!page_params.search_pills_enabled) {
-        search_query_box.trigger("blur");
+        $search_query_box.trigger("blur");
     }
-    return search_query_box.val();
+    return $search_query_box.val();
 }
 
 function update_buttons_with_focus(focused) {
-    const search_query_box = $("#search_query");
+    const $search_query_box = $("#search_query");
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
-    if (focused || search_query_box.val() || narrow_state.active()) {
+    if (focused || $search_query_box.val() || narrow_state.active()) {
         $(".search_button").prop("disabled", false);
     }
 }
@@ -64,9 +64,9 @@ export function update_button_visibility() {
 }
 
 export function initialize() {
-    const search_query_box = $("#search_query");
-    const searchbox_form = $("#searchbox_form");
-    const searchbox = $("#searchbox");
+    const $search_query_box = $("#search_query");
+    const $searchbox_form = $("#searchbox_form");
+    const $searchbox = $("#searchbox");
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
@@ -75,7 +75,7 @@ export function initialize() {
     // just represents the key of the hash, so it's redundant.)
     let search_map = new Map();
 
-    search_query_box.typeahead({
+    $search_query_box.typeahead({
         source(query) {
             let base_query = "";
             if (page_params.search_pills_enabled) {
@@ -102,7 +102,7 @@ export function initialize() {
         updater(search_string) {
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string, search_pill_widget.widget);
-                return search_query_box.val();
+                return $search_query_box.val();
             }
             return narrow_or_search_for_term(search_string);
         },
@@ -114,7 +114,7 @@ export function initialize() {
 
         on_move() {
             if (page_params.search_pills_enabled) {
-                ui_util.place_caret_at_end(search_query_box[0]);
+                ui_util.place_caret_at_end($search_query_box[0]);
             }
         },
         // Use our custom typeahead `on_escape` hook to exit
@@ -122,7 +122,7 @@ export function initialize() {
         on_escape: message_view_header.exit_search,
     });
 
-    searchbox_form.on("compositionend", () => {
+    $searchbox_form.on("compositionend", () => {
         // Set `is_using_input_method` to true if Enter is pressed to exit
         // the input tool popover and get the text in the search bar. Then
         // we suppress searching triggered by this Enter key by checking
@@ -131,10 +131,10 @@ export function initialize() {
         is_using_input_method = true;
     });
 
-    searchbox_form
+    $searchbox_form
         .on("keydown", (e) => {
             update_button_visibility();
-            if (e.key === "Enter" && search_query_box.is(":focus")) {
+            if (e.key === "Enter" && $search_query_box.is(":focus")) {
                 // Don't submit the form so that the typeahead can instead
                 // handle our Enter keypress. Any searching that needs
                 // to be done will be handled in the keyup.
@@ -147,7 +147,7 @@ export function initialize() {
                 return;
             }
 
-            if (e.key === "Enter" && search_query_box.is(":focus")) {
+            if (e.key === "Enter" && $search_query_box.is(":focus")) {
                 // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by
@@ -156,8 +156,8 @@ export function initialize() {
                 // indicate that they've done what they need to do)
 
                 // Pill is already added during keydown event of input pills.
-                narrow_or_search_for_term(search_query_box.val());
-                search_query_box.trigger("blur");
+                narrow_or_search_for_term($search_query_box.val());
+                $search_query_box.trigger("blur");
                 update_buttons_with_focus(false);
             }
         });
@@ -166,8 +166,8 @@ export function initialize() {
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
 
-    search_query_box.on("focus", focus_search);
-    search_query_box.on("blur", (e) => {
+    $search_query_box.on("focus", focus_search);
+    $search_query_box.on("blur", (e) => {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
@@ -204,9 +204,9 @@ export function initialize() {
         // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
         // while we want to add box-shadow to `#searchbox`. This could have been done
         // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
-        searchbox.on("focusout", () => {
+        $searchbox.on("focusout", () => {
             message_view_header.close_search_bar_and_open_narrow_description();
-            searchbox.css({"box-shadow": "unset"});
+            $searchbox.css({"box-shadow": "unset"});
         });
     }
 }

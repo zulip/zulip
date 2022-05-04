@@ -23,6 +23,7 @@ import * as util from "./util";
 export function resize_app() {
     const navbar_alerts_wrapper_height = $("#navbar_alerts_wrapper").height();
     $("body > .app").height("calc(100% - " + navbar_alerts_wrapper_height + "px)");
+    $(".recent_topics_container").height("calc(100vh - " + navbar_alerts_wrapper_height + "px)");
 
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).

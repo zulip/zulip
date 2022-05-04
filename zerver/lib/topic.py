@@ -8,6 +8,7 @@ from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
+from zerver.lib.types import EditHistoryEvent
 from zerver.models import Message, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
@@ -18,12 +19,6 @@ MATCH_TOPIC = "match_subject"
 
 # Prefix use to mark topic as resolved.
 RESOLVED_TOPIC_PREFIX = "✔ "
-
-# This constant is actually embedded into
-# the JSON data for message edit history,
-# so we'll always need to handle legacy data
-# unless we do a pretty tricky migration.
-LEGACY_PREV_TOPIC = "prev_subject"
 
 # This constant is pretty closely coupled to the
 # database, but it's the JSON field.
@@ -56,7 +51,7 @@ def REQ_topic() -> Optional[str]:
     return REQ(
         whence="topic",
         aliases=["subject"],
-        converter=lambda x: x.strip(),
+        converter=lambda var_name, x: x.strip(),
         default=None,
     )
 
@@ -135,11 +130,11 @@ def user_message_exists_for_topic(
 
 
 def update_edit_history(
-    message: Message, last_edit_time: datetime, edit_history_event: Dict[str, Any]
+    message: Message, last_edit_time: datetime, edit_history_event: EditHistoryEvent
 ) -> None:
     message.last_edit_time = last_edit_time
     if message.edit_history is not None:
-        edit_history = orjson.loads(message.edit_history)
+        edit_history: List[EditHistoryEvent] = orjson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
@@ -154,7 +149,7 @@ def update_messages_for_topic_edit(
     topic_name: Optional[str],
     new_stream: Optional[Stream],
     old_stream: Stream,
-    edit_history_event: Dict[str, Any],
+    edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
 ) -> List[Message]:
     propagate_query = Q(recipient_id=old_stream.recipient_id, subject__iexact=orig_topic_name)
