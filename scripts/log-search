@@ -2,6 +2,7 @@
 
 import argparse
 import gzip
+import logging
 import os
 import re
 import signal
@@ -56,7 +57,9 @@ def parser() -> argparse.ArgumentParser:
     )
 
     filtering = parser.add_argument_group("Filtering")
-    filtering.add_argument("filter", help="IP address, hostname, user-id, or path to search for")
+    filtering.add_argument(
+        "filter", help="IP address, hostname, user-id, path, or status code to search for"
+    )
     filtering.add_argument(
         "--all-lines",
         "-L",
@@ -155,12 +158,11 @@ class FilterType(Enum):
     CLIENT_IP = auto()
     USER_ID = auto()
     PATH = auto()
+    STATUS = auto()
 
 
 def main() -> None:
     args = parser().parse_args()
-
-    logfile_names = parse_logfile_names(args)
 
     # The heuristics below are not intended to be precise -- they
     # certainly count things as "IPv4" or "IPv6" addresses that are
@@ -168,7 +170,17 @@ def main() -> None:
     # reasonably well-formed.
     filter = args.filter
 
-    if re.match(r"\d+$", filter):
+    if re.match(r"[1-5][0-9][0-9]$", filter):
+        string_filter = lambda m: m["code"] == filter
+        filter_type = FilterType.STATUS
+        if not args.nginx and filter == "502":
+            logging.warning("Adding --nginx -- 502's do not appear in Django logs.")
+            args.nginx = True
+    elif re.match(r"[1-5]xx$", filter):
+        filter = filter[0]
+        string_filter = lambda m: m["code"].startswith(filter)
+        filter_type = FilterType.STATUS
+    elif re.match(r"\d+$", filter):
         if args.nginx:
             raise parser().error("Cannot parse user-ids with nginx logs; try without --nginx")
         string_filter = lambda m: m["user_id"] == filter
@@ -199,8 +211,12 @@ def main() -> None:
         filter_type = FilterType.PATH
         args.all_lines = True
     else:
-        raise RuntimeError(f"Can't parse {filter} as an IP, hostname, user-id, or path.")
+        raise RuntimeError(
+            f"Can't parse {filter} as an IP, hostname, user-id, path, or status code."
+        )
     assert filter_type is not None
+
+    logfile_names = parse_logfile_names(args)
 
     try:
         for logfile_name in reversed(logfile_names):
