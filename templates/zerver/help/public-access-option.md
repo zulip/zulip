@@ -37,10 +37,9 @@ communities such as open-source projects and research communities.
 ### Enable or disable web-public streams
 
 !!! warn ""
-    Self-hosted Zulip servers must enable support for web-public streams by setting
-    `WEB_PUBLIC_STREAMS_ENABLED = True` in their [server
-    settings](https://zulip.readthedocs.io/en/latest/production/settings.html)
-    prior to proceeding.
+    Self-hosted Zulip servers must enable support for web-public streams in their
+    [server settings](https://zulip.readthedocs.io/en/latest/production/settings.html)
+    by setting `WEB_PUBLIC_STREAMS_ENABLED = True` prior to proceeding.
 
 {start_tabs}
 

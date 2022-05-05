@@ -2,10 +2,12 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_confirm_delete_user from "../templates/confirm_dialog/confirm_delete_user.hbs";
+import render_add_user_group_modal from "../templates/settings/add_user_group_modal.hbs";
 import render_admin_user_group_list from "../templates/settings/admin_user_group_list.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -297,48 +299,78 @@ export function populate_user_groups() {
     }
 }
 
+export function add_user_group(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $user_group_status = $("#dialog_error");
+
+    const group = {
+        members: JSON.stringify([people.my_current_user_id()]),
+    };
+
+    for (const obj of $("#add-user-group-form").serializeArray()) {
+        if (obj.value.trim() === "") {
+            continue;
+        }
+        group[obj.name] = obj.value;
+    }
+
+    channel.post({
+        url: "/json/user_groups/create",
+        data: group,
+        success() {
+            $user_group_status.hide();
+            ui_report.success($t_html({defaultMessage: "User group added!"}), $user_group_status);
+            dialog_widget.close_modal();
+        },
+        error(xhr) {
+            $user_group_status.hide();
+            const errors = JSON.parse(xhr.responseText).msg;
+            xhr.responseText = JSON.stringify({msg: errors});
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
+        },
+    });
+}
+
+function show_add_user_group_modal() {
+    const html_body = render_add_user_group_modal();
+
+    function add_user_group_post_render() {
+        const $add_user_group_input_element = $("#user_group_name");
+        const $add_user_group_submit_button = $("#add-user-group-modal .dialog_submit_button");
+        $add_user_group_submit_button.prop("disabled", true);
+
+        $add_user_group_input_element.on("input", () => {
+            $add_user_group_submit_button.prop(
+                "disabled",
+                $add_user_group_input_element.val() === "",
+            );
+        });
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Add new user group"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Save"}),
+        help_link: "/help/user-groups",
+        form_id: "add-user-group-form",
+        id: "add-user-group-modal",
+        on_click: add_user_group,
+        on_shown: () => $("#user_group_name").trigger("focus"),
+        post_render: add_user_group_post_render,
+    });
+}
+
 export function set_up() {
     meta.loaded = true;
     populate_user_groups();
 
-    $(".organization form.admin-user-group-form")
-        .off("submit")
-        .on("submit", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const $user_group_status = $("#admin-user-group-status");
-
-            const group = {
-                members: JSON.stringify([people.my_current_user_id()]),
-            };
-
-            for (const obj of $(this).serializeArray()) {
-                if (obj.value.trim() === "") {
-                    continue;
-                }
-                group[obj.name] = obj.value;
-            }
-
-            channel.post({
-                url: "/json/user_groups/create",
-                data: group,
-                success() {
-                    $user_group_status.hide();
-                    ui_report.success(
-                        $t_html({defaultMessage: "User group added!"}),
-                        $user_group_status,
-                    );
-                    $("form.admin-user-group-form input[type='text']").val("");
-                },
-                error(xhr) {
-                    $user_group_status.hide();
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $user_group_status);
-                },
-            });
-        });
+    $("#show-add-user-group-modal").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        show_add_user_group_modal();
+    });
 
     $("#user-groups").on("click", ".delete", function () {
         const group_id = Number.parseInt($(this).parents(".user-group").attr("id"), 10);

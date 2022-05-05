@@ -2,7 +2,9 @@
 
 {settings_tab|user-groups-admin}
 
-1. Under **Add a new user group**, enter a **Name** and **Description**.
+1. Click the **Add a new user group** button.
+
+1. Enter a **Name** and **Description**.
 
 1. Click **Save**.
 

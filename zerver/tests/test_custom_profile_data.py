@@ -145,6 +145,15 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
+                "python": {"text": "Duplicate", "order": "1"},
+                "java": {"text": "Duplicate", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field must not have duplicate choices.")
+
+        data["field_data"] = orjson.dumps(
+            {
                 "python": {"text": "Python", "order": "1"},
                 "java": {"text": "Java", "order": "2"},
             }
@@ -281,7 +290,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Malformed URL pattern.")
+        self.assert_json_error(result, "URL pattern must contain '%(username)s'.")
 
         data["field_data"] = orjson.dumps(
             {
@@ -290,7 +299,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
-        self.assert_json_error(result, "Malformed URL pattern.")
+        self.assert_json_error(result, "URL pattern must contain '%(username)s'.")
 
         data["field_data"] = orjson.dumps(
             {

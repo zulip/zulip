@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_subscription_invites_warning_modal from "../templates/confirm_dialog/confirm_subscription_invites_warning.hbs";
@@ -14,6 +15,7 @@ import * as stream_create_subscribers from "./stream_create_subscribers";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as ui_report from "./ui_report";
+import {parse_html} from "./ui_util";
 
 let created_stream;
 
@@ -385,28 +387,13 @@ export function set_up_handlers() {
         stream_name_error.pre_validate(stream_name);
     });
 
-    $container.on("mouseover", "#announce-stream-docs", (e) => {
-        const $announce_stream_docs = $("#announce-stream-docs");
-        $announce_stream_docs.popover({
-            placement: "right",
-            content: render_announce_stream_docs({
-                notifications_stream: stream_data.get_notifications_stream(),
-            }),
-            html: true,
-            trigger: "manual",
-        });
-        $announce_stream_docs.popover("show");
-        $announce_stream_docs.data("popover").tip().css("z-index", 2000);
-        $announce_stream_docs
-            .data("popover")
-            .tip()
-            .find(".popover-content")
-            .css("margin", "9px 14px");
-        e.stopPropagation();
-    });
-    $container.on("mouseout", "#announce-stream-docs", (e) => {
-        $("#announce-stream-docs").popover("hide");
-        e.stopPropagation();
+    tippy("#announce-stream-docs", {
+        content: () =>
+            parse_html(
+                render_announce_stream_docs({
+                    notifications_stream: stream_data.get_notifications_stream(),
+                }),
+            ),
     });
 
     // Do not allow the user to enter newline characters while typing out the

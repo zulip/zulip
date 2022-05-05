@@ -718,22 +718,32 @@ input[type="checkbox"] {
     text-align: right;
 }
 
+#show-add-user-group-modal {
+    margin-bottom: 10px;
+}
+
+#add-user-group-form {
+    margin: 0;
+
+    /* This 14px is the border and padding of the input element */
+    #user_group_description {
+        width: calc(100% - 14px);
+    }
+}
+
 .add-new-emoji-box,
-.add-new-user-group-box,
 .add-new-alert-word-box,
 .add-new-export-box {
     margin-bottom: 20px;
 }
 
 .add-new-emoji-box .new-emoji-form,
-.add-new-user-group-box .new-user-group-form,
 .add-new-alert-word-box .new-alert-word-form,
 .add-new-export-box {
     margin: 10px 0;
 }
 
 .add-new-emoji-box,
-.add-new-user-group-box,
 .add-new-default-stream-box {
     input[type="text"] {
         padding: 6px;
