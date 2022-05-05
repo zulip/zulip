@@ -1,11 +1,11 @@
->  “Choosing Zulip over Slack as our group chat is one of the best
->  decisions we’ve ever made. Zulip makes it easy for our community of
->  1000 Recursers around the world to stay involved, even years after
->  their batches finish. No other tool has a user experience that
->  [scales to a community of our
->  size](https://www.recurse.com/blog/112-how-rc-uses-zulip).”
+> “The core of the Recurse Center is the community, and the core of our online
+> community is Zulip… Switching to Zulip has turned out to be one of the best
+> decisions we’ve made, and it’s impossible to imagine RC today without it. No
+> other tool has a user experience that scales to a community of our size.”
 >
-> — Nick Bergson-Shilcock, founder and CEO, Recurse Center
+> — Nick Bergson-Shilcock, founder and CEO, [Recurse
+> Center](https://www.recurse.com/); check out [the story of how the Recurse
+> Center uses Zulip](/case-studies/recurse-center/)
 
 ## Zulip: Designed with communities in mind
 
