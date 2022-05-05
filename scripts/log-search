@@ -24,9 +24,7 @@ from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
 
 
 def parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Search logfiles for an IP or hostname, ignoring commonly-fetched URLs."
-    )
+    parser = argparse.ArgumentParser(description="Search logfiles, ignoring commonly-fetched URLs.")
     log_selection = parser.add_argument_group("File selection")
     log_selection_options = log_selection.add_mutually_exclusive_group()
     log_selection_options.add_argument(
@@ -58,7 +56,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     filtering = parser.add_argument_group("Filtering")
-    filtering.add_argument("filter", help="IP address or hostname to search for")
+    filtering.add_argument("filter", help="IP address, hostname, or user-id to search for")
     filtering.add_argument(
         "--all-lines",
         "-L",
@@ -222,7 +220,7 @@ def main() -> None:
         string_filter = lambda m: m["hostname"] == filter
         filter_type = FilterType.HOSTNAME
     else:
-        raise RuntimeError(f"Can't parse {filter} as an IP or hostname.")
+        raise RuntimeError(f"Can't parse {filter} as an IP, hostname, or user-id.")
     assert filter_type is not None
 
     try:
