@@ -679,6 +679,8 @@ export function initialize_everything() {
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
+
+    $("#app-loading").addClass("loaded");
 }
 
 $(() => {
