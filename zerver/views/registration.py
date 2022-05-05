@@ -9,6 +9,7 @@ from django.contrib.sessions.models import Session
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -43,7 +44,7 @@ from zerver.forms import (
     RegistrationForm,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
-from zerver.lib.exceptions import RateLimited
+from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
@@ -338,9 +339,12 @@ def accounts_register(
             realm_name = form.cleaned_data["realm_name"]
             realm_type = form.cleaned_data["realm_type"]
             is_demo_org = form.cleaned_data["is_demo_organization"]
-            realm = do_create_realm(
-                string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
-            )
+            try:
+                realm = do_create_realm(
+                    string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
+                )
+            except IntegrityError as e:
+                raise JsonableError(_("Realm already exists")) from e
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
