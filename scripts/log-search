@@ -57,6 +57,7 @@ def parser() -> argparse.ArgumentParser:
     )
     filtering.add_argument("--static", "-s", help="Include static file paths", action="store_true")
     filtering.add_argument("--uploads", "-u", help="Include file upload paths", action="store_true")
+    filtering.add_argument("--avatars", "-a", help="Include avatar paths", action="store_true")
     filtering.add_argument("--events", "-e", help="Include event fetch paths", action="store_true")
     filtering.add_argument("--messages", "-m", help="Include message paths", action="store_true")
     filtering.add_argument(
@@ -254,6 +255,8 @@ def passes_filters(
     if path.startswith("/static/") and not args.static:
         return False
     if path.startswith("/user_uploads/") and not args.uploads:
+        return False
+    if path.startswith(("/user_avatars/", "/avatar/")) and not args.avatars:
         return False
     if re.match(r"/(json|api/v1)/events($|\?|/)", path) and not args.events:
         return False
