@@ -252,7 +252,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
-        "/bot_storage",
         "/submessage",
         "/zcommand",
         #### These "organization settings" endpoint have modest value to document:

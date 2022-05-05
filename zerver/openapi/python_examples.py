@@ -1405,6 +1405,28 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 
 
+@openapi_test_function("/bot_storage:get")
+def get_storage(client: Client) -> None:
+    # {code_example|start}
+    # Get Storages
+    request = {"keys": ["key1", "key2"]}
+    result = client.get_storage(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/bot_storage", "get", "200")
+
+
+@openapi_test_function("/bot_storage:put")
+def update_storage(client: Client) -> None:
+    # {code_example|start}
+    # Update storage
+    request = {"storage": {"key1": "value1", "key2": "value2"}}
+    result = client.update_storage(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/bot_storage", "put", "200")
+
+
 def test_invalid_api_key(client_with_invalid_key: Client) -> None:
     result = client_with_invalid_key.get_subscriptions()
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400")
@@ -1544,6 +1566,8 @@ def test_server_organizations(client: Client) -> None:
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)
+    update_storage(client)
+    get_storage(client)
 
 
 def test_errors(client: Client) -> None:

@@ -39,6 +39,149 @@ security:
 # Endpoint definitions
 #######################
 paths:
+  /bot_storage:
+    get:
+      operationId: get-storage
+      summary: Get bot storage
+      tags: ["server_and_organizations"]
+      description: |
+        When interactive bots are started, in some cases there maybe a need
+        to fetch the saved states of the bots. This is done by calling this
+        endpoint to retrieve the data stored using key-value pairs. The saved
+        data is accessed using the `keys` as described in parameters.
+
+        `GET {{ api_url }}/v1/bot_storage/get_storage`
+
+        **Changes**: New in Zulip 6.0 (feature level 130).
+      parameters:
+        - name: keys
+          in: query
+          description: List of storage keys.
+          required: False
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ["key1"]
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      storage:
+                        type: object
+                        description: |
+                          A dictionary of storage items and its respective keys
+                        additionalProperties:
+                          type: string
+                          description: |
+                            Returns unique storage keys and its value
+                    example:
+                      {
+                        "msg": "",
+                        "storage": {"key1": "value1", "key2": "value2"},
+                        "result": "success",
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example: {"msg": "Key does not exist.", "result": "error"}
+                    description: |
+                      An example JSON response for when a `get` operation is requested for list of
+                      storage where keys don't exist
+    put:
+      operationId: update-storage
+      summary: Update bot Storage
+      tags: ["server_and_organizations"]
+      description: |
+        This endpoint allows interactive bot writes to save the persistent state of
+        their bots (e.g. for an RSVP bot, the RSVPs).
+
+        `PUT {{ api_url }}/v1/bot_storage/update_storage
+
+        **Note** For a sufficiently complex bot, you want need your own database,
+        but for simpler bots, we offer a convenient way for bot code to persistently store data.
+      parameters:
+        - name: storage
+          in: query
+          description: A map of values
+          required: True
+          example: {"storage": {"sampleKey": "value1"}}
+          schema:
+            type: object
+      responses:
+        "201":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {"msg": "Error updating storage", "result": "error"}
+                    description: |
+                      An example JSON response for when a `PUT` operation is requested to update
+                      storage keys
+    delete:
+      operationId: delete-storage
+      summary: Remove storage
+      tags: ["server_and_organizations"]
+      description: |
+        This removes the persistent states for the bots.
+
+        `DELETE {{ api_url }}/v1/bot_storage/remove_storage
+      parameters:
+        - name: keys
+          in: query
+          description: List of storage keys
+          schema:
+            type: array
+            items:
+              type: string
+          required: False
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonError"
+                  - example:
+                      {"msg": "Error Deleting storage", "result": "error"}
+                    description: |
+                      An example JSON response for when a `remove` operation is requested for a
+                      storage key.
   /fetch_api_key:
     post:
       operationId: fetch-api-key

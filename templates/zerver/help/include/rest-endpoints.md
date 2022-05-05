@@ -83,6 +83,8 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
+* [Get bot storage](/api/get-storage)
+* [Update bot storage](/api/update-storage)
 
 #### Real-time events
 

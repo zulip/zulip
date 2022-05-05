@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 130**
+
+* [`GET /bot_storage`](/api/get-storage): Added documentation for `/GET bot storage`
+which retrieves the state of interactive bots stored using key value pairs using `/PUT bot storage` method.
+
 **Feature level 129**
 
 * [`POST /register`](/api/register-queue),
