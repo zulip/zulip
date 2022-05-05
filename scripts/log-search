@@ -114,6 +114,7 @@ PYTHON_LOG_LINE_RE = re.compile(
       (?P<date> \d+-\d+-\d+ ) \s+
       (?P<time> \d+:\d+:\d+\.\d+ ) \s+
       INFO \s+  # All access log lines are INFO
+      (pid:\d+ \s+) ?
       \[ (?P<source> zr(:\d+)?) \] \s+
       (?P<ip>
         \d{1,3}(\.\d{1,3}){3}
