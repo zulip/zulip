@@ -90,7 +90,7 @@ NGINX_LOG_LINE_RE = re.compile(
          (?P<date> \d+/\w+/\d+ )
          :
          (?P<time> \d+:\d+:\d+ )
-         \s+ \+0000
+         \s+ [+-]\d+
       \] \s+
       "
          (?P<method> \S+ )
