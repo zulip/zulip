@@ -7,7 +7,7 @@ import re
 import signal
 import sys
 from enum import Enum, auto
-from typing import Callable, TextIO
+from typing import Callable, List, TextIO
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -160,33 +160,7 @@ class FilterType(Enum):
 def main() -> None:
     args = parser().parse_args()
 
-    if args.nginx:
-        base_path = "/var/log/nginx/access.log"
-    else:
-        base_path = "/var/log/zulip/server.log"
-
-    logfile_names = [base_path]
-    if args.all_logs:
-        logfile_count = 15
-    elif args.log_files is not None:
-        logfile_count = args.log_files
-    else:
-        # Detect if there was a logfile rotation in the last
-        # (min-hours)-ish hours, and if so include the previous
-        # logfile as well.
-        logfile_count = 1
-        try:
-            current_size = os.path.getsize(base_path)
-            past_size = os.path.getsize(base_path + ".1")
-            if current_size < (args.min_hours / 24.0) * past_size:
-                logfile_count = 2
-        except FileNotFoundError:
-            pass
-    for n in range(1, logfile_count):
-        logname = f"{base_path}.{n}"
-        if n > 1:
-            logname += ".gz"
-        logfile_names.append(logname)
+    logfile_names = parse_logfile_names(args)
 
     # The heuristics below are not intended to be precise -- they
     # certainly count things as "IPv4" or "IPv6" addresses that are
@@ -254,6 +228,37 @@ def main() -> None:
                         )
     except KeyboardInterrupt:
         sys.exit(signal.SIGINT + 128)
+
+
+def parse_logfile_names(args: argparse.Namespace) -> List[str]:
+    if args.nginx:
+        base_path = "/var/log/nginx/access.log"
+    else:
+        base_path = "/var/log/zulip/server.log"
+
+    logfile_names = [base_path]
+    if args.all_logs:
+        logfile_count = 15
+    elif args.log_files is not None:
+        logfile_count = args.log_files
+    else:
+        # Detect if there was a logfile rotation in the last
+        # (min-hours)-ish hours, and if so include the previous
+        # logfile as well.
+        logfile_count = 1
+        try:
+            current_size = os.path.getsize(base_path)
+            past_size = os.path.getsize(base_path + ".1")
+            if current_size < (args.min_hours / 24.0) * past_size:
+                logfile_count = 2
+        except FileNotFoundError:
+            pass
+    for n in range(1, logfile_count):
+        logname = f"{base_path}.{n}"
+        if n > 1:
+            logname += ".gz"
+        logfile_names.append(logname)
+    return logfile_names
 
 
 def passes_filters(
