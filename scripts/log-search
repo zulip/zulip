@@ -11,6 +11,15 @@ from typing import Callable, TextIO
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
+
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+
+from django.conf import settings
+
 from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
 
 
@@ -314,12 +323,14 @@ def print_line(
     if filter_type != FilterType.HOSTNAME:
         hostname = match["hostname"]
         if hostname is None:
-            hostname = "???.zulipchat.com"
+            hostname = "???." + settings.EXTERNAL_HOST
         elif not args.nginx:
-            if hostname == "root":
+            if hostname != "root":
+                hostname += "." + settings.EXTERNAL_HOST
+            elif settings.EXTERNAL_HOST == "zulipchat.com":
                 hostname = "zulip.com"
             else:
-                hostname += ".zulipchat.com"
+                hostname = settings.EXTERNAL_HOST
         url = "https://" + hostname + url
 
     user_id = ""
