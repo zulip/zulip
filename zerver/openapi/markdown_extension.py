@@ -215,7 +215,7 @@ def curl_method_arguments(endpoint: str, method: str, api_url: str) -> List[str]
         # TODO: remove the -X part by updating the linting rule. It's redundant.
         return ["-sSX", "GET", "-G", url]
     elif method in valid_methods:
-        return ["-X", method, url]
+        return ["-sSX", method, url]
     else:
         msg = f"The request method {method} is not one of {valid_methods}"
         raise ValueError(msg)

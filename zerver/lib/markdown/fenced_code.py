@@ -132,7 +132,7 @@ Missing required -X argument in curl command:
 
 {command}
 """.strip()
-    print(lines)
+
     for line in lines:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
         if line.startswith("curl"):
