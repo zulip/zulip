@@ -79,7 +79,7 @@ export function get_realm_user_groups(): UserGroup[] {
     return user_groups.filter((group) => !group.is_system_group);
 }
 
-export function is_direct_member_of(user_group_id: number, user_id: number): boolean {
+export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error(`Could not find user group with ID ${user_group_id}`);
@@ -149,7 +149,7 @@ export function is_user_group(item: User | UserGroup): item is UserGroup {
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
     const groups_of_user = user_groups_realm.filter((group) =>
-        is_direct_member_of(group.id, user_id),
+        is_direct_member_of(user_id, group.id),
     );
     return groups_of_user;
 }
