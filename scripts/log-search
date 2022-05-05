@@ -313,7 +313,9 @@ def print_line(
     url = f"{BOLD}{match['path']}"
     if filter_type != FilterType.HOSTNAME:
         hostname = match["hostname"]
-        if not args.nginx:
+        if hostname is None:
+            hostname = "???.zulipchat.com"
+        elif not args.nginx:
             if hostname == "root":
                 hostname = "zulip.com"
             else:
