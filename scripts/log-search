@@ -56,7 +56,7 @@ def parser() -> argparse.ArgumentParser:
     )
 
     filtering = parser.add_argument_group("Filtering")
-    filtering.add_argument("filter", help="IP address, hostname, or user-id to search for")
+    filtering.add_argument("filter", help="IP address, hostname, user-id, or path to search for")
     filtering.add_argument(
         "--all-lines",
         "-L",
@@ -154,6 +154,7 @@ class FilterType(Enum):
     HOSTNAME = auto()
     CLIENT_IP = auto()
     USER_ID = auto()
+    PATH = auto()
 
 
 def main() -> None:
@@ -219,8 +220,12 @@ def main() -> None:
         filter = filter.lower()
         string_filter = lambda m: m["hostname"] == filter
         filter_type = FilterType.HOSTNAME
+    elif re.match(r"/\S*$", filter):
+        string_filter = lambda m: m["path"] == filter
+        filter_type = FilterType.PATH
+        args.all_lines = True
     else:
-        raise RuntimeError(f"Can't parse {filter} as an IP, hostname, or user-id.")
+        raise RuntimeError(f"Can't parse {filter} as an IP, hostname, user-id, or path.")
     assert filter_type is not None
 
     try:
