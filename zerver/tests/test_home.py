@@ -336,8 +336,10 @@ class HomeTest(ZulipTestCase):
             "narrow",
             "narrow_stream",
         ]
-        expected_keys = [i for i in self.expected_page_params_keys if i not in removed_keys]
-        self.assertEqual(actual_keys, expected_keys)
+        expected_keys = set(self.expected_page_params_keys + ["realm_rendered_description"]) - set(
+            removed_keys
+        )
+        self.assertEqual(set(actual_keys), set(expected_keys))
 
         # Test information passed to client about users.
         page_params = self._get_page_params(result)

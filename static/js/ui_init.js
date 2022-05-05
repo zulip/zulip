@@ -157,7 +157,7 @@ function initialize_left_sidebar() {
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
-        realm_description: page_params.realm_description,
+        realm_rendered_description: page_params.realm_rendered_description,
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);

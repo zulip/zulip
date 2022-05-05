@@ -243,6 +243,6 @@ def build_page_params_for_home_page_load(
     if user_profile is None:
         # Get rendered version of realm description which is displayed in right
         # sidebar for spectator.
-        page_params["realm_description"] = get_realm_rendered_description(realm)
+        page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
 
     return register_ret["queue_id"], page_params
