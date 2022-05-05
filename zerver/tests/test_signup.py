@@ -3319,7 +3319,7 @@ class RealmCreationTest(ZulipTestCase):
 
             result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
             self.assertEqual(result.status_code, 400)
-            self.assert_in_response("Realm already exists", result)
+            self.assert_in_response("Organization already exists", result)
 
     def test_create_realm_as_system_bot(self) -> None:
         result = self.client_post("/new/", {"email": "notification-bot@zulip.com"})
