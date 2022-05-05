@@ -654,6 +654,11 @@ i18n_urls = [
         {"template_name": "zerver/asciidoctor-case-study.html"},
     ),
     path(
+        "case-studies/recurse-center/",
+        landing_view,
+        {"template_name": "zerver/recurse-center-case-study.html"},
+    ),
+    path(
         "for/communities/",
         landing_view,
         {"template_name": "zerver/for-communities.html"},
