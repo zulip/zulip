@@ -23,7 +23,7 @@ format used by the Zulip server that they are interacting with.
 **Feature level 129**
 
 * [`POST /register`](/api/register-queue),
-  [`GET/events`](/api/get-events), `PATCH /realm`: Added realm setting
+  [`GET /events`](/api/get-events), `PATCH /realm`: Added realm setting
   `want_advertise_in_communities_directory` for organizations to give
   permission to be advertised in the Zulip communities directory.
 
@@ -695,7 +695,7 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 39**
 
-* Added new [GET /users/{email}](/api/get-user-by-email) endpoint.
+* Added new [`GET /users/{email}`](/api/get-user-by-email) endpoint.
 
 **Feature level 38**
 
@@ -905,7 +905,7 @@ No changes; feature level used for Zulip 3.0 release.
   subscribe/unsubscribe, declared in the `principals` parameter, can
   now be referenced by user_id, rather than Zulip display email
   address.
-* [PATCH /messages/{message_id}](/api/update-message): Added
+* [`PATCH /messages/{message_id}`](/api/update-message): Added
   `send_notification_to_old_thread` and
   `send_notification_to_new_thread` optional parameters.
 
