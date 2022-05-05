@@ -4,6 +4,7 @@ import argparse
 import gzip
 import os
 import re
+import signal
 import sys
 from enum import Enum, auto
 from typing import Callable, TextIO
@@ -215,29 +216,32 @@ def main() -> None:
         raise RuntimeError(f"Can't parse {filter} as an IP or hostname.")
     assert filter_type is not None
 
-    for logfile_name in reversed(logfile_names):
-        with maybe_gzip(logfile_name) as logfile:
-            for logline in logfile:
-                # As a performance optimization, just do a substring
-                # check before we parse the line fully
-                if filter not in logline.lower():
-                    continue
+    try:
+        for logfile_name in reversed(logfile_names):
+            with maybe_gzip(logfile_name) as logfile:
+                for logline in logfile:
+                    # As a performance optimization, just do a substring
+                    # check before we parse the line fully
+                    if filter not in logline.lower():
+                        continue
 
-                if args.nginx:
-                    match = NGINX_LOG_LINE_RE.match(logline)
-                else:
-                    match = PYTHON_LOG_LINE_RE.match(logline)
-                if match is None:
-                    # We expect other types of loglines in the Python logfiles
                     if args.nginx:
-                        print(f"! Failed to parse:\n{logline}", file=sys.stderr)
-                    continue
-                if passes_filters(string_filter, match, args):
-                    print_line(
-                        match,
-                        args,
-                        filter_type=filter_type,
-                    )
+                        match = NGINX_LOG_LINE_RE.match(logline)
+                    else:
+                        match = PYTHON_LOG_LINE_RE.match(logline)
+                    if match is None:
+                        # We expect other types of loglines in the Python logfiles
+                        if args.nginx:
+                            print(f"! Failed to parse:\n{logline}", file=sys.stderr)
+                        continue
+                    if passes_filters(string_filter, match, args):
+                        print_line(
+                            match,
+                            args,
+                            filter_type=filter_type,
+                        )
+    except KeyboardInterrupt:
+        sys.exit(signal.SIGINT + 128)
 
 
 def passes_filters(
