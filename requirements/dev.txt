@@ -133,10 +133,12 @@ boto3==1.22.5 \
     # via
     #   -r requirements/common.in
     #   moto
-boto3-stubs[s3]==1.22.5 \
+boto3-stubs[s3,ses,sns,sqs]==1.22.5 \
     --hash=sha256:28982cc8926b43e80fa00b0b8b8ab264c38370599fe756cbe33486a6414d998e \
     --hash=sha256:d4b16fb4c9cb46c75bde7f2754b62e178c7f1413ccdd7c4f1d9c2868b2b03141
-    # via -r requirements/mypy.in
+    # via
+    #   -r requirements/common.in
+    #   -r requirements/mypy.in
 botocore==1.25.5 \
     --hash=sha256:9f2f143fe8581eb9c43c0934b7daf706067afa409171a80b103f458977fcfbd4 \
     --hash=sha256:bcbacc0ec0a1f44cbf7e6d8112af8096eed41bec75e90af06f8bf61f20d820aa
@@ -1035,9 +1037,19 @@ mypy==0.950 \
 mypy-boto3-s3==1.22.0.post1 \
     --hash=sha256:7e9374d89e708e69f93124aa5eafbf16df1149545aa071eabf88e5399a8a43be \
     --hash=sha256:94ea6cca0622d62099f4382a3a37c9e072fd3ef4662ea329116aa078ec85088e
-    # via
-    #   -r requirements/common.in
-    #   boto3-stubs
+    # via boto3-stubs
+mypy-boto3-ses==1.22.8 \
+    --hash=sha256:37ce6c2094fb2fe5d28b0336da2c2e81f41e1ba45a4e055375103f001b0393bd \
+    --hash=sha256:e1f106227cebb8ba023c9f49b5c0a44fea487b75957214e7478d5f47221a558c
+    # via boto3-stubs
+mypy-boto3-sns==1.22.8 \
+    --hash=sha256:01d12eada072be8ca4e7f1a68632b14b5cd10167760513bd6246011b3847e441 \
+    --hash=sha256:9646504b295574af2c109e1a49207e8f94181d6dcca45faa1b2594b3a04f0a89
+    # via boto3-stubs
+mypy-boto3-sqs==1.22.8 \
+    --hash=sha256:059b1a9211b421ffb05150dfca3f3847e49399070ac1f1aaf6d5a075f525f5aa \
+    --hash=sha256:d8bc78aef5f95a03a736258d7f6488de705d1ccc341b11165fb05ae70c99b98b
+    # via boto3-stubs
 mypy-extensions==0.4.3 \
     --hash=sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d \
     --hash=sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8
@@ -2192,6 +2204,9 @@ typing-extensions==4.2.0 \
     #   markdown-it-py
     #   mypy
     #   mypy-boto3-s3
+    #   mypy-boto3-ses
+    #   mypy-boto3-sns
+    #   mypy-boto3-sqs
     #   myst-parser
     #   pyre-check
     #   pyre-extensions
