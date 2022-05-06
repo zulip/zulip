@@ -2162,7 +2162,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             "Whoops. The confirmation link has expired or been deactivated.", result
         )
 
-    def test_never_expire_confirmation_obejct(self) -> None:
+    def test_never_expire_confirmation_object(self) -> None:
         email = self.nonreg_email("alice")
         realm = get_realm("zulip")
         inviter = self.example_user("iago")
