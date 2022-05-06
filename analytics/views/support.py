@@ -91,9 +91,9 @@ def get_confirmations(
         assert content_object is not None
         if hasattr(content_object, "status"):
             if content_object.status == STATUS_ACTIVE:
-                link_status = "Link has been clicked"
+                link_status = "Link has been used"
             else:
-                link_status = "Link has never been clicked"
+                link_status = "Link has not been used"
         else:
             link_status = ""
 

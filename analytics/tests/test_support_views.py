@@ -153,7 +153,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_in_success_response(
                     [
                         "<b>Expires in</b>: 1\xa0week, 3\xa0days",
-                        "<b>Status</b>: Link has never been clicked",
+                        "<b>Status</b>: Link has not been used",
                     ],
                     result,
                 )
@@ -163,7 +163,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_in_success_response(
                     [
                         "<b>Expires in</b>: 1\xa0day",
-                        "<b>Status</b>: Link has never been clicked",
+                        "<b>Status</b>: Link has not been used",
                     ],
                     result,
                 )
