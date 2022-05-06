@@ -146,7 +146,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
         )
 
     not_found_count = 0
-    print(f"\npossible CLDR emoji are: \n" + "".join(CLDR_DATA.keys()) + "\n\n-----\n")
+    remaining_CLDR_emojis = set(CLDR_DATA.keys())
 
     # Prepare iamcal and CLDR names map.
     for emoji_dict in EMOJI_DATA:
@@ -154,32 +154,19 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
         emoji_code_to_iamcal_names[emoji_code] = ", ".join(emoji_dict["short_names"])
 
         # create the unicode character(s) for the emoji, since this is the key into the CLDR data
-        emoji =  "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')])
+        emoji = "".join(
+            chr(int(h, 16))
+            for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
+        )
         if emoji in CLDR_DATA:
             emoji_code_to_cldr_names[emoji_code] = ", ".join(CLDR_DATA[emoji]['tts']) + " --- " + ", ".join(CLDR_DATA[emoji]['default'])
+            remaining_CLDR_emojis.remove(emoji)
         else:
             print(f"{emoji} not found in CLDR data")
             not_found_count += 1
 
-    ##### attempting to catch more emoji by fiddling with the unicode hex. pausing on this to provide most of the data to the team first
-    #     i = 0
-    #     original_emoji = "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')])
-    #     while True:
-    #         if i == len(emoji_dict['unified'].split('-')):
-    #             not_found_count += 1
-    #             print(f"{original_emoji} not found")
-    #             break
-    #         if i == 0:
-    #             emoji = original_emoji
-    #         else:
-    #             emoji = "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')[:-i]])
-    #         if emoji in CLDR_DATA:
-    #             if original_emoji != emoji:
-    #                 print(f"got {emoji} from {original_emoji}")
-    #             emoji_code_to_cldr_names[emoji_code] = ", ".join(CLDR_DATA[emoji]['default']) # todo: add tts entry too
-    #             break
-    #         i += 1
     print(f"\n{not_found_count} emoji weren't found in CLDR data. There are {len(CLDR_DATA.keys())} emoji in the CLDR data and {len(EMOJI_DATA)} rows in the generated table.\n")
+    print(f"remaining emoji in CLDR data that we didn't use: {''.join(remaining_CLDR_emojis)}")
 
 
     # Prepare zulip names map.
