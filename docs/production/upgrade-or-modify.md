@@ -242,7 +242,11 @@ setup.
 If you need to modify Zulip's `nginx` configuration, we recommend
 first attempting to add configuration to `/etc/nginx/conf.d` or
 `/etc/nginx/zulip-include/app.d`; those directories are designed for
-custom configuration.
+custom configuration, and are not overridden during upgrades. The
+former is useful for directives with the `http` [context][context],
+and the latter for `server` contexts.
+
+[context]: http://nginx.org/en/docs/beginners_guide.html#conf_structure
 
 ## Upgrading the operating system
 
