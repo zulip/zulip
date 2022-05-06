@@ -21,11 +21,14 @@ UNIFIED_REACTIONS_FILE = os.path.join(
 EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
 EMOJI_CACHE = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
 OUTPUT_FILE = os.path.join(EMOJI_CACHE, "emoji_names_table.html")
+CLDR_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "cldr-annotations-full", "annotations", "en", "annotations.json")
 
 with open(EMOJI_DATA_FILE, "rb") as fp:
     EMOJI_DATA = orjson.loads(fp.read())
 with open(UNIFIED_REACTIONS_FILE, "rb") as fp:
     UNIFIED_REACTIONS_MAP = orjson.loads(fp.read())
+with open(CLDR_DATA_FILE, "rb") as fp:
+    CLDR_DATA = orjson.loads(fp.read())['annotations']['annotations']
 
 EMOJI_IMAGE_TEMPLATE = """
     <img class="emoji" src="images-{emojiset}-64/{emoji_code}.png" title={emojiset}>
@@ -38,6 +41,7 @@ TABLE_ROW_TEMPLATE = """
         <td class="emoji-images">{images_html}</td>
         <td class="zulip-emoji-names">{zulip_names}</td>
         <td class="iamcal-emoji-names">{iamcal_names}</td>
+        <td class="cldr-emoji-names">{cldr_names}</td>
         <td class="gemoji-emoji-names">{gemoji_names}</td>
         <td class="unicode-name">{unicode_name}</td>
     </tr>
@@ -60,6 +64,7 @@ EMOJI_LISTING_TEMPLATE = """
                     <th class="emoji-images">Images</th>
                     <th class="zulip-emoji-names">Zulip</th>
                     <th class="iamcal-emoji-names">Iamcal (Slack)</th>
+                    <th class="cldr-emoji-names">CLDR</th>
                     <th class="gemoji-emoji-names">Gemoji (unordered)</th>
                     <th class="unicode-name">Unicode</th>
                 </tr>
@@ -121,6 +126,7 @@ SORTED_CATEGORIES = [
 emoji_code_to_zulip_names: Dict[str, str] = {}
 emoji_code_to_iamcal_names: Dict[str, str] = {}
 emoji_code_to_gemoji_names: Dict[str, str] = {}
+emoji_code_to_cldr_names: Dict[str, str] = {}
 emoji_collection: Dict[str, List[Dict[str, Any]]] = {category: [] for category in SORTED_CATEGORIES}
 
 
@@ -139,10 +145,42 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
             reverse_unified_reactions_map[emoji_code]
         )
 
-    # Prepare iamcal names map.
+    not_found_count = 0
+    print(f"\npossible CLDR emoji are: \n" + "".join(CLDR_DATA.keys()) + "\n\n-----\n")
+
+    # Prepare iamcal and CLDR names map.
     for emoji_dict in EMOJI_DATA:
         emoji_code = get_emoji_code(emoji_dict)
         emoji_code_to_iamcal_names[emoji_code] = ", ".join(emoji_dict["short_names"])
+
+        # create the unicode character(s) for the emoji, since this is the key into the CLDR data
+        emoji =  "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')])
+        if emoji in CLDR_DATA:
+            emoji_code_to_cldr_names[emoji_code] = ", ".join(CLDR_DATA[emoji]['tts']) + " --- " + ", ".join(CLDR_DATA[emoji]['default'])
+        else:
+            print(f"{emoji} not found in CLDR data")
+            not_found_count += 1
+
+    ##### attempting to catch more emoji by fiddling with the unicode hex. pausing on this to provide most of the data to the team first
+    #     i = 0
+    #     original_emoji = "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')])
+    #     while True:
+    #         if i == len(emoji_dict['unified'].split('-')):
+    #             not_found_count += 1
+    #             print(f"{original_emoji} not found")
+    #             break
+    #         if i == 0:
+    #             emoji = original_emoji
+    #         else:
+    #             emoji = "".join([chr(int(h, 16)) for h in  emoji_dict['unified'].split('-')[:-i]])
+    #         if emoji in CLDR_DATA:
+    #             if original_emoji != emoji:
+    #                 print(f"got {emoji} from {original_emoji}")
+    #             emoji_code_to_cldr_names[emoji_code] = ", ".join(CLDR_DATA[emoji]['default']) # todo: add tts entry too
+    #             break
+    #         i += 1
+    print(f"\n{not_found_count} emoji weren't found in CLDR data. There are {len(CLDR_DATA.keys())} emoji in the CLDR data and {len(EMOJI_DATA)} rows in the generated table.\n")
+
 
     # Prepare zulip names map.
     for emoji_code in EMOJI_NAME_MAPS:
@@ -186,6 +224,7 @@ def generate_emoji_collection() -> None:
                 "images_html": get_images_html(emoji_code),
                 "gemoji_names": emoji_code_to_gemoji_names.get(emoji_code, ""),
                 "iamcal_names": emoji_code_to_iamcal_names.get(emoji_code, ""),
+                "cldr_names": emoji_code_to_cldr_names.get(emoji_code, ""),
                 "zulip_names": emoji_code_to_zulip_names.get(emoji_code, ""),
                 "unicode_name": (emoji_dict["name"] or "").lower(),
                 "sort_order": sort_order,
