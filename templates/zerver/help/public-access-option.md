@@ -1,10 +1,5 @@
 # Public access option
 
-!!! warn ""
-
-    This feature is in beta. Contact [support@zulip.com](mailto:support@zulip.com) to
-    enable it for your Zulip Cloud organization.
-
 {!web-public-streams-intro.md!}
 
 Web-public streams are indicated with a globe (<i class="zulip-icon zulip-icon-globe"></i>) icon.

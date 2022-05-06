@@ -324,7 +324,7 @@ class PermissionTest(ZulipTestCase):
             "zerver.lib.events.request_event_queue", return_value=None
         ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                do_events_register(user, get_client("website"), client_gravatar=True)
+                do_events_register(user, user.realm, get_client("website"), client_gravatar=True)
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], True)
 
         #############################################################
@@ -355,7 +355,7 @@ class PermissionTest(ZulipTestCase):
             "zerver.lib.events.request_event_queue", return_value=None
         ) as mock_request_event_queue:
             with self.assertRaises(JsonableError):
-                do_events_register(user, get_client("website"), client_gravatar=True)
+                do_events_register(user, user.realm, get_client("website"), client_gravatar=True)
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3], False)
 
         # client_gravatar is still turned off for admins.  In theory,

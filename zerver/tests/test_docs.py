@@ -163,6 +163,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
         self._test("/case-studies/rust/", "Rust programming language")
+        self._test("/case-studies/recurse-center/", "Recurse Center")
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
         self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")

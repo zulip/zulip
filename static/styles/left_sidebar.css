@@ -121,6 +121,11 @@ li.show-more-topics {
                 .input-append.topic_search_section {
                     margin-bottom: 3px;
                     margin-left: 3px;
+
+                    input {
+                        padding-right: 20px;
+                        width: calc(100% - 50px);
+                    }
                 }
             }
         }
@@ -550,10 +555,18 @@ li.expanded_private_message {
     margin-right: 12px;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
+    margin-top: 3px;
+
+    input {
+        padding-right: 20px;
+    }
 }
 
 .stream-list-filter {
-    width: 236px;
+    width: 216px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .topic-list-filter {
