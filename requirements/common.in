@@ -26,9 +26,9 @@ Pillow
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
 
-# Needed for S3 file uploads
+# Needed for S3 file uploads and other AWS tools
 boto3
-mypy-boto3-s3
+boto3-stubs[ses,s3,sqs,sns]
 
 # Needed for integrations
 defusedxml
