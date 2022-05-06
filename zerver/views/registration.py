@@ -139,8 +139,15 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
     prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
     assert isinstance(prereg_user, PreregistrationUser)
 
-    if prereg_user.status == confirmation_settings.STATUS_REVOKED:
+    if prereg_user.status in [
+        confirmation_settings.STATUS_REVOKED,
+        confirmation_settings.STATUS_ACTIVE,
+    ]:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
+
+    # Defensive assert to make sure no mix-up in how .status is set leading to re-use
+    # of a PreregistrationUser object.
+    assert prereg_user.created_user is None
 
     return prereg_user
 
