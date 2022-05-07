@@ -13,6 +13,7 @@ import pika.adapters.tornado_connection
 import pika.connection
 import pika.exceptions
 from django.conf import settings
+from django.db import transaction
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
@@ -437,6 +438,10 @@ def queue_json_publish(
         from zerver.worker.queue_processors import get_worker
 
         get_worker(queue_name, disable_timeout=True).consume_single_event(event)
+
+
+def queue_event_on_commit(queue_name: str, event: Dict[str, Any]) -> None:
+    transaction.on_commit(lambda: queue_json_publish(queue_name, event))
 
 
 def retry_event(

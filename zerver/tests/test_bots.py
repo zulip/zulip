@@ -21,6 +21,7 @@ from zerver.models import (
     Realm,
     RealmUserDefault,
     Service,
+    Subscription,
     UserProfile,
     get_bot_services,
     get_realm,
@@ -1101,6 +1102,54 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot_user.refresh_from_db()
         self.assertEqual(bot_user.bot_owner, cordelia)
+
+    def test_patch_bot_owner_with_private_streams(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        self.create_bot()
+
+        bot_realm = get_realm("zulip")
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_user = get_user(bot_email, bot_realm)
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        public_stream = self.make_stream("public_stream")
+        self.subscribe(bot_user, "private_stream")
+        self.subscribe(self.example_user("iago"), "private_stream")
+        self.subscribe(bot_user, "public_stream")
+        self.subscribe(self.example_user("iago"), "public_stream")
+
+        private_stream_test = self.make_stream("private_stream_test", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), "private_stream_test")
+        self.subscribe(bot_user, "private_stream_test")
+
+        bot_info = {
+            "bot_owner_id": hamlet.id,
+        }
+        result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
+        self.assert_json_success(result)
+        bot_user = get_user(bot_email, bot_realm)
+        assert bot_user.bot_owner is not None
+        self.assertEqual(bot_user.bot_owner.id, hamlet.id)
+
+        assert private_stream.recipient_id is not None
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=private_stream.recipient_id, active=True
+            ).exists()
+        )
+        assert private_stream_test.recipient_id is not None
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=private_stream_test.recipient_id, active=True
+            ).exists()
+        )
+        assert public_stream.recipient_id is not None
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=public_stream.recipient_id, active=True
+            ).exists()
+        )
 
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")

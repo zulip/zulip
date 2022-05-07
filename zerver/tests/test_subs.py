@@ -2590,13 +2590,14 @@ class StreamAdminTest(ZulipTestCase):
 
         with self.assert_database_query_count(query_count):
             with cache_tries_captured() as cache_tries:
-                result = self.client_delete(
-                    "/json/users/me/subscriptions",
-                    {
-                        "subscriptions": orjson.dumps([stream_name]).decode(),
-                        "principals": orjson.dumps(principals).decode(),
-                    },
-                )
+                with self.captureOnCommitCallbacks(execute=True):
+                    result = self.client_delete(
+                        "/json/users/me/subscriptions",
+                        {
+                            "subscriptions": orjson.dumps([stream_name]).decode(),
+                            "principals": orjson.dumps(principals).decode(),
+                        },
+                    )
         if cache_count is not None:
             self.assert_length(cache_tries, cache_count)
 
@@ -4940,9 +4941,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user3, "private_stream")
 
         # Sends 3 peer-remove events and 2 unsubscribe events.
-        with self.capture_send_event_calls(expected_num_events=5) as events:
-            with self.assert_database_query_count(16):
-                with self.assert_memcached_count(3):
+        with self.assert_database_query_count(16):
+            with self.assert_memcached_count(3):
+                with self.capture_send_event_calls(expected_num_events=5) as events:
                     bulk_remove_subscriptions(
                         realm,
                         [user1, user2],
@@ -5455,9 +5456,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(result[1]["stream_id"], stream2.id)
         self.assertEqual(result[2]["stream_id"], private.id)
 
-        # Unsubscribing should mark all the messages in stream2 as read
-        self.unsubscribe(user, "stream2")
-        self.unsubscribe(user, "private_stream")
+        with self.captureOnCommitCallbacks(execute=True):
+            # Unsubscribing should mark all the messages in stream2 as read
+            self.unsubscribe(user, "stream2")
+            self.unsubscribe(user, "private_stream")
 
         self.subscribe(user, "stream2")
         self.subscribe(user, "private_stream")
