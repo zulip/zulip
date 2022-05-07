@@ -16,7 +16,9 @@ exports.set_verbose = (value) => {
     verbose = value;
 };
 
-exports.run_test = (label, f, opts) => {
+exports.suite = [];
+
+function execute_test(label, f, opts) {
     const {sloppy_$} = opts || {};
 
     /* istanbul ignore if */
@@ -46,4 +48,8 @@ exports.run_test = (label, f, opts) => {
     }
     // defensively reset blueslip after each test.
     zblueslip.reset();
+}
+
+exports.run_test = (label, f, opts) => {
+    exports.suite.push(() => execute_test(label, f, opts));
 };

@@ -17,7 +17,9 @@ let num_unread_for_stream;
 
 const noop = () => {};
 
-const narrow_state = mock_esm("../../static/js/narrow_state");
+mock_esm("../../static/js/narrow_state", {
+    active: () => false,
+});
 const topic_list = mock_esm("../../static/js/topic_list");
 mock_esm("../../static/js/keydown_util", {
     handle: noop,
@@ -626,8 +628,6 @@ test_ui("separators_only_pinned", ({mock_template}) => {
     assert.deepEqual(appended_elems, expected_elems);
     assert.ok(pinned_subheader_flag);
 });
-
-narrow_state.active = () => false;
 
 test_ui("rename_stream", ({mock_template}) => {
     create_stream_subheader({mock_template});

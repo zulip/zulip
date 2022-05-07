@@ -324,4 +324,6 @@ run_test("test reify_message_id", ({override, override_rewire}) => {
     assert.ok(draft_deleted);
 });
 
-MockDate.reset();
+run_test("reset MockDate", () => {
+    MockDate.reset();
+});
