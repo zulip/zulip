@@ -1899,7 +1899,8 @@ class MarkUnreadTest(ZulipTestCase):
         ]
         # Unsubscribing generates an event in the deferred_work queue
         # that marks the above messages as read.
-        self.unsubscribe(receiver, stream_name)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.unsubscribe(receiver, stream_name)
         after_unsubscribe_stream_message_ids = [
             self.send_stream_message(
                 sender=sender,

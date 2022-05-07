@@ -28,7 +28,7 @@ from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_last_message_id
-from zerver.lib.queue import queue_json_publish
+from zerver.lib.queue import queue_event_on_commit, queue_json_publish
 from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
     SubInfo,
@@ -718,7 +718,7 @@ def notify_subscriptions_removed(
 ) -> None:
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove", subscriptions=payload)
-    send_event(realm, event, [user_profile.id])
+    send_event_on_commit(realm, event, [user_profile.id])
 
 
 SubAndRemovedT: TypeAlias = Tuple[
@@ -750,7 +750,7 @@ def send_subscription_remove_events(
                 stream.recipient_id for stream in streams_by_user[user_profile.id]
             ],
         }
-        queue_json_publish("deferred_work", event)
+        queue_event_on_commit("deferred_work", event)
 
     send_peer_remove_events(
         realm=realm,
