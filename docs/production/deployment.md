@@ -553,8 +553,8 @@ Zulip's configuration allows for [warm standby database
 replicas][warm-standby] as a disaster recovery solution; see the
 linked PostgreSQL documentation for details on this type of
 deployment. Zulip's configuration builds on top of `wal-g`, our
-[database backup solution][wal-g], and thus requires that it be
-configured for the primary and all secondary warm standby replicas.
+[streaming database backup solution][wal-g], and thus requires that it
+be configured for the primary and all secondary warm standby replicas.
 
 In addition to having `wal-g` backups configured, warm standby
 replicas should configure the hostname of their primary replica, and
