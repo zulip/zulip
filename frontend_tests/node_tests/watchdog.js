@@ -68,4 +68,6 @@ run_test("suspect_offline", () => {
     assert.ok(!watchdog.suspects_user_is_offline());
 });
 
-MockDate.reset();
+run_test("reset MockDate", () => {
+    MockDate.reset();
+});

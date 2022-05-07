@@ -94,7 +94,11 @@ function run_one_module(file) {
     zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".js"));
     test.set_current_file_name(file);
+    test.suite.length = 0;
     require(file);
+    for (const f of test.suite) {
+        f();
+    }
     namespace.complain_about_unused_mocks();
 }
 

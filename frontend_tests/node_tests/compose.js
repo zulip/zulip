@@ -966,4 +966,6 @@ test_ui("narrow_button_titles", () => {
     );
 });
 
-MockDate.reset();
+run_test("reset MockDate", () => {
+    MockDate.reset();
+});

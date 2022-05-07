@@ -634,8 +634,6 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(linus.user_id));
 });
 
-people.init();
-
 test_people("multi_user_methods", () => {
     people.add_active_user(emp401);
     people.add_active_user(emp402);
@@ -1202,4 +1200,6 @@ test_people("huddle_string", () => {
 });
 
 // reset to native Date()
-MockDate.reset();
+run_test("reset MockDate", () => {
+    MockDate.reset();
+});
