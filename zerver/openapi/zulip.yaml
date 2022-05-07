@@ -6822,7 +6822,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
-          description: Success.
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -8779,7 +8779,7 @@ paths:
                   - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
-          description: Bad request
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -13629,7 +13629,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - $ref: "#/components/schemas/SuccessDescription"
         "400":
-          description: Error.
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -16029,15 +16029,11 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccessBase"
+        - $ref: "#/components/schemas/JsonErrorBase"
         - additionalProperties: false
           properties:
             result: {}
             msg: {}
-            raw_content:
-              type: string
-              description: |
-                The raw content of the message.
           example:
             {
               "msg": "Invalid message(s)",

@@ -37,7 +37,7 @@ gave us all the benefits above, along with a slew of others we hadn’t expected
 When the startup building Zulip was [acquired by Dropbox in early
 2014](https://zulip.com/history/), Zulip product development was put on hold for
 a year and a half. Because of Zulip’s advantages over the alternatives, Recurse
-Center continued using Zulip all through that time: "We strongly prefer Zulip to
+Center continued using Zulip all through that time: “We strongly prefer Zulip to
 other options for several reasons – its message threading being a key one,”
 [wrote](https://www.recurse.com/blog/90-zulip-supporting-oss-at-the-recurse-center)
 RC CEO Nick Bergson-Shilcock in 2015.
@@ -204,7 +204,7 @@ bug, I try to find someone I know who works there, because I have no idea if
 anyone will pay attention if I go through support.”
 
 
-## Going virtual: "For a while, Zulip *was* RC”
+## Going virtual: “For a while, Zulip *was* RC”
 
 Prior to 2020, the Recurse Center offered an immersive in-person retreat
 experience in the heart of New York City. This paradigm was shattered when the
@@ -226,7 +226,7 @@ Edith, who works as a technical writer, participated in virtual RC in 2020. Two
 years later, she still uses Zulip every day to stay connected.
 
 Zulip’s combination of powerful search and topic-based threading makes prior
-discussions both findable and useful.  "It’s easier to build context with Zulip
+discussions both findable and useful.  “It’s easier to build context with Zulip
 than any other tool,” Edith says. “With other messaging services, information
 tends to get lost. In Zulip, I often look something up from a while ago —
 anything from discussion of niche programming topics, to whether anyone has
