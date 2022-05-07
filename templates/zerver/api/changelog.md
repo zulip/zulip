@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 130**
+
+* `PATCH /bots/{bot_user_id}`: Added support for changing a bot's role
+  via this endpoint. Previously, this could only be done via [`PATCH
+  /users/{user_id}`](/api/update-user).
+
 **Feature level 129**
 
 * [`POST /register`](/api/register-queue),
