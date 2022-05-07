@@ -5,7 +5,7 @@
 mypy
 
 backoff-stubs
-boto3-stubs[s3]
+boto3-stubs[s3,ses,sns,sqs]
 lxml-stubs
 SQLAlchemy[mypy]
 types-beautifulsoup4
