@@ -28,7 +28,12 @@ SQLAlchemy==1.4.*
 
 # Needed for S3 file uploads and other AWS tools
 boto3
-boto3-stubs[ses,s3,sqs,sns]
+
+# The runtime-relevant part of boto3-stubs (see mypy.in)
+mypy-boto3-s3
+mypy-boto3-ses
+mypy-boto3-sns
+mypy-boto3-sqs
 
 # Needed for integrations
 defusedxml
