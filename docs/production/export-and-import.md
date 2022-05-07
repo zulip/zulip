@@ -437,7 +437,8 @@ Once that's done, you can simply re-run the import process.
 The [Zulip-specific backup tool documented above](#backups) is perfect
 for an all-in-one backup solution, and can be used for nightly
 backups. For administrators wanting continuous point-in-time backups,
-Zulip has built-in support for taking daily incremental backups using
+Zulip has built-in support for taking daily backup snapshots along
+with [streaming write-ahead log (WAL)][wal] backups using
 [wal-g](https://github.com/wal-g/wal-g) and storing them in Amazon S3.
 By default, these backups are stored for 30 days.
 
@@ -460,11 +461,20 @@ s3_backups_bucket = # name of S3 backup bucket
 1. Run `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.
 
 Daily full-database backups will be taken at 0200 UTC, and every WAL
-log will be written to S3 as it is saved by PostgreSQL; by default,
-this happens every 5 minutes, or every 1G, whichever happens first.
+archive file will be written to S3 as it is saved by PostgreSQL; these
+are written every 16KiB of the WAL. This means that if there are
+periods of slow activity, it may be minutes before the backup is saved
+into S3 -- see [`archive_timeout`][archive-timout] for how to set an
+upper bound on this. On an active Zulip server, this also means the
+Zulip server will be regularly sending PutObject requests to S3,
+possibly thousands of times per day.
+
 If you need always-current backup availability, Zulip also has
 [built-in database replication support](deployment.md#postgresql-warm-standby).
 
 You can (and should) monitor that backups are running regularly via
 the Nagios plugin installed into
 `/usr/lib/nagios/plugins/zulip_postgresql_backups/check_postgresql_backup`.
+
+[wal]: https://www.postgresql.org/docs/current/wal-intro.html
+[archive-timeout]: https://www.postgresql.org/docs/current/runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT
