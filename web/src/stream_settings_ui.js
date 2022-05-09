@@ -1031,7 +1031,7 @@ export function unsubscribe_from_private_stream(sub) {
 export function sub_or_unsub(sub, $stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
-        if (sub.invite_only || page_params.is_guest) {
+        if (sub.invite_only || (page_params.is_guest && !sub.is_web_public)) {
             unsubscribe_from_private_stream(sub);
             return;
         }
