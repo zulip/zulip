@@ -77,6 +77,10 @@ OPEN_REALM_CREATION = True
 WEB_PUBLIC_STREAMS_ENABLED = True
 INVITES_MIN_USER_AGE_DAYS = 0
 
+# Redirect to /devlogin/ by default in dev mode
+HOME_NOT_LOGGED_IN = "/devlogin/"
+LOGIN_URL = "/devlogin/"
+
 # For development convenience, configure the ToS/Privacy Policies
 POLICIES_DIRECTORY = "corporate/policies"
 TERMS_OF_SERVICE_VERSION = "1.0"
