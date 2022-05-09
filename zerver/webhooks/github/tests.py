@@ -56,6 +56,10 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.check_webhook("push__1_commit", TOPIC_BRANCH, expected_message)
 
+    def test_push_1_commit_forced(self) -> None:
+        expected_message = ":warning: Anton-4 **force** [pushed](https://github.com/Anton-4/zulip-test-repo/compare/79b580c68a3a...f1b0931987cc) 1 commit to branch main.\n\n* change 2 ([f1b0931](https://github.com/Anton-4/zulip-test-repo/commit/f1b0931987cca844115bad986ccd0c7ed829f4f0))"
+        self.check_webhook("push__1_commit_forced", "zulip-test-repo / main", expected_message)
+
     def test_push_multiple_comitters(self) -> None:
         commits_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
         expected_message = f"""baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 6 commits to branch changes. Commits by Tomasz (3), Ben (2) and baxterthehacker (1).\n\n{commits_info * 5}* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"""

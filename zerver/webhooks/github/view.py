@@ -267,6 +267,7 @@ def get_push_commits_body(helper: Helper) -> str:
         get_branch_name_from_ref(payload["ref"].tame(check_string)),
         commits_data,
         deleted=payload["deleted"].tame(check_bool),
+        forced=payload["forced"].tame(check_bool),
     )
 
 

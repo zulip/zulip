@@ -13,10 +13,12 @@ COMMIT_ROW_TEMPLATE = "* {commit_msg} ([{commit_short_sha}]({commit_url}))\n"
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = "[and {commits_number} more commit(s)]"
 COMMIT_OR_COMMITS = "commit{}"
 
-PUSH_PUSHED_TEXT_WITH_URL = "[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
-PUSH_PUSHED_TEXT_WITHOUT_URL = "pushed {number_of_commits} {commit_or_commits}"
+PUSH_PUSHED_TEXT_WITH_URL = (
+    "{force_msg}[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
+)
+PUSH_PUSHED_TEXT_WITHOUT_URL = "{force_msg}pushed {number_of_commits} {commit_or_commits}"
 
-PUSH_COMMITS_BASE = "{user_name} {pushed_text} to branch {branch_name}."
+PUSH_COMMITS_BASE = "{start_emoji}{user_name} {pushed_text} to branch {branch_name}."
 PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS = (
     PUSH_COMMITS_BASE
     + """ {committers_details}.
@@ -32,10 +34,10 @@ PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS = (
 """
 )
 PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
-    "{user_name} [deleted]({compare_url}) the branch {branch_name}."
+    "{start_emoji}{user_name} {force_msg}[deleted]({compare_url}) the branch {branch_name}."
 )
 PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (
-    "{user_name} [pushed]({compare_url}) the branch {branch_name}."
+    "{start_emoji}{user_name} {force_msg}[pushed]({compare_url}) the branch {branch_name}."
 )
 PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
@@ -72,17 +74,26 @@ def get_push_commits_event_message(
     commits_data: List[Dict[str, Any]],
     is_truncated: bool = False,
     deleted: bool = False,
+    forced: bool = False,  # forced as in "git push --force"
 ) -> str:
+    # emoji to display at the beginning of the message
+    start_emoji = ":warning: " if forced else ""
+    force_msg = "**force** " if forced else ""
+
     if not commits_data and deleted:
         return PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE.format(
+            start_emoji=start_emoji,
             user_name=user_name,
+            force_msg=force_msg,
             compare_url=compare_url,
             branch_name=branch_name,
         )
 
     if not commits_data and not deleted:
         return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+            start_emoji=start_emoji,
             user_name=user_name,
+            force_msg=force_msg,
             compare_url=compare_url,
             branch_name=branch_name,
         )
@@ -92,6 +103,7 @@ def get_push_commits_event_message(
     )
 
     pushed_text_message = pushed_message_template.format(
+        force_msg=force_msg,
         compare_url=compare_url,
         number_of_commits=len(commits_data),
         commit_or_commits=COMMIT_OR_COMMITS.format("s" if len(commits_data) > 1 else ""),
@@ -100,6 +112,7 @@ def get_push_commits_event_message(
     committers_items: List[Tuple[str, int]] = get_all_committers(commits_data)
     if len(committers_items) == 1 and user_name == committers_items[0][0]:
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITHOUT_COMMITTERS.format(
+            start_emoji=start_emoji,
             user_name=user_name,
             pushed_text=pushed_text_message,
             branch_name=branch_name,
@@ -115,6 +128,7 @@ def get_push_commits_event_message(
             committers_details = "{} and {} ({})".format(committers_details, *committers_items[-1])
 
         return PUSH_COMMITS_MESSAGE_TEMPLATE_WITH_COMMITTERS.format(
+            start_emoji=start_emoji,
             user_name=user_name,
             pushed_text=pushed_text_message,
             branch_name=branch_name,
