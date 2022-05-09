@@ -38,6 +38,7 @@ from .configured_settings import (
     EXTERNAL_URI_SCHEME,
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
+    HOME_NOT_LOGGED_IN,
     INVITATION_LINK_VALIDITY_DAYS,
     IS_DEV_DROPLET,
     LOCAL_UPLOADS_DIR,
@@ -1038,17 +1039,13 @@ ONLY_LDAP = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipLDAPAuthBackend"
 USING_APACHE_SSO = "zproject.backends.ZulipRemoteUserBackend" in AUTHENTICATION_BACKENDS
 ONLY_SSO = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipRemoteUserBackend",)
 
-if ONLY_SSO:
-    HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
-else:
-    HOME_NOT_LOGGED_IN = "/login/"
+if HOME_NOT_LOGGED_IN is None:
+    if ONLY_SSO:
+        HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
+    else:
+        HOME_NOT_LOGGED_IN = "/login/"
 
 AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipDummyBackend",)
-
-# Redirect to /devlogin/ by default in dev mode
-if DEVELOPMENT:
-    HOME_NOT_LOGGED_IN = "/devlogin/"
-    LOGIN_URL = "/devlogin/"
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
