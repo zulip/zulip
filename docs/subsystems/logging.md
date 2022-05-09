@@ -110,6 +110,49 @@ great deal of Python processing overhead to marshall the data from the
 database into Django objects that is not accounted for in these
 numbers.
 
+#### Searching backend log files
+
+Zulip comes with a tool, `./scripts/log-search`, to quickly search
+through the main `server.log` log file based on a number of different
+axes -- including client IP address, client user-id, request path,
+response code. It can also search the NGINX logs, which provide
+similar information.
+
+Because often the requests to static resources, or to things like user
+avatars, are not as important, they are also filtered out of the
+output by default.
+
+The output shows timestamp, request duration, client IP address,
+response code, and request method, hostname, and path; any property
+which is limited by the tool is not displayed, for conciseness:
+
+```
+zulip@example-prod:~/deployments/current$ ./scripts/log-search realm-name
+22:30:36.593     1ms         2606:2800:220:1:248:1893:25c8:1946       302 GET    /
+22:30:42.508   366ms         2606:2800:220:1:248:1893:25c8:1946       200 GET    /login/
+23:18:30.977     1ms         93.184.216.34                            302 GET    /
+23:18:31.286   132ms         93.184.216.34                            200 GET    /login/
+23:18:48.094    20ms         93.184.216.34                            200 GET    /accounts/password/reset/
+23:18:51.520   149ms         93.184.216.34                            200 GET    /login/
+23:18:59.420    20ms         93.184.216.34                            200 GET    /accounts/password/reset/
+23:19:02.929  1300ms         93.184.216.34                            302 POST   /accounts/password/reset/
+23:19:03.056    93ms         93.184.216.34                            200 GET    /accounts/password/reset/done/
+23:19:08.911    26ms         93.184.216.34                            302 GET    /accounts/password/reset/OA/b56jfp-bd80ee99b98e703456b3bdcd91892be2/
+23:19:09.189   116ms         93.184.216.34                            200 GET    /accounts/password/reset/OA/set-password/
+23:19:18.743   215ms         93.184.216.34                            302 POST   /accounts/password/reset/OA/set-password/
+23:19:18.779    12ms         93.184.216.34                            200 GET    /accounts/password/done/
+23:19:20.796    12ms         93.184.216.34                            200 GET    /accounts/login/
+23:19:29.323   295ms 8@      93.184.216.34                            302 POST   /accounts/login/
+23:19:29.704   362ms 8@      93.184.216.34                            200 GET    /
+23:20:04.980   110ms 8@      93.184.216.34                            200 DELETE /json/users/me/subscriptions
+
+zulip@example-prod:~/deployments/current$ ./scripts/log-search 2606:2800:220:1:248:1893:25c8:1946
+22:30:36.593     1ms          302 GET    https://realm-one.example-prod.example.com/
+22:30:42.508   366ms          200 GET    https://realm-one.example-prod.example.com/login/
+```
+
+See `./scripts/log-search --help` for complete documentation.
+
 ## Blueslip frontend error reporting
 
 We have a custom library, called `blueslip` (named after the form used
