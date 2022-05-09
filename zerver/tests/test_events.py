@@ -190,6 +190,7 @@ from zerver.lib.events import (
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import render_markdown
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -3044,6 +3045,17 @@ class SubscribeActionTest(BaseAction):
             events[0]["streams"][0]["message_retention_days"],
             10,
         )
+
+    def test_stream_creation_events_for_guests(self) -> None:
+        self.user_profile = self.example_user("polonius")
+        realm = self.user_profile.realm
+
+        action = lambda: create_stream_if_needed(realm, "web_public_stream", is_web_public=True)
+        events = self.verify_action(action, num_events=1)
+        check_stream_create("events[0]", events[0])
+
+        action = lambda: create_stream_if_needed(realm, "public_stream")
+        events = self.verify_action(action, num_events=0, state_change_expected=False)
 
 
 class DraftActionTest(BaseAction):
