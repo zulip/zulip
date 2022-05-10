@@ -60,14 +60,16 @@ class zulip::profile::app_frontend {
     source  => 'puppet:///modules/zulip/letsencrypt/nginx-deploy-hook.sh',
     require => Package[certbot],
   }
-  exec { 'fix-standalone-certbot':
-    onlyif  => @(EOT),
-      test -L /etc/ssl/certs/zulip.combined-chain.crt &&
-      readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
-      test -d /etc/letsencrypt/renewal &&
-      grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
-      | EOT
-    command => "${::zulip_scripts_path}/lib/fix-standalone-certbot",
+  if ! $nginx_http_only {
+      exec { 'fix-standalone-certbot':
+        onlyif  => @(EOT),
+          test -L /etc/ssl/certs/zulip.combined-chain.crt &&
+          readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
+          test -d /etc/letsencrypt/renewal &&
+          grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
+          | EOT
+        command => "${::zulip_scripts_path}/lib/fix-standalone-certbot",
+      }
   }
 
   # Restart the server regularly to avoid potential memory leak problems.
