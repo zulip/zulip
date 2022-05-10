@@ -131,7 +131,8 @@ h4.stream_setting_subsection_title {
 
 .subscriber-list-box {
     text-align: center;
-    border: 1px solid hsl(0, 0%, 87%);
+    border-left: 1px solid hsl(0, 0%, 87%);
+    border-right: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
 
     .subscriber_list_container {
