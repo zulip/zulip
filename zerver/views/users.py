@@ -198,7 +198,7 @@ def update_user_backend(
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
 
-        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
+        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
