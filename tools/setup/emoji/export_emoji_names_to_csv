@@ -30,7 +30,7 @@ column_names = [
     "explanation",
 ]
 category_index = {
-    "Smileys & People": "1",
+    "People & Body": "1",
     "Animals & Nature": "2",
     "Food & Drink": "3",
     "Activities": "4",
@@ -38,13 +38,14 @@ category_index = {
     "Objects": "6",
     "Symbols": "7",
     "Flags": "8",
-    "Skin Tones": "9",
+    "Component": "9",
+    "Smileys & Emotion": "10",
 }
 
 name_entry_regex = re.compile(
-    r"'(?P<emoji_code>[a-z0-9-]+)': "
-    r"{'canonical_name': '(?P<canonical_name>[+-]?[a-z0-9_X-]+)',[\n ]+"
-    r"'aliases': \[(?P<aliases>('([+-]?[a-z0-9_, X-]+)'[, ]{0,2})*)\]},"
+    r"\"(?P<emoji_code>[a-z0-9-]+)\": "
+    r"{\"canonical_name\": \"(?P<canonical_name>[+-]?[a-z0-9_X-]+)\",[\n ]+"
+    r"\"aliases\": \[(?P<aliases>(\"([+-]?[a-z0-9_, X-]+)\"[, ]{0,2})*)\]},"
 )
 explanation_regex = re.compile(r"    # (?P<explanation_line>[^\r\n\t]+)")
 
@@ -134,13 +135,12 @@ def main() -> None:
 
     with open(args.output_file_path, "w") as f:
         writer = csv.writer(f, dialect="excel")
-    writer.writerows(output_data)
-    # The CSV file exported by Google Sheets doesn't have a newline
-    # character in the end. So we also strip the last newline character
-    # so that round-trip conversion test passes.
-    line_sep_len = len(os.linesep)
-    fp.truncate(fp.tell() - line_sep_len)
-    fp.close()
+        writer.writerows(output_data)
+        # The CSV file exported by Google Sheets doesn't have a newline
+        # character in the end. So we also strip the last newline character
+        # so that round-trip conversion test passes.
+        line_sep_len = len(os.linesep)
+        f.truncate(f.tell() - line_sep_len)
 
 
 if __name__ == "__main__":
