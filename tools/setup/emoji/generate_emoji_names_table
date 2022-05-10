@@ -7,6 +7,7 @@
 # codepoint.
 import os
 from typing import Any, Dict, List
+import csv
 
 import orjson
 
@@ -21,6 +22,7 @@ UNIFIED_REACTIONS_FILE = os.path.join(
 EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
 EMOJI_CACHE = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
 OUTPUT_FILE = os.path.join(EMOJI_CACHE, "emoji_names_table.html")
+OUTPUT_CSV = os.path.join(ZULIP_PATH, "tools", "setup", "emoji", "emoji_names_table.csv")
 CLDR_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "cldr-annotations-full", "annotations", "en", "annotations.json")
 
 with open(EMOJI_DATA_FILE, "rb") as fp:
@@ -128,7 +130,15 @@ emoji_code_to_iamcal_names: Dict[str, str] = {}
 emoji_code_to_gemoji_names: Dict[str, str] = {}
 emoji_code_to_cldr_names: Dict[str, str] = {}
 emoji_collection: Dict[str, List[Dict[str, Any]]] = {category: [] for category in SORTED_CATEGORIES}
-
+emoji_csv = [[
+    "category",
+    "emoji_code",
+    "images_html",
+    "iamcal_names",
+    "cldr_names",
+    "zulip_names",
+    "unicode_name",
+]]
 
 def generate_emoji_code_to_emoji_names_maps() -> None:
     # Prepare gemoji names map.
@@ -166,7 +176,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
             not_found_count += 1
 
     print(f"\n{not_found_count} emoji weren't found in CLDR data. There are {len(CLDR_DATA.keys())} emoji in the CLDR data and {len(EMOJI_DATA)} rows in the generated table.\n")
-    print(f"remaining emoji in CLDR data that we didn't use: {''.join(remaining_CLDR_emojis)}")
+    print(f"remaining {len(list(remaining_CLDR_emojis))} emoji in CLDR data that we didn't use: {''.join(remaining_CLDR_emojis)}")
 
 
     # Prepare zulip names map.
@@ -218,6 +228,21 @@ def generate_emoji_collection() -> None:
                 "sorting_info": get_sorting_info(category, sort_order),
             }
         )
+        emoji = "".join(
+            chr(int(h, 16))
+            for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
+        )
+        emoji_csv.append(
+            [
+                category,
+                emoji,
+                emoji_code,
+                emoji_code_to_iamcal_names.get(emoji_code, ""),
+                emoji_code_to_cldr_names.get(emoji_code, ""),
+                emoji_code_to_zulip_names.get(emoji_code, ""),
+                (emoji_dict["name"] or "").lower(),
+            ]
+        )
 
     # Sort `emoji_collection`.
     for category in SORTED_CATEGORIES:
@@ -241,10 +266,17 @@ def main() -> None:
         )
 
     print(
-        "Done! Open http://localhost:9991/static/generated/emoji/emoji_names_table.html "
+        "HTML view done! Open http://localhost:9991/static/generated/emoji/emoji_names_table.html "
         "to view(after starting the dev server)."
     )
 
+    with open(OUTPUT_CSV, "w") as fp:
+        writer = csv.writer(fp)
+        writer.writerows(emoji_csv)
+
+    print(
+        "Spreadsheet done! Open tools/setup/emoji/emoji_names_table.csv to view."
+    )
 
 if __name__ == "__main__":
     main()
