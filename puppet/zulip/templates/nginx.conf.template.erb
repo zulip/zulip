@@ -2,6 +2,7 @@ user zulip;
 
 worker_processes auto;
 pid /var/run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
 
 worker_rlimit_nofile 40000;
 events {
