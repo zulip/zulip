@@ -3142,10 +3142,15 @@ clamp@^1.0.1:
   resolved "https://registry.yarnpkg.com/clamp/-/clamp-1.0.1.tgz#66a0e64011816e37196828fdc8c8c147312c8634"
   integrity sha1-ZqDmQBGBbjcZaCj9yMjBRzEshjQ=
 
-cldr-annotations-full@^41.0.0:
+cldr-annotations-derived-modern@^41.0.0:
   version "41.0.0"
-  resolved "https://registry.yarnpkg.com/cldr-annotations-full/-/cldr-annotations-full-41.0.0.tgz#389b684e113597dcaeb6b235b374993868067168"
-  integrity sha512-65w3DBKTpcLFMu28TLd5NTk4jycnwTCxC1AIzeUbTxDX3YHEC1j/60u70GXhT7N7YbZp/apWh6tk8b6o/R52FQ==
+  resolved "https://registry.yarnpkg.com/cldr-annotations-derived-modern/-/cldr-annotations-derived-modern-41.0.0.tgz#da55423006c5b9dd742d9395a2318b05d6a6efa2"
+  integrity sha512-V9N8CW+DDem3NZlpGKPdvTkoqZV/rNbZq27UZO1d0JXhM+pZo6e8n3+GSqSDgIAXphxn1v9Yd9U+X9NzZ+PCcA==
+
+cldr-annotations-modern@^41.0.0:
+  version "41.0.0"
+  resolved "https://registry.yarnpkg.com/cldr-annotations-modern/-/cldr-annotations-modern-41.0.0.tgz#5eeaef3b250e30e0dd7e8babc28a3a70c71a7192"
+  integrity sha512-ymcfrliWq6IFB9vnDuT9awT7z9bTkh03g39eeU5RIYK0hFuZAPsYdpgs461GEuUKCL7SmDXXyZJwmf9iGYsCdg==
 
 clean-css@^5.1.0, clean-css@^5.2.2:
   version "5.2.4"
