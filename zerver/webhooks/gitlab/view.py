@@ -1,7 +1,6 @@
 import re
 from functools import partial
-from inspect import signature
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Protocol, Union
 
 from django.http import HttpRequest, HttpResponse
 
@@ -27,7 +26,7 @@ from zerver.lib.webhooks.git import (
 from zerver.models import UserProfile
 
 
-def fixture_to_headers(fixture_name: str) -> Dict[str, Any]:
+def fixture_to_headers(fixture_name: str) -> Dict[str, str]:
     if fixture_name.startswith("build"):
         return {}  # Since there are 2 possible event types.
 
@@ -36,7 +35,7 @@ def fixture_to_headers(fixture_name: str) -> Dict[str, Any]:
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__")[0].replace("_", " ").title()}
 
 
-def get_push_event_body(payload: WildValue) -> str:
+def get_push_event_body(payload: WildValue, include_title: bool) -> str:
     after = payload.get("after")
     if after:
         stringified_after = after.tame(check_string)
@@ -77,7 +76,7 @@ def get_remove_branch_event_body(payload: WildValue) -> str:
     )
 
 
-def get_tag_push_event_body(payload: WildValue) -> str:
+def get_tag_push_event_body(payload: WildValue, include_title: bool) -> str:
     return get_push_tag_event_message(
         get_user_name(payload),
         get_tag_name(payload),
@@ -85,7 +84,7 @@ def get_tag_push_event_body(payload: WildValue) -> str:
     )
 
 
-def get_issue_created_event_body(payload: WildValue, include_title: bool = False) -> str:
+def get_issue_created_event_body(payload: WildValue, include_title: bool) -> str:
     description = payload["object_attributes"].get("description")
     # Filter out multiline hidden comments
     if description:
@@ -106,7 +105,7 @@ def get_issue_created_event_body(payload: WildValue, include_title: bool = False
     )
 
 
-def get_issue_event_body(payload: WildValue, action: str, include_title: bool = False) -> str:
+def get_issue_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     return get_issue_event_message(
         get_issue_user_name(payload),
         action,
@@ -116,7 +115,7 @@ def get_issue_event_body(payload: WildValue, action: str, include_title: bool = 
     )
 
 
-def get_merge_request_updated_event_body(payload: WildValue, include_title: bool = False) -> str:
+def get_merge_request_updated_event_body(payload: WildValue, include_title: bool) -> str:
     if payload["object_attributes"].get("oldrev"):
         return get_merge_request_event_body(
             payload,
@@ -131,9 +130,7 @@ def get_merge_request_updated_event_body(payload: WildValue, include_title: bool
     )
 
 
-def get_merge_request_event_body(
-    payload: WildValue, action: str, include_title: bool = False
-) -> str:
+def get_merge_request_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -146,7 +143,7 @@ def get_merge_request_event_body(
 
 
 def get_merge_request_open_or_updated_body(
-    payload: WildValue, action: str, include_title: bool = False
+    payload: WildValue, action: str, include_title: bool
 ) -> str:
     pull_request = payload["object_attributes"]
     return get_pull_request_event_message(
@@ -192,7 +189,7 @@ def replace_assignees_username_with_name(
     return formatted_assignees
 
 
-def get_commented_commit_event_body(payload: WildValue) -> str:
+def get_commented_commit_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({})".format(comment["url"].tame(check_string))
     return get_commits_comment_action_message(
@@ -204,7 +201,7 @@ def get_commented_commit_event_body(payload: WildValue) -> str:
     )
 
 
-def get_commented_merge_request_event_body(payload: WildValue, include_title: bool = False) -> str:
+def get_commented_merge_request_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/merge_requests/{}".format(
@@ -223,7 +220,7 @@ def get_commented_merge_request_event_body(payload: WildValue, include_title: bo
     )
 
 
-def get_commented_issue_event_body(payload: WildValue, include_title: bool = False) -> str:
+def get_commented_issue_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/issues/{}".format(
@@ -242,7 +239,7 @@ def get_commented_issue_event_body(payload: WildValue, include_title: bool = Fal
     )
 
 
-def get_commented_snippet_event_body(payload: WildValue, include_title: bool = False) -> str:
+def get_commented_snippet_event_body(payload: WildValue, include_title: bool) -> str:
     comment = payload["object_attributes"]
     action = "[commented]({}) on".format(comment["url"].tame(check_string))
     url = "{}/snippets/{}".format(
@@ -261,7 +258,7 @@ def get_commented_snippet_event_body(payload: WildValue, include_title: bool = F
     )
 
 
-def get_wiki_page_event_body(payload: WildValue, action: str) -> str:
+def get_wiki_page_event_body(payload: WildValue, action: str, include_title: bool) -> str:
     return '{} {} [wiki page "{}"]({}).'.format(
         get_issue_user_name(payload),
         action,
@@ -270,7 +267,7 @@ def get_wiki_page_event_body(payload: WildValue, action: str) -> str:
     )
 
 
-def get_build_hook_event_body(payload: WildValue) -> str:
+def get_build_hook_event_body(payload: WildValue, include_title: bool) -> str:
     build_status = payload["build_status"].tame(check_string)
     if build_status == "created":
         action = "was created"
@@ -285,11 +282,11 @@ def get_build_hook_event_body(payload: WildValue) -> str:
     )
 
 
-def get_test_event_body(payload: WildValue) -> str:
+def get_test_event_body(payload: WildValue, include_title: bool) -> str:
     return f"Webhook for **{get_repo_name(payload)}** has been configured successfully! :tada:"
 
 
-def get_pipeline_event_body(payload: WildValue) -> str:
+def get_pipeline_event_body(payload: WildValue, include_title: bool) -> str:
     pipeline_status = payload["object_attributes"]["status"].tame(check_string)
     if pipeline_status == "pending":
         action = "was created"
@@ -367,7 +364,12 @@ def get_object_url(payload: WildValue) -> str:
     return payload["object_attributes"]["url"].tame(check_string)
 
 
-EVENT_FUNCTION_MAPPER = {
+class EventFunction(Protocol):
+    def __call__(self, payload: WildValue, include_title: bool) -> str:
+        ...
+
+
+EVENT_FUNCTION_MAPPER: Dict[str, EventFunction] = {
     "Push Hook": get_push_event_body,
     "Tag Push Hook": get_tag_push_event_body,
     "Test Hook": get_test_event_body,
@@ -414,13 +416,10 @@ def api_gitlab_webhook(
     event = get_event(request, payload, branches)
     if event is not None:
         event_body_function = get_body_based_on_event(event)
-        if "include_title" in signature(event_body_function).parameters:
-            body = event_body_function(
-                payload,
-                include_title=user_specified_topic is not None,
-            )
-        else:
-            body = event_body_function(payload)
+        body = event_body_function(
+            payload,
+            include_title=user_specified_topic is not None,
+        )
 
         # Add a link to the project if a custom topic is set
         if user_specified_topic:
@@ -432,7 +431,7 @@ def api_gitlab_webhook(
     return json_success(request)
 
 
-def get_body_based_on_event(event: str) -> Any:
+def get_body_based_on_event(event: str) -> EventFunction:
     return EVENT_FUNCTION_MAPPER[event]
 
 
