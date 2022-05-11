@@ -27,7 +27,6 @@ class TestStatsEndpoint(ZulipTestCase):
         result = self.client_get("/stats")
         self.assertEqual(result.status_code, 200)
         # Check that the headers equal an expected value
-        print(type(result.headers))
         self.assertEqual(
             {
                 "Content-Type": "text/html; charset=utf-8",
