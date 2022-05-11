@@ -26,7 +26,7 @@ class TestStatsEndpoint(ZulipTestCase):
         self.login_user(self.user)
         result = self.client_get("/stats")
         self.assertEqual(result.status_code, 200)
-        print(result)
+        print(result.content, result.headers, result.reason_phrase)
         # Check that we get something back
         self.assert_in_response("Zulip analytics for", result)
 
