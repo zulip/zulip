@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Callable, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -133,7 +133,7 @@ EVENT_FUNCTION_MAPPER = {
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
-def get_body_based_on_event(event: str) -> Any:
+def get_body_based_on_event(event: str) -> Callable[[WildValue], str]:
     return EVENT_FUNCTION_MAPPER[event]
 
 
