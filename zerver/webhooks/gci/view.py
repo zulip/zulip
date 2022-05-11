@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Callable, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -158,5 +158,5 @@ def get_event(payload: WildValue) -> Optional[str]:
     raise UnknownEventType(f"Event '{event}' is unknown and cannot be handled")  # nocoverage
 
 
-def get_body_based_on_event(event: str) -> Any:
+def get_body_based_on_event(event: str) -> Callable[[WildValue], str]:
     return EVENTS_FUNCTION_MAPPER[event]
