@@ -28,13 +28,15 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         # Check that the headers equal an expected value
         print(type(result.headers))
-        self.assertEqual({
-                'Content-Type': 'text/html; charset=utf-8',
-                'Vary': 'Accept-Language, Cookie',
-                'Content-Language': 'en',
-                'Content-Length': '8662'
+        self.assertEqual(
+            {
+                "Content-Type": "text/html; charset=utf-8",
+                "Vary": "Accept-Language, Cookie",
+                "Content-Language": "en",
+                "Content-Length": "8662",
             },
-            result.headers)
+            result.headers,
+        )
 
     def test_guest_user_cant_access_stats(self) -> None:
         self.user = self.example_user("polonius")
