@@ -15,6 +15,7 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 # General configuration
 
 print('hello world')
+print('hello world')
 
 extensions = [
     "myst_parser",
