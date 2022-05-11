@@ -21,6 +21,15 @@ class TestStatsEndpoint(ZulipTestCase):
         # Check that we get something back
         self.assert_in_response("Zulip analytics for", result)
 
+    def test_stats_equals(self) -> None:
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+        result = self.client_get("/stats")
+        self.assertEqual(result.status_code, 200)
+        print(result)
+        # Check that we get something back
+        self.assert_in_response("Zulip analytics for", result)
+
     def test_guest_user_cant_access_stats(self) -> None:
         self.user = self.example_user("polonius")
         self.login_user(self.user)
