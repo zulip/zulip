@@ -14,6 +14,8 @@ on_rtd = os.environ.get("READTHEDOCS") == "True"
 
 # General configuration
 
+print('hello world')
+
 extensions = [
     "myst_parser",
     "sphinx_rtd_theme",
