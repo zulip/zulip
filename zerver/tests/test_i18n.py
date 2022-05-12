@@ -132,23 +132,27 @@ class TranslationTestCase(ZulipTestCase):
 
     def test_get_browser_language_code(self) -> None:
         req = HostRequestMock()
-
         self.assertIsNone(get_browser_language_code(req))
 
+        req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "de"
         self.assertEqual(get_browser_language_code(req), "de")
 
+        req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "en-GB,en;q=0.8"
         self.assertEqual(get_browser_language_code(req), "en-gb")
 
         # Case when unsupported language has higher weight.
+        req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND;q=0.9,de;q=0.8"
         self.assertEqual(get_browser_language_code(req), "de")
 
         # Browser locale is set to unsupported language.
+        req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "en-IND"
         self.assertIsNone(get_browser_language_code(req))
 
+        req = HostRequestMock()
         req.META["HTTP_ACCEPT_LANGUAGE"] = "*"
         self.assertIsNone(get_browser_language_code(req))
 
