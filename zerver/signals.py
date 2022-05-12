@@ -74,7 +74,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         if (timezone_now() - user.date_joined).total_seconds() <= JUST_CREATED_THRESHOLD:
             return
 
-        user_agent = request.META.get("HTTP_USER_AGENT", "").lower()
+        user_agent = request.headers.get("User-Agent", "").lower()
 
         context = common_context(user)
         context["user_email"] = user.delivery_email

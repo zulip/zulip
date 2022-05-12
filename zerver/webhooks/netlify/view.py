@@ -51,7 +51,7 @@ def api_netlify_webhook(
 def get_template(request: HttpRequest, payload: Dict[str, Any]) -> Tuple[str, str]:
 
     message_template = "The build [{build_name}]({build_url}) on branch {branch_name} "
-    event = validate_extract_webhook_http_header(request, "X_NETLIFY_EVENT", "Netlify")
+    event = validate_extract_webhook_http_header(request, "X-Netlify-Event", "Netlify")
 
     if event == "deploy_failed":
         message_template += payload["error_message"]

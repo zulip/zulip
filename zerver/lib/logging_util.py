@@ -264,16 +264,12 @@ class ZulipWebhookFormatter(ZulipFormatter):
         except orjson.JSONDecodeError:
             pass
 
-        custom_header_template = "{header}: {value}\n"
+        header_text = "".join(
+            f"{header}: {value}\n"
+            for header, value in request.headers.items()
+            if header.lower().startswith("x-")
+        )
 
-        header_text = ""
-        for header in request.META.keys():
-            if header.lower().startswith("http_x"):
-                header_text += custom_header_template.format(
-                    header=header, value=request.META[header]
-                )
-
-        header_message = header_text if header_text else None
         from zerver.lib.request import RequestNotes
 
         client = RequestNotes.get_notes(request).client
@@ -283,7 +279,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
         setattr(record, "client", client.name)
         setattr(record, "url", request.META.get("PATH_INFO", None))
         setattr(record, "content_type", request.content_type)
-        setattr(record, "custom_headers", header_message)
+        setattr(record, "custom_headers", header_text or None)
         setattr(record, "payload", payload)
         return super().format(record)
 
