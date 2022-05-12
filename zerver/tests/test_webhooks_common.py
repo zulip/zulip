@@ -88,6 +88,9 @@ class WebhooksCommonTestCase(ZulipTestCase):
         self.assertNotEqual(msg.content, expected_msg.strip())
 
         # Then verify that with the setting, it does send such a message.
+        request = HostRequestMock()
+        request.POST["api_key"] = webhook_bot_api_key
+        request.host = "zulip.testserver"
         with self.assertRaisesRegex(JsonableError, "Malformed JSON"):
             my_webhook_notify(request)
         msg = self.get_last_message()

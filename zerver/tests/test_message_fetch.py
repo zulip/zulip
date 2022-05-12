@@ -3238,6 +3238,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn("AND message_id <=", sql)
         self.assertNotIn("AND message_id >=", sql)
 
+        request = HostRequestMock(query_params, user_profile)
         first_visible_message_id = 5
         with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
