@@ -4668,10 +4668,10 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user3, "private_stream")
 
         # Apart from 3 peer-remove events and 2 unsubscribe event, because `bulk_remove_subscriptions`
-        # also marks are read messages in those streams as read, so emits 8 `message_flags` events too
+        # also marks are read messages in those streams as read, so emits 6 `message_flags` events too
         # (for each of the notification bot messages).
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=13):
+        with self.tornado_redirected_to_list(events, expected_num_events=11):
             with queries_captured() as query_count:
                 with cache_tries_captured() as cache_count:
                     bulk_remove_subscriptions(
@@ -4681,7 +4681,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(query_count, 27)
+        self.assert_length(query_count, 23)
         self.assert_length(cache_count, 3)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
