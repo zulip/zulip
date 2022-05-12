@@ -343,8 +343,8 @@ def accounts_register(
                 realm = do_create_realm(
                     string_id, realm_name, org_type=realm_type, is_demo_organization=is_demo_org
                 )
-            except IntegrityError as e:
-                raise JsonableError(_("Organization already exists")) from e
+            except IntegrityError:
+                raise JsonableError(_("Organization already exists"))
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
