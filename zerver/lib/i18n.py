@@ -72,12 +72,12 @@ def get_and_set_request_language(
 
 
 def get_browser_language_code(request: HttpRequest) -> Optional[str]:
-    accept_lang_header = request.META.get("HTTP_ACCEPT_LANGUAGE")
+    accept_lang_header = request.headers.get("Accept-Language")
     if accept_lang_header is None:
         return None
 
     available_language_codes = get_available_language_codes()
-    for accept_lang, priority in parse_accept_lang_header(request.META.get("HTTP_ACCEPT_LANGUAGE")):
+    for accept_lang, priority in parse_accept_lang_header(accept_lang_header):
         if accept_lang == "*":
             return None
         if accept_lang in available_language_codes:

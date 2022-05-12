@@ -9,7 +9,10 @@ from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import (
+    check_send_webhook_message,
+    validate_extract_webhook_http_header,
+)
 from zerver.lib.webhooks.git import (
     CONTENT_MESSAGE_TEMPLATE,
     TOPIC_WITH_BRANCH_TEMPLATE,
@@ -433,10 +436,14 @@ def api_bitbucket3_webhook(
     branches: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
+    eventkey: Optional[str]
     if "eventKey" in payload:
         eventkey = payload["eventKey"].tame(check_string)
     else:
-        eventkey = request.META["HTTP_X_EVENT_KEY"]
+        eventkey = validate_extract_webhook_http_header(
+            request, "X-Event-Key", "BitBucket", fatal=True
+        )
+        assert eventkey is not None
     handler = EVENT_HANDLER_MAP.get(eventkey)
     if handler is None:
         raise UnsupportedWebhookEventType(eventkey)

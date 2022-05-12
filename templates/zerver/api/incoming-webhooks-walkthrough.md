@@ -610,7 +610,7 @@ event = validate_extract_webhook_http_header(request, header, integration_name)
 ```
 
 `request` is the `HttpRequest` object passed to your main webhook function. `header`
-is the name of the custom header you'd like to extract, such as `X_EVENT_KEY`, and
+is the name of the custom header you'd like to extract, such as `X-Event-Key`, and
 `integration_name` is the name of the third-party service in question, such as
 `GitHub`.
 

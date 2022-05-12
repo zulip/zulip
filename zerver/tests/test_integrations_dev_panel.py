@@ -80,7 +80,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         data = {
             "url": url,
             "body": body,
-            "custom_headers": orjson.dumps({"X_GITHUB_EVENT": "ping"}).decode(),
+            "custom_headers": orjson.dumps({"X-GitHub-Event": "ping"}).decode(),
             "is_json": "true",
         }
 

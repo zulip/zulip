@@ -652,7 +652,7 @@ def authenticated_rest_api_view(
             try:
                 # Grab the base64-encoded authentication string, decode it, and split it into
                 # the email and API key
-                auth_type, credentials = request.META["HTTP_AUTHORIZATION"].split()
+                auth_type, credentials = request.headers["Authorization"].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
                     raise JsonableError(_("This endpoint requires HTTP basic authentication."))
@@ -716,7 +716,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
         if not request.POST:
             # Only take action if POST is empty.
-            if request.META.get("CONTENT_TYPE", "").startswith("multipart"):
+            if request.content_type == "multipart/form-data":
                 # Note that request._files is just the private attribute that backs the
                 # FILES property, so we are essentially setting request.FILES here.  (In
                 # Django 1.5 FILES was still a read-only property.)
