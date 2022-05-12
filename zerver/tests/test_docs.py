@@ -401,7 +401,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain=root_domain)
         self.assert_in_success_response(["Self-host Zulip"], result)
         self.assert_not_in_success_response(["/upgrade#sponsorship"], result)
-        self.assert_in_success_response(["/accounts/go/?next=/upgrade%23sponsorship"], result)
+        self.assert_in_success_response(["/accounts/go/?next=%2Fupgrade%23sponsorship"], result)
 
         non_existent_domain = "moo"
         result = self.client_get("/plans/", subdomain=non_existent_domain)
@@ -425,7 +425,7 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         self.assert_in_success_response(["/upgrade#sponsorship"], result)
-        self.assert_not_in_success_response(["/accounts/go/?next=/upgrade%23sponsorship"], result)
+        self.assert_not_in_success_response(["/accounts/go/?next=%2Fupgrade%23sponsorship"], result)
 
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")
