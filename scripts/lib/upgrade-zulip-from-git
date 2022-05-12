@@ -62,9 +62,10 @@ try:
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
         logging.info("Cloning the repository")
         subprocess.check_call(
-            ["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+            ["git", "clone", "-q", remote_url, LOCAL_GIT_CACHE_DIR],
             stdout=subprocess.DEVNULL,
         )
+
     if os.stat(LOCAL_GIT_CACHE_DIR).st_uid == 0:
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
@@ -72,6 +73,57 @@ try:
     subprocess.check_call(
         ["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip
     )
+
+    # Check to see if it's the old "mirror" configuration
+    is_mirror = subprocess.check_output(
+        ["git", "config", "--bool", "--default=false", "remote.origin.mirror"],
+        preexec_fn=su_to_zulip,
+        text=True,
+    )
+    if is_mirror.strip() == "true":
+        subprocess.check_call(
+            ["git", "config", "--unset", "remote.origin.mirror"],
+            preexec_fn=su_to_zulip,
+        )
+        subprocess.check_call(
+            ["git", "config", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*"],
+            preexec_fn=su_to_zulip,
+        )
+        matching_refs = subprocess.check_output(
+            ["git", "for-each-ref", "--format=%(refname)", "refs/pull/", "refs/heads/"],
+            preexec_fn=su_to_zulip,
+            text=True,
+        ).splitlines()
+
+        # We can't use `git worktree list --porcelain -z` here because
+        # Ubuntu 20.04 Focal only has git 2.25.1, and -z was
+        # introduced in 2.36
+        worktree_data = subprocess.check_output(
+            ["git", "worktree", "list", "--porcelain"],
+            preexec_fn=su_to_zulip,
+            text=True,
+        ).splitlines()
+        keep_refs = set()
+        for worktree_line in worktree_data:
+            if worktree_line.startswith("branch "):
+                keep_refs.add(worktree_line[len("branch ") :])
+
+        delete_input = "".join(
+            f"delete {refname}\n" for refname in matching_refs if refname not in keep_refs
+        )
+        subprocess.run(
+            ["git", "update-ref", "--stdin"],
+            check=True,
+            preexec_fn=su_to_zulip,
+            input=delete_input,
+            text=True,
+        )
+
+        logging.info("Repacking repository after pruning unnecessary refs...")
+        subprocess.check_call(
+            ["git", "gc", "--prune=now"],
+            preexec_fn=su_to_zulip,
+        )
 
     # Ensure upstream remote is configured; we need this to make `git describe` accurate.
     remotes = subprocess.check_output(["git", "remote"], preexec_fn=su_to_zulip).split(b"\n")
@@ -90,11 +142,25 @@ try:
     )
 
     # Generate the deployment directory via git worktree from our local repository.
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", refname],
-        preexec_fn=su_to_zulip,
-        text=True,
-    ).strip()
+    try:
+        fullref = f"refs/tags/{refname}"
+        commit_hash = subprocess.check_output(
+            ["git", "rev-parse", "--verify", fullref],
+            preexec_fn=su_to_zulip,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except subprocess.CalledProcessError as e:
+        if e.returncode == 128:
+            # Try in the origin namespace
+            fullref = f"refs/remotes/origin/{refname}"
+            commit_hash = subprocess.check_output(
+                ["git", "rev-parse", "--verify", fullref],
+                preexec_fn=su_to_zulip,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+    refname = fullref
     logging.info("Upgrading to %s, in %s", commit_hash, deploy_path)
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
@@ -102,8 +168,19 @@ try:
         preexec_fn=su_to_zulip,
     )
     os.chdir(deploy_path)
+    extra_flags = []
+    if not refname.startswith("refs/tags/"):
+        extra_flags = ["-t"]
     subprocess.check_call(
-        ["git", "checkout", "-qtb", "deployment-" + os.path.basename(deploy_path), refname],
+        [
+            "git",
+            "checkout",
+            "-q",
+            *extra_flags,
+            "-b",
+            "deployment-" + os.path.basename(deploy_path),
+            refname,
+        ],
         preexec_fn=su_to_zulip,
     )
 
