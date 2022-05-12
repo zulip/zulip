@@ -107,7 +107,7 @@ def create_dns_records(droplet: digitalocean.Droplet) -> None:
 
 
 def setup_one_click_app_installer(droplet: digitalocean.Droplet) -> None:
-    subprocess.call(
+    subprocess.check_call(
         [
             "fab",
             "build_image",
