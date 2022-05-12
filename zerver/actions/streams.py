@@ -607,7 +607,9 @@ def bulk_remove_subscriptions(
         event = {
             "type": "mark_stream_messages_as_read",
             "user_profile_id": user_profile.id,
-            "stream_recipient_ids": [stream.recipient_id for stream in streams],
+            "stream_recipient_ids": [
+                stream.recipient_id for stream in streams_by_user[user_profile.id]
+            ],
         }
         queue_json_publish("deferred_work", event)
 
