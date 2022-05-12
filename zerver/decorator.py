@@ -637,6 +637,7 @@ def authenticated_rest_api_view(
     webhook_client_name: Optional[str] = None,
     allow_webhook_access: bool = False,
     skip_rate_limiting: bool = False,
+    beanstalk_email_decode: bool = False,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     if webhook_client_name is not None:
         allow_webhook_access = True
@@ -656,6 +657,10 @@ def authenticated_rest_api_view(
                 if auth_type.lower() != "basic":
                     raise JsonableError(_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(credentials).decode().split(":")
+                if beanstalk_email_decode:
+                    # Beanstalk's web hook UI rejects URL with a @ in the username section
+                    # So we ask the user to replace them with %40
+                    role = role.replace("%40", "@")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
