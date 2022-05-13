@@ -143,6 +143,23 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["realm_emoji"], [])
         self.assertEqual(result_dict["queue_id"], "15:13")
 
+    def test_events_register_spectators(self) -> None:
+        # Verify that POST /register works for spectators, but not for
+        # normal users.
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            result = self.client_post("/json/register", dict())
+            self.assert_json_error(
+                result,
+                "Not logged in: API authentication or user session required",
+                status_code=401,
+            )
+
+        result = self.client_post("/json/register", dict())
+        self.assert_json_success(result)
+        result_dict = result.json()
+        self.assertEqual(result_dict["queue_id"], None)
+        self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
+
     def test_events_register_endpoint_all_public_streams_access(self) -> None:
         guest_user = self.example_user("polonius")
         normal_user = self.example_user("hamlet")

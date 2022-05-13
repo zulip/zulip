@@ -407,6 +407,10 @@ ul {
         .stream-search {
             margin-left: auto;
             align-self: center;
+            padding-right: 20px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
 
         #clear_stream_search {

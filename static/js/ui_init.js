@@ -16,6 +16,7 @@ import * as activity from "./activity";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
+import * as channel from "./channel";
 import * as click_handlers from "./click_handlers";
 import * as common from "./common";
 import * as compose from "./compose";
@@ -157,7 +158,7 @@ function initialize_left_sidebar() {
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
-        realm_description: page_params.realm_description,
+        realm_rendered_description: page_params.realm_rendered_description,
     });
 
     $("#right-sidebar-container").html(rendered_sidebar);
@@ -679,9 +680,29 @@ export function initialize_everything() {
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
+
+    $("#app-loading").addClass("loaded");
 }
 
-$(() => {
+$(async () => {
+    if (page_params.is_spectator) {
+        const data = {
+            apply_markdown: true,
+            client_capabilities: JSON.stringify({
+                notification_settings_null: true,
+                bulk_message_deletion: true,
+                user_avatar_url_field_optional: true,
+                // Set this to true when stream typing notifications are implemented.
+                stream_typing_notifications: false,
+                user_settings_object: true,
+            }),
+            client_gravatar: false,
+        };
+        const {result, msg, ...state} = await new Promise((success, error) => {
+            channel.post({url: "/json/register", data, success, error});
+        });
+        Object.assign(page_params, state);
+    }
     blueslip.measure_time("initialize_everything", () => {
         initialize_everything();
     });

@@ -178,6 +178,17 @@ run_test("user groups", ({override}) => {
         assert_same(args.user_ids, event.user_ids);
     }
 
+    event = event_fixtures.user_group__add_subgroups;
+    {
+        const stub = make_stub();
+        override(user_groups, "add_subgroups", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("group_id", "subgroup_ids");
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.subgroup_ids, event.subgroup_ids);
+    }
+
     event = event_fixtures.user_group__remove_members;
     {
         const stub = make_stub();
@@ -187,6 +198,17 @@ run_test("user groups", ({override}) => {
         const args = stub.get_args("group_id", "user_ids");
         assert_same(args.group_id, event.group_id);
         assert_same(args.user_ids, event.user_ids);
+    }
+
+    event = event_fixtures.user_group__remove_subgroups;
+    {
+        const stub = make_stub();
+        override(user_groups, "remove_subgroups", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("group_id", "subgroup_ids");
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.subgroup_ids, event.subgroup_ids);
     }
 
     event = event_fixtures.user_group__update;

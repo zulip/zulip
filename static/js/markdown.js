@@ -217,7 +217,7 @@ function parse_with_options({raw_content, helper_config, options}) {
                     display_text = "@" + group.name;
                     classes = "user-group-mention";
                     if (
-                        helper_config.is_member_of_user_group(group.id, helper_config.my_user_id())
+                        helper_config.is_member_of_user_group(helper_config.my_user_id(), group.id)
                     ) {
                         // Mentioned the current user's group.
                         mentioned_group = true;

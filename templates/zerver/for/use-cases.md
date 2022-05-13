@@ -15,3 +15,4 @@
 * [Lean theorem prover community](/case-studies/lean/)
 * [Asciidoctor open-source community](/case-studies/asciidoctor/)
 * [Rust language community](/case-studies/rust/)
+* [Recurse Center](/case-studies/recurse-center/)

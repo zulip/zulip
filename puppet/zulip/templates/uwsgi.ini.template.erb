@@ -18,6 +18,7 @@ stats=/home/zulip/deployments/uwsgi-stats
 
 <% if @uwsgi_rolling_restart != '' -%>
 master-fifo=/home/zulip/deployments/uwsgi-control
+hook-post-fork=chdir:/home/zulip/deployments/current
 # lazy-apps are required for rolling restarts:
 # https://uwsgi-docs.readthedocs.io/en/latest/articles/TheArtOfGracefulReloading.html#preforking-vs-lazy-apps-vs-lazy
 lazy-apps=true

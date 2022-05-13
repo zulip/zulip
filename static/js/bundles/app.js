@@ -17,7 +17,6 @@ import "../notifications";
 import "../server_events";
 import "../templates";
 import "../settings";
-import "../ui_init";
 import "../desktop_integration";
 import "../zulip_test";
 
@@ -56,4 +55,4 @@ import "../../styles/user_status.css";
 import "../../styles/widgets.css";
 
 // This should be last.
-import "../ready";
+import "../ui_init";

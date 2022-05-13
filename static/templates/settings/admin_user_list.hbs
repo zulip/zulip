@@ -12,14 +12,14 @@
         <span class="hidden-email">{{t "(hidden)"}}</span>
     </td>
     {{/if}}
+    {{#unless is_bot}}
     <td>
         <span class="user_id">{{user_id}}</span>
     </td>
-    {{#unless is_bot}}
+    {{/unless}}
     <td>
         <span class="user_role">{{user_role_text}}</span>
     </td>
-    {{/unless}}
     {{#if is_bot}}
     <td>
         <span class="owner">

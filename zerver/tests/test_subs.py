@@ -2431,7 +2431,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2457,7 +2457,7 @@ class StreamAdminTest(ZulipTestCase):
             self.example_user(name) for name in ["cordelia", "prospero", "iago", "hamlet", "ZOE"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=31,
+            query_count=26,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -2475,7 +2475,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2492,7 +2492,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2509,7 +2509,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from public streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -2529,7 +2529,7 @@ class StreamAdminTest(ZulipTestCase):
             self.example_user(name) for name in ["cordelia", "prospero", "othello", "hamlet", "ZOE"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=31,
+            query_count=26,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=False,
@@ -2547,7 +2547,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from private streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -2574,7 +2574,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=16,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2588,7 +2588,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=20,
+            query_count=18,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -4667,11 +4667,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, "private_stream")
         self.subscribe(user3, "private_stream")
 
-        # Apart from 3 peer-remove events and 2 unsubscribe event, because `bulk_remove_subscriptions`
-        # also marks are read messages in those streams as read, so emits 8 `message_flags` events too
-        # (for each of the notification bot messages).
+        # Sends 3 peer-remove events and 2 unsubscribe events.
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=13):
+        with self.tornado_redirected_to_list(events, expected_num_events=5):
             with queries_captured() as query_count:
                 with cache_tries_captured() as cache_count:
                     bulk_remove_subscriptions(
@@ -4681,7 +4679,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(query_count, 27)
+        self.assert_length(query_count, 17)
         self.assert_length(cache_count, 3)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]

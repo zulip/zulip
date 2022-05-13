@@ -746,6 +746,13 @@ exports.fixtures = {
         user_ids: [2],
     },
 
+    user_group__add_subgroups: {
+        type: "user_group",
+        op: "add_subgroups",
+        group_id: 1,
+        subgroup_ids: [3],
+    },
+
     user_group__remove: {
         type: "user_group",
         op: "remove",
@@ -757,6 +764,13 @@ exports.fixtures = {
         op: "remove_members",
         group_id: 3,
         user_ids: [99, 100],
+    },
+
+    user_group__remove_subgroups: {
+        type: "user_group",
+        op: "remove_subgroups",
+        group_id: 1,
+        subgroup_ids: [3],
     },
 
     user_group__update: {

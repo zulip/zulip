@@ -68,7 +68,7 @@ export const get_helpers = () => ({
 
     // user groups
     get_user_group_from_name: (name) => user_group(user_groups.get_user_group_from_name(name)),
-    is_member_of_user_group: user_groups.is_member_of,
+    is_member_of_user_group: user_groups.is_direct_member_of,
 
     // stream hashes
     get_stream_by_name: (name) => stream(stream_data.get_sub(name)),

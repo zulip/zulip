@@ -1,5 +1,5 @@
-import urllib.parse
 from typing import Optional
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -40,7 +40,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     sponsorship_url = "/upgrade#sponsorship"
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
-        sponsorship_url = f"/accounts/go/?next={urllib.parse.quote(sponsorship_url)}"
+        sponsorship_url = f"/accounts/go/?{urlencode({'next': sponsorship_url})}"
     realm_on_free_trial = False
 
     if realm is not None:

@@ -1340,10 +1340,9 @@ class NormalActionsTest(BaseAction):
     def test_muted_users_events(self) -> None:
         muted_user = self.example_user("othello")
         events = self.verify_action(
-            lambda: do_mute_user(self.user_profile, muted_user), num_events=2
+            lambda: do_mute_user(self.user_profile, muted_user), num_events=1
         )
-        check_update_message_flags_add("events[0]", events[0])
-        check_muted_users("events[1]", events[1])
+        check_muted_users("events[0]", events[0])
 
         mute_object = get_mute_object(self.user_profile, muted_user)
         assert mute_object is not None
@@ -2678,7 +2677,7 @@ class SubscribeActionTest(BaseAction):
         # Now remove the user himself, to test the 'remove' event flow
         action = lambda: bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
         events = self.verify_action(
-            action, include_subscribers=include_subscribers, include_streams=False, num_events=2
+            action, include_subscribers=include_subscribers, include_streams=False, num_events=1
         )
         check_subscription_remove("events[0]", events[0])
         self.assert_length(events[0]["subscriptions"], 1)

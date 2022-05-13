@@ -144,6 +144,7 @@ def build_page_params_for_home_page_load(
         assert client is not None
         register_ret = do_events_register(
             user_profile,
+            realm,
             client,
             apply_markdown=True,
             client_gravatar=True,
@@ -152,32 +153,21 @@ def build_page_params_for_home_page_load(
             narrow=narrow,
             include_streams=False,
         )
+        default_language = register_ret["user_settings"]["default_language"]
     else:
-        # Since events for spectator is not implemented, we only fetch the data
-        # at the time of request and don't register for any events.
-        # TODO: Implement events for spectator.
-        from zerver.lib.events import fetch_initial_state_data, post_process_state
-
-        register_ret = fetch_initial_state_data(
-            user_profile,
-            realm=realm,
-            event_types=None,
-            queue_id=None,
-            client_gravatar=False,
-            user_avatar_url_field_optional=client_capabilities["user_avatar_url_field_optional"],
-            user_settings_object=client_capabilities["user_settings_object"],
-            slim_presence=False,
-            include_subscribers=False,
-            include_streams=False,
-        )
-
-        post_process_state(user_profile, register_ret, False)
+        # The spectator client will be fetching the /register response
+        # for spectators via the API. But we still need to set the
+        # values not presence in that object.
+        register_ret = {
+            "queue_id": None,
+        }
+        default_language = realm.default_language
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
     request_language = get_and_set_request_language(
         request,
-        register_ret["user_settings"]["default_language"],
+        default_language,
         translation.get_language_from_path(request.path_info),
     )
 
@@ -243,6 +233,6 @@ def build_page_params_for_home_page_load(
     if user_profile is None:
         # Get rendered version of realm description which is displayed in right
         # sidebar for spectator.
-        page_params["realm_description"] = get_realm_rendered_description(realm)
+        page_params["realm_rendered_description"] = get_realm_rendered_description(realm)
 
     return register_ret["queue_id"], page_params

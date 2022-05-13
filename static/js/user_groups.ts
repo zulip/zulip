@@ -8,6 +8,7 @@ type UserGroup = {
     name: string;
     members: Set<number>;
     is_system_group: boolean;
+    subgroups: Set<number>;
 };
 
 // The members field is a number array which we convert
@@ -35,6 +36,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         name: user_group_raw.name,
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
+        subgroups: new Set(user_group_raw.subgroups),
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -77,7 +79,7 @@ export function get_realm_user_groups(): UserGroup[] {
     return user_groups.filter((group) => !group.is_system_group);
 }
 
-export function is_member_of(user_group_id: number, user_id: number): boolean {
+export function is_direct_member_of(user_id: number, user_group_id: number): boolean {
     const user_group = user_group_by_id_dict.get(user_group_id);
     if (user_group === undefined) {
         blueslip.error(`Could not find user group with ID ${user_group_id}`);
@@ -110,6 +112,30 @@ export function remove_members(user_group_id: number, user_ids: number[]): void 
     }
 }
 
+export function add_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        user_group.subgroups.add(subgroup_id);
+    }
+}
+
+export function remove_subgroups(user_group_id: number, subgroup_ids: number[]): void {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return;
+    }
+
+    for (const subgroup_id of subgroup_ids) {
+        user_group.subgroups.delete(subgroup_id);
+    }
+}
+
 export function initialize(params: {realm_user_groups: UserGroupRaw[]}): void {
     for (const user_group of params.realm_user_groups) {
         add(user_group);
@@ -122,6 +148,56 @@ export function is_user_group(item: User | UserGroup): item is UserGroup {
 
 export function get_user_groups_of_user(user_id: number): UserGroup[] {
     const user_groups_realm = get_realm_user_groups();
-    const groups_of_user = user_groups_realm.filter((group) => is_member_of(group.id, user_id));
+    const groups_of_user = user_groups_realm.filter((group) =>
+        is_direct_member_of(user_id, group.id),
+    );
     return groups_of_user;
+}
+
+export function get_recursive_subgroups(target_group_id: number): Set<number> | undefined {
+    const target_user_group = user_group_by_id_dict.get(target_group_id);
+    if (target_user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${target_group_id}`);
+        return undefined;
+    }
+
+    // Correctness of this algorithm relying on the ES6 Set
+    // implementation having the property that a `for of` loop will
+    // visit all items that are added to the set during the loop.
+    const subgroup_ids = new Set(target_user_group.subgroups);
+    for (const subgroup_id of subgroup_ids) {
+        const subgroup = user_group_by_id_dict.get(subgroup_id);
+        if (subgroup === undefined) {
+            blueslip.error(`Could not find subgroup with ID ${subgroup_id}`);
+            return undefined;
+        }
+
+        for (const direct_subgroup_id of subgroup.subgroups) {
+            subgroup_ids.add(direct_subgroup_id);
+        }
+    }
+    return subgroup_ids;
+}
+
+export function is_user_in_group(user_group_id: number, user_id: number): boolean {
+    const user_group = user_group_by_id_dict.get(user_group_id);
+    if (user_group === undefined) {
+        blueslip.error(`Could not find user group with ID ${user_group_id}`);
+        return false;
+    }
+    if (is_direct_member_of(user_id, user_group_id)) {
+        return true;
+    }
+
+    const subgroup_ids = get_recursive_subgroups(user_group_id);
+    if (subgroup_ids === undefined) {
+        return false;
+    }
+
+    for (const group_id of subgroup_ids) {
+        if (is_direct_member_of(user_id, group_id)) {
+            return true;
+        }
+    }
+    return false;
 }

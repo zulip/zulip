@@ -274,9 +274,6 @@ export function get_user_time(user_id) {
 
 export function get_user_type(user_id) {
     const user_profile = get_by_user_id(user_id);
-    if (user_profile.is_bot) {
-        return $t({defaultMessage: "Bot"});
-    }
 
     return settings_config.user_role_map.get(user_profile.role);
 }

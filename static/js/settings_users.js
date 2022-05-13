@@ -190,10 +190,12 @@ function bot_info(bot_user_id) {
     const info = {};
 
     info.is_bot = true;
+    info.role = people.get_by_user_id(bot_user_id).role;
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
     info.bot_owner_id = owner_id;
+    info.user_role_text = people.get_user_type(bot_user_id);
 
     // Convert bot type id to string for viewing to the users.
     info.bot_type = settings_bots.type_id_to_string(bot_user.bot_type);
@@ -279,7 +281,7 @@ section.bots.create_table = () => {
         sort_fields: {
             email: sort_bot_email,
             bot_owner: sort_bot_owner,
-            id: sort_user_id,
+            role: sort_role,
         },
         $simplebar_container: $("#admin-bot-list .progressive-table-wrapper"),
     });
@@ -643,16 +645,20 @@ function handle_bot_form($tbody) {
             user_id,
             email: bot.email,
             full_name: bot.full_name,
+            user_role_values: settings_config.user_role_values,
+            disable_role_dropdown: bot.is_owner && !page_params.is_owner,
         });
 
         let owner_widget;
 
         function submit_bot_details() {
+            const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
             const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
 
             const url = "/json/bots/" + encodeURIComponent(user_id);
             const data = {
                 full_name: $full_name.val(),
+                role: JSON.stringify(role),
             };
 
             if (owner_widget === undefined) {
@@ -666,7 +672,7 @@ function handle_bot_form($tbody) {
             dialog_widget.submit_api_request(channel.patch, url, data);
         }
 
-        function get_bot_owner_widget() {
+        function get_bot_owner_widget_and_set_role_values() {
             const owner_id = bot_data.get(user_id).owner_id;
 
             const user_ids = people.get_active_human_ids();
@@ -685,14 +691,25 @@ function handle_bot_form($tbody) {
             // organizations with 10Ks of users.
             owner_widget = new DropdownListWidget(opts);
             owner_widget.setup();
+
+            $("#bot-role-select").val(bot.role);
+            if (!page_params.is_owner) {
+                $("#bot-role-select")
+                    .find(
+                        `option[value="${CSS.escape(
+                            settings_config.user_role_values.owner.code,
+                        )}"]`,
+                    )
+                    .hide();
+            }
         }
 
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Change bot info and owner"}),
+            html_heading: $t_html({defaultMessage: "Manage bot"}),
             html_body,
             id: "edit_bot_modal",
             on_click: submit_bot_details,
-            post_render: get_bot_owner_widget,
+            post_render: get_bot_owner_widget_and_set_role_values,
         });
     });
 }

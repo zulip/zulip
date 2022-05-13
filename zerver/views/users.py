@@ -193,10 +193,12 @@ def update_user_backend(
         # grant/remove the role in question.  access_user_by_id has
         # already verified we're an administrator; here we enforce
         # that only owners can toggle the is_realm_owner flag.
+        #
+        # Logic replicated in patch_bot_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
 
-        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
+        if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
@@ -302,6 +304,12 @@ def patch_bot_backend(
     user_profile: UserProfile,
     bot_id: int,
     full_name: Optional[str] = REQ(default=None),
+    role: Optional[int] = REQ(
+        default=None,
+        json_validator=check_int_in(
+            UserProfile.ROLE_TYPES,
+        ),
+    ),
     bot_owner_id: Optional[int] = REQ(json_validator=check_int, default=None),
     config_data: Optional[Dict[str, str]] = REQ(
         default=None, json_validator=check_dict(value_validator=check_string)
@@ -316,6 +324,14 @@ def patch_bot_backend(
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
+
+    if role is not None and bot.role != role:
+        # Logic duplicated from update_user_backend.
+        if UserProfile.ROLE_REALM_OWNER in [role, bot.role] and not user_profile.is_realm_owner:
+            raise OrganizationOwnerRequired()
+
+        do_change_user_role(bot, role, acting_user=user_profile)
+
     if bot_owner_id is not None:
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)

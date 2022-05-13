@@ -230,6 +230,16 @@
     }
 }
 
+#user_search_section {
+    input {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding-right: 20px;
+        width: calc(100% - 40px - 3px);
+    }
+}
+
 @media (width < $sm_min) {
     #userlist-toggle {
         height: 30px;

@@ -1,5 +1,5 @@
 """Webhooks for external integrations."""
-from typing import Any, Dict, List
+from typing import List
 
 from django.http import HttpRequest, HttpResponse
 
@@ -7,6 +7,7 @@ from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -27,19 +28,6 @@ TICKET_CREATION_TEMPLATE = """
 * **Priority**: {priority}
 * **Status**: {status}
 """.strip()
-
-
-class TicketDict(Dict[str, Any]):
-    """
-    A helper class to turn a dictionary with ticket information into
-    an object where each of the keys is an attribute for easy access.
-    """
-
-    def __getattr__(self, field: str) -> Any:
-        if "_" in field:
-            return self.get(field)
-        else:
-            return self.get("ticket_" + field)
 
 
 def property_name(property: str, index: int) -> str:
@@ -93,30 +81,30 @@ def parse_freshdesk_event(event_string: str) -> List[str]:
         ]
 
 
-def format_freshdesk_note_message(ticket: TicketDict, event_info: List[str]) -> str:
+def format_freshdesk_note_message(ticket: WildValue, event_info: List[str]) -> str:
     """There are public (visible to customers) and private note types."""
     note_type = event_info[1]
     content = NOTE_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
+        name=ticket["requester_name"].tame(check_string),
+        email=ticket["requester_email"].tame(check_string),
         note_type=note_type,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        ticket_id=ticket["ticket_id"].tame(check_string),
+        ticket_url=ticket["ticket_url"].tame(check_string),
     )
 
     return content
 
 
-def format_freshdesk_property_change_message(ticket: TicketDict, event_info: List[str]) -> str:
+def format_freshdesk_property_change_message(ticket: WildValue, event_info: List[str]) -> str:
     """Freshdesk will only tell us the first event to match our webhook
     configuration, so if we change multiple properties, we only get the before
     and after data for the first one.
     """
     content = PROPERTY_CHANGE_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        name=ticket["requester_name"].tame(check_string),
+        email=ticket["requester_email"].tame(check_string),
+        ticket_id=ticket["ticket_id"].tame(check_string),
+        ticket_url=ticket["ticket_url"].tame(check_string),
         property_name=event_info[0].capitalize(),
         old=event_info[1],
         new=event_info[2],
@@ -125,18 +113,18 @@ def format_freshdesk_property_change_message(ticket: TicketDict, event_info: Lis
     return content
 
 
-def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
+def format_freshdesk_ticket_creation_message(ticket: WildValue) -> str:
     """They send us the description as HTML."""
-    cleaned_description = convert_html_to_markdown(ticket.description)
+    cleaned_description = convert_html_to_markdown(ticket["ticket_description"].tame(check_string))
     content = TICKET_CREATION_TEMPLATE.format(
-        name=ticket.requester_name,
-        email=ticket.requester_email,
-        ticket_id=ticket.id,
-        ticket_url=ticket.url,
+        name=ticket["requester_name"].tame(check_string),
+        email=ticket["requester_email"].tame(check_string),
+        ticket_id=ticket["ticket_id"].tame(check_string),
+        ticket_url=ticket["ticket_url"].tame(check_string),
         description=cleaned_description,
-        type=ticket.type,
-        priority=ticket.priority,
-        status=ticket.status,
+        type=ticket["ticket_type"].tame(check_string),
+        priority=ticket["ticket_priority"].tame(check_string),
+        status=ticket["ticket_status"].tame(check_string),
     )
 
     return content
@@ -147,14 +135,14 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 def api_freshdesk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    ticket_data = payload["freshdesk_webhook"]
+    ticket = payload["freshdesk_webhook"]
 
-    ticket = TicketDict(ticket_data)
-
-    subject = f"#{ticket.id}: {ticket.subject}"
-    event_info = parse_freshdesk_event(ticket.triggered_event)
+    subject = (
+        f"#{ticket['ticket_id'].tame(check_string)}: {ticket['ticket_subject'].tame(check_string)}"
+    )
+    event_info = parse_freshdesk_event(ticket["triggered_event"].tame(check_string))
 
     if event_info[1] == "created":
         content = format_freshdesk_ticket_creation_message(ticket)
