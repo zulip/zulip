@@ -220,4 +220,8 @@ class zulip::app_frontend_base {
     mode   => '0644',
     source => 'puppet:///modules/zulip/cron.d/fetch-tor-exit-nodes',
   }
+  # This was originally added with a typo in the name.
+  file { '/etc/cron.d/fetch-for-exit-nodes':
+    ensure => absent,
+  }
 }

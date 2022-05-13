@@ -888,7 +888,7 @@ def get_tor_ips() -> Set[str]:
     if not settings.RATE_LIMIT_TOR_TOGETHER:
         return set()
 
-    # Cron job in /etc/cron.d/fetch-for-exit-nodes fetches this
+    # Cron job in /etc/cron.d/fetch-tor-exit-nodes fetches this
     # hourly; we cache it in memcached to prevent going to disk on
     # every unauth'd request.  In case of failures to read, we
     # circuit-break so 2 failures cause a 10-minute backoff.
