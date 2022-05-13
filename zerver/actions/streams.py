@@ -564,10 +564,10 @@ def bulk_remove_subscriptions(
             subs_to_deactivate.append(sub_info)
             sub_ids_to_deactivate.append(sub_info.sub.id)
 
+    streams_to_unsubscribe = [sub_info.stream for sub_info in subs_to_deactivate]
     # We do all the database changes in a transaction to ensure
     # RealmAuditLog entries are atomically created when making changes.
     with transaction.atomic():
-        occupied_streams_before = list(get_occupied_streams(realm))
         Subscription.objects.filter(
             id__in=sub_ids_to_deactivate,
         ).update(active=False)
@@ -619,7 +619,7 @@ def bulk_remove_subscriptions(
         altered_user_dict=altered_user_dict,
     )
 
-    new_vacant_streams = set(occupied_streams_before) - set(occupied_streams_after)
+    new_vacant_streams = set(streams_to_unsubscribe) - set(occupied_streams_after)
     new_vacant_private_streams = [stream for stream in new_vacant_streams if stream.invite_only]
 
     if new_vacant_private_streams:
