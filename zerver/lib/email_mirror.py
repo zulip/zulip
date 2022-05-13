@@ -241,11 +241,17 @@ def get_message_part_by_type(message: EmailMessage, content_type: str) -> Option
             content = part.get_payload(decode=True)
             assert isinstance(content, bytes)
             if charsets[idx]:
-                return content.decode(charsets[idx], errors="ignore")
+                try:
+                    return content.decode(charsets[idx], errors="ignore")
+                except LookupError:
+                    # The RFCs do not define how to handle unknown
+                    # charsets, but treating as US-ASCII seems
+                    # reasonable; fall through to below.
+                    pass
+
             # If no charset has been specified in the header, assume us-ascii,
             # by RFC6657: https://tools.ietf.org/html/rfc6657
-            else:
-                return content.decode("us-ascii", errors="ignore")
+            return content.decode("us-ascii", errors="ignore")
 
     return None
 

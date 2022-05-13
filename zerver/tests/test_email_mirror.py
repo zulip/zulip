@@ -1496,6 +1496,31 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
         self.assertEqual(message.content, "Email fixture 1.txt body")
 
 
+class TestContentTypeInvalidCharset(ZulipTestCase):
+    def test_unknown_charset(self) -> None:
+        message_as_string = self.fixture_data("1.txt", type="email")
+        message_as_string = message_as_string.replace(
+            'Content-Type: text/plain; charset="us-ascii"',
+            'Content-Type: text/plain; charset="bogus"',
+        )
+        incoming_message = message_from_string(message_as_string, policy=email.policy.default)
+        # https://github.com/python/typeshed/issues/2417
+        assert isinstance(incoming_message, EmailMessage)
+
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+        stream_to_address = encode_email_address(stream)
+
+        del incoming_message["To"]
+        incoming_message["To"] = stream_to_address
+        process_message(incoming_message)
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(message.content, "Email fixture 1.txt body")
+
+
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
     def test_process_message_no_valid_recipient(self) -> None:
         incoming_valid_message = EmailMessage()
