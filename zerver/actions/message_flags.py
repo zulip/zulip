@@ -98,6 +98,9 @@ def do_mark_stream_messages_as_read(
 
     message_ids = list(msgs.values_list("message_id", flat=True))
 
+    if len(message_ids) == 0:
+        return 0
+
     count = msgs.update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
@@ -135,6 +138,9 @@ def do_mark_muted_user_messages_as_read(
     ).extra(where=[UserMessage.where_unread()])
 
     message_ids = list(messages.values_list("message_id", flat=True))
+
+    if len(message_ids) == 0:
+        return 0
 
     count = messages.update(
         flags=F("flags").bitor(UserMessage.flags.read),
