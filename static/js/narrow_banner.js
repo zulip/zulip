@@ -293,7 +293,7 @@ function pick_empty_narrow_banner() {
                 }
                 return {
                     title: $t({
-                        defaultMessage: "You have no private messages with this person yet!",
+                        defaultMessage: "You are not allowed to send private messages here!",
                     }),
                     html: $t_html(
                         {
