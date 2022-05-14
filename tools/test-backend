@@ -233,6 +233,12 @@ def main() -> None:
         "--verbose-coverage", action="store_true", help="Enable verbose print of coverage report."
     )
     parser.add_argument(
+        "--xml-report", action="store_true", help="Enable (slow) XML coverage report."
+    )
+    parser.add_argument(
+        "--no-html-report", action="store_true", help="Disable (slow) HTML coverage report."
+    )
+    parser.add_argument(
         "--no-cov-cleanup", action="store_true", help="Do not clean generated coverage files."
     )
 
@@ -441,9 +447,14 @@ def main() -> None:
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
-        cov.xml_report(outfile="var/coverage.xml")
-        cov.html_report(directory="var/coverage", show_contexts=True)
-        print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
+        if options.xml_report:
+            print("Writing XML report")
+            cov.xml_report(outfile="var/coverage.xml")
+            print("XML report saved; see var/coverage.xml")
+        if not options.no_html_report:
+            print("Writing HTML report")
+            cov.html_report(directory="var/coverage", show_contexts=True)
+            print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
     if full_suite and not failures and options.coverage:
         # Assert that various files have full coverage
         for path in enforce_fully_covered:
