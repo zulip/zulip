@@ -24,6 +24,13 @@ exclude_lines =
 
 [run]
 data_file=var/.coverage
+
+# dynamic_context=test_function, combined with using
+# html_report(..., show_contexts=True), means the HTML report can detail
+# which test(s) executed each line with coverage. This has modest
+# overhead but is very useful for finding existing tests for a code path.
+dynamic_context=test_function
+
 omit =
     */zulip-venv-cache/*
     */migrations/*

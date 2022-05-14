@@ -481,6 +481,10 @@ Here are some things to consider when writing new tests:
   view right from your browser (the tool prints the URL where the report
   is exposed in your development environment).
 
+  The HTML report also displays which tests executed each line, which
+  can be handy for finding existing tests for a code path you're
+  working on.
+
 - **Console output** A properly written test should print nothing to
   the console; use `with self.assertLogs` to capture and verify any
   logging output. Note that we reconfigure various loggers in
