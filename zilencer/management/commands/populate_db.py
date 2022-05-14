@@ -26,6 +26,7 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -825,6 +826,7 @@ class Command(BaseCommand):
             if options["test_suite"]:
                 # Create test users; the MIT ones are needed to test
                 # the Zephyr mirroring codepaths.
+                event_time = timezone_now()
                 testsuite_mit_users = [
                     ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
@@ -834,12 +836,26 @@ class Command(BaseCommand):
                     mit_realm, testsuite_mit_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
                 )
 
+                mit_user = get_user_by_delivery_email("sipbtest@mit.edu", mit_realm)
+                mit_signup_stream = Stream.objects.get(
+                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=mit_realm
+                )
+                bulk_add_subscriptions(mit_realm, [mit_signup_stream], [mit_user], acting_user=None)
+
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
                     ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
                 create_users(
                     lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+                )
+
+                lear_user = get_user_by_delivery_email("king@lear.org", lear_realm)
+                lear_signup_stream = Stream.objects.get(
+                    name=Realm.INITIAL_PRIVATE_STREAM_NAME, realm=lear_realm
+                )
+                bulk_add_subscriptions(
+                    lear_realm, [lear_signup_stream], [lear_user], acting_user=None
                 )
 
             if not options["test_suite"]:
