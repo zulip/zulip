@@ -144,7 +144,10 @@ class EventsTestCase(TornadoWebTestCase):
             )
             process_event(event, users)
 
-        self.io_loop.call_later(0.1, process_events)
+        # todo: calls down into rest_dispatch() which non-deterministically returns
+        # request_notes.saved_response - this is an occasional problem for test coverage,
+        # and this long delay helps.
+        self.io_loop.call_later(1.0, process_events)
         response = await self.client_get_async(path)
         self.assertEqual(response.headers["Vary"], "Accept-Language, Cookie")
         data = orjson.loads(response.body)
