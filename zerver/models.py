@@ -941,20 +941,11 @@ class Realm(models.Model):
     def presence_disabled(self) -> bool:
         return self.is_zephyr_mirror_realm
 
-    def web_public_streams_available_for_realm(self) -> bool:
-        if self.string_id in settings.WEB_PUBLIC_STREAMS_BETA_SUBDOMAINS:
-            return True
-
+    def web_public_streams_enabled(self) -> bool:
         if not settings.WEB_PUBLIC_STREAMS_ENABLED:
             # To help protect against accidentally web-public streams in
             # self-hosted servers, we require the feature to be enabled at
             # the server level before it is available to users.
-            return False
-
-        return True
-
-    def web_public_streams_enabled(self) -> bool:
-        if not self.web_public_streams_available_for_realm():
             return False
 
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
