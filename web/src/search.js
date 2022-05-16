@@ -51,7 +51,7 @@ export function initialize({on_narrow_search}) {
             search_map = suggestions.lookup_table;
             return suggestions.strings;
         },
-        parentElement: "#searchbox",
+        parentElement: "#searchbox_form",
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
@@ -73,7 +73,19 @@ export function initialize({on_narrow_search}) {
         // Use our custom typeahead `on_escape` hook to exit
         // the search bar as soon as the user hits Esc.
         on_escape: message_view_header.exit_search,
+        tabIsEnter: false,
+        openInputFieldOnKeyUp() {
+            if ($(".navbar-search.expanded").length === 0) {
+                message_view_header.open_search_bar_and_close_narrow_description();
+            }
+        },
         closeInputFieldOnHide() {
+            // Don't close the search bar if the user has changed
+            // the text from the default, they might accidentally
+            // click away and not want to lose it.
+            if (message_view_header.get_initial_search_string() !== $("#search_query").val()) {
+                return;
+            }
             const filter = narrow_state.filter();
             if (!filter || filter.is_common_narrow()) {
                 message_view_header.close_search_bar_and_open_narrow_description();
@@ -118,11 +130,40 @@ export function initialize({on_narrow_search}) {
                 $search_query_box.trigger("blur");
             }
         });
+
+    // We don't want to make this a focus handler because selecting the
+    // typehead seems to trigger this (and we don't want to open search
+    // when an option is selected and we're closing search).
+    // Instead we explicitly initiate search on click and on specific keyboard
+    // shortcuts.
+    $search_query_box.on("click", initiate_search);
+
+    $(".search_icon").on("mousedown", (e) => {
+        e.preventDefault();
+        // Clicking on the collapsed search box's icon opens search, but
+        // clicking on the expanded search box's search icon does nothing.
+        if ($(e.target).parents(".navbar-search.expanded").length === 0) {
+            initiate_search();
+        }
+    });
 }
 
 export function initiate_search() {
-    message_view_header.open_search_bar_and_close_narrow_description();
-    $("#search_query").typeahead("lookup").trigger("select");
+    const search_bar_already_open = $(".navbar-search.expanded").length > 0;
+    if (!search_bar_already_open) {
+        message_view_header.open_search_bar_and_close_narrow_description();
+    }
+
+    // Open the typeahead after opening the search bar, so that we don't
+    // get a weird visual jump where the typeahead results are narrow
+    // before the search bar expands and then wider it expands.
+    if (!$("#searchbox .dropdown-menu").is(":visible")) {
+        $("#search_query").typeahead("lookup");
+    }
+
+    if (!search_bar_already_open) {
+        $("#search_query").typeahead("lookup").trigger("select");
+    }
 }
 
 export function clear_search_form() {
