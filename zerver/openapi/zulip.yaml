@@ -2853,19 +2853,24 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the user group whose details have changed.
-                                subgroup_ids:
+                                direct_subgroup_ids:
                                   type: array
                                   items:
                                     type: integer
                                   description: |
                                     Array containing the IDs of the subgroups that have been added
                                     to the user group.
+
+                                    **Changes**: New in Zulip 6.0 (feature level 131).
+                                    Previously, this was called `subgroup_ids`, but
+                                    clients can ignore older events as this feature level
+                                    predates subgroups being fully implemented.
                               example:
                                 {
                                   "type": "user_group",
                                   "op": "add_subgroups",
                                   "group_id": 2,
-                                  "subgroup_ids": [10],
+                                  "direct_subgroup_ids": [10],
                                   "id": 0,
                                 }
                             - type: object
@@ -2891,19 +2896,24 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the user group whose details have changed.
-                                subgroup_ids:
+                                direct_subgroup_ids:
                                   type: array
                                   items:
                                     type: integer
                                   description: |
                                     Array containing the IDs of the subgroups that have been
                                     removed from the user group.
+
+                                    **Changes**: New in Zulip 6.0 (feature level 131).
+                                    Previously, this was called `subgroup_ids`, but
+                                    clients can ignore older events as this feature level
+                                    predates subgroups being fully implemented.
                               example:
                                 {
                                   "type": "user_group",
                                   "op": "remove_subgroups",
                                   "group_id": 2,
-                                  "subgroup_ids": [10],
+                                  "direct_subgroup_ids": [10],
                                   "id": 0,
                                 }
                             - type: object
@@ -13998,12 +14008,15 @@ paths:
                                 The integer user IDs of the user group members.
                               items:
                                 type: integer
-                            subgroups:
+                            direct_subgroup_ids:
                               type: array
                               description: |
-                                The integer user group IDs of the subgroups.
+                                The integer user group IDs of the direct subgroups.
 
-                                **Changes**: New in Zulip 6.0 (feature level 127).
+                                **Changes**: New in Zulip 6.0 (feature level 131).
+                                Introduced in feature level 127 as `subgroups`, but
+                                clients can ignore older events as this feature level
+                                predates subgroups being fully implemented.
                               items:
                                 type: integer
                             name:
@@ -14031,7 +14044,7 @@ paths:
                               "id": 1,
                               "name": "hamletcharacters",
                               "members": [3, 4],
-                              "subgroups": [],
+                              "direct_subgroup_ids": [],
                               "is_system_group": false,
                             },
                             {
@@ -14039,7 +14052,7 @@ paths:
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
-                              "subgroups": [1, 2],
+                              "direct_subgroup_ids": [1, 2],
                               "is_system_group": true,
                             },
                           ],
@@ -14978,15 +14991,18 @@ components:
           description: |
             Array containing the id of the users who are
             members of this user group.
-        subgroups:
+        direct_subgroup_ids:
           type: array
           items:
             type: integer
           description: |
-            Array containing the id of the subgroups of this
-            user group.
+            Array containing the id of the direct_subgroups of
+            this user group.
 
-            **Changes**: New in Zulip 6.0 (feature level 127).
+            **Changes**: New in Zulip 6.0 (feature level 131).
+            Introduced in feature level 127 as `subgroups`, but
+            clients can ignore older events as this feature level
+            predates subgroups being fully implemented.
         id:
           type: integer
           description: |

@@ -1249,14 +1249,16 @@ def apply_event(
         elif event["op"] == "add_subgroups":
             for user_group in state["realm_user_groups"]:
                 if user_group["id"] == event["group_id"]:
-                    user_group["subgroups"].extend(event["subgroup_ids"])
-                    user_group["subgroups"].sort()
+                    user_group["direct_subgroup_ids"].extend(event["direct_subgroup_ids"])
+                    user_group["direct_subgroup_ids"].sort()
         elif event["op"] == "remove_subgroups":
             for user_group in state["realm_user_groups"]:
                 if user_group["id"] == event["group_id"]:
-                    subgroups = set(user_group["subgroups"])
-                    user_group["subgroups"] = list(subgroups - set(event["subgroup_ids"]))
-                    user_group["subgroups"].sort()
+                    subgroups = set(user_group["direct_subgroup_ids"])
+                    user_group["direct_subgroup_ids"] = list(
+                        subgroups - set(event["direct_subgroup_ids"])
+                    )
+                    user_group["direct_subgroup_ids"].sort()
         elif event["op"] == "remove":
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]

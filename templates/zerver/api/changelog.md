@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 131**
+
+* [`GET /user_groups`](/api/get-user-groups),[`POST
+  /register`](/api/register-queue): Renamed `subgroups` field in
+  the user group objects to `direct_subgroup_ids`.
+* [`GET /events`](/api/get-events): Renamed `subgroup_ids` field
+  in the group object to `direct_subgroup_ids`.
+
 **Feature level 130**
 
 * `PATCH /bots/{bot_user_id}`: Added support for changing a bot's role

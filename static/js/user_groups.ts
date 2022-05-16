@@ -8,7 +8,7 @@ type UserGroup = {
     name: string;
     members: Set<number>;
     is_system_group: boolean;
-    subgroups: Set<number>;
+    direct_subgroup_ids: Set<number>;
 };
 
 // The members field is a number array which we convert
@@ -36,7 +36,7 @@ export function add(user_group_raw: UserGroupRaw): void {
         name: user_group_raw.name,
         members: new Set(user_group_raw.members),
         is_system_group: user_group_raw.is_system_group,
-        subgroups: new Set(user_group_raw.subgroups),
+        direct_subgroup_ids: new Set(user_group_raw.direct_subgroup_ids),
     };
 
     user_group_name_dict.set(user_group.name, user_group);
@@ -120,7 +120,7 @@ export function add_subgroups(user_group_id: number, subgroup_ids: number[]): vo
     }
 
     for (const subgroup_id of subgroup_ids) {
-        user_group.subgroups.add(subgroup_id);
+        user_group.direct_subgroup_ids.add(subgroup_id);
     }
 }
 
@@ -132,7 +132,7 @@ export function remove_subgroups(user_group_id: number, subgroup_ids: number[]):
     }
 
     for (const subgroup_id of subgroup_ids) {
-        user_group.subgroups.delete(subgroup_id);
+        user_group.direct_subgroup_ids.delete(subgroup_id);
     }
 }
 
@@ -164,7 +164,7 @@ export function get_recursive_subgroups(target_group_id: number): Set<number> | 
     // Correctness of this algorithm relying on the ES6 Set
     // implementation having the property that a `for of` loop will
     // visit all items that are added to the set during the loop.
-    const subgroup_ids = new Set(target_user_group.subgroups);
+    const subgroup_ids = new Set(target_user_group.direct_subgroup_ids);
     for (const subgroup_id of subgroup_ids) {
         const subgroup = user_group_by_id_dict.get(subgroup_id);
         if (subgroup === undefined) {
@@ -172,7 +172,7 @@ export function get_recursive_subgroups(target_group_id: number): Set<number> | 
             return undefined;
         }
 
-        for (const direct_subgroup_id of subgroup.subgroups) {
+        for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
             subgroup_ids.add(direct_subgroup_id);
         }
     }

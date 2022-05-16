@@ -291,7 +291,7 @@ const hamletcharacters = {
     description: "Characters of Hamlet",
     members: new Set([100, 104]),
     is_system_group: false,
-    subgroups: new Set([10, 11]),
+    direct_subgroup_ids: new Set([10, 11]),
 };
 
 const backend = {
@@ -300,7 +300,7 @@ const backend = {
     description: "Backend team",
     members: new Set([]),
     is_system_group: false,
-    subgroups: new Set([]),
+    direct_subgroup_ids: new Set([]),
 };
 
 const call_center = {
@@ -309,7 +309,7 @@ const call_center = {
     description: "folks working in support",
     members: new Set([]),
     is_system_group: false,
-    subgroups: new Set([]),
+    direct_subgroup_ids: new Set([]),
 };
 
 const make_emoji = (emoji_dict) => ({

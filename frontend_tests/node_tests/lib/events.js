@@ -735,7 +735,7 @@ exports.fixtures = {
             description: "mobile folks",
             members: [1],
             is_system_group: false,
-            subgroups: [2],
+            direct_subgroup_ids: [2],
         },
     },
 
@@ -750,7 +750,7 @@ exports.fixtures = {
         type: "user_group",
         op: "add_subgroups",
         group_id: 1,
-        subgroup_ids: [3],
+        direct_subgroup_ids: [3],
     },
 
     user_group__remove: {
@@ -770,7 +770,7 @@ exports.fixtures = {
         type: "user_group",
         op: "remove_subgroups",
         group_id: 1,
-        subgroup_ids: [3],
+        direct_subgroup_ids: [3],
     },
 
     user_group__update: {

@@ -100,7 +100,7 @@ def do_send_create_user_group_event(
             description=user_group.description,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
-            subgroups=[subgroup.id for subgroup in subgroups],
+            direct_subgroup_ids=[subgroup.id for subgroup in subgroups],
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -169,7 +169,7 @@ def do_send_subgroups_update_event(
     event_name: str, user_group: UserGroup, subgroup_ids: List[int]
 ) -> None:
     event = dict(
-        type="user_group", op=event_name, group_id=user_group.id, subgroup_ids=subgroup_ids
+        type="user_group", op=event_name, group_id=user_group.id, direct_subgroup_ids=subgroup_ids
     )
     transaction.on_commit(
         lambda: send_event(user_group.realm, event, active_user_ids(user_group.realm_id))

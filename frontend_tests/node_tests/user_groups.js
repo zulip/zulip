@@ -15,7 +15,7 @@ run_test("user_groups", () => {
         id: 0,
         members: new Set([1, 2]),
         is_system_group: false,
-        subgroups: new Set([4, 5]),
+        direct_subgroup_ids: new Set([4, 5]),
     };
 
     const params = {};
@@ -32,14 +32,14 @@ run_test("user_groups", () => {
         id: 1,
         members: new Set([3]),
         is_system_group: false,
-        subgroups: new Set([]),
+        direct_subgroup_ids: new Set([]),
     };
     const all = {
         name: "Everyone",
         id: 2,
         members: new Set([1, 2, 3]),
         is_system_group: false,
-        subgroups: new Set([4, 5, 6]),
+        direct_subgroup_ids: new Set([4, 5, 6]),
     };
 
     user_groups.add(admins);
@@ -101,12 +101,15 @@ run_test("user_groups", () => {
 
     user_groups.add_subgroups(all.id, [2, 3]);
     assert.deepEqual(
-        user_groups.get_user_group_from_id(all.id).subgroups,
+        user_groups.get_user_group_from_id(all.id).direct_subgroup_ids,
         new Set([2, 3, 5, 4, 6]),
     );
 
     user_groups.remove_subgroups(all.id, [2, 4]);
-    assert.deepEqual(user_groups.get_user_group_from_id(all.id).subgroups, new Set([3, 5, 6]));
+    assert.deepEqual(
+        user_groups.get_user_group_from_id(all.id).direct_subgroup_ids,
+        new Set([3, 5, 6]),
+    );
 
     assert.ok(user_groups.is_user_group(admins));
     const object = {
@@ -135,28 +138,28 @@ run_test("get_recursive_subgroups", () => {
         id: 1,
         members: new Set([1]),
         is_system_group: false,
-        subgroups: new Set([4]),
+        direct_subgroup_ids: new Set([4]),
     };
     const all = {
         name: "Everyone",
         id: 2,
         members: new Set([2, 3]),
         is_system_group: false,
-        subgroups: new Set([1, 3]),
+        direct_subgroup_ids: new Set([1, 3]),
     };
     const test = {
         name: "Test",
         id: 3,
         members: new Set([3, 4, 5]),
         is_system_group: false,
-        subgroups: new Set([2]),
+        direct_subgroup_ids: new Set([2]),
     };
     const foo = {
         name: "Foo",
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        subgroups: new Set([]),
+        direct_subgroup_ids: new Set([]),
     };
 
     user_groups.add(admins);
@@ -190,28 +193,28 @@ run_test("is_user_in_group", () => {
         id: 1,
         members: new Set([1]),
         is_system_group: false,
-        subgroups: new Set([4]),
+        direct_subgroup_ids: new Set([4]),
     };
     const all = {
         name: "Everyone",
         id: 2,
         members: new Set([2, 3]),
         is_system_group: false,
-        subgroups: new Set([1, 3]),
+        direct_subgroup_ids: new Set([1, 3]),
     };
     const test = {
         name: "Test",
         id: 3,
         members: new Set([4, 5]),
         is_system_group: false,
-        subgroups: new Set([1]),
+        direct_subgroup_ids: new Set([1]),
     };
     const foo = {
         name: "Foo",
         id: 4,
         members: new Set([6, 7]),
         is_system_group: false,
-        subgroups: new Set([]),
+        direct_subgroup_ids: new Set([]),
     };
     user_groups.add(admins);
     user_groups.add(all);
