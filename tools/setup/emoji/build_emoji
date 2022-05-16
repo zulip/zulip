@@ -76,6 +76,14 @@ EMOJI_POS_INFO_TEMPLATE = """\
 }}
 """
 
+EMOJI_POS_INFO_OVERRIDE_TEMPLATE = """\
+.emoji-{codepoint} {{
+    background-image: url(~emoji-datasource-google/img/google/sheets-256/64.png) !important;
+    background-size: {background_size} !important;
+    background-position: {pos_x} {pos_y};
+}}
+"""
+
 # change directory
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
 
@@ -139,7 +147,11 @@ def get_square_size(emoji_data: List[Dict[str, Any]]) -> int:
 
 
 def generate_sprite_css_files(
-    cache_path: str, emoji_data: List[Dict[str, Any]], emojiset: str, alt_name: str
+    cache_path: str,
+    emoji_data: List[Dict[str, Any]],
+    emojiset: str,
+    alt_name: str,
+    fallback_emoji_data: List[Dict[str, Any]],
 ) -> None:
     """
     Spritesheets are usually NxN squares.
@@ -211,7 +223,6 @@ def generate_sprite_css_files(
             gutters don't show up in the element, the algebra
             will get more complicated.
             """
-
             emoji_positions += EMOJI_POS_INFO_TEMPLATE.format(
                 codepoint=get_emoji_code(emoji),
                 pos_x=percent(emoji["sheet_x"] / (n - 1)),
@@ -228,6 +239,27 @@ def generate_sprite_css_files(
                 background_size=background_size,
             ),
         )
+
+    # Google Classic stopped being supported in 2017. To be able to use other emoji, we
+    # fallback to Google Modern for any emoji not covered by Google Classic.
+    if emojiset == "google-blob":
+        extra_emoji_positions = ""
+        n = get_square_size(fallback_emoji_data)
+        background_size = percent(n)
+        covered_emoji_codes = [
+            get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_google"]
+        ]
+        for emoji in fallback_emoji_data:
+            code = get_emoji_code(emoji)
+            if emoji["has_img_google"] and code not in covered_emoji_codes:
+                extra_emoji_positions += EMOJI_POS_INFO_OVERRIDE_TEMPLATE.format(
+                    codepoint=code,
+                    pos_x=percent(emoji["sheet_x"] / (n - 1)),
+                    pos_y=percent(emoji["sheet_y"] / (n - 1)),
+                    background_size=background_size,
+                )
+        with open(SPRITE_CSS_PATH, "a") as f:
+            f.write(extra_emoji_positions)
 
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
@@ -284,7 +316,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         output_img_file = os.path.join(cache_path, "images-" + emojiset + "-64", "1f419.png")
         shutil.copyfile(input_img_file, output_img_file)
 
-        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name)
+        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
 
     # Set up standard emoji sets.
     for emojiset in ["google", "twitter"]:
@@ -296,7 +328,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
     )
     with open(GOOGLE_BLOB_EMOJI_DATA_PATH, "rb") as fp:
         blob_emoji_data = orjson.loads(fp.read())
-    setup_emoji_farm("google-blob", blob_emoji_data, "google")
+    setup_emoji_farm("google-blob", blob_emoji_data, "google", emoji_data)
 
 
 def setup_old_emoji_farm(
