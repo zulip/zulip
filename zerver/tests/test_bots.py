@@ -861,6 +861,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_id = result.json()["user_id"]
 
         test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        public_stream = self.make_stream("public_stream")
+        self.subscribe(test_bot, "private_stream")
+        self.subscribe(self.example_user("hamlet"), "private_stream")
+        self.subscribe(test_bot, "public_stream")
+        self.subscribe(self.example_user("hamlet"), "public_stream")
+
+        private_stream_test = self.make_stream("private_stream_test", invite_only=True)
+        self.subscribe(self.example_user("iago"), "private_stream_test")
+        self.subscribe(test_bot, "private_stream_test")
+
         do_deactivate_user(test_bot, acting_user=None)
 
         # Deactivate the bot owner
@@ -872,6 +883,22 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=private_stream.id, active=True
+            ).exists()
+        )
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=private_stream_test.id, active=True
+            ).exists()
+        )
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=public_stream.id, active=True
+            ).exists()
+        )
 
     def test_patch_bot_full_name(self) -> None:
         self.login("hamlet")
