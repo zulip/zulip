@@ -1,7 +1,8 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from unittest.mock import Mock, patch
 
 from django.conf import settings
+from django.contrib.sessions.models import Session
 
 from zerver.apps import flush_cache
 from zerver.lib.cache import (
@@ -15,14 +16,32 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
+    get_cache_backend,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
     validate_cache_key,
 )
+from zerver.lib.cache_helpers import (
+    client_cache_items,
+    fill_remote_cache,
+    huddle_cache_items,
+    session_cache_items,
+    stream_cache_items,
+    user_cache_items,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.models import UserProfile, get_realm, get_system_bot, get_user, get_user_profile_by_id
+from zerver.models import (
+    UserProfile,
+    get_client,
+    get_huddle,
+    get_realm,
+    get_stream,
+    get_system_bot,
+    get_user,
+    get_user_profile_by_id,
+)
 
 
 class AppsTest(ZulipTestCase):
@@ -163,6 +182,33 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         self.assertEqual(result_two, None)
         self.assert_length(queries, 0)
 
+    def test_cache_with_key_database(self) -> None:
+        def good_cache_key_function(user_id: int) -> str:
+            return f"CacheWithKeyDecoratorTest:good_cache_key:{user_id}"
+
+        @cache_with_key(good_cache_key_function, cache_name="database", with_statsd_key="stk")
+        def get_user_function_with_good_cache_keys(user_id: int) -> UserProfile:
+            return UserProfile.objects.get(id=user_id)
+
+        hamlet = self.example_user("hamlet")
+        mock_backend = get_cache_backend(None)
+
+        with queries_captured() as queries:
+            with patch("zerver.lib.cache.get_cache_backend", return_value=mock_backend):
+                result = get_user_function_with_good_cache_keys(hamlet.id)
+
+        self.assertEqual(result, hamlet)
+        self.assert_length(queries, 1)
+
+        # The previous function call should have cached the result correctly, so now
+        # no database queries should happen:
+        with queries_captured(keep_cache_warm=True) as queries_two:
+            with patch("zerver.lib.cache.get_cache_backend", return_value=mock_backend):
+                result_two = get_user_function_with_good_cache_keys(hamlet.id)
+
+        self.assertEqual(result_two, hamlet)
+        self.assert_length(queries_two, 0)
+
 
 class SafeCacheFunctionsTest(ZulipTestCase):
     def test_safe_cache_functions_with_all_good_keys(self) -> None:
@@ -259,7 +305,7 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             pass
 
         def query_function(ids: List[int]) -> List[UserProfile]:
-            raise CustomException("The query function was called")
+            raise AssertionError("query_function shouldn't be called.")
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
@@ -274,14 +320,21 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             flush_cache(Mock())
         self.assertEqual(info_log.output, ["INFO:root:Clearing memcached cache after migrations"])
 
+        new_query_function_called = False
+
+        def new_query_function(ids: List[int]) -> List[UserProfile]:
+            nonlocal new_query_function_called
+            new_query_function_called = True
+            return [hamlet]
+
         # With the cache flushed, the query_function should get called:
-        with self.assertRaises(CustomException):
-            result = bulk_cached_fetch(
-                cache_key_function=user_profile_by_id_cache_key,
-                query_function=query_function,
-                object_ids=[hamlet.id],
-                id_fetcher=get_user_id,
-            )
+        result = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
+            query_function=new_query_function,
+            object_ids=[hamlet.id],
+            id_fetcher=get_user_id,
+        )
+        self.assertTrue(new_query_function_called)
 
     def test_empty_object_ids_list(self) -> None:
         class CustomException(Exception):
@@ -306,3 +359,53 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {})
+
+
+class CacheHelpers(ZulipTestCase):
+    def test_fill_remote_cache(self) -> None:
+        for ctype in ["user", "client", "stream", "huddle", "session"]:
+            with patch("zerver.lib.cache.get_remote_cache_time", return_value=0):
+                with self.assertLogs(level="INFO") as m:
+                    fill_remote_cache(ctype)
+                self.assertEqual(
+                    m.output,
+                    [
+                        f"INFO:root:Successfully populated {ctype} cache!  "
+                        "Consumed 1 remote cache queries (0.0 time)"
+                    ],
+                )
+
+        with self.assertRaises(KeyError):
+            fill_remote_cache("unknown")
+
+    def test_batch_fill_remote_cache(self) -> None:
+        with patch(
+            "zerver.lib.cache_helpers.cache_fillers",
+            {"user": (lambda: [i for i in range(100)], lambda a, b: None, 1000, 4)},
+        ):
+            with patch("zerver.lib.cache.get_remote_cache_time", return_value=0):
+                with self.assertLogs(level="INFO"):
+                    fill_remote_cache("user")
+
+    def test_getitems(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        items_for_remote_cache: Dict[str, Any] = {}
+        user_cache_items(items_for_remote_cache, hamlet)
+        stream_cache_items(items_for_remote_cache, get_stream("Denmark", hamlet.realm))
+        client_cache_items(items_for_remote_cache, get_client("test"))
+        huddle_cache_items(items_for_remote_cache, get_huddle([hamlet.id, cordelia.id]))
+        session_cache_items(items_for_remote_cache, Session(session_key="foo"))
+
+        class MockSessionStore(object):
+            cache_key: str = "42"
+
+            def decode(*args) -> str:
+                return "meaning of the universe"
+
+        with self.settings(SESSION_ENGINE="zerver.lib.safe_session_cached_db"):
+            with patch(
+                "zerver.lib.sessions.session_engine.SessionStore", return_value=MockSessionStore()
+            ):
+                session_cache_items(items_for_remote_cache, Session(session_key="bar"))
+                self.assertEqual(items_for_remote_cache["42"], "meaning of the universe")
