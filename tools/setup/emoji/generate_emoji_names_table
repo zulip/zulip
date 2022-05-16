@@ -210,8 +210,6 @@ def generate_emoji_collection() -> None:
     generate_emoji_code_to_emoji_names_maps()
     # Prepare `emoji_collection`.
     for emoji_dict in EMOJI_DATA:
-        if not emoji_is_universal(emoji_dict):
-            continue
         category = emoji_dict["category"]
         emoji_code = get_emoji_code(emoji_dict)
         sort_order = emoji_dict["sort_order"]

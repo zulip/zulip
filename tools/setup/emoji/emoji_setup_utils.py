@@ -103,7 +103,6 @@ def generate_emoji_catalog(
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seamlessly.
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
-    return True
     for emoji_set in EMOJISETS:
         if not emoji_dict["has_img_" + emoji_set]:
             return False
