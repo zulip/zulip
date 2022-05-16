@@ -19,7 +19,7 @@ const search = zrequire("search");
 
 run_test("clear_search_form", () => {
     $("#search_query").val("noise");
-    $("#search_query").trigger("focus");
+    $("#search_query").trigger("click");
 
     search.clear_search_form();
 
@@ -215,6 +215,7 @@ run_test("initialize", ({mock_template}) => {
 
             $search_query_box.off("blur");
         }
+        return {};
     };
 
     search.initialize({
@@ -226,8 +227,6 @@ run_test("initialize", ({mock_template}) => {
 
     $search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
-    $search_query_box.trigger("blur");
-    assert.equal($search_query_box.val(), "test string");
 
     search.__Rewire__("is_using_input_method", false);
     $searchbox_form.trigger("compositionend");
@@ -301,6 +300,7 @@ run_test("initialize", ({mock_template}) => {
     assert.ok(is_blurred);
 
     _setup("ver");
+    ev.key = "Enter";
     search.__Rewire__("is_using_input_method", true);
     $searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
@@ -318,7 +318,7 @@ run_test("initiate_search", () => {
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
-    narrow_state.filter = () => ({is_search: () => true});
+    narrow_state.filter = () => ({is_search: () => false});
     let typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
     $("#search_query").typeahead = (lookup) => {
@@ -331,13 +331,10 @@ run_test("initiate_search", () => {
         is_searchbox_text_selected = true;
     });
 
+    $(".navbar-search.expanded").length = 0;
     search.initiate_search();
     assert.ok(typeahead_forced_open);
     assert.ok(is_searchbox_text_selected);
-    assert.equal($("#search_query").val(), "ver");
-
     // test that we append space for user convenience
-    narrow_state.filter = () => ({is_search: () => false});
-    search.initiate_search();
     assert.equal($("#search_query").val(), "ver ");
 });

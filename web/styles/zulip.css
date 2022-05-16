@@ -58,6 +58,17 @@ body {
     }
 
     /*
+    Height of the search box, which appears in the header.
+    On very small screens, the search box's height becomes
+    the height of its parent (i.e. the header height).
+    */
+    --search-box-height: 28px;
+
+    @media (width < $sm_min) {
+        --search-box-height: var(--header-height);
+    }
+
+    /*
     Since #navbar_alerts_wrapper can take variable height depending upon
     window width / language, we sync its height in navbar_alerts.js
     */
@@ -156,7 +167,7 @@ body {
     --color-message-header-icon-interactive: hsl(0deg 0% 0%);
     --color-background: hsl(0deg 0% 94%);
     --color-background-widget-input: hsl(0deg 0% 100%);
-    --color-background-navbar: hsl(0deg 0% 96%);
+    --color-background-navbar: hsl(0deg 0% 97%);
     --color-background-active-narrow-filter: hsl(202deg 56% 91%);
     --color-background-hover-narrow-filter: hsl(120deg 12.3% 71.4% / 38%);
     --color-navbar-bottom-border: hsl(0deg 0% 80%);
@@ -165,6 +176,12 @@ body {
     --color-background-modal: hsl(0deg 0% 98%);
     --color-unmuted-or-followed-topic-list-item: hsl(0deg 0% 20%);
     --color-outline-focus: hsl(215deg 47% 50%);
+    --color-background-search: hsl(0deg 0% 100%);
+    --color-background-search-option-hover: hsl(0deg 0% 94%);
+    --color-search-box-hover-shadow: hsl(0deg 0% 0% / 10%);
+    --color-search-shadow-wide: hsl(0deg 0% 0% / 25%);
+    --color-search-shadow-tight: hsl(0deg 0% 0% / 10%);
+    --color-search-dropdown-top-border: hsla(0deg 0% 0% / 10%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 20%);
@@ -175,6 +192,9 @@ body {
     --color-text-self-direct-mention: hsl(240deg 52% 45% / 100%);
     --color-text-self-group-mention: hsl(183deg 52% 26% / 100%);
     --color-text-show-more-less-button: hsl(240deg 52% 53%);
+    --color-text-search: hsl(0deg 0% 35%);
+    --color-text-search-hover: hsl(0deg 0% 0%);
+    --color-text-search-placeholder: hsl(0deg 0% 50%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 8% 65% / 100%);
@@ -248,6 +268,10 @@ body {
     --color-background-modal: hsl(212deg 28% 18%);
     --color-unmuted-or-followed-topic-list-item: hsl(236deg 33% 90%);
     --color-recipient-bar-controls-spinner: hsl(0deg 0% 100%);
+    --color-background-search: hsl(0deg 0% 20%);
+    --color-background-search-option-hover: hsl(0deg 0% 30%);
+    --color-search-box-hover-shadow: hsl(0deg 0% 0% / 30%);
+    --color-search-dropdown-top-border: hsla(0deg 0% 0% / 35%);
 
     /* Text colors */
     --color-text-default: hsl(0deg 0% 100% / 75%);
@@ -262,6 +286,9 @@ body {
     --color-text-self-direct-mention: hsl(240deg 100% 88% / 100%);
     --color-text-self-group-mention: hsl(184deg 52% 63% / 100%);
     --color-text-show-more-less-button: hsl(240deg 30% 65%);
+    --color-text-search: hsl(0deg 0% 100% / 75%);
+    --color-text-search-hover: hsl(0deg 0% 100%);
+    --color-text-search-placeholder: hsl(0deg 0% 100% / 50%);
 
     /* Icon colors */
     --color-icon-bot: hsl(180deg 5% 50% / 100%);
@@ -2003,7 +2030,6 @@ div.focused-message-list {
     align-content: flex-start;
     flex-wrap: nowrap;
     margin: 0;
-    border: none;
     white-space: nowrap;
     cursor: default;
 
@@ -2131,9 +2157,12 @@ div.focused-message-list {
            before the stream name must begin to shrink */
         flex-shrink: 100;
         white-space: nowrap;
-        margin: 0;
         padding: 12px 0;
         padding-left: 10px;
+        /* We are adding right margin so the text can truncate
+        and it doesn't overflow through search section. We make it
+        5px more than the size of the search box. */
+        margin: 0 155px 0 0;
 
         @media (width < $sm_min) {
             padding: 7px 0;
@@ -2143,19 +2172,9 @@ div.focused-message-list {
         & > a {
             padding: 12px 0;
         }
-    }
 
-    .search_closed {
-        overflow: visible;
-        flex: 0; /* makes sure search icon is always visible */
-
-        cursor: pointer;
-        font-size: 20px;
-
-        padding: 10px 15px 0 0;
-
-        @media (width < $sm_min) {
-            padding: 0 15px 0 0;
+        @media (width < $md_min) {
+            margin-right: 30px;
         }
     }
 
@@ -2163,15 +2182,9 @@ div.focused-message-list {
        last element is either the narrow description (for stream narrows) or
        the "title" (for other narrows). The flex-grow property ensures these
        elements take up the entirety of the white space. */
-    .navbar-click-opens-search {
+    .navbar_title,
+    .narrow_description {
         flex-grow: 1;
-
-        /* Provide the visual cue that clicking this will work as expected. */
-        cursor: pointer;
-
-        &:hover ~ .search_closed {
-            opacity: 1;
-        }
     }
 }
 
@@ -2341,6 +2354,7 @@ div.focused-message-list {
 
 nav {
     .column-left {
+        text-align: left;
         margin-left: 15px;
 
         .nav-logo {
@@ -2975,10 +2989,6 @@ select.invite-as {
     #navbar-middle {
         margin-right: 87px;
     }
-
-    .search_closed .zulip-icon-search {
-        right: 115px;
-    }
 }
 
 @media (width < $md_min) {
@@ -3036,12 +3046,25 @@ select.invite-as {
         display: block;
     }
 
-    .top-navbar-border {
+    .top-navbar-container {
         margin-left: 40px;
     }
 
-    .search_closed .zulip-icon-search {
+    .zulip-icon-search {
         right: 115px;
+    }
+
+    .dropdown-menu ul {
+        margin: 0 -25px 0 0;
+        background: transparent;
+
+        & li {
+            width: 100%;
+
+            & a {
+                white-space: normal;
+            }
+        }
     }
 }
 
@@ -3066,15 +3089,8 @@ select.invite-as {
         }
     }
 
-    /* Usually the styling is applied directly to the icon, but here
-    the icon is `position: static`, so we can't. */
-    .search_closed {
-        top: 5px;
-    }
-
     #streamlist-toggle,
     #navbar-buttons,
-    .navbar-search,
     #message_view_header,
     #searchbox,
     .header {

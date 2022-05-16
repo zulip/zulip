@@ -9,7 +9,6 @@ import * as peer_data from "./peer_data";
 import * as popovers from "./popovers";
 import * as recent_view_util from "./recent_view_util";
 import * as rendered_markdown from "./rendered_markdown";
-import * as search from "./search";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -94,65 +93,35 @@ function append_and_display_title_area(message_view_header_data) {
     }
 }
 
-function bind_title_area_handlers() {
-    $(".search_closed").on("click", (e) => {
-        popovers.hide_all();
-        search.initiate_search();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
-        popovers.hide_all();
-
-        if (document.getSelection().type === "Range") {
-            // Allow copy/paste to work normally without interference.
-            return;
-        }
-
-        // Let links behave normally, ie, do nothing if <a>
-        if ($(e.target).closest("a").length === 0) {
-            search.initiate_search();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
-    // handler that makes sure that hover plays nicely
-    // with whether search is being opened or not.
-    $("#message_view_header .narrow_description > a")
-        .on("mouseenter", () => {
-            $("#message_view_header .search_closed").css("opacity", 0.5);
-        })
-        .on("mouseleave", () => {
-            $("#message_view_header .search_closed").css("opacity", "");
-        });
-}
-
 function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
         open_search_bar_and_close_narrow_description();
+        $("#search_query").val(narrow_state.search_string());
     } else {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
-        bind_title_area_handlers();
         close_search_bar_and_open_narrow_description();
     }
+}
+
+// This is what the default searchbox text would be for this narrow,
+// NOT what might be currently displayed there. We can use this both
+// to set the initial text and to see if the user has changed it.
+export function get_initial_search_string() {
+    let search_string = narrow_state.search_string();
+    if (search_string !== "" && !narrow_state.filter().is_search()) {
+        // saves the user a keystroke for quick searches
+        search_string = search_string + " ";
+    }
+    return search_string;
 }
 
 // we rely entirely on this function to ensure
 // the searchbar has the right text.
 export function reset_searchbox_text() {
-    let search_string = narrow_state.search_string();
-    if (search_string !== "") {
-        if (!narrow_state.filter().is_search()) {
-            // saves the user a keystroke for quick searches
-            search_string = search_string + " ";
-        }
-        $("#search_query").val(search_string);
-    }
+    $("#search_query").val(get_initial_search_string());
 }
 
 export function exit_search() {
@@ -164,6 +133,7 @@ export function exit_search() {
         // for "searching narrows", we redirect
         window.location.href = filter.generate_redirect_url();
     }
+    $("#search_query").trigger("blur");
     $(".app").trigger("focus");
 }
 
@@ -176,6 +146,24 @@ export function initialize() {
         exit_search();
         e.preventDefault();
         e.stopPropagation();
+    });
+    $("#search_exit").on("blur", (e) => {
+        // Blurs that move focus to elsewhere within the search input shouldn't
+        // close search.
+        if ($(e.relatedTarget).parents("#searchbox-input-container").length > 0) {
+            return;
+        }
+        // But otherwise, it should behave like the input blurring.
+        $("#search_query").trigger("blur");
+    });
+    // This prevents a bug where tab shows a visual change before the blur handler kicks in
+    $("#search_exit").on("keydown", (e) => {
+        if (e.key === "tab") {
+            popovers.hide_all();
+            exit_search();
+            e.preventDefault();
+            e.stopPropagation();
+        }
     });
 }
 
@@ -195,12 +183,23 @@ export function maybe_rerender_title_area_for_stream(modified_sub) {
 }
 
 export function open_search_bar_and_close_narrow_description() {
-    reset_searchbox_text();
+    // Preserve user input if they've already started typing, but
+    // otherwise fill the input field with the text operators for
+    // the current narrow.
+    if ($("#search_query").val() === "") {
+        reset_searchbox_text();
+    }
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
 }
 
 export function close_search_bar_and_open_narrow_description() {
+    // Hide the dropdown before closing the search bar. We do this
+    // to avoid being in a situation where the typeahead gets narrow
+    // in width as the search bar closes, which doesn't look great.
+    $("#searchbox_form .dropdown-menu").hide();
+
+    $("#search_query").val("");
     const filter = narrow_state.filter();
     if (!filter || filter.is_common_narrow()) {
         $(".navbar-search").removeClass("expanded");
