@@ -113,10 +113,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
         # for some special views (e.g. serving a file that has been
         # uploaded), we support using the same URL for web and API clients.
-        if (
-            "override_api_url_scheme" in view_flags
-            and request.META.get("HTTP_AUTHORIZATION", None) is not None
-        ):
+        if "override_api_url_scheme" in view_flags and "Authorization" in request.headers:
             # This request uses standard API based authentication.
             # For override_api_url_scheme views, we skip our normal
             # rate limiting, because there are good reasons clients
@@ -126,7 +123,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         elif "override_api_url_scheme" in view_flags and request.GET.get("api_key") is not None:
             # This request uses legacy API authentication.  We
             # unfortunately need that in the React Native mobile apps,
-            # because there's no way to set HTTP_AUTHORIZATION in
+            # because there's no way to set the Authorization header in
             # React Native.  See last block for rate limiting notes.
             target_function = authenticated_uploads_api_view(skip_rate_limiting=True)(
                 target_function
@@ -141,7 +138,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
         # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
         # username:password, we use email:apiKey
-        elif request.META.get("HTTP_AUTHORIZATION", None):
+        elif "Authorization" in request.headers:
             # Wrap function with decorator to authenticate the user before
             # proceeding
             target_function = authenticated_rest_api_view(

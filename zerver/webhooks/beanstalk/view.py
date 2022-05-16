@@ -1,15 +1,12 @@
 # Webhooks for external integrations.
-import base64
 import re
-from functools import wraps
-from typing import Dict, List, Optional, Tuple, cast
+from typing import Dict, List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
@@ -52,29 +49,12 @@ def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[st
     return new_commits_list
 
 
-# Beanstalk's web hook UI rejects URL with a @ in the username section
-# So we ask the user to replace them with %40
-# We manually fix the username here before passing it along to @authenticated_rest_api_view
-def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
-    @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
-        auth_type: str
-        encoded_value: str
-        auth_type, encoded_value = request.META["HTTP_AUTHORIZATION"].split()
-        if auth_type.lower() == "basic":
-            email, api_key = base64.b64decode(encoded_value).decode().split(":")
-            email = email.replace("%40", "@")
-            credentials = f"{email}:{api_key}"
-            encoded_credentials: str = base64.b64encode(credentials.encode()).decode()
-            request.META["HTTP_AUTHORIZATION"] = "Basic " + encoded_credentials
-
-        return view_func(request, *args, **kwargs)
-
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
-
-
-@beanstalk_decoder
-@authenticated_rest_api_view(webhook_client_name="Beanstalk")
+@authenticated_rest_api_view(
+    webhook_client_name="Beanstalk",
+    # Beanstalk's web hook UI rejects URL with a @ in the username section
+    # So we ask the user to replace them with %40
+    beanstalk_email_decode=True,
+)
 @has_request_variables
 def api_beanstalk_webhook(
     request: HttpRequest,

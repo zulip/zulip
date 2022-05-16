@@ -746,10 +746,10 @@ def api_github_webhook(
     """
     GitHub sends the event as an HTTP header.  We have our
     own Zulip-specific concept of an event that often maps
-    directly to the X_GITHUB_EVENT header's event, but we sometimes
+    directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
-    header_event = validate_extract_webhook_http_header(request, "X_GITHUB_EVENT", "GitHub")
+    header_event = validate_extract_webhook_http_header(request, "X-GitHub-Event", "GitHub")
     if header_event is None:
         raise UnsupportedWebhookEventType("no header provided")
 

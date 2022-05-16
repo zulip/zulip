@@ -160,7 +160,7 @@ def api_gogs_webhook(
 ) -> HttpResponse:
     return gogs_webhook_main(
         "Gogs",
-        "X_GOGS_EVENT",
+        "X-Gogs-Event",
         format_pull_request_event,
         request,
         user_profile,

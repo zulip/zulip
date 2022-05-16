@@ -29,7 +29,7 @@ def stripe_webhook(request: HttpRequest) -> HttpResponse:
         try:
             stripe_event = stripe.Webhook.construct_event(
                 request.body,
-                request.META.get("HTTP_STRIPE_SIGNATURE"),
+                request.headers.get("Stripe-Signature"),
                 stripe_webhook_endpoint_secret,
             )
         except ValueError:
