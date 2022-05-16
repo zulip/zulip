@@ -1,5 +1,6 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
+from zerver.lib.types import LinkifierDict
 from zerver.models import (
     Realm,
     RealmFilter,
@@ -10,8 +11,7 @@ from zerver.models import (
 from zerver.tornado.django_api import send_event
 
 
-def notify_linkifiers(realm: Realm) -> None:
-    realm_linkifiers = linkifiers_for_realm(realm.id)
+def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> None:
     event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -33,7 +33,9 @@ def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
     linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
     linkifier.full_clean()
     linkifier.save()
-    notify_linkifiers(realm)
+
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    notify_linkifiers(realm, realm_linkifiers)
 
     return linkifier.id
 
@@ -46,7 +48,9 @@ def do_remove_linkifier(
     else:
         assert id is not None
         RealmFilter.objects.get(realm=realm, id=id).delete()
-    notify_linkifiers(realm)
+
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    notify_linkifiers(realm, realm_linkifiers)
 
 
 def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: str) -> None:
@@ -57,4 +61,6 @@ def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: 
     linkifier.url_format_string = url_format_string
     linkifier.full_clean()
     linkifier.save(update_fields=["pattern", "url_format_string"])
-    notify_linkifiers(realm)
+
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    notify_linkifiers(realm, realm_linkifiers)
