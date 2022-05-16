@@ -2476,10 +2476,12 @@ class NormalActionsTest(BaseAction):
 
         self.user_profile = self.example_user("iago")
         action = lambda: do_reactivate_user(bot, acting_user=self.example_user("iago"))
-        events = self.verify_action(action, num_events=6)
+        events = self.verify_action(action, num_events=7)
         check_realm_bot_add("events[1]", events[1])
         check_realm_bot_update("events[2]", events[2], "owner_id")
         check_realm_user_update("events[3]", events[3], "bot_owner_id")
+        check_subscription_peer_remove("events[4]", events[4])
+        check_stream_delete("events[5]", events[5])
 
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
