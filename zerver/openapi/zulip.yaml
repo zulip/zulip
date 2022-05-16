@@ -4859,6 +4859,10 @@ paths:
           description: |
             The narrow where you want to fetch the messages from. See how to
             [construct a narrow](/api/construct-narrow).
+
+            **Changes**: In Zulip 2.1, added support for using user/stream IDs
+            when constructing narrows for a message's sender, its stream and/or
+            its recipient(s).
           content:
             application/json:
               schema:

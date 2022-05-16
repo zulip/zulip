@@ -1041,6 +1041,9 @@ No changes; feature level used for Zulip 3.0 release.
 
 ## Changes in Zulip 2.1
 
+* [`GET /messages`](/api/get-messages): Added support for
+  [search/narrow options](/api/construct-narrow) that use stream/user
+  IDs to specify a message's sender, its stream, and/or its recipient(s).
 * [`GET /users`](/api/get-users): Added `include_custom_profile_fields`
   to request custom profile field data.
 * [`GET /users/me`](/api/get-own-user): Added `avatar_url` field,
