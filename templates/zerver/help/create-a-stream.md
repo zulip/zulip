@@ -1,7 +1,7 @@
 # Create a stream
 
 By default, all users other than guests can create streams. Administrators can
-[restrict the ability to create a stream](/help/stream-permissions) to specific
+[restrict the ability to create a stream](/help/configure-who-can-create-streams) to specific
 [roles](/help/roles-and-permissions).
 
 If you are an administrator setting up streams for the first time, check out our
