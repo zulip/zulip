@@ -1743,11 +1743,6 @@ div.focused_table {
     font-weight: bold;
 }
 
-.top-navbar-border {
-    border-right: 1px solid hsl(0, 0%, 88%);
-    border-left: 1px solid hsl(0, 0%, 88%);
-}
-
 .search_icon {
     /* These rules match the .dropdown-toggle CSS for the gear menu. */
     color: inherit;
@@ -1770,7 +1765,6 @@ div.focused_table {
     align-content: flex-start;
     flex-wrap: nowrap;
     margin: 0;
-    border: none;
     white-space: nowrap;
     cursor: default;
 
@@ -1989,7 +1983,6 @@ div.focused_table {
         padding: 0;
         padding-left: 5px;
         padding-right: 40px;
-        border: none;
         border-radius: 0;
         font-family: "Source Sans 3", sans-serif;
         font-weight: 300;
@@ -2010,7 +2003,6 @@ div.focused_table {
         top: 6px;
         background: none;
         border-radius: 0;
-        border: none;
         height: 30px;
         text-align: center;
         padding: 4px;
@@ -2916,7 +2908,6 @@ textarea.invitee_emails {
             right: 72px;
         }
 
-        .top-navbar-border,
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 50px);
@@ -2987,12 +2978,6 @@ textarea.invitee_emails {
         display: block;
     }
 
-    .top-navbar-border {
-        margin-left: 40px;
-        width: calc(100% - 108px);
-    }
-    /* todo: Figure out why this has to be different
-       from above at this width and resolve it */
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
         width: calc(100% - 123px);
@@ -3003,9 +2988,6 @@ textarea.invitee_emails {
     }
 
     #top_navbar:not(.rightside-userlist) {
-        .top-navbar-border {
-            width: calc(100% - 75px);
-        }
 
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
