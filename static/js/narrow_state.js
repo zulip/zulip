@@ -143,7 +143,7 @@ export function topic() {
 export function pm_ids_string() {
     // If you are narrowed to a PM conversation
     // with users 4, 5, and 99, this will return "4,5,99"
-    const emails_string = pm_emails_string();
+    const emails_string = pm_email_string();
 
     if (!emails_string) {
         return undefined;
@@ -154,7 +154,7 @@ export function pm_ids_string() {
     return user_ids_string;
 }
 
-export function pm_emails_string() {
+export function pm_email_string() {
     if (current_filter === undefined) {
         return undefined;
     }

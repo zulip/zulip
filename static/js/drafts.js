@@ -20,6 +20,7 @@ import {$t, $t_html} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -380,6 +381,14 @@ function remove_draft($draft_row) {
     if ($("#drafts_table .draft-row").length === 0) {
         $("#drafts_table .no-drafts").show();
     }
+    if ($("#drafts-from-conversation .draft-row").length === 0) {
+        // Since there are no relevant drafts from this conversation left, switch to the "all drafts" view.
+        $("#split-drafts").hide();
+        $("#all-drafts").show();
+    }
+    if ($("#other-drafts .draft-row").length === 0) {
+        $("#other-drafts").hide();
+    }
 }
 
 export function launch() {
@@ -401,10 +410,22 @@ export function launch() {
         return sorted_formatted_drafts;
     }
 
-    function render_widgets(drafts) {
+    function render_widgets(narrow_drafts, other_drafts) {
         $("#drafts_table").empty();
+
+        let narrow_drafts_header;
+        if (narrow_state.narrowed_to_topic() || (compose_state.get_message_type === "stream" && compose_state.topic())) {
+            narrow_drafts_header = $t({defaultMessage: "Drafts from this conversation"});
+        } else if (narrow_state.stream() || compose_state.get_message_type === "stream") {
+            narrow_drafts_header = $t({defaultMessage: "Drafts from this stream"});
+        } else if (narrow_state.narrowed_by_pm_reply() || compose_state.get_message_type() === "private") {
+            narrow_drafts_header = $t({defaultMessage: "Drafts from this conversation"});
+        }
+
         const rendered = render_draft_table_body({
-            drafts,
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });
         const $drafts_table = $("#drafts_table");
@@ -418,6 +439,16 @@ export function launch() {
             $rendered_drafts.each(function () {
                 rendered_markdown.update_elements($(this));
             });
+        }
+        if (narrow_drafts.length > 0) {
+            $("#all-drafts").hide();
+            $("#split-drafts").show();
+            if ($("#other-drafts .draft-row").length === 0) {
+                $("#other-drafts").hide();
+            }
+        } else {
+            $("#all-drafts").show();
+            $("#split-drafts").hide();
         }
     }
 
@@ -441,8 +472,66 @@ export function launch() {
         });
     }
 
-    const drafts = format_drafts(draft_model.get());
-    render_widgets(drafts);
+    function filter_drafts_by_compose_box_and_recipient(drafts) {
+        // Prioritize stream, topic, and PM recipients from the compose box first and then
+        // from the narrow.
+        let stream = null;
+        if (compose_state.get_message_type() === "stream") {
+            if (compose_state.stream_name) {
+                stream = compose_state.stream_name();
+            }
+        } else {
+            stream = narrow_state.stream();
+        }
+
+        let topic = null;
+        if (compose_state.get_message_type() === "stream") {
+            if (compose_state.topic()) {
+                topic = compose_state.topic();
+            }
+        } else {
+            topic = narrow_state.topic();
+        }
+
+        let private_recipients = null;
+        if (compose_state.get_message_type() === "private") {
+            if (compose_state.private_message_recipient()) {
+                private_recipients = compose_state.private_message_recipient();
+            }
+        } else if (narrow_state.narrowed_by_pm_reply()) {
+            private_recipients = narrow_state.pm_email_string();
+        }
+
+        const narrow_drafts_ids = []; 
+        for (const [id, draft] of Object.entries(drafts)) {
+            // Match by stream and topic.
+            if (draft.type === "stream" && draft.stream === stream && draft.topic === topic) {
+                narrow_drafts_ids.push(id);
+            }
+            // Match by only stream.
+            else if (draft.type === "stream" && !topic && draft.stream === stream) {
+                narrow_drafts_ids.push(id);
+            }
+            // Match by private message recipient.
+            else if (
+                private_recipients &&
+                draft.type === "private" &&
+                _.isEqual(
+                    draft.private_message_recipient.split(",").map(s => s.trim()).sort(),
+                    private_recipients.split(",").map(s => s.trim()).sort(),
+                )
+            ) {
+                narrow_drafts_ids.push(id);
+            }
+        }
+        return _.pick(drafts, narrow_drafts_ids);
+    }
+
+    const drafts = draft_model.get();
+    const narrow_drafts = filter_drafts_by_compose_box_and_recipient(drafts);
+    const other_drafts = _.pick(drafts, _.difference(Object.keys(drafts), Object.keys(narrow_drafts)));
+
+    render_widgets(format_drafts(narrow_drafts), format_drafts(other_drafts));
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
