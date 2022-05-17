@@ -19,7 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import REQ_topic
 from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
-from zerver.models import Message, UserProfile
+from zerver.models import Message, Realm, UserProfile
 
 
 def fill_edit_history_entries(
@@ -93,7 +93,10 @@ def get_message_edit_history(
     user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
 ) -> HttpResponse:
-    if not user_profile.realm.allow_edit_history:
+    if (
+        user_profile.realm.message_edit_history_visibility
+        == Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE
+    ):
         raise JsonableError(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
 
@@ -201,13 +204,13 @@ def json_fetch_raw_message(
 
     flags = ["read"]
     if not maybe_user_profile.is_authenticated:
-        allow_edit_history = realm.allow_edit_history
+        message_edit_history_visibility = realm.message_edit_history_visibility
     else:
         if user_message:
             flags = user_message.flags_list()
         else:
             flags = ["read", "historical"]
-        allow_edit_history = maybe_user_profile.realm.allow_edit_history
+        message_edit_history_visibility = maybe_user_profile.realm.message_edit_history_visibility
 
     # Security note: It's important that we call this only with a
     # message already fetched via `access_message` type methods,
@@ -218,7 +221,7 @@ def json_fetch_raw_message(
         search_fields={},
         apply_markdown=apply_markdown,
         client_gravatar=True,
-        allow_edit_history=allow_edit_history,
+        message_edit_history_visibility=message_edit_history_visibility,
     )
     response = dict(
         message=message_dict_list[0],

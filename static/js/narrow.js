@@ -31,6 +31,7 @@ import * as resize from "./resize";
 import * as search from "./search";
 import * as search_pill from "./search_pill";
 import * as search_pill_widget from "./search_pill_widget";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -334,7 +335,9 @@ export function activate(raw_operators, opts) {
 
             if (
                 !narrow_matches_target_message &&
-                (narrow_exists_in_edit_history || !page_params.realm_allow_edit_history)
+                (narrow_exists_in_edit_history ||
+                    page_params.realm_message_edit_history_visibility ===
+                        settings_config.message_edit_history_visibility_values.never.code)
             ) {
                 const adjusted_operators = adjusted_operators_if_moved(
                     raw_operators,

@@ -13,6 +13,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
+import * as settings_config from "./settings_config";
 import * as spectators from "./spectators";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
@@ -165,13 +166,19 @@ export function show_history(message) {
 
 export function initialize() {
     $("body").on("mouseenter", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
+        if (
+            page_params.realm_message_edit_history_visibility !==
+            settings_config.message_edit_history_visibility_values.never.code
+        ) {
             $(e.currentTarget).addClass("message_edit_notice_hover");
         }
     });
 
     $("body").on("mouseleave", ".message_edit_notice", (e) => {
-        if (page_params.realm_allow_edit_history) {
+        if (
+            page_params.realm_message_edit_history_visibility !==
+            settings_config.message_edit_history_visibility_values.never.code
+        ) {
             $(e.currentTarget).removeClass("message_edit_notice_hover");
         }
     });
@@ -189,8 +196,10 @@ export function initialize() {
             spectators.login_to_access();
             return;
         }
-
-        if (page_params.realm_allow_edit_history) {
+        if (
+            page_params.realm_message_edit_history_visibility !==
+            settings_config.message_edit_history_visibility_values.never.code
+        ) {
             show_history(message);
             $("#message-history-cancel").trigger("focus");
         }

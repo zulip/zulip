@@ -110,6 +110,9 @@ export function get_organization_settings_options() {
     options.common_message_policy_values = get_sorted_options_list(
         settings_config.common_message_policy_values,
     );
+    options.message_edit_history_visibility_values = get_sorted_options_list(
+        settings_config.message_edit_history_visibility_values,
+    );
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
@@ -247,6 +250,7 @@ const simple_dropdown_properties = [
     "realm_move_messages_between_streams_policy",
     "realm_edit_topic_policy",
     "realm_org_type",
+    "realm_message_edit_history_visibility",
 ];
 
 function set_property_dropdown_value(property_name) {

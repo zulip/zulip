@@ -85,7 +85,9 @@ def update_realm(
     message_content_edit_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
     ),
-    allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    message_edit_history_visibility: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_TYPES), default=None
+    ),
     default_language: Optional[str] = REQ(default=None),
     waiting_period_threshold: Optional[int] = REQ(converter=to_non_negative_int, default=None),
     authentication_methods: Optional[Dict[str, Any]] = REQ(

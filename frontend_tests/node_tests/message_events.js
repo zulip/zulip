@@ -20,6 +20,7 @@ message_lists.current = {};
 const people = zrequire("people");
 const message_events = zrequire("message_events");
 const message_helper = zrequire("message_helper");
+const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");
@@ -112,7 +113,8 @@ run_test("update_messages", () => {
 
     const helper = test_helper(side_effects);
 
-    page_params.realm_allow_edit_history = false;
+    page_params.realm_message_edit_history_visibility =
+        settings_config.message_edit_history_visibility_values.never.code;
     message_list.narrowed = "stub-to-ignore";
 
     const $message_edit_history_modal = $.create("#message-edit-history");

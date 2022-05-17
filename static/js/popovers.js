@@ -483,7 +483,8 @@ export function toggle_actions_popover(element, id) {
                     entry.prev_stream !== undefined ||
                     entry.prev_topic !== undefined,
             ) &&
-            page_params.realm_allow_edit_history &&
+            page_params.realm_message_edit_history_visibility !==
+                settings_config.message_edit_history_visibility_values.never.code &&
             not_spectator;
 
         // Disabling this for /me messages is a temporary workaround

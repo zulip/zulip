@@ -189,7 +189,7 @@ def messages_for_ids(
     search_fields: Dict[int, Dict[str, str]],
     apply_markdown: bool,
     client_gravatar: bool,
-    allow_edit_history: bool,
+    message_edit_history_visibility: int,
 ) -> List[Dict[str, Any]]:
 
     cache_transformer = MessageDict.build_dict_from_raw_db_row
@@ -213,8 +213,10 @@ def messages_for_ids(
         if message_id in search_fields:
             msg_dict.update(search_fields[message_id])
         # Make sure that we never send message edit history to clients
-        # in realms with allow_edit_history disabled.
-        if "edit_history" in msg_dict and not allow_edit_history:
+        # in realms with message_edit_history_visibility set to never.
+        if "edit_history" in msg_dict and (
+            message_edit_history_visibility == Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE
+        ):
             del msg_dict["edit_history"]
         message_list.append(msg_dict)
 

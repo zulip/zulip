@@ -22,7 +22,6 @@ const admin_settings_label = {
         defaultMessage: "Advertise organization in the Zulip communities directory",
     }),
     // Organization settings
-    realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
     realm_notifications_stream: $t({defaultMessage: "New stream notifications"}),
     realm_signup_notifications_stream: $t({defaultMessage: "New user notifications"}),
@@ -107,7 +106,7 @@ export function build_page() {
             "realm_message_content_delete_limit_seconds",
         ),
         realm_message_retention_days: page_params.realm_message_retention_days,
-        realm_allow_edit_history: page_params.realm_allow_edit_history,
+        realm_message_edit_history_visibility: page_params.realm_message_edit_history_visibility,
         language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,

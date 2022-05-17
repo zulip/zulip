@@ -554,6 +554,7 @@ class RealmTest(ZulipTestCase):
             move_messages_between_streams_policy=10,
             add_custom_emoji_policy=10,
             delete_own_message_policy=10,
+            message_edit_history_visibility=10,
         )
 
         # We need an admin user.
@@ -1088,6 +1089,7 @@ class RealmAPITest(ZulipTestCase):
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_TYPES,
         )
 
         vals = test_values.get(name)

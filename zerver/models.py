@@ -464,8 +464,19 @@ class Realm(models.Model):
         default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS,
     )
 
-    # Whether users have access to message edit history
-    allow_edit_history: bool = models.BooleanField(default=True)
+    # Which type of message edit history is visible
+    # i.e. all history, "MOVED" only or none.
+    MESSAGE_EDIT_HISTORY_VISIBILITY_ALL = 1
+    MESSAGE_EDIT_HISTORY_VISIBILITY_MOVES_ONLY = 2
+    MESSAGE_EDIT_HISTORY_VISIBILITY_NONE = 3
+    message_edit_history_visibility: int = models.PositiveSmallIntegerField(
+        default=MESSAGE_EDIT_HISTORY_VISIBILITY_ALL
+    )
+    MESSAGE_EDIT_HISTORY_VISIBILITY_TYPES = [
+        MESSAGE_EDIT_HISTORY_VISIBILITY_ALL,
+        MESSAGE_EDIT_HISTORY_VISIBILITY_MOVES_ONLY,
+        MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
+    ]
 
     # Defaults for new users
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
@@ -680,7 +691,6 @@ class Realm(models.Model):
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
-        allow_edit_history=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
         create_private_stream_policy=int,
@@ -706,6 +716,7 @@ class Realm(models.Model):
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
         message_content_delete_limit_seconds=(int, type(None)),
+        message_edit_history_visibility=int,
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
         name=str,

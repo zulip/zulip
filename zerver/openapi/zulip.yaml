@@ -3669,11 +3669,6 @@ paths:
                                       description: |
                                         The [policy](/api/roles-and-permissions#permission-levels)
                                         for which users can add custom emoji in this organization.
-                                    allow_edit_history:
-                                      type: boolean
-                                      description: |
-                                        Whether this organization is configured to allow users to access
-                                        [message edit history](/help/view-a-messages-edit-history).
                                     allow_message_editing:
                                       type: boolean
                                       description: |
@@ -3899,6 +3894,11 @@ paths:
                                         Messages sent more than this many seconds ago cannot be edited
                                         with this organization's
                                         [message edit policy](/help/configure-message-editing-and-deletion).
+                                    message_edit_history_visibility:
+                                      type: integer
+                                      description: |
+                                        Which type of history i.e. moved or edited is configured to allow users to access
+                                        [message edit history](/help/view-a-messages-edit-history).
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -10894,13 +10894,21 @@ paths:
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
-                      realm_allow_edit_history:
-                        type: boolean
+                      realm_message_edit_history_visibility:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether this organization is configured to allow users to access
                           [message edit history](/help/view-a-messages-edit-history).
+
+                          - 1 = All
+                          - 2 = Moved only
+                          - 3 = Never
+
+                          **Changes**: New in Zulip 6.0 (feature level 133) replacing the previous
+                          `realm_allow_edit_history` boolean;
+                          `true` corresponds to `All`, and `false` to `Never`.
                       realm_delete_own_message_policy:
                         type: integer
                         description: |
