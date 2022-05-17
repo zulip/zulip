@@ -159,6 +159,14 @@ class TestDigestEmailMessages(ZulipTestCase):
         new_stream_names = kwargs["context"]["new_streams"]["plain"]
         self.assertTrue("web_public_stream" in new_stream_names)
 
+    def test_no_logging(self) -> None:
+        hamlet = self.example_user("hamlet")
+        RealmAuditLog.objects.all().delete()
+        bulk_write_realm_audit_logs([])
+        self.assert_length(RealmAuditLog.objects.all(), 0)
+        bulk_write_realm_audit_logs([hamlet])
+        self.assert_length(RealmAuditLog.objects.all(), 1)
+
     def test_soft_deactivated_user_multiple_stream_senders(self) -> None:
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
         Message.objects.all().update(date_sent=one_day_ago)
@@ -324,6 +332,16 @@ class TestDigestEmailMessages(ZulipTestCase):
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
+
+    @override_settings(SEND_DIGEST_EMAILS=True)
+    @override_settings(SYSTEM_ONLY_REALMS=["zulipinternal"])
+    def test_enqueue_emails(self) -> None:
+        # code coverage
+        Realm.objects.update(digest_emails_enabled=True)
+        Realm.objects.update(deactivated=False)
+        Realm.objects.update(digest_weekday=timezone_now().weekday())
+        cutoff = timezone_now() - datetime.timedelta(days=0)
+        enqueue_emails(cutoff)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:
