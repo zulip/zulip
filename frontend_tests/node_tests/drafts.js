@@ -7,6 +7,15 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
+const people = zrequire("people");
+
+const aaron = {
+    email: "aaron@zulip.com",
+    user_id: 6,
+    full_name: "Aaron",
+};
+people.add_active_user(aaron);
+
 const noop = () => {};
 
 const setTimeout_delay = 3000;
@@ -308,7 +317,7 @@ test("delete_all_drafts", () => {
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override_rewire, mock_template}) => {
+test("format_drafts", ({override, override_rewire, mock_template}) => {
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -368,21 +377,21 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         {
             draft_id: "id2",
             is_stream: false,
-            recipients: "aaron@zulip.com",
+            recipients: "Aaron",
             raw_content: "Test private message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
-            recipients: "aaron@zulip.com",
+            recipients: "Aaron",
             raw_content: "Test private message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
-            recipients: "aaron@zulip.com",
+            recipients: "Aaron",
             raw_content: "Test private message 2",
             time_stamp: "Jan 26",
         },
@@ -416,9 +425,14 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return {name: "stream"};
     };
 
+    override(compose_state, "composing", () => true);
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_state, "private_message_recipient", () => "");
+
     mock_template("draft_table_body.hbs", false, (data) => {
-        // Tests formatting and sorting of drafts
-        assert.deepEqual(data.drafts, expected);
+        // Tests formatting and time-sorting of drafts
+        assert.deepEqual(data.narrow_drafts, []);
+        assert.deepEqual(data.other_drafts, expected);
         return "<draft table stub>";
     });
 
@@ -441,5 +455,143 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     const $unread_count = $("<unread-count-stub>");
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
+    drafts.launch();
+});
+
+test("filter_drafts", ({override, override_rewire, mock_template}) => {
+    function feb12() {
+        return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
+    }
+
+    function date(offset) {
+        return feb12().setDate(offset);
+    }
+
+    const stream_draft_1 = {
+        stream: "stream",
+        topic: "topic",
+        type: "stream",
+        content: "Test stream message",
+        stream_id: 30,
+        updatedAt: feb12().getTime(),
+    };
+    const pm_draft_1 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Test private message",
+        updatedAt: date(-1),
+    };
+    const stream_draft_2 = {
+        stream: "stream 2",
+        subject: "topic",
+        type: "stream",
+        content: "Test stream message 2",
+        updatedAt: date(-10),
+    };
+    const pm_draft_2 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "iago@zulip.com",
+        type: "private",
+        content: "Test private message 2",
+        updatedAt: date(-5),
+    };
+    const pm_draft_3 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "zoe@zulip.com",
+        type: "private",
+        content: "Test private message 3",
+        updatedAt: date(-2),
+    };
+
+    const expected_pm_drafts = [
+        {
+            draft_id: "id2",
+            is_stream: false,
+            recipients: "Aaron",
+            raw_content: "Test private message",
+            time_stamp: "Jan 30",
+        },
+        {
+            draft_id: "id5",
+            is_stream: false,
+            recipients: "Aaron",
+            raw_content: "Test private message 3",
+            time_stamp: "Jan 29",
+        },
+        {
+            draft_id: "id4",
+            is_stream: false,
+            recipients: "Aaron",
+            raw_content: "Test private message 2",
+            time_stamp: "Jan 26",
+        },
+    ];
+
+    const expected_other_drafts = [
+        {
+            draft_id: "id1",
+            is_stream: true,
+            stream_name: "stream",
+            stream_color: "#FFFFFF",
+            dark_background: "",
+            topic: "topic",
+            raw_content: "Test stream message",
+            time_stamp: "7:55 AM",
+        },
+        {
+            draft_id: "id3",
+            is_stream: true,
+            stream_name: "stream 2",
+            stream_color: "#FFFFFF",
+            dark_background: "",
+            topic: "topic",
+            raw_content: "Test stream message 2",
+            time_stamp: "Jan 21",
+        },
+    ];
+
+    $("#drafts_table").append = noop;
+
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    const data = {
+        id1: stream_draft_1,
+        id2: pm_draft_1,
+        id3: stream_draft_2,
+        id4: pm_draft_2,
+        id5: pm_draft_3,
+    };
+    ls.set("drafts", data);
+    assert.deepEqual(draft_model.get(), data);
+
+    const stub_render_now = timerender.render_now;
+    override_rewire(timerender, "render_now", (time) =>
+        stub_render_now(time, new Date(1549958107000)),
+    );
+
+    sub_store.get = function (stream_id) {
+        assert.equal(stream_id, 30);
+        return {name: "stream"};
+    };
+
+    mock_template("draft_table_body.hbs", false, (data) => {
+        // Tests splitting up drafts by current narrow.
+        assert.deepEqual(data.narrow_drafts, expected_pm_drafts);
+        assert.deepEqual(data.other_drafts, expected_other_drafts);
+        return "<draft table stub>";
+    });
+
+    override_rewire(drafts, "set_initial_element", noop);
+
+    override(compose_state, "composing", () => true);
+    override(compose_state, "get_message_type", () => "private");
+    override(
+        compose_state,
+        "private_message_recipient",
+        () => pm_draft_1.private_message_recipient,
+    );
+
+    $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
 });
