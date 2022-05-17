@@ -173,18 +173,16 @@ run_test("get_recursive_subgroups", () => {
     // when determining recursive subgroups.
     // A test case that can occur in practice and would be problematic without this
     // optimization is a tree where each layer connects to every node in the next layer.
-    assert.deepEqual(user_groups.get_recursive_subgroups(admins.id), new Set([4]));
-    assert.deepEqual(user_groups.get_recursive_subgroups(all.id), new Set([4, 1, 2, 3]));
-    assert.deepEqual(user_groups.get_recursive_subgroups(test.id), new Set([2, 4, 1, 3]));
-    assert.deepEqual(user_groups.get_recursive_subgroups(foo.id), new Set([]));
-
-    blueslip.expect("error", "Could not find user group with ID 1111");
-    assert.deepEqual(user_groups.get_recursive_subgroups(1111), undefined);
+    assert.deepEqual(user_groups.get_recursive_subgroups(admins), new Set([4]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(all), new Set([4, 1, 2, 3]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(test), new Set([2, 4, 1, 3]));
+    assert.deepEqual(user_groups.get_recursive_subgroups(foo), new Set([]));
 
     user_groups.add_subgroups(foo.id, [9999]);
+    const foo_group = user_groups.get_user_group_from_id(foo.id);
     blueslip.expect("error", "Could not find subgroup with ID 9999", 2);
-    assert.deepEqual(user_groups.get_recursive_subgroups(foo.id), undefined);
-    assert.deepEqual(user_groups.get_recursive_subgroups(test.id), undefined);
+    assert.deepEqual(user_groups.get_recursive_subgroups(foo_group), undefined);
+    assert.deepEqual(user_groups.get_recursive_subgroups(test), undefined);
 });
 
 run_test("is_user_in_group", () => {
