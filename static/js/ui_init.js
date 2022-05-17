@@ -150,6 +150,8 @@ function message_hover($message_row) {
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_guest: page_params.is_guest,
+        realm_name: page_params.realm_name,
+        display_organization_name: user_settings.display_organization_name ? "" : "hidden",
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

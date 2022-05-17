@@ -600,6 +600,7 @@ export function dispatch_normal_event(event) {
                 "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
+                "display_organization_name",
                 "emojiset",
                 "escape_navigates_to_default_view",
                 "fluid_layout_width",
@@ -636,6 +637,9 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "high_contrast_mode") {
                 $("body").toggleClass("high-contrast");
+            }
+            if (event.property === "display_organization_name") {
+                $(".organization-name").toggleClass("notdisplayed", !event.value);
             }
             if (event.property === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();

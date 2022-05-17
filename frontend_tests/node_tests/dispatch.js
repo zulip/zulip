@@ -736,9 +736,18 @@ run_test("user_settings", ({override, override_rewire}) => {
     dispatch(event);
     assert_same(user_settings.left_side_userlist, true);
 
+    event = event_fixtures.user_settings__display_organization_name;
+    let toggled = [];
+    $(".organization-name").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(user_settings.display_organization_name, true);
+    assert_same(toggled, ["notdisplayed"]);
+
     event = event_fixtures.user_settings__escape_navigates_to_default_view;
     user_settings.escape_navigates_to_default_view = false;
-    let toggled = [];
+    toggled = [];
     $("#go-to-default-view-hotkey-help").toggleClass = (cls) => {
         toggled.push(cls);
     };
