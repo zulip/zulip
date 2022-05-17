@@ -295,7 +295,9 @@ class Realm(models.Model):
 
     # Whether organization has given permission to be advertised in the
     # Zulip communities directory.
-    want_advertise_in_communities_directory: bool = models.BooleanField(default=False)
+    want_advertise_in_communities_directory: bool = models.BooleanField(
+        default=False, db_index=True
+    )
 
     # Whether the organization has enabled inline image and URL previews.
     inline_image_preview: bool = models.BooleanField(default=True)
