@@ -163,9 +163,9 @@ def add_subgroups_to_group_backend(
 
     subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    existing_subgroups = user_group.direct_subgroups.all().values_list("id", flat=True)
+    existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     for group in subgroups:
-        if group.id in existing_subgroups:
+        if group.id in existing_direct_subgroup_ids:
             raise JsonableError(
                 _("User group {group_id} is already a subgroup of this group.").format(
                     group_id=group.id
@@ -184,9 +184,9 @@ def remove_subgroups_from_group_backend(
 
     subgroups = access_user_groups_as_potential_subgroups(subgroup_ids, user_profile)
     user_group = access_user_group_by_id(user_group_id, user_profile)
-    existing_subgroups = user_group.direct_subgroups.all().values_list("id", flat=True)
+    existing_direct_subgroup_ids = user_group.direct_subgroups.all().values_list("id", flat=True)
     for group in subgroups:
-        if group.id not in existing_subgroups:
+        if group.id not in existing_direct_subgroup_ids:
             raise JsonableError(
                 _("User group {group_id} is not a subgroup of this group.").format(
                     group_id=group.id
