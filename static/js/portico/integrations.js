@@ -180,7 +180,7 @@ function hide_catalog_show_integration() {
     function hide_catalog(doc) {
         $(".integration-categories-dropdown").css("display", "none");
         $(".integrations .catalog").addClass("hide");
-        $(".extra, #integration-main-text, #integration-search").css("display", "none");
+        $(".extra, .integration-main-text, #integration-search").css("display", "none");
 
         show_integration(doc);
         $(".main").css("visibility", "visible");
@@ -205,7 +205,7 @@ function hide_integration_show_catalog() {
 
         $(".integration-categories-dropdown").css("display", "");
         $(".integrations .catalog").removeClass("hide");
-        $(".extra, #integration-main-text, #integration-search").css("display", "block");
+        $(".extra, .integration-main-text, #integration-search").css("display", "block");
         adjust_font_sizing();
     }
 

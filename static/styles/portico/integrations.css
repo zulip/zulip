@@ -88,7 +88,7 @@ $category-text: hsl(219, 23%, 33%);
         font-size: 0.85em;
     }
 
-    #integration-main-text {
+    .integration-main-text {
         padding: 0 15px;
     }
 
