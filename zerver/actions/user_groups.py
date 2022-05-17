@@ -89,7 +89,7 @@ def promote_new_full_members() -> None:
 
 
 def do_send_create_user_group_event(
-    user_group: UserGroup, members: List[UserProfile], subgroups: Sequence[UserGroup] = []
+    user_group: UserGroup, members: List[UserProfile], direct_subgroups: Sequence[UserGroup] = []
 ) -> None:
     event = dict(
         type="user_group",
@@ -100,7 +100,7 @@ def do_send_create_user_group_event(
             description=user_group.description,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
-            direct_subgroup_ids=[subgroup.id for subgroup in subgroups],
+            direct_subgroup_ids=[direct_subgroup.id for direct_subgroup in direct_subgroups],
         ),
     )
     send_event(user_group.realm, event, active_user_ids(user_group.realm_id))
