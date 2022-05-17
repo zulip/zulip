@@ -547,9 +547,3 @@ class FencedBlockPreprocessor(Preprocessor):
 
 def makeExtension(*args: Any, **kwargs: None) -> FencedCodeExtension:
     return FencedCodeExtension(kwargs)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

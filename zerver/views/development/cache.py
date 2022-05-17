@@ -13,7 +13,7 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../
 # This is used only by the Puppeteer tests to clear all the cache after each run.
 @csrf_exempt
 @require_post
-def remove_caches(request: HttpRequest) -> HttpResponse:
+def remove_caches(request: HttpRequest) -> HttpResponse:  # nocoverage
     cache = get_cache_backend(None)
     cache.clear()
     clear_client_cache()
