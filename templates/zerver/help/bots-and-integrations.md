@@ -67,7 +67,7 @@ A few more details:
   Slack-compatible format.
 
     This is the preferred bot type for interactive bots built on top of Zulip
-    botserver.
+    Botserver.
 
 ## Adding bots
 
