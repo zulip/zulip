@@ -171,7 +171,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
 
 async function test_restore_private_message_draft(page: Page): Promise<void> {
     console.log("Restoring private message draft.");
-    await page.click("#drafts_table .message_row.private-message .restore-draft");
+    await page.click(".message_row.private-message .restore-draft");
     await wait_for_drafts_to_disappear(page);
     await page.waitForSelector("#private-message", {visible: true});
     await common.check_form_contents(page, "form#send_message_form", {

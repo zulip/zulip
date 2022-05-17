@@ -20,6 +20,7 @@ import {$t, $t_html} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
@@ -365,12 +366,35 @@ function row_with_focus() {
 
 function row_before_focus() {
     const $focused_row = row_with_focus();
-    return $focused_row.prev(".draft-row:visible");
+    const $prev_row = $focused_row.prev(".draft-row:visible");
+    // The draft modal can have two sub-sections. This handles the edge case
+    // when the user moves from the second "Other drafts" section to the first
+    // section which contains drafts from a particular narrow.
+    if (
+        $prev_row.length === 0 &&
+        $focused_row.parent().attr("id") === "other-drafts" &&
+        $("#drafts-from-conversation").is(":visible")
+    ) {
+        return $($("#drafts-from-conversation").children(".draft-row:visible").last());
+    }
+
+    return $prev_row;
 }
 
 function row_after_focus() {
     const $focused_row = row_with_focus();
-    return $focused_row.next(".draft-row:visible");
+    const $next_row = $focused_row.next(".draft-row:visible");
+    // The draft modal can have two sub-sections. This handles the edge case
+    // when the user moves from the first section (drafts from a particular
+    // narrow) to the second section which contains the rest of the drafts.
+    if (
+        $next_row.length === 0 &&
+        $focused_row.parent().attr("id") === "drafts-from-conversation" &&
+        $("#other-drafts").is(":visible")
+    ) {
+        return $("#other-drafts").children(".draft-row:visible").first();
+    }
+    return $next_row;
 }
 
 function remove_draft($draft_row) {
@@ -383,6 +407,24 @@ function remove_draft($draft_row) {
 
     if ($("#drafts_table .draft-row").length === 0) {
         $("#drafts_table .no-drafts").show();
+    }
+    update_rendered_drafts(
+        $("#drafts-from-conversation .draft-row").length > 0,
+        $("#other-drafts .draft-row").length > 0,
+    );
+}
+
+function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) {
+    if (has_drafts_from_conversation) {
+        $("#drafts-from-conversation").show();
+    } else {
+        // Since there are no relevant drafts from this conversation left, switch to the "all drafts" view and remove headers.
+        $("#drafts-from-conversation").hide();
+        $("#other-drafts-header").hide();
+    }
+
+    if (!has_other_drafts) {
+        $("#other-drafts").hide();
     }
 }
 
@@ -405,10 +447,29 @@ export function launch() {
         return sorted_formatted_drafts;
     }
 
-    function render_widgets(drafts) {
+    function get_header_for_narrow_drafts() {
+        const {stream_name, topic, private_recipients} = current_recipient_data();
+        if (private_recipients) {
+            return $t(
+                {defaultMessage: "Drafts from conversation with {recipient}"},
+                {
+                    recipient: people.emails_to_full_names_string(private_recipients.split(",")),
+                },
+            );
+        }
+        const recipient = topic ? `#${stream_name} > ${topic}` : `#${stream_name}`;
+        return $t({defaultMessage: "Drafts from {recipient}"}, {recipient});
+    }
+
+    function render_widgets(narrow_drafts, other_drafts) {
         $("#drafts_table").empty();
+
+        const narrow_drafts_header = get_header_for_narrow_drafts();
+
         const rendered = render_draft_table_body({
-            drafts,
+            narrow_drafts_header,
+            narrow_drafts,
+            other_drafts,
             draft_lifetime: DRAFT_LIFETIME,
         });
         const $drafts_table = $("#drafts_table");
@@ -423,6 +484,7 @@ export function launch() {
                 rendered_markdown.update_elements($(this));
             });
         }
+        update_rendered_drafts(narrow_drafts.length > 0, other_drafts.length > 0);
     }
 
     function setup_event_handlers() {
@@ -445,15 +507,100 @@ export function launch() {
         });
     }
 
-    const drafts = format_drafts(draft_model.get());
-    render_widgets(drafts);
+    function current_recipient_data() {
+        // Prioritize recipients from the compose box first. If the compose
+        // box isn't open, just return data from the current narrow.
+        if (!compose_state.composing()) {
+            const stream_name = narrow_state.stream();
+            return {
+                stream_name,
+                topic: narrow_state.topic(),
+                private_recipients: narrow_state.pm_emails_string(),
+            };
+        }
+
+        if (compose_state.get_message_type() === "stream") {
+            const stream_name = compose_state.stream_name();
+            return {
+                stream_name,
+                topic: compose_state.topic(),
+                private_recipients: undefined,
+            };
+        } else if (compose_state.get_message_type() === "private") {
+            return {
+                stream_name: undefined,
+                topic: undefined,
+                private_recipients: compose_state.private_message_recipient(),
+            };
+        }
+        return {
+            stream_name: undefined,
+            topic: undefined,
+            private_recipients: undefined,
+        };
+    }
+
+    function filter_drafts_by_compose_box_and_recipient(drafts) {
+        const {stream_name, topic, private_recipients} = current_recipient_data();
+        const stream_id = stream_name ? stream_data.get_stream_id(stream_name) : undefined;
+        const narrow_drafts_ids = [];
+        for (const [id, draft] of Object.entries(drafts)) {
+            // Match by stream and topic.
+            if (
+                stream_id &&
+                topic &&
+                draft.topic &&
+                util.same_recipient(draft, {type: "stream", stream_id, topic})
+            ) {
+                narrow_drafts_ids.push(id);
+            }
+            // Match by only stream.
+            else if (
+                draft.type === "stream" &&
+                stream_id &&
+                !topic &&
+                draft.stream_id === stream_id
+            ) {
+                narrow_drafts_ids.push(id);
+            }
+            // Match by private message recipient.
+            else if (
+                draft.type === "private" &&
+                private_recipients &&
+                _.isEqual(
+                    draft.private_message_recipient
+                        .split(",")
+                        .map((s) => s.trim())
+                        .sort(),
+                    private_recipients
+                        .split(",")
+                        .map((s) => s.trim())
+                        .sort(),
+                )
+            ) {
+                narrow_drafts_ids.push(id);
+            }
+        }
+        return _.pick(drafts, narrow_drafts_ids);
+    }
+
+    const drafts = draft_model.get();
+    const narrow_drafts = filter_drafts_by_compose_box_and_recipient(drafts);
+    const other_drafts = _.pick(
+        drafts,
+        _.difference(Object.keys(drafts), Object.keys(narrow_drafts)),
+    );
+    const formatted_narrow_drafts = format_drafts(narrow_drafts);
+    const formatted_other_drafts = format_drafts(other_drafts);
+
+    render_widgets(formatted_narrow_drafts, formatted_other_drafts);
 
     // We need to force a style calculation on the newly created
     // element in order for the CSS transition to take effect.
     $("#draft_overlay").css("opacity");
 
     open_overlay();
-    set_initial_element(drafts);
+    set_initial_element(formatted_narrow_drafts.concat(formatted_other_drafts));
     setup_event_handlers();
 }
 
