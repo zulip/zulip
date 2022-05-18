@@ -3486,6 +3486,16 @@ def validate_attachment_request(
 def get_old_unclaimed_attachments(
     weeks_ago: int,
 ) -> Tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
+    """
+    The logic in this function is fairly tricky. The essence is that
+    a file should be cleaned up if and only if it not referenced by any
+    Message or ArchivedMessage. The way to find that out is through the
+    Attachment and ArchivedAttachment tables.
+    The queries are complicated by the fact that an uploaded file
+    may have either only an Attachment row, only an ArchivedAttachment row,
+    or both - depending on whether some, all or none of the messages
+    linking to it have been archived.
+    """
     delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
     old_attachments = Attachment.objects.annotate(
         has_other_messages=Exists(
