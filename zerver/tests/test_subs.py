@@ -5457,6 +5457,40 @@ class GetStreamsTest(ZulipTestCase):
         ]
         self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(all_streams))
 
+    def test_get_single_stream_api(self) -> None:
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        denmark_stream = get_stream("Denmark", realm)
+        result = self.client_get(f"/json/streams/{denmark_stream.id}")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(json["stream"]["name"], "Denmark")
+        self.assertEqual(json["stream"]["stream_id"], denmark_stream.id)
+
+        result = self.client_get("/json/streams/9999")
+        self.assert_json_error(result, "Invalid stream id")
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("cordelia"), "private_stream")
+
+        # Non-admins cannot access unsubscribed private streams.
+        result = self.client_get(f"/json/streams/{private_stream.id}")
+        self.assert_json_error(result, "Invalid stream id")
+
+        self.login("iago")
+        result = self.client_get(f"/json/streams/{private_stream.id}")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(json["stream"]["name"], "private_stream")
+        self.assertEqual(json["stream"]["stream_id"], private_stream.id)
+
+        self.login("cordelia")
+        result = self.client_get(f"/json/streams/{private_stream.id}")
+        self.assert_json_success(result)
+        json = result.json()
+        self.assertEqual(json["stream"]["name"], "private_stream")
+        self.assertEqual(json["stream"]["stream_id"], private_stream.id)
+
 
 class StreamIdTest(ZulipTestCase):
     def test_get_stream_id(self) -> None:

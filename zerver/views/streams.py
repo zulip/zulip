@@ -755,6 +755,16 @@ def get_streams_backend(
 
 
 @has_request_variables
+def get_stream_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    stream_id: int,
+) -> HttpResponse:
+    (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    return json_success(request, data={"stream": stream.to_dict()})
+
+
+@has_request_variables
 def get_topics_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],

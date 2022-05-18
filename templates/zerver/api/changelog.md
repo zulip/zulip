@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 132**
+
+* [`GET /streams/{stream_id}`](/api/get-stream-by-id):
+  Added new endpoint to get a stream by ID.
+
 **Feature level 131**
 
 * [`GET /user_groups`](/api/get-user-groups),[`POST

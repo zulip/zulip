@@ -145,6 +145,7 @@ from zerver.views.streams import (
     create_default_stream_group,
     deactivate_stream_backend,
     delete_in_topic,
+    get_stream_backend,
     get_streams_backend,
     get_subscribers_backend,
     get_topics_backend,
@@ -443,7 +444,10 @@ v1_api_and_json_patterns = [
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     rest_path("streams/<int:stream_id>/members", GET=get_subscribers_backend),
     rest_path(
-        "streams/<int:stream_id>", PATCH=update_stream_backend, DELETE=deactivate_stream_backend
+        "streams/<int:stream_id>",
+        GET=get_stream_backend,
+        PATCH=update_stream_backend,
+        DELETE=deactivate_stream_backend,
     ),
     # Delete topic in stream
     rest_path("streams/<int:stream_id>/delete_topic", POST=delete_in_topic),

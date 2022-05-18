@@ -31,6 +31,7 @@
 * [Get all subscribers](/api/get-subscribers)
 * [Update subscription settings](/api/update-subscription-settings)
 * [Get all streams](/api/get-streams)
+* [Get a stream by ID](/api/get-stream-by-id)
 * [Get stream ID](/api/get-stream-id)
 * [Create a stream](/api/create-stream)
 * [Update a stream](/api/update-stream)

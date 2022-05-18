@@ -13428,6 +13428,67 @@ paths:
                       `include_all_active` parameter (i.e. because they are not an organization
                       administrator):
   /streams/{stream_id}:
+    get:
+      operationId: get-stream-by-id
+      summary: Get a stream by ID
+      tags: ["streams"]
+      description: |
+        Fetch details for the stream with the ID `stream_id`.
+
+        `GET {{ api_url }}/v1/streams/{stream_id}`
+
+        **Changes**: New in Zulip 6.0 (feature level 132).
+      parameters:
+        - $ref: "#/components/parameters/StreamIdInPath"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      stream:
+                        $ref: "#/components/schemas/BasicStream"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "stream":
+                          {
+                            "description": "A Scandinavian country",
+                            "first_message_id": 1,
+                            "history_public_to_subscribers": True,
+                            "invite_only": False,
+                            "is_announcement_only": False,
+                            "is_web_public": False,
+                            "message_retention_days": null,
+                            "name": "Denmark",
+                            "rendered_description": "<p>A Scandinavian country</p>",
+                            "stream_id": 7,
+                            "stream_post_policy": 1,
+                          },
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the stream ID is not valid.
     delete:
       operationId: archive-stream
       summary: Archive a stream

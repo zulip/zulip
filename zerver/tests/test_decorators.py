@@ -1983,7 +1983,7 @@ class RestAPITest(ZulipTestCase):
 
         result = self.client_options("/json/streams/15")
         self.assertEqual(result.status_code, 204)
-        self.assertEqual(str(result["Allow"]), "DELETE, PATCH")
+        self.assertEqual(str(result["Allow"]), "DELETE, GET, HEAD, PATCH")
 
     def test_http_accept_redirect(self) -> None:
         result = self.client_get("/json/users", HTTP_ACCEPT="text/html")
