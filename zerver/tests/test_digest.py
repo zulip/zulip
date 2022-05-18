@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.actions.create_user import do_create_user
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.digest import (
     DigestTopic,
@@ -158,6 +159,14 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         new_stream_names = kwargs["context"]["new_streams"]["plain"]
         self.assertTrue("web_public_stream" in new_stream_names)
+
+    def test_no_logging(self) -> None:
+        hamlet = self.example_user("hamlet")
+        startlen = len(RealmAuditLog.objects.all())
+        bulk_write_realm_audit_logs([])
+        self.assert_length(RealmAuditLog.objects.all(), startlen)
+        bulk_write_realm_audit_logs([hamlet])
+        self.assert_length(RealmAuditLog.objects.all(), startlen + 1)
 
     def test_soft_deactivated_user_multiple_stream_senders(self) -> None:
         one_day_ago = timezone_now() - datetime.timedelta(days=1)
@@ -324,6 +333,27 @@ class TestDigestEmailMessages(ZulipTestCase):
             _enqueue_emails_for_realm(realm, cutoff)
 
         self.assertEqual(queue_mock.call_count, 0)
+
+    @override_settings(SEND_DIGEST_EMAILS=True)
+    @override_settings(SYSTEM_ONLY_REALMS=["zulipinternal"])
+    def test_enqueue_emails(self) -> None:
+        # code coverage - digest.should_process_digest()
+        def call_enqueue_emails(realm: Realm) -> int:
+            do_set_realm_property(realm, "digest_emails_enabled", True, acting_user=None)
+            do_set_realm_property(
+                realm, "digest_weekday", timezone_now().weekday(), acting_user=None
+            )
+            cutoff = timezone_now() - datetime.timedelta(days=0)
+            with mock.patch(
+                "zerver.worker.queue_processors.bulk_handle_digest_email"
+            ) as queue_mock:
+                enqueue_emails(cutoff)
+            return 0 if queue_mock.call_args is None else len(queue_mock.call_args[0][0])
+
+        num_queued_users = call_enqueue_emails(get_realm("zulipinternal"))
+        self.assertEqual(num_queued_users, 0)
+        num_queued_users = call_enqueue_emails(get_realm("zulip"))
+        self.assertEqual(num_queued_users, 10)
 
     @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self) -> None:
