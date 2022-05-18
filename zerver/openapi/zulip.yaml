@@ -3717,6 +3717,13 @@ paths:
 
                                         **Changes**: Before Zulip 5.0 (feature level 102), permission to
                                         create streams was controlled by the `create_stream_policy` setting.
+                                    create_web_public_stream_policy:
+                                      type: integer
+                                      description: |
+                                        The [policy](/api/roles-and-permissions#permission-levels)
+                                        for which users can create web public streams in this organization.
+
+                                        **Changes**: New in Zulip 5.0 (feature level 103).
                                     default_code_block_language:
                                       type: string
                                       nullable: true
