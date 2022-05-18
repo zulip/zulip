@@ -34,9 +34,13 @@ class Command(BaseCommand):
         print(f"Deleting unclaimed attached files older than {delta_weeks} weeks")
 
         # print the list of files that are going to be removed
-        old_attachments = get_old_unclaimed_attachments(delta_weeks)
+        old_attachments, old_archived_attachments = get_old_unclaimed_attachments(delta_weeks)
         for old_attachment in old_attachments:
             print(f"* {old_attachment.file_name} created at {old_attachment.create_time}")
+        for old_archived_attachment in old_archived_attachments:
+            print(
+                f"* {old_archived_attachment.file_name} created at {old_archived_attachment.create_time}"
+            )
 
         print("")
         if not options["for_real"]:
