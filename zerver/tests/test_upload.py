@@ -220,9 +220,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         entry = Attachment.objects.get(file_name="zulip.txt")
         self.assertEqual(entry.is_claimed(), False)
 
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        body = f"First message ...[zulip.txt]({hamlet.realm.host}{uri})"
+        self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # Now try the endpoint that's supposed to return a temporary URL for access
         # to the file.
@@ -363,7 +364,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         response = self.client_get(
-            f"http://localhost:9991/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
+            f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
         self.assert_in_response("File not found.", response)
@@ -391,11 +392,14 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         d2_attachment.save()
 
         # Send message referring only dummy_1
-        self.subscribe(self.example_user("hamlet"), "Denmark")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
         body = (
-            "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+            f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
+            + d1_path_id
+            + ")"
         )
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        self.send_stream_message(hamlet, "Denmark", body, "test")
 
         # dummy_2 should not exist in database or the uploads folder
         do_delete_old_unclaimed_attachments(2)
@@ -410,9 +414,21 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        body = f"Test message ...[zulip.txt](http://localhost:9991/user_uploads/{hamlet.realm_id}/64/fake_path_id.txt)"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
-        self.assertFalse(Attachment.objects.filter(path_id="1/64/fake_path_id.txt").exists())
+        with self.assertLogs(level="WARNING") as warn_log:
+            body = f"Test message ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/64/fake_path_id.txt)"
+            message_id = self.send_stream_message(
+                self.example_user("hamlet"), "Denmark", body, "test"
+            )
+        self.assertFalse(
+            Attachment.objects.filter(path_id=f"{hamlet.realm_id}/64/fake_path_id.txt").exists()
+        )
+
+        self.assertEqual(
+            warn_log.output,
+            [
+                f"WARNING:root:User {hamlet.id} tried to share upload {hamlet.realm_id}/64/fake_path_id.txt in message {message_id}, but lacks permission"
+            ],
+        )
 
     def test_multiple_claim_attachments(self) -> None:
         """
@@ -1932,7 +1948,7 @@ class S3Test(ZulipTestCase):
         self.assert_length(b"zulip!", uploaded_file.size)
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
-        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
+        body = f"First message ...[zulip.txt](http://{user_profile.realm.host}{uri})"
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
     @use_s3_backend
@@ -2038,9 +2054,10 @@ class S3Test(ZulipTestCase):
         # second (resulting in the same timestamp+signature),
         # url_only_url may or may not equal redirect_url.
 
-        self.subscribe(self.example_user("hamlet"), "Denmark")
-        body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
+        self.send_stream_message(hamlet, "Denmark", body, "test")
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:
