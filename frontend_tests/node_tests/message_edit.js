@@ -14,7 +14,9 @@ const settings_config = zrequire("settings_config");
 const get_editability = message_edit.get_editability;
 const editability_types = message_edit.editability_types;
 
+const people = zrequire("people");
 const settings_data = mock_esm("../../static/js/settings_data");
+const stream_data = zrequire("stream_data");
 
 run_test("get_editability", ({override}) => {
     override(settings_data, "user_can_edit_topic_of_any_message", () => true);
@@ -81,10 +83,32 @@ run_test("get_editability", ({override}) => {
     // If we don't pass a second argument, treat it as 0
     assert.equal(get_editability(message), editability_types.NO_LONGER);
 
+    const sub = {
+        stream_id: 102,
+        name: "stream102",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.everyone.code,
+    };
+
+    stream_data.add_sub(sub);
+
+    const me = {
+        email: "me@example.com",
+        user_id: 30,
+        full_name: "Me Myself",
+        is_admin: true,
+    };
+
+    page_params.user_id = me.user_id;
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+
     message = {
         sent_by_me: false,
         type: "stream",
+        stream: "stream102",
     };
+
     page_params.realm_edit_topic_policy =
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
