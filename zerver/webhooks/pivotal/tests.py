@@ -1,4 +1,10 @@
+from unittest import mock
+
+import orjson
+
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.webhooks.pivotal.view import api_pivotal_webhook_v5
 
 
 class PivotalV3HookTests(WebhookTestCase):
@@ -12,6 +18,14 @@ class PivotalV3HookTests(WebhookTestCase):
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573).'
         self.check_webhook(
             "accepted", expected_topic, expected_message, content_type="application/xml"
+        )
+
+    def test_bad_subject(self) -> None:
+        expected_topic = "Story changed"
+        expected_message = "Leo Franchi accepted My new Feature story \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)."
+        self.check_webhook(
+            "bad_accepted", expected_topic, expected_message, content_type="application/xml"
         )
 
     def test_commented(self) -> None:
@@ -185,6 +199,28 @@ Try again next time
         self.check_webhook(
             "type_changed", expected_topic, expected_message, content_type="application/xml"
         )
+
+    def test_bad_payload(self) -> None:
+        bad = ("foo", None, "bar")
+        with self.assertRaisesRegex(AssertionError, "Unable to handle Pivotal payload"):
+            with mock.patch(
+                "zerver.webhooks.pivotal.view.api_pivotal_webhook_v3", return_value=bad
+            ):
+                self.check_webhook("accepted", expect_topic="foo")
+
+    def test_bad_request(self) -> None:
+        request = mock.MagicMock()
+        hamlet = self.example_user("hamlet")
+        bad = orjson.loads(self.get_body("bad_request"))
+
+        with mock.patch("zerver.webhooks.pivotal.view.orjson.loads", return_value=bad):
+            result = api_pivotal_webhook_v5(request, hamlet)
+            self.assertEqual(result[0], "#0: ")
+
+        bad = orjson.loads(self.get_body("bad_kind"))
+        with self.assertRaisesRegex(UnsupportedWebhookEventType, "'unknown_kind'.* supported"):
+            with mock.patch("zerver.webhooks.pivotal.view.orjson.loads", return_value=bad):
+                api_pivotal_webhook_v5(request, hamlet)
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("pivotal", f"v5_{fixture_name}", file_type="json")
