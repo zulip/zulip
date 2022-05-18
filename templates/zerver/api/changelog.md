@@ -214,7 +214,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 104**
 
-* [`PATCH /realm`]: Added `string_id` parameter for changing an
+* `PATCH /realm`: Added `string_id` parameter for changing an
   organization's subdomain. Currently, this is only allowed for
   changing a demo organization to a normal one.
 
@@ -222,7 +222,8 @@ No changes; feature level used for Zulip 5.0 release.
 
 * [`POST /register`](/api/register-queue): Added `create_web_public_stream_policy`
   policy for which users can create web-public streams.
-* [`PATCH /realm`]: Added support for updating `create_web_public_stream_policy`.
+* [`GET /events`](/api/get-events), `PATCH /realm`: Added support for updating
+  `create_web_public_stream_policy`.
 * [`POST /register`](/api/register-queue): Added `can_create_web_public_streams` boolean
   field to the response.
 
