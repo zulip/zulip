@@ -3483,11 +3483,22 @@ def validate_attachment_request(
     ).exists()
 
 
-def get_old_unclaimed_attachments(weeks_ago: int) -> Sequence[Attachment]:
-    # TODO: Change return type to QuerySet[Attachment]
+def get_old_unclaimed_attachments(
+    weeks_ago: int,
+) -> Tuple[QuerySet[Attachment], QuerySet[ArchivedAttachment]]:
     delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
-    old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
-    return old_attachments
+    old_attachments = Attachment.objects.annotate(
+        has_other_messages=Exists(
+            ArchivedAttachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
+        )
+    ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
+    old_archived_attachments = ArchivedAttachment.objects.annotate(
+        has_other_messages=Exists(
+            Attachment.objects.filter(id=OuterRef("id")).exclude(messages=None)
+        )
+    ).filter(messages=None, create_time__lt=delta_weeks_ago, has_other_messages=False)
+
+    return old_attachments, old_archived_attachments
 
 
 class Subscription(models.Model):

@@ -20,6 +20,7 @@ from PIL import Image
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.message_edit import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -34,6 +35,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
+from zerver.lib.retention import clean_archived_data
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import (
     avatar_disk_path,
@@ -53,6 +55,7 @@ from zerver.lib.upload import (
     ZulipUploadBackend,
     delete_export_tarball,
     delete_message_image,
+    get_local_file_path,
     resize_avatar,
     resize_emoji,
     sanitize_name,
@@ -63,6 +66,7 @@ from zerver.lib.upload import (
 )
 from zerver.lib.users import get_api_key
 from zerver.models import (
+    ArchivedAttachment,
     Attachment,
     Message,
     Realm,
@@ -371,6 +375,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_delete_old_unclaimed_attachments(self) -> None:
         # Upload some files and make them older than a week
+        hamlet = self.example_user("hamlet")
         self.login("hamlet")
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
@@ -382,17 +387,28 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": d2})
         d2_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
 
+        d3 = StringIO("zulip!")
+        d3.name = "dummy_3.txt"
+        result = self.client_post("/json/user_uploads", {"file": d3})
+        d3_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
+
         two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
+        # This Attachment will have a message linking to it:
         d1_attachment = Attachment.objects.get(path_id=d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
         self.assertEqual(str(d1_attachment), "<Attachment: dummy_1.txt>")
+        # This Attachment won't have any messages.
         d2_attachment = Attachment.objects.get(path_id=d2_path_id)
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()
+        # This Attachment will have a message that gets archived. The file
+        # should not be deleted until the message is deleted from the archive.
+        d3_attachment = Attachment.objects.get(path_id=d3_path_id)
+        d3_attachment.create_time = two_week_ago
+        d3_attachment.save()
 
         # Send message referring only dummy_1
-        hamlet = self.example_user("hamlet")
         self.subscribe(hamlet, "Denmark")
         body = (
             f"Some files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
@@ -401,6 +417,18 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         )
         self.send_stream_message(hamlet, "Denmark", body, "test")
 
+        # Send message referecing dummy_3 - it will be archived next.
+        body = (
+            f"Some more files here ...[zulip.txt](http://{hamlet.realm.host}/user_uploads/"
+            + d3_path_id
+            + ")"
+        )
+        message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+        d3_local_path = get_local_file_path(d3_path_id)
+        assert d3_local_path is not None
+        self.assertTrue(os.path.exists(d3_local_path))
+
+        do_delete_messages(hamlet.realm, [Message.objects.get(id=message_id)])
         # dummy_2 should not exist in database or the uploads folder
         do_delete_old_unclaimed_attachments(2)
         self.assertTrue(not Attachment.objects.filter(path_id=d2_path_id).exists())
@@ -410,6 +438,18 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             warn_log.output,
             ["WARNING:root:dummy_2.txt does not exist. Its entry in the database will be removed."],
         )
+
+        # dummy_3 file should still exist, because the attachment has been moved to the archive.
+        self.assertTrue(os.path.exists(d3_local_path))
+
+        # After the archive gets emptied, do_delete_old_unclaimed_attachments should result
+        # in deleting the file, since it is now truly no longer referenced.
+        with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
+            clean_archived_data()
+        do_delete_old_unclaimed_attachments(2)
+        self.assertFalse(os.path.exists(d3_local_path))
+        self.assertTrue(not Attachment.objects.filter(path_id=d3_path_id).exists())
+        self.assertTrue(not ArchivedAttachment.objects.filter(path_id=d3_path_id).exists())
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")

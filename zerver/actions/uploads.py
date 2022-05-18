@@ -64,9 +64,14 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
 
 
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
-    old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)
+    old_unclaimed_attachments, old_unclaimed_archived_attachments = get_old_unclaimed_attachments(
+        weeks_ago
+    )
 
     for attachment in old_unclaimed_attachments:
+        delete_message_image(attachment.path_id)
+        attachment.delete()
+    for attachment in old_unclaimed_archived_attachments:
         delete_message_image(attachment.path_id)
         attachment.delete()
 
