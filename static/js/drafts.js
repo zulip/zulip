@@ -74,7 +74,7 @@ export const draft_model = (function () {
         return id;
     };
 
-    exports.editDraft = function (id, draft) {
+    exports.editDraft = function (id, draft, update_timestamp = true) {
         const drafts = get();
         let changed = false;
 
@@ -84,7 +84,9 @@ export const draft_model = (function () {
 
         if (drafts[id]) {
             changed = !check_if_equal(drafts[id], draft);
-            draft.updatedAt = getTimestamp();
+            if (update_timestamp) {
+                draft.updatedAt = getTimestamp();
+            }
             drafts[id] = draft;
             save(drafts);
         }
@@ -116,6 +118,17 @@ export function confirm_delete_all_drafts() {
         html_body,
         on_click: delete_all_drafts,
     });
+}
+
+export function rename_topic(stream_id, old_topic, new_topic) {
+    const current_drafts = draft_model.get();
+    for (const draft_id of Object.keys(current_drafts)) {
+        const draft = current_drafts[draft_id];
+        if (util.same_stream_and_topic(draft, {stream_id, topic: old_topic})) {
+            draft.topic = new_topic;
+            draft_model.editDraft(draft_id, draft, false);
+        }
+    }
 }
 
 export function snapshot_message() {

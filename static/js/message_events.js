@@ -7,6 +7,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
+import * as drafts from "./drafts";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
@@ -258,6 +259,8 @@ export function update_messages(events) {
                 compose_validate.warn_if_topic_resolved(true);
                 compose_fade.set_focused_recipient("stream");
             }
+
+            drafts.rename_topic(event.stream_id, orig_topic, new_topic);
 
             for (const msg of event_messages) {
                 if (page_params.realm_allow_edit_history) {
