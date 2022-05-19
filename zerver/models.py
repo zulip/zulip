@@ -1544,10 +1544,10 @@ class UserBaseSettings(models.Model):
     TEXT_EMOJISET = "text"
     TWITTER_EMOJISET = "twitter"
     EMOJISET_CHOICES = (
-        (GOOGLE_EMOJISET, "Google modern"),
-        (GOOGLE_BLOB_EMOJISET, "Google classic"),
+        (GOOGLE_EMOJISET, "Google"),
         (TWITTER_EMOJISET, "Twitter"),
         (TEXT_EMOJISET, "Plain text"),
+        (GOOGLE_BLOB_EMOJISET, "Google blobs"),
     )
     emojiset: str = models.CharField(
         default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20

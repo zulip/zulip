@@ -59,6 +59,14 @@
                             <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
                             {{/if}}
                         </span>
+                        {{#if (eq this.key "google-blob")}}
+                        <span>(<a href='/help/emoji-and-emoticons#change-your-emoji-set'>deprecated</a>)</span>
+                        <i
+                          class="fa fa-question-circle-o tippy-zulip-tooltip"
+                          data-tippy-placement="bottom"
+                          data-tippy-content="{{t 'Because Google redesigned their emoji style in 2017, any emoji released since then will be displayed with the modern design instead of as a blob emoji.'}}"
+                          ></i>
+                        {{/if}}
                     </label>
                 {{/each}}
             </div>

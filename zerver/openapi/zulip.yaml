@@ -8583,10 +8583,10 @@ paths:
             The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
             used to display emoji to the user everywhere they appear in the UI.
 
-            - "google" - Google modern
-            - "google-blob" - Google classic
+            - "google" - Google
             - "twitter" - Twitter
             - "text" - Plain text
+            - "google-blob" - Google blobs
           schema:
             type: string
           example: "google"
