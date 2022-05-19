@@ -165,7 +165,6 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-importlib-resources ; python_version < "3.9"  # for jsonschema
 
 # For reporting errors to sentry.io
 sentry-sdk
