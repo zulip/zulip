@@ -60,18 +60,18 @@ class zulip::common {
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.18.1',
+      'version' => '1.18.2',
       'sha256' => {
-        'amd64'   => 'b3b815f47ababac13810fc6021eb73d65478e0b2db4b09d348eefad9581a2334',
-        'aarch64' => '56a91851c97fb4697077abbca38860f735c32b38993ff79b088dac46e4735633',
+        'amd64'   => 'e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc',
+        'aarch64' => 'fc4ad28d0501eaa9c9d6190de3888c9d44d8b5fb02183ce4ae93713f67b8a35b',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => 'dbb816b62b790432414db7cafbb4583d5092c601',
+      'version' => 'e196cd61a007e1cdbde5579fe2dac95e7154190c',
       # Source code, so arch-invariant sha256
-      'sha256' => '3c02676af074bf7c18a29343e0824cb87da4837bf7bbe2837ac81c254f813c32',
+      'sha256' => 'bd6126877020c5aab142b26cfa1abde6b25e780f03bd6af25d9fdc85993193fb',
     },
 
     # https://github.com/wal-g/wal-g/releases
