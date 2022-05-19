@@ -7447,21 +7447,30 @@ paths:
               enum:
                 - stream_id
       parameters:
-        - name: stream
-          in: query
-          description: |
-            The name of the stream to access.
-          schema:
-            type: string
-          example: Denmark
-          required: false
         - name: stream_id
           in: query
           description: |
             The ID of the stream to access.
+
+            Clients must provide either `stream` or `stream_id` as a parameter
+            to this endpoint, but not both.
+
+            **Changes**: New in Zulip 2.0.
           schema:
             type: integer
           example: 43
+          required: false
+        - name: stream
+          in: query
+          description: |
+            The name of the stream to access.
+
+            Clients must provide either `stream` or `stream_id` as a parameter
+            to this endpoint, but not both. Clients should use `stream_id`
+            instead of the `stream` parameter when possible.
+          schema:
+            type: string
+          example: Denmark
           required: false
         - name: topic
           in: query
