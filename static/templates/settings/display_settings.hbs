@@ -59,6 +59,10 @@
                             <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f389.png" />
                             {{/if}}
                         </span>
+                        {{#if (eq this.key "google-blob")}}
+                        <span>(<em>{{t "deprecated" }}</em>)</span>
+                        {{> ../help_link_widget link="/help/emoji-and-emoticons#change-your-emoji-set" }}
+                        {{/if}}
                     </label>
                 {{/each}}
             </div>

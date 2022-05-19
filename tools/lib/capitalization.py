@@ -32,6 +32,7 @@ IGNORED_PHRASES = [
     r"PM",
     r"PMs",
     r"Slack",
+    r"Google",
     r"Terms of Service",
     r"Tuesday",
     r"URL",
@@ -74,6 +75,8 @@ IGNORED_PHRASES = [
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
+    # Used alone in a parenthetical where capitalized looks worse.
+    r"^deprecated$",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",
