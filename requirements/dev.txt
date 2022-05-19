@@ -647,10 +647,6 @@ importlib-metadata==4.11.3 ; python_version < "3.10" \
     #   markdown
     #   sphinx
     #   zulip-bots
-importlib-resources==5.7.1 ; python_version < "3.9" \
-    --hash=sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3 \
-    --hash=sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8
-    # via -r requirements/common.in
 incremental==21.3.0 \
     --hash=sha256:02f5de5aff48f6b9f665d99d48bfc7ec03b6e3943210de7cfc88856d755d6f57 \
     --hash=sha256:92014aebc6a20b78a8084cdd5645eeaa7f74b8933f70fa3ada2cfbd1e3b54321
@@ -2346,9 +2342,7 @@ xmltodict==0.12.0 \
 zipp==3.8.0 \
     --hash=sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad \
     --hash=sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099
-    # via
-    #   importlib-metadata
-    #   importlib-resources
+    # via importlib-metadata
 zope.interface==5.4.0 \
     --hash=sha256:08f9636e99a9d5410181ba0729e0408d3d8748026ea938f3b970a0249daa8192 \
     --hash=sha256:0b465ae0962d49c68aa9733ba92a001b2a0933c317780435f00be7ecb959c702 \

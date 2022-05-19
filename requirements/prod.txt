@@ -434,10 +434,6 @@ importlib-metadata==4.11.3 ; python_version < "3.10" \
     #   -r requirements/common.in
     #   markdown
     #   zulip-bots
-importlib-resources==5.7.1 ; python_version < "3.9" \
-    --hash=sha256:b6062987dfc51f0fcb809187cffbd60f35df7acb4589091f154214af6d0d49d3 \
-    --hash=sha256:e447dc01619b1e951286f3929be820029d48c75eb25d265c28b92a16548212b8
-    # via -r requirements/common.in
 ipython==8.3.0 \
     --hash=sha256:341456643a764c28f670409bbd5d2518f9b82c013441084ff2c2fc999698f83b \
     --hash=sha256:807ae3cf43b84693c9272f70368440a9a7eaa2e7e6882dad943c32fbf7e51402
@@ -1492,9 +1488,7 @@ xmlsec==1.3.12 \
 zipp==3.8.0 \
     --hash=sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad \
     --hash=sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099
-    # via
-    #   importlib-metadata
-    #   importlib-resources
+    # via importlib-metadata
 https://github.com/zulip/python-zulip-api/archive/0.8.2.zip#egg=zulip==0.8.2+git&subdirectory=zulip \
     --hash=sha256:c85a2c76b265ef66478715bb2a38723c4942f84b2f876c3e0ba916962e3d0735
     # via
