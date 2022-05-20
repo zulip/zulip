@@ -70,8 +70,19 @@ export function update_toggler_for_sub(sub) {
         }
         stream_edit.toggler.disable_tab("personal_settings");
     }
+    enable_or_disable_subscribers_tab(sub);
 }
 
+export function enable_or_disable_subscribers_tab(sub) {
+    if (sub.invite_only) {
+        if (sub.subscribed) {
+            stream_edit.toggler.enable_tab("subscriber_settings");
+        }
+        if (!sub.subscribed) {
+            stream_edit.toggler.disable_tab("subscriber_settings");
+        }
+    }
+}
 export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const $settings_button = stream_settings_ui.settings_button_for_sub(sub);
