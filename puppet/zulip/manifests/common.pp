@@ -76,13 +76,13 @@ class zulip::common {
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version'       => '1.1.3-rc-with-build',
+      'version'       => '2.0.0',
       'sha256'        => {
-        'amd64' => '109a80f4c019e0f1d52602e90d2a181eb844494ece2d099a149cf9204b71113e',
+        'amd64' => 'df50c0c588fe9ff1638e42763c26e885ea32ad6dc39dee35d547186d3b94a19a',
         # aarch64 builds from source, below
       },
       # This is a Git commit hash, not a sha256sum, for when building from source.
-      'git_commit_id' => '52f990fe87679ee4651fe3fb7629a2ac799f50c6',
+      'git_commit_id' => '1eb88a577d5f938ffc1af9ae8f6ecdf82b7fda6b',
     },
 
     ### zulip_ops packages
