@@ -25,7 +25,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from urllib.parse import urlencode, urljoin, urlsplit
+from urllib.parse import urlencode, urljoin, urlparse, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
 
@@ -718,6 +718,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         container = SubElement(root, "div")
         container.set("class", "message_embed")
+        parsed_url = urlparse(link)
+        container.set("data-urldomain", parsed_url.netloc if parsed_url else "")
 
         img_link = get_camo_url(extracted_data.image)
         img = SubElement(container, "a")

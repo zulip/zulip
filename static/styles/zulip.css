@@ -3160,3 +3160,7 @@ select.inline_select_topic_edit {
         }
     }
 }
+
+.hide_embed_button {
+    opacity: 0.5;
+}

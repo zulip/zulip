@@ -35,6 +35,24 @@
     </li>
     {{/if}}
 
+    {{#if should_display_hide_embed}}
+    <li>
+        <a class="popover_toggle_embed" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-film" aria-hidden="true"></i>
+            {{t "Hide preview" }} <span class="hotkey-hint">(!)</span>
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if should_display_unhide_embed}}
+    <li>
+        <a class="popover_toggle_embed" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-film" aria-hidden="true"></i>
+            {{t "Unhide preview" }} <span class="hotkey-hint">(!)</span>
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_collapse}}
     <li>
         <a class="popover_toggle_collapse" data-message-id="{{message_id}}" tabindex="0">
