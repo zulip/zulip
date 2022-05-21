@@ -538,8 +538,10 @@ paths:
                                                 The ID of the custom profile field which user updated.
                                             value:
                                               type: string
+                                              nullable: true
                                               description: |
-                                                User's personal value for this custom profile field.
+                                                User's personal value for this custom profile field,
+                                                or `null` if unset.
                                             rendered_value:
                                               type: string
                                               description: |
