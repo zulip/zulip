@@ -83,7 +83,10 @@ def build_userprofile(
             user_map[user_data["id"]] = user_id
 
             email = get_user_email(user_data, domain_name)
-            build_avatar(user_id, realm_id, email, user_data["avatarUrl"], timestamp, avatar_list)
+            if user_data.get("avatarUrl"):
+                build_avatar(
+                    user_id, realm_id, email, user_data["avatarUrl"], timestamp, avatar_list
+                )
 
             # Build userprofile object
             userprofile = UserProfile(
