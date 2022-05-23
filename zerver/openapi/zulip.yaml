@@ -566,7 +566,10 @@ paths:
                                         new_email:
                                           type: string
                                           description: |
-                                            The new email of the user.
+                                            The new value of `email` for the user. The client
+                                            should update any data structures associated
+                                            with this user to use this new value as the
+                                            user's Zulip display email address.
                               additionalProperties: false
                               example:
                                 {
