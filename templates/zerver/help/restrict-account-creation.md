@@ -51,8 +51,10 @@ Regardless of whether invitations are required, you can:
 
 {!owner-only.md!}
 
-You can restrict the ability to invite new users to join your
-Zulip organization to specific [roles](/help/roles-and-permissions).
+You can restrict the ability to invite new users to join your Zulip organization
+to specific [roles](/help/roles-and-permissions). To protect your organization,
+while permission to send out individual email invitations is configurable, creating
+*reusable* invitation links is always limited to administrators.
 
 {start_tabs}
 
