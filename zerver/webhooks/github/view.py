@@ -8,7 +8,14 @@ from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
+from zerver.lib.validator import (
+    WildValue,
+    check_bool,
+    check_int,
+    check_none_or,
+    check_string,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -64,7 +71,7 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
     description = None
     changes = payload.get("changes", {})
     if "body" in changes or action == "opened":
-        description = pull_request["body"].tame(check_string)
+        description = pull_request["body"].tame(check_none_or(check_string))
 
     return get_pull_request_event_message(
         get_sender_name(payload),
@@ -152,7 +159,7 @@ def get_issue_body(helper: Helper) -> str:
         action,
         issue["html_url"].tame(check_string),
         issue["number"].tame(check_int),
-        issue["body"].tame(check_string),
+        issue["body"].tame(check_none_or(check_string)),
         assignee=assignee["login"].tame(check_string) if assignee else None,
         title=issue["title"].tame(check_string) if include_title else None,
     )
