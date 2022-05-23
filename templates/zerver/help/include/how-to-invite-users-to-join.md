@@ -22,7 +22,7 @@
 
 {end_tabs}
 
-[email-invitations]:/help/invite-new-users#send-e-mail-invitations
+[email-invitations]:/help/invite-new-users#send-email-invitations
 [invitation-links]: /help/invite-new-users#create-an-invitation-link
 [set-if-invitations-required]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
 [restrict-email-domain]: /help/restrict-account-creation#configuring-email-domain-restrictions

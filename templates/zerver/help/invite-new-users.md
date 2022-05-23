@@ -1,5 +1,16 @@
 # Invite new users
 
+You can invite users to join your organization by sending out email invitations,
+or creating reusable invitation links to share.
+
+Prior to inviting users to your organization, it is recommended that administrators:
+
+* Configure [default settings](/help/configure-default-new-user-settings) for
+  new users.
+
+* Configure the [notifications language][org-notifications-language] for your
+  organization, which is used for email invitations.
+
 When you invite users, you can:
 
 * Set the [role](/help/roles-and-permissions) that they will have when
@@ -8,20 +19,13 @@ When you invite users, you can:
 * Configure which streams they will be added to. The organization's
   [default streams](/help/set-default-streams-for-new-users) will be preselected.
 
-Your organization may also want to configure [default
-settings](/help/configure-default-new-user-settings) for new users.
+Organization administrators can
+[configure](/help/restrict-account-creation#change-who-can-send-invitations)
+which [roles](/help/roles-and-permissions) have permission to invite users to
+the organization. You will only see an **Invite users** menu option if you have
+permission to invite users.
 
-## Send e-mail invitations
-
-Personal invitation links can be sent to individuals via email.
-Outgoing email invitations are translated and sent in the organization's
-[notifications language][org-notifications-language], so you may want
-to check (or update) that configuration before sending email invitations.
-
-!!! warn ""
-    **Note**: You will only see an **Invite users** option if you
-    [have permission](/help/restrict-account-creation#change-who-can-send-invitations)
-    to invite users to the organization.
+## Send email invitations
 
 {start_tabs}
 
@@ -52,10 +56,6 @@ to check (or update) that configuration before sending email invitations.
 ## Create an invitation link
 
 {!admin-only.md!}
-
-Customized, reusable invitation links can be generated as well. To
-protect your organization, creating these reusable invitation links
-is always limited to administrators.
 
 {start_tabs}
 
