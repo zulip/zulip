@@ -578,6 +578,11 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     let html_body;
     // check if bot or human
     if (user.is_bot) {
+        opts.original_owner_deactivated =
+            user.is_bot && user.bot_owner_id && !people.is_person_active(user.bot_owner_id);
+        if (opts.original_owner_deactivated) {
+            opts.owner_name = people.get_by_user_id(user.bot_owner_id).full_name;
+        }
         html_body = render_settings_reactivation_bot_modal(opts);
     } else {
         html_body = render_settings_reactivation_user_modal(opts);
