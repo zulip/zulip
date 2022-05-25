@@ -396,9 +396,18 @@ def validate_user_custom_profile_data(
 
 
 def can_access_delivery_email(
-    user_profile: UserProfile, target_user_id: int, email_address_visibility: int
+    user_profile: UserProfile,
+    target_user_id: int,
+    email_address_visibility: int,
+    target_user_is_bot: bool,
 ) -> bool:
     if target_user_id == user_profile.id:
+        return True
+
+    if target_user_is_bot:
+        return True
+
+    if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         return True
 
     if email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
@@ -483,9 +492,11 @@ def format_user_row(
         )
 
     if acting_user is not None and can_access_delivery_email(
-        acting_user, row["id"], realm.email_address_visibility
+        acting_user, row["id"], realm.email_address_visibility, row["is_bot"]
     ):
         result["delivery_email"] = row["delivery_email"]
+    else:
+        result["delivery_email"] = None
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
@@ -635,3 +646,18 @@ def is_2fa_verified(user: UserProfile) -> bool:
     # is True before calling `is_2fa_verified`.
     assert settings.TWO_FACTOR_AUTHENTICATION_ENABLED
     return is_verified(user)
+
+
+def get_users_with_access_to_real_email(user_profile: UserProfile) -> List[int]:
+    active_users = user_profile.realm.get_active_users()
+    user_ids_with_real_email_access = []
+    for user in active_users:
+        if can_access_delivery_email(
+            user,
+            user_profile.id,
+            user_profile.realm.email_address_visibility,
+            user_profile.is_bot,
+        ):
+            user_ids_with_real_email_access.append(user.id)
+
+    return user_ids_with_real_email_access

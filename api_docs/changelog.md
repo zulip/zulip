@@ -20,6 +20,19 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 163**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email),
+  [`GET /users/me`](/api/get-own-user) and [`GET /events`](/api/get-events):
+  The `delivery_email` field is always present in user objects, including the case
+  when `email_address_visibility` is set to `EMAIL_ADDRESS_VISIBILITY_EVERYONE,`
+  with the value being `None` if the requestor does not have access to the user's
+  real email. For bot users, the `delivery_email` field is always set to the real email.
+* [`GET /events`](/api/get-events): Event for updating `delivery_email`  is now sent to
+  all users who have access to it and is also sent when `email_address_visibility` setting
+  changes.
+
 **Feature level 162**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

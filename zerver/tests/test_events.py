@@ -2635,8 +2635,11 @@ class RealmPropertyActionTest(BaseAction):
                 old_value,
                 val,
             ]:
-                # email update event is sent for each user.
-                num_events = 11
+                # one event for updating "email_address_visibility" setting +
+                # one delivery_email update event is sent for 9 users (all human
+                # users except the user themselves) + one email update event for
+                # each of the 10 human users in the realm.
+                num_events = 20
 
             events = self.verify_action(
                 lambda: do_set_realm_property(
@@ -2676,7 +2679,8 @@ class RealmPropertyActionTest(BaseAction):
                 old_value,
                 val,
             ]:
-                check_realm_user_update("events[1]", events[1], "email")
+                check_realm_user_update("events[1]", events[1], "delivery_email")
+                check_realm_user_update("events[10]", events[10], "email")
 
     def test_change_realm_property(self) -> None:
         for prop in Realm.property_types:
@@ -2831,6 +2835,39 @@ class UserDisplayActionTest(BaseAction):
             check_user_settings_update("events[0]", events[0])
             check_update_display_settings("events[1]", events[1])
             check_realm_user_update("events[2]", events[2], "timezone")
+
+    def test_delivery_email_events_on_changing_email_address_visibility(self) -> None:
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_set_realm_property(
+            self.user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            acting_user=None,
+        )
+
+        events = self.verify_action(
+            lambda: do_set_realm_property(
+                self.user_profile.realm,
+                "email_address_visibility",
+                Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+                acting_user=self.user_profile,
+            ),
+            num_events=10,
+        )
+        check_realm_user_update("events[1]", events[1], "delivery_email")
+        self.assertIsNone(events[1]["person"]["delivery_email"])
+
+        events = self.verify_action(
+            lambda: do_set_realm_property(
+                self.user_profile.realm,
+                "email_address_visibility",
+                Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                acting_user=self.user_profile,
+            ),
+            num_events=10,
+        )
+        check_realm_user_update("events[1]", events[1], "delivery_email")
+        self.assertIsNotNone(events[1]["person"]["delivery_email"])
 
 
 class SubscribeActionTest(BaseAction):
