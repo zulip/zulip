@@ -61,9 +61,9 @@ def send_event_for_updating_delivery_email_fields(
 
     for user in active_users:
         if can_access_delivery_email(
-            user, user_profile.id, old_visibility_setting
-        ) != can_access_delivery_email(user, user_profile.id, visibility_setting):
-            if can_access_delivery_email(user, user_profile.id, visibility_setting):
+            user, user_profile.id, old_visibility_setting, user.is_bot
+        ) != can_access_delivery_email(user, user_profile.id, visibility_setting, user.is_bot):
+            if can_access_delivery_email(user, user_profile.id, visibility_setting, user.is_bot):
                 delivery_email_visible_user_ids.append(user.id)
             else:
                 delivery_email_not_visible_user_ids.append(user.id)
@@ -106,7 +106,9 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     delivery_email_visible_user_ids = [
         user.id
         for user in active_users
-        if can_access_delivery_email(user, user_profile.id, user_profile.email_address_visibility)
+        if can_access_delivery_email(
+            user, user_profile.id, user_profile.email_address_visibility, user_profile.is_bot
+        )
     ]
 
     transaction.on_commit(

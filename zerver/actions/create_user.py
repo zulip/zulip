@@ -304,7 +304,9 @@ def notify_created_user(user_profile: UserProfile) -> None:
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
     for user in active_users:
-        if can_access_delivery_email(user, user_profile.id, user_row["email_address_visibility"]):
+        if can_access_delivery_email(
+            user, user_profile.id, user_row["email_address_visibility"], user_row["is_bot"]
+        ):
             user_ids_with_real_email_access.append(user.id)
         else:
             user_ids_without_real_email_access.append(user.id)
