@@ -12,7 +12,11 @@ from confirmation.models import Confirmation, create_confirmation_link, generate
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
-from zerver.actions.user_settings import do_delete_avatar_image, send_user_email_update_event
+from zerver.actions.user_settings import (
+    do_delete_avatar_image,
+    send_delivery_email_update_events,
+    send_user_email_update_event,
+)
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.create_user import get_display_email_address
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
@@ -95,6 +99,11 @@ def do_set_realm_property(
     )
 
     if name == "email_address_visibility":
+        user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
+
+        for user_profile in user_profiles:
+            send_delivery_email_update_events(user_profile, old_value, value)
+
         if Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, value]:
             # We use real email addresses on UserProfile.email only if
             # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
@@ -102,7 +111,6 @@ def do_set_realm_property(
             # that field, so we can save work and return here.
             return
 
-        user_profiles = UserProfile.objects.filter(realm=realm, is_bot=False)
         for user_profile in user_profiles:
             user_profile.email = get_display_email_address(user_profile)
         UserProfile.objects.bulk_update(user_profiles, ["email"])

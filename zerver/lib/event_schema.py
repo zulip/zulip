@@ -1085,6 +1085,7 @@ realm_user_type = DictType(
         ("profile_data", StringDictType(dict)),
         ("timezone", str),
         ("date_joined", str),
+        ("delivery_email", OptionalType(str)),
     ]
 )
 
@@ -1157,7 +1158,7 @@ realm_user_person_types = dict(
         required_keys=[
             # vertical formatting
             ("user_id", int),
-            ("delivery_email", str),
+            ("delivery_email", OptionalType(str)),
         ],
     ),
     email=DictType(

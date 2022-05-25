@@ -606,6 +606,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
         self.assertFalse(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
         do_set_realm_property(
             user_profile.realm,
@@ -615,11 +616,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_set_realm_property(
             user_profile.realm,
@@ -629,15 +627,13 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIsNone(hamlet_obj["delivery_email"])
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
         do_set_realm_property(
             user_profile.realm,
@@ -647,11 +643,8 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
         do_set_realm_property(
             user_profile.realm,
