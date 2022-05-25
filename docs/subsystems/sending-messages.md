@@ -387,3 +387,9 @@ There are a few details that require special care with this system:
   determine what has happened in streams the user can see. We can use
   the user's subscriptions to construct what messages they should have
   access to for this feature.
+- Soft-deactivated users experience high loading latency when
+  returning after being idle for months. We optimize this by
+  triggering a soft reactivation for users who receive email or push
+  notification for private messages or personal mentions, or who
+  request a password reset, since these are good leading indicators
+  that a user is likely to return to Zulip.

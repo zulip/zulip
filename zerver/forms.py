@@ -29,6 +29,7 @@ from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import (
@@ -360,6 +361,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if user is not None:
             context["active_account_in_realm"] = True
             context["reset_url"] = generate_password_reset_url(user, token_generator)
+            queue_soft_reactivation(user.id)
             send_email(
                 "zerver/emails/password_reset",
                 to_user_ids=[user.id],
