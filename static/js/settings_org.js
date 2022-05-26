@@ -384,7 +384,9 @@ function set_digest_emails_weekday_visibility() {
 function set_create_web_public_stream_dropdown_visibility() {
     change_element_block_display_property(
         "id_realm_create_web_public_stream_policy",
-        page_params.server_web_public_streams_enabled && page_params.realm_enable_spectator_access,
+        page_params.server_web_public_streams_enabled &&
+            page_params.zulip_plan_is_not_limited &&
+            page_params.realm_enable_spectator_access,
     );
 }
 

@@ -170,7 +170,9 @@ export function build_page() {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         create_web_public_stream_policy_values:
             settings_config.create_web_public_stream_policy_values,
-        disable_enable_spectator_access_setting: !page_params.server_web_public_streams_enabled,
+        disable_enable_spectator_access_setting:
+            !page_params.server_web_public_streams_enabled ||
+            !page_params.zulip_plan_is_not_limited,
         can_sort_by_email: settings_data.show_email(),
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
