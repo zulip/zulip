@@ -487,7 +487,7 @@ msgstr "Tartalék token használata"
 
 #: templates/zerver/accounts_accept_terms.html:13
 msgid "Accept the Terms of Service"
-msgstr ""
+msgstr "Felhasználási feltételek elfogadása"
 
 #: templates/zerver/accounts_accept_terms.html:20
 #: templates/zerver/create_realm.html:22 templates/zerver/login.html:86
@@ -1692,7 +1692,7 @@ msgstr "Lean fejlesztői társaság"
 
 #: templates/zerver/footer.html:54
 msgid "Asciidoctor open-source community"
-msgstr ""
+msgstr "Asciidoctor nyílt forrású közösség"
 
 #: templates/zerver/footer.html:57
 msgid "Rust language community"
@@ -2717,7 +2717,7 @@ msgstr "Örökre"
 
 #: zerver/actions/streams.py:1101
 msgid "Messages in this stream will now be retained forever."
-msgstr ""
+msgstr "Ebben az üzenetfolyamban az üzeneteket örökre megőrizzük mostantól."
 
 #: zerver/actions/streams.py:1107
 #, python-brace-format
@@ -2868,7 +2868,7 @@ msgstr ""
 msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
-msgstr ""
+msgstr "A jelszavad túl gyengének bizonyult, ezért zároltuk. Állítsd vissza a jelszavad, hogy egy újat beállíthass."
 
 #: zerver/forms.py:466
 #, python-brace-format
@@ -3535,7 +3535,7 @@ msgstr "Rossz érték megadva ennél '{var_name}': {bad_value}"
 
 #: zerver/lib/request.py:385
 msgid "Malformed payload"
-msgstr ""
+msgstr "Sérült payload"
 
 #: zerver/lib/request.py:433
 msgid "Argument \"{}\" is not valid JSON."
@@ -3597,7 +3597,7 @@ msgstr "Ezen üzenetfolyam(ok) ({}) nem valós / valósak"
 
 #: zerver/lib/streams.py:706 zerver/views/streams.py:324
 msgid "Web-public streams are not enabled."
-msgstr ""
+msgstr "Nyilvános webes üzenetfolyamok nem engedélyezettek."
 
 #: zerver/lib/streams.py:735
 msgid "Default stream group with id '{}' does not exist."
@@ -3605,7 +3605,7 @@ msgstr "Ilyen azonosítós '{}' alapértelmezett üzenetfolyam nem létezik."
 
 #: zerver/lib/string_validation.py:31
 msgid "Stream name can't be empty!"
-msgstr ""
+msgstr "A beszédfolyam neve nem lehet üres!"
 
 #: zerver/lib/string_validation.py:35
 msgid "Stream name too long (limit: {} characters)."
@@ -3851,7 +3851,7 @@ msgstr ""
 #: zerver/lib/validator.py:666 zerver/lib/validator.py:686
 #, python-brace-format
 msgid "{var_name} is missing"
-msgstr ""
+msgstr "{var_name} hiányzik"
 
 #: zerver/lib/webhooks/common.py:72
 #, python-brace-format
@@ -3937,7 +3937,7 @@ msgstr "Vendég"
 
 #: zerver/models.py:2360
 msgid "Web-public"
-msgstr ""
+msgstr "Nyilvános a weben"
 
 #: zerver/models.py:2366
 msgid "Public"
@@ -4614,7 +4614,7 @@ msgstr "BigBlueButton nincs beállítva."
 
 #: zerver/views/video_calls.py:212
 msgid "Invalid signature."
-msgstr ""
+msgstr "Érvénytelen aláírás."
 
 #: zerver/views/video_calls.py:242
 msgid "Error connecting to the BigBlueButton server."
@@ -4714,7 +4714,7 @@ msgstr "Érvényesítsd a Zulip szervert érvényes API kulccsal"
 #. error
 #: zilencer/views.py:65 zilencer/views.py:67
 msgid "Invalid UUID"
-msgstr ""
+msgstr "Érvénytelen UUID"
 
 #. error
 #: zilencer/views.py:74

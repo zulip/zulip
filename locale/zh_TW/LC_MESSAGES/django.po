@@ -71,7 +71,7 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr ""
+msgstr "您的社群沒有剩餘的 Zulip 許可證，並且不能再接受新用戶。請[增加許可數量]({billing_page_link}) 或[停用非活動用戶]({deactivate_user_help_page_link}) 以允許新用戶加入。"
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -80,7 +80,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr ""
+msgstr "您的社群只剩下一個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許多個用戶加入。"
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -89,7 +89,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr ""
+msgstr "您的社群只剩下兩個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許兩個以上的用戶加入。"
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -98,7 +98,7 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr ""
+msgstr "您的社群只剩下三個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許兩個以上的用戶加入。"
 
 #: corporate/lib/registration.py:57
 #, python-brace-format

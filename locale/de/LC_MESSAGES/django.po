@@ -1813,7 +1813,7 @@ msgstr "Jobs"
 
 #: templates/zerver/footer.html:146
 msgid "Website attributions"
-msgstr ""
+msgstr "Webseiten-Urheberschaft"
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"

@@ -1079,7 +1079,7 @@
   "We are about to have a poll.  Please wait for the question.": "Szavazás előtt állunk. Kérjük, várd meg a kérdést.",
   "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.": "Erősen javasoljuk az asztali értesítések engedélyezését. Segít a Zulip-nak egyben tartani a csapatodat!",
   "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "A/az \"{originalHotkey}\" gyorsbillentyűt lecseréltük a/az \"{replacementHotkey}\" gombra, hogy ez a gyakori művelet könnyebben végrehajtható legyen.",
-  "Web-public": "",
+  "Web-public": "Nyilvános a weben",
   "Wednesday": "szerda",
   "Week of {date}": "{date} hete",
   "Welcome back!  You have <z-link>{unread_msgs_count}</z-link> unread messages. Do you want to mark them all as read?": "Üdv újra!  Érkezett <z-link>{unread_msgs_count}</z-link> olvasatlan üzeneted. Szeretnéd mindegyiket olvasottra állítani?",

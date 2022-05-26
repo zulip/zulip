@@ -3938,11 +3938,11 @@ msgstr "ප්‍රසිද්ධ"
 
 #: zerver/models.py:2372
 msgid "Private, shared history"
-msgstr ""
+msgstr "පෞද්ගලික, හවුල් ඉතිහාසය"
 
 #: zerver/models.py:2378
 msgid "Private, protected history"
-msgstr ""
+msgstr "පෞද්ගලික, ආරක්‍ෂිත ඉතිහාසය"
 
 #: zerver/models.py:2386
 msgid "Public, protected history"

@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: analytics/views/stats.py:88 zerver/decorator.py:572 zerver/decorator.py:584
 msgid "Not allowed for guest users"
@@ -1792,7 +1792,7 @@ msgstr "Lavori"
 
 #: templates/zerver/footer.html:146
 msgid "Website attributions"
-msgstr ""
+msgstr "Attribuzioni del sito web"
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
