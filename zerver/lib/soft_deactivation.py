@@ -377,6 +377,14 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> List[UserProf
     return users_to_catch_up
 
 
+def queue_soft_reactivation(user_profile_id: int) -> None:
+    event = {
+        "type": "soft_reactivate",
+        "user_profile_id": user_profile_id,
+    }
+    queue_json_publish("deferred_work", event)
+
+
 def soft_reactivate_if_personal_notification(
     user_profile: UserProfile, unique_triggers: Set[str], mentioned_user_group_name: Optional[str]
 ) -> None:
@@ -400,8 +408,4 @@ def soft_reactivate_if_personal_notification(
     if not private_message and not personal_mention:
         return
 
-    event = {
-        "type": "soft_reactivate",
-        "user_profile_id": user_profile.id,
-    }
-    queue_json_publish("deferred_work", event)
+    queue_soft_reactivation(user_profile.id)
