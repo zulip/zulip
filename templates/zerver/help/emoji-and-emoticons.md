@@ -64,10 +64,15 @@ you send. Zulip emoji are compatible with screen readers and other accessibility
 
 {settings_tab|display-settings}
 
-1. Under **Theme**, select **Google modern**, **Google classic**,
-   **Twitter** or **Plain text** for the emoji theme.
+1. Under **Theme**, select **Google**,
+   **Twitter**, **Plain text**, or **Google blobs** for the emoji theme.
 
 {end_tabs}
+
+**Google blobs** is an old style of Google emoji that has not been maintained by Google
+since 2017, when they switched to a more modern style. Zulip allows you to still use blob
+emoji, but any new emoji that have been released since 2017 will be displayed in the modern
+**Google** style.
 
 ## Related articles
 
