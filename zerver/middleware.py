@@ -42,7 +42,12 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.rate_limiter import RateLimitResult
 from zerver.lib.request import REQ, RequestNotes, has_request_variables, set_request, unset_request
-from zerver.lib.response import json_response, json_response_from_error, json_unauthorized
+from zerver.lib.response import (
+    AsynchronousResponse,
+    json_response,
+    json_response_from_error,
+    json_unauthorized,
+)
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
@@ -401,8 +406,8 @@ class LogRequests(MiddlewareMixin):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
-        if getattr(response, "asynchronous", False):
-            # This special Tornado "asynchronous" response is
+        if isinstance(response, AsynchronousResponse):
+            # This special AsynchronousResponse sentinel is
             # discarded after going through this code path as Tornado
             # intends to block, so we stop here to avoid unnecessary work.
             return response

@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from zerver.decorator import internal_notify_view, process_client
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import AsynchronousResponse, json_success
 from zerver.lib.validator import (
     check_bool,
     check_int,
@@ -170,13 +170,11 @@ def get_events_backend(
         log_data["extra"] = result["extra_log_data"]
 
     if result["type"] == "async":
-        # Mark this response with .asynchronous; this will result in
+        # Return an AsynchronousResponse; this will result in
         # Tornado discarding the response and instead long-polling the
         # request.  See zulip_finish for more design details.
         handler._request = request
-        response = json_success(request)
-        response.asynchronous = True
-        return response
+        return AsynchronousResponse()
     if result["type"] == "error":
         raise result["exception"]
     return json_success(request, data=result["response"])
