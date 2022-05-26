@@ -19,13 +19,13 @@ export function get_recipient_label(message) {
                     stream: narrow_state.stream(),
                     topic: narrow_state.topic(),
                 };
-            } else if (narrow_state.pm_string()) {
+            } else if (narrow_state.pm_ids_string()) {
                 // TODO: This is a total hack.  Ideally, we'd rework
                 // this to not duplicate the actual compose_actions.js
                 // logic for what happens when you click the button,
                 // and not call into random modules with hacky fake
                 // "message" objects.
-                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_string());
+                const user_ids = people.user_ids_string_to_ids_array(narrow_state.pm_ids_string());
                 const user_ids_dicts = user_ids.map((user_id) => ({id: user_id}));
                 message = {
                     display_reply_to: message_store.get_pm_full_names({

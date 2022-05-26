@@ -860,7 +860,7 @@ export function narrow_to_next_topic() {
 }
 
 export function narrow_to_next_pm_string() {
-    const curr_pm = narrow_state.pm_string();
+    const curr_pm = narrow_state.pm_ids_string();
 
     const next_pm = topic_generator.get_next_unread_pm_string(curr_pm);
 
