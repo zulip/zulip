@@ -1,4 +1,4 @@
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple, TypedDict, Union
+from typing import Collection, List, Optional, Set, Tuple, TypedDict, Union
 
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
@@ -18,6 +18,7 @@ from zerver.lib.stream_subscription import (
     get_subscribed_stream_ids_for_user,
 )
 from zerver.lib.string_validation import check_stream_name
+from zerver.lib.types import APIStreamDict
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -785,7 +786,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
     return occupied_streams
 
 
-def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:  # nocoverage
+def get_web_public_streams(realm: Realm) -> List[APIStreamDict]:  # nocoverage
     query = get_web_public_streams_queryset(realm)
     streams = Stream.get_client_data(query)
     return streams
@@ -799,7 +800,7 @@ def do_get_streams(
     include_all_active: bool = False,
     include_default: bool = False,
     include_owner_subscribed: bool = False,
-) -> List[Dict[str, Any]]:
+) -> List[APIStreamDict]:
     # This function is only used by API clients now.
 
     if include_all_active and not user_profile.is_realm_admin:

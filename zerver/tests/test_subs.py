@@ -75,7 +75,12 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
 )
-from zerver.lib.types import NeverSubscribedStreamDict, SubscriptionInfo
+from zerver.lib.types import (
+    APIStreamDict,
+    APISubscriptionDict,
+    NeverSubscribedStreamDict,
+    SubscriptionInfo,
+)
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -204,6 +209,32 @@ class TestMiscStuff(ZulipTestCase):
             include_default=False,
         )
         self.assertEqual(streams, [])
+
+    def test_api_fields(self) -> None:
+        """Verify that all the fields from `Stream.API_FIELDS` and `Subscription.API_FIELDS` present
+        in `APIStreamDict` and `APISubscriptionDict`, respectively.
+        """
+        expected_fields = set(Stream.API_FIELDS) | {"stream_id"}
+        expected_fields -= {"id"}
+
+        stream_dict_fields = set(APIStreamDict.__annotations__.keys())
+        computed_fields = set(["is_announcement_only", "is_default"])
+
+        self.assertEqual(stream_dict_fields - computed_fields, expected_fields)
+
+        expected_fields = set(Subscription.API_FIELDS)
+
+        subscription_dict_fields = set(APISubscriptionDict.__annotations__.keys())
+        computed_fields = set(
+            ["in_home_view", "email_address", "stream_weekly_traffic", "subscribers"]
+        )
+        # `APISubscriptionDict` is a subclass of `APIStreamDict`, therefore having all the
+        # fields in addition to the computed fields and `Subscription.API_FIELDS` that
+        # need to be excluded here.
+        self.assertEqual(
+            subscription_dict_fields - computed_fields - stream_dict_fields,
+            expected_fields,
+        )
 
 
 class TestCreateStreams(ZulipTestCase):
