@@ -87,7 +87,12 @@ export function save_filters() {
 }
 
 export function load_filters() {
-    filters = new Set(ls.get(ls_key));
+    if (!page_params.is_spectator) {
+        // A user may have a stored filter and can log out
+        // to see web public view. This ensures no filters are
+        // selected for spectators.
+        filters = new Set(ls.get(ls_key));
+    }
 }
 
 export function set_default_focus() {
