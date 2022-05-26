@@ -1,19 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2020
-# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2020
-# Pham Tuan Anh <tuananh301099@gmail.com>, 2020
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# Pham Tuan Anh <tuananh301099@gmail.com>, 2022
+# Vu Pham, 2022
+# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:40+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Pham Tuan Anh <tuananh301099@gmail.com>, 2020\n"
-"Language-Team: Vietnamese (http://www.transifex.com/zulip/zulip/language/vi/)\n"
+"POT-Creation-Date: 2022-03-31 17:37+0000\n"
+"PO-Revision-Date: 2022-03-29 15:39+0000\n"
+"Last-Translator: Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2022\n"
+"Language-Team: Vietnamese (https://www.transifex.com/zulip/teams/53893/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -51,11 +55,14 @@ msgstr ""
 #: analytics/views/stats.py:305
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Thời gian bắt đầu muộn hơn thời gian kết thúc. Start: {start}, End: {end}"
+msgstr ""
+"Thời gian bắt đầu muộn hơn thời gian kết thúc. Start: {start}, End: {end}"
 
 #: analytics/views/stats.py:327 analytics/views/stats.py:362
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Không có sẵn dữ liệu phân tích. Vui lòng liên hệ với quản trị viên máy chủ của bạn."
+msgstr ""
+"Không có sẵn dữ liệu phân tích. Vui lòng liên hệ với quản trị viên máy chủ "
+"của bạn."
 
 #: analytics/views/support.py:166 zerver/views/streams.py:325
 msgid "Invalid parameters"
@@ -496,7 +503,9 @@ msgstr "Email"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Tôi đồng ý với<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Điều khoản Sử dụng</a>"
+msgstr ""
+"Tôi đồng ý với<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Điều khoản Sử dụng</a>"
 
 #: templates/zerver/accounts_accept_terms.html:57
 msgid "Accept"
@@ -527,7 +536,7 @@ msgstr "Đăng ký sử dụng với %(identity_provider)s"
 
 #: templates/zerver/accounts_send_confirm.html:13
 msgid "Thanks for signing up!"
-msgstr "Cảm ơn bạn đã đăng ký tài khoản !"
+msgstr "Cảm ơn bạn đã đăng ký tài khoản!"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Check your email so we can get started."
@@ -535,11 +544,13 @@ msgstr "Kiểm tra email của bạn để chúng ta có thể bắt đầu."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Vẫn không nhận được email? Chúng tôi có thể <a href=\"#\" id=\"resend_email_link\"> gửi lại </a>."
+msgstr ""
+"Vẫn không nhận được email? Chúng tôi có thể <a href=\"#\" "
+"id=\"resend_email_link\"> gửi lại </a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
-msgstr "Để cho chắc thì hãy thử kiểm tra hòm thư rác của bạn nhé."
+msgstr "Để cho chắc, hãy thử kiểm tra hòm thư Spam của bạn nhé."
 
 #: templates/zerver/app/index.html:63
 msgid "Loading..."
@@ -1784,10 +1795,6 @@ msgstr "History"
 msgid "Jobs"
 msgstr ""
 
-#: templates/zerver/footer.html:146
-msgid "Website attributions"
-msgstr ""
-
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr ""
@@ -2260,7 +2267,8 @@ msgstr "Xác nhận mật khẩu"
 
 #: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
+msgstr ""
+"Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
@@ -2878,7 +2886,8 @@ msgstr ""
 
 #: zerver/lib/actions.py:7744
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Một số tài khoản email chưa xác nhận nên chúng tôi không thể gửi lời mời."
+msgstr ""
+"Một số tài khoản email chưa xác nhận nên chúng tôi không thể gửi lời mời."
 
 #: zerver/lib/actions.py:7752
 msgid "We weren't able to invite anyone."
@@ -2888,7 +2897,9 @@ msgstr "Chúng tôi không thể mời ai."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Một số địa chỉ đã lập tài khoản Zulip nên chúng tôi không gửi lời mời. Chúng tôi đã gửi lời mời tới tất cả những người khác."
+msgstr ""
+"Một số địa chỉ đã lập tài khoản Zulip nên chúng tôi không gửi lời mời. Chúng"
+" tôi đã gửi lời mời tới tất cả những người khác."
 
 #: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
 msgid "A custom emoji with this name already exists."
@@ -4149,7 +4160,8 @@ msgstr "Không có lời mời như vậy"
 
 #: zerver/views/invite.py:190
 msgid "Invalid stream id {}. No invites were sent."
-msgstr "ID của dòng hội thoại {} không hợp lệ. Chưa có lời mời nào được gửi đi."
+msgstr ""
+"ID của dòng hội thoại {} không hợp lệ. Chưa có lời mời nào được gửi đi."
 
 #: zerver/views/message_edit.py:97
 msgid "Message edit history is disabled in this organization"

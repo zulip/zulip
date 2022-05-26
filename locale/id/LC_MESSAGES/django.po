@@ -1,20 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Mamat Rahmat <coderbodoh@gmail.com>, 2017
-# Rafid Aslam <rafidteam@gmail.com>, 2017
-# steve <cqpphp@gmail.com>, 2018
-# Tim Abbott <tabbott@kandralabs.com>, 2018
+# Alya Abbott <alya@zulip.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:40+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2018\n"
-"Language-Team: Indonesian (http://www.transifex.com/zulip/zulip/language/id/)\n"
+"POT-Creation-Date: 2022-03-31 17:37+0000\n"
+"PO-Revision-Date: 2022-03-29 15:39+0000\n"
+"Last-Translator: Alya Abbott <alya@zulip.com>, 2022\n"
+"Language-Team: Indonesian (https://www.transifex.com/zulip/teams/53893/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -56,7 +56,8 @@ msgstr ""
 
 #: analytics/views/stats.py:327 analytics/views/stats.py:362
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Data analisis tidak tersedia. Mohon hubungi administrator server anda."
+msgstr ""
+"Data analisis tidak tersedia. Mohon hubungi administrator server anda."
 
 #: analytics/views/support.py:166 zerver/views/streams.py:325
 msgid "Invalid parameters"
@@ -536,7 +537,9 @@ msgstr "Cek email Anda sehingga kita bisa memulai."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Masih tidak ada email? Kami dapat <a href=\"#\" id=\"resend_email_link\">mengirimkan kembali</a>."
+msgstr ""
+"Masih tidak ada email? Kami dapat <a href=\"#\" "
+"id=\"resend_email_link\">mengirimkan kembali</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -1785,10 +1788,6 @@ msgstr "History"
 msgid "Jobs"
 msgstr ""
 
-#: templates/zerver/footer.html:146
-msgid "Website attributions"
-msgstr ""
-
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr ""
@@ -2058,7 +2057,7 @@ msgstr "Username"
 #: templates/zerver/login.html:95 templates/zerver/register.html:167
 #: templates/zerver/register.html:180 templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr "Kata Sandi"
+msgstr "Password"
 
 #: templates/zerver/login.html:112
 msgid ""
@@ -2114,7 +2113,9 @@ msgstr ""
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "Server ini tidak memperbolehkan anggota dari publik untuk membuat organisasi bari."
+msgstr ""
+"Server ini tidak memperbolehkan anggota dari publik untuk membuat organisasi"
+" bari."
 
 #: templates/zerver/realm_creation_failed.html:21
 #, python-format
@@ -2229,7 +2230,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata sandi."
+msgstr ""
+"Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata"
+" sandi."
 
 #: templates/zerver/register.html:192
 msgid "Password strength"
@@ -2331,7 +2334,11 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Tolong periksa ulangan bahwa Anda telah mempunyai URL yang lengkap dan coba lagi, atau <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email kami</a> dan kami akan menyelesaikan hal ini segera!"
+msgstr ""
+"Tolong periksa ulangan bahwa Anda telah mempunyai URL yang lengkap dan coba "
+"lagi, atau <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+" kami</a> dan kami akan menyelesaikan hal ini segera!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -2465,14 +2472,17 @@ msgstr "Organisasi yang Anda coba gabung menggunakan {email} tidak tersedia."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
+msgstr ""
+"Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
 
 #: zerver/forms.py:197
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang diperbolehkan untuk mendaftar akun pada organisasi ini."
+msgstr ""
+"Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang "
+"diperbolehkan untuk mendaftar akun pada organisasi ini."
 
 #: zerver/forms.py:202 zerver/forms.py:227 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -2879,7 +2889,9 @@ msgstr ""
 
 #: zerver/lib/actions.py:7744
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan apapun."
+msgstr ""
+"Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan "
+"apapun."
 
 #: zerver/lib/actions.py:7752
 msgid "We weren't able to invite anyone."
@@ -2889,7 +2901,10 @@ msgstr "Kami tidak dapat mengundang siapapun."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-orang yang lain!"
+msgstr ""
+"Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak "
+"mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-"
+"orang yang lain!"
 
 #: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
 msgid "A custom emoji with this name already exists."
@@ -2946,7 +2961,9 @@ msgstr "Lampiran invalid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba lagi nanti."
+msgstr ""
+"Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba "
+"lagi nanti."
 
 #: zerver/lib/bot_lib.py:105
 msgid "Message must have recipients!"
@@ -4136,7 +4153,9 @@ msgstr "Anda harus menentukan minimal satu alamat email."
 
 #: zerver/views/invite.py:65
 msgid "You must specify at least one stream for invitees to join."
-msgstr "Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk bergabung."
+msgstr ""
+"Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk "
+"bergabung."
 
 #: zerver/views/invite.py:75
 msgid "Stream does not exist with id: {}. No invites were sent."
@@ -4365,7 +4384,9 @@ msgstr ""
 #: zerver/views/streams.py:112
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili '{principal}'"
+msgstr ""
+"Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili "
+"'{principal}'"
 
 #: zerver/views/streams.py:159
 msgid "Private streams cannot be made default."
@@ -4389,7 +4410,9 @@ msgstr ""
 
 #: zerver/views/streams.py:372 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah' atau 'hapus'."
+msgstr ""
+"Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah'"
+" atau 'hapus'."
 
 #: zerver/views/streams.py:452
 #, python-brace-format

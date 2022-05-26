@@ -1,18 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# David Clubb, 2021
 # Tim Abbott <tabbott@kandralabs.com>, 2022
+# David Clubb, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:40+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2022\n"
-"Language-Team: Welsh (http://www.transifex.com/zulip/zulip/language/cy/)\n"
+"POT-Creation-Date: 2022-03-31 17:37+0000\n"
+"PO-Revision-Date: 2022-03-29 15:39+0000\n"
+"Last-Translator: David Clubb, 2022\n"
+"Language-Team: Welsh (https://www.transifex.com/zulip/teams/53893/cy/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -50,11 +53,14 @@ msgstr "Enw siart anhysbys: {}"
 #: analytics/views/stats.py:305
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Mae'r amser cychwyn yn hwyrach na'r amser gorffen. Dechreuwch: {start}, Diwedd: {end}"
+msgstr ""
+"Mae'r amser cychwyn yn hwyrach na'r amser gorffen. Dechreuwch: {start}, "
+"Diwedd: {end}"
 
 #: analytics/views/stats.py:327 analytics/views/stats.py:362
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Nid oes data dadansoddeg ar gael. Cysylltwch â gweinyddwr eich gweinydd."
+msgstr ""
+"Nid oes data dadansoddeg ar gael. Cysylltwch â gweinyddwr eich gweinydd."
 
 #: analytics/views/support.py:166 zerver/views/streams.py:325
 msgid "Invalid parameters"
@@ -67,7 +73,11 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr "Nid oes gan eich sefydliad drwyddedau Zulip ar ôl ac ni all dderbyn defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau] ({billing_page_link}) neu [deactivate defnyddwyr anactif] ({deactivate_user_help_page_link}) i ganiatáu i ddefnyddwyr newydd ymuno."
+msgstr ""
+"Nid oes gan eich sefydliad drwyddedau Zulip ar ôl ac ni all dderbyn "
+"defnyddwyr newydd mwyach. Plis [cynyddwch nifer y trwyddedau] "
+"({billing_page_link}) neu [deactivate defnyddwyr anactif] "
+"({deactivate_user_help_page_link}) i ganiatáu i ddefnyddwyr newydd ymuno."
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -76,7 +86,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr "Dim ond un drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy nag un defnyddiwr ymuno."
+msgstr ""
+"Dim ond un drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
+"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
+"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy nag un "
+"defnyddiwr ymuno."
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -85,7 +99,11 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr "Dim ond dwy drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na dau ddefnyddiwr ymuno."
+msgstr ""
+"Dim ond dwy drwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
+"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
+"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na dau "
+"ddefnyddiwr ymuno."
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -94,7 +112,11 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr "Dim ond tair trwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na thri defnyddiwr ymuno."
+msgstr ""
+"Dim ond tair trwydded Zulip sydd gan eich sefydliad ar ôl. Gallwch [gynyddu "
+"nifer y trwyddedau] ({billing_page_link}) neu [ddadactifadu defnyddwyr "
+"anactif] ({deactivate_user_help_page_link}) i ganiatáu i fwy na thri "
+"defnyddiwr ymuno."
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -103,18 +125,26 @@ msgid ""
 "Zulip licenses are in use. Please [increase the number of "
 "licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow new members to join."
-msgstr "Nid oedd aelod newydd ({email}) yn gallu ymuno â'ch sefydliad oherwydd bod pob trwydded Zulip yn cael ei defnyddio. Plis [cynyddwch nifer y trwyddedau] ({billing_page_link}) neu [deactivate defnyddwyr anactif] ({deactivate_user_help_page_link}) i ganiatáu i aelodau newydd ymuno."
+msgstr ""
+"Nid oedd aelod newydd ({email}) yn gallu ymuno â'ch sefydliad oherwydd bod "
+"pob trwydded Zulip yn cael ei defnyddio. Plis [cynyddwch nifer y trwyddedau]"
+" ({billing_page_link}) neu [deactivate defnyddwyr anactif] "
+"({deactivate_user_help_page_link}) i ganiatáu i aelodau newydd ymuno."
 
 #: corporate/lib/registration.py:101
 msgid "All Zulip licenses for this organization are currently in use."
-msgstr "Mae holl drwyddedau Zulip ar gyfer y sefydliad hwn yn cael eu defnyddio ar hyn o bryd."
+msgstr ""
+"Mae holl drwyddedau Zulip ar gyfer y sefydliad hwn yn cael eu defnyddio ar "
+"hyn o bryd."
 
 #: corporate/lib/registration.py:104
 #, python-brace-format
 msgid ""
 "Your organization does not have enough unused Zulip licenses to invite "
 "{num_invites} users."
-msgstr "Nid oes gan eich sefydliad ddigon o drwyddedau Zulip nas defnyddiwyd i wahodd defnyddwyr {num_invites}."
+msgstr ""
+"Nid oes gan eich sefydliad ddigon o drwyddedau Zulip nas defnyddiwyd i "
+"wahodd defnyddwyr {num_invites}."
 
 #: corporate/lib/stripe.py:90
 msgid "You must invoice for at least {} users."
@@ -124,7 +154,9 @@ msgstr "Rhaid i chi anfonebu am o leiaf {} defnyddiwr."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "Ni ellir prosesu anfonebau â mwy na {} trwydded o'r dudalen hon. I gwblhau'r uwchraddiad, cysylltwch â {}."
+msgstr ""
+"Ni ellir prosesu anfonebau â mwy na {} trwydded o'r dudalen hon. I gwblhau'r"
+" uwchraddiad, cysylltwch â {}."
 
 #: corporate/lib/stripe.py:203
 #, python-brace-format
@@ -137,14 +169,16 @@ msgstr "Aeth rhywbeth o'i le. Ail-lwythwch y dudalen."
 
 #: corporate/lib/stripe.py:278
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Aeth rhywbeth o'i le. Arhoswch ychydig eiliadau a rhoi cynnig arall arni."
+msgstr ""
+"Aeth rhywbeth o'i le. Arhoswch ychydig eiliadau a rhoi cynnig arall arni."
 
 #: corporate/lib/stripe.py:992
 #, python-brace-format
 msgid ""
 "Your organization's request for sponsored hosting has been approved! "
 "{emoji}.\n"
-msgstr "Mae cais eich sefydliad am westeio noddedig wedi'i gymeradwyo! {emoji}\n"
+msgstr ""
+"Mae cais eich sefydliad am westeio noddedig wedi'i gymeradwyo! {emoji}\n"
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -164,7 +198,9 @@ msgstr "Dull talu anhysbys. Cysylltwch â {email}."
 msgid ""
 "Unable to update the plan. The plan has been expired and replaced with a new"
 " plan."
-msgstr "Methu diweddaru'r cynllun. Mae'r cynllun wedi dod i ben a rhoi cynllun newydd yn ei le."
+msgstr ""
+"Methu diweddaru'r cynllun. Mae'r cynllun wedi dod i ben a rhoi cynllun "
+"newydd yn ei le."
 
 #: corporate/views/billing_page.py:184
 msgid "Unable to update the plan. The plan has ended."
@@ -174,13 +210,16 @@ msgstr "Methu diweddaru'r cynllun. Mae'r cynllun wedi dod i ben."
 msgid ""
 "Unable to update licenses manually. Your plan is on automatic license "
 "management."
-msgstr "Methu diweddaru trwyddedau â llaw. Mae eich cynllun ar reoli trwydded yn awtomatig."
+msgstr ""
+"Methu diweddaru trwyddedau â llaw. Mae eich cynllun ar reoli trwydded yn "
+"awtomatig."
 
 #: corporate/views/billing_page.py:213
 #, python-brace-format
 msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
-msgstr "Mae eich cynllun eisoes ar drwyddedau {licenses} yn y cyfnod bilio cyfredol."
+msgstr ""
+"Mae eich cynllun eisoes ar drwyddedau {licenses} yn y cyfnod bilio cyfredol."
 
 #: corporate/views/billing_page.py:218
 msgid "You cannot decrease the licenses in the current billing period."
@@ -191,7 +230,9 @@ msgstr "Ni allwch ostwng y trwyddedau yn y cyfnod bilio cyfredol."
 msgid ""
 "Your plan is already scheduled to renew with {licenses_at_next_renewal} "
 "licenses."
-msgstr "Disgwylir i'ch cynllun adnewyddu eisoes gyda thrwyddedau {licenses_at_next_renewal}."
+msgstr ""
+"Disgwylir i'ch cynllun adnewyddu eisoes gyda thrwyddedau "
+"{licenses_at_next_renewal}."
 
 #: corporate/views/billing_page.py:249
 msgid "Nothing to change."
@@ -336,7 +377,9 @@ msgstr "Diweddariad diwethaf"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Mae diweddariad llawn o'r holl graffiau yn digwydd unwaith y dydd. Mae'r graff “negeseuon a anfonir dros amser” yn cael ei ddiweddaru unwaith yr awr."
+msgstr ""
+"Mae diweddariad llawn o'r holl graffiau yn digwydd unwaith y dydd. Mae'r "
+"graff “negeseuon a anfonir dros amser” yn cael ei ddiweddaru unwaith yr awr."
 
 #: templates/analytics/stats.html:129
 msgid "Analytics documentation"
@@ -353,7 +396,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nMae hyn yn cadarnhau bod y cyfeiriad e-bost ar gyfer eich cyfrif Zulip wedi newid\n o %(old_email_html_tag)s i %(new_email_html_tag)s"
+msgstr ""
+"\n"
+"Mae hyn yn cadarnhau bod y cyfeiriad e-bost ar gyfer eich cyfrif Zulip wedi newid\n"
+" o %(old_email_html_tag)s i %(new_email_html_tag)s"
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -366,7 +412,9 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\nBeth bynnag, saethwch linell atom yn %(support_email_html_tag)s a byddwn yn datrys hyn yn fuan."
+msgstr ""
+"\n"
+"Beth bynnag, saethwch linell atom yn %(support_email_html_tag)s a byddwn yn datrys hyn yn fuan."
 
 #: templates/confirmation/link_expired.html:10
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -384,7 +432,10 @@ msgstr "Whoops. Mae'r cyswllt cadarnhau weid'i gamffurfio."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "Sicrhewch eich bod wedi copïo'r ddolen yn gywir i'ch porwr. Os ydych chi'n dal i ddod ar draws y dudalen hon, mae'n debyg mai ein bai ni yw hynny. Mae'n ddrwg gennym."
+msgstr ""
+"Sicrhewch eich bod wedi copïo'r ddolen yn gywir i'ch porwr. Os ydych chi'n "
+"dal i ddod ar draws y dudalen hon, mae'n debyg mai ein bai ni yw hynny. "
+"Mae'n ddrwg gennym."
 
 #: templates/corporate/billing.html:20
 msgid "Billing"
@@ -495,7 +546,9 @@ msgstr "E-bost"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Rwy'n cytuno ir <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Telerau Gwasanaeth</a> ."
+msgstr ""
+"Rwy'n cytuno i'r <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Telerau Gwasanaeth</a> ."
 
 #: templates/zerver/accounts_accept_terms.html:57
 msgid "Accept"
@@ -534,7 +587,9 @@ msgstr "Gwiriwch eich e-bost fel y gallwn ddechrau."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Dal dim e-bost? Gallwn ei  <a href=\"#\" id=\"resend_email_link\">ail-gyflwyno</a> ."
+msgstr ""
+"Dal dim e-bost? Gallwn ei  <a href=\"#\" id=\"resend_email_link\">ail-"
+"gyflwyno</a> ."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -548,7 +603,9 @@ msgstr "Llwytho ..."
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a "
 "id=\"reload-lnk\">reload</a> the page."
-msgstr "Os na fydd y neges hon yn diflannu, arhoswch ychydig eiliadau ac <a id=\"reload-lnk\">ail-lwytho'r</a> dudalen."
+msgstr ""
+"Os na fydd y neges hon yn diflannu, arhoswch ychydig eiliadau ac <a "
+"id=\"reload-lnk\">ail-lwytho'r</a> dudalen."
 
 #: templates/zerver/app/index.html:98
 msgid "Unable to connect to Zulip."
@@ -586,7 +643,11 @@ msgid ""
 "                        organization first. Please use EmailAuthBackend to create\n"
 "                        your organization and then try again.\n"
 "                        "
-msgstr "\nRydych chi'n ceisio mewngofnodi gan ddefnyddio LDAP heb greu \nsefydliad yn gyntaf. Defnyddiwch EmailAuthBackend i greu \neich sefydliad ac yna ceisiwch eto."
+msgstr ""
+"\n"
+"Rydych chi'n ceisio mewngofnodi gan ddefnyddio LDAP heb greu \n"
+"sefydliad yn gyntaf. Defnyddiwch EmailAuthBackend i greu \n"
+"eich sefydliad ac yna ceisiwch eto."
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
@@ -598,7 +659,9 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\nNi ddarganfuwyd cyfrif ar gyfer %(email)s."
+msgstr ""
+"\n"
+"Ni ddarganfuwyd cyfrif ar gyfer %(email)s."
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -638,7 +701,9 @@ msgid ""
 "\n"
 "                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
 "                    "
-msgstr "\nMae'r sefydliad rydych chi'n ceisio ymuno ag, %(deactivated_domain_name)s, wedi'i ddadactifadu."
+msgstr ""
+"\n"
+"Mae'r sefydliad rydych chi'n ceisio ymuno ag, %(deactivated_domain_name)s, wedi'i ddadactifadu."
 
 #: templates/zerver/deactivated.html:24
 #, python-format
@@ -646,7 +711,9 @@ msgid ""
 "\n"
 "                        It has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
 "                        "
-msgstr "\nMae wedi symud i <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a> ."
+msgstr ""
+"\n"
+"Mae wedi symud i <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a> ."
 
 #: templates/zerver/deactivated.html:28
 #, python-format
@@ -655,7 +722,9 @@ msgid ""
 "                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
 "                    this group.\n"
 "                    "
-msgstr "\n                 Cysylltwch â  <a href=\"mailto:%(support_email)s\">%(support_email)s</a>i ail-greu'r grŵp hwn"
+msgstr ""
+"\n"
+"                 Cysylltwch â  <a href=\"mailto:%(support_email)s\">%(support_email)s</a>i ail-greu'r grŵp hwn"
 
 #: templates/zerver/desktop_login.html:7
 msgid "Finish desktop login"
@@ -665,7 +734,9 @@ msgstr "Gorffen mewngofnodi bwrdd gwaith"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "Defnyddiwch eich porwr gwe i orffen mewngofnodi, yna dewch yn ôl yma i gludo'ch tocyn mewngofnodi."
+msgstr ""
+"Defnyddiwch eich porwr gwe i orffen mewngofnodi, yna dewch yn ôl yma i "
+"gludo'ch tocyn mewngofnodi."
 
 #: templates/zerver/desktop_login.html:14
 msgid "Paste token here"
@@ -686,7 +757,9 @@ msgstr "Derbyniwyd Tocyn. Mewngofnodi i chi…"
 #: templates/zerver/desktop_redirect.html:8
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "Copïwch y tocyn mewngofnodi hwn a'i ddychwelyd i'ch app Zulip i orffen mewngofnodi:"
+msgstr ""
+"Copïwch y tocyn mewngofnodi hwn a'i ddychwelyd i'ch app Zulip i orffen "
+"mewngofnodi:"
 
 #: templates/zerver/desktop_redirect.html:13
 msgid "Copy"
@@ -757,7 +830,10 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "Cawsom gais i newid y cyfeiriad e-bost ar gyfer y cyfrif Zulip ar %(realm_uri)s o %(old_email)s i %(new_email)s. I gadarnhau'r newid hwn, cliciwch isod:"
+msgstr ""
+"Cawsom gais i newid y cyfeiriad e-bost ar gyfer y cyfrif Zulip ar "
+"%(realm_uri)s o %(old_email)s i %(new_email)s. I gadarnhau'r newid hwn, "
+"cliciwch isod:"
 
 #: templates/zerver/emails/confirm_new_email.source.html:11
 msgid "Confirm email change"
@@ -768,7 +844,9 @@ msgstr "Cadarnhau newid e-bost"
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "%(support_email)s."
-msgstr "Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar %(support_email)s."
+msgstr ""
+"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar "
+"%(support_email)s."
 
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 msgid "Verify your new email address"
@@ -779,7 +857,9 @@ msgstr "Gwiriwch eich cyfeiriad e-bost newydd"
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith yn<%(support_email)s> ."
+msgstr ""
+"Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith "
+"yn<%(support_email)s> ."
 
 #: templates/zerver/emails/confirm_registration.source.html:10
 #: templates/zerver/emails/confirm_registration.txt:2
@@ -816,7 +896,9 @@ msgstr "Gorffen cofrestru"
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble, have any "
 "feedback, or just want to chat!"
-msgstr "Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
+msgstr ""
+"Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i "
+"drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
 
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
@@ -832,7 +914,9 @@ msgstr "Gweithredwch eich cyfrif Zulip"
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble,have any "
 "feedback, or just want to chat!"
-msgstr "Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
+msgstr ""
+"Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i "
+"drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 #: templates/zerver/emails/digest.source.html:39
@@ -865,7 +949,8 @@ msgstr "Treuliad Zulip ar gyfer %(realm_name)s"
 #: templates/zerver/emails/digest.txt:12
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
-msgstr "Cliciwch yma i fewngofnodi i Zulip a dal i fyny: %(organization_uri)s."
+msgstr ""
+"Cliciwch yma i fewngofnodi i Zulip a dal i fyny: %(organization_uri)s."
 
 #: templates/zerver/emails/digest.txt:15
 #: templates/zerver/emails/followup_day2.txt:19
@@ -891,14 +976,19 @@ msgstr "Diolch am eich cais!"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by <a href=\"%(external_host)s\">%(external_host)s</a>:"
-msgstr "Mae gan eich cyfeiriad e-bost %(email)s gyfrifon gyda'r sefydliadau Zulip canlynol a gynhelir gan <a href=\"%(external_host)s\">%(external_host)s</a> :"
+msgstr ""
+"Mae gan eich cyfeiriad e-bost %(email)s gyfrifon gyda'r sefydliadau Zulip "
+"canlynol a gynhelir gan <a href=\"%(external_host)s\">%(external_host)s</a> "
+":"
 
 #: templates/zerver/emails/find_team.source.html:18
 #: templates/zerver/emails/find_team.txt:10
 msgid ""
 "If you have trouble logging in, please contact Zulip support by replying to "
 "this email."
-msgstr "Os ydych chi'n cael trafferth mewngofnodi, cysylltwch â chefnogaeth Zulip trwy ateb yr e-bost hwn."
+msgstr ""
+"Os ydych chi'n cael trafferth mewngofnodi, cysylltwch â chefnogaeth Zulip "
+"trwy ateb yr e-bost hwn."
 
 #: templates/zerver/emails/find_team.source.html:20
 #: templates/zerver/emails/find_team.txt:13
@@ -914,7 +1004,9 @@ msgstr "Eich cyfrifon Zulip"
 msgid ""
 "Your email address %(email)s has accounts with the following Zulip "
 "organizations hosted by %(external_host)s:"
-msgstr "Mae gan eich cyfeiriad e-bost %(email)s gyfrifon gyda'r sefydliadau Zulip canlynol a gynhelir gan %(external_host)s:"
+msgstr ""
+"Mae gan eich cyfeiriad e-bost %(email)s gyfrifon gyda'r sefydliadau Zulip "
+"canlynol a gynhelir gan %(external_host)s:"
 
 #: templates/zerver/emails/followup_day1.source.html:8
 #: templates/zerver/emails/followup_day1.txt:1
@@ -926,7 +1018,10 @@ msgid ""
 "You've created a demo Zulip organization. Note that this organization will "
 "be automatically deleted in 30 days. Learn more about demo organizations <a "
 "href=\"https://zulip.com/help/demo-organizations\">here</a>!"
-msgstr "Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo <a href=\"https://zulip.com/help/demo-organizations\">yma</a> !"
+msgstr ""
+"Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn "
+"cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo "
+"<a href=\"https://zulip.com/help/demo-organizations\">yma</a> !"
 
 #: templates/zerver/emails/followup_day1.source.html:15
 #, python-format
@@ -971,7 +1066,9 @@ msgstr "E-bost: %(email)s"
 msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
 "and desktop</a> apps)"
-msgstr "(bydd angen y rhain arnoch chi i fewngofnodi i'r apiau <a href=\"%(apps_page_link)s\">symudol a bwrdd gwaith</a> )"
+msgstr ""
+"(bydd angen y rhain arnoch chi i fewngofnodi i'r apiau <a "
+"href=\"%(apps_page_link)s\">symudol a bwrdd gwaith</a> )"
 
 #: templates/zerver/emails/followup_day1.source.html:41
 #, python-format
@@ -980,7 +1077,11 @@ msgid ""
 "become a Zulip pro with a few <a "
 "href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
 "href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "Edrychwch ar ein <a href=\"%(getting_started_link)s\">canllaw edmygwyr</a> , dewch yn pro Zulip gydag ychydig o <a href=\"%(keyboard_shortcuts_link)s\">lwybrau byr bysellfwrdd</a> , neu <a href=\"%(realm_uri)s\">blymiwch i mewn</a> !"
+msgstr ""
+"Edrychwch ar ein <a href=\"%(getting_started_link)s\">canllaw edmygwyr</a> ,"
+" dewch yn pro Zulip gydag ychydig o <a "
+"href=\"%(keyboard_shortcuts_link)s\">lwybrau byr bysellfwrdd</a> , neu <a "
+"href=\"%(realm_uri)s\">blymiwch i mewn</a> !"
 
 #: templates/zerver/emails/followup_day1.source.html:43
 #, python-format
@@ -988,7 +1089,10 @@ msgid ""
 "<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
 "pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
 "shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\">Dysgu mwy</a> am Zulip, dod yn pro gydag ychydig o <a href=\"%(keyboard_shortcuts_link)s\">lwybrau byr bysellfwrdd</a> , neu <a href=\"%(realm_uri)s\">blymio i mewn</a> !"
+msgstr ""
+"<a href=\"%(getting_started_link)s\">Dysgu mwy</a> am Zulip, dod yn pro "
+"gydag ychydig o <a href=\"%(keyboard_shortcuts_link)s\">lwybrau byr "
+"bysellfwrdd</a> , neu <a href=\"%(realm_uri)s\">blymio i mewn</a> !"
 
 #: templates/zerver/emails/followup_day1.source.html:48
 #: templates/zerver/emails/followup_day1.txt:36
@@ -1025,7 +1129,10 @@ msgid ""
 "You've created a demo Zulip organization. Note that this organization will "
 "be automatically deleted in 30 days. Learn more about demo organizations "
 "here: https://zulip.com/help/demo-organizations"
-msgstr "Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo yma: https://zulip.com/help/demo-organizations"
+msgstr ""
+"Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn "
+"cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo "
+"yma: https://zulip.com/help/demo-organizations"
 
 #: templates/zerver/emails/followup_day1.txt:7
 #: templates/zerver/emails/followup_day1.txt:9
@@ -1043,7 +1150,9 @@ msgstr "Rydych chi wedi ymuno â sefydliad Zulip %(realm_name)s."
 msgid ""
 "(you'll need these to sign in to the mobile and desktop apps "
 "(%(apps_page_link)s))"
-msgstr "(bydd angen y rhain arnoch i fewngofnodi i'r apiau symudol a bwrdd gwaith (%(apps_page_link)s))"
+msgstr ""
+"(bydd angen y rhain arnoch i fewngofnodi i'r apiau symudol a bwrdd gwaith "
+"(%(apps_page_link)s))"
 
 #: templates/zerver/emails/followup_day1.txt:30
 #, python-format
@@ -1051,7 +1160,10 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr "Edrychwch ar ein canllaw (%(getting_started_link)s) am edmygwyr, dewch yn pro Zulip gydag ychydig o lwybrau byr bysellfwrdd (%(keyboard_shortcuts_link)s), neu blymiwch i mewn i %(realm_uri)s!"
+msgstr ""
+"Edrychwch ar ein canllaw (%(getting_started_link)s) am edmygwyr, dewch yn "
+"pro Zulip gydag ychydig o lwybrau byr bysellfwrdd "
+"(%(keyboard_shortcuts_link)s), neu blymiwch i mewn i %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:32
 #, python-format
@@ -1059,7 +1171,10 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr "Dysgwch fwy (%(getting_started_link)s) am Zulip, dewch yn pro gydag ychydig o lwybrau byr bysellfwrdd (%(keyboard_shortcuts_link)s), neu blymiwch i mewn i %(realm_uri)s!"
+msgstr ""
+"Dysgwch fwy (%(getting_started_link)s) am Zulip, dewch yn pro gydag ychydig "
+"o lwybrau byr bysellfwrdd (%(keyboard_shortcuts_link)s), neu blymiwch i mewn"
+" i %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:39
 msgid ""
@@ -1078,7 +1193,10 @@ msgstr "Hei,"
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr "Roeddwn i eisiau rhannu un peth olaf gyda chi: ychydig o awgrymiadau am bynciau, gan fod meistroli pynciau yn rhan allweddol o fod yn ddefnyddiwr pŵer Zulip."
+msgstr ""
+"Roeddwn i eisiau rhannu un peth olaf gyda chi: ychydig o awgrymiadau am "
+"bynciau, gan fod meistroli pynciau yn rhan allweddol o fod yn ddefnyddiwr "
+"pŵer Zulip."
 
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
@@ -1089,7 +1207,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em&mdash;you can always edit the message later!"
-msgstr "Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. Peidiwch â gor-feddwl;  gallwch chi bob amser olygu'r neges yn nes ymlaen!"
+msgstr ""
+"Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw "
+"eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. "
+"Peidiwch â gor-feddwl;  gallwch chi bob amser olygu'r neges yn nes ymlaen!"
 
 #: templates/zerver/emails/followup_day2.source.html:17
 #: templates/zerver/emails/followup_day2.txt:7
@@ -1101,7 +1222,9 @@ msgstr "Pynciau da: dylunio, Bug 345, byrgyrs acme"
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr "Heb ei argymell: \"Beth yw barn pobl am y ffug ddylunio newydd hwn?\", \"Rwy'n edrych ar Bug 345\", \"A yw Acme Burgers ar agor i ginio?\""
+msgstr ""
+"Heb ei argymell: \"Beth yw barn pobl am y ffug ddylunio newydd hwn?\", "
+"\"Rwy'n edrych ar Bug 345\", \"A yw Acme Burgers ar agor i ginio?\""
 
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
@@ -1113,7 +1236,12 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac mae'n caniatáu ichi ddal i fyny yn fwy effeithlon yr hyn sydd wedi digwydd tra'ch bod chi i ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai nad ydyn nhw!"
+msgstr ""
+"Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn "
+"gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac mae'n caniatáu "
+"ichi ddal i fyny yn fwy effeithlon yr hyn sydd wedi digwydd tra'ch bod chi i"
+" ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai "
+"nad ydyn nhw!"
 
 #: templates/zerver/emails/followup_day2.source.html:25
 msgid "Take it for a spin now."
@@ -1139,7 +1267,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
-msgstr "Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. Peidiwch â gor-feddwl - gallwch chi bob amser olygu'r neges yn nes ymlaen!"
+msgstr ""
+"Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw "
+"eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. "
+"Peidiwch â gor-feddwl - gallwch chi bob amser olygu'r neges yn nes ymlaen!"
 
 #: templates/zerver/emails/followup_day2.txt:11
 msgid ""
@@ -1147,7 +1278,12 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac ma'n gadael i chi ddal i fyny yn fwy effeithlon ar yr hyn sydd wedi digwydd tra'ch bod chi i ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai nad ydyn nhw!"
+msgstr ""
+"Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn "
+"gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac ma'n gadael i chi "
+"ddal i fyny yn fwy effeithlon ar yr hyn sydd wedi digwydd tra'ch bod chi i "
+"ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai "
+"nad ydyn nhw!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
@@ -1167,7 +1303,9 @@ msgstr "Helo,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr "mae %(referrer_name)s eisiau ichi ymuno â nhw ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer cynhyrchiant."
+msgstr ""
+"mae %(referrer_name)s eisiau ichi ymuno â nhw ar Zulip - yr offeryn "
+"cyfathrebu tîm sydd wedi'i gynllunio ar gyfer cynhyrchiant."
 
 #: templates/zerver/emails/invitation.source.html:15
 #: templates/zerver/emails/invitation_reminder.source.html:13
@@ -1177,14 +1315,19 @@ msgstr "I ddechrau, cliciwch y botwm isod."
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s has invited you to join %(referrer_realm_name)s"
-msgstr "Mae %(referrer_full_name)s wedi eich gwahodd i ymuno ag %(referrer_realm_name)s"
+msgstr ""
+"Mae %(referrer_full_name)s wedi eich gwahodd i ymuno ag "
+"%(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "mae %(referrer_full_name)s (%(referrer_email)s) eisiau ichi ymuno â nhw ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer cynhyrchiant."
+msgstr ""
+"mae %(referrer_full_name)s (%(referrer_email)s) eisiau ichi ymuno â nhw ar "
+"Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer "
+"cynhyrchiant."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -1201,12 +1344,16 @@ msgstr "Helo eto,"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip &mdash; the team communication tool designed for productivity."
-msgstr "Mae hwn yn atgoffa cyfeillgar bod %(referrer_name)s eisiau ichi ymuno â nhw ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer cynhyrchiant."
+msgstr ""
+"Mae hwn yn atgoffa cyfeillgar bod %(referrer_name)s eisiau ichi ymuno â nhw "
+"ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer "
+"cynhyrchiant."
 
 #: templates/zerver/emails/invitation_reminder.source.html:18
 #: templates/zerver/emails/invitation_reminder.txt:8
 msgid "This is the last reminder you'll receive for this invitation."
-msgstr "Dyma'r nodyn atgoffa olaf y byddwch chi'n ei dderbyn am y gwahoddiad hwn."
+msgstr ""
+"Dyma'r nodyn atgoffa olaf y byddwch chi'n ei dderbyn am y gwahoddiad hwn."
 
 #: templates/zerver/emails/invitation_reminder.source.html:22
 #, python-format
@@ -1215,12 +1362,16 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr "\nDaw'r gwahoddiad hwn i ben mewn dau ddiwrnod. Os daw'r gwahoddiad i ben, \nbydd angen i chi ofyn i %(referrer_name)s am un arall."
+msgstr ""
+"\n"
+"Daw'r gwahoddiad hwn i ben mewn dau ddiwrnod. Os daw'r gwahoddiad i ben, \n"
+"bydd angen i chi ofyn i %(referrer_name)s am un arall."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
 msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
-msgstr "Nodyn i'ch atgoffa: Ymunwch â %(referrer_name)s yn %(referrer_realm_name)s"
+msgstr ""
+"Nodyn i'ch atgoffa: Ymunwch â %(referrer_name)s yn %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
@@ -1228,14 +1379,19 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "Mae hwn yn atgoffa cyfeillgar bod %(referrer_name)s (%(referrer_email)s) eisiau ichi ymuno â nhw ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i gynllunio ar gyfer cynhyrchiant."
+msgstr ""
+"Mae hwn yn atgoffa cyfeillgar bod %(referrer_name)s (%(referrer_email)s) "
+"eisiau ichi ymuno â nhw ar Zulip - yr offeryn cyfathrebu tîm sydd wedi'i "
+"gynllunio ar gyfer cynhyrchiant."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "Daw'r gwahoddiad hwn i ben mewn dau ddiwrnod. Os daw'r gwahoddiad i ben, bydd angen i chi ofyn i %(referrer_name)s am un arall."
+msgstr ""
+"Daw'r gwahoddiad hwn i ben mewn dau ddiwrnod. Os daw'r gwahoddiad i ben, "
+"bydd angen i chi ofyn i %(referrer_name)s am un arall."
 
 #: templates/zerver/emails/missed_message.source.html:17
 #, python-format
@@ -1243,7 +1399,10 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gan eich sefydliad <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">gynnwys neges anabl yn ymddangos mewn hysbysiadau e-bost</a> ."
+msgstr ""
+"Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gan eich sefydliad"
+" <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">gynnwys neges"
+" anabl yn ymddangos mewn hysbysiadau e-bost</a> ."
 
 #: templates/zerver/emails/missed_message.source.html:19
 #, python-format
@@ -1251,7 +1410,11 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych analluogi<a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">gynnwys neges yn ymddangos mewn hysbysiadau e-bost</a> ."
+msgstr ""
+"Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych "
+"analluogi<a class=\"content_disabled_help_link\" "
+"href=\"%(alert_notif_url)s\">gynnwys neges yn ymddangos mewn hysbysiadau "
+"e-bost</a> ."
 
 #: templates/zerver/emails/missed_message.source.html:30
 #: templates/zerver/emails/missed_message.txt:26
@@ -1259,41 +1422,52 @@ msgstr "Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych anallu
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned "
 "in %(realm_name)s."
-msgstr "Rydych chi'n derbyn hwn oherwydd soniwyd am @ %(mentioned_user_group_name)s yn %(realm_name)s."
+msgstr ""
+"Rydych chi'n derbyn hwn oherwydd soniwyd am @ %(mentioned_user_group_name)s "
+"yn %(realm_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:32
 #: templates/zerver/emails/missed_message.txt:28
 #, python-format
 msgid "You are receiving this because you were mentioned in %(realm_name)s."
-msgstr "Rydych chi'n derbyn hwn oherwydd cawsoch eich crybwyll yn %(realm_name)s."
+msgstr ""
+"Rydych chi'n derbyn hwn oherwydd cawsoch eich crybwyll yn %(realm_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:35
 #: templates/zerver/emails/missed_message.txt:31
 msgid ""
 "You are receiving this because you have email notifications enabled for this"
 " stream."
-msgstr "Rydych chi'n derbyn hwn oherwydd bod gennych chi hysbysiadau e-bost wedi'u galluogi ar gyfer y ffrwd hon."
+msgstr ""
+"Rydych chi'n derbyn hwn oherwydd bod gennych chi hysbysiadau e-bost wedi'u "
+"galluogi ar gyfer y ffrwd hon."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "Ymateb i'r e-bost hwn yn uniongyrchol, ei <a href=\"%(narrow_url)s\">weld yn Zulip</a> , neu <a href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
+msgstr ""
+"Ymateb i'r e-bost hwn yn uniongyrchol, ei <a href=\"%(narrow_url)s\">weld yn"
+" Zulip</a> , neu <a href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Gweld neu ateb yn Zulip</a> , neu <a href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Gweld neu ateb yn Zulip</a> , neu <a "
+"href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
 
 #: templates/zerver/emails/missed_message.source.html:42
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Ymateb yn Zulip</a> , neu <a href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Ymateb yn Zulip</a> , neu <a "
+"href=\"%(notif_url)s\">reoli dewisiadau e-bost</a> ."
 
 #: templates/zerver/emails/missed_message.source.html:44
 #, python-format
@@ -1301,12 +1475,14 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\nPeidiwch ag ymateb i'r e-bost hwn. Nid yw'r gweinydd Zulip hwn wedi'i ffurfweddu i dderbyn e-byst sy'n dod i mewn ( <a href=\"%(url)s\">help</a> )."
+msgstr ""
+"\n"
+"Peidiwch ag ymateb i'r e-bost hwn. Nid yw'r gweinydd Zulip hwn wedi'i ffurfweddu i dderbyn e-byst sy'n dod i mewn ( <a href=\"%(url)s\">help</a> )."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
 msgid "Group PMs with %(huddle_display_name)s"
-msgstr "Grŵpio NPau gydag %(huddle_display_name)s"
+msgstr "Grŵpio NP gydag %(huddle_display_name)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
@@ -1323,7 +1499,10 @@ msgid ""
 "\n"
 "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\nNid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod eich sefydliad wedi analluogi gynnwys neges yn ymddangos mewn hysbysiadau e-bost. \nGweler %(hide_content_url)s i gael mwy o fanylion.\n"
+msgstr ""
+"\n"
+"Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod eich sefydliad wedi analluogi gynnwys neges yn ymddangos mewn hysbysiadau e-bost. \n"
+"Gweler %(hide_content_url)s i gael mwy o fanylion.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
@@ -1331,11 +1510,14 @@ msgid ""
 "\n"
 "This email does not include message content because you have disabled message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\nNid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych analluogi gynnwys neges yn ymddangos mewn hysbysiadau e-bost. Gweler %(alert_notif_url)s i gael mwy o fanylion.\n"
+msgstr ""
+"\n"
+"Nid yw'r e-bost hwn yn cynnwys cynnwys neges oherwydd bod gennych analluogi gynnwys neges yn ymddangos mewn hysbysiadau e-bost. Gweler %(alert_notif_url)s i gael mwy o fanylion.\n"
 
 #: templates/zerver/emails/missed_message.txt:35
 msgid "Reply to this email directly, or view it in Zulip:"
-msgstr "Ymatebwch i'r e-bost hwn yn uniongyrchol, neu edrychwch arno yn Zulip:"
+msgstr ""
+"Ymatebwch i'r e-bost hwn yn uniongyrchol, neu edrychwch arno yn Zulip:"
 
 #: templates/zerver/emails/missed_message.txt:39
 msgid "View or reply in Zulip:"
@@ -1350,7 +1532,9 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\nPeidiwch ag ymateb i'r e-bost hwn. Nid yw'r gweinydd Zulip hwn wedi'i ffurfweddu i dderbyn e-byst sy'n dod i mewn. Help:\n"
+msgstr ""
+"\n"
+"Peidiwch ag ymateb i'r e-bost hwn. Nid yw'r gweinydd Zulip hwn wedi'i ffurfweddu i dderbyn e-byst sy'n dod i mewn. Help:\n"
 
 #: templates/zerver/emails/missed_message.txt:54
 msgid "Manage email preferences: "
@@ -1362,7 +1546,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
-msgstr "Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i %(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar %(support_email)s."
+msgstr ""
+"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i "
+"%(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith ar"
+" %(support_email)s."
 
 #: templates/zerver/emails/notify_change_in_email.source.html:13
 #: templates/zerver/emails/notify_change_in_email.txt:6
@@ -1380,19 +1567,24 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr "Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i %(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith yn<%(support_email)s> ."
+msgstr ""
+"Newidiwyd yr e-bost sy'n gysylltiedig â'ch cyfrif Zulip yn ddiweddar i "
+"%(new_email)s. Os na ofynasoch am y newid hwn, cysylltwch â ni ar unwaith "
+"yn<%(support_email)s> ."
 
 #: templates/zerver/emails/notify_new_login.source.html:4
 #, python-format
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Sefydliad: %(organization_url)s Amser: %(login_time)s E-bost: %(user_email)s"
+msgstr ""
+"Sefydliad: %(organization_url)s Amser: %(login_time)s E-bost: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
 msgid "We noticed a recent login for the following Zulip account."
-msgstr "Gwnaethom sylwi ar fewngofnodi diweddar ar gyfer y cyfrif Zulip canlynol."
+msgstr ""
+"Gwnaethom sylwi ar fewngofnodi diweddar ar gyfer y cyfrif Zulip canlynol."
 
 #: templates/zerver/emails/notify_new_login.source.html:16
 #, python-format
@@ -1426,7 +1618,9 @@ msgstr "Cyfeiriad IP: %(device_ip)s"
 #: templates/zerver/emails/notify_new_login.source.html:33
 #: templates/zerver/emails/notify_new_login.txt:14
 msgid "If this was you, great! There's nothing else you need to do."
-msgstr "Os mai hwn oeddech chi, gwych! Nid oes unrhyw beth arall y mae angen i chi ei wneud."
+msgstr ""
+"Os mai hwn oeddech chi, gwych! Nid oes unrhyw beth arall y mae angen i chi "
+"ei wneud."
 
 #: templates/zerver/emails/notify_new_login.source.html:36
 #, python-format
@@ -1434,7 +1628,10 @@ msgid ""
 "If you do not recognize this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
-msgstr "Os nad ydych yn cydnabod y mewngofnodi hwn, neu'n credu y gallai eich cyfrif fod wedi'i gyfaddawdu, <a href=\"%(reset_link)s\">ailosodwch eich cyfrinair</a> neu cysylltwch â ni ar unwaith yn %(support_email)s."
+msgstr ""
+"Os nad ydych yn cydnabod y mewngofnodi hwn, neu'n credu y gallai eich cyfrif"
+" fod wedi'i gyfaddawdu, <a href=\"%(reset_link)s\">ailosodwch eich "
+"cyfrinair</a> neu cysylltwch â ni ar unwaith yn %(support_email)s."
 
 #: templates/zerver/emails/notify_new_login.source.html:41
 #: templates/zerver/emails/notify_new_login.txt:21
@@ -1460,7 +1657,9 @@ msgstr "Sefydliad: %(organization_url)s"
 msgid ""
 "\n"
 "If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
-msgstr "\nOs nad ydych yn cydnabod y mewngofnodi hwn, neu'n credu y gallai eich cyfrif fod wedi'i gyfaddawdu, ailosodwch eich cyfrinair yn %(reset_link)s neu cysylltwch â ni ar unwaith yn %(support_email)s."
+msgstr ""
+"\n"
+"Os nad ydych yn cydnabod y mewngofnodi hwn, neu'n credu y gallai eich cyfrif fod wedi'i gyfaddawdu, ailosodwch eich cyfrinair yn %(reset_link)s neu cysylltwch â ni ar unwaith yn %(support_email)s."
 
 #: templates/zerver/emails/password_reset.source.html:9
 #: templates/zerver/emails/password_reset.txt:1
@@ -1468,7 +1667,9 @@ msgstr "\nOs nad ydych yn cydnabod y mewngofnodi hwn, neu'n credu y gallai eich 
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr "Gofynnodd rhywun (chi o bosibl) am gyfrinair newydd ar gyfer y cyfrif Zulip %(email)s ar %(realm_uri)s."
+msgstr ""
+"Gofynnodd rhywun (chi o bosibl) am gyfrinair newydd ar gyfer y cyfrif Zulip "
+"%(email)s ar %(realm_uri)s."
 
 #: templates/zerver/emails/password_reset.source.html:13
 msgid "Click the button below to reset your password."
@@ -1484,7 +1685,10 @@ msgid ""
 "You previously had an account on %(organization_url)s, but it has been "
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
-msgstr "Yn flaenorol, roedd gennych gyfrif ar %(organization_url)s, ond mae wedi cael ei ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i <a href=\"%(help_link)s\">ail-greu'ch cyfrif</a> ."
+msgstr ""
+"Yn flaenorol, roedd gennych gyfrif ar %(organization_url)s, ond mae wedi "
+"cael ei ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i <a "
+"href=\"%(help_link)s\">ail-greu'ch cyfrif</a> ."
 
 #: templates/zerver/emails/password_reset.source.html:21
 #: templates/zerver/emails/password_reset.txt:11
@@ -1501,13 +1705,17 @@ msgstr "Mae gennych gyfrifon gweithredol yn y sefydliad (au) canlynol."
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "Gallwch geisio mewngofnodi neu ailosod eich cyfrinair yn y sefydliad(au) uchod."
+msgstr ""
+"Gallwch geisio mewngofnodi neu ailosod eich cyfrinair yn y sefydliad(au) "
+"uchod."
 
 #: templates/zerver/emails/password_reset.source.html:38
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Os nad ydych yn cydnabod y gweithgaredd hwn, gallwch anwybyddu'r e-bost hwn yn ddiogel."
+msgstr ""
+"Os nad ydych yn cydnabod y gweithgaredd hwn, gallwch anwybyddu'r e-bost hwn "
+"yn ddiogel."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -1523,7 +1731,9 @@ msgstr "Cliciwch y ddolen isod i ailosod eich cyfrinair."
 msgid ""
 "You previously had an account on %(realm_uri)s, but it has been deactivated."
 " You can contact an organization administrator to reactivate your account."
-msgstr "Yn flaenorol, roedd gennych gyfrif ar %(realm_uri)s, ond mae wedi cael ei ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i ail-greu'ch cyfrif."
+msgstr ""
+"Yn flaenorol, roedd gennych gyfrif ar %(realm_uri)s, ond mae wedi cael ei "
+"ddadactifadu. Gallwch gysylltu â gweinyddwr sefydliad i ail-greu'ch cyfrif."
 
 #: templates/zerver/emails/realm_auto_downgraded.source.html:8
 #, python-format
@@ -1532,7 +1742,10 @@ msgid ""
 "    Your organization, %(organization_name_with_link)s, has been downgraded to the Zulip Cloud\n"
 "    Free plan because of unpaid invoices. The unpaid invoices have been voided.\n"
 "    "
-msgstr "\nMae eich sefydliad, %(organization_name_with_link)s, wedi cael ei israddio i gynllun Zulip Cloud\nCynllun rhad oherwydd anfonebau di-dâl. Mae'r anfonebau di-dâl wedi'u gwagio."
+msgstr ""
+"\n"
+"Mae eich sefydliad, %(organization_name_with_link)s, wedi cael ei israddio i gynllun Zulip Cloud\n"
+"Cynllun rhad oherwydd anfonebau di-dâl. Mae'r anfonebau di-dâl wedi'u gwagio."
 
 #: templates/zerver/emails/realm_auto_downgraded.source.html:15
 #, python-format
@@ -1540,7 +1753,9 @@ msgid ""
 "\n"
 "    To continue on the Zulip Cloud Standard plan, please upgrade again by going to %(upgrade_url)s.\n"
 "    "
-msgstr "\nI barhau ar gynllun Zulip Cloud Standard, uwchraddiwch eto trwy fynd i %(upgrade_url)s."
+msgstr ""
+"\n"
+"I barhau ar gynllun Zulip Cloud Standard, uwchraddiwch eto trwy fynd i %(upgrade_url)s."
 
 #: templates/zerver/emails/realm_auto_downgraded.source.html:22
 #, python-format
@@ -1548,7 +1763,9 @@ msgid ""
 "\n"
 "    If you think this was a mistake or need more details, please reach out to us at %(support_email)s.\n"
 "    "
-msgstr "\nOs ydych chi'n credu mai camgymeriad oedd hwn neu angen mwy o fanylion, estynwch atom ni ar %(support_email)s."
+msgstr ""
+"\n"
+"Os ydych chi'n credu mai camgymeriad oedd hwn neu angen mwy o fanylion, estynwch atom ni ar %(support_email)s."
 
 #: templates/zerver/emails/realm_reactivation.source.html:8
 #: templates/zerver/emails/realm_reactivation.txt:1
@@ -1562,7 +1779,9 @@ msgstr "Annwyl gyn-weinyddwyr %(realm_name)s,"
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr "Gofynnodd un o'ch gweinyddwyr am ad-drefnu'r sefydliad Zulip a weithredwyd yn flaenorol a gynhaliwyd yn %(realm_uri)s."
+msgstr ""
+"Gofynnodd un o'ch gweinyddwyr am ad-drefnu'r sefydliad Zulip a weithredwyd "
+"yn flaenorol a gynhaliwyd yn %(realm_uri)s."
 
 #: templates/zerver/emails/realm_reactivation.source.html:13
 msgid "Click the button below to reactivate your organization."
@@ -1577,7 +1796,9 @@ msgstr "Ailgychwyn sefydliad"
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr "Os oedd y cais mewn camgymeriad, ni allwch gymryd unrhyw gamau a bydd y ddolen hon yn dod i ben mewn 24 awr."
+msgstr ""
+"Os oedd y cais mewn camgymeriad, ni allwch gymryd unrhyw gamau a bydd y "
+"ddolen hon yn dod i ben mewn 24 awr."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -1589,7 +1810,7 @@ msgstr "Cliciwch y ddolen isod i ail-greu'ch sefydliad."
 
 #: templates/zerver/find_account.html:8
 msgid "Find your Zulip accounts"
-msgstr "Dewch o hyd i&#39;ch cyfrifon Zulip"
+msgstr "Dewch o hyd i'ch cyfrifon Zulip"
 
 #: templates/zerver/find_account.html:41
 msgid "Email addresses"
@@ -1783,10 +2004,6 @@ msgstr "Hanes"
 msgid "Jobs"
 msgstr "Swyddi"
 
-#: templates/zerver/footer.html:146
-msgid "Website attributions"
-msgstr ""
-
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr "Noddwr Zulip"
@@ -1849,7 +2066,7 @@ msgstr "Y pwnc arlwyo nos Fawrth yn Zulip - blwch cyfansoddi"
 
 #: templates/zerver/hello.html:116 templates/zerver/hello.html:118
 msgid "The Tuesday night catering topic in Slack"
-msgstr "Pwnc arlwyo nos Fawrth yn Slack"
+msgstr "Pwnc arlwyo nos Fawrth yn Slac"
 
 #: templates/zerver/hello.html:127 templates/zerver/hello.html:550
 msgid "See plans and pricing"
@@ -1905,7 +2122,10 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr "\nRydych chi'n defnyddio hen fersiwn o'r app bwrdd gwaith Zulip\n nad yw'n cael ei gefnogi pellach."
+msgstr ""
+"\n"
+"Rydych chi'n defnyddio hen fersiwn o'r app bwrdd gwaith Zulip\n"
+" nad yw'n cael ei gefnogi pellach."
 
 #: templates/zerver/insecure_desktop_app.html:21
 msgid ""
@@ -1913,7 +2133,10 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr "\nNid yw'r nodwedd auto-ddiweddaru yn yr hen fersiwn hon o \napp bwrdd gwaith Zulip yn gweithio pellach."
+msgstr ""
+"\n"
+"Nid yw'r nodwedd auto-ddiweddaru yn yr hen fersiwn hon o \n"
+"app bwrdd gwaith Zulip yn gweithio pellach."
 
 #: templates/zerver/insecure_desktop_app.html:30
 msgid "Download the latest release."
@@ -1932,7 +2155,12 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\nA channoedd yn fwy trwy\n <a href=\"/integrations/doc/zapier\">Zapier</a> \nac\n <a href=\"/integrations/doc/ifttt\">IFTTT</a> ."
+msgstr ""
+"\n"
+"A channoedd yn fwy trwy\n"
+" <a href=\"/integrations/doc/zapier\">Zapier</a> \n"
+"ac\n"
+" <a href=\"/integrations/doc/ifttt\">IFTTT</a> ."
 
 #: templates/zerver/integrations/index.html:40
 msgid "Search integrations"
@@ -1985,7 +2213,10 @@ msgid ""
 "        The email address you are trying to sign up with is not valid.\n"
 "        Please sign up using a valid email address.\n"
 "        "
-msgstr "\nNid yw'r cyfeiriad e-bost rydych chi'n ceisio ymuno ag ef yn ddilys. \nCofrestrwch gan ddefnyddio cyfeiriad e-bost dilys."
+msgstr ""
+"\n"
+"Nid yw'r cyfeiriad e-bost rydych chi'n ceisio ymuno ag ef yn ddilys. \n"
+"Cofrestrwch gan ddefnyddio cyfeiriad e-bost dilys."
 
 #: templates/zerver/invalid_email.html:19
 #, python-format
@@ -1995,7 +2226,10 @@ msgid ""
 "        only allows users with email addresses within the\n"
 "        organization. Please sign up using appropriate email address.\n"
 "        "
-msgstr "\nMae'r sefydliad rydych chi'n ceisio ymuno ag ef, %(realm_name)s, yn caniatáu i ddefnyddwyr sydd â chyfeiriadau e-bost yn y \nsefydliad. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
+msgstr ""
+"\n"
+"Mae'r sefydliad rydych chi'n ceisio ymuno ag ef, %(realm_name)s, yn caniatáu i ddefnyddwyr sydd â chyfeiriadau e-bost yn y \n"
+"sefydliad. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
 
 #: templates/zerver/invalid_email.html:29
 #, python-format
@@ -2004,7 +2238,10 @@ msgid ""
 "        %(realm_name)s, does not allow signups using disposable email\n"
 "        addresses. Please sign up using a real email address.\n"
 "        "
-msgstr "Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio cyfeiriadau e-bost tafladwy. \nCofrestrwch gan ddefnyddio cyfeiriad e-bost go iawn."
+msgstr ""
+"Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n"
+" %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio cyfeiriadau e-bost tafladwy. \n"
+"Cofrestrwch gan ddefnyddio cyfeiriad e-bost go iawn."
 
 #: templates/zerver/invalid_email.html:38
 #, python-format
@@ -2013,7 +2250,10 @@ msgid ""
 "        %(realm_name)s, does not allow signups using emails\n"
 "        that contains +. Please sign up using appropriate email address.\n"
 "        "
-msgstr "Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio e-byst \nsy'n cynnwys +. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
+msgstr ""
+"Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n"
+" %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio e-byst \n"
+"sy'n cynnwys +. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
 
 #: templates/zerver/invalid_realm.html:7
 msgid "Organization does not exist"
@@ -2061,7 +2301,9 @@ msgstr "Cyfrinair"
 #: templates/zerver/login.html:112
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Rydych chi eisoes wedi cofrestru gyda'r cyfeiriad e-bost hwn. Mewngofnodwch isod."
+msgstr ""
+"Rydych chi eisoes wedi cofrestru gyda'r cyfeiriad e-bost hwn. Mewngofnodwch "
+"isod."
 
 #: templates/zerver/login.html:139
 #, python-format
@@ -2075,7 +2317,9 @@ msgstr "Wedi anghofio eich cyfrinair?"
 #: templates/zerver/login.html:159
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "Nid efo cyfrif eto? Mae angen i chi gael eich gwahodd i ymuno â'r sefydliad hwn."
+msgstr ""
+"Nid efo cyfrif eto? Mae angen i chi gael eich gwahodd i ymuno â'r sefydliad "
+"hwn."
 
 #: templates/zerver/no_spare_licenses.html:7
 msgid "This organization cannot accept new members right now."
@@ -2087,7 +2331,9 @@ msgid ""
 "    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
 "    invited you and ask them to increase the number of licenses, then try again.\n"
 "    "
-msgstr "\nNi all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio ar hyn o bryd. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
+msgstr ""
+"\n"
+"Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio ar hyn o bryd. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
 
 #: templates/zerver/portico-header-dropdown.html:3
 msgid "Go to Zulip"
@@ -2101,7 +2347,9 @@ msgstr "Rhagorwyd ar y terfyn cyfradd."
 msgid ""
 "You have exceeded the limit for how\n"
 "                        often a user can perform this action."
-msgstr "Rydych wedi rhagori ar y terfyn ar gyfer \npa mor aml y gall defnyddiwr gyflawni'r weithred hon."
+msgstr ""
+"Rydych wedi rhagori ar y terfyn ar gyfer \n"
+"pa mor aml y gall defnyddiwr gyflawni'r weithred hon."
 
 #: templates/zerver/rate_limit_exceeded.html:15
 #, python-format
@@ -2112,7 +2360,9 @@ msgstr "Gallwch roi cynnig arall arni mewn %(retry_after)s eiliad."
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "Nid yw'r gweinydd hwn yn caniatáu i aelodau'r cyhoedd greu sefydliadau newydd."
+msgstr ""
+"Nid yw'r gweinydd hwn yn caniatáu i aelodau'r cyhoedd greu sefydliadau "
+"newydd."
 
 #: templates/zerver/realm_creation_failed.html:21
 #, python-format
@@ -2121,7 +2371,11 @@ msgid ""
 "                    Zulip is open source, so you can <a href=\"%(production_install_url)s\">install your own Zulip server</a> or create a new organization on\n"
 "                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
 "                    "
-msgstr "\nMae Zulip yn ffynhonnell agored, felly gallwch chi <a href=\"%(production_install_url)s\">osod eich gweinydd Zulip eich hun</a>\n neu greu sefydliad newydd ar\n <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>"
+msgstr ""
+"\n"
+"Mae Zulip yn ffynhonnell agored, felly gallwch chi <a href=\"%(production_install_url)s\">osod eich gweinydd Zulip eich hun</a>\n"
+" neu greu sefydliad newydd ar\n"
+" <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>"
 
 #: templates/zerver/realm_reactivation.html:9
 msgid "Your organization has been successfully reactivated."
@@ -2172,7 +2426,9 @@ msgid ""
 "\n"
 "            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>\n"
 "            "
-msgstr "\n<p>Rydych chi bron yno! Mae angen i chi wneud un peth olaf yn unig.</p>"
+msgstr ""
+"\n"
+"<p>Rydych chi bron yno! Mae angen i chi wneud un peth olaf yn unig.</p>"
 
 #: templates/zerver/register.html:38
 msgid "Organization name"
@@ -2197,7 +2453,9 @@ msgstr "Defnyddiwch %(external_host)s"
 
 #: templates/zerver/register.html:97
 msgid "The URL users will use to access the new organization."
-msgstr "Y URL bydd y defnyddwyr yn eu defnyddio i gael mynediad i'r sefydliad newydd."
+msgstr ""
+"Y URL bydd y defnyddwyr yn eu defnyddio i gael mynediad i'r sefydliad "
+"newydd."
 
 #: templates/zerver/register.html:105
 msgid "Your account"
@@ -2205,7 +2463,7 @@ msgstr "Eich cyfrif"
 
 #: templates/zerver/register.html:124
 msgid "Import settings from existing Zulip account"
-msgstr "Mewnforio gosodiadau o&#39;r cyfrif Zulip presennol"
+msgstr "Mewnforio gosodiadau o'r cyfrif Zulip presennol"
 
 #: templates/zerver/register.html:130
 msgid "Don&rsquo;t import settings"
@@ -2227,7 +2485,9 @@ msgstr "Rhowch eich cyfrinair LDAP / Active Directory."
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Defnyddir hwn ar gyfer cymwysiadau symudol ac offer eraill sydd angen cyfrinair."
+msgstr ""
+"Defnyddir hwn ar gyfer cymwysiadau symudol ac offer eraill sydd angen "
+"cyfrinair."
 
 #: templates/zerver/register.html:192
 msgid "Password strength"
@@ -2239,7 +2499,9 @@ msgstr "Beth mae gennych chi ddiddordeb ynddo?"
 
 #: templates/zerver/register.html:258
 msgid "Subscribe me to Zulip's low-traffic newsletter (a few emails a year)."
-msgstr "Tanysgrifiwch fi i gylchlythyr traffig isel Zulip (ychydig o negeseuon e-bost y flwyddyn)."
+msgstr ""
+"Tanysgrifiwch fi i gylchlythyr traffig isel Zulip (ychydig o negeseuon "
+"e-bost y flwyddyn)."
 
 #: templates/zerver/reset.html:7
 msgid "Reset your password"
@@ -2259,7 +2521,9 @@ msgstr "Cadarnhau cyfrinair"
 
 #: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Mae'n ddrwg gennym, mae'r ddolen a ddarparwyd gennych yn annilys neu wedi'i defnyddio eisoes."
+msgstr ""
+"Mae'n ddrwg gennym, mae'r ddolen a ddarparwyd gennych yn annilys neu wedi'i "
+"defnyddio eisoes."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
@@ -2268,11 +2532,13 @@ msgstr "Rydyn ni wedi ailosod eich cyfrinair!"
 #: templates/zerver/reset_done.html:13
 #, python-format
 msgid "Please <a href=\"%(login_url)s\">log in</a> with your new password."
-msgstr "<a href=\"%(login_url)s\">Mewngofnodi</a> gyda'ch cyfrinair newydd os gwelwch yn dda."
+msgstr ""
+"<a href=\"%(login_url)s\">Mewngofnodi</a> gyda'ch cyfrinair newydd os "
+"gwelwch yn dda."
 
 #: templates/zerver/reset_emailed.html:9
 msgid "Password reset sent!"
-msgstr "Cyfrinair wedi'i anfon!"
+msgstr "Ailcychwyn cyfrinair wedi'i anfon!"
 
 #: templates/zerver/reset_emailed.html:13
 msgid "Check your email in a few minutes to finish the process."
@@ -2291,7 +2557,9 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n<h1 class=\"get-started\">Dewis cyfrif</h1>"
+msgstr ""
+"\n"
+"<h1 class=\"get-started\">Dewis cyfrif</h1>"
 
 #: templates/zerver/social_auth_select_email.html:63
 msgid ""
@@ -2299,7 +2567,9 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\nMae gan eich cyfrif GitHub hefyd gyfeiriadau e-bost heb eu gwirio sy'n gysylltiedig ag ef."
+msgstr ""
+"\n"
+"Mae gan eich cyfrif GitHub hefyd gyfeiriadau e-bost heb eu gwirio sy'n gysylltiedig ag ef."
 
 #: templates/zerver/social_auth_select_email.html:69
 msgid ""
@@ -2307,7 +2577,9 @@ msgid ""
 "            To use one of these to log in to Zulip, you must first\n"
 "            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
 "            "
-msgstr "\nI ddefnyddio un o'r rhain i fewngofnodi i Zulip, yn gyntaf rhaid i chi ei <a href=\"https://github.com/settings/emails\">wirio gyda GitHub.</a>"
+msgstr ""
+"\n"
+"I ddefnyddio un o'r rhain i fewngofnodi i Zulip, yn gyntaf rhaid i chi ei <a href=\"https://github.com/settings/emails\">wirio gyda GitHub.</a>"
 
 #: templates/zerver/team.html:144
 msgid "Avatar"
@@ -2321,7 +2593,9 @@ msgstr "Cais dad-danysgrifio e-bost anhysbys"
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something,\n"
 "    but we don't recognize the URL."
-msgstr "Helo yno! Mae'n edrych fel eich bod wedi ceisio dad-danysgrifio o rywbeth, ond nid ydym yn adnabod yr URL."
+msgstr ""
+"Helo yno! Mae'n edrych fel eich bod wedi ceisio dad-danysgrifio o rywbeth, "
+"ond nid ydym yn adnabod yr URL."
 
 #: templates/zerver/unsubscribe_link_error.html:12
 #, python-format
@@ -2329,7 +2603,11 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Gwiriwch ddwywaith bod gennych yr URL llawn a rhoi cynnig arall arni, neu <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">anfonwch e-bost atom</a> a byddwn yn cael hwn wedi sortio!"
+msgstr ""
+"Gwiriwch ddwywaith bod gennych yr URL llawn a rhoi cynnig arall arni, neu <a"
+" "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">anfonwch"
+" e-bost atom</a> a byddwn yn cael hwn wedi sortio!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -2341,7 +2619,9 @@ msgid ""
 "\n"
 "                    You've successfully unsubscribed from Zulip %(subscription_type)s emails.\n"
 "                    "
-msgstr "\nRydych chi wedi dad-danysgrifio yn llwyddiannus o e-byst%(subscription_type)s Zulip."
+msgstr ""
+"\n"
+"Rydych chi wedi dad-danysgrifio yn llwyddiannus o e-byst%(subscription_type)s Zulip."
 
 #: templates/zerver/unsubscribe_success.html:21
 #, python-format
@@ -2352,7 +2632,10 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">Zulip notification\n"
 "                    settings</a>.\n"
 "                    "
-msgstr "\nGallwch ddadwneud y newid hwn neu adolygu eich dewisiadau yn eich\n <a href=\"%(realm_uri)s/#settings/notifications\">gosodiadau hysbysu Zulip</a> ."
+msgstr ""
+"\n"
+"Gallwch ddadwneud y newid hwn neu adolygu eich dewisiadau yn eich\n"
+" <a href=\"%(realm_uri)s/#settings/notifications\">gosodiadau hysbysu Zulip</a> ."
 
 #: templates/zerver/unsupported_browser.html:11
 msgid "Unsupported browser"
@@ -2364,7 +2647,9 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\nni chefnogir %(browser_name)s gan Zulip."
+msgstr ""
+"\n"
+"ni chefnogir %(browser_name)s gan Zulip."
 
 #: templates/zerver/unsupported_browser.html:18
 msgid ""
@@ -2372,7 +2657,10 @@ msgid ""
 "                        Zulip supports modern browsers like Firefox,\n"
 "                        Chrome, and Edge.\n"
 "                        "
-msgstr "\nMae Zulip yn cefnogi porwyr modern fel Firefox, \nChrome, ac Edge."
+msgstr ""
+"\n"
+"Mae Zulip yn cefnogi porwyr modern fel Firefox, \n"
+"Chrome, ac Edge."
 
 #: templates/zerver/unsupported_browser.html:24
 #, python-format
@@ -2380,7 +2668,9 @@ msgid ""
 "\n"
 "                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
 "                        "
-msgstr "\nGallwch hefyd ddefnyddio'r <a href=\"%(apps_page_link)s\">app bwrdd gwaith Zulip</a> ."
+msgstr ""
+"\n"
+"Gallwch hefyd ddefnyddio'r <a href=\"%(apps_page_link)s\">app bwrdd gwaith Zulip</a> ."
 
 #: zerver/decorator.py:255
 msgid "Invalid subdomain for push notifications bouncer"
@@ -2440,11 +2730,11 @@ msgstr ""
 
 #: zerver/forms.py:81
 msgid "Subdomain needs to have length 3 or greater."
-msgstr "Mae angen i subdomain fod â hyd 3 neu fwy."
+msgstr "Mae angen i isbarth fod â hyd 3 neu fwy."
 
 #: zerver/forms.py:82
 msgid "Subdomain cannot start or end with a '-'."
-msgstr "Ni all subdomain ddechrau na gorffen gyda &#39;-&#39;."
+msgstr "Ni all subdomain ddechrau na gorffen gyda '-'."
 
 #: zerver/forms.py:83
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
@@ -2457,7 +2747,9 @@ msgstr "Isbarth ddim ar gael. Dewiswch un gwahanol."
 #: zerver/forms.py:178
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "Nid yw&#39;r sefydliad rydych chi&#39;n ceisio ymuno ag ef gan ddefnyddio {email} yn bodoli."
+msgstr ""
+"Nid yw'r sefydliad rydych chi'n ceisio ymuno ag ef gan ddefnyddio {email} yn"
+" bodoli."
 
 #: zerver/forms.py:186
 #, python-brace-format
@@ -2470,7 +2762,9 @@ msgstr "Gofynnwch am wahoddwr am {email} gan weinyddwr y sefydliad."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Nid yw eich cyfeiriad e-bost, {email}, yn un o'r parthau y caniateir iddynt gofrestru ar gyfer cyfrifon yn y sefydliad hwn."
+msgstr ""
+"Nid yw eich cyfeiriad e-bost, {email}, yn un o'r parthau y caniateir iddynt "
+"gofrestru ar gyfer cyfrifon yn y sefydliad hwn."
 
 #: zerver/forms.py:202 zerver/forms.py:227 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -2485,7 +2779,10 @@ msgid ""
 "New members cannot join this organization because all Zulip licenses are in "
 "use. Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
-msgstr "Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
+msgstr ""
+"Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau "
+"Zulip yn cael eu defnyddio. Cysylltwch â'r person a'ch gwahoddodd a gofyn "
+"iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
 
 #: zerver/forms.py:237
 msgid "New password"
@@ -2592,7 +2889,8 @@ msgstr "Math data annilys ar gyfer derbynwyr"
 
 #: zerver/lib/actions.py:2971 zerver/lib/actions.py:2979
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "Gall rhestrau derbynwyr gynnwys e-byst neu IDau defnyddiwr, ond nid y ddau."
+msgstr ""
+"Gall rhestrau derbynwyr gynnwys e-byst neu IDau defnyddiwr, ond nid y ddau."
 
 #: zerver/lib/actions.py:3091
 msgid "Reminders can only be set for streams."
@@ -2640,7 +2938,9 @@ msgstr "Mae'r terfyn amser ar gyfer golygu pwnc y neges hon wedi mynd heibio"
 
 #: zerver/lib/actions.py:3260 zerver/lib/actions.py:3609
 msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr "Nid oes gennych ganiatâd i ddefnyddio cyfeiriadau cardiau gwyllt yn y ffrwd hon."
+msgstr ""
+"Nid oes gennych ganiatâd i ddefnyddio cyfeiriadau cardiau gwyllt yn y ffrwd "
+"hon."
 
 #: zerver/lib/actions.py:3269
 msgid "You don't have permission to move this message"
@@ -2650,7 +2950,9 @@ msgstr "Nid oes gennych ganiatâd i symud y neges hon"
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
-msgstr "Nid oes gennych ganiatâd i symud y neges hon oherwydd colli mynediad i'w nant"
+msgstr ""
+"Nid oes gennych ganiatâd i symud y neges hon oherwydd colli mynediad i'w "
+"nant"
 
 #: zerver/lib/actions.py:3313
 msgid "Invalid default stream group name '{}'"
@@ -2669,21 +2971,27 @@ msgstr "Mae enw grŵp nant diofyn '{}' yn cynnwys nodau NULL (0x00)."
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio ID {stream_id}, ond nid oes ffrwd gyda'r ID hwnnw."
+msgstr ""
+"Ceisiodd eich bot {bot_identity} anfon neges i ffrydio ID {stream_id}, ond "
+"nid oes ffrwd gyda'r ID hwnnw."
 
 #: zerver/lib/actions.py:3397
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}, ond nid yw'r ffrwd honno'n bodoli. Cliciwch [yma] ({new_stream_link}) i'w greu."
+msgstr ""
+"Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}, ond "
+"nid yw'r ffrwd honno'n bodoli. Cliciwch [yma] ({new_stream_link}) i'w greu."
 
 #: zerver/lib/actions.py:3405
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}. Mae'r ffrwd yn bodoli ond nid oes ganddo unrhyw danysgrifwyr."
+msgstr ""
+"Ceisiodd eich bot {bot_identity} anfon neges i ffrydio {stream_name}. Mae'r "
+"ffrwd yn bodoli ond nid oes ganddo unrhyw danysgrifwyr."
 
 #: zerver/lib/actions.py:3452
 msgid "Private messages are disabled in this organization."
@@ -2704,11 +3012,11 @@ msgstr "Widgets: {error_msg}"
 
 #: zerver/lib/actions.py:3866
 msgid "Subscriber data is not available for this stream"
-msgstr "Nid oes data tanysgrifiwr ar gael ar gyfer y llif hwn"
+msgstr "Nid oes data tanysgrifiwr ar gael ar gyfer y ffrwd hwn"
 
 #: zerver/lib/actions.py:3873
 msgid "Unable to retrieve subscribers for private stream"
-msgstr "Methu adfer tanysgrifwyr ar gyfer nant preifat"
+msgstr "Methu adfer tanysgrifwyr ar gyfer ffrwd preifat"
 
 #: zerver/lib/actions.py:5143
 #, python-brace-format
@@ -2779,7 +3087,9 @@ msgstr "Grŵp ffrwd diofyn annilys {}"
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "Mae '{stream_name}' yn ffrwd ddiofyn ac ni ellir ei ychwanegu at '{group_name}'"
+msgstr ""
+"Mae '{stream_name}' yn ffrwd ddiofyn ac ni ellir ei ychwanegu at "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:5970
 #, python-brace-format
@@ -2791,13 +3101,17 @@ msgstr "Mae grŵp llif diofyn '{group_name}' eisoes yn bodoli"
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
-msgstr "Mae ffrwd '{stream_name}' eisoes yn bresennol yn y grŵp llif diofyn '{group_name}'"
+msgstr ""
+"Mae ffrwd '{stream_name}' eisoes yn bresennol yn y grŵp llif diofyn "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:6008
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
-msgstr "Nid yw ffrwd '{stream_name}&#39; yn bresennol yn y grŵp llif diofyn &#39;{group_name}&#39;"
+msgstr ""
+"Nid yw ffrwd '{stream_name}' yn bresennol yn y grŵp llif diofyn "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:6022
 msgid "This default stream group is already named '{}'"
@@ -2867,13 +3181,18 @@ msgstr ""
 msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one"
 " day. Because you have reached the limit, no invitations were sent."
-msgstr "Er mwyn amddiffyn defnyddwyr, mae Zulip yn cyfyngu ar nifer y gwahoddiadau y gallwch eu hanfon mewn un diwrnod. Oherwydd eich bod wedi cyrraedd y terfyn, ni anfonwyd unrhyw wahoddiadau."
+msgstr ""
+"Er mwyn amddiffyn defnyddwyr, mae Zulip yn cyfyngu ar nifer y gwahoddiadau y"
+" gallwch eu hanfon mewn un diwrnod. Oherwydd eich bod wedi cyrraedd y "
+"terfyn, ni anfonwyd unrhyw wahoddiadau."
 
 #: zerver/lib/actions.py:7704
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Mae eich cyfrif yn rhy newydd i anfon gwahoddiadau ar gyfer y sefydliad hwn. Gofynnwch i weinyddwr sefydliad, neu ddefnyddiwr mwy profiadol."
+msgstr ""
+"Mae eich cyfrif yn rhy newydd i anfon gwahoddiadau ar gyfer y sefydliad hwn."
+" Gofynnwch i weinyddwr sefydliad, neu ddefnyddiwr mwy profiadol."
 
 #: zerver/lib/actions.py:7744
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -2887,7 +3206,9 @@ msgstr "Nid oeddem yn gallu gwahodd unrhyw un."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Mae rhai o'r cyfeiriadau hynny eisoes yn defnyddio Zulip, felly ni wnaethom anfon gwahoddiad atynt. Fe wnaethon ni anfon gwahoddiadau at bawb arall!"
+msgstr ""
+"Mae rhai o'r cyfeiriadau hynny eisoes yn defnyddio Zulip, felly ni wnaethom "
+"anfon gwahoddiad atynt. Fe wnaethon ni anfon gwahoddiadau at bawb arall!"
 
 #: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
 msgid "A custom emoji with this name already exists."
@@ -2944,7 +3265,8 @@ msgstr "Ymlyniad annilys"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "Digwyddodd gwall wrth ddileu'r atodiad. Rho gynnig Arni eto'n hwyrach."
+msgstr ""
+"Digwyddodd gwall wrth ddileu'r atodiad. Rho gynnig Arni eto'n hwyrach."
 
 #: zerver/lib/bot_lib.py:105
 msgid "Message must have recipients!"
@@ -2988,7 +3310,7 @@ msgstr "Rhaid i'r pwnc beidio â chynnwys null bytes"
 
 #: zerver/lib/drafts.py:72
 msgid "Must specify exactly 1 stream ID for stream messages"
-msgstr "Rhaid nodi'n union 1 ID ffrwd ar gyfer negeseuon nant"
+msgstr "Rhaid nodi'n union 1 ID ffrwd ar gyfer negeseuon ffrwd"
 
 #: zerver/lib/drafts.py:96
 msgid "User has disabled synchronizing drafts."
@@ -3172,7 +3494,9 @@ msgstr "Allwedd API camffurfiedig"
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
-msgstr "Ar hyn o bryd nid yw'r digwyddiad '{event_type}' yn cael ei gefnogi gan y webhook {webhook_name}"
+msgstr ""
+"Ar hyn o bryd nid yw'r digwyddiad '{event_type}' yn cael ei gefnogi gan y "
+"webhook {webhook_name}"
 
 #: zerver/lib/exceptions.py:384
 #, python-brace-format
@@ -3204,7 +3528,9 @@ msgstr "Dal i fyny ar ffrwd"
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "Mae pawb sy'n tanysgrifio i'r ffrwd honno yn gweld negeseuon a anfonir at ffrwd. Ceisiwch glicio ar un o'r dolenni ffrwd isod."
+msgstr ""
+"Mae pawb sy'n tanysgrifio i'r ffrwd honno yn gweld negeseuon a anfonir at "
+"ffrwd. Ceisiwch glicio ar un o'r dolenni ffrwd isod."
 
 #: zerver/lib/hotspots.py:20
 msgid "Topics"
@@ -3214,7 +3540,10 @@ msgstr "Pynciau"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr "Mae gan bob neges bwnc. Mae pynciau'n cadw sgyrsiau yn hawdd i'w dilyn, ac yn ei gwneud h'n hawdd ymateb i sgyrsiau sy'n cychwyn tra'ch bod chi oddi ar-lein."
+msgstr ""
+"Mae gan bob neges bwnc. Mae pynciau'n cadw sgyrsiau yn hawdd i'w dilyn, ac "
+"yn ei gwneud h'n hawdd ymateb i sgyrsiau sy'n cychwyn tra'ch bod chi oddi "
+"ar-lein."
 
 #: zerver/lib/hotspots.py:28
 msgid "Settings"
@@ -3222,7 +3551,8 @@ msgstr "Gosodiadau"
 
 #: zerver/lib/hotspots.py:30
 msgid "Go to Settings to configure your notifications and display settings."
-msgstr "Ewch i Gosodiadau i ffurfweddu'ch hysbysiadau a'ch gosodiadau arddangos."
+msgstr ""
+"Ewch i Gosodiadau i ffurfweddu'ch hysbysiadau a'ch gosodiadau arddangos."
 
 #: zerver/lib/hotspots.py:34
 msgid "Compose"
@@ -3232,7 +3562,9 @@ msgstr "Cyfansoddi"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr "Cliciwch yma i ddechrau sgwrs newydd. Dewiswch bwnc (2-3 gair sydd orau), a rhowch gynnig arni!"
+msgstr ""
+"Cliciwch yma i ddechrau sgwrs newydd. Dewiswch bwnc (2-3 gair sydd orau), a "
+"rhowch gynnig arni!"
 
 #: zerver/lib/integrations.py:35
 msgid "Integration frameworks"
@@ -3309,7 +3641,8 @@ msgstr "Gweithredwr {} heb ei gefnogi."
 #: zerver/lib/onboarding.py:47
 #, python-brace-format
 msgid "We also have a guide for [Setting up your organization]({help_url})."
-msgstr "Mae gennym hefyd ganllaw ar gyfer [Sefydlu'ch sefydliad] ({help_url})."
+msgstr ""
+"Mae gennym hefyd ganllaw ar gyfer [Sefydlu'ch sefydliad] ({help_url})."
 
 #: zerver/lib/onboarding.py:50
 msgid "Hello, and welcome to Zulip!"
@@ -3320,7 +3653,9 @@ msgstr "Helo, a chroeso i Zulip!"
 msgid ""
 "Note that this is a [demo organization]({demo_org_help_url}) and will be "
 "**automatically deleted** in 30 days."
-msgstr "Sylwch fod hwn yn [sefydliad demo] ({demo_org_help_url}) a bydd yn cael ei **ddileu yn awtomatig** mewn 30 diwrnod."
+msgstr ""
+"Sylwch fod hwn yn [sefydliad demo] ({demo_org_help_url}) a bydd yn cael ei "
+"**ddileu yn awtomatig** mewn 30 diwrnod."
 
 #: zerver/lib/onboarding.py:64
 msgid "This is a private message from me, Welcome Bot."
@@ -3331,13 +3666,17 @@ msgstr "Dyma neges breifat gennyf i, Welcome Bot."
 msgid ""
 "If you are new to Zulip, check out our [Getting started "
 "guide]({getting_started_url})!"
-msgstr "Os ydych chi'n newydd i Zulip, edrychwch ar ein [Canllaw cychwyn arni] ({getting_started_url})!"
+msgstr ""
+"Os ydych chi'n newydd i Zulip, edrychwch ar ein [Canllaw cychwyn arni] "
+"({getting_started_url})!"
 
 #: zerver/lib/onboarding.py:71
 msgid ""
 "I can also help you get set up! Just click anywhere on this message or press"
 " `r` to reply."
-msgstr "Gallaf hefyd eich helpu i sefydlu! Cliciwch unrhyw le ar y neges hon neu pwyswch `r` i ateb."
+msgstr ""
+"Gallaf hefyd eich helpu i sefydlu! Cliciwch unrhyw le ar y neges hon neu "
+"pwyswch `r` i ateb."
 
 #: zerver/lib/onboarding.py:74 zerver/lib/onboarding.py:182
 msgid "Here are a few messages I understand:"
@@ -3347,14 +3686,19 @@ msgstr "Dyma ychydig o negeseuon rwy'n eu deall:"
 msgid ""
 "You can [download](/apps) the [mobile and desktop apps](/apps). Zulip also "
 "works great in a browser."
-msgstr "Gallwch [lawrlwytho] (/apiau) yr [apiau symudol a bwrdd gwaith] (/ apiau). Mae Zulip hefyd yn gweithio'n wych mewn porwr."
+msgstr ""
+"Gallwch [lawrlwytho] (/apiau) yr [apiau symudol a bwrdd gwaith] (/ apiau). "
+"Mae Zulip hefyd yn gweithio'n wych mewn porwr."
 
 #: zerver/lib/onboarding.py:116
 msgid ""
 "Go to [Profile settings](#settings/profile) to add a [profile "
 "picture](/help/change-your-profile-picture) and edit your [profile "
 "information](/help/edit-your-profile)."
-msgstr "Ewch i [Gosodiadau proffil] (#gosodiadau/proffil) i ychwanegu [llun proffil] (/help/change-your-profile-picture) a golygu eich [gwybodaeth proffil] (/help/edit-your-profile)."
+msgstr ""
+"Ewch i [Gosodiadau proffil] (#gosodiadau/proffil) i ychwanegu [llun proffil]"
+" (/help/change-your-profile-picture) a golygu eich [gwybodaeth proffil] "
+"(/help/edit-your-profile)."
 
 #: zerver/lib/onboarding.py:122
 msgid ""
@@ -3363,13 +3707,19 @@ msgid ""
 "theme](/help/emoji-and-emoticons#change-your-emoji-set), [change your "
 "language](/help/change-your-language), and make other tweaks to your Zulip "
 "experience."
-msgstr "Ewch i [Display settings] (#settings/display-settings) i [newid rhwng y themâu golau a thywyll] (/help/dark-theme), [dewiswch eich hoff thema emoji] (/help/emoji-and-emoticons # change-your-emoji-set), [newid eich iaith] (/help/change-your-language), a gwneud newidiadau eraill i'ch profiad Zulip."
+msgstr ""
+"Ewch i [Display settings] (#settings/display-settings) i [newid rhwng y "
+"themâu golau a thywyll] (/help/dark-theme), [dewiswch eich hoff thema emoji]"
+" (/help/emoji-and-emoticons # change-your-emoji-set), [newid eich iaith] "
+"(/help/change-your-language), a gwneud newidiadau eraill i'ch profiad Zulip."
 
 #: zerver/lib/onboarding.py:132
 msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
-msgstr "Yn Zulip, ffrydiau [penderfynu pwy sy'n cael neges] (/help/streams-and-topics). Maent yn debyg i sianeli mewn apiau sgwrsio eraill."
+msgstr ""
+"Yn Zulip, ffrydiau [penderfynu pwy sy'n cael neges] (/help/streams-and-"
+"topics). Maent yn debyg i sianeli mewn apiau sgwrsio eraill."
 
 #: zerver/lib/onboarding.py:136
 msgid "[Browse and subscribe to streams](#streams/all)."
@@ -3380,73 +3730,96 @@ msgid ""
 "In Zulip, topics [tell you what a message is about](/help/streams-and-"
 "topics). They are light-weight subjects, very similar to the subject line of"
 " an email."
-msgstr "Yn Zulip, pynciau [dywedwch wrthych beth yw neges] (/help/frydiau-a-phynciau). Maent yn bynciau pwysau ysgafn, yn debyg iawn i linell pwnc e-bost."
+msgstr ""
+"Yn Zulip, pynciau [dywedwch wrthych beth yw neges] (/help/frydiau-a-"
+"phynciau). Maent yn bynciau pwysau ysgafn, yn debyg iawn i linell pwnc "
+"e-bost."
 
 #: zerver/lib/onboarding.py:148
 msgid ""
 "Check out [Recent topics](#recent_topics) to see what's happening! You can "
 "return to this conversation by clicking \"Private messages\" in the upper "
 "left."
-msgstr "Edrychwch ar [Pynciau diweddar] (#recent_topics) i weld beth sy'n digwydd! Gallwch ddychwelyd i'r sgwrs hon trwy glicio \"Negeseuon preifat\" yn y chwith uchaf."
+msgstr ""
+"Edrychwch ar [Pynciau diweddar] (#recent_topics) i weld beth sy'n digwydd! "
+"Gallwch ddychwelyd i'r sgwrs hon trwy glicio \"Negeseuon preifat\" yn y "
+"chwith uchaf."
 
 #: zerver/lib/onboarding.py:157
 msgid ""
 "Zulip's [keyboard shortcuts](#keyboard-shortcuts) let you navigate the app "
 "quickly and efficiently."
-msgstr "Mae [llwybrau byr bysellfwrdd] Zulip (# bysellfwrdd-llwybrau byr) yn caniatáu ichi lywio'r ap yn gyflym ac yn effeithlon."
+msgstr ""
+"Mae [llwybrau byr bysellfwrdd] Zulip (# bysellfwrdd-llwybrau byr) yn "
+"caniatáu ichi lywio'r ap yn gyflym ac yn effeithlon."
 
 #: zerver/lib/onboarding.py:161
 msgid "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."
-msgstr "Pwyswch `?` Unrhyw bryd i weld [taflen twyllo] (#bysellfwrdd-llwybrau byr)."
+msgstr ""
+"Pwyswch `?` Unrhyw bryd i weld [taflen twyllo] (#bysellfwrdd-llwybrau byr)."
 
 #: zerver/lib/onboarding.py:168
 msgid ""
 "Zulip uses [Markdown](/help/format-your-message-using-markdown), an "
 "intuitive format for **bold**, *italics*, bulleted lists, and more. Click "
 "[here](#message-formatting) for a cheat sheet."
-msgstr "Mae Zulip yn defnyddio [Markdown] (/help/format-your-message-using-markdown), fformat greddfol ar gyfer **print trwm**, *italig*, rhestrau bwled, a mwy. Cliciwch [yma] (#message-formatting) i gael taflen twyllo."
+msgstr ""
+"Mae Zulip yn defnyddio [Markdown] (/help/format-your-message-using-"
+"markdown), fformat greddfol ar gyfer **print trwm**, *italig*, rhestrau "
+"bwled, a mwy. Cliciwch [yma] (#message-formatting) i gael taflen twyllo."
 
 #: zerver/lib/onboarding.py:174
 msgid ""
 "Check out our [messaging tips](/help/messaging-tips) to learn about emoji "
 "reactions, code blocks and much more!"
-msgstr "Edrychwch ar ein [awgrymiadau negeseuon] (/help/messaging-tips) i ddysgu am adweithiau emoji, blociau cod a llawer mwy!"
+msgstr ""
+"Edrychwch ar ein [awgrymiadau negeseuon] (/help/messaging-tips) i ddysgu am "
+"adweithiau emoji, blociau cod a llawer mwy!"
 
 #: zerver/lib/onboarding.py:185
 msgid ""
 "Check out our [Getting started guide](/help/getting-started-with-zulip), or "
 "browse the [Help center](/help/) to learn more!"
-msgstr "Edrychwch ar ein [Canllaw cychwyn arni] (/ help / dechrau-gyda-zulip), neu bori trwy'r [canolfan gymorth] (/ help /) i ddysgu mwy!"
+msgstr ""
+"Edrychwch ar ein [Canllaw cychwyn arni] (/ help / dechrau-gyda-zulip), neu "
+"bori trwy'r [canolfan gymorth] (/ help /) i ddysgu mwy!"
 
 #: zerver/lib/onboarding.py:194
 msgid ""
 "I’m sorry, I did not understand your message. Please try one of the "
 "following commands:"
-msgstr "Mae'n ddrwg gen i, doeddwn i ddim yn deall eich neges. Rhowch gynnig ar un o'r gorchmynion canlynol:"
+msgstr ""
+"Mae'n ddrwg gen i, doeddwn i ddim yn deall eich neges. Rhowch gynnig ar un "
+"o'r gorchmynion canlynol:"
 
 #: zerver/lib/onboarding.py:218
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr "Ffrwd breifat yw hon, fel y dangosir gan yr eicon clo wrth ymyl enw'r ffrwd."
+msgstr ""
+"Ffrwd breifat yw hon, fel y dangosir gan yr eicon clo wrth ymyl enw'r ffrwd."
 
 #: zerver/lib/onboarding.py:220
 msgid "Private streams are only visible to stream members."
-msgstr "Dim ond i aelodau ffrwdiau y mae ffrwd preifat yn weladwy."
+msgstr "Dim ond i aelodau ffrydiau y mae ffrwd preifat yn weladwy."
 
 #: zerver/lib/onboarding.py:224
 #, python-brace-format
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr "I reoli'r nant hon, ewch i [Gosodiadau nant] ({stream_settings_url}) a chlicio ar `{initial_private_stream_name}`."
+msgstr ""
+"I reoli'r nant hon, ewch i [Gosodiadau nant] ({stream_settings_url}) a "
+"chlicio ar `{initial_private_stream_name}`."
 
 #: zerver/lib/onboarding.py:234
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
-msgstr "Dyma neges ar ffrwd #**{default_notification_stream_name}** gyda'r pwnc `arddangosiad pwnc`."
+msgstr ""
+"Dyma neges ar ffrwd #**{default_notification_stream_name}** gyda'r pwnc "
+"`arddangosiad pwnc`."
 
 #: zerver/lib/onboarding.py:240
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -3457,21 +3830,27 @@ msgstr "Offeryn ysgafn yw pynciau i gadw sgyrsiau'n drefnus."
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
-msgstr "Gallwch ddysgu mwy am bynciau yn [Ffrydiau a phynciau] ({about_topics_help_url})."
+msgstr ""
+"Gallwch ddysgu mwy am bynciau yn [Ffrydiau a phynciau] "
+"({about_topics_help_url})."
 
 #: zerver/lib/onboarding.py:247
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
-msgstr "Dyma neges ar nant #**{default_notification_stream_name}** gyda'r pwnc `crwbanod nofio`."
+msgstr ""
+"Dyma neges ar nant #**{default_notification_stream_name}** gyda'r pwnc "
+"`crwbanod nofio`."
 
 #: zerver/lib/onboarding.py:256
 #, python-brace-format
 msgid ""
 "[Start a new topic]({start_topic_help_url}) any time you're not replying to "
 "a         previous message."
-msgstr "[Dechreuwch bwnc newydd] ({start_topic_help_url}) unrhyw bryd nad ydych chi'n ymateb i neges flaenorol."
+msgstr ""
+"[Dechreuwch bwnc newydd] ({start_topic_help_url}) unrhyw bryd nad ydych "
+"chi'n ymateb i neges flaenorol."
 
 #: zerver/lib/outgoing_webhook.py:315
 msgid "Invalid JSON in response"
@@ -3498,7 +3877,9 @@ msgstr "Nid yw Token yn bodoli"
 msgid ""
 "This organization has disabled including message content in mobile push "
 "notifications"
-msgstr "Mae'r sefydliad hwn wedi anabl gan gynnwys cynnwys neges mewn hysbysiadau gwthio symudol"
+msgstr ""
+"Mae'r sefydliad hwn wedi anabl gan gynnwys cynnwys neges mewn hysbysiadau "
+"gwthio symudol"
 
 #: zerver/lib/push_notifications.py:833
 #, python-brace-format
@@ -3557,7 +3938,8 @@ msgstr "Dim ond gweinyddwyr sefydliadau all anfon at y ffrwd hwn."
 #: zerver/lib/streams.py:218
 msgid ""
 "Only organization administrators and moderators can send to this stream."
-msgstr "Dim ond gweinyddwyr a chymedrolwyr sefydliadau all anfon at y ffrwd hwn."
+msgstr ""
+"Dim ond gweinyddwyr a chymedrolwyr sefydliadau all anfon at y ffrwd hwn."
 
 #: zerver/lib/streams.py:221
 msgid "Guests cannot send to this stream."
@@ -3736,7 +4118,8 @@ msgstr "mae {var_name} yn rhy hir (terfyn: {max_length} nod)"
 #: zerver/lib/validator.py:115
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
-msgstr "mae gan {var_name} hyd anghywir {length}; dylai fod yn {target_length}"
+msgstr ""
+"mae gan {var_name} hyd anghywir {length}; dylai fod yn {target_length}"
 
 #: zerver/lib/validator.py:135 zerver/lib/validator.py:137
 #, python-brace-format
@@ -3800,7 +4183,7 @@ msgstr "Dadleuon annisgwyl: {}"
 #: zerver/lib/validator.py:325
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
-msgstr "Nid yw {var_name} yn allow_type"
+msgstr "Nid yw {var_name} yn allowed_type"
 
 #: zerver/lib/validator.py:334
 #, python-brace-format
@@ -3896,13 +4279,17 @@ msgstr "Llinyn fformat annilys yn URL."
 #, python-format
 msgid ""
 "Group %(name)r in URL format string is not present in linkifier pattern."
-msgstr "Nid yw grŵp %(name)r yn llinyn fformat URL yn bresennol ym mhatrwm y cysylltydd."
+msgstr ""
+"Nid yw grŵp %(name)r yn llinyn fformat URL yn bresennol ym mhatrwm y "
+"cysylltydd."
 
 #: zerver/models.py:1285
 #, python-format
 msgid ""
 "Group %(name)r in linkifier pattern is not present in URL format string."
-msgstr "Nid yw grŵp %(name)r mewn patrwm cysylltydd yn bresennol yn llinyn fformat URL."
+msgstr ""
+"Nid yw grŵp %(name)r mewn patrwm cysylltydd yn bresennol yn llinyn fformat "
+"URL."
 
 #: zerver/models.py:1380 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
@@ -4002,7 +4389,7 @@ msgstr "Testun hir"
 
 #: zerver/models.py:4368
 msgid "Date picker"
-msgstr "Codwr dyddiad"
+msgstr "Dewiswr dyddiad"
 
 #: zerver/models.py:4369
 msgid "Link"
@@ -4101,7 +4488,7 @@ msgstr "Rhaid i gae gael o leiaf un dewis."
 
 #: zerver/views/custom_profile_fields.py:95
 msgid "Invalid field type."
-msgstr "Math cae annilys."
+msgstr "Math maes annilys."
 
 #: zerver/views/custom_profile_fields.py:133
 #: zerver/views/custom_profile_fields.py:173
@@ -4160,7 +4547,7 @@ msgstr "Nid oes gennych ganiatâd i ddileu'r neges hon"
 
 #: zerver/views/message_edit.py:164
 msgid "The time limit for deleting this message has passed"
-msgstr "Mae'r terfyn amser ar gyfer dileur neges hon wedi mynd heibio"
+msgstr "Mae'r terfyn amser ar gyfer dileu'r neges hon wedi mynd heibio"
 
 #: zerver/views/message_edit.py:184
 msgid "Message already deleted"
@@ -4247,7 +4634,9 @@ msgstr "Ni phasiodd y cleient unrhyw werthoedd newydd."
 #: zerver/views/presence.py:106
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
-msgstr "Rhaid i'r cleient basio emoji_name os yw'n pasio naill ai emoji_code neu reaction_type."
+msgstr ""
+"Rhaid i'r cleient basio emoji_name os yw'n pasio naill ai emoji_code neu "
+"reaction_type."
 
 #: zerver/views/presence.py:144
 msgid "Invalid status: {}"
@@ -4265,7 +4654,9 @@ msgstr "Tocyn APNS annilys"
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
-msgstr "Rhaid io leiaf un o'r dadleuon canlynol fod yn bresennol: emoji_name, emoji_code"
+msgstr ""
+"Rhaid io leiaf un o'r dadleuon canlynol fod yn bresennol: emoji_name, "
+"emoji_code"
 
 #: zerver/views/reactions.py:68
 msgid "Reaction doesn't exist."
@@ -4317,7 +4708,8 @@ msgstr "Dim ond gweinyddwyr all ddiystyru emoji adeiledig."
 #: zerver/views/realm_logo.py:30 zerver/views/upload.py:143
 #: zerver/views/user_settings.py:331
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
-msgstr "Mae'r ffeil wedi'i llwytho i fyny yn fwy na&'r terfyn a ganiateir o {} MiB"
+msgstr ""
+"Mae'r ffeil wedi'i llwytho i fyny yn fwy na&'r terfyn a ganiateir o {} MiB"
 
 #: zerver/views/realm_export.py:41
 msgid "Exceeded rate limit."
@@ -4406,7 +4798,9 @@ msgstr "Methu cyrchu ffrwd ({stream_name})."
 
 #: zerver/views/streams.py:541
 msgid "You can only invite other Zephyr mirroring users to private streams."
-msgstr "Dim ond i ffrydiau preifat y gallwch chi wahodd defnyddwyr eraill sy'n adlewyrchu Zephyr."
+msgstr ""
+"Dim ond i ffrydiau preifat y gallwch chi wahodd defnyddwyr eraill sy'n "
+"adlewyrchu Zephyr."
 
 #: zerver/views/streams.py:659
 #, python-brace-format
@@ -4449,11 +4843,13 @@ msgstr "Rhestr wag 'to'"
 
 #: zerver/views/typing.py:42
 msgid "User has disabled typing notifications for stream messages"
-msgstr "Mae gan y defnyddiwr hysbysiadau teipio analluogi ar gyfer negeseuon ffrwd"
+msgstr ""
+"Mae gan y defnyddiwr hysbysiadau teipio analluogi ar gyfer negeseuon ffrwd"
 
 #: zerver/views/typing.py:52
 msgid "User has disabled typing notifications for private messages"
-msgstr "Maedefnyddiwr wedi annulluogi hysbysiadau teipio ar gyfer negeseuon preifat"
+msgstr ""
+"Maedefnyddiwr wedi annulluogi hysbysiadau teipio ar gyfer negeseuon preifat"
 
 #: zerver/views/upload.py:114
 msgid "<p>File not found.</p>"
@@ -4519,7 +4915,9 @@ msgstr "Cyfrinair anghywir!"
 
 #: zerver/views/user_settings.py:235
 msgid "You're making too many attempts! Try again in {} seconds."
-msgstr "Rydych chi'n gwneud gormod o ymdrechion! Rhowch gynnig arall arni mewn {} eiliad."
+msgstr ""
+"Rydych chi'n gwneud gormod o ymdrechion! Rhowch gynnig arall arni mewn {} "
+"eiliad."
 
 #: zerver/views/user_settings.py:241
 msgid "New password is too weak!"
@@ -4536,7 +4934,8 @@ msgstr "Ni all ddadactifadu unig berchennog y sefydliad"
 #: zerver/views/users.py:195
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
-msgstr "Ni ellir tynnu caniatâd y perchennog oddi wrth unig berchennog y sefydliad."
+msgstr ""
+"Ni ellir tynnu caniatâd y perchennog oddi wrth unig berchennog y sefydliad."
 
 #: zerver/views/users.py:308
 msgid "Failed to change owner, no such user"
@@ -4548,13 +4947,16 @@ msgstr "Wedi methu newid perchennog, mae'r defnyddiwr wedi'i ddadactifadu"
 
 #: zerver/views/users.py:312
 msgid "Failed to change owner, bots can't own other bots"
-msgstr "Wedi methu newid perchennog, ni all bots fod yn berchen ar bots eraill"
+msgstr ""
+"Wedi methu newid perchennog, ni all bots fod yn berchen ar bots eraill"
 
 #: zerver/views/users.py:416
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "Methu creu bots nes bod FAKE_EMAIL_DOMAIN wedi'i ffurfweddu'n gywir. \nCysylltwch â'ch gweinyddwr gweinydd."
+msgstr ""
+"Methu creu bots nes bod FAKE_EMAIL_DOMAIN wedi'i ffurfweddu'n gywir. \n"
+"Cysylltwch â'ch gweinyddwr gweinydd."
 
 #: zerver/views/users.py:424
 msgid "Embedded bots are not enabled."
@@ -4673,7 +5075,9 @@ msgstr "Mae angen stamp amser mewn milieiliadau ar y webhook newrelic."
 #: zerver/webhooks/newrelic/view.py:69
 msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
-msgstr "Mae'r webhook newrelic yn ei gwneud yn ofynnol i current_state fod yn [agored | cydnabyddedig | ar gau]"
+msgstr ""
+"Mae'r webhook newrelic yn ei gwneud yn ofynnol i current_state fod yn "
+"[open|acknowledged|closed]"
 
 #: zerver/webhooks/pivotal/view.py:189
 msgid "Unable to handle Pivotal payload"
@@ -4685,7 +5089,7 @@ msgstr "Gwall: paramedr sianelau_map_to_topics heblaw 0 neu 1"
 
 #: zerver/webhooks/slack/view.py:35
 msgid "Message from Slack"
-msgstr "Neges gan Slack"
+msgstr "Neges o Slack"
 
 #: zerver/webhooks/wordpress/view.py:56
 msgid "Unknown WordPress webhook action: {}"
@@ -4697,7 +5101,10 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr "Mae eich allforio data wedi'i gwblhau ac wedi'i uwchlwytho yma: {public_url}"
+msgstr ""
+"Mae eich allforio data wedi'i gwblhau ac wedi'i uwchlwytho yma: \n"
+"\n"
+"{public_url}"
 
 #. error
 #: zilencer/views.py:53

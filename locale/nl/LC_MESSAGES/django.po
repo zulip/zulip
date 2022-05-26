@@ -1,20 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# André Koot <meneer@tken.net>, 2017,2021
-# kolkmvd <marco.git@vdkolk.nl>, 2018
-# Steven Uzeel <stevenuzeel@gmail.com>, 2021
-# Tim Abbott <tabbott@kandralabs.com>, 2021
+# Tim Abbott <tabbott@kandralabs.com>, 2022
+# Steven Uzeel <stevenuzeel@gmail.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# kolkmvd <marco.git@vdkolk.nl>, 2022
+# André Koot <meneer@tken.net>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:40+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: André Koot <meneer@tken.net>, 2017,2021\n"
-"Language-Team: Dutch (http://www.transifex.com/zulip/zulip/language/nl/)\n"
+"POT-Creation-Date: 2022-03-31 17:37+0000\n"
+"PO-Revision-Date: 2022-03-29 15:39+0000\n"
+"Last-Translator: André Koot <meneer@tken.net>, 2022\n"
+"Language-Team: Dutch (https://www.transifex.com/zulip/teams/53893/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -126,7 +130,9 @@ msgstr "Je moet factureren voor minimaal {} gebruikers."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "Facturen met meer dan {} licenties kunnen vanaf deze pagina niet worden verwerkt. Neem contact op met {} om de upgrade te voltooien."
+msgstr ""
+"Facturen met meer dan {} licenties kunnen vanaf deze pagina niet worden "
+"verwerkt. Neem contact op met {} om de upgrade te voltooien."
 
 #: corporate/lib/stripe.py:203
 #, python-brace-format
@@ -139,7 +145,9 @@ msgstr "Er is iets mis gegaan. Herlaad de pagina, alsjeblieft."
 
 #: corporate/lib/stripe.py:278
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het opnieuw."
+msgstr ""
+"Er is iets mis gegaan. Wacht alsjeblieft een paar seconden en probeer het "
+"opnieuw."
 
 #: corporate/lib/stripe.py:992
 #, python-brace-format
@@ -160,7 +168,8 @@ msgstr "{brand} eindigt over {last4}"
 #: corporate/views/billing_page.py:56
 #, python-brace-format
 msgid "Unknown payment method. Please contact {email}."
-msgstr "Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
+msgstr ""
+"Dit is een onbekende betaalmethode. Neem alsjeblieft contact op met {email}."
 
 #: corporate/views/billing_page.py:180
 msgid ""
@@ -237,7 +246,9 @@ msgstr ""
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de creatie van de organisatie."
+msgstr ""
+"Analysegegevens zijn volledig toegankelijk na de eerste 24 uur van de "
+"creatie van de organisatie."
 
 #: templates/analytics/stats.html:15
 #, python-format
@@ -338,7 +349,9 @@ msgstr "Laatste update"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde berichten” grafiek wordt elk uur bijgewerkt."
+msgstr ""
+"Een volledige update van de grafieken gebeurt eens per dag. De “verstuurde "
+"berichten” grafiek wordt elk uur bijgewerkt."
 
 #: templates/analytics/stats.html:129
 msgid "Analytics documentation"
@@ -355,7 +368,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nDit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\nvan %(old_email_html_tag)s naar %(new_email_html_tag)s"
+msgstr ""
+"\n"
+"Dit bevestigt dat het e-mailadres voor jouw Zulip account is veranderd\n"
+"van %(old_email_html_tag)s naar %(new_email_html_tag)s"
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -394,7 +410,7 @@ msgstr "Facturering"
 
 #: templates/corporate/billing.html:228
 msgid "Close"
-msgstr "Sluiten"
+msgstr "Dichtbij"
 
 #: templates/corporate/support_request.html:7 templates/zerver/footer.html:90
 msgid "Contact support"
@@ -536,7 +552,9 @@ msgstr "Controleer je e-mail, zodat we kunnen beginnen."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Nog geen e-mail? We kunnen het <a href=\"#\" id=\"resend_email_link\">opnieuw versturen</a>."
+msgstr ""
+"Nog geen e-mail? We kunnen het <a href=\"#\" "
+"id=\"resend_email_link\">opnieuw versturen</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -550,7 +568,9 @@ msgstr "Laden..."
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a "
 "id=\"reload-lnk\">reload</a> the page."
-msgstr "Als dit bericht niet verdwijnt, wacht dan even en <a id=\"reload-lnk\">ververs </a> de pagina."
+msgstr ""
+"Als dit bericht niet verdwijnt, wacht dan even en <a id=\"reload-"
+"lnk\">ververs </a> de pagina."
 
 #: templates/zerver/app/index.html:98
 msgid "Unable to connect to Zulip."
@@ -600,7 +620,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Geen account gevonden voor %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Geen account gevonden voor %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -1080,7 +1103,10 @@ msgstr "Hoi,"
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr "Ik wil nog iets met jullie delen: een paar tips over onderwerpen, aangezien het beheersen van onderwerpen een belangrijk onderdeel is van krachtig Zulip gebruik."
+msgstr ""
+"Ik wil nog iets met jullie delen: een paar tips over onderwerpen, aangezien "
+"het beheersen van onderwerpen een belangrijk onderdeel is van krachtig Zulip"
+" gebruik."
 
 #: templates/zerver/emails/followup_day2.source.html:12
 msgid "Examples of short topics"
@@ -1103,7 +1129,9 @@ msgstr "Goede onderwerpen: design mock-up, Bug 345, acme burgers"
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr "Dit is echt minder: \"Wat vinden mensen van dit nieuwe design mock-up?\", \"Ik kijk naar Bug 345\", \"Is Acme Burgers open voor lunch?\""
+msgstr ""
+"Dit is echt minder: \"Wat vinden mensen van dit nieuwe design mock-up?\", "
+"\"Ik kijk naar Bug 345\", \"Is Acme Burgers open voor lunch?\""
 
 #: templates/zerver/emails/followup_day2.source.html:21
 msgid "Example of a topic that is too long"
@@ -1389,7 +1417,9 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organisatie: %(organization_url)s Tijd: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.source.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -1785,10 +1815,6 @@ msgstr "Geschiedenis"
 msgid "Jobs"
 msgstr ""
 
-#: templates/zerver/footer.html:146
-msgid "Website attributions"
-msgstr ""
-
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr ""
@@ -2063,7 +2089,8 @@ msgstr "Wachtwoord"
 #: templates/zerver/login.html:112
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
+msgstr ""
+"Je bent al geregistreerd met dit e-mailadres. Hieronder inloggen graag."
 
 #: templates/zerver/login.html:139
 #, python-format
@@ -2114,7 +2141,9 @@ msgstr ""
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "Deze server staat niet toe dat leden van het publiek nieuwe organisaties creëren."
+msgstr ""
+"Deze server staat niet toe dat leden van het publiek nieuwe organisaties "
+"creëren."
 
 #: templates/zerver/realm_creation_failed.html:21
 #, python-format
@@ -2229,7 +2258,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord nodig hebben."
+msgstr ""
+"Dit wordt gebruikt voor mobiele apps en andere tools die een wachtwoord "
+"nodig hebben."
 
 #: templates/zerver/register.html:192
 msgid "Password strength"
@@ -2293,7 +2324,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">Selecteer account</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">Selecteer account</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:63
 msgid ""
@@ -2331,7 +2365,10 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Controleer goed of je de volledige URL hebt en probeer het opnieuw, of<a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\"> e-mail ons</a> en we lossen het zo snel mogelijk op!"
+msgstr ""
+"Controleer goed of je de volledige URL hebt en probeer het opnieuw, of<a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">"
+" e-mail ons</a> en we lossen het zo snel mogelijk op!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -2366,7 +2403,10 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\n                        %(browser_name)s wordt niet ondersteund door Zulip.\n                        "
+msgstr ""
+"\n"
+"                        %(browser_name)s wordt niet ondersteund door Zulip.\n"
+"                        "
 
 #: templates/zerver/unsupported_browser.html:18
 msgid ""
@@ -2459,7 +2499,8 @@ msgstr "Subdomein niet beschikbaar. Kies een ander."
 #: zerver/forms.py:178
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
+msgstr ""
+"De organisatie waar je bij wilt aansluiten met {email} bestaat hier niet."
 
 #: zerver/forms.py:186
 #, python-brace-format
@@ -2472,7 +2513,9 @@ msgstr "Vraag een uitnodiging voor {email} aan bij de organisatiebeheerder."
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich mogen registreren voor accounts in deze organisatie."
+msgstr ""
+"Je e-mailadres, {email}, bevindt zich niet in een van de domeinen die zich "
+"mogen registreren voor accounts in deze organisatie."
 
 #: zerver/forms.py:202 zerver/forms.py:227 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -2879,7 +2922,9 @@ msgstr ""
 
 #: zerver/lib/actions.py:7744
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen gestuurd."
+msgstr ""
+"Sommige e-mails zijn niet gevalideerd, dus we hebben geen uitnodigingen "
+"gestuurd."
 
 #: zerver/lib/actions.py:7752
 msgid "We weren't able to invite anyone."
@@ -2889,7 +2934,9 @@ msgstr "We konden niemand uitnodigen."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
+msgstr ""
+"Sommige van die adressen gebruiken al Zulip, dus we hebben ze geen "
+"uitnodiging gestuurd. We hebben alle anderen wel uitnodigingen gestuurd!"
 
 #: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
 msgid "A custom emoji with this name already exists."
@@ -3220,7 +3267,7 @@ msgstr ""
 
 #: zerver/lib/hotspots.py:28
 msgid "Settings"
-msgstr "Instellingen"
+msgstr "instellingen"
 
 #: zerver/lib/hotspots.py:30
 msgid "Go to Settings to configure your notifications and display settings."
@@ -4036,7 +4083,9 @@ msgstr "Ontbrekend 'last_event_id' argument"
 
 #: zerver/tornado/event_queue.py:666
 msgid "You are not authorized to get events from this queue"
-msgstr "Je bent niet geautoriseerd om de gebeurtenissen uit deze wachtrij op te halen"
+msgstr ""
+"Je bent niet geautoriseerd om de gebeurtenissen uit deze wachtrij op te "
+"halen"
 
 #: zerver/tornado/event_queue.py:672
 #, python-brace-format
@@ -4136,7 +4185,8 @@ msgstr "Je moet minimaal één e-mailadres opgeven."
 
 #: zerver/views/invite.py:65
 msgid "You must specify at least one stream for invitees to join."
-msgstr "Je moet ten minste één kanaal opgeven voordat genodigden kunnen deelnemen."
+msgstr ""
+"Je moet ten minste één kanaal opgeven voordat genodigden kunnen deelnemen."
 
 #: zerver/views/invite.py:75
 msgid "Stream does not exist with id: {}. No invites were sent."
@@ -4154,7 +4204,8 @@ msgstr ""
 
 #: zerver/views/message_edit.py:97
 msgid "Message edit history is disabled in this organization"
-msgstr "Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
+msgstr ""
+"Bewerkingsgeschiedenis van berichten is uitgeschakeld in deze organisatie"
 
 #: zerver/views/message_edit.py:153 zerver/views/message_edit.py:156
 msgid "You don't have permission to delete this message"
@@ -4365,7 +4416,9 @@ msgstr ""
 #: zerver/views/streams.py:112
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Gebruiker niet geautoriseerd om zoekopdrachten uit te voeren namens '{principal}'"
+msgstr ""
+"Gebruiker niet geautoriseerd om zoekopdrachten uit te voeren namens "
+"'{principal}'"
 
 #: zerver/views/streams.py:159
 msgid "Private streams cannot be made default."

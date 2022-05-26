@@ -1,17 +1,21 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# R S <renatke@gmail.com>, 2020
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# R S <renatke@gmail.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-31 17:40+0000\n"
-"PO-Revision-Date: 2015-12-06 00:18+0000\n"
-"Last-Translator: R S <renatke@gmail.com>, 2020\n"
-"Language-Team: Lithuanian (http://www.transifex.com/zulip/zulip/language/lt/)\n"
+"POT-Creation-Date: 2022-03-31 17:37+0000\n"
+"PO-Revision-Date: 2022-03-29 15:39+0000\n"
+"Last-Translator: R S <renatke@gmail.com>, 2022\n"
+"Language-Team: Lithuanian (https://www.transifex.com/zulip/teams/53893/lt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -53,7 +57,8 @@ msgstr ""
 
 #: analytics/views/stats.py:327 analytics/views/stats.py:362
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Analitiniai duomenys negalimi. Susisiekite su serverio administratoriumi."
+msgstr ""
+"Analitiniai duomenys negalimi. Susisiekite su serverio administratoriumi."
 
 #: analytics/views/support.py:166 zerver/views/streams.py:325
 msgid "Invalid parameters"
@@ -533,7 +538,9 @@ msgstr "Patikrinkite savo el. paštą, kad galėtume pradėti."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Vis dar negavote el. laiško? Galime jį <a href=\"#\" id=\"resend_email_link\">atsiųsti iš naujo</a>."
+msgstr ""
+"Vis dar negavote el. laiško? Galime jį <a href=\"#\" "
+"id=\"resend_email_link\">atsiųsti iš naujo</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -1782,10 +1789,6 @@ msgstr "History"
 msgid "Jobs"
 msgstr ""
 
-#: templates/zerver/footer.html:146
-msgid "Website attributions"
-msgstr ""
-
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
 msgstr ""
@@ -2226,7 +2229,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Tai naudojama mobiliosioms programėlėms ir kitiems įrankiams, kuriems reikia slaptažodžio."
+msgstr ""
+"Tai naudojama mobiliosioms programėlėms ir kitiems įrankiams, kuriems reikia"
+" slaptažodžio."
 
 #: templates/zerver/register.html:192
 msgid "Password strength"
@@ -2876,7 +2881,8 @@ msgstr ""
 
 #: zerver/lib/actions.py:7744
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Kai kurie el. pašto adresai nepatvirtinti, todėl pakvietimų neišsiuntėme."
+msgstr ""
+"Kai kurie el. pašto adresai nepatvirtinti, todėl pakvietimų neišsiuntėme."
 
 #: zerver/lib/actions.py:7752
 msgid "We weren't able to invite anyone."
@@ -2886,7 +2892,9 @@ msgstr "Negalėjome nieko pakviesti."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Kai kuriuos el. pašto adresus turintys žmonės jau naudoja programėlę, todėl pakvietimo jiems neišsiuntėme. Tačiau visi kiti pakvietimą gavo!"
+msgstr ""
+"Kai kuriuos el. pašto adresus turintys žmonės jau naudoja programėlę, todėl "
+"pakvietimo jiems neišsiuntėme. Tačiau visi kiti pakvietimą gavo!"
 
 #: zerver/lib/actions.py:7990 zerver/views/realm_emoji.py:36
 msgid "A custom emoji with this name already exists."
