@@ -101,7 +101,11 @@ def build_email(
                 stringified = str(Address(addr_spec=to_user.delivery_email))
             to_emails.append(stringified)
 
-    extra_headers = {}
+    # Attempt to suppress all auto-replies.  This header originally
+    # came out of Microsoft Outlook and friends, but seems reasonably
+    # commonly-recognized.
+    extra_headers = {"X-Auto-Response-Suppress": "All"}
+
     if realm is not None:
         # formaddr is meant for formatting (display_name, email_address) pair for headers like "To",
         # but we can use its utility for formatting the List-Id header, as it follows the same format,
