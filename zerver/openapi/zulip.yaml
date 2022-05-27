@@ -6973,7 +6973,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream id",
+                        "msg": "Invalid stream ID",
                         "result": "error",
                       }
                     description: |
@@ -13259,7 +13259,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream id",
+                        "msg": "Invalid stream ID",
                         "result": "error",
                       }
                     description: |
@@ -13498,7 +13498,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream id",
+                        "msg": "Invalid stream ID",
                         "result": "error",
                       }
                     description: |
@@ -13533,7 +13533,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream id",
+                        "msg": "Invalid stream ID",
                         "result": "error",
                       }
                     description: |
@@ -13649,7 +13649,7 @@ paths:
                   - example:
                       {
                         "code": "BAD_REQUEST",
-                        "msg": "Invalid stream id",
+                        "msg": "Invalid stream ID",
                         "result": "error",
                       }
                     description: |

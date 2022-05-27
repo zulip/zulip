@@ -186,7 +186,7 @@ class MutedTopicsTests(ZulipTestCase):
 
         data = {"stream_id": 999999999, "topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
         data = {"topic": "Verona3", "op": "add"}
         result = self.api_patch(user, url, data)

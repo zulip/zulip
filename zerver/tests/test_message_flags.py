@@ -275,7 +275,7 @@ class UnreadCountTests(ZulipTestCase):
                 "stream_id": invalid_stream_id,
             },
         )
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_mark_all_topics_unread_with_invalid_stream_name(self) -> None:
         self.login("hamlet")
@@ -287,7 +287,7 @@ class UnreadCountTests(ZulipTestCase):
                 "topic_name": "whatever",
             },
         )
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_mark_all_in_stream_topic_read(self) -> None:
         self.login("hamlet")

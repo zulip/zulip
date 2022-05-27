@@ -1778,7 +1778,7 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
         self,
@@ -1798,7 +1798,7 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
 
-        self.assert_json_error(result, "Invalid stream id")
+        self.assert_json_error(result, "Invalid stream ID")
 
     def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
         self,
