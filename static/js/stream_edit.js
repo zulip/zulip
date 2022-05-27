@@ -639,7 +639,7 @@ export function initialize() {
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
             ui_report.client_error(
-                $t_html({defaultMessage: "Invalid stream id"}),
+                $t_html({defaultMessage: "Invalid stream ID"}),
                 $(".stream_change_property_info"),
             );
             return;
@@ -649,7 +649,7 @@ export function initialize() {
             const stream_id = $(".dialog_submit_button").data("stream-id");
             if (!stream_id) {
                 ui_report.client_error(
-                    $t_html({defaultMessage: "Invalid stream id"}),
+                    $t_html({defaultMessage: "Invalid stream ID"}),
                     $(".stream_change_property_info"),
                 );
                 return;
