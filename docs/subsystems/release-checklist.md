@@ -109,6 +109,9 @@ preparing a new release.
     number for future Cloud deployments.
   - Consider removing a few old releases from ReadTheDocs; we keep about
     two years of back-versions.
+  - Update Transifex to add the new `4.x` style release branch
+    resources and archive the previous release branch's resources with
+    the "Translations can't translate this resource" setting.
 - Following a minor release (e.g. 3.2):
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
