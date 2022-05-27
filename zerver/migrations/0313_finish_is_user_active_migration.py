@@ -2,11 +2,11 @@
 
 from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import connection, migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def backfill_is_user_active(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def backfill_is_user_active(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Subscription = apps.get_model("zerver", "Subscription")
     BATCH_SIZE = 1000
     lower_id_bound = 0

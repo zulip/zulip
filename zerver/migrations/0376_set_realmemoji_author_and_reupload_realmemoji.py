@@ -1,9 +1,9 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def set_emoji_author(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def set_emoji_author(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     This migration establishes the invariant that all RealmEmoji objects have .author set
     and queues events for reuploading all RealmEmoji.

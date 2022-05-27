@@ -3,13 +3,15 @@ from typing import Any, Dict
 
 import orjson
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count
 from django.utils.timezone import now as timezone_now
 
 
-def set_realm_admins_as_realm_owners(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def set_realm_admins_as_realm_owners(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
 

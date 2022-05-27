@@ -3,7 +3,7 @@
 from typing import Any, Dict, Optional
 
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # We include a copy of this structure as it was at the time this
@@ -38,7 +38,7 @@ def get_video_chat_provider_detail(
 
 
 def update_existing_video_chat_provider_values(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     Realm = apps.get_model("zerver", "Realm")
 
@@ -49,7 +49,7 @@ def update_existing_video_chat_provider_values(
         realm.save(update_fields=["video_chat_provider"])
 
 
-def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
 
     for realm in Realm.objects.all():

@@ -3,11 +3,11 @@
 import json
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def update_realmauditlog_values(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def update_realmauditlog_values(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     This migration fixes two issues with the RealmAuditLog format for certain event types:
     * The notifications_stream and signup_notifications_stream fields had the

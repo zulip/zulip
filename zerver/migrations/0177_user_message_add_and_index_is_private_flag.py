@@ -2,12 +2,12 @@
 
 import bitfield.models
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import F, Q
 
 
-def reset_is_private_flag(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reset_is_private_flag(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserMessage = apps.get_model("zerver", "UserMessage")
     UserProfile = apps.get_model("zerver", "UserProfile")
     user_profile_ids = UserProfile.objects.all().order_by("id").values_list("id", flat=True)

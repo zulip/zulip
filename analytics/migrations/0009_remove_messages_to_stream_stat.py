@@ -1,10 +1,10 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def delete_messages_sent_to_stream_stat(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     UserCount = apps.get_model("analytics", "UserCount")
     StreamCount = apps.get_model("analytics", "StreamCount")

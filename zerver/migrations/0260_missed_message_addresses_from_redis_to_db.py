@@ -2,7 +2,7 @@ import secrets
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # Imported to avoid needing to duplicate Redis-related code.
@@ -14,7 +14,7 @@ def generate_missed_message_token() -> str:
 
 
 def move_missed_message_addresses_to_database(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     redis_client = get_redis_client()
     MissedMessageEmailAddress = apps.get_model("zerver", "MissedMessageEmailAddress")

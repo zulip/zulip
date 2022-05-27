@@ -3,7 +3,7 @@ from typing import List, Optional, TypedDict
 
 import orjson
 from django.db import migrations, transaction
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min, Model
 
@@ -116,7 +116,7 @@ def backfill_message_edit_history_chunk(first_id: int, last_id: int, message_mod
 
 
 def copy_and_update_message_edit_history(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     Message = apps.get_model("zerver", "Message")
     ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")

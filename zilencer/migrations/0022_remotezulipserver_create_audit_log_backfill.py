@@ -1,10 +1,10 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def backfill_remote_zulip_server_creation_log_events(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     RemoteZulipServer = apps.get_model("zilencer", "RemoteZulipServer")
     RemoteZulipServerAuditLog = apps.get_model("zilencer", "RemoteZulipServerAuditLog")
@@ -22,7 +22,7 @@ def backfill_remote_zulip_server_creation_log_events(
     RemoteZulipServerAuditLog.objects.bulk_create(objects_to_create)
 
 
-def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     RemoteZulipServerAuditLog = apps.get_model("zilencer", "RemoteZulipServerAuditLog")
     RemoteZulipServerAuditLog.REMOTE_SERVER_CREATED = 10215
     RemoteZulipServerAuditLog.objects.filter(

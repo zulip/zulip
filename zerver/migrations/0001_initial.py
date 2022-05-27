@@ -8,14 +8,16 @@ from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models.functions import Upper
 
 from zerver.models import generate_email_token_for_stream
 
 
-def migrate_existing_attachment_data(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def migrate_existing_attachment_data(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     Attachment = apps.get_model("zerver", "Attachment")
     Recipient = apps.get_model("zerver", "Recipient")
     Stream = apps.get_model("zerver", "Stream")

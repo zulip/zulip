@@ -2,12 +2,12 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def set_realm_for_existing_scheduledemails(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     scheduledemail_model = apps.get_model("zerver", "ScheduledEmail")
     preregistrationuser_model = apps.get_model("zerver", "PreregistrationUser")

@@ -1,9 +1,11 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def render_all_stream_descriptions(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def render_all_stream_descriptions(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     # FIXME: Application code should not be imported from migrations.
     from zerver.lib.streams import render_stream_description
 

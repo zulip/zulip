@@ -4,7 +4,7 @@ import shutil
 import boto3
 from django.conf import settings
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from mypy_boto3_s3.type_defs import CopySourceTypeDef
 
@@ -82,7 +82,9 @@ def get_emoji_file_name(emoji_file_name: str, new_name: str) -> str:
     return "".join((new_name, image_ext))
 
 
-def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def migrate_realm_emoji_image_files(
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
+) -> None:
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     uploader = get_uploader()
     for realm_emoji in RealmEmoji.objects.all():
@@ -93,7 +95,7 @@ def migrate_realm_emoji_image_files(apps: StateApps, schema_editor: DatabaseSche
         realm_emoji.save(update_fields=["file_name"])
 
 
-def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     # Ensures that migration can be re-run in case of a failure.
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     for realm_emoji in RealmEmoji.objects.all():
