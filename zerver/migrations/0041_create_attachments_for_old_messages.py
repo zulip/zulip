@@ -2,7 +2,7 @@ import os
 import re
 
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 attachment_url_re = re.compile(r"[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)")
@@ -14,7 +14,7 @@ def attachment_url_to_path_id(attachment_url: str) -> str:
     return re.sub("[.]+$", "", path_id_raw, re.M)
 
 
-def check_and_create_attachments(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     STREAM = 2
     Message = apps.get_model("zerver", "Message")
     Attachment = apps.get_model("zerver", "Attachment")

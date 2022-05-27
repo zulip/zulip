@@ -1,10 +1,10 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 
 
-def set_string_id_using_domain(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def set_string_id_using_domain(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     for realm in Realm.objects.all():
         if not realm.string_id:

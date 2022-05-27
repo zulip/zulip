@@ -5,12 +5,12 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.db import migrations, transaction
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
 def set_expiry_date_for_existing_confirmations(
-    apps: StateApps, schema_editor: DatabaseSchemaEditor
+    apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     Confirmation = apps.get_model("confirmation", "Confirmation")
     if not Confirmation.objects.exists():

@@ -1,12 +1,12 @@
 from typing import List
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
 
-def revoke_invitations(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def revoke_invitations(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Realm = apps.get_model("zerver", "Realm")
     Confirmation = apps.get_model("confirmation", "Confirmation")
     Confirmation.INVITATION = 2

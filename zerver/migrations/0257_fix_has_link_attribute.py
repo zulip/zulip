@@ -5,7 +5,7 @@ from typing import cast
 
 import lxml
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 BATCH_SIZE = 1000
@@ -55,7 +55,7 @@ def process_batch(apps: StateApps, id_start: int, id_end: int, last_id: int) -> 
         message.save(update_fields=["has_link", "has_attachment", "has_image"])
 
 
-def fix_has_link(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def fix_has_link(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Message = apps.get_model("zerver", "Message")
     if not Message.objects.exists():
         # Nothing to do, and Message.objects.latest() will crash.

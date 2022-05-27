@@ -6,7 +6,7 @@ import orjson
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
@@ -15,7 +15,7 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.utils import generate_api_key
 
 
-def ensure_no_empty_passwords(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def ensure_no_empty_passwords(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """With CVE-2019-18933, it was possible for certain users created
     using social login (e.g. Google/GitHub auth) to have the empty
     string as their password in the Zulip database, rather than

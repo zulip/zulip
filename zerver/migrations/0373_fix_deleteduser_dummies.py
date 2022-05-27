@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -40,7 +40,7 @@ def get_fake_email_domain(realm: Any) -> str:
     return settings.FAKE_EMAIL_DOMAIN
 
 
-def fix_dummy_users(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def fix_dummy_users(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     """
     do_delete_users had two bugs:
     1. Creating the replacement dummy users with active=True

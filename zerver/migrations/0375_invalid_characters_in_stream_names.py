@@ -1,7 +1,7 @@
 import unicodedata
 
 from django.db import connection, migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 # There are 66 Unicode non-characters; see
@@ -18,7 +18,7 @@ def character_is_printable(character: str) -> bool:
     return not (unicodedata.category(character) in ["Cc", "Cs"] or character in unicode_non_chars)
 
 
-def fix_stream_names(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def fix_stream_names(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Stream = apps.get_model("zerver", "Stream")
     Realm = apps.get_model("zerver", "Realm")
 

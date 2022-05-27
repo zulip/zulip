@@ -2,11 +2,11 @@ from typing import Dict, List
 
 import orjson
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def move_to_seperate_table(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     AlertWord = apps.get_model("zerver", "AlertWord")
 
@@ -24,7 +24,7 @@ def move_to_seperate_table(apps: StateApps, schema_editor: DatabaseSchemaEditor)
         )
 
 
-def move_back_to_user_profile(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def move_back_to_user_profile(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     AlertWord = apps.get_model("zerver", "AlertWord")
     UserProfile = apps.get_model("zerver", "UserProfile")
 

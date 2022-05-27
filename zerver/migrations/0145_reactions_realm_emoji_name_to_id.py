@@ -2,11 +2,11 @@ from collections import defaultdict
 from typing import Any, Dict
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import DatabaseSchemaEditor
+from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
-def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def realm_emoji_name_to_id(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Reaction = apps.get_model("zerver", "Reaction")
     RealmEmoji = apps.get_model("zerver", "RealmEmoji")
     realm_emoji_by_realm_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
@@ -33,7 +33,7 @@ def realm_emoji_name_to_id(apps: StateApps, schema_editor: DatabaseSchemaEditor)
             reaction.save()
 
 
-def reversal(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
+def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
     Reaction = apps.get_model("zerver", "Reaction")
     for reaction in Reaction.objects.filter(reaction_type="realm_emoji"):
         reaction.emoji_code = reaction.emoji_name
