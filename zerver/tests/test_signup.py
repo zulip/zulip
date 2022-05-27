@@ -3050,7 +3050,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
-        self.assert_json_error(result, "Invalid stream id 54321. No invites were sent.")
+        self.assert_json_error(result, "Invalid stream ID 54321. No invites were sent.")
 
 
 class EmailUnsubscribeTests(ZulipTestCase):

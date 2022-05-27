@@ -187,7 +187,7 @@ def generate_multiuse_invite_backend(
         try:
             (stream, sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
-            raise JsonableError(_("Invalid stream id {}. No invites were sent.").format(stream_id))
+            raise JsonableError(_("Invalid stream ID {}. No invites were sent.").format(stream_id))
         streams.append(stream)
 
     invite_link = do_create_multiuse_invite_link(
