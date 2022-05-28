@@ -318,6 +318,13 @@ def update_stream_backend(
         if is_private and stream.id in default_stream_ids:
             raise JsonableError(_("Default streams cannot be made private."))
 
+        if (
+            not is_private
+            and history_public_to_subscribers is False
+            and not stream.realm.is_zephyr_mirror_realm
+        ):
+            raise JsonableError(_("Invalid parameters"))
+
     if is_web_public:
         # Enforce restrictions on creating web-public streams.
         if not user_profile.realm.web_public_streams_enabled():
