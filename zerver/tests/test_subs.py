@@ -1018,6 +1018,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(attachment.is_web_public)
 
     def test_try_make_stream_public_with_private_history(self) -> None:
+        # We only support public streams with private history if
+        # is_zephyr_mirror_realm, and don't allow changing stream
+        # permissions in such realms.  So changing the
+        # history_public_to_subscribers property of a public stream is
+        # not possible in Zulip today
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         realm = user_profile.realm
@@ -1030,30 +1035,7 @@ class StreamAdminTest(ZulipTestCase):
         }
         stream_id = self.subscribe(user_profile, "public_stream").id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_success(result)
-        stream = get_stream("public_stream", realm)
-        self.assertFalse(stream.invite_only)
-        self.assertTrue(stream.history_public_to_subscribers)
-
-        messages = get_topic_messages(user_profile, stream, "stream events")
-        self.assert_length(messages, 1)
-
-        # This test verifies the (weird) outcome for a transition that
-        # is not currently possible.  For background, we only support
-        # public streams with private history if
-        # is_zephyr_mirror_realm, and don't allow changing stream
-        # permissions in such realms.  So changing the
-        # history_public_to_subscribers property of a public stream is
-        # not possible in Zulip today; this test covers that situation
-        # and will produce the odd/wrong output of "Public to Public".
-        #
-        # This test should be corrected if we add support for such a
-        # stream configuration transition.
-        expected_notification = (
-            f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Public**."
-        )
-        self.assertEqual(messages[0].content, expected_notification)
+        self.assert_json_error(result, "Invalid parameters")
 
     def test_subscriber_ids_with_stream_history_access(self) -> None:
         hamlet = self.example_user("hamlet")
