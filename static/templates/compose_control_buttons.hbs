@@ -13,7 +13,8 @@
     <div class="{{#if message_id}}hide-lg{{else}}hide-sm{{/if}}">
         {{> compose_control_buttons_in_popover}}
     </div>
-    <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tippy-content="{{t 'Drafts' }}">
+    <a role="button" class="compose_control_button compose_draft_button hide-sm" tabindex=0 href="#drafts" data-tooltip-template-id="compose_draft_tooltip">
+    <template id="compose_draft_tooltip">{{t 'Drafts ' }} <span class="hotkey-hint">(d)</span></template>
         {{t 'Drafts' }}
     </a>
     <div class="compose_control_menu_wrapper" role="button" tabindex=0>
