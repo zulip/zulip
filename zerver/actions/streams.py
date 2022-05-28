@@ -851,8 +851,6 @@ def do_change_stream_permission(
     # But absent such a refactoring, it's important to assert that
     # we're not requesting an unsupported configurations.
     if is_web_public:
-        assert history_public_to_subscribers is not False
-        assert invite_only is not True
         stream.is_web_public = True
         stream.invite_only = False
         stream.history_public_to_subscribers = True
