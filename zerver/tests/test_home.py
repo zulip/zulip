@@ -318,7 +318,7 @@ class HomeTest(ZulipTestCase):
         # Redirect to login if spectator access is disabled.
         result = self.client_get("/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/login/")
+        self.assertEqual(result["Location"], "/login/")
 
         # Load webapp directly if spectator access is enabled.
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)

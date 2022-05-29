@@ -23,7 +23,7 @@ class ThumbnailTest(ZulipTestCase):
 
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
         self.assertEqual(result.status_code, 302, result)
-        self.assertEqual(uri, result.url)
+        self.assertEqual(uri, result["Location"])
 
         self.login("iago")
         result = self.client_get("/thumbnail", {"url": uri[1:], "size": "full"})
@@ -34,19 +34,19 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/56c362a24201593891955ff526b3b412c0f9fcd2/68747470733a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
         uri = "http://www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
         uri = "//www.google.com/images/srpr/logo4w.png"
         result = self.client_get("/thumbnail", {"url": uri, "size": "full"})
         self.assertEqual(result.status_code, 302, result)
         base = "https://external-content.zulipcdn.net/external_content/676530cf4b101d56f56cc4a37c6ef4d4fd9b0c03/2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67"
-        self.assertEqual(base, result.url)
+        self.assertEqual(base, result["Location"])
 
     @override_settings(RATE_LIMITING=True)
     def test_thumbnail_redirect_for_spectator(self) -> None:

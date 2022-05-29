@@ -85,8 +85,8 @@ class TestVideoCall(ZulipTestCase):
             {"code": "code", "state": '{"realm":"zephyr","sid":"somesid"}'},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertIn("http://zephyr.testserver/", response.url)
-        self.assertIn("somesid", response.url)
+        self.assertIn("http://zephyr.testserver/", response["Location"])
+        self.assertIn("somesid", response["Location"])
 
     def test_create_video_sid_error(self) -> None:
         response = self.client_get(
@@ -214,7 +214,7 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(isinstance(response, HttpResponseRedirect), True)
         self.assertEqual(
-            response.url,
+            response["Location"],
             "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
             "password=a&fullName=King%20Hamlet&createTime=0&checksum=47ca959b4ff5c8047a5a56d6e99c07e17eac43dbf792afc0a2a9f6491ec0048b",
         )

@@ -176,7 +176,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         for url in ("/register/", "/login/"):
             result = self.client_get(url)
             self.assertEqual(result.status_code, 302)
-            self.assertIn("deactivated", result.url)
+            self.assertIn("deactivated", result["Location"])
 
     def test_redirection_for_active_realm(self) -> None:
         for url in ("/register/", "/login/"):
@@ -186,7 +186,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
     def test_deactivation_notice_when_realm_is_active(self) -> None:
         result = self.client_get("/accounts/deactivated/")
         self.assertEqual(result.status_code, 302)
-        self.assertIn("login", result.url)
+        self.assertIn("login", result["Location"])
 
     def test_deactivation_notice_when_deactivated(self) -> None:
         realm = get_realm("zulip")
@@ -403,9 +403,11 @@ class PasswordResetTest(ZulipTestCase):
         )
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.endswith(f"/{PasswordResetConfirmView.reset_url_token}/"))
+        self.assertTrue(
+            result["Location"].endswith(f"/{PasswordResetConfirmView.reset_url_token}/")
+        )
 
-        final_reset_url = result.url
+        final_reset_url = result["Location"]
         result = self.client_get(final_reset_url)
         self.assertEqual(result.status_code, 200)
 
@@ -440,7 +442,9 @@ class PasswordResetTest(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True, ROOT_SUBDOMAIN_ALIASES=["alias"]):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+            self.assertEqual(
+                result["Location"], "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F"
+            )
 
         mock_get_host.return_value = "www.testserver"
         with self.settings(
@@ -448,7 +452,9 @@ class PasswordResetTest(ZulipTestCase):
         ):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+            self.assertEqual(
+                result["Location"], "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F"
+            )
 
     @patch("django.http.HttpRequest.get_host")
     def test_password_reset_page_redirects_for_root_domain_when_root_domain_landing_page_is_enabled(
@@ -458,7 +464,9 @@ class PasswordResetTest(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+            self.assertEqual(
+                result["Location"], "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F"
+            )
 
         mock_get_host.return_value = "www.testserver.com"
         with self.settings(
@@ -467,7 +475,9 @@ class PasswordResetTest(ZulipTestCase):
         ):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F")
+            self.assertEqual(
+                result["Location"], "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F"
+            )
 
     @patch("django.http.HttpRequest.get_host")
     def test_password_reset_page_works_for_root_alias_when_root_domain_landing_page_is_not_enabled(
@@ -912,7 +922,7 @@ class LoginTest(ZulipTestCase):
             "/accounts/home/", {"email": self.nonreg_email("test")}, subdomain="zulip"
         )
         self.assertEqual(result.status_code, 302)
-        self.assertEqual("/accounts/deactivated/", result.url)
+        self.assertEqual("/accounts/deactivated/", result["Location"])
 
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user("test")
@@ -936,7 +946,7 @@ class LoginTest(ZulipTestCase):
         email = self.nonreg_email("test")
         result = self.client_post("/accounts/home/", {"email": email}, subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertNotIn("deactivated", result.url)
+        self.assertNotIn("deactivated", result["Location"])
 
         realm = get_realm("zulip")
         realm.deactivated = True
@@ -944,7 +954,7 @@ class LoginTest(ZulipTestCase):
 
         result = self.submit_reg_form_for_user(email, "abcd1234", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual("/accounts/deactivated/", result.url)
+        self.assertEqual("/accounts/deactivated/", result["Location"])
 
         with self.assertRaises(UserProfile.DoesNotExist):
             self.nonreg_user("test")
@@ -959,7 +969,7 @@ class LoginTest(ZulipTestCase):
 
         result = self.login_with_return(self.example_email("hamlet"), subdomain="zulip")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual("/accounts/deactivated/", result.url)
+        self.assertEqual("/accounts/deactivated/", result["Location"])
 
     def test_logout(self) -> None:
         self.login("hamlet")
@@ -2259,7 +2269,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response.url,
+            response["Location"],
             reverse("login") + "?" + urlencode({"email": email, "already_registered": 1}),
         )
 
@@ -2280,7 +2290,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
         response = self.submit_reg_form_for_user(email, "password", key=registration_key)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, "http://zulip.testserver/")
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
         self.subscribe_realm_to_monthly_plan_on_manual_license_management(realm, 5, 5)
 
@@ -3341,9 +3351,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        result = self.client_get(result.url, subdomain=string_id)
+        result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://zuliptest.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -3385,9 +3395,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        result = self.client_get(result.url, subdomain=string_id)
+        result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://zuliptest.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -3439,9 +3449,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        result = self.client_get(result.url, subdomain=string_id)
+        result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://zuliptest.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -3482,9 +3492,9 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        result = self.client_get(result.url, subdomain=string_id)
+        result = self.client_get(result["Location"], subdomain=string_id)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "http://zuliptest.testserver")
+        self.assertEqual(result["Location"], "http://zuliptest.testserver")
 
         # Make sure the realm is created
         realm = get_realm(string_id)
@@ -3589,10 +3599,10 @@ class RealmCreationTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
 
-        result = self.client_get(result.url, subdomain=string_id)
-        self.assertEqual(result.url, "http://zuliptest.testserver/upgrade/?onboarding=true")
+        result = self.client_get(result["Location"], subdomain=string_id)
+        self.assertEqual(result["Location"], "http://zuliptest.testserver/upgrade/?onboarding=true")
 
-        result = self.client_get(result.url, subdomain=string_id)
+        result = self.client_get(result["Location"], subdomain=string_id)
         self.assert_in_success_response(["Not ready to start your trial?"], result)
 
         realm = get_realm(string_id)
@@ -3717,7 +3727,9 @@ class RealmCreationTest(ZulipTestCase):
             email, password, realm_subdomain="a-0", realm_name=realm_name
         )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith("http://a-0.testserver/accounts/login/subdomain/"))
+        self.assertTrue(
+            result["Location"].startswith("http://a-0.testserver/accounts/login/subdomain/")
+        )
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_using_old_subdomain_of_a_realm(self) -> None:
@@ -3760,7 +3772,9 @@ class RealmCreationTest(ZulipTestCase):
             email, password, realm_subdomain="", realm_name=realm_name
         )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith("http://testserver/accounts/login/subdomain/"))
+        self.assertTrue(
+            result["Location"].startswith("http://testserver/accounts/login/subdomain/")
+        )
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_subdomain_restrictions_root_domain_option(self) -> None:
@@ -3793,7 +3807,9 @@ class RealmCreationTest(ZulipTestCase):
             realm_name=realm_name,
         )
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(result.url.startswith("http://testserver/accounts/login/subdomain/"))
+        self.assertTrue(
+            result["Location"].startswith("http://testserver/accounts/login/subdomain/")
+        )
 
     def test_is_root_domain_available(self) -> None:
         self.assertTrue(is_root_domain_available())
@@ -4046,7 +4062,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
         self.assertIn("login", result["Location"])
-        result = self.client_get(result.url)
+        result = self.client_get(result["Location"])
         self.assert_in_response("You've already registered", result)
 
     def test_signup_system_bot(self) -> None:
@@ -4054,7 +4070,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_post("/accounts/home/", {"email": email}, subdomain="lear")
         self.assertEqual(result.status_code, 302)
         self.assertIn("login", result["Location"])
-        result = self.client_get(result.url)
+        result = self.client_get(result["Location"])
 
         # This is not really the right error message, but at least it's an error.
         self.assert_in_response("You've already registered", result)
@@ -4813,7 +4829,7 @@ class UserSignUpTest(InviteUserBase):
             with self.assertRaises(UserProfile.DoesNotExist):
                 user_profile = UserProfile.objects.get(delivery_email=email)
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+            self.assertEqual(result["Location"], "/accounts/login/?email=newuser%40zulip.com")
 
             # Submit the final form with the correct password.
             result = self.submit_reg_form_for_user(
@@ -5070,7 +5086,7 @@ class UserSignUpTest(InviteUserBase):
             )
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because password was wrong
-            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+            self.assertEqual(result["Location"], "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # For the rest of the test we delete the user from ldap.
@@ -5093,7 +5109,7 @@ class UserSignUpTest(InviteUserBase):
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because emails matching LDAP_APPEND_DOMAIN,
             # aren't allowed to create non-LDAP accounts.
-            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+            self.assertEqual(result["Location"], "/accounts/login/?email=newuser%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
             self.assertEqual(
                 debug_log.output,
@@ -5137,7 +5153,7 @@ class UserSignUpTest(InviteUserBase):
                 ],
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "http://zulip.testserver/")
+            self.assertEqual(result["Location"], "http://zulip.testserver/")
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, "Non-LDAP Full Name")
@@ -5190,7 +5206,7 @@ class UserSignUpTest(InviteUserBase):
             )
             self.assertEqual(result.status_code, 302)
             # We get redirected back to the login page because password was wrong
-            self.assertEqual(result.url, "/accounts/login/?email=newuser_email%40zulip.com")
+            self.assertEqual(result["Location"], "/accounts/login/?email=newuser_email%40zulip.com")
             self.assertFalse(UserProfile.objects.filter(delivery_email=email).exists())
 
         # If the user's email is not in the LDAP directory , though, we
@@ -5243,7 +5259,7 @@ class UserSignUpTest(InviteUserBase):
                 ],
             )
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "http://zulip.testserver/")
+            self.assertEqual(result["Location"], "http://zulip.testserver/")
             user_profile = UserProfile.objects.get(delivery_email=email)
             # Name comes from the POST request, not LDAP
             self.assertEqual(user_profile.full_name, "Non-LDAP Full Name")
@@ -5660,11 +5676,11 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/")
+            self.assertEqual(result["Location"], "/accounts/go/")
 
             result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
+            self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_redirects_for_root_domain(self, mock_get_host: MagicMock) -> None:
@@ -5672,11 +5688,11 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/")
+            self.assertEqual(result["Location"], "/accounts/go/")
 
             result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
+            self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
         mock_get_host.return_value = "www.testserver.com"
         with self.settings(
@@ -5686,11 +5702,11 @@ class TestLoginPage(ZulipTestCase):
         ):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/")
+            self.assertEqual(result["Location"], "/accounts/go/")
 
             result = self.client_get("/en/login/", {"next": "/upgrade/"})
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, "/accounts/go/?next=%2Fupgrade%2F")
+            self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
     @patch("django.http.HttpRequest.get_host")
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
@@ -5732,7 +5748,7 @@ class TestLoginPage(ZulipTestCase):
         session.save()
         result = self.client_get("http://auth.testserver/login/")
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, zulip_realm.uri)
+        self.assertEqual(result["Location"], zulip_realm.uri)
 
         session = self.client.session
         session["subdomain"] = "invalid"
@@ -5760,9 +5776,9 @@ class TestFindMyTeam(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            result.url, "/accounts/find/?emails=iago%40zulip.com%2CcordeliA%40zulip.com"
+            result["Location"], "/accounts/find/?emails=iago%40zulip.com%2CcordeliA%40zulip.com"
         )
-        result = self.client_get(result.url)
+        result = self.client_get(result["Location"])
         content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn("iago@zulip.com", content)
@@ -5783,9 +5799,10 @@ class TestFindMyTeam(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
-            result.url, "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com"
+            result["Location"],
+            "/accounts/find/?emails=iago%40zulip.com%2Cinvalid_email%40zulip.com",
         )
-        result = self.client_get(result.url)
+        result = self.client_get(result["Location"])
         content = result.content.decode()
         self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn(self.example_email("iago"), content)
@@ -5819,7 +5836,7 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
         self.assert_length(outbox, 1)
@@ -5829,7 +5846,7 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
@@ -5839,7 +5856,7 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
+        self.assertEqual(result["Location"], "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
@@ -5848,7 +5865,7 @@ class TestFindMyTeam(ZulipTestCase):
         data = {"emails": self.example_email("webhook_bot")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, "/accounts/find/?emails=webhook-bot%40zulip.com")
+        self.assertEqual(result["Location"], "/accounts/find/?emails=webhook-bot%40zulip.com")
         from django.core.mail import outbox
 
         self.assert_length(outbox, 0)
