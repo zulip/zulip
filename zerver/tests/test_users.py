@@ -25,6 +25,7 @@ from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
     do_delete_user,
+    do_delete_user_preserving_messages,
 )
 from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.bulk_create import create_users
@@ -2315,6 +2316,87 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(), 3)
 
         self.assertEqual(Message.objects.filter(sender_id=hamlet_user_id).count(), 0)
+
+        # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
+        # in a correct state.
+        for recipient_id in huddle_with_hamlet_recipient_ids:
+            self.assertTrue(
+                Subscription.objects.filter(
+                    user_profile=replacement_dummy_user, recipient_id=recipient_id
+                ).exists()
+            )
+
+    def test_do_delete_user_preserving_messages(self) -> None:
+        """
+        This test is extremely similar to the one for do_delete_user, with the only difference being
+        that Messages are supposed to be preserved. All other effects should be identical.
+        """
+
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        hamlet_personal_recipient = hamlet.recipient
+        hamlet_user_id = hamlet.id
+        hamlet_date_joined = hamlet.date_joined
+
+        self.send_personal_message(cordelia, hamlet)
+        self.send_personal_message(hamlet, cordelia)
+
+        personal_message_ids_to_hamlet = Message.objects.filter(
+            recipient=hamlet_personal_recipient
+        ).values_list("id", flat=True)
+        self.assertGreater(len(personal_message_ids_to_hamlet), 0)
+        self.assertTrue(Message.objects.filter(sender=hamlet).exists())
+
+        huddle_message_ids_from_cordelia = [
+            self.send_huddle_message(cordelia, [hamlet, othello]) for i in range(3)
+        ]
+        huddle_message_ids_from_hamlet = [
+            self.send_huddle_message(hamlet, [cordelia, othello]) for i in range(3)
+        ]
+
+        huddle_with_hamlet_recipient_ids = list(
+            Subscription.objects.filter(
+                user_profile=hamlet, recipient__type=Recipient.HUDDLE
+            ).values_list("recipient_id", flat=True)
+        )
+        self.assertGreater(len(huddle_with_hamlet_recipient_ids), 0)
+
+        original_messages_from_hamlet_count = Message.objects.filter(
+            sender_id=hamlet_user_id
+        ).count()
+        self.assertGreater(original_messages_from_hamlet_count, 0)
+
+        do_delete_user_preserving_messages(hamlet)
+
+        replacement_dummy_user = UserProfile.objects.get(id=hamlet_user_id, realm=realm)
+
+        self.assertEqual(
+            replacement_dummy_user.delivery_email, f"deleteduser{hamlet_user_id}@zulip.testserver"
+        )
+        self.assertEqual(replacement_dummy_user.is_mirror_dummy, True)
+        self.assertEqual(replacement_dummy_user.is_active, False)
+        self.assertEqual(replacement_dummy_user.date_joined, hamlet_date_joined)
+
+        # All messages should have been preserved:
+        self.assertEqual(
+            Message.objects.filter(id__in=personal_message_ids_to_hamlet).count(),
+            len(personal_message_ids_to_hamlet),
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=huddle_message_ids_from_hamlet).count(),
+            len(huddle_message_ids_from_hamlet),
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=huddle_message_ids_from_cordelia).count(),
+            len(huddle_message_ids_from_cordelia),
+        )
+
+        self.assertEqual(
+            Message.objects.filter(sender_id=hamlet_user_id).count(),
+            original_messages_from_hamlet_count,
+        )
 
         # Verify that the dummy user is subscribed to the deleted user's huddles, to keep huddle data
         # in a correct state.
