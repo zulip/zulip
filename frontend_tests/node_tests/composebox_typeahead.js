@@ -953,7 +953,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         fake_this.$element.closest = () => [];
         fake_this.options = options;
         let actual_value = options.source.call(fake_this, "test #s");
-        assert.deepEqual(sorted_names_from(actual_value), ["Denmark", "Sweden", "The Netherlands"]);
+        assert.deepEqual(sorted_names_from(actual_value), ["Sweden", "The Netherlands"]);
         assert.ok(caret_called);
 
         // options.highlighter()
@@ -1590,15 +1590,15 @@ test("typeahead_results", () => {
     assert_mentions_matches("delia lear", []);
     assert_mentions_matches("Mark Tw", [twin1, twin2]);
 
+    // Earlier user group and stream mentions were autocompleted by their
+    // description too. This is now removed as it often led to unexpected
+    // behaviour, and did not have any great discoverability advantage.
+
     // Autocomplete user group mentions by group name.
     assert_mentions_matches("hamletchar", [hamletcharacters]);
 
-    // Autocomplete user group mentions by group descriptions.
-    assert_mentions_matches("characters ", [hamletcharacters]);
-    assert_mentions_matches("characters of ", [hamletcharacters]);
-    assert_mentions_matches("characters o ", []);
-    assert_mentions_matches("haracters of hamlet", []);
-    assert_mentions_matches("of hamlet", [hamletcharacters]);
+    // Verify we're not matching on a terms that only appear in the description.
+    assert_mentions_matches("characters of", []);
 
     // Autocomplete by slash commands.
     assert_slash_matches("me", [me_slash]);
@@ -1607,14 +1607,15 @@ test("typeahead_results", () => {
     assert_slash_matches("light", [light_slash]);
     assert_slash_matches("day", [light_slash]);
 
-    // Autocomplete stream by stream name or stream description.
+    // Autocomplete stream by stream name
     assert_stream_matches("den", [denmark_stream, sweden_stream]);
     assert_stream_matches("denmark", [denmark_stream]);
     assert_stream_matches("denmark ", []);
     assert_stream_matches("den ", []);
-    assert_stream_matches("cold", [sweden_stream, denmark_stream]);
     assert_stream_matches("the ", [netherland_stream]);
-    assert_stream_matches("city", [netherland_stream]);
+    // Do not match stream descriptions
+    assert_stream_matches("cold", []);
+    assert_stream_matches("city", []);
 });
 
 test("message people", ({override}) => {
