@@ -326,9 +326,9 @@ def build_reactions(
 
     # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
-    for reaction in reactions:
-        emoji_name = reaction["name"]
-        user_id = reaction["user_id"]
+    for reaction_dict in reactions:
+        emoji_name = reaction_dict["name"]
+        user_id = reaction_dict["user_id"]
         # Check in realm emoji
         if emoji_name in realmemoji:
             emoji_code = realmemoji[emoji_name]

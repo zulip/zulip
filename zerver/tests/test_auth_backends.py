@@ -6724,6 +6724,7 @@ class EmailValidatorTestCase(ZulipTestCase):
             "fred+5555@zulip.com",
             get_realm_email_validator(realm),
         )
+        assert error is not None
         self.assertIn("containing + are not allowed", error)
 
         cordelia_email = cordelia.delivery_email

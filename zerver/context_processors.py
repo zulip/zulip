@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -29,7 +29,7 @@ from zproject.backends import (
     require_email_format_usernames,
 )
 
-DEFAULT_PAGE_PARAMS = {
+DEFAULT_PAGE_PARAMS: Mapping[str, Any] = {
     "development_environment": settings.DEVELOPMENT,
     "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
 }

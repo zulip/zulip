@@ -2703,6 +2703,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # we hit another cache to get the recipient.  We may want to
     # unify our caching strategy here.
     huddle = get_huddle(list(user_profile_ids))
+    assert huddle.recipient is not None
     return huddle.recipient
 
 

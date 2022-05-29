@@ -515,10 +515,10 @@ def public_stream_user_ids(stream: Stream) -> Set[int]:
     guest_subscriptions = get_active_subscriptions_for_stream_id(
         stream.id, include_deactivated_users=False
     ).filter(user_profile__role=UserProfile.ROLE_GUEST)
-    guest_subscriptions = {
+    guest_subscriptions_ids = {
         sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
     }
-    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
+    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions_ids
 
 
 def can_access_stream_user_ids(stream: Stream) -> Set[int]:
