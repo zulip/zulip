@@ -16,7 +16,7 @@ function person_matcher(query, item) {
 
 function group_matcher(query, item) {
     if (user_groups.is_user_group(item)) {
-        return composebox_typeahead.query_matches_name_description(query, item);
+        return composebox_typeahead.query_matches_name(query, item);
     }
     return false;
 }
