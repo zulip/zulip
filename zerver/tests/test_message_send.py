@@ -1544,6 +1544,7 @@ class StreamMessagesTest(ZulipTestCase):
         stream = get_stream("Denmark", realm)
         topic_name = "lunch"
         recipient = stream.recipient
+        assert recipient is not None
         sending_client = make_client(name="test suite")
 
         for i in range(num_extra_users):

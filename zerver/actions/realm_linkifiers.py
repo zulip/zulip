@@ -44,6 +44,7 @@ def do_remove_linkifier(
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
+        assert id is not None
         RealmFilter.objects.get(realm=realm, id=id).delete()
     notify_linkifiers(realm)
 

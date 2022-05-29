@@ -905,7 +905,9 @@ class RealmImportExportTest(ExportFile):
 
         # test recipients
         def get_recipient_stream(r: Realm) -> Recipient:
-            return Stream.objects.get(name="Verona", realm=r).recipient
+            recipient = Stream.objects.get(name="Verona", realm=r).recipient
+            assert recipient is not None
+            return recipient
 
         def get_recipient_user(r: Realm) -> Recipient:
             return UserProfile.objects.get(full_name="Iago", realm=r).recipient

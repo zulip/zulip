@@ -270,6 +270,7 @@ def main(options: argparse.Namespace) -> int:
             destroy_leaked_test_databases,
         )
 
+        assert settings.RABBITMQ_PASSWORD is not None
         if options.is_force or need_to_run_configure_rabbitmq([settings.RABBITMQ_PASSWORD]):
             run_as_root(["scripts/setup/configure-rabbitmq"])
             write_new_digest(

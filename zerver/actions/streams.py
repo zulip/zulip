@@ -979,7 +979,8 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         ).decode(),
     )
 
-    recipient_id = stream.recipient_id
+    assert stream.recipient_id is not None
+    recipient_id: int = stream.recipient_id
     messages = Message.objects.filter(recipient_id=recipient_id).only("id")
 
     # Update the display recipient and stream, which are easy single
