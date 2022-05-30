@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
@@ -581,7 +582,7 @@ def send_confirm_registration_email(
         "zerver/emails/confirm_registration",
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
-        language=request.LANGUAGE_CODE if request is not None else None,
+        language=get_language() if request is not None else None,
         context={
             "create_realm": (realm is None),
             "activate_url": activation_url,
