@@ -13,6 +13,7 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from markupsafe import Markup as mark_safe
@@ -382,7 +383,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             )
             if active_accounts_in_other_realms:
                 context["active_accounts_in_other_realms"] = active_accounts_in_other_realms
-            language = request.LANGUAGE_CODE
+            language = get_language()
+
             send_email(
                 "zerver/emails/password_reset",
                 to_emails=[email],
