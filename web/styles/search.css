@@ -27,7 +27,11 @@
 
         .search_close_button {
             display: inline;
-            margin-right: 15px;
+            margin-right: 5px;
+        }
+
+        .zulip-icon-close {
+            font-size: 15px;
         }
     }
 
@@ -176,7 +180,7 @@
 
     .navbar-search.expanded {
         .search_close_button {
-            margin-right: 14px;
+            margin-right: 5px;
         }
     }
 }
