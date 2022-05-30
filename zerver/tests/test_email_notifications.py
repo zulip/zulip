@@ -338,6 +338,7 @@ class TestFollowupEmails(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
         scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        assert scheduled_email is not None
         self.assertEqual(
             orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
         )
@@ -359,6 +360,7 @@ class TestFollowupEmails(ZulipTestCase):
         cordelia.realm.save()
         enqueue_welcome_emails(self.example_user("cordelia"), realm_creation=True)
         scheduled_email = ScheduledEmail.objects.filter(users=cordelia).last()
+        assert scheduled_email is not None
         self.assertEqual(
             orjson.loads(scheduled_email.data)["template_prefix"], "zerver/emails/followup_day1"
         )

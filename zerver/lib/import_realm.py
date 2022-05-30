@@ -1029,6 +1029,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     )
     for realm_emoji in RealmEmoji.objects.filter(realm=realm):
         if realm_emoji.author_id is None:
+            assert first_user_profile is not None
             realm_emoji.author_id = first_user_profile.id
             realm_emoji.save(update_fields=["author_id"])
 

@@ -583,10 +583,12 @@ class StripeTestCase(ZulipTestCase):
             else:
                 expected_session_details["type"] = "free_trial_upgrade_from_billing_page"
         else:
+            last_stripe_payment_intent = PaymentIntent.objects.last()
+            assert last_stripe_payment_intent is not None
             expected_session_details["type"] = "upgrade_from_billing_page"
             expected_session_details[
                 "stripe_payment_intent_id"
-            ] = PaymentIntent.objects.last().stripe_payment_intent_id
+            ] = last_stripe_payment_intent.stripe_payment_intent_id
 
         self.assert_details_of_valid_session_from_event_status_endpoint(
             upgrade_json_response.json()["stripe_session_id"], expected_session_details

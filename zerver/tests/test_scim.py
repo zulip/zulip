@@ -287,6 +287,7 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(new_user_count, original_user_count + 1)
 
         new_user = UserProfile.objects.last()
+        assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
 
@@ -315,6 +316,7 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(new_user_count, original_user_count + 1)
 
         new_user = UserProfile.objects.last()
+        assert new_user is not None
         self.assertEqual(new_user.delivery_email, "newuser@zulip.com")
         self.assertEqual(new_user.full_name, "New User")
 

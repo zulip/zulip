@@ -373,6 +373,7 @@ class PreviewTestCase(ZulipTestCase):
 
         embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
         self.assertIn(embedded_link, msg.rendered_content)
 
     @responses.activate
@@ -462,6 +463,7 @@ class PreviewTestCase(ZulipTestCase):
                     # up-to-date event for edited_url.
                     queue_json_publish(*args, **kwargs)
                     msg = Message.objects.select_related("sender").get(id=msg_id)
+                    assert msg.rendered_content is not None
                     self.assertIn(
                         f'<a href="{edited_url}" title="The Rock">The Rock</a>',
                         msg.rendered_content,
@@ -821,6 +823,7 @@ class PreviewTestCase(ZulipTestCase):
 
         assert cached_data is not None
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
         self.assertIn(cached_data.title, msg.rendered_content)
         assert cached_data.image is not None
         self.assertIn(re.sub(r"([^\w-])", r"\\\1", cached_data.image), msg.rendered_content)
@@ -946,6 +949,7 @@ class PreviewTestCase(ZulipTestCase):
 
         self.assertEqual(cached_data, mocked_data)
         msg.refresh_from_db()
+        assert msg.rendered_content is not None
         self.assertIn(f'a data-id="{escape(mocked_data.html)}"', msg.rendered_content)
 
     @responses.activate

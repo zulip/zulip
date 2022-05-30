@@ -567,6 +567,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
 
         message = most_recent_message(user_profile)
         attachment = Attachment.objects.last()
+        assert attachment is not None
         self.assertEqual(list(attachment.messages.values_list("id", flat=True)), [message.id])
         self.assertEqual(
             message.sender, get_system_bot(settings.EMAIL_GATEWAY_BOT, stream.realm_id)

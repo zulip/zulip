@@ -504,7 +504,9 @@ def make_end_of_cycle_updates_if_needed(
             standard_plan_last_ledger = (
                 LicenseLedger.objects.filter(plan=standard_plan).order_by("id").last()
             )
+            assert standard_plan_last_ledger is not None
             licenses_for_plus_plan = standard_plan_last_ledger.licenses_at_next_renewal
+            assert licenses_for_plus_plan is not None
             plus_plan_ledger_entry = LicenseLedger.objects.create(
                 plan=plus_plan,
                 is_renewal=True,
@@ -1040,6 +1042,7 @@ def estimate_annual_recurring_revenue_by_realm() -> Dict[str, int]:  # nocoverag
         if plan.billing_schedule == CustomerPlan.MONTHLY:
             renewal_cents *= 12
         # TODO: Decimal stuff
+        assert plan.customer.realm is not None
         annual_revenue[plan.customer.realm.string_id] = int(renewal_cents / 100)
     return annual_revenue
 
@@ -1048,6 +1051,7 @@ def get_realms_to_default_discount_dict() -> Dict[str, Decimal]:
     realms_to_default_discount: Dict[str, Any] = {}
     customers = Customer.objects.exclude(default_discount=None).exclude(default_discount=0)
     for customer in customers:
+        assert customer.realm is not None
         realms_to_default_discount[customer.realm.string_id] = assert_is_not_none(
             customer.default_discount
         )
@@ -1116,6 +1120,7 @@ def downgrade_small_realms_behind_on_payments_as_needed() -> None:
     customers = Customer.objects.all().exclude(stripe_customer_id=None)
     for customer in customers:
         realm = customer.realm
+        assert realm is not None
 
         # For larger realms, we generally want to talk to the customer
         # before downgrading or cancelling invoices; so this logic only applies with 5.
@@ -1172,6 +1177,7 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan_last_renewal_ledger = (
         LicenseLedger.objects.filter(is_renewal=True, plan=standard_plan).order_by("id").last()
     )
+    assert standard_plan_last_renewal_ledger is not None
     standard_plan_last_renewal_amount = (
         standard_plan_last_renewal_ledger.licenses * standard_plan.price_per_license
     )
