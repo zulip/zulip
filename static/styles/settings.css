@@ -270,6 +270,18 @@ td .button {
     box-shadow: none;
 }
 
+#language_selection_modal {
+    table {
+        width: 90%;
+        margin-top: 20px;
+        border-collapse: separate;
+    }
+
+    td {
+        padding-top: 1px;
+    }
+}
+
 .settings-section {
     display: none;
     width: calc(100% - 40px);
@@ -393,17 +405,6 @@ td .button {
         margin-top: 7px;
         vertical-align: middle;
         display: inline-block;
-    }
-
-    #language_selection_modal {
-        table {
-            width: 90%;
-            margin-top: 20px;
-        }
-
-        td {
-            padding-left: 80px;
-        }
     }
 
     .inline {
