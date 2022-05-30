@@ -298,6 +298,7 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
 
         recipient = stream.recipient
+        assert recipient is not None
         cond = column("recipient_id", Integer) == recipient.id
         return query.where(maybe_negate(cond))
 

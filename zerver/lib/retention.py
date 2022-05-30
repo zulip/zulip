@@ -420,6 +420,7 @@ def archive_stream_messages(
     recipients = [stream.recipient for stream in streams]
     message_count = 0
     for recipient in recipients:
+        assert recipient is not None
         message_count += archive_messages_by_recipient(
             recipient,
             retention_policy_dict[recipient.type_id],
