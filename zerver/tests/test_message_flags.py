@@ -1408,7 +1408,7 @@ class PersonalMessagesFlagTest(ZulipTestCase):
 
 
 class MarkUnreadTest(ZulipTestCase):
-    def mute_stream(self, stream_name: str, user: int) -> None:
+    def mute_stream(self, stream_name: str, user: UserProfile) -> None:
         realm = get_realm("zulip")
         stream = get_stream(stream_name, realm)
         recipient = stream.recipient

@@ -81,7 +81,7 @@ def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> Optional
     return stream.recipient.id if stream.recipient is not None else None
 
 
-def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
+def mute_stream(realm: Realm, user_profile: UserProfile, stream_name: str) -> None:
     stream = get_stream(stream_name, realm)
     recipient = stream.recipient
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
