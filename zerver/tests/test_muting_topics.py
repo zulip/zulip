@@ -118,6 +118,7 @@ class MutedTopicsTests(ZulipTestCase):
         # trying to mute the topic.  To do this, we patch the
         # topic_is_muted function to always return False when trying
         # to mute a topic that is already muted.
+        assert stream.recipient is not None
         add_topic_mute(
             user_profile=user,
             stream_id=stream.id,

@@ -1378,6 +1378,9 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids: Dict[str, Union[int, str]] = {}
 
         scotland_stream = get_stream("Scotland", hamlet_user.realm)
+        assert scotland_stream.recipient_id is not None
+        assert hamlet_user.recipient_id is not None
+        assert othello_user.recipient_id is not None
         query_ids["scotland_recipient"] = scotland_stream.recipient_id
         query_ids["hamlet_id"] = hamlet_user.id
         query_ids["othello_id"] = othello_user.id

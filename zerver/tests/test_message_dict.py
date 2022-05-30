@@ -450,6 +450,7 @@ class MessageHydrationTest(ZulipTestCase):
 
         cordelia_recipient = cordelia.recipient
         # Cause the display_recipient to get cached:
+        assert cordelia_recipient is not None
         get_display_recipient(cordelia_recipient)
 
         # Change cordelia's email:
