@@ -168,6 +168,8 @@ LOGIN_URL = "/accounts/login/"
 # Explicitly set this to True within tests that must have this on.
 SEND_LOGIN_EMAILS = False
 
+SMTP_CON_MAX_LIFETIME_MINUTES = 0
+
 GOOGLE_OAUTH2_CLIENT_ID = "id"
 GOOGLE_OAUTH2_CLIENT_SECRET = "secret"
 

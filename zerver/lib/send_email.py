@@ -7,7 +7,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
 import orjson
@@ -224,6 +224,50 @@ class NoEmailArgumentException(CommandError):
         super().__init__(msg)
 
 
+class Connection:
+    max_lifetime = datetime.timedelta(minutes=settings.SMTP_CON_MAX_LIFETIME_MINUTES or 0)
+    conn_init_time: Dict[BaseEmailBackend, datetime.datetime] = {}
+
+    @classmethod
+    def get_new(cls, backend: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+        if not backend:
+            backend = get_connection()
+        else:
+            backend.close()
+
+        backend.open()
+        cls.conn_init_time[backend] = timezone_now()
+
+        return backend
+
+    @classmethod
+    def check_lifetime_and_connectivity(cls, backend: BaseEmailBackend) -> Union[None, bool]:
+        if backend not in cls.conn_init_time:
+            return None
+
+        now = timezone_now()
+        lifetime = now - cls.conn_init_time[backend]
+        if lifetime > cls.max_lifetime:
+            return False
+
+        elif backend.open():
+            # If it's a new connection, no need to check connectivity
+            cls.conn_init_time[backend] = now
+            return True
+
+        # No-op to ensure that we don't return a connection that has been
+        # closed by the mail server.
+        try:
+            assert backend.connection is not None
+            status = backend.connection.noop()[0]
+        except Exception:
+            status = -1
+        if status != 250:
+            return False
+
+        return True
+
+
 # When changing the arguments to this function, you may need to write a
 # migration to change or remove any emails in ScheduledEmail.
 def send_email(
@@ -260,7 +304,9 @@ def send_email(
         return
 
     if connection is None:
-        connection = get_connection()
+        connection = Connection.get_new()
+    elif Connection.check_lifetime_and_connectivity(connection):
+        connection = Connection.get_new(connection)
 
     cause = ""
     if request is not None:
@@ -298,12 +344,8 @@ def send_email(
 @backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
-        connection = get_connection()
+        connection = Connection.get_new()
         assert connection is not None
-
-    if connection.open():
-        # If it's a new connection, no need to no-op to check connectivity
-        return connection
 
     if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
         # With the development environment backend and without a
@@ -314,18 +356,10 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
         # implemented, so we need to return the connection early.
         return connection
 
-    # No-op to ensure that we don't return a connection that has been
-    # closed by the mail server.
     if isinstance(connection, EmailBackend):
-        try:
-            assert connection.connection is not None
-            status = connection.connection.noop()[0]
-        except Exception:
-            status = -1
-        if status != 250:
+        if not Connection.check_lifetime_and_connectivity(connection):
             # Close and connect again.
-            connection.close()
-            connection.open()
+            connection = Connection.get_new(connection)
 
     return connection
 

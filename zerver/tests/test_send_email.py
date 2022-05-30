@@ -1,11 +1,14 @@
+from datetime import timedelta
 from smtplib import SMTP, SMTPDataError, SMTPException, SMTPRecipientsRefused
 from unittest import mock
 
 from django.core.mail.backends.locmem import EmailBackend
 from django.core.mail.backends.smtp import EmailBackend as SMTPBackend
 from django.core.mail.message import sanitize_address
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import (
+    Connection,
     EmailNotDeliveredException,
     FromAddress,
     build_email,
@@ -70,6 +73,7 @@ class TestBuildEmail(ZulipTestCase):
 
 
 class TestSendEmail(ZulipTestCase):
+    @mock.patch.object(Connection, "max_lifetime", timedelta(minutes=1))
     def test_initialize_connection(self) -> None:
         # Test the new connection case
         with mock.patch.object(EmailBackend, "open", return_value=True):
@@ -78,6 +82,7 @@ class TestSendEmail(ZulipTestCase):
 
         backend = mock.MagicMock(spec=SMTPBackend)
         backend.connection = mock.MagicMock(spec=SMTP)
+        Connection.conn_init_time[backend] = timezone_now()
 
         self.assertTrue(isinstance(backend, SMTPBackend))
 
@@ -103,6 +108,19 @@ class TestSendEmail(ZulipTestCase):
             initialize_connection(backend)
         # 3 more calls to open as we try 3 times before giving up
         self.assertEqual(backend.open.call_count, 6)
+
+    @mock.patch.object(Connection, "max_lifetime", timedelta(minutes=0))
+    def test_initialize_connection_with_zero_lifetime(self) -> None:
+        backend = mock.MagicMock(spec=SMTPBackend)
+        backend.connection = mock.MagicMock(spec=SMTP)
+        Connection.conn_init_time[backend] = timezone_now()
+
+        # Test we get a new connection every time
+        initialize_connection(backend)
+        initialize_connection(backend)
+        self.assertEqual(backend.close.call_count, 2)
+        self.assertEqual(backend.open.call_count, 2)
+        self.assertEqual(backend.connection.noop.call_count, 0)
 
     def test_send_email_exceptions(self) -> None:
         hamlet = self.example_user("hamlet")

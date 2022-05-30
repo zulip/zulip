@@ -74,6 +74,7 @@ EXTERNAL_HOST = "zulip.example.com"
 ## EMAIL_HOST and EMAIL_HOST_USER are generally required.
 # EMAIL_HOST = "smtp.example.com"
 # EMAIL_HOST_USER = ""
+# SMTP_CON_MAX_LIFETIME_MINUTES = 0
 
 ## Passwords and secrets are not stored in this file.  The password
 ## for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.

@@ -35,6 +35,8 @@ FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
 
 # SMTP settings
 EMAIL_HOST: Optional[str] = None
+SMTP_CON_MAX_LIFETIME_MINUTES = 0
+
 # Other settings, like EMAIL_HOST_USER, EMAIL_PORT, and EMAIL_USE_TLS,
 # we leave up to Django's defaults.
 
