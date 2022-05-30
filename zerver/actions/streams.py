@@ -855,8 +855,12 @@ def do_change_stream_permission(
         stream.invite_only = False
         stream.history_public_to_subscribers = True
     else:
-        assert invite_only is not None
         # is_web_public is falsey
+        if invite_only is None:
+            # This is necessary to get correct default value for
+            # history_public_to_subscribers when invite_only is
+            # None.
+            invite_only = stream.invite_only
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             stream.realm,
             invite_only,

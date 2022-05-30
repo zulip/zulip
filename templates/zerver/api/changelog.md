@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 136**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): The endpoint
+  now returns an error for a request to make a public stream with
+  protected history which was previously ignored silently.
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added support
+  to change access to history of the stream by only passing
+  `history_public_to_subscribers` parameter without `is_private`
+  and `is_web_public` parameters.
+
 **Feature level 135**
 
 * [`DELETE /user/{user_id}`](/api/deactivate-user): Added
