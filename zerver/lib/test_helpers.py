@@ -217,6 +217,7 @@ def avatar_disk_path(
 ) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
     assert avatar_url_path is not None
+    assert settings.LOCAL_UPLOADS_DIR is not None
     avatar_disk_path = os.path.join(
         settings.LOCAL_UPLOADS_DIR,
         "avatars",
