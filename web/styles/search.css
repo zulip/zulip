@@ -37,7 +37,7 @@
         width: max-content;
         min-width: 100%;
 
-        .fa-search {
+        .zulip-icon-search {
             padding: 0;
             font-size: 20px;
             position: absolute;
@@ -50,7 +50,7 @@
             }
         }
 
-        .fa-search:not(.deactivated) {
+        .zulip-icon-search:not(.deactivated) {
             cursor: pointer;
         }
     }
