@@ -118,6 +118,10 @@ Files: static/assets/icons/search.svg
 Copyright: 2015-present Ionic (http://ionic.io/)
 License: Expat
 
+Files: static/assets/icons/close.svg
+Copyright: 2013-2017 Cole Bemis (https://feathericons.com)
+License: Expat
+
 Files: tools/check-thirdparty
 Copyright: 2020 Kandra Labs, Inc.
 License: GPL-2.0+
