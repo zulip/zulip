@@ -1762,6 +1762,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         base = "/user_uploads/"
         self.assertEqual(base, uri[: len(base)])
         path_id = re.sub("/user_uploads/", "", uri)
+        assert settings.LOCAL_UPLOADS_DIR is not None
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", path_id)
         self.assertTrue(os.path.isfile(file_path))
 
@@ -1800,6 +1801,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         write_local_file("avatars", file_path + ".original", read_test_image_file("img.png"))
 
+        assert settings.LOCAL_UPLOADS_DIR is not None
         image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
         with open(image_path, "rb") as f:
             image_data = f.read()
@@ -1878,10 +1880,12 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
 
+        assert settings.TEST_WORKER_DIR is not None
         tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
         with open(tarball_path, "w") as f:
             f.write("dummy")
 
+        assert settings.LOCAL_UPLOADS_DIR is not None
         uri = upload_export_tarball(user_profile.realm, tarball_path)
         self.assertTrue(
             os.path.isfile(os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", tarball_path))

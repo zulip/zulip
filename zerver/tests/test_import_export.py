@@ -1177,6 +1177,7 @@ class RealmImportExportTest(ExportFile):
         uploaded_file = Attachment.objects.get(realm=imported_realm)
         self.assert_length(b"zulip!", uploaded_file.size)
 
+        assert settings.LOCAL_UPLOADS_DIR is not None
         attachment_file_path = os.path.join(
             settings.LOCAL_UPLOADS_DIR, "files", uploaded_file.path_id
         )
