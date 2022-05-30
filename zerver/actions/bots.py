@@ -40,11 +40,12 @@ def do_change_bot_owner(
                 user_id=user_profile.id,
             ),
         )
+        previous_owner_id = previous_owner.id
         transaction.on_commit(
             lambda: send_event(
                 user_profile.realm,
                 delete_event,
-                {previous_owner.id},
+                {previous_owner_id},
             )
         )
         # Do not send update event for previous bot owner.

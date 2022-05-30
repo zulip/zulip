@@ -39,6 +39,7 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
+            assert settings.TERMS_OF_SERVICE_VERSION is not None
             do_change_tos_version(request.user, settings.TERMS_OF_SERVICE_VERSION)
             return redirect(home)
     else:
@@ -81,10 +82,11 @@ def detect_narrowed_window(
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
 
-    if request.GET.get("stream"):
+    if "stream" in request.GET:
         try:
             # TODO: We should support stream IDs and PMs here as well.
             narrow_stream_name = request.GET.get("stream")
+            assert narrow_stream_name is not None
             (narrow_stream, ignored_sub) = access_stream_by_name(user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:

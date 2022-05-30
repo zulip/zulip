@@ -570,6 +570,7 @@ class LDAPReverseEmailSearch(_LDAPUser):
         search = settings.AUTH_LDAP_REVERSE_EMAIL_SEARCH
         USERNAME_ATTR = settings.AUTH_LDAP_USERNAME_ATTR
 
+        assert search is not None
         results = search.execute(self.connection, {"email": email})
 
         ldap_users = []

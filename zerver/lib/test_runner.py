@@ -237,6 +237,7 @@ def init_worker(counter: "multiprocessing.sharedctypes.Synchronized[int]") -> No
     from zproject.dev_urls import avatars_url
 
     assert settings.LOCAL_UPLOADS_DIR is not None
+    assert avatars_url.default_args is not None
     new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
     avatars_url.default_args["document_root"] = new_root
 
