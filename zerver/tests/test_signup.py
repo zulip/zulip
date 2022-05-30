@@ -14,7 +14,9 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.test import Client, override_settings
 from django.urls import reverse
+from django.utils import translation
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import (
@@ -378,9 +380,10 @@ class PasswordResetTest(ZulipTestCase):
 
         [message] = outbox
         self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        # The email might be sent in different languages for i18n testing
         self.assertRegex(
             self.email_display_from(message),
-            rf"^Zulip Account Security <{self.TOKENIZED_NOREPLY_REGEX}>\Z",
+            rf'^{_("Zulip Account Security")} <{self.TOKENIZED_NOREPLY_REGEX}>\Z',
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
@@ -658,6 +661,23 @@ class PasswordResetTest(ZulipTestCase):
         self.assertIn("safely ignore", body)
         self.assertNotIn("reset your password", body)
         self.assertNotIn("deactivated", body)
+
+    def test_wrong_subdomain_i18n(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.delivery_email
+
+        # Send a password reset request with a different language to a wrong subdomain
+        result = self.client_post(
+            "/accounts/password/reset/",
+            {"email": email},
+            HTTP_ACCEPT_LANGUAGE="de",
+            subdomain="lear",
+        )
+        self.assertEqual(result.status_code, 302)
+
+        with translation.override("de"):
+            body = self.get_reset_mail_body("lear")
+            self.assertIn("hat ein neues Passwort", body)
 
     def test_invalid_subdomain(self) -> None:
         email = self.example_email("hamlet")
