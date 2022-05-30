@@ -1195,6 +1195,7 @@ class MarkdownTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.filter(
             realm=realm, name="green_tick", deactivated=False
         ).get()
+        assert realm_emoji.file_name is not None
         self.assertEqual(
             converted.rendered_content,
             "<p>{}</p>".format(emoji_img(":green_tick:", realm_emoji.file_name, realm.id)),

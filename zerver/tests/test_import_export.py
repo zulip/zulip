@@ -223,6 +223,7 @@ class ExportFile(ZulipTestCase):
 
         realm_emoji = RealmEmoji.objects.get(author=user)
         file_name = realm_emoji.file_name
+        assert file_name is not None
         assert file_name.endswith(".png")
 
         emoji_path = f"{realm.id}/emoji/images/{file_name}"
@@ -510,6 +511,7 @@ class RealmImportExportTest(ExportFile):
             content="Thumbs up for export",
         )
         message = Message.objects.last()
+        assert message is not None
         consented_user_ids = [self.example_user(user).id for user in ["iago", "hamlet"]]
         do_add_reaction(
             self.example_user("iago"), message, "outbox", "1f4e4", Reaction.UNICODE_EMOJI
@@ -1517,10 +1519,10 @@ class SingleUserExportTest(ExportFile):
             reaction_type=None,
         )
         reaction = Reaction.objects.order_by("id").last()
-        assert reaction
 
         @checker
         def zerver_reaction(records: List[Record]) -> None:
+            assert reaction
             (exported_reaction,) = records
             self.assertEqual(
                 exported_reaction,
