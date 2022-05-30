@@ -335,7 +335,15 @@ def update_stream_backend(
         if is_private or history_public_to_subscribers is False:
             raise JsonableError(_("Invalid parameters"))
 
-    if is_private is not None or is_web_public is not None:
+    if history_public_to_subscribers is False and not stream.realm.is_zephyr_mirror_realm:
+        if is_private is None and not stream.invite_only:
+            raise JsonableError(_("Invalid parameters"))
+
+    if (
+        is_private is not None
+        or is_web_public is not None
+        or history_public_to_subscribers is not None
+    ):
         do_change_stream_permission(
             stream,
             invite_only=is_private,

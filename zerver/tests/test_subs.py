@@ -879,6 +879,77 @@ class StreamAdminTest(ZulipTestCase):
         ).decode()
         self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
+    def test_change_history_access_for_private_streams(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        realm = user_profile.realm
+        self.make_stream("private_stream", realm=realm, invite_only=True)
+        stream_id = self.subscribe(user_profile, "private_stream").id
+
+        params = {
+            "history_public_to_subscribers": orjson.dumps(True).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_success(result)
+
+        stream = get_stream("private_stream", realm)
+        self.assertTrue(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 1)
+        expected_notification = (
+            f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
+            "for this stream from **Private, protected history** to **Private, shared history**."
+        )
+        self.assertEqual(messages[0].content, expected_notification)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: False,
+                RealmAuditLog.NEW_VALUE: True,
+                "property": "history_public_to_subscribers",
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_success(result)
+
+        stream = get_stream("private_stream", realm)
+        self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+        messages = get_topic_messages(user_profile, stream, "stream events")
+        self.assert_length(messages, 2)
+        expected_notification = (
+            f"@_**Iago|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
+            "for this stream from **Private, shared history** to **Private, protected history**."
+        )
+        self.assertEqual(messages[1].content, expected_notification)
+
+        realm_audit_log = RealmAuditLog.objects.filter(
+            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
+            modified_stream=stream,
+        ).last()
+        assert realm_audit_log is not None
+        expected_extra_data = orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: True,
+                RealmAuditLog.NEW_VALUE: False,
+                "property": "history_public_to_subscribers",
+            }
+        ).decode()
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
+
     def test_stream_permission_changes_updates_updates_attachments(self) -> None:
         self.login("desdemona")
         fp = StringIO("zulip!")
@@ -1035,6 +1106,16 @@ class StreamAdminTest(ZulipTestCase):
         }
         stream_id = self.subscribe(user_profile, "public_stream").id
         result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Invalid parameters")
+
+        params = {
+            "history_public_to_subscribers": orjson.dumps(False).decode(),
+        }
+        result = self.client_patch(f"/json/streams/{stream_id}", params)
+        self.assert_json_error(result, "Invalid parameters")
+
+        web_public_stream = self.make_stream("web_public_stream", realm=realm, is_web_public=True)
+        result = self.client_patch(f"/json/streams/{web_public_stream.id}", params)
         self.assert_json_error(result, "Invalid parameters")
 
     def test_subscriber_ids_with_stream_history_access(self) -> None:

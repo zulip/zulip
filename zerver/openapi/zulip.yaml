@@ -13751,8 +13751,27 @@ paths:
             type: boolean
           example: true
           required: false
+        - name: history_public_to_subscribers
+          in: query
+          description: |
+            Whether the stream's message history should be available to
+            newly subscribed members, or users can only access messages
+            they actually received while subscribed to the stream.
+
+            Corresponds to the [shared history](/help/stream-permissions)
+            option in documentation.
+
+            It's an error for this parameter to be false for a public or
+            web-public stream and when is_private is false.
+
+            **Changes**: Before Zulip 6.0 (feature level 136), `history_public_to_subscribers`
+            was silently ignored unless the request also contained either `is_private` or
+            `is_web_public`.
+          schema:
+            type: boolean
+          example: false
+          required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
-        - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/MessageRetentionDays"
       responses:
         "200":
@@ -13762,16 +13781,28 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonError"
-                  - example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "Invalid stream ID",
-                        "result": "error",
-                      }
-                    description: |
-                      An example JSON response for when the supplied stream does not exist:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid stream ID",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when the supplied stream does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid parameters",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON response for when invalid combination of stream permission
+                          parameters are passed.
   /streams/{stream_id}/delete_topic:
     post:
       operationId: delete-topic
