@@ -53,6 +53,7 @@ from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import RealmPlaygroundDict
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
     Realm,
@@ -120,7 +121,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_time__lte=now + timedelta(minutes=60),
         ):
-            extra_data = orjson.loads(event.extra_data)
+            extra_data = orjson.loads(assert_is_not_none(event.extra_data))
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertNotIn(RealmAuditLog.OLD_VALUE, extra_data)
 
@@ -149,7 +150,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now,
             event_time__lte=now + timedelta(minutes=60),
         ):
-            extra_data = orjson.loads(event.extra_data)
+            extra_data = orjson.loads(assert_is_not_none(event.extra_data))
             self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
             self.assertIn(RealmAuditLog.OLD_VALUE, extra_data)
             self.assertIn(RealmAuditLog.NEW_VALUE, extra_data)
@@ -332,14 +333,14 @@ class TestRealmAuditLog(ZulipTestCase):
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
-        extra_data = orjson.loads(log_entry.extra_data)
+        extra_data = orjson.loads(assert_is_not_none(log_entry.extra_data))
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
         do_reactivate_realm(realm)
         log_entry = RealmAuditLog.objects.get(
             realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED
         )
-        extra_data = orjson.loads(log_entry.extra_data)
+        extra_data = orjson.loads(assert_is_not_none(log_entry.extra_data))
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
 
     def test_create_stream_if_needed(self) -> None:
@@ -407,7 +408,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=user,
         )
         self.assertEqual(realm_audit_logs.count(), 1)
-        extra_data = orjson.loads(realm_audit_logs[0].extra_data)
+        extra_data = orjson.loads(assert_is_not_none(realm_audit_logs[0].extra_data))
         expected_new_value = auth_method_dict
         self.assertEqual(extra_data[RealmAuditLog.OLD_VALUE], expected_old_value)
         self.assertEqual(extra_data[RealmAuditLog.NEW_VALUE], expected_new_value)
@@ -449,7 +450,8 @@ class TestRealmAuditLog(ZulipTestCase):
         ).order_by("id")
         self.assertEqual(realm_audit_logs.count(), 2)
         self.assertEqual(
-            [orjson.loads(entry.extra_data) for entry in realm_audit_logs], values_expected
+            [orjson.loads(assert_is_not_none(entry.extra_data)) for entry in realm_audit_logs],
+            values_expected,
         )
 
     def test_set_realm_notifications_stream(self) -> None:

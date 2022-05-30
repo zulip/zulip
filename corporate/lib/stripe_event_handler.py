@@ -82,6 +82,7 @@ def handle_checkout_session_completed_event(
     ]:
         ensure_realm_does_not_have_active_plan(user.realm)
         update_or_create_stripe_customer(user, payment_method)
+        assert session.payment_intent is not None
         session.payment_intent.status = PaymentIntent.PROCESSING
         session.payment_intent.last_payment_error = ()
         session.payment_intent.save(update_fields=["status", "last_payment_error"])

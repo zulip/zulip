@@ -23,7 +23,9 @@ session_engine = cast(SessionEngine, import_module(settings.SESSION_ENGINE))
 def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
     # Compare django.contrib.auth._get_user_session_key
     try:
-        return get_user_model()._meta.pk.to_python(session_dict[SESSION_KEY])
+        pk = get_user_model()._meta.pk
+        assert pk is not None
+        return pk.to_python(session_dict[SESSION_KEY])
     except KeyError:
         return None
 
