@@ -2652,7 +2652,7 @@ select.invite-as {
         width: calc(100% - 84px);
     }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 }
@@ -2725,7 +2725,7 @@ select.invite-as {
         width: calc(100% - 108px);
     }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 }
@@ -2750,8 +2750,10 @@ select.invite-as {
         }
     }
 
-    .search_closed .fa-search {
-        top: 5px;
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 4px;
     }
 
     #streamlist-toggle,
