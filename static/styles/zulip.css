@@ -1968,7 +1968,7 @@ div.focused_table {
         width: max-content;
         min-width: 100%;
 
-        .fa-search {
+        .zulip-icon-search {
             padding: 0;
             font-size: 20px;
             position: absolute;
@@ -1977,7 +1977,7 @@ div.focused_table {
             z-index: 5;
         }
 
-        .fa-search:not(.deactivated) {
+        .zulip-icon-search:not(.deactivated) {
             cursor: pointer;
         }
     }
@@ -2907,12 +2907,12 @@ textarea.invitee_emails {
         width: calc(100% - 84px);
     }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 
     #top_navbar:not(.rightside-userlist) {
-        .search_closed .fa-search {
+        .search_closed .zulip-icon-search {
             right: 72px;
         }
 
@@ -2998,7 +2998,7 @@ textarea.invitee_emails {
         width: calc(100% - 123px);
     }
 
-    .search_closed .fa-search {
+    .search_closed .zulip-icon-search {
         right: 115px;
     }
 
@@ -3034,8 +3034,10 @@ textarea.invitee_emails {
         }
     }
 
-    .search_closed .fa-search {
-        top: 5px;
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 4px;
     }
 
     #streamlist-toggle,
@@ -3071,7 +3073,7 @@ textarea.invitee_emails {
 
     #searchbox,
     #searchbox_legacy {
-        .input-append .fa-search {
+        .input-append .zulip-icon-search {
             top: 5px;
         }
 
