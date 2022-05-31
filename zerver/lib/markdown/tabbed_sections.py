@@ -77,7 +77,6 @@ TAB_SECTION_LABELS = {
     "web-public-streams": "Web-public streams",
     "via-user-profile": "Via the user's profile",
     "via-organization-settings": "Via organization settings",
-    "via-browser-address-bar": "Via browser's address bar",
 }
 
 

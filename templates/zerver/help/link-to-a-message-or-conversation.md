@@ -59,7 +59,7 @@ message](/help/quote-and-reply).
 
 1. Click **Copy link to message**.
 
-{tab|via-browser-address-bar}
+{tab|web}
 
 1. Click on the timestamp of the message.
 
@@ -67,7 +67,7 @@ message](/help/quote-and-reply).
 
 {end_tabs}
 
-### Get a link to a specific topic:
+### Get a link to a specific topic
 
 {start_tabs}
 
@@ -77,14 +77,14 @@ message](/help/quote-and-reply).
 
 1. Click **Copy link to topic**.
 
-{tab|via-browser-address-bar}
+{tab|web}
 
 1. Click on a topic in the left sidebar.
 
 1. Copy the URL from your browser's address bar.
 
 {end_tabs}
-### Get a link to a specific stream:
+### Get a link to a specific stream
 
 {start_tabs}
 
@@ -94,7 +94,7 @@ message](/help/quote-and-reply).
 
 1. Click **Copy Link**.
 
-{tab|via-browser-address-bar}
+{tab|web}
 
 1. Click on a stream in the left sidebar.
 
