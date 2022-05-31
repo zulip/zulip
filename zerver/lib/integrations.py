@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import path
@@ -10,7 +10,6 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext as gettext_lazy
 
 from zerver.lib.storage import static_path
-from zerver.lib.types import Validator
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -30,6 +29,8 @@ To add a new integration category, add to the CATEGORIES dict.
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
+
+OptionValidator = Callable[[str, str], Optional[str]]
 
 CATEGORIES: Dict[str, Promise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
@@ -66,7 +67,7 @@ class Integration:
         doc: Optional[str] = None,
         stream_name: Optional[str] = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, Validator[object]]] = [],
+        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
     ) -> None:
         self.name = name
         self.client_name = client_name
@@ -188,7 +189,7 @@ class WebhookIntegration(Integration):
         doc: Optional[str] = None,
         stream_name: Optional[str] = None,
         legacy: bool = False,
-        config_options: Sequence[Tuple[str, str, Validator[object]]] = [],
+        config_options: Sequence[Tuple[str, str, OptionValidator]] = [],
     ) -> None:
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
