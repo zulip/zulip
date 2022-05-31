@@ -464,7 +464,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
                         f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )
             elif kind == "html_singleton":
-                if not state.foreign and tag not in HTML_VOID_TAGS:
+                if tag not in HTML_VOID_TAGS:
                     raise TemplateParserException(
                         f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )

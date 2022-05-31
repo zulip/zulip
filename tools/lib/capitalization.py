@@ -218,7 +218,7 @@ def check_capitalization(strings: List[str]) -> Tuple[List[str], List[str], List
         capitalized = is_capitalized(safe_text)
         if not capitalized:
             errors.append(text)
-        elif capitalized and has_ignored_phrase:
+        elif has_ignored_phrase:
             ignored.append(text)
 
         banned_word_errors.extend(check_banned_words(text))

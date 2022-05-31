@@ -87,8 +87,7 @@ class MentionBackend:
             # We expect callers who take advantage of our cache to supply both
             # id and full_name in the user mentions in their messages.
             for user in user_list:
-                if user.id is not None and user.full_name is not None:
-                    self.user_cache[(user.id, user.full_name)] = user
+                self.user_cache[(user.id, user.full_name)] = user
 
             result += user_list
 

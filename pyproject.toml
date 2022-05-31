@@ -24,6 +24,11 @@ disallow_untyped_calls = false
 disallow_untyped_decorators = false
 warn_return_any = false
 
+# Enable optional errors.
+enable_error_code = [
+    "redundant-expr",
+]
+
 # Display the codes needed for # type: ignore[code] annotations.
 show_error_codes = true
 
