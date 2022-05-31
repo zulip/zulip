@@ -4706,7 +4706,7 @@ class InvoiceTest(StripeTestCase):
     def test_invoice_plan_without_stripe_customer(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, False, False)
         plan = get_current_plan_by_realm(get_realm("zulip"))
-        assert plan and plan.customer
+        assert plan is not None
         plan.customer.stripe_customer_id = None
         plan.customer.save(update_fields=["stripe_customer_id"])
         with self.assertRaises(BillingError) as context:

@@ -754,7 +754,6 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         iago = self.example_user("iago")
         test_bot = self.create_test_bot("foo-bot", iago)
         self.login_user(iago)
-        assert test_bot
 
         with queries_captured() as queries:
             response = self.client_get(

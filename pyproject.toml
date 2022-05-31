@@ -27,6 +27,7 @@ warn_return_any = false
 # Enable optional errors.
 enable_error_code = [
     "redundant-expr",
+    "truthy-bool",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.
