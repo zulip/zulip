@@ -86,6 +86,7 @@ def dev_direct_login(
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
         return config_error(request, "dev")
+    assert isinstance(user_profile, UserProfile)
     do_login(request, user_profile)
 
     redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
@@ -130,7 +131,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
         # is when one's attempting to send an email address that
         # doesn't have an account, i.e. it's definitely invalid username.
         raise AuthenticationFailedError()
-    assert user_profile is not None
+    assert isinstance(user_profile, UserProfile)
 
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)

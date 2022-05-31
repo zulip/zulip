@@ -753,13 +753,16 @@ class RateLimitAuthenticationTests(ZulipTestCase):
         def attempt_authentication(
             request: HttpRequest, username: str, password: str
         ) -> Optional[UserProfile]:
-            return authenticate(
+            user = authenticate(
                 request=request,
                 username=username,
                 realm=get_realm("zulip"),
                 password=password,
                 return_data={},
             )
+            if user is not None:
+                assert isinstance(user, UserProfile)
+            return user
 
         self.do_test_auth_rate_limiting(
             attempt_authentication,

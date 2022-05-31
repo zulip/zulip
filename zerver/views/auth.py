@@ -431,6 +431,8 @@ def remote_user_sso(
         user_profile = None
     else:
         user_profile = authenticate(remote_user=remote_user, realm=realm)
+    if user_profile is not None:
+        assert isinstance(user_profile, UserProfile)
 
     email = remote_user_to_email(remote_user)
     data_dict = ExternalAuthDataDict(
@@ -486,6 +488,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
             data_dict={"email": email, "full_name": remote_user, "subdomain": realm.subdomain}
         )
     else:
+        assert isinstance(user_profile, UserProfile)
         result = ExternalAuthResult(user_profile=user_profile)
 
     return login_or_register_remote_user(request, result)
@@ -895,6 +898,7 @@ def api_fetch_api_key(
     email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
 
     # Mark this request as having a logged-in user for our server logs.
+    assert isinstance(user_profile, UserProfile)
     process_client(request, user_profile)
     RequestNotes.get_notes(request).requestor_for_logs = user_profile.format_requestor_for_logs()
 
