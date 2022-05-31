@@ -17,23 +17,12 @@ show_traceback = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
 
-# These are all the options that would be enabled by mypy --strict, in
-# the order listed by the mypy --help documentation of --strict.  We
-# do not yet enable all of them.
-warn_unused_configs = true
-disallow_any_generics = true
+# Enable strict mode, with some exceptions.
+strict = true
 disallow_subclassing_any = false
 disallow_untyped_calls = false
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
 disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 warn_return_any = false
-no_implicit_reexport = true
-strict_equality = true
 
 # Display the codes needed for # type: ignore[code] annotations.
 show_error_codes = true
