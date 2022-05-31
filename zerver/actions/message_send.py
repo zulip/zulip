@@ -1396,7 +1396,7 @@ def check_message(
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
-        mirror_message = client and client.name in [
+        mirror_message = client.name in [
             "zephyr_mirror",
             "irc_mirror",
             "jabber_mirror",
