@@ -288,7 +288,6 @@ function generate_topic_data(topic_info_array) {
             stream: "stream" + stream_id,
             stream_color: "",
             stream_id,
-            stream_url: "https://www.example.com",
             topic,
             topic_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",

@@ -309,7 +309,6 @@ function format_topic(topic_data) {
         stream_color: stream_info.color,
         invite_only: stream_info.invite_only,
         is_web_public: stream_info.is_web_public,
-        stream_url: hash_util.by_stream_url(stream_id),
 
         topic,
         topic_key: get_topic_key(stream_id, topic),
