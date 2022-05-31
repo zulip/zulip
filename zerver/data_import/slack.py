@@ -648,6 +648,7 @@ def process_long_term_idle_users(
     return long_term_idle_helper(
         get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members),
         get_message_sending_user,
+        get_timestamp_from_message,
         lambda id: slack_user_id_to_zulip_user_id[id],
         users,
         zerver_userprofile,
@@ -1139,6 +1140,10 @@ def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
     if message.get("file"):
         return message["file"].get("user")
     return None
+
+
+def get_timestamp_from_message(message: ZerverFieldsT) -> float:
+    return float(message["ts"])
 
 
 def fetch_shared_channel_users(

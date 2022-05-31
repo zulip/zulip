@@ -753,6 +753,7 @@ ExternalId = TypeVar("ExternalId")
 def long_term_idle_helper(
     message_iterator: Iterator[ZerverFieldsT],
     user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
+    timestamp_from_message: Callable[[ZerverFieldsT], float],
     zulip_user_id_from_user: Callable[[ExternalId], int],
     users: List[ZerverFieldsT],
     zerver_userprofile: List[ZerverFieldsT],
@@ -767,7 +768,7 @@ def long_term_idle_helper(
     recent_senders: Set[ExternalId] = set()
     NOW = float(timezone_now().timestamp())
     for message in message_iterator:
-        timestamp = float(message["ts"])
+        timestamp = timestamp_from_message(message)
         user = user_from_message(message)
         if user is None:
             continue
