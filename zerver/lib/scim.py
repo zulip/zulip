@@ -181,7 +181,7 @@ class ZulipSCIMUser(SCIMUser):
             self._full_name_new_value = new_value
 
     def change_is_active(self, new_value: bool) -> None:
-        if new_value is not None and new_value != self.obj.is_active:
+        if new_value != self.obj.is_active:
             self._is_active_new_value = new_value
 
     def handle_replace(
