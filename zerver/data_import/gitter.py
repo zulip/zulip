@@ -78,7 +78,7 @@ def build_userprofile(
     user_id = 0
 
     for data in gitter_data:
-        if data["fromUser"]["id"] not in user_map:
+        if get_user_from_message(data) not in user_map:
             user_data = data["fromUser"]
             user_map[user_data["id"]] = user_id
 
@@ -205,6 +205,10 @@ def get_timestamp_from_message(message: ZerverFieldsT) -> float:
     return float(dateutil.parser.parse(message["sent"]).timestamp())
 
 
+def get_user_from_message(message: ZerverFieldsT) -> str:
+    return message["fromUser"]["id"]
+
+
 def convert_gitter_workspace_messages(
     gitter_data: GitterDataT,
     output_dir: str,
@@ -238,7 +242,7 @@ def convert_gitter_workspace_messages(
             topic_name = "imported from Gitter" + (
                 f' room {message["room"]}' if "room" in message else ""
             )
-            user_id = user_map[message["fromUser"]["id"]]
+            user_id = user_map[get_user_from_message(message)]
             recipient_id = stream_map[message["room"]] if "room" in message else 0
             zulip_message = build_message(
                 topic_name,
