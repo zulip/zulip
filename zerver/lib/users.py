@@ -101,7 +101,7 @@ def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[s
         for key, validator in config_options.items():
             value = config_data[key]
             error = validator(key, value)
-            if error:
+            if error is not None:
                 raise JsonableError(_("Invalid {} value {} ({})").format(key, value, error))
 
     elif bot_type == UserProfile.EMBEDDED_BOT:
