@@ -383,7 +383,7 @@ def accounts_register(
             # prereg_user.realm_creation carries the information about whether
             # we're in realm creation mode, and the ldap flow will handle
             # that and create the user with the appropriate parameters.
-            user_profile = authenticate(
+            user = authenticate(
                 request=request,
                 username=email,
                 password=password,
@@ -391,7 +391,7 @@ def accounts_register(
                 prereg_user=prereg_user,
                 return_data=return_data,
             )
-            if user_profile is None:
+            if user is None:
                 can_use_different_backend = email_auth_enabled(realm) or (
                     len(get_external_method_dicts(realm)) > 0
                 )
@@ -419,13 +419,14 @@ def accounts_register(
                     query = urlencode({"email": email})
                     redirect_url = append_url_query_string(view_url, query)
                     return HttpResponseRedirect(redirect_url)
-            elif not realm_creation:
-                # Since we'll have created a user, we now just log them in.
-                return login_and_go_to_home(request, user_profile)
             else:
+                assert isinstance(user, UserProfile)
+                user_profile = user
+                if not realm_creation:
+                    # Since we'll have created a user, we now just log them in.
+                    return login_and_go_to_home(request, user_profile)
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
-                pass
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
@@ -485,6 +486,7 @@ def accounts_register(
             )
             return redirect("/")
 
+        assert isinstance(auth_result, UserProfile)
         return login_and_go_to_home(request, auth_result)
 
     return render(

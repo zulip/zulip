@@ -273,6 +273,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
         return new_password
 
     def save(self, commit: bool = True) -> UserProfile:
+        assert isinstance(self.user, UserProfile)
         do_change_password(self.user, self.cleaned_data["new_password1"], commit=commit)
         return self.user
 
