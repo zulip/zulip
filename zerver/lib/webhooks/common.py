@@ -114,7 +114,7 @@ def check_send_webhook_message(
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.
-        if stream is not None and unquote_url_parameters:
+        if unquote_url_parameters:
             stream = unquote(stream)
 
         if user_specified_topic is not None:
