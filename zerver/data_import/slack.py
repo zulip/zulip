@@ -794,7 +794,7 @@ def get_messages_iterator(
 
         # we sort the messages according to the timestamp to show messages with
         # the proper date order
-        yield from sorted(messages_for_one_day, key=lambda m: m["ts"])
+        yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
 def channel_message_to_zerver_message(
@@ -924,7 +924,7 @@ def channel_message_to_zerver_message(
 
         zulip_message = build_message(
             topic_name,
-            float(message["ts"]),
+            get_timestamp_from_message(message),
             message_id,
             content,
             rendered_content,
