@@ -29,8 +29,8 @@ from zerver.models import (
 
 
 # A test validator
-def _check_string(var_name: str, val: object) -> Optional[str]:
-    if str(val).startswith("_"):
+def _check_string(var_name: str, val: str) -> Optional[str]:
+    if val.startswith("_"):
         return f'{var_name} starts with a "_" and is hence invalid.'
     return None
 
