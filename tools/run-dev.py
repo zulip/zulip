@@ -277,11 +277,11 @@ class BaseHandler(web.RequestHandler):
                     self.add_header(header, v)
             if response.body:
                 self.write(response.body)
-            self.finish()
+            await self.finish()
         except (ConnectionError, httpclient.HTTPError) as e:
             self.set_status(500)
             self.write("Internal server error:\n" + str(e))
-            self.finish()
+            await self.finish()
 
 
 class WebPackHandler(BaseHandler):
