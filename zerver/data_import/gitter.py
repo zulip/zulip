@@ -200,6 +200,11 @@ def build_recipient_and_subscription(
     return zerver_recipient, zerver_subscription
 
 
+def get_timestamp_from_message(message: ZerverFieldsT) -> float:
+    # Gitter's timestamps are in UTC
+    return float(dateutil.parser.parse(message["sent"]).timestamp())
+
+
 def convert_gitter_workspace_messages(
     gitter_data: GitterDataT,
     output_dir: str,
@@ -227,7 +232,7 @@ def convert_gitter_workspace_messages(
         if len(message_data) == 0:
             break
         for message in message_data:
-            message_time = dateutil.parser.parse(message["sent"]).timestamp()
+            message_time = get_timestamp_from_message(message)
             mentioned_user_ids = get_usermentions(message, user_map, user_short_name_to_full_name)
             rendered_content = None
             topic_name = "imported from Gitter" + (
@@ -237,7 +242,7 @@ def convert_gitter_workspace_messages(
             recipient_id = stream_map[message["room"]] if "room" in message else 0
             zulip_message = build_message(
                 topic_name,
-                float(message_time),
+                message_time,
                 message_id,
                 message["text"],
                 rendered_content,
