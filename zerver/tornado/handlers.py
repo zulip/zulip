@@ -122,7 +122,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         return request
 
-    def write_django_response_as_tornado_response(self, response: HttpResponse) -> None:
+    async def write_django_response_as_tornado_response(self, response: HttpResponse) -> None:
         # This takes a Django HttpResponse and copies its HTTP status
         # code, headers, cookies, and content onto this
         # tornado.web.RequestHandler (which is how Tornado prepares a
@@ -145,7 +145,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.write(response.content)
 
         # Close the connection.
-        self.finish()
+        await self.finish()
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = self.convert_tornado_request_to_django_request()
@@ -174,7 +174,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 clear_handler_by_id(self.handler_id)
 
                 assert isinstance(response, HttpResponse)
-                self.write_django_response_as_tornado_response(response)
+                await self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django that we're done processing this request on
             # the Django side; this triggers cleanup work like
@@ -213,7 +213,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             for msg in result_dict["messages"]:
                 if msg["content_type"] != "text/html":
                     self.set_status(500)
-                    self.finish("Internal error: bad message format")
+                    await self.finish("Internal error: bad message format")
         if result_dict["result"] == "error":
             self.set_status(400)
 
@@ -264,7 +264,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # middleware will not have seen a session access
             patch_vary_headers(response, ("Cookie",))
             assert isinstance(response, HttpResponse)
-            self.write_django_response_as_tornado_response(response)
+            await self.write_django_response_as_tornado_response(response)
         finally:
             # Tell Django we're done processing this request
             await sync_to_async(response.close, thread_sensitive=True)()
