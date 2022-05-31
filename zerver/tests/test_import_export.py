@@ -644,7 +644,6 @@ class RealmImportExportTest(ExportFile):
             realm_emoji = check_add_realm_emoji(
                 realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
             )
-            assert realm_emoji
             self.assertEqual(realm_emoji.name, "hawaii")
 
         # Deactivate a user to ensure such a case is covered.
@@ -801,7 +800,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
-            assert orig_realm_result
+            assert orig_realm_result  # type: ignore[truthy-bool] # see above
 
             # It may be helpful to do print(f.__name__) if you are having
             # trouble debugging this.
