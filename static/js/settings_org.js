@@ -211,6 +211,9 @@ function get_subsection_property_elements(element) {
         // Because the emojiset widget has a unique radio button
         // structure, it needs custom code.
         const $color_scheme_elem = $subsection.find(".setting_color_scheme");
+        const $display_emoji_reaction_users_elem = $subsection.find(
+            ".display_emoji_reaction_users",
+        );
         const $emojiset_elem = $subsection.find("input[name='emojiset']:checked");
         const $user_list_style_elem = $subsection.find("input[name='user_list_style']:checked");
         const $translate_emoticons_elem = $subsection.find(".translate_emoticons");
@@ -219,6 +222,7 @@ function get_subsection_property_elements(element) {
             $emojiset_elem,
             $user_list_style_elem,
             $translate_emoticons_elem,
+            $display_emoji_reaction_users_elem,
         ];
     }
     return Array.from($subsection.find(".prop-element"));
