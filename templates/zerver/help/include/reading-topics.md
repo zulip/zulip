@@ -4,7 +4,7 @@
 
 2. Click on the name of a topic in the **Topic** column.
 
-3. Read the topic, scrolling down with the mouse or by pressing `Fn` + `↓`.
+3. Read the topic, scrolling down with the mouse or by pressing `PgDn`.
 
 4. If the topic is not of interest, you can
    [mark all messages as read](/help/marking-messages-as-read) or do so by jumping
@@ -19,7 +19,7 @@
 
 2. Click on a topic in the left sidebar.
 
-3. Read the topic, scrolling down with the mouse or by pressing `Fn` + `↓`.
+3. Read the topic, scrolling down with the mouse or by pressing `PgDn`.
 
 4. If the topic is not of interest, you can
    [mark all messages as read](/help/marking-messages-as-read) or do so by jumping
