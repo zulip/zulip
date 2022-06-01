@@ -25,11 +25,7 @@ class RequestMockWithProxySupport(responses.RequestsMock):
                     url=f"{proxy_uri}/",
                     headers=adapter.proxy_headers(proxy_uri),
                 ).prepare()
-        return super()._on_request(  # type: ignore[misc]  # This is an undocumented internal API
-            adapter,
-            request,
-            **kwargs,
-        )
+        return super()._on_request(adapter, request, **kwargs)
 
 
 class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
@@ -41,11 +37,7 @@ class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
     ) -> requests.Response:
         if kwargs.get("timeout") is not None:
             request.headers["X-Timeout"] = kwargs["timeout"]
-        return super()._on_request(  # type: ignore[misc]  # This is an undocumented internal API
-            adapter,
-            request,
-            **kwargs,
-        )
+        return super()._on_request(adapter, request, **kwargs)
 
 
 class TestOutgoingHttp(ZulipTestCase):
