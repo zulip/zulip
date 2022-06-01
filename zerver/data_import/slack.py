@@ -650,7 +650,7 @@ def process_long_term_idle_users(
         get_message_sending_user,
         get_timestamp_from_message,
         lambda id: slack_user_id_to_zulip_user_id[id],
-        users,
+        [user["id"] for user in users],
         zerver_userprofile,
     )
 
