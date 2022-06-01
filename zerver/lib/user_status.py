@@ -93,3 +93,21 @@ def update_user_status(
         user_profile_id=user_profile_id,
         defaults=defaults,
     )
+
+
+def get_user_status(user_profile_id: int) -> Dict[str, Dict[str, Any]]:
+    result = list(
+        UserStatus.objects.filter(user_profile_id=user_profile_id,).values(
+            "user_profile_id",
+            "status",
+            "status_text",
+            "emoji_name",
+            "emoji_code",
+            "reaction_type",
+        )
+    )
+
+    if len(result) == 0:
+        return {"status": {}}
+
+    return {"status": format_user_status(result[0])}
