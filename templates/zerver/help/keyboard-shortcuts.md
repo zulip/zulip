@@ -15,186 +15,203 @@ below, and add more to your repertoire as needed.
 
 ## The basics
 
-* **Reply to message**: `r` or `Enter` — Reply to the selected
-  message (outlined in blue).
+* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
+  selected message (outlined in blue).
 
-* **New stream message**: `c` — Start a new topic in the current stream.
+* **New stream message**: <kbd>C</kbd> — Start a new topic in the current
+  stream.
 
-* **New private message**: `x`
+* **New private message**: <kbd>X</kbd>
 
-* **Cancel compose and save draft**: `Esc` or `Ctrl` + `[` — Close the compose box and save
-  the unsent message as a draft.
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
+  <kbd>[</kbd> — Close the compose box and save the unsent message as a
+  draft.
 
-* **View drafts**: `d` — Use the arrow keys and `Enter` to restore a draft.
-  Press `d` again to close.
+* **View drafts**: <kbd>D</kbd> — Use the arrow keys and <kbd>Enter</kbd>
+  to restore a draft. Press <kbd>D</kbd> again to close.
 
-* **Next message**: `↓` or `j`
+* **Next message**: <kbd class="arrow-key">↓</kbd> or <kbd>J</kbd>
 
-* **Last message**: `End` or `G` — Also marks all messages in
-  the current view as read.
+* **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
+  Also marks all messages in the current view as read.
 
-* **Next unread topic**: `n`
+* **Next unread topic**: <kbd>N</kbd>
 
-* **Next unread private message**: `p`
+* **Next unread private message**: <kbd>P</kbd>
 
-* **Search messages**: `/`
+* **Search messages**: <kbd>/</kbd>
 
-* **Toggle keyboard shortcuts view**: `?`
+* **Toggle keyboard shortcuts view**: <kbd>?</kbd>
 
-* **Go to default view**: `Ctrl` + `[` (or `Esc`,
-  [if enabled][disable-escape])
+* **Go to default view**: <kbd>Ctrl</kbd> + <kbd>[</kbd> (or
+  <kbd>Esc</kbd>, [if enabled][disable-escape])
   until you are in the [default view](/help/configure-default-view).
 
 [disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 ## Navigation
 
-* **Search messages**: `/` or `Ctrl` + `k`
+* **Search messages**: <kbd>/</kbd> or <kbd>Ctrl</kbd> + <kbd>K</kbd>
 
-* **Filter streams**: `q`
+* **Filter streams**: <kbd>Q</kbd>
 
-* **Search people**: `w`
+* **Search people**: <kbd>W</kbd>
 
-* **Last message**: `End` or `G` — Also marks all messages in
-  the current view as read.
+* **Last message**: <kbd>End</kbd> or <kbd>Shift</kbd> + <kbd>G</kbd> —
+  Also marks all messages in the current view as read.
 
-* **First message**: `Home`
+* **First message**: <kbd>Home</kbd>
 
-* **Previous message**: `↑` or `k`
+* **Previous message**: <kbd class="arrow-key">↑</kbd> or <kbd>K</kbd>
 
-* **Next message**: `↓` or `j`
+* **Next message**: <kbd class="arrow-key">↓</kbd> or <kbd>J</kbd>
 
-* **Scroll up**: `PgUp` or `K`
+* **Scroll up**: <kbd>PgUp</kbd> or <kbd>Shift</kbd> + <kbd>K</kbd>
 
-* **Scroll down**: `PgDn`, `J`, or `Spacebar`
+* **Scroll down**: <kbd>PgDn</kbd>, <kbd>Shift</kbd> + <kbd>J</kbd>, or
+  <kbd>Spacebar</kbd>
 
-* **Go back through viewing history**: `Alt` + `←`
+* **Go back through viewing history**: <kbd>Alt</kbd> +
+  <kbd class="arrow-key">←</kbd>
 
-* **Go forward through viewing history**: `Alt` + `→`
+* **Go forward through viewing history**: <kbd>Alt</kbd> +
+  <kbd class="arrow-key">→</kbd>
 
 ## Narrowing
 
-* **Narrow to next unread topic**: `n`
+* **Narrow to next unread topic**: <kbd>N</kbd>
 
-* **Narrow to next unread private message**: `p`
+* **Narrow to next unread private message**: <kbd>P</kbd>
 
-* **Narrow to stream**: `s`
+* **Narrow to stream**: <kbd>S</kbd>
 
-* **Narrow to topic or PM conversation**: `S`
+* **Narrow to topic or PM conversation**: <kbd>Shift</kbd> + <kbd>S</kbd>
 
-* **Narrow to all private messages**: `P`
+* **Narrow to all private messages**: <kbd>Shift</kbd> + <kbd>P</kbd>
 
-* **Cycle between stream narrows**: `A` (previous) and `D` (next)
+* **Cycle between stream narrows**: <kbd>Shift</kbd> + <kbd>A</kbd>
+  (previous) and <kbd>Shift</kbd> + <kbd>D</kbd> (next)
 
-* **Narrow to all messages**: `a` — Shows all unmuted messages.
+* **Narrow to all messages**: <kbd>A</kbd> — Shows all unmuted messages.
 
-* **Narrow to current compose box recipient**: `Ctrl` + `.`
+* **Narrow to current compose box recipient**: <kbd>Ctrl</kbd> + <kbd>.</kbd>
 
 ## Composing messages
 
-* **Reply to message**: `r` or `Enter` — Reply to the selected
-  message (outlined in blue). Same behavior as clicking on the message.
+* **Reply to message**: <kbd>R</kbd> or <kbd>Enter</kbd> — Reply to the
+  selected message (outlined in blue). Same behavior as clicking on the
+  message.
 
-* **Reply to message, mentioning author**: `@`
+* **Reply to message, mentioning author**: <kbd>@</kbd>
 
-* **Reply only to author**: `R`
+* **Reply only to author**: <kbd>Shift</kbd> + <kbd>R</kbd>
 
-* **Quote and reply to message**: `>`
+* **Quote and reply to message**: <kbd>></kbd>
 
-* **New stream message**: `c` — For starting a new topic in a stream.
+* **New stream message**: <kbd>C</kbd> — For starting a new topic in a
+  stream.
 
-* **New private message**: `x`
+* **New private message**: <kbd>X</kbd>
 
 ### In the compose box
 
-* **Send message**: `Enter`, `Tab` then `Enter`, and/or `Ctrl` + `Enter`,
+* **Send message**: <kbd>Enter</kbd>, <kbd>Tab</kbd> then <kbd>Enter</kbd>,
+  and/or <kbd>Ctrl</kbd> + <kbd>Enter</kbd>, depending on your settings. See
+  [enable enter to send](https://zulip.com/help/enable-enter-to-send).
+
+* **Insert new line**: <kbd>Enter</kbd>, or <kbd>Shift</kbd> + <kbd>Enter</kbd>,
   depending on your settings. See
   [enable enter to send](https://zulip.com/help/enable-enter-to-send).
 
-* **Insert new line**: `Enter`, or `Shift` + `Enter`, depending on your
-  settings. See
-  [enable enter to send](https://zulip.com/help/enable-enter-to-send).
+* **Insert italic text**: `*italic*` or <kbd>Ctrl</kbd> + <kbd>I</kbd>
 
-* **Insert italic text**: `*italic*` or `Ctrl` + `I`
-* **Insert bold text**: `**bold**` or `Ctrl` + `B`
-* **Insert link**: `[Zulip website](https://zulip.org)` or `Ctrl` + `Shift` + `L`
+* **Insert bold text**: `**bold**` or <kbd>Ctrl</kbd> + <kbd>B</kbd>
 
-* **Cancel compose and save draft**: `Esc` or `Ctrl` + `[` — Close the compose box and save
-  the unsent message as a draft.
+* **Insert link**: `[Zulip website](https://zulip.org)` or <kbd>Ctrl</kbd> +
+  <kbd>Shift</kbd> + <kbd>L</kbd>
+
+* **Cancel compose and save draft**: <kbd>Esc</kbd> or <kbd>Ctrl</kbd> +
+  <kbd>[</kbd> — Close the compose box and save the unsent message as a draft.
 
 ## Message actions
 
-* **Edit last message**: `←` — Open the last editable message in the current
-  view (if any).
+* **Edit last message**: <kbd class="arrow-key">←</kbd> — Open the last
+  editable message in the current view (if any).
 
 ### For a selected message (outlined in blue)
 
-* **Show sender's profile**: `u`
+* **Show sender's profile**: <kbd>U</kbd>
 
-* **View image**: `v`
+* **View image**: <kbd>V</kbd>
 
-* **Edit message**: `e`
+* **Edit message**: <kbd>E</kbd>
 
-* **Star message**: `Ctrl` + `s`
+* **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 
 * **React with <img alt=":thumbs_up:" class="emoji"
-src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
-title="thumbs up"/>**: `+`
+  src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+  title="thumbs up"/>**: <kbd>+</kbd>
 
-* **Collapse/show message**: `-`
+* **Collapse/show message**: <kbd>-</kbd>
 
-* **Toggle topic mute**: `M` — Muted topics don't show up in any views
-  (including All messages), and don't contribute to unread counts. Read more about
-  [muting topics](/help/mute-a-topic).
+* **Toggle topic mute**: <kbd>Shift</kbd> + <kbd>M</kbd> — Muted topics
+  don't show up in any views (including All messages), and don't contribute
+  to unread counts. Read more about [muting topics](/help/mute-a-topic).
 
 ## Recent topics
 
-* **View recent topics**: `t`
-* **Search recent topics**: `t`
-* **Escape from recent topics search**: `Esc` or arrow keys
-* **Navigate recent topics**: Use arrow keys or vim keys (`j`, `k`, `l`, `h`).
+* **View recent topics**: <kbd>T</kbd>
 
-Use `Enter` to engage with elements.
+* **Search recent topics**: <kbd>T</kbd>
+
+* **Escape from recent topics search**: <kbd>Esc</kbd> or arrow keys
+
+* **Navigate recent topics**: Use arrow keys or vim keys (<kbd>J</kbd>,
+  <kbd>K</kbd>, <kbd>L</kbd>, <kbd>H</kbd>).
+
+Use <kbd>Enter</kbd> to engage with elements.
 
 ## Drafts
 
-* **Toggle drafts view**: `d`
+* **Toggle drafts view**: <kbd>D</kbd>
 
 ### Within the drafts view
 
-* **Edit selected draft**: `Enter`
+* **Edit selected draft**: <kbd>Enter</kbd>
 
-* **Delete selected draft**: `Backspace`
+* **Delete selected draft**: <kbd>Backspace</kbd>
 
 Keyboard navigation (e.g. arrow keys) works as expected.
 
 ## Menus
 
-* **Toggle shortcuts help**: `?`
+* **Toggle shortcuts help**: <kbd>?</kbd>
 
-* **Toggle gear menu**: `g`
+* **Toggle gear menu**: <kbd>G</kbd>
 
 ### For a selected message (outlined in blue)
 
-* **Toggle emoji reactions menu**: `:`
+* **Toggle emoji reactions menu**: <kbd>:</kbd>
 
-* **Toggle message actions menu**: `i`
+* **Toggle message actions menu**: <kbd>I</kbd>
 
 ## Streams settings page
 
-* **Scroll through streams**: `↑` and `↓`
+* **Scroll through streams**: <kbd class="arrow-key">↑</kbd> and
+  <kbd class="arrow-key">↓</kbd>
 
     !!! tip ""
 
-        Pressing `↑` from the first stream in the list moves
-        you to the **Filter streams** input.
+        Pressing <kbd class="arrow-key">↑</kbd> from the first stream
+        in the list moves you to the **Filter streams** input.
 
-* **Switch between tabs**: `←` and `→` — Switch between the
-**Subscribed** and **All streams** tabs.
+* **Switch between tabs**: <kbd class="arrow-key">←</kbd> and
+  <kbd class="arrow-key">→</kbd> — Switch between the **Subscribed**
+  and **All streams** tabs.
 
-* **Create new stream**: `n`
+* **Create new stream**: <kbd>N</kbd>
 
 ### For a selected stream
 
-* **View stream messages**: `V`
+* **View stream messages**: <kbd>Shift</kbd> + <kbd>V</kbd>
 
-* **Toggle subscription**: `S`
+* **Toggle subscription**: <kbd>Shift</kbd> + <kbd>S</kbd>

@@ -12,17 +12,18 @@ There are two situations in which messages automatically get marked as read.
 * **Blue box**: Messages are marked as read when the blue box passes over
   them.
 
-You can move the blue box either with the keyboard (arrow keys, `End`, etc.)
-or by scrolling the feed with your mouse.
+You can move the blue box either with the keyboard (arrow keys, <kbd>End</kbd>,
+etc.) or by scrolling the feed with your mouse.
 
 You can also manually **mark all messages as read**, or **mark all messages in a
 stream or topic as read**.
 
 {start_tabs}
 
-1. Hover over a stream, topic, or All messages in the left sidebar.
+1. Hover over a stream, topic, or **All messages** in the left sidebar.
 
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
+   to the right.
 
 1. Click **Mark all messages as read**.
 

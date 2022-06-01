@@ -1,26 +1,26 @@
-# Enable `Enter` to send
+# Enable Enter to send
 
-By default, the `Enter` key adds a new line to a message,
-and `Ctrl` + `Enter` sends the message.
+By default, the <kbd>Enter</kbd> key adds a new line to a message,
+and <kbd>Ctrl</kbd> + <kbd>Enter</kbd> sends the message.
 
 This is convenient for typing multi-line messages, which are more common in
 Zulip than in most other chat products. However, you can also configure
-Zulip so that `Enter` sends the message.
+Zulip so that <kbd>Enter</kbd> sends the message.
 
-## Enable `Enter` to send
+## Enable <kbd>Enter</kbd> to send
 
 {start_tabs}
 
 {!start-composing.md!}
 
-1. Select **`Ctrl` + `Enter` to send** below the **Send** button in
-   the compose box.
+1. Click **<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to send** in the bottom right
+   corner of the compose box, just below the **Send** button.
 
-1. Toggle your preferred option.
+1. Select **<kbd>Enter</kbd> to send**.
 
 {end_tabs}
 
 !!! tip ""
 
-    `Shift` + `Enter` always adds a new line, regardless of whether
-    **`Enter` to send** is enabled.
+    <kbd>Shift</kbd> + <kbd>Enter</kbd> always adds a new line, regardless
+    of whether **<kbd>Enter</kbd> to send** is enabled.

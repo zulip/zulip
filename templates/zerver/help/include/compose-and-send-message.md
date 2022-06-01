@@ -1,4 +1,6 @@
-1. Press `Tab` or click on the compose box to compose your message.
+1. Press <kbd>Tab</kbd> or click on the compose box to compose your
+   message.
 
-1. Click **Send**, or use `Enter` or `Ctrl` + `Enter` (depending on whether
-  the [**Press Enter to send** option](/help/enable-enter-to-send) is checked).
+1. Click **Send**, or use <kbd>Enter</kbd> or <kbd>Ctrl</kbd> +
+   <kbd>Enter</kbd> (depending on your settings. See
+  [enable enter to send](https://zulip.com/help/enable-enter-to-send)).

@@ -14,8 +14,8 @@ To narrow the view to the conversation you're currently composing to,
 click on the **Go to conversation** (<i class="zulip-icon
    zulip-icon-arrow-left-circle"></i>) button in the compose box.
 
-You can also use the keyboard shortcut `Ctrl` + `.` to go to the conversation to
-which you are composing.
+You can also use the keyboard shortcut <kbd>Ctrl</kbd> + <kbd>.</kbd>
+to go to the conversation to which you are composing.
 
 While the button is only shown when composing to a stream, the keyboard shortcut
 will work in both stream messages and private messages.

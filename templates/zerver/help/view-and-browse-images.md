@@ -24,9 +24,9 @@ Exit the image viewer by clicking anywhere outside the image.
 
 !!! keyboard_tip ""
 
-    Use `v` to **open** the image viewer. Use `Z` and `z` to
-    zoom in and out of the image. Use `v` or `Esc` to **close**
-    the image viewer.
+    Use <kbd>V</kbd> to **open** the image viewer. Use <kbd>Shift</kbd> +
+    <kbd>Z</kbd> and <kbd>Z</kbd> to zoom in and out of the image. Use
+    <kbd>V</kbd> or <kbd>Esc</kbd> to **close** the image viewer.
 
 ## Troubleshooting
 
