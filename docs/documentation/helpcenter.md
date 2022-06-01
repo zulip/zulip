@@ -62,7 +62,7 @@ the current documentation as a resource and guide as you begin.
   you're documenting.
 
 - Read through the existing articles in that section and pay attention
-  to the writing style and [voice](#voice), as well as any
+  to the [writing style](#writing-style) used, as well as any
   [Markdown features](#markdown-features) used to enhance the
   readability of the documentation.
 
@@ -96,7 +96,8 @@ users as an addition to the existing article.
 Here are some things to keep in mind when expanding and updating
 existing help center articles:
 
-- Maintain the format and style of the current article.
+- Maintain the format and [writing style](#writing-style) of the
+  current article.
 
 - Review the [Markdown features](#markdown-features) available and
   pay attention to the ones already utilized in the article.
@@ -147,6 +148,11 @@ with modals, etc. should never go in the help center documentation.
 In such cases, you may be able to fix the problem by adding text in-app,
 where the user will see it as they are interacting with the feature.
 
+## Writing style
+
+Below are some general style and writing conventions that should be used
+as guidance when documenting Zulip's features.
+
 ### User interface
 
 When you refer to the features in the Zulip UI, you should **bold** the
@@ -162,6 +168,29 @@ is needed. **Never identify or refer to a button by its color.**
 Do not use `we` to refer to Zulip or its creators; for example, "Zulip also
 allows ...", rather than "we also allow ...". On the other hand, `you` is ok
 and used liberally.
+
+### Keyboard shortcuts
+
+Use backticks for each keyboard key in the shortcut (e.g. `Enter` or `R`).
+For shortcuts with more than one key, add a plus sign (+) surrounded by
+spaces in between the keys (e.g. `Ctrl` + `K`, instead of `Ctrl + K` or
+`Ctrl`+`K` or `Ctrl` `K`).
+
+Use the labels one sees on the actual keyboard rather than the letter they
+produce when pressed (e.g. `R` and `Shift` + `R` rather than `r` and `R`).
+**Note**: The existing help center documentation is inconsistent about this
+([see this UI redesign issue](https://github.com/zulip/zulip/issues/21753)).
+Therefore, if there are already some keyboard shortcuts in the existing help
+center article, then it is more important to be consistent with those than
+with the global style.
+
+Use non-Mac keyboard keys; for example `Enter`, instead of `Return`. Zulip will
+automatically translate non-Mac keys to the Mac versions for users with a Mac
+user agent. If you want to confirm that your documentation is rendering Mac keys
+correctly when writing documentation in Windows or Linux, you can temporarily
+change `has_mac_keyboard` in `/static/js/common.ts` to always return `True`.
+Then when you view your documentation changes in the development environment,
+the keyboard shortcuts should be rendered with Mac keys where appropriate.
 
 ## Markdown features
 
