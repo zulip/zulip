@@ -324,16 +324,7 @@ export function format_draft(draft) {
         };
     } else {
         const emails = util.extract_pm_recipients(draft.private_message_recipient);
-        const recipients = emails
-            .map((email) => {
-                email = email.trim();
-                const person = people.get_by_email(email);
-                if (person !== undefined) {
-                    return person.full_name;
-                }
-                return email;
-            })
-            .join(", ");
+        const recipients = people.emails_to_full_names_string(emails);
 
         formatted = {
             draft_id: draft.id,

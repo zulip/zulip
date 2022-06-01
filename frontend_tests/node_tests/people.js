@@ -664,6 +664,24 @@ test_people("multi_user_methods", () => {
     assert.equal(people.reply_to_to_user_ids_string("invalid@example.com"), undefined);
 });
 
+test_people("emails_to_full_names_string", () => {
+    people.add_active_user(charles);
+    people.add_active_user(maria);
+    assert.equal(
+        people.emails_to_full_names_string([charles.email, maria.email]),
+        `${charles.full_name}, ${maria.full_name}`,
+    );
+
+    assert.equal(
+        people.emails_to_full_names_string([
+            charles.email,
+            "unknown-email@example.com",
+            maria.email,
+        ]),
+        `${charles.full_name}, unknown-email@example.com, ${maria.full_name}`,
+    );
+});
+
 test_people("concat_huddle", () => {
     /*
         We assume that user_ids passed in

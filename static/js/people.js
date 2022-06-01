@@ -256,6 +256,19 @@ export function reply_to_to_user_ids_string(emails_string) {
     return user_ids.join(",");
 }
 
+export function emails_to_full_names_string(emails) {
+    return emails
+        .map((email) => {
+            email = email.trim();
+            const person = get_by_email(email);
+            if (person !== undefined) {
+                return person.full_name;
+            }
+            return email;
+        })
+        .join(", ");
+}
+
 export function get_user_time_preferences(user_id) {
     const user_timezone = get_by_user_id(user_id).timezone;
     if (user_timezone) {
