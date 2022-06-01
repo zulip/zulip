@@ -56,7 +56,7 @@ details worth understanding:
 - Return to "Credentials", and select "Create credentials". Choose
   "OAuth client ID", and follow prompts to create a consent screen, etc.
   For "Authorized redirect URIs", fill in
-  `http://zulipdev.com:9991/complete/google/` .
+  `http://auth.zulipdev.com:9991/complete/google/` .
 
 - You should get a client ID and a client secret. Copy them. In
   `dev-secrets.conf`, set `social_auth_google_key` to the client ID
@@ -67,7 +67,7 @@ details worth understanding:
 - Register an OAuth2 application with GitHub at one of
   <https://github.com/settings/developers> or
   <https://github.com/organizations/ORGNAME/settings/developers>.
-  Specify `http://zulipdev.com:9991/complete/github/` as the callback URL.
+  Specify `http://auth.zulipdev.com:9991/complete/github/` as the callback URL.
 
 - You should get a page with settings for your new application,
   showing a client ID and a client secret. In `dev-secrets.conf`, set
@@ -78,7 +78,7 @@ details worth understanding:
 
 - Register an OAuth application with GitLab at
   <https://gitlab.com/oauth/applications>.
-  Specify `http://zulipdev.com:9991/complete/gitlab` as the callback URL.
+  Specify `http://auth.zulipdev.com:9991/complete/gitlab` as the callback URL.
 
 - You should get a page containing the Application ID and Secret for
   your new application. In `dev-secrets.conf`, enter the Application
@@ -91,7 +91,7 @@ details worth understanding:
   Enable App ID and Create a Services ID with the instructions in
   <https://help.apple.com/developer-account/?lang=en#/dev1c0e25352> .
   When prompted for a "Return URL", enter
-  `http://zulipdev.com:9991/complete/apple/` .
+  `http://auth.zulipdev.com:9991/complete/apple/` .
 
 - [Create a Sign in with Apple private key](https://help.apple.com/developer-account/?lang=en#/dev77c875b7e)
 
