@@ -12,7 +12,7 @@ on how to use these views.
 
 You can configure which view is set as your default, and whether
 the `Esc` key navigates to the default view. Also, you can always reach
-the default view by using the `Ctrl + [` shortcut.
+the default view by using the `Ctrl` + `[` shortcut.
 
 ## Change default view
 
@@ -35,7 +35,7 @@ and select a view.
 
 1. To see your changes in action, open a new Zulip tab, or use a keyboard
 shortcut twice to exit the settings and navigate to your default view
-(`Ctrl + [` or `Esc` if enabled).
+(`Ctrl` + `[` or `Esc` if enabled).
 
 [configure-esc]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 
@@ -49,7 +49,7 @@ designed to enhance the user experience in the app.
 By default, the `Esc` key shortcut will ultimately navigate to your
 default view. You can disable this key binding if you would prefer.
 This will not disable other `Esc` key shortcuts used in Zulip,
-and will not affect the behavior of the `Ctrl+[` shortcut.
+and will not affect the behavior of the `Ctrl` + `[` shortcut.
 
 ### Toggle whether `Esc` navigates to the default view
 
