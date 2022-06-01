@@ -29,7 +29,7 @@ certificate store, like your web browser.
 
 {start_tabs}
 {tab|mac}
-1. Hit Cmd+Space to bring up Spotlight Search, type **Keychain
+1. Hit `Cmd` + `Space` to bring up Spotlight Search, type **Keychain
    Access**, and press Enter.
 
 2. From the **File** menu, choose **Import Items...**

@@ -20,7 +20,7 @@ and GitHub account use the same email address.
 
 {tab|desktop}
 
-1. Open the **left sidebar** (`Ctrl+Shift+s`).
+1. Open the **left sidebar** (`Ctrl` + `Shift` + `s`).
 
 1. Set your [proxy settings](/help/connect-through-a-proxy) or add a
    [custom certificate](/help/custom-certificates) if needed (rare).
