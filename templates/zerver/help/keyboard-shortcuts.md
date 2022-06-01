@@ -22,7 +22,7 @@ below, and add more to your repertoire as needed.
 
 * **New private message**: `x`
 
-* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+* **Cancel compose**: `Esc` or `Ctrl` + `[` — Close the compose box and save
   the unsent message as a draft.
 
 * **View drafts**: `d` — Use the arrow keys and `Enter` to restore a draft.
@@ -41,14 +41,14 @@ below, and add more to your repertoire as needed.
 
 * **Toggle keyboard shortcuts view**: `?`
 
-* **Go to default view**: Press `Ctrl + [` (or `Esc`,
+* **Go to default view**: `Ctrl` + `[` (or `Esc`,
   [if enabled][disable-escape])
   until you are in the [default view](/help/configure-default-view).
 
 [disable-escape]: /help/configure-default-view#set-whether-esc-navigates-to-the-default-view
 ## Navigation
 
-* **Search messages**: `/` or `Ctrl+k`
+* **Search messages**: `/` or `Ctrl` + `k`
 
 * **Filter streams**: `q`
 
@@ -110,11 +110,11 @@ below, and add more to your repertoire as needed.
   settings. See
   [enable enter to send](https://zulip.com/help/enable-enter-to-send).
 
-* **Insert italic text**: `*italic*` or `Ctrl + I`
-* **Insert bold text**: `**bold**` or `Ctrl + B`
-* **Insert link**: `[Zulip website](https://zulip.org)` or `Ctrl + Shift + L`
+* **Insert italic text**: `*italic*` or `Ctrl` + `I`
+* **Insert bold text**: `**bold**` or `Ctrl` + `B`
+* **Insert link**: `[Zulip website](https://zulip.org)` or `Ctrl` + `Shift` + `L`
 
-* **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
+* **Cancel compose**: `Esc` or `Ctrl` + `[` — Close the compose box and save
   the unsent message as a draft.
 
 ## Message actions
@@ -130,7 +130,7 @@ below, and add more to your repertoire as needed.
 
 * **Edit message**: `e`
 
-* **Star message**: `Ctrl + s`
+* **Star message**: `Ctrl` + `s`
 
 * **React with <img alt=":thumbs_up:" class="emoji"
 src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
