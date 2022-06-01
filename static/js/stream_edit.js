@@ -497,6 +497,8 @@ export function initialize() {
                 get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            is_business_type_org:
+                page_params.realm_org_type === settings_config.all_org_type_values.business.code,
             is_stream_edit: true,
             max_stream_name_length: page_params.max_stream_name_length,
             max_stream_description_length: page_params.max_stream_description_length,

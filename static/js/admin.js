@@ -176,6 +176,8 @@ export function build_page() {
             page_params.realm_want_advertise_in_communities_directory,
         disable_want_advertise_in_communities_directory:
             !page_params.realm_push_notifications_enabled,
+        is_business_type_org:
+            page_params.realm_org_type === settings_config.all_org_type_values.business.code,
     };
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {

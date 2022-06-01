@@ -901,6 +901,7 @@ body.dark-theme {
     }
 
     .upgrade-tip,
+    .upgrade-or-sponsorship-tip,
     .tip {
         color: inherit;
         background-color: hsla(46, 28%, 38%, 0.27);

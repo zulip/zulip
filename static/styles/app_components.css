@@ -502,23 +502,25 @@ div.overlay {
     line-height: 38px;
 }
 
-.upgrade-tip {
+.upgrade-tip,
+.upgrade-or-sponsorship-tip {
     width: max-content;
 
     &::before {
         content: "\f135";
     }
+}
 
-    &:hover {
-        color: hsl(0, 0%, 20%);
-        border: 1px solid hsl(49, 20%, 60%);
-        box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
+.upgrade-tip:hover {
+    color: hsl(0, 0%, 20%);
+    border: 1px solid hsl(49, 20%, 60%);
+    box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
 
-        text-decoration: none;
-    }
+    text-decoration: none;
 }
 
 .upgrade-tip,
+.upgrade-or-sponsorship-tip,
 .tip {
     position: relative;
     display: block;
