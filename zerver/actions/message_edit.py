@@ -698,7 +698,7 @@ def do_update_message(
     # where possible.
     users_to_be_notified = list(map(user_info, ums))
     if stream_being_edited is not None:
-        if stream_being_edited.is_history_public_to_subscribers:
+        if stream_being_edited.is_history_public_to_subscribers():
             subscriptions = get_active_subscriptions_for_stream_id(
                 stream_id, include_deactivated_users=False
             )
