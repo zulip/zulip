@@ -41,7 +41,6 @@ cp -a \
     tools/ci/production-upgrade-pg \
     tools/ci/send-failure-message \
     package.json yarn.lock \
-    \
     /tmp/production-build
 
 # Check that webpack bundles use only ES2019 syntax.
