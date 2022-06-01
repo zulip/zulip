@@ -24,6 +24,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
@@ -636,6 +637,8 @@ export function setup_page(callback) {
                 stream_edit.get_display_text_for_realm_message_retention_setting(),
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            is_business_type_org:
+                page_params.realm_org_type === settings_config.all_org_type_values.business.code,
             disable_message_retention_setting:
                 !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
         };
