@@ -274,7 +274,7 @@ function create_stream() {
                 // error text directly rather than turning it into
                 // "Error creating stream"?
                 stream_name_error.report_already_exists(stream_name);
-                stream_name_error.trigger("select");
+                stream_name_error.select();
             }
 
             ui_report.error(
