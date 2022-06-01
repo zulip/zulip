@@ -2,6 +2,7 @@ import os
 from typing import Any
 from unittest import mock
 
+import dateutil.parser
 import orjson
 
 from zerver.data_import.gitter import do_convert_data, get_usermentions
@@ -15,7 +16,19 @@ class GitterImporter(ZulipTestCase):
     def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self.make_import_output_dir("gitter")
         gitter_file = os.path.join(os.path.dirname(__file__), "fixtures/gitter_data.json")
-        with self.assertLogs(level="INFO"):
+
+        # We need some time-mocking to set up user soft-deactivation logic.
+        # One of the messages in the import data
+        # is significantly older than the other one. We mock the current time in the relevant module
+        # to match the sent time of the more recent message - to make it look like one of the messages
+        # is very recent, while the other one is old. This should cause that the sender of the recent
+        # message to NOT be soft-deactivated, while the sender of the other one is.
+        with open(gitter_file) as f:
+            gitter_data = orjson.loads(f.read())
+        sent_datetime = dateutil.parser.parse(gitter_data[1]["sent"])
+        with self.assertLogs(level="INFO"), mock.patch(
+            "zerver.data_import.import_util.timezone_now", return_value=sent_datetime
+        ):
             do_convert_data(gitter_file, output_dir)
 
         def read_file(output_file: str) -> Any:
@@ -73,11 +86,26 @@ class GitterImporter(ZulipTestCase):
         self.assertIn(messages["zerver_message"][1]["recipient"], exported_recipient_id)
         self.assertIn(messages["zerver_message"][0]["content"], "test message")
 
-        # test usermessages
+        # test usermessages and soft-deactivation of users
+        user_should_be_long_term_idle = [
+            user
+            for user in realm["zerver_userprofile"]
+            if user["delivery_email"] == "username1@users.noreply.github.com"
+        ][0]
+        user_should_not_be_long_term_idle = [
+            user
+            for user in realm["zerver_userprofile"]
+            if user["delivery_email"] == "username2@users.noreply.github.com"
+        ][0]
+        self.assertEqual(user_should_be_long_term_idle["long_term_idle"], True)
+
+        # Only the user who's not soft-deactivated gets UserMessages.
         exported_usermessage_userprofile = self.get_set(
             messages["zerver_usermessage"], "user_profile"
         )
-        self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
+        self.assertEqual(
+            set([user_should_not_be_long_term_idle["id"]]), exported_usermessage_userprofile
+        )
         exported_usermessage_message = self.get_set(messages["zerver_usermessage"], "message")
         self.assertEqual(exported_usermessage_message, exported_messages_id)
 

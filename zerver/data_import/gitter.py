@@ -21,6 +21,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
 )
@@ -216,12 +217,23 @@ def convert_gitter_workspace_messages(
     user_map: Dict[str, int],
     stream_map: Dict[str, int],
     user_short_name_to_full_name: Dict[str, str],
+    zerver_userprofile: List[ZerverFieldsT],
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> None:
     """
     Messages are stored in batches
     """
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
+
+    long_term_idle = long_term_idle_helper(
+        iter(gitter_data),
+        get_user_from_message,
+        get_timestamp_from_message,
+        lambda id: user_map[id],
+        list(user_map.keys()),
+        zerver_userprofile,
+    )
+
     message_id = 0
 
     low_index = 0
@@ -262,6 +274,7 @@ def convert_gitter_workspace_messages(
                 mentioned_user_ids=mentioned_user_ids,
                 message_id=message_id,
                 is_private=False,
+                long_term_idle=long_term_idle,
             )
 
             message_id += 1
@@ -330,7 +343,13 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int = 6) ->
         user_short_name_to_full_name[userprofile["short_name"]] = userprofile["full_name"]
 
     convert_gitter_workspace_messages(
-        gitter_data, output_dir, subscriber_map, user_map, stream_map, user_short_name_to_full_name
+        gitter_data,
+        output_dir,
+        subscriber_map,
+        user_map,
+        stream_map,
+        user_short_name_to_full_name,
+        realm["zerver_userprofile"],
     )
 
     avatar_folder = os.path.join(output_dir, "avatars")
