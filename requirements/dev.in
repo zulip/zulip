@@ -15,7 +15,7 @@ Twisted
 Scrapy
 
 # Needed to compute test coverage
-coverage<6.3  # https://github.com/nedbat/coveragepy/issues/1310
+coverage
 
 # fake for LDAP testing
 fakeldap
