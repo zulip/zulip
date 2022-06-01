@@ -53,10 +53,13 @@
         top: 1px;
         font-size: 90%;
         display: flex;
-        color: hsl(200, 100%, 40%);
         margin: 0 3px;
         padding: 2px 0;
         line-height: 1em;
+    }
+
+    .message_reaction:hover .message_reaction_count {
+        color: hsl(200, 100%, 40%);
     }
 
     i {
