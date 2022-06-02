@@ -78,7 +78,7 @@ details worth understanding:
 
 - Register an OAuth application with GitLab at
   <https://gitlab.com/oauth/applications>.
-  Specify `http://auth.zulipdev.com:9991/complete/gitlab` as the callback URL.
+  Specify `http://auth.zulipdev.com:9991/complete/gitlab/` as the callback URL.
 
 - You should get a page containing the Application ID and Secret for
   your new application. In `dev-secrets.conf`, enter the Application
