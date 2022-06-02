@@ -1,7 +1,8 @@
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
+from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -229,7 +230,7 @@ def do_clear_mobile_push_notifications_for_ids(
 
 def do_update_message_flags(
     user_profile: UserProfile, operation: str, flag: str, messages: List[int]
-) -> int:
+) -> Tuple[int, List[int]]:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
         raise JsonableError(_("Invalid flag: '{}'").format(flag))
@@ -250,18 +251,36 @@ def do_update_message_flags(
 
     # And then create historical UserMessage records.  See the called function for more context.
     create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
+    with transaction.atomic():
+        if operation == "add":
+            msgs = (
+                msgs.select_for_update()
+                .order_by("message_id")
+                .extra(where=[UserMessage.where_flag_is_absent(flagattr)])
+            )
+            updated_message_ids = [um.message_id for um in msgs]
+            msgs.filter(message_id__in=updated_message_ids).update(flags=F("flags").bitor(flagattr))
+        elif operation == "remove":
+            msgs = (
+                msgs.select_for_update()
+                .order_by("message_id")
+                .extra(where=[UserMessage.where_flag_is_present(flagattr)])
+            )
+            updated_message_ids = [um.message_id for um in msgs]
+            msgs.filter(message_id__in=updated_message_ids).update(
+                flags=F("flags").bitand(~flagattr)
+            )
 
-    if operation == "add":
-        count = msgs.update(flags=F("flags").bitor(flagattr))
-    elif operation == "remove":
-        count = msgs.update(flags=F("flags").bitand(~flagattr))
+    count = len(updated_message_ids)
+    if count == 0:
+        return 0, []
 
     event = {
         "type": "update_message_flags",
         "op": operation,
         "operation": operation,
         "flag": flag,
-        "messages": messages,
+        "messages": updated_message_ids,
         "all": False,
     }
 
@@ -270,14 +289,14 @@ def do_update_message_flags(
         # unread), extend the event with an additional object with
         # details on the messages required to update the client's
         # `unread_msgs` data structure.
-        raw_unread_data = get_raw_unread_data(user_profile, messages)
+        raw_unread_data = get_raw_unread_data(user_profile, updated_message_ids)
         event["message_details"] = format_unread_message_details(user_profile.id, raw_unread_data)
 
     send_event(user_profile.realm, event, [user_profile.id])
 
     if flag == "read" and operation == "add":
         event_time = timezone_now()
-        do_clear_mobile_push_notifications_for_ids([user_profile.id], messages)
+        do_clear_mobile_push_notifications_for_ids([user_profile.id], updated_message_ids)
 
         do_increment_logging_stat(
             user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
@@ -290,4 +309,4 @@ def do_update_message_flags(
             increment=min(1, count),
         )
 
-    return count
+    return count, updated_message_ids
