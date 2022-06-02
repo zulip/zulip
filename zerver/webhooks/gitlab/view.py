@@ -496,7 +496,10 @@ def get_event(request: HttpRequest, payload: WildValue, branches: Optional[str])
     event = validate_extract_webhook_http_header(request, "X-GitLab-Event", "GitLab")
     if event == "System Hook":
         # Convert the event name to a GitLab event title
-        event_name = payload.get("event_name", payload["object_kind"]).tame(check_string)
+        if "event_name" in payload:
+            event_name = payload["event_name"].tame(check_string)
+        else:
+            event_name = payload["object_kind"].tame(check_string)
         event = event_name.split("__")[0].replace("_", " ").title()
         event = f"{event} Hook"
     if event in ["Confidential Issue Hook", "Issue Hook", "Merge Request Hook", "Wiki Page Hook"]:
