@@ -192,7 +192,7 @@ class CommonUtils {
     }
 
     async get_element_text(element: ElementHandle<Element>): Promise<string> {
-        return (await element.getProperty("textContent"))!.jsonValue();
+        return (await element.getProperty("innerText"))!.jsonValue();
     }
 
     async get_text_from_selector(page: Page, selector: string): Promise<string> {
