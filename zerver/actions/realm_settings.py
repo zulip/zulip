@@ -416,6 +416,11 @@ def do_change_realm_plan_type(
     realm: Realm, plan_type: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.plan_type
+
+    if plan_type == Realm.PLAN_TYPE_LIMITED:
+        # We do not allow public access on limited plans.
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=acting_user)
+
     realm.plan_type = plan_type
     realm.save(update_fields=["plan_type"])
     RealmAuditLog.objects.create(
@@ -451,7 +456,14 @@ def do_change_realm_plan_type(
 
     update_first_visible_message_id(realm)
 
-    realm.save(update_fields=["_max_invites", "message_visibility_limit", "upload_quota_gb"])
+    realm.save(
+        update_fields=[
+            "_max_invites",
+            "enable_spectator_access",
+            "message_visibility_limit",
+            "upload_quota_gb",
+        ]
+    )
 
     event = {
         "type": "realm",

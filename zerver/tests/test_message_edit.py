@@ -427,6 +427,12 @@ class EditMessageTest(EditMessageTestCase):
             result, "Not logged in: API authentication or user session required", 401
         )
 
+        do_set_realm_property(user_profile.realm, "enable_spectator_access", True, acting_user=None)
+        result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
+
         # Verify works with STANDARD_FREE plan type too.
         do_change_realm_plan_type(
             user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None

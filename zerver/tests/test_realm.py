@@ -97,11 +97,27 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.invite_to_stream_policy, Realm.POLICY_MODERATORS_ONLY)
 
     def test_realm_enable_spectator_access(self) -> None:
-        realm = do_create_realm("test_web_public_true", "Foo", enable_spectator_access=True)
+        realm = do_create_realm(
+            "test_web_public_true",
+            "Foo",
+            plan_type=Realm.PLAN_TYPE_STANDARD,
+            enable_spectator_access=True,
+        )
         self.assertEqual(realm.enable_spectator_access, True)
 
         realm = do_create_realm("test_web_public_false", "Boo", enable_spectator_access=False)
         self.assertEqual(realm.enable_spectator_access, False)
+
+        with self.assertRaises(AssertionError):
+            realm = do_create_realm("test_web_public_false_1", "Foo", enable_spectator_access=True)
+
+        with self.assertRaises(AssertionError):
+            realm = do_create_realm(
+                "test_web_public_false_2",
+                "Foo",
+                plan_type=Realm.PLAN_TYPE_LIMITED,
+                enable_spectator_access=True,
+            )
 
     def test_do_set_realm_name_caching(self) -> None:
         """The main complicated thing about setting realm names is fighting the
@@ -733,12 +749,14 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.message_visibility_limit, None)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_STANDARD)
 
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=iago)
         realm = get_realm("zulip")
         self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
         self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
         self.assertEqual(realm.message_visibility_limit, Realm.MESSAGE_VISIBILITY_LIMITED)
         self.assertEqual(realm.upload_quota_gb, Realm.UPLOAD_QUOTA_LIMITED)
+        self.assertFalse(realm.enable_spectator_access)
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=iago)
         realm = get_realm("zulip")

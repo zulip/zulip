@@ -166,6 +166,10 @@ def do_create_realm(
     if org_type is not None:
         kwargs["org_type"] = org_type
     if enable_spectator_access is not None:
+        if enable_spectator_access:
+            # Realms with LIMITED plan cannot have spectators enabled.
+            assert plan_type != Realm.PLAN_TYPE_LIMITED
+            assert plan_type is not None or not settings.BILLING_ENABLED
         kwargs["enable_spectator_access"] = enable_spectator_access
 
     if date_created is not None:
