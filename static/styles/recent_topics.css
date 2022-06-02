@@ -142,7 +142,12 @@
 
         .unread_count {
             margin-right: 10px;
+            margin-left: 10px;
             align-self: center;
+        }
+
+        .unread_hidden {
+            visibility: hidden;
         }
 
         .flex_container {

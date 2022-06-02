@@ -13,7 +13,7 @@
                 <a href="{{topic_url}}">{{topic}}</a>
             </div>
             <div class="right_part">
-                {{#if unread_count}}<span class="unread_count">{{unread_count}}</span>{{/if}}
+                <span class="unread_count {{#unless unread_count}}unread_hidden{{/unless}}">{{unread_count}}</span>
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable hidden-for-spectators">
                         {{#if topic_muted}}
