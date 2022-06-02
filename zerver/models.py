@@ -514,7 +514,6 @@ class Realm(models.Model):
             "name": "Unspecified",
             "id": 0,
             "hidden": True,
-            "hidden_for_sponsorship": True,
             "display_order": 0,
         },
         "business": {
