@@ -87,7 +87,7 @@ class AnalyticsTestCase(ZulipTestCase):
 
         # used to generate unique names in self.create_*
         self.name_counter = 100
-        # used as defaults in self.assertCountEquals
+        # used as defaults in self.assert_table_count
         self.current_property: Optional[str] = None
 
     # Lightweight creation of users, streams, and messages
@@ -159,7 +159,7 @@ class AnalyticsTestCase(ZulipTestCase):
         return Message.objects.create(**kwargs)
 
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(
+    def assert_table_count(
         self,
         table: Type[BaseCount],
         value: int,
@@ -763,9 +763,9 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 1, subgroup="private_message")
-        self.assertCountEquals(UserCount, 1, subgroup="huddle_message")
-        self.assertCountEquals(UserCount, 1, subgroup="public_stream")
+        self.assert_table_count(UserCount, 1, subgroup="private_message")
+        self.assert_table_count(UserCount, 1, subgroup="huddle_message")
+        self.assert_table_count(UserCount, 1, subgroup="public_stream")
 
     def test_messages_sent_by_client(self) -> None:
         stat = COUNT_STATS["messages_sent:client:day"]
