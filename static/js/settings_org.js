@@ -125,6 +125,10 @@ export function get_org_type_dropdown_options() {
 }
 
 export function get_realm_time_limits_in_minutes(property) {
+    if (page_params[property] === null) {
+        // This represents "Anytime" case.
+        return null;
+    }
     let val = (page_params[property] / 60).toFixed(1);
     if (Number.parseFloat(val, 10) === Number.parseInt(val, 10)) {
         val = Number.parseInt(val, 10);
@@ -555,6 +559,13 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             if (property_value !== 0) {
                 $("#id_realm_org_type option[value=0]").remove();
             }
+            break;
+        case "realm_message_content_edit_limit_minutes":
+        case "realm_message_content_delete_limit_minutes":
+            // We are not using set_input_element_value here because we
+            // need to make the custom input box empty by setting the
+            // value null for "Anytime" case.
+            $elem.val(property_value);
             break;
         default:
             if (property_value !== undefined) {
