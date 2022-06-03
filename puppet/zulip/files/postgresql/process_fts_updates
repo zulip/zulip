@@ -214,11 +214,11 @@ while True:
             # Catch up on any historical columns
             while True:
                 rows_updated = update_fts_columns(cursor)
-                notice = f"process_fts_updates: Processed {rows_updated} rows catching up"
-                if rows_updated > 0:
-                    logger.info(notice)
-                else:
-                    logger.debug(notice)
+                logger.log(
+                    logging.INFO if rows_updated > 0 else logging.DEBUG,
+                    "process_fts_updates: Processed %d rows catching up",
+                    rows_updated,
+                )
 
                 if rows_updated != BATCH_SIZE:
                     # We're caught up, so proceed to the listening for updates phase.

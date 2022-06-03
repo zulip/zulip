@@ -86,14 +86,12 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             }
 
             for ids, fns in ignorable_ids_dict.items():
-                logging.warning(
-                    "Duplicate ID(s) detected :Id '" + ids + "' present at following files:"
-                )
+                logging.warning("Duplicate ID(s) detected: ID %r present at following files:", ids)
                 for fn in fns:
                     print(fn)
 
         for ids, fns in bad_ids_dict.items():
-            logging.error("Duplicate ID(s) detected :Id '" + ids + "' present at following files:")
+            logging.error("Duplicate ID(s) detected: ID %r present at following files:", ids)
             for fn in fns:
                 print(fn)
         return bad_ids_dict

@@ -44,7 +44,6 @@ def handler_stats_string() -> str:
 def finish_handler(
     handler_id: int, event_queue_id: str, contents: List[Dict[str, Any]], apply_markdown: bool
 ) -> None:
-    err_msg = f"Got error finishing handler for queue {event_queue_id}"
     try:
         # We do the import during runtime to avoid cyclic dependency
         # with zerver.lib.request
@@ -70,14 +69,14 @@ def finish_handler(
             request,
             apply_markdown=apply_markdown,
         )
-    except OSError as e:
-        if str(e) != "Stream is closed":
-            logging.exception(err_msg, stack_info=True)
-    except AssertionError as e:
-        if str(e) != "Request closed":
-            logging.exception(err_msg, stack_info=True)
-    except Exception:
-        logging.exception(err_msg, stack_info=True)
+    except Exception as e:
+        if not (
+            (isinstance(e, OSError) and str(e) == "Stream is closed")
+            or (isinstance(e, AssertionError) and str(e) == "Request closed")
+        ):
+            logging.exception(
+                "Got error finishing handler for queue %s", event_queue_id, stack_info=True
+            )
 
 
 class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):

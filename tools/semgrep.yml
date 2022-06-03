@@ -46,12 +46,13 @@ rules:
     languages: [python]
     patterns:
       - pattern-either:
-          - pattern: $LOGGER.debug($FORMATTED)
-          - pattern: $LOGGER.info($FORMATTED)
-          - pattern: $LOGGER.warning($FORMATTED)
-          - pattern: $LOGGER.error($FORMATTED)
-          - pattern: $LOGGER.critical($FORMATTED)
-          - pattern: $LOGGER.exception($FORMATTED)
+          - pattern: $LOGGER.debug($FORMATTED, ...)
+          - pattern: $LOGGER.info($FORMATTED, ...)
+          - pattern: $LOGGER.warning($FORMATTED, ...)
+          - pattern: $LOGGER.error($FORMATTED, ...)
+          - pattern: $LOGGER.critical($FORMATTED, ...)
+          - pattern: $LOGGER.exception($FORMATTED, ...)
+          - pattern: $LOGGER.log($LEVEL, $FORMATTED, ...)
       - metavariable-pattern:
           metavariable: $LOGGER
           patterns:
