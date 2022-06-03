@@ -189,7 +189,6 @@ class ClientDescriptor:
 
     def finish_current_handler(self) -> bool:
         if self.current_handler_id is not None:
-            err_msg = f"Got error finishing handler for queue {self.event_queue.id}"
             try:
                 finish_handler(
                     self.current_handler_id,
@@ -198,7 +197,9 @@ class ClientDescriptor:
                     self.apply_markdown,
                 )
             except Exception:
-                logging.exception(err_msg, stack_info=True)
+                logging.exception(
+                    "Got error finishing handler for queue %s", self.event_queue.id, stack_info=True
+                )
             finally:
                 self.disconnect_handler()
                 return True

@@ -73,7 +73,7 @@ class Command(BaseCommand):
             cnt = 0
             for queue_name in queues:
                 if not settings.DEVELOPMENT:
-                    logger.info("launching queue worker thread " + queue_name)
+                    logger.info("launching queue worker thread %s", queue_name)
                 cnt += 1
                 td = ThreadedWorker(queue_name, logger)
                 td.start()
@@ -126,5 +126,5 @@ class ThreadedWorker(threading.Thread):
         ):
             scope.set_tag("queue_worker", self.worker.queue_name)
             self.worker.setup()
-            logging.debug("starting consuming " + self.worker.queue_name)
+            logging.debug("starting consuming %s", self.worker.queue_name)
             self.worker.start()
