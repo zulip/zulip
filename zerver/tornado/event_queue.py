@@ -201,7 +201,7 @@ class ClientDescriptor:
                 logging.exception(err_msg, stack_info=True)
             finally:
                 self.disconnect_handler()
-                return True
+            return True
         return False
 
     def accepts_event(self, event: Mapping[str, Any]) -> bool:
