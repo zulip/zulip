@@ -901,7 +901,7 @@ class RealmTest(ZulipTestCase):
             "@role:everyone",
             "@role:internet",
         ]
-        self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
+        self.assertCountEqual(user_group_names, expected_system_group_names)
 
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
