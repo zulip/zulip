@@ -2627,9 +2627,17 @@ class SAMLAuthBackendTest(SocialAuthBase):
             )
             self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
 
-            result = self.client_get(f"/accounts/{action}/social/saml/")
-            # No matching URL pattern.
-            self.assertEqual(result.status_code, 404)
+        with self.assertLogs(level="INFO") as info_log:
+            result = self.client_get("/accounts/register/social/saml/")
+        # Missing idp argument.
+        self.assert_in_success_response(["Configuration error", "SAML authentication"], result)
+        self.assertEqual(
+            info_log.output,
+            ["INFO:root:Attempted to initiate SAML authentication with wrong idp argument: None"],
+        )
+        result = self.client_get("/accounts/login/social/saml/")
+        # No matching URL pattern.
+        self.assertEqual(result.status_code, 404)
 
     def test_social_auth_saml_require_limit_to_subdomains(self) -> None:
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
@@ -2981,7 +2989,7 @@ class AppleAuthMixin:
 
 class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
     LOGIN_URL = "/accounts/login/social/apple"
-    SIGNUP_URL = "/accounts/register/social/apple"
+    SIGNUP_URL = "/accounts/register/social/apple/"
 
     # This URL isn't used in the Apple auth flow, so we just set a
     # dummy value to keep SocialAuthBase common code happy.
@@ -3318,7 +3326,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
     LOGIN_URL = "/accounts/login/social/oidc"
-    SIGNUP_URL = "/accounts/register/social/oidc"
+    SIGNUP_URL = "/accounts/register/social/oidc/"
 
     BASE_OIDC_URL = "https://example.com/api/openid"
     AUTHORIZATION_URL = f"{BASE_OIDC_URL}/authorize"
@@ -3529,7 +3537,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITHUB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITHUB_SECRET"
     LOGIN_URL = "/accounts/login/social/github"
-    SIGNUP_URL = "/accounts/register/social/github"
+    SIGNUP_URL = "/accounts/register/social/github/"
     AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
     ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
     USER_INFO_URL = "https://api.github.com/user"
@@ -4048,7 +4056,7 @@ class GitLabAuthBackendTest(SocialAuthBase):
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GITLAB_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GITLAB_SECRET"
     LOGIN_URL = "/accounts/login/social/gitlab"
-    SIGNUP_URL = "/accounts/register/social/gitlab"
+    SIGNUP_URL = "/accounts/register/social/gitlab/"
     AUTHORIZATION_URL = "https://gitlab.com/oauth/authorize"
     ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token"
     USER_INFO_URL = "https://gitlab.com/api/v4/user"
@@ -4067,7 +4075,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_GOOGLE_KEY"
     CLIENT_SECRET_SETTING = "SOCIAL_AUTH_GOOGLE_SECRET"
     LOGIN_URL = "/accounts/login/social/google"
-    SIGNUP_URL = "/accounts/register/social/google"
+    SIGNUP_URL = "/accounts/register/social/google/"
     AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/auth"
     ACCESS_TOKEN_URL = "https://accounts.google.com/o/oauth2/token"
     USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"

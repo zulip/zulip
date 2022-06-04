@@ -532,6 +532,8 @@ i18n_urls = [
     path("accounts/login/social/<backend>", start_social_login, name="login-social"),
     path("accounts/login/social/<backend>/<extra_arg>", start_social_login, name="login-social"),
     path("accounts/register/social/<backend>", start_social_signup, name="signup-social"),
+    # To support `next` in urls.
+    path("accounts/register/social/<backend>/", start_social_signup, name="signup-social"),
     path(
         "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
