@@ -572,7 +572,7 @@ def prepare_activation_url(
 
     activation_url = create_confirmation_link(prereg_user, confirmation_type)
     if settings.DEVELOPMENT and realm_creation:
-        session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-1]}
+        session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-2]}
     return activation_url
 
 

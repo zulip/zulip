@@ -1400,8 +1400,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         assert confirmation is not None
         confirmation_key = confirmation.confirmation_key
         if expect_confirm_registration_page:
-            self.assert_in_success_response(["do_confirm/" + confirmation_key], result)
-            do_confirm_url = "/accounts/do_confirm/" + confirmation_key
+            self.assert_in_success_response([f"do_confirm/{confirmation_key}/"], result)
+            do_confirm_url = f"/accounts/do_confirm/{confirmation_key}/"
         else:
             self.assertIn("do_confirm/" + confirmation_key, result["Location"])
             do_confirm_url = result["Location"]

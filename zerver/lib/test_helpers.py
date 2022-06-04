@@ -238,7 +238,7 @@ def make_client(name: str) -> Client:
 def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
 
-    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
+    key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})/>")
     for message in reversed(outbox):
         if address in message.to:
             match = key_regex.search(message.body)
@@ -480,6 +480,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             # or may not exist.
             "coverage/(?P<path>.+)",
             "confirmation_key/",
+            "accounts/do_confirm/(?P<confirmation_key>[^/]+)",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
             "help/add-custom-emoji",

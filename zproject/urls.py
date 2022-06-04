@@ -579,8 +579,14 @@ i18n_urls = [
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
+    # For backward compatibility.
     path(
         "accounts/do_confirm/<confirmation_key>",
+        get_prereg_key_and_redirect,
+        name="get_prereg_key_and_redirect",
+    ),
+    path(
+        "accounts/do_confirm/<confirmation_key>/",
         get_prereg_key_and_redirect,
         name="get_prereg_key_and_redirect",
     ),

@@ -2119,7 +2119,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = url.split("/")[-1]
+        registration_key = url.split("/")[-2]
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
         with self.assertRaises(ConfirmationKeyException) as cm:
@@ -2146,7 +2146,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with patch("confirmation.models.timezone_now", return_value=date_sent):
             url = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
 
-        key = url.split("/")[-1]
+        key = url.split("/")[-2]
         confirmation_link_path = "/" + url.split("/", 3)[3]
         # Both the confirmation link and submitting the key to the registration endpoint
         # directly will return the appropriate error.
@@ -2175,7 +2175,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         confirmation = Confirmation.objects.last()
         assert confirmation is not None
         self.assertEqual(confirmation.expiry_date, None)
-        activation_key = activation_url.split("/")[-1]
+        activation_key = activation_url.split("/")[-2]
         response = self.client_post(
             "/accounts/register/",
             {"key": activation_key, "from_confirmation": 1, "full_nme": "alice"},
@@ -2275,7 +2275,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             "Whoops. We couldn't find your confirmation link in the system.", response
         )
 
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
         response = self.client_post(
             url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
         )
@@ -2293,7 +2293,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
 
         url = "/accounts/register/"
         self.client_post(
@@ -2307,7 +2307,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         new_confirmation_link = create_confirmation_link(
             new_prereg_user, Confirmation.USER_REGISTRATION
         )
-        new_registration_key = new_confirmation_link.split("/")[-1]
+        new_registration_key = new_confirmation_link.split("/")[-2]
         url = "/accounts/register/"
         response = self.client_post(
             url, {"key": new_registration_key, "from_confirmation": 1, "full_name": "alice"}
@@ -2328,7 +2328,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
 
         url = "/accounts/register/"
         self.client_post(
@@ -2356,7 +2356,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
         url = "/accounts/register/"
         self.client_post(
             url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
@@ -2372,7 +2372,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             email=email, referred_by=inviter, realm=realm
         )
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
         url = "/accounts/register/"
         self.client_post(url, {"key": registration_key, "from_confirmation": 1, "full_name": "bob"})
         response = self.submit_reg_form_for_user(email, "password", key=registration_key)
@@ -2868,7 +2868,7 @@ class InvitationsTestCase(InviteUserBase):
         )
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
-        registration_key = confirmation_link.split("/")[-1]
+        registration_key = confirmation_link.split("/")[-2]
 
         result = self.client_post(
             "/accounts/register/",
@@ -3732,7 +3732,7 @@ class RealmCreationTest(ZulipTestCase):
             password,
             realm_subdomain=first_string_id,
             realm_name=first_realm_name,
-            key=first_confirmation_url.split("/")[-1],
+            key=first_confirmation_url.split("/")[-2],
         )
         self.assertEqual(result.status_code, 302)
         # Make sure the realm is created
@@ -3751,7 +3751,7 @@ class RealmCreationTest(ZulipTestCase):
             password,
             realm_subdomain=second_string_id,
             realm_name=second_realm_name,
-            key=second_confirmation_url.split("/")[-1],
+            key=second_confirmation_url.split("/")[-2],
         )
         self.assertEqual(result.status_code, 302)
         # Make sure the realm is created
