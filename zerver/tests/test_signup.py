@@ -2888,6 +2888,31 @@ class InvitationsTestCase(InviteUserBase):
         self.assertIsNotNone(user)
         self.assertEqual(user.delivery_email, email)
 
+    # For coverage of have a `next` case.
+    def test_signup_with_next(self) -> None:
+        email = self.nonreg_email("alice")
+        realm = get_realm("zulip")
+
+        inviter = UserProfile.objects.filter(realm=realm).first()
+        prereg_user = PreregistrationUser.objects.create(
+            email=email, referred_by=inviter, realm=realm
+        )
+
+        confirmation_link = create_confirmation_link(
+            prereg_user, Confirmation.USER_REGISTRATION, next="/#FOO/BOO"
+        )
+        registration_key = confirmation_link.split("/")[-4]
+
+        result = self.client_post(
+            "/accounts/register/",
+            {"key": registration_key, "from_confirmation": "1", "full_name": "alice"},
+        )
+        self.assertEqual(result.status_code, 200)
+        confirmation = Confirmation.objects.get(confirmation_key=registration_key)
+        assert confirmation.content_object is not None
+        prereg_user = confirmation.content_object
+        self.assertEqual(prereg_user.status, 0)
+
 
 class InviteeEmailsParserTests(ZulipTestCase):
     def setUp(self) -> None:

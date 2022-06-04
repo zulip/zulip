@@ -3,6 +3,7 @@
 __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
+import urllib
 from base64 import b32encode
 from typing import List, Mapping, Optional, Union
 from urllib.parse import urljoin
@@ -114,6 +115,7 @@ def create_confirmation_link(
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
+    next: str = "",
 ) -> str:
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
@@ -142,7 +144,7 @@ def create_confirmation_link(
         expiry_date=expiry_date,
         type=confirmation_type,
     )
-    return confirmation_url(key, realm, confirmation_type, url_args)
+    return confirmation_url(key, realm, confirmation_type, url_args, next)
 
 
 def confirmation_url(
@@ -150,13 +152,17 @@ def confirmation_url(
     realm: Optional[Realm],
     confirmation_type: int,
     url_args: Mapping[str, str] = {},
+    next: str = "",
 ) -> str:
     url_args = dict(url_args)
     url_args["confirmation_key"] = confirmation_key
-    return urljoin(
+    url = urljoin(
         settings.ROOT_DOMAIN_URI if realm is None else realm.uri,
         reverse(_properties[confirmation_type].url_name, kwargs=url_args),
     )
+    if next:
+        url += "?next=" + urllib.parse.quote(next)
+    return url
 
 
 class Confirmation(models.Model):

@@ -281,3 +281,7 @@ export function build_login_link() {
     }
     return login_link;
 }
+
+export function build_signup_link() {
+    return "/register/?" + current_hash_as_next();
+}

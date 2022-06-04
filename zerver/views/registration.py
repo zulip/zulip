@@ -96,7 +96,10 @@ if settings.BILLING_ENABLED:
 
 @has_request_variables
 def get_prereg_key_and_redirect(
-    request: HttpRequest, confirmation_key: str, full_name: Optional[str] = REQ(default=None)
+    request: HttpRequest,
+    confirmation_key: str,
+    full_name: Optional[str] = REQ(default=None),
+    next: str = REQ(default="/"),
 ) -> HttpResponse:
     """
     The purpose of this little endpoint is primarily to take a GET
@@ -121,7 +124,7 @@ def get_prereg_key_and_redirect(
     return render(
         request,
         "confirmation/confirm_preregistrationuser.html",
-        context={"key": confirmation_key, "full_name": full_name},
+        context={"key": confirmation_key, "full_name": full_name, "next": next},
     )
 
 
@@ -151,6 +154,7 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
 def accounts_register(
     request: HttpRequest,
     key: str = REQ(default=""),
+    next: str = REQ(default=""),
     timezone: str = REQ(default="", converter=to_timezone_or_empty),
     from_confirmation: Optional[str] = REQ(default=None),
     form_full_name: Optional[str] = REQ("full_name", default=None),
@@ -427,7 +431,7 @@ def accounts_register(
                 user_profile = user
                 if not realm_creation:
                     # Since we'll have created a user, we now just log them in.
-                    return login_and_go_to_home(request, user_profile)
+                    return login_and_go_to_home(request, user_profile, next)
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
 
@@ -489,8 +493,7 @@ def accounts_register(
             )
             return redirect("/")
 
-        assert isinstance(auth_result, UserProfile)
-        return login_and_go_to_home(request, auth_result)
+        return login_and_go_to_home(request, auth_result, next)
 
     return render(
         request,
@@ -499,6 +502,7 @@ def accounts_register(
             "form": form,
             "email": email,
             "key": key,
+            "next": next,
             "full_name": request.session.get("authenticated_full_name", None),
             "lock_name": name_validated and name_changes_disabled(realm),
             # password_auth_enabled is normally set via our context processor,
@@ -523,7 +527,9 @@ def accounts_register(
     )
 
 
-def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+def login_and_go_to_home(
+    request: HttpRequest, user_profile: UserProfile, next: str
+) -> HttpResponse:
     mobile_flow_otp = get_expirable_session_var(
         request.session, "registration_mobile_flow_otp", delete=True
     )
@@ -538,7 +544,9 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks
     # that 'user_profile' is user-controlled
-    return HttpResponseRedirect(mark_sanitized(user_profile.realm.uri) + reverse("home"))
+    return HttpResponseRedirect(
+        mark_sanitized(user_profile.realm.uri) + reverse("home") + next.lstrip("/")
+    )
 
 
 def prepare_activation_url(
@@ -550,6 +558,7 @@ def prepare_activation_url(
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
     multiuse_invite: Optional[MultiuseInvite] = None,
+    next: str = "",
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
@@ -570,7 +579,7 @@ def prepare_activation_url(
     if realm_creation:
         confirmation_type = Confirmation.REALM_CREATION
 
-    activation_url = create_confirmation_link(prereg_user, confirmation_type)
+    activation_url = create_confirmation_link(prereg_user, confirmation_type, next=next)
     if settings.DEVELOPMENT and realm_creation:
         session["confirmation_key"] = {"confirmation_key": activation_url.split("/")[-2]}
     return activation_url
@@ -670,8 +679,10 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     )
 
 
+@has_request_variables
 def accounts_home(
     request: HttpRequest,
+    next: str = REQ(default=""),
     multiuse_object_key: str = "",
     multiuse_object: Optional[MultiuseInvite] = None,
 ) -> HttpResponse:
@@ -724,6 +735,7 @@ def accounts_home(
                 streams=streams_to_subscribe,
                 invited_as=invited_as,
                 multiuse_invite=multiuse_object,
+                next=next,
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)
