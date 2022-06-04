@@ -43,7 +43,7 @@ const currently_echoing_messages = new Map();
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
-export let notify_old_thread_default = true;
+export let notify_old_thread_default = false;
 
 export let notify_new_thread_default = true;
 
