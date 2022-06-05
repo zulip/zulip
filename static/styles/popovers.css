@@ -252,6 +252,12 @@ ul {
         line-height: 1;
     }
 
+    #profile-tab {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 5px;
+    }
+
     #avatar {
         display: inline-block;
         height: 180px;
@@ -259,7 +265,6 @@ ul {
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        margin-right: 10px;
         border: 1px solid hsla(0, 0%, 0%, 0.2);
 
         &.guest-avatar::after {
