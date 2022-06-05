@@ -237,7 +237,6 @@ ul {
 
     .name {
         color: hsl(0, 0%, 20%);
-        display: inline-block;
         width: 120px;
         font-weight: 600;
         margin-right: 10px;
@@ -253,9 +252,12 @@ ul {
     }
 
     #profile-tab {
+        margin: 0 5px;
+    }
+
+    .top {
         display: flex;
         justify-content: space-between;
-        margin: 0 5px;
     }
 
     #avatar {
@@ -287,16 +289,15 @@ ul {
     }
 
     #default-section {
-        display: inline-block;
         vertical-align: top;
 
         .default-field {
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
+    }
 
-        #date-joined {
-            margin-bottom: 15px;
-        }
+    #user-status {
+        text-align: center;
     }
 
     hr {
@@ -305,10 +306,8 @@ ul {
     }
 
     #content {
-        margin-top: 10px;
-
         .field-section {
-            margin-top: 8px;
+            margin-bottom: 10px;
 
             .name {
                 color: hsl(0, 0%, 20%);
@@ -319,6 +318,14 @@ ul {
                 overflow-wrap: break-word;
             }
         }
+
+        .rendered_markdown p {
+            margin: 0;
+        }
+    }
+
+    .col-left {
+        max-width: 60%;
     }
 
     &.no-fields {

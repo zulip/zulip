@@ -157,6 +157,7 @@ export function show_user_profile(user) {
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
         date_joined: dateFormat.format(parseISO(user.date_joined)),
+        user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
         show_email: settings_data.show_email(),
         user_time: people.get_user_time(user.user_id),
