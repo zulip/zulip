@@ -14,55 +14,61 @@
                 <div id="tab-toggle" class="center"></div>
                 <div class="tab-data">
                     <div class="tabcontent active" id="profile-tab">
-                        <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
-                          style="background-image: url('{{user_avatar}}');">
-                        </div>
-                        <div id="default-section">
-                            {{#if show_email}}
-                            <div id="email" class="default-field">
-                                <span class="name">{{#tr}}Email{{/tr}}</span>
-                                <span class="value">{{email}}</span>
-                            </div>
-                            {{/if}}
-                            <div id="user-id" class="default-field">
-                                <span class="name">{{#tr}}User ID{{/tr}}</span>
-                                <span class="value">{{user_id}}</span>
-                            </div>
-                            <div id="user-type" class="default-field">
-                                <span class="name">{{#tr}}Role{{/tr}}</span>
-                                <span class="value">{{user_type}}</span>
-                            </div>
-                            <div id="date-joined" class="default-field">
-                                <span class="name">{{#tr}}Joined{{/tr}}</span>
-                                <span class="value">{{date_joined}}</span>
-                            </div>
-                            <span class="value">{{last_seen}}</span>
-                            {{#if user_time}}
-                            <div class="default-field">
-                                <span class="name">{{#tr}}Local time{{/tr}}</span>
-                                <span class="value">{{user_time}}</span>
-                            </div>
-                            {{/if}}
-                        </div>
-                        <div id="content">
-                            {{#each profile_data}}
-                                <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
-                                    <div class="name">{{this.name}}</div>
-                                    {{#if this.is_user_field}}
-                                        <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                                            <div class="input" contenteditable="false" style="display: none;"></div>
-                                        </div>
-                                    {{else if this.is_link}}
-                                        <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                    {{else if this.is_external_account}}
-                                        <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                    {{else if this.rendered_value}}
-                                        <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
-                                    {{else}}
-                                        <div class="value">{{this.value}}</div>
-                                    {{/if}}
+                        <div class="column-wrapper">
+                            <div id="default-section">
+                                {{#if show_email}}
+                                <div id="email" class="default-field">
+                                    <span class="name">{{#tr}}Email{{/tr}}</span>
+                                    <span class="value">{{email}}</span>
                                 </div>
-                            {{/each}}
+                                {{/if}}
+                                <div id="user-id" class="default-field">
+                                    <span class="name">{{#tr}}User ID{{/tr}}</span>
+                                    <span class="value">{{user_id}}</span>
+                                </div>
+                                <div id="user-type" class="default-field">
+                                    <span class="name">{{#tr}}Role{{/tr}}</span>
+                                    <span class="value">{{user_type}}</span>
+                                </div>
+                                <div id="date-joined" class="default-field">
+                                    <span class="name">{{#tr}}Joined{{/tr}}</span>
+                                    <span class="value">{{date_joined}}</span>
+                                </div>
+                                <span class="value">{{last_seen}}</span>
+                                {{#if user_time}}
+                                <div class="default-field">
+                                    <span class="name">{{#tr}}Local time{{/tr}}</span>
+                                    <span class="value">{{user_time}}</span>
+                                </div>
+                                {{/if}}
+                            </div>
+                            <div id="content">
+                                {{#each profile_data}}
+                                    <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+                                        <div class="name">{{this.name}}</div>
+                                        {{#if this.is_user_field}}
+                                            <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                                                <div class="input" contenteditable="false" style="display: none;"></div>
+                                            </div>
+                                        {{else if this.is_link}}
+                                            <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                                        {{else if this.is_external_account}}
+                                            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                                        {{else}}
+                                            {{#if this.rendered_value}}
+                                            <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
+                                            {{else}}
+                                            <div class="value">{{this.value}}</div>
+                                            {{/if}}
+                                        {{/if}}
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                        <div class="column-wrapper">
+                            <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
+                              style="background-image: url('{{user_avatar}}');">
+                            </div>
                         </div>
                     </div>
 
