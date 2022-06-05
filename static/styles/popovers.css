@@ -238,8 +238,13 @@ ul {
     .name {
         color: hsl(0, 0%, 20%);
         display: inline-block;
-        min-width: 120px;
+        width: 120px;
         font-weight: 600;
+        margin-right: 10px;
+    }
+
+    .value {
+        vertical-align: top;
     }
 
     #exit-sign {
