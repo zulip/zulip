@@ -731,9 +731,8 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:
         self.login("iago")
         result = self.client_get("/json/realm/profile_fields")
-        self.assert_json_success(result)
+        content = self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        content = result.json()
         self.assert_length(content["custom_fields"], self.original_count)
 
     def test_list_order(self) -> None:
@@ -746,7 +745,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         try_reorder_realm_custom_profile_fields(realm, order)
         result = self.client_get("/json/realm/profile_fields")
-        content = result.json()
+        content = self.assert_json_success(result)
         self.assertListEqual(
             content["custom_fields"], sorted(content["custom_fields"], key=lambda x: -x["id"])
         )
@@ -764,8 +763,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         self.assert_length(queries, 4)
 
-        self.assertEqual(response.status_code, 200)
-        raw_users_data = response.json()["members"]
+        raw_users_data = self.assert_json_success(response)["members"]
 
         iago_raw_data = None
         test_bot_raw_data = None
@@ -826,8 +824,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(test_bot_raw_data["bot_owner_id"], iago_raw_data["user_id"])
 
         response = self.client_get("/json/users", {"client_gravatar": "false"})
-        self.assertEqual(response.status_code, 200)
-        raw_users_data = response.json()["members"]
+        raw_users_data = self.assert_json_success(response)["members"]
         for user_dict in raw_users_data:
             with self.assertRaises(KeyError):
                 user_dict["profile_data"]
@@ -858,8 +855,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         url = "/json/users/me"
         response = self.client_get(url)
-        self.assertEqual(response.status_code, 200)
-        raw_user_data = response.json()
+        raw_user_data = self.assert_json_success(response)
         self.assertEqual(set(raw_user_data.keys()), expected_keys)
 
 

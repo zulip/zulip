@@ -22,8 +22,7 @@ class RealmDomainTest(ZulipTestCase):
         realm = get_realm("zulip")
         RealmDomain.objects.create(realm=realm, domain="acme.com", allow_subdomains=True)
         result = self.client_get("/json/realm/domains")
-        self.assert_json_success(result)
-        received = result.json()["domains"]
+        received = self.assert_json_success(result)["domains"]
         expected = [
             {"domain": "zulip.com", "allow_subdomains": False},
             {"domain": "acme.com", "allow_subdomains": True},

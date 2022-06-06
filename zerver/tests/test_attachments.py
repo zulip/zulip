@@ -22,9 +22,9 @@ class AttachmentsTests(ZulipTestCase):
         user_profile = self.example_user("cordelia")
         self.login_user(user_profile)
         result = self.client_get("/json/attachments")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
         attachments = user_attachments(user_profile)
-        self.assertEqual(result.json()["attachments"], attachments)
+        self.assertEqual(response_dict["attachments"], attachments)
 
     def test_remove_attachment_exception(self) -> None:
         user_profile = self.example_user("cordelia")
@@ -48,8 +48,8 @@ class AttachmentsTests(ZulipTestCase):
         user_profile = self.example_user("iago")
         self.login_user(user_profile)
         result = self.client_get("/json/attachments")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["attachments"], [])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["attachments"], [])
 
     def test_remove_another_user(self) -> None:
         user_profile = self.example_user("iago")

@@ -17,8 +17,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_success(result)
 
         result = self.client_get("/json/realm/linkifiers")
-        self.assert_json_success(result)
-        linkifiers = result.json()["linkifiers"]
+        linkifiers = self.assert_json_success(result)["linkifiers"]
         self.assert_length(linkifiers, 1)
         self.assertEqual(linkifiers[0]["pattern"], "#(?P<id>[123])")
         self.assertEqual(linkifiers[0]["url_format"], "https://realm.com/my_realm_filter/%(id)s")
@@ -151,9 +150,7 @@ class RealmFilterTest(ZulipTestCase):
             "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
         }
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_success(result)
-
-        linkifier_id = result.json()["id"]
+        linkifier_id = self.assert_json_success(result)["id"]
         linkifiers_count = RealmFilter.objects.count()
         result = self.client_delete(f"/json/realm/filters/{linkifier_id + 1}")
         self.assert_json_error(result, "Linkifier not found.")
@@ -169,9 +166,7 @@ class RealmFilterTest(ZulipTestCase):
             "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
         }
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_success(result)
-
-        linkifier_id = result.json()["id"]
+        linkifier_id = self.assert_json_success(result)["id"]
         data = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_format_string": "https://realm.com/my_realm_filter/issues/%(id)s",
@@ -182,8 +177,7 @@ class RealmFilterTest(ZulipTestCase):
 
         # Verify that the linkifier is updated accordingly.
         result = self.client_get("/json/realm/linkifiers")
-        self.assert_json_success(result)
-        linkifier = result.json()["linkifiers"]
+        linkifier = self.assert_json_success(result)["linkifiers"]
         self.assert_length(linkifier, 1)
         self.assertEqual(linkifier[0]["pattern"], "#(?P<id>[0-9]+)")
         self.assertEqual(

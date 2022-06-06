@@ -583,8 +583,8 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             "bot_type": "1",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
-        hambot = UserProfile.objects.get(id=result.json()["user_id"])
+        response_dict = self.assert_json_success(result)
+        hambot = UserProfile.objects.get(id=response_dict["user_id"])
         client_descriptor = allocate_event_queue(hambot)
         self.assertTrue(client_descriptor.event_queue.empty())
         msg_id = self.send_personal_message(iago, hambot)

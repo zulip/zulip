@@ -21,8 +21,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.subscribe(user_profile, stream_name)
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint, {}, subdomain="zephyr")
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         self.assertEqual(history, [])
 
     def test_topics_history(self) -> None:
@@ -75,8 +74,7 @@ class TopicHistoryTest(ZulipTestCase):
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
@@ -105,8 +103,7 @@ class TopicHistoryTest(ZulipTestCase):
         # same results for a public stream.
         self.login("cordelia")
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
 
         # We only look at the most recent three topics, because
         # the prior fixture data may be unreliable.
@@ -138,8 +135,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.subscribe(self.example_user("cordelia"), stream.name)
 
         result = self.client_get(endpoint, {})
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         history = history[:3]
 
         # Cordelia doesn't have these recent history items when we
@@ -184,8 +180,7 @@ class TopicHistoryTest(ZulipTestCase):
 
         endpoint = f"/json/users/me/{stream.id}/topics"
         result = self.client_get(endpoint)
-        self.assert_json_success(result)
-        history = result.json()["topics"]
+        history = self.assert_json_success(result)["topics"]
         self.assertEqual(
             [topic["name"] for topic in history],
             [

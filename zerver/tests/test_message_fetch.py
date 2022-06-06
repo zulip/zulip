@@ -2091,8 +2091,7 @@ class GetOldMessagesTest(ZulipTestCase):
         raw_params = dict(msg_ids=msg_ids, narrow=narrow)
         params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get("/json/messages/matches_narrow", params)
-        self.assert_json_success(result)
-        messages = result.json()["messages"]
+        messages = self.assert_json_success(result)["messages"]
         self.assert_length(list(messages.keys()), 1)
         message = messages[str(good_id)]
         self.assertEqual(
@@ -2486,8 +2485,7 @@ class GetOldMessagesTest(ZulipTestCase):
         raw_params = dict(msg_ids=msg_ids, narrow=narrow)
         params = {k: orjson.dumps(v).decode() for k, v in raw_params.items()}
         result = self.client_get("/json/messages/matches_narrow", params)
-        self.assert_json_success(result)
-        messages = result.json()["messages"]
+        messages = self.assert_json_success(result)["messages"]
         self.assert_length(list(messages.keys()), 1)
         message = messages[str(good_id)]
         self.assertIn("a href=", message["match_content"])

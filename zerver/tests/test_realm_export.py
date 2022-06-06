@@ -74,10 +74,10 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
 
         result = self.client_get("/json/export/realm")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
         # Test that the export we have is the export we created.
-        export_dict = result.json()["exports"]
+        export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
         self.assertEqual(
             export_dict[0]["export_url"],
@@ -144,10 +144,10 @@ class RealmExportTest(ZulipTestCase):
         self.assert_streaming_content(response, b"zulip!")
 
         result = self.client_get("/json/export/realm")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
         # Test that the export we have is the export we created.
-        export_dict = result.json()["exports"]
+        export_dict = response_dict["exports"]
         self.assertEqual(export_dict[0]["id"], audit_log_entry.id)
         self.assertEqual(export_dict[0]["export_url"], admin.realm.uri + export_path)
         self.assertEqual(export_dict[0]["acting_user_id"], admin.id)

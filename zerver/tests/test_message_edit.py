@@ -317,10 +317,10 @@ class EditMessageTest(EditMessageTestCase):
             content="Personal message",
         )
         result = self.client_get("/json/messages/" + str(msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "Personal message")
-        self.assertEqual(result.json()["message"]["id"], msg_id)
-        self.assertEqual(result.json()["message"]["flags"], [])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "Personal message")
+        self.assertEqual(response_dict["message"]["id"], msg_id)
+        self.assertEqual(response_dict["message"]["flags"], [])
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -331,28 +331,28 @@ class EditMessageTest(EditMessageTestCase):
             self.example_user("cordelia"), web_public_stream.name, content="web-public message"
         )
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
-        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
-        self.assertEqual(result.json()["message"]["flags"], ["read", "historical"])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["id"], web_public_stream_msg_id)
+        self.assertEqual(response_dict["message"]["flags"], ["read", "historical"])
 
         # Spectator should be able to fetch message in web-public stream.
         self.logout()
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
-        self.assertEqual(result.json()["message"]["id"], web_public_stream_msg_id)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["id"], web_public_stream_msg_id)
 
         # Verify default is apply_markdown=True
-        self.assertEqual(result.json()["message"]["content"], "<p>web-public message</p>")
+        self.assertEqual(response_dict["message"]["content"], "<p>web-public message</p>")
 
         # Verify apply_markdown=False works correctly.
         result = self.client_get(
             "/json/messages/" + str(web_public_stream_msg_id), {"apply_markdown": "false"}
         )
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
-        self.assertEqual(result.json()["message"]["content"], "web-public message")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["content"], "web-public message")
 
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
             result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
@@ -414,9 +414,9 @@ class EditMessageTest(EditMessageTestCase):
 
         # Verify success with web-public stream and default SELF_HOSTED plan type.
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
-        self.assertEqual(result.json()["message"]["flags"], ["read"])
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
         # Verify LIMITED plan type does not allow web-public access.
         do_change_realm_plan_type(user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
@@ -430,8 +430,8 @@ class EditMessageTest(EditMessageTestCase):
             user_profile.realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=None
         )
         result = self.client_get("/json/messages/" + str(web_public_stream_msg_id))
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["raw_content"], "web-public message")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["raw_content"], "web-public message")
 
         # Verify private messages are rejected.
         result = self.client_get("/json/messages/" + str(private_message_id))
@@ -726,9 +726,7 @@ class EditMessageTest(EditMessageTestCase):
 
         result = self.client_get(f"/json/messages/{msg_id}/history")
 
-        self.assert_json_success(result)
-
-        message_history = result.json()["message_history"]
+        message_history = self.assert_json_success(result)["message_history"]
         self.assert_length(message_history, 1)
 
     def test_mentions_for_message_updates(self) -> None:

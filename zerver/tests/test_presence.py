@@ -113,8 +113,7 @@ class UserPresenceTests(ZulipTestCase):
 
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
         self.assertIn("timestamp", json["presences"][hamlet.email][client])
         self.assertIsInstance(json["presences"][hamlet.email][client]["timestamp"], int)
@@ -123,7 +122,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login_user(othello)
         params = dict(status="idle", slim_presence="true")
         result = self.client_post("/json/users/me/presence", params)
-        json = result.json()
+        json = self.assert_json_success(result)
         presences = json["presences"]
         self.assertEqual(
             set(presences.keys()),
@@ -149,23 +148,21 @@ class UserPresenceTests(ZulipTestCase):
 
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual(result.json()["presences"][hamlet.email][client]["status"], "idle")
+        self.assertEqual(response_dict["presences"][hamlet.email][client]["status"], "idle")
 
         self.login("othello")
         params = dict(status="idle")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         self.assertEqual(json["presences"][othello.email][client]["status"], "idle")
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
 
         params = dict(status="active")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         self.assertEqual(json["presences"][othello.email][client]["status"], "active")
         self.assertEqual(json["presences"][hamlet.email][client]["status"], "idle")
@@ -173,8 +170,7 @@ class UserPresenceTests(ZulipTestCase):
         self.login_user(hamlet)
         params = dict(status="active", slim_presence="true")
         result = self.client_post("/json/users/me/presence", params)
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         presences = json["presences"]
         self.assertEqual(
@@ -276,8 +272,8 @@ class UserPresenceTests(ZulipTestCase):
         user = self.mit_user("espuser")
         self.login_user(user)
         result = self.client_post("/json/users/me/presence", {"status": "idle"}, subdomain="zephyr")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["presences"], {})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["presences"], {})
 
     def test_mirror_presence(self) -> None:
         """Zephyr mirror realms find out the status of their mirror bot"""
@@ -288,8 +284,7 @@ class UserPresenceTests(ZulipTestCase):
             result = self.client_post(
                 "/json/users/me/presence", {"status": "idle"}, subdomain="zephyr"
             )
-            self.assert_json_success(result)
-            json = result.json()
+            json = self.assert_json_success(result)
             return json
 
         json = post_presence()
@@ -321,8 +316,7 @@ class UserPresenceTests(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         result = self.client_post("/json/users/me/presence", {"status": "idle"})
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(json["presences"][hamlet.email]["website"]["status"], "idle")
         self.assertEqual(
             json["presences"].keys(),
@@ -402,14 +396,14 @@ class SingleUserPresenceTests(ZulipTestCase):
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(
             set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}
         )
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(
             set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}
         )
@@ -423,7 +417,7 @@ class SingleUserPresenceTests(ZulipTestCase):
             ping_only="true",
         )
         result = self.client_post("/json/users/me/presence", req)
-        self.assertEqual(result.json()["msg"], "")
+        self.assertEqual(self.assert_json_success(result)["msg"], "")
 
 
 class UserPresenceAggregationTests(ZulipTestCase):
@@ -448,7 +442,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 {"status": status},
                 HTTP_USER_AGENT="ZulipIOS/1.0",
             )
-        latest_result_dict = latest_result.json()
+        latest_result_dict = self.assert_json_success(latest_result)
         self.assertDictEqual(
             latest_result_dict["presences"][user.email]["aggregated"],
             {
@@ -459,7 +453,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         )
 
         result = self.client_get(f"/json/users/{user.email}/presence")
-        return result.json()
+        return self.assert_json_success(result)
 
     def test_aggregated_info(self) -> None:
         user = self.example_user("othello")
@@ -475,7 +469,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 {"status": "active"},
                 HTTP_USER_AGENT="ZulipTestDev/1.0",
             )
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertDictEqual(
             result_dict["presences"][user.email]["aggregated"],
             {
@@ -566,8 +560,7 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="idle"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
 
         result = self.api_post(
@@ -576,14 +569,12 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="active", slim_presence="true"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {str(hamlet.id), str(othello.id)})
 
         # Check that a bot can fetch the presence data for the realm.
         result = self.api_get(self.example_user("default_bot"), "/api/v1/realm/presence")
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {hamlet.email, othello.email})
 
     def test_presence_disabled(self) -> None:
@@ -609,8 +600,7 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="idle"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
 
         # Othello's presence status is disabled so it won't be reported.
         self.assertEqual(set(json["presences"].keys()), {hamlet.email})
@@ -621,6 +611,5 @@ class GetRealmStatusesTest(ZulipTestCase):
             dict(status="active", slim_presence="true"),
             HTTP_USER_AGENT="ZulipDesktop/1.0",
         )
-        self.assert_json_success(result)
-        json = result.json()
+        json = self.assert_json_success(result)
         self.assertEqual(set(json["presences"].keys()), {str(hamlet.id)})

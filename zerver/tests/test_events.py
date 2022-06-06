@@ -2213,9 +2213,9 @@ class NormalActionsTest(BaseAction):
             nonlocal uri
             result = self.client_post("/json/user_uploads", {"file": fp})
 
-            self.assert_json_success(result)
-            self.assertIn("uri", result.json())
-            uri = result.json()["uri"]
+            response_dict = self.assert_json_success(result)
+            self.assertIn("uri", response_dict)
+            uri = response_dict["uri"]
             base = "/user_uploads/"
             self.assertEqual(base, uri[: len(base)])
 
