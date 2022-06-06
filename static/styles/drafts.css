@@ -50,7 +50,7 @@
     }
 
     .drafts-list {
-        padding: 10px 0;
+        padding: 10px 25px;
         overflow: auto;
 
         .no-drafts {
@@ -73,7 +73,7 @@
 }
 
 .draft-row {
-    padding: 5px 25px;
+    padding: 5px 0;
 
     > div {
         display: inline-block;
