@@ -239,9 +239,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         result = self.client_get("/json/user_groups")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
         self.assert_length(
-            result.json()["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
+            response_dict["user_groups"], UserGroup.objects.filter(realm=user_profile.realm).count()
         )
 
     def test_can_edit_user_groups(self) -> None:

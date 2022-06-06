@@ -2984,9 +2984,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.client_post(
             "/json/invites/multiuse", {"invite_expires_in_minutes": 2 * 24 * 60}
         )
-        self.assert_json_success(result)
-
-        invite_link = result.json()["invite_link"]
+        invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
     def test_create_multiuse_link_with_specified_streams_api_call(self) -> None:
@@ -3002,9 +3000,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
-        self.assert_json_success(result)
-
-        invite_link = result.json()["invite_link"]
+        invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
         self.check_user_subscribed_only_to_streams("test", streams)
 
@@ -3018,9 +3014,7 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.client_post(
             "/json/invites/multiuse", {"invite_expires_in_minutes": 2 * 24 * 60}
         )
-        self.assert_json_success(result)
-
-        invite_link = result.json()["invite_link"]
+        invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
         self.login("hamlet")
@@ -3046,9 +3040,7 @@ class MultiuseInviteTest(ZulipTestCase):
                 "invite_expires_in_minutes": 2 * 24 * 60,
             },
         )
-        self.assert_json_success(result)
-
-        invite_link = result.json()["invite_link"]
+        invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
 
     def test_create_multiuse_link_invalid_stream_api_call(self) -> None:

@@ -55,8 +55,7 @@ class MutedUsersTests(ZulipTestCase):
             "bot_type": "1",
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
-        muted_id = result.json()["user_id"]
+        muted_id = self.assert_json_success(result)["user_id"]
 
         url = f"/api/v1/users/me/muted_users/{muted_id}"
         result = self.api_post(hamlet, url)

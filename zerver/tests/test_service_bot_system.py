@@ -267,13 +267,13 @@ class TestServiceBotStateHandler(ZulipTestCase):
             "keys": orjson.dumps(["key 1", "key 3"]).decode(),
         }
         result = self.client_get("/json/bot_storage", params)
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], {"key 3": "value 3", "key 1": "value 1"})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], {"key 3": "value 3", "key 1": "value 1"})
 
         # Assert the stored data for all keys.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], initial_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], initial_dict)
 
         # Store some more data; update an entry and store a new entry
         dict_update = {"key 1": "new value", "key 4": "value 4"}
@@ -287,8 +287,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         updated_dict = initial_dict.copy()
         updated_dict.update(dict_update)
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Assert errors on invalid requests.
         invalid_params = {
@@ -321,8 +321,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
         for key in keys_to_remove:
             updated_dict.pop(key)
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Try to remove an existing and a nonexistent key.
         params = {
@@ -333,8 +333,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert an error has been thrown and no entries were removed.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], updated_dict)
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], updated_dict)
 
         # Remove the entire storage.
         result = self.client_delete("/json/bot_storage")
@@ -342,8 +342,8 @@ class TestServiceBotStateHandler(ZulipTestCase):
 
         # Assert the entire storage has been removed.
         result = self.client_get("/json/bot_storage")
-        self.assert_json_success(result)
-        self.assertEqual(result.json()["storage"], {})
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["storage"], {})
 
 
 class TestServiceBotConfigHandler(ZulipTestCase):

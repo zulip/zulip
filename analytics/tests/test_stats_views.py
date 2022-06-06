@@ -124,8 +124,7 @@ class TestGetChartData(ZulipTestCase):
         stat = COUNT_STATS["active_users_audit:is_bot:day"]
         self.insert_data(stat, ["false"], [])
         result = self.client_get("/json/analytics/chart_data", {"chart_name": "number_of_humans"})
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -148,8 +147,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -171,8 +169,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_message_type"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -215,8 +212,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_client"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -240,8 +236,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_read_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data,
             {
@@ -262,8 +257,7 @@ class TestGetChartData(ZulipTestCase):
             state=FillState.DONE,
         )
         result = self.client_get("/json/analytics/chart_data", {"chart_name": "number_of_humans"})
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {"_1day": [0], "_15day": [0], "all_time": [0]})
         self.assertFalse("user" in data)
 
@@ -275,8 +269,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_over_time"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {"human": [0], "bot": [0]})
         self.assertEqual(data["user"], {"human": [0], "bot": [0]})
 
@@ -288,8 +281,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_message_type"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data["everyone"],
             {
@@ -317,8 +309,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "messages_sent_by_client"}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["everyone"], {})
         self.assertEqual(data["user"], {})
 
@@ -340,8 +331,7 @@ class TestGetChartData(ZulipTestCase):
                 "end": end_time_timestamps[2],
             },
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["end_times"], end_time_timestamps[1:3])
         self.assertEqual(
             data["everyone"], {"_1day": [0, 100], "_15day": [0, 100], "all_time": [0, 100]}
@@ -369,8 +359,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "number_of_humans", "min_length": 2}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             data["end_times"], [datetime_to_timestamp(dt) for dt in self.end_times_day]
         )
@@ -382,8 +371,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data", {"chart_name": "number_of_humans", "min_length": 5}
         )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         end_times = [
             ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)
         ]

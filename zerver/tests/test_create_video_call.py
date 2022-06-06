@@ -184,9 +184,9 @@ class TestVideoCall(ZulipTestCase):
             response = self.client_get(
                 "/json/calls/bigbluebutton/create?meeting_name=general > meeting"
             )
-            self.assert_json_success(response)
+            response_dict = self.assert_json_success(response)
             self.assertEqual(
-                response.json()["url"],
+                response_dict["url"],
                 append_url_query_string(
                     "/calls/bigbluebutton/join",
                     "bigbluebutton="

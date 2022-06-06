@@ -79,8 +79,7 @@ class EventsEndpointTest(ZulipTestCase):
                 user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
-        self.assert_json_success(result)
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["last_event_id"], -1)
         self.assertEqual(result_dict["queue_id"], "15:11")
 
@@ -93,8 +92,7 @@ class EventsEndpointTest(ZulipTestCase):
                 user, "/json/register", dict(event_types=orjson.dumps([event_type]).decode())
             )
 
-        self.assert_json_success(result)
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["last_event_id"], 6)
         self.assertEqual(result_dict["queue_id"], "15:12")
 
@@ -112,8 +110,7 @@ class EventsEndpointTest(ZulipTestCase):
                     fetch_event_types=orjson.dumps(["message"]).decode(),
                 ),
             )
-        self.assert_json_success(result)
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["last_event_id"], 6)
         # Check that the message event types data is in there
         self.assertIn("max_message_id", result_dict)
@@ -132,8 +129,7 @@ class EventsEndpointTest(ZulipTestCase):
                     event_types=orjson.dumps(["message"]).decode(),
                 ),
             )
-        self.assert_json_success(result)
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["last_event_id"], 6)
         # Check that we didn't fetch the messages data
         self.assertNotIn("max_message_id", result_dict)
@@ -155,8 +151,7 @@ class EventsEndpointTest(ZulipTestCase):
             )
 
         result = self.client_post("/json/register", dict())
-        self.assert_json_success(result)
-        result_dict = result.json()
+        result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["queue_id"], None)
         self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
 

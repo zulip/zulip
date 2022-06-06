@@ -362,8 +362,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 payload,
                 content_type="application/json",
             )
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(
             {"result": "success", "msg": "", "total_android_devices": 2, "total_apple_devices": 1},
             data,

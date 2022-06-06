@@ -2815,9 +2815,9 @@ class MarkdownApiTests(ZulipTestCase):
             "/api/v1/messages/render",
             dict(content=content),
         )
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
         self.assertEqual(
-            result.json()["rendered"], "<p>That is a <strong>bold</strong> statement</p>"
+            response_dict["rendered"], "<p>That is a <strong>bold</strong> statement</p>"
         )
 
     def test_render_mention_stream_api(self) -> None:
@@ -2828,11 +2828,11 @@ class MarkdownApiTests(ZulipTestCase):
             "/api/v1/messages/render",
             dict(content=content),
         )
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
         user_id = self.example_user("hamlet").id
         stream_id = get_stream("Denmark", get_realm("zulip")).id
         self.assertEqual(
-            result.json()["rendered"],
+            response_dict["rendered"],
             f'<p>This mentions <a class="stream" data-stream-id="{stream_id}" href="/#narrow/stream/{stream_id}-Denmark">#Denmark</a> and <span class="user-mention" data-user-id="{user_id}">@King Hamlet</span>.</p>',
         )
 

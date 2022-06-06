@@ -98,7 +98,7 @@ class TestExceptionDetailsNotRevealedToClient(SCIMTestCase):
             result = self.client_get("/scim/v2/Users", {}, **self.scim_headers())
             # Only a generic error message is returned:
             self.assertEqual(
-                result.json(),
+                orjson.loads(result.content),
                 {
                     "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
                     "detail": "Exception occurred while processing the SCIM request",
@@ -351,9 +351,8 @@ class TestSCIMUser(SCIMTestCase):
         result = self.client_post(
             "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
         )
-        response_dict = result.json()
         self.assertEqual(
-            response_dict,
+            orjson.loads(result.content),
             {
                 "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
                 "detail": "Must specify name.formatted, name.givenName or name.familyName when creating a new user",
@@ -373,9 +372,8 @@ class TestSCIMUser(SCIMTestCase):
         result = self.client_post(
             "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
         )
-        response_dict = result.json()
         self.assertEqual(
-            response_dict,
+            orjson.loads(result.content),
             {
                 "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
                 "detail": "New user must have active=True",
@@ -399,9 +397,8 @@ class TestSCIMUser(SCIMTestCase):
         result = self.client_post(
             "/scim/v2/Users", payload, content_type="application/json", **self.scim_headers()
         )
-        response_dict = result.json()
         self.assertEqual(
-            response_dict,
+            orjson.loads(result.content),
             {
                 "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
                 "detail": "This email domain isn't allowed in this organization.",
@@ -638,7 +635,7 @@ class TestSCIMUser(SCIMTestCase):
         with self.assertLogs("django.request", "ERROR") as m:
             result = self.json_patch(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
             self.assertEqual(
-                result.json(),
+                orjson.loads(result.content),
                 {
                     "schemas": ["urn:ietf:params:scim:api:messages:2.0:Error"],
                     "detail": "Not Implemented",

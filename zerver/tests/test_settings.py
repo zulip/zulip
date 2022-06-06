@@ -506,8 +506,7 @@ class UserChangesTest(ZulipTestCase):
         self.assertEqual(result.status_code, 401)
 
         result = self.api_post(user, "/api/v1/users/me/api_key/regenerate")
-        self.assert_json_success(result)
-        new_api_key = result.json()["api_key"]
+        new_api_key = self.assert_json_success(result)["api_key"]
         self.assertNotIn(new_api_key, old_api_keys)
         user = self.example_user("hamlet")
         current_api_keys = get_all_api_keys(user)

@@ -4638,8 +4638,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
 
     def test_success(self) -> None:
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
-        self.assert_json_success(result)
-        data = result.json()
+        data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
         user_api_keys = get_all_api_keys(self.user_profile)
         self.assertIn(data["api_key"], user_api_keys)
@@ -4812,7 +4811,7 @@ class FetchAuthBackends(ZulipTestCase):
                 authentication_methods_list.append((backend_name_with_case.lower(), check_bool))
             external_auth_methods = get_external_method_dicts()
 
-            self.assert_json_success(result)
+            response_dict = self.assert_json_success(result)
             checker = check_dict_only(
                 [
                     ("authentication_methods", check_dict_only(authentication_methods_list)),
@@ -4845,18 +4844,20 @@ class FetchAuthBackends(ZulipTestCase):
                     *extra_fields,
                 ]
             )
-            checker("data", result.json())
+            checker("data", response_dict)
 
         result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")
         check_result(result)
+        response_dict = self.assert_json_success(result)
         self.assertEqual(
-            result.json()["external_authentication_methods"], get_external_method_dicts()
+            response_dict["external_authentication_methods"], get_external_method_dicts()
         )
 
         result = self.client_get(
             "/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="ZulipInvalid"
         )
-        self.assertTrue(result.json()["is_incompatible"])
+        response_dict = self.assert_json_success(result)
+        self.assertTrue(response_dict["is_incompatible"])
 
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
             result = self.client_get("/api/v1/server_settings", subdomain="", HTTP_USER_AGENT="")

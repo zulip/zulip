@@ -205,8 +205,7 @@ class PermissionTest(ZulipTestCase):
         do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         result = self.client_get("/json/users")
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         iago_dict = find_dict(members, "email", iago.email)
         self.assertTrue(iago_dict["is_owner"])
         othello_dict = find_dict(members, "email", othello.email)
@@ -266,8 +265,7 @@ class PermissionTest(ZulipTestCase):
 
         # Make sure we see is_admin flag in /json/users
         result = self.client_get("/json/users")
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         desdemona_dict = find_dict(members, "email", desdemona.email)
         self.assertTrue(desdemona_dict["is_admin"])
         othello_dict = find_dict(members, "email", othello.email)
@@ -311,8 +309,7 @@ class PermissionTest(ZulipTestCase):
 
         # First, verify client_gravatar works normally
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], user.email)
         self.assertIsNone(hamlet["avatar_url"])
@@ -338,8 +335,7 @@ class PermissionTest(ZulipTestCase):
                 acting_user=None,
             )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
         # Note that the Gravatar URL should still be computed from the
@@ -366,8 +362,7 @@ class PermissionTest(ZulipTestCase):
         user.refresh_from_db()
         self.login_user(admin)
         result = self.client_get("/json/users", {"client_gravatar": "true"})
-        self.assert_json_success(result)
-        members = result.json()["members"]
+        members = self.assert_json_success(result)["members"]
         hamlet = find_dict(members, "user_id", user.id)
         self.assertEqual(hamlet["email"], f"user{user.id}@zulip.testserver")
         self.assertEqual(hamlet["avatar_url"], get_gravatar_url(user.delivery_email, 1))
@@ -1955,8 +1950,7 @@ class BulkUsersTest(ZulipTestCase):
         def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
             data = dict(client_gravatar=orjson.dumps(client_gravatar).decode())
             result = self.client_get("/json/users", data)
-            self.assert_json_success(result)
-            rows = result.json()["members"]
+            rows = self.assert_json_success(result)["members"]
             hamlet_data = [row for row in rows if row["user_id"] == hamlet.id][0]
             return hamlet_data["avatar_url"]
 
@@ -2093,9 +2087,9 @@ class GetProfileTest(ZulipTestCase):
     def test_get_all_profiles_avatar_urls(self) -> None:
         hamlet = self.example_user("hamlet")
         result = self.api_get(hamlet, "/api/v1/users")
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        (my_user,) = (user for user in result.json()["members"] if user["email"] == hamlet.email)
+        (my_user,) = (user for user in response_dict["members"] if user["email"] == hamlet.email)
 
         self.assertEqual(
             my_user["avatar_url"],

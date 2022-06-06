@@ -53,8 +53,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def assert_num_bots_equal(self, count: int) -> None:
         result = self.client_get("/json/bots")
-        self.assert_json_success(result)
-        self.assert_length(result.json()["bots"], count)
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["bots"], count)
 
     def create_bot(self, **extras: Any) -> Dict[str, Any]:
         bot_info = {
@@ -64,8 +64,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
-        return result.json()
+        response_dict = self.assert_json_success(result)
+        return response_dict
 
     def test_bot_domain(self) -> None:
         self.login("hamlet")
@@ -625,7 +625,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info, subdomain="zephyr")
         self.assert_json_success(result)
         result = self.client_get("/json/bots", subdomain="zephyr")
-        bot_email = result.json()["bots"][0]["username"]
+        response_dict = self.assert_json_success(result)
+        bot_email = response_dict["bots"][0]["username"]
         bot = get_user(bot_email, user.realm)
         self.login("iago")
         result = self.client_delete(f"/json/bots/{bot.id}")
@@ -680,8 +681,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def get_bot(self) -> Dict[str, Any]:
         result = self.client_get("/json/bots")
-        bots = result.json()["bots"]
-        return bots[0]
+        return self.assert_json_success(result)["bots"][0]
 
     def test_update_api_key(self) -> None:
         self.login("hamlet")
@@ -690,8 +690,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         old_api_key = bot["api_key"]
         email = "hambot-bot@zulip.testserver"
         result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}/api_key/regenerate")
-        self.assert_json_success(result)
-        new_api_key = result.json()["api_key"]
+        new_api_key = self.assert_json_success(result)["api_key"]
         self.assertNotEqual(old_api_key, new_api_key)
         bot = self.get_bot()
         self.assertEqual(new_api_key, bot["api_key"])
@@ -848,9 +847,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Fred", result.json()["full_name"])
+        self.assertEqual("Fred", response_dict["full_name"])
 
         bot = self.get_bot()
         self.assertEqual("Fred", bot["full_name"])
@@ -928,10 +927,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
         # Test bot's owner has been changed successfully.
-        self.assertEqual(result.json()["bot_owner"], othello.email)
+        self.assertEqual(response_dict["bot_owner"], othello.email)
 
         self.login("othello")
         bot = self.get_bot()
@@ -1119,9 +1118,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Denmark", result.json()["default_sending_stream"])
+        self.assertEqual("Denmark", response_dict["default_sending_stream"])
 
         bot = self.get_bot()
         self.assertEqual("Denmark", bot["default_sending_stream"])
@@ -1139,9 +1138,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Rome", result.json()["default_sending_stream"])
+        self.assertEqual("Rome", response_dict["default_sending_stream"])
 
         bot = self.get_bot()
         self.assertEqual("Rome", bot["default_sending_stream"])
@@ -1212,9 +1211,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Denmark", result.json()["default_sending_stream"])
+        self.assertEqual("Denmark", response_dict["default_sending_stream"])
 
         bot = self.get_bot()
         self.assertEqual("Denmark", bot["default_sending_stream"])
@@ -1275,9 +1274,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         stream_name = "Denmark"
         bot_info = dict(default_events_register_stream=stream_name)
         result = self.client_patch(url, bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual(stream_name, result.json()["default_events_register_stream"])
+        self.assertEqual(stream_name, response_dict["default_events_register_stream"])
 
         bot = self.get_bot()
         self.assertEqual(stream_name, bot["default_events_register_stream"])
@@ -1320,9 +1319,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Denmark", result.json()["default_events_register_stream"])
+        self.assertEqual("Denmark", response_dict["default_events_register_stream"])
 
         bot = self.get_bot()
         self.assertEqual("Denmark", bot["default_events_register_stream"])
@@ -1402,9 +1401,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual(result.json()["default_all_public_streams"], True)
+        self.assertEqual(response_dict["default_all_public_streams"], True)
 
         bot = self.get_bot()
         self.assertEqual(bot["default_all_public_streams"], True)
@@ -1422,9 +1421,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         email = "hambot-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual(result.json()["default_all_public_streams"], False)
+        self.assertEqual(response_dict["default_all_public_streams"], False)
 
         bot = self.get_bot()
         self.assertEqual(bot["default_all_public_streams"], False)
@@ -1444,9 +1443,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "hambot-bot@zulip.testserver"
         # Important: We intentionally use the wrong method, post, here.
         result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        self.assert_json_success(result)
+        response_dict = self.assert_json_success(result)
 
-        self.assertEqual("Fred", result.json()["full_name"])
+        self.assertEqual("Fred", response_dict["full_name"])
 
         bot = self.get_bot()
         self.assertEqual("Fred", bot["full_name"])

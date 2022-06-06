@@ -281,8 +281,7 @@ class ReactionMessageIDTest(ZulipTestCase):
             "/api/v1/messages",
             {"type": "private", "content": "Test message", "to": pm_recipient.email},
         )
-        self.assert_json_success(result)
-        pm_id = result.json()["id"]
+        pm_id = self.assert_json_success(result)["id"]
         reaction_info = {
             "emoji_name": "smile",
         }
@@ -418,8 +417,7 @@ class ReactionEventTest(ZulipTestCase):
             "/api/v1/messages",
             {"type": "private", "content": "Test message", "to": pm_recipient.email},
         )
-        self.assert_json_success(result)
-        pm_id = result.json()["id"]
+        pm_id = self.assert_json_success(result)["id"]
 
         expected_recipient_ids = {pm_sender.id, pm_recipient.id}
 
@@ -458,8 +456,7 @@ class ReactionEventTest(ZulipTestCase):
             "/api/v1/messages",
             {"type": "private", "content": "Test message", "to": pm_recipient.email},
         )
-        self.assert_json_success(result)
-        content = result.json()
+        content = self.assert_json_success(result)
         pm_id = content["id"]
 
         expected_recipient_ids = {pm_sender.id, pm_recipient.id}
