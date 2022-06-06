@@ -146,54 +146,34 @@ run_test("language_list", () => {
 
     const successful_formatted_list = [
         {
-            first: {
-                name: "English",
-                code: "en",
-                name_with_percent: "English",
-                selected: true,
-            },
-            second: {
-                name: "Bahasa Indonesia",
-                code: "id",
-                name_with_percent: "Bahasa Indonesia (32%)",
-                selected: false,
-            },
+            name: "English",
+            code: "en",
+            name_with_percent: "English",
+            selected: true,
         },
         {
-            first: {
-                name: "British English",
-                code: "en-gb",
-                name_with_percent: "British English (99%)",
-                selected: false,
-            },
+            name: "British English",
+            code: "en-gb",
+            name_with_percent: "British English (99%)",
+            selected: false,
+        },
+        {
+            name: "Bahasa Indonesia",
+            code: "id",
+            name_with_percent: "Bahasa Indonesia (32%)",
+            selected: false,
         },
     ];
 
     const formatted_list = get_language_list_columns("en");
 
-    function check_value_match(element, position) {
-        assert.equal(
-            formatted_list[element][position].name,
-            successful_formatted_list[element][position].name,
-        );
-        assert.equal(
-            formatted_list[element][position].code,
-            successful_formatted_list[element][position].code,
-        );
-        assert.equal(
-            formatted_list[element][position].name_with_percent,
-            successful_formatted_list[element][position].name_with_percent,
-        );
-        assert.equal(
-            formatted_list[element][position].selected,
-            successful_formatted_list[element][position].selected,
-        );
-    }
-
     for (const element of _.range(0, formatted_list.length)) {
-        check_value_match(element, "first");
-        if (formatted_list[element].second) {
-            check_value_match(element, "second");
-        }
+        assert.equal(formatted_list[element].name, successful_formatted_list[element].name);
+        assert.equal(formatted_list[element].code, successful_formatted_list[element].code);
+        assert.equal(
+            formatted_list[element].name_with_percent,
+            successful_formatted_list[element].name_with_percent,
+        );
+        assert.equal(formatted_list[element].selected, successful_formatted_list[element].selected);
     }
 });

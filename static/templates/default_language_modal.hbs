@@ -12,27 +12,16 @@
         {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="https://zulip.readthedocs.io/en/latest/translating/translating.html">{{> @partial-block}}</a>{{/inline}}
     {{/tr}}
 </p>
-<table>
+<div class="default_language_modal_table">
     {{#each language_list}}
-        <tr>
-            <td>
-                <a class="language" data-code="{{this.first.code}}" data-name="{{this.first.name}}">
-                    {{#if this.first.selected}}
-                    <b>{{this.first.name_with_percent}}</b>
-                    {{else}}
-                    {{this.first.name_with_percent}}
-                    {{/if}}
-                </a>
-            </td>
-            <td>
-                <a class="language" data-code="{{this.second.code}}" data-name="{{this.second.name}}">
-                    {{#if this.second.selected}}
-                    <b>{{this.second.name_with_percent}}</b>
-                    {{else}}
-                    {{this.second.name_with_percent}}
-                    {{/if}}
-                </a>
-            </td>
-        </tr>
+        <div class="language_block">
+            <a class="language" data-code="{{this.code}}" data-name="{{this.name}}">
+                {{#if this.selected}}
+                <b>{{this.name_with_percent}}</b>
+                {{else}}
+                {{this.name_with_percent}}
+                {{/if}}
+            </a>
+        </div>
     {{/each}}
-</table>
+</div>
