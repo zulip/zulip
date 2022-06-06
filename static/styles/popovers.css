@@ -672,3 +672,19 @@ ul {
         }
     }
 }
+
+#language_selection_modal {
+    width: min(750px, 70vw);
+}
+
+.default_language_modal_table {
+    column-count: 3;
+
+    @media (width < $md_min) {
+        column-count: 2;
+    }
+
+    @media (width < $sm_min) {
+        column-count: 1;
+    }
+}
