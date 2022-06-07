@@ -2744,6 +2744,40 @@ class SubscribeActionTest(BaseAction):
         check_stream_update("events[0]", events[0])
         check_message("events[1]", events[1])
 
+        # Update stream privacy - make stream public
+        self.user_profile = self.example_user("cordelia")
+        action = lambda: do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_create("events[0]", events[0])
+        check_subscription_peer_add("events[1]", events[1])
+
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
+        )
+        self.subscribe(self.example_user("cordelia"), stream.name)
+        self.unsubscribe(self.example_user("cordelia"), stream.name)
+        action = lambda: do_change_stream_permission(
+            stream,
+            invite_only=False,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
+        )
+        events = self.verify_action(
+            action, include_subscribers=include_subscribers, num_events=2, include_streams=False
+        )
+
+        self.user_profile = self.example_user("hamlet")
         # Update stream stream_post_policy property
         action = lambda: do_change_stream_post_policy(
             stream, Stream.STREAM_POST_POLICY_ADMINS, acting_user=self.example_user("hamlet")
