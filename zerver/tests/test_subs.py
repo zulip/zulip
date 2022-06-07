@@ -549,7 +549,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "private_stream_2")
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertTrue(stream.invite_only)
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
         sub = get_subscription("private_stream_2", user_profile)
         do_change_subscription_property(
@@ -677,7 +677,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "public_stream_2")
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertFalse(stream.invite_only)
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
         sub = get_subscription("public_stream_2", user_profile)
         do_change_subscription_property(
@@ -914,7 +914,7 @@ class StreamAdminTest(ZulipTestCase):
             "history_public_to_subscribers": orjson.dumps(True).decode(),
         }
         result = self.client_patch(f"/json/streams/{stream_id}", params)
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
         do_set_realm_property(
             realm, "create_web_public_stream_policy", Realm.POLICY_OWNERS_ONLY, acting_user=None
@@ -1335,7 +1335,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(sub.is_stream_admin)
 
         result = self.client_delete(f"/json/streams/{stream.id}")
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_private_stream_live_updates(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1528,7 +1528,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_notify_on_stream_rename(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1819,7 +1819,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(
             f"/json/streams/{stream_id}", {"description": "Test description"}
         )
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_change_to_stream_post_policy_admins(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1881,7 +1881,7 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch(
                 f"/json/streams/{stream_id}", {"stream_post_policy": orjson.dumps(policy).decode()}
             )
-            self.assert_json_error(result, "Must be an organization or stream administrator")
+            self.assert_json_error(result, "Must be an organization administrator")
 
         policies = [
             Stream.STREAM_POST_POLICY_ADMINS,
@@ -2453,7 +2453,7 @@ class StreamAdminTest(ZulipTestCase):
             invite_only=False,
             target_users_subbed=True,
         )
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_realm_admin_remove_others_from_public_stream(self) -> None:
         """
@@ -2600,7 +2600,7 @@ class StreamAdminTest(ZulipTestCase):
             target_users_subbed=True,
             using_legacy_emails=True,
         )
-        self.assert_json_error(result, "Must be an organization or stream administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(

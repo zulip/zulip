@@ -241,17 +241,6 @@ class OrganizationOwnerRequired(JsonableError):
         return _("Must be an organization owner")
 
 
-class StreamAdministratorRequired(JsonableError):
-    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
-
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("Must be an organization or stream administrator")
-
-
 class AuthenticationFailedError(JsonableError):
     # Generic class for authentication failures
     code: ErrorCode = ErrorCode.AUTHENTICATION_FAILED

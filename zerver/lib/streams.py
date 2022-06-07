@@ -9,8 +9,8 @@ from django.utils.translation import gettext as _
 from zerver.actions.default_streams import get_default_streams_for_realm
 from zerver.lib.exceptions import (
     JsonableError,
+    OrganizationAdministratorRequired,
     OrganizationOwnerRequired,
-    StreamAdministratorRequired,
 )
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.stream_subscription import (
@@ -315,7 +315,7 @@ def check_stream_access_for_delete_or_update(
     if sub is not None and sub.is_stream_admin:
         return
 
-    raise StreamAdministratorRequired()
+    raise OrganizationAdministratorRequired()
 
 
 def access_stream_for_delete_or_update(
