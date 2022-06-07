@@ -944,6 +944,43 @@ def do_change_stream_permission(
                 ).decode(),
             )
 
+    notify_stream_creation_ids = set()
+    if old_invite_only_value and not stream.invite_only:
+        # We need to send stream creation event to users who can access the
+        # stream now but were not able to do so previously. So, we can exclude
+        # subscribers, users who were previously subscribed to the stream and
+        # realm admins from the non-guest user list.
+        previously_subscribed_user_ids = Subscription.objects.filter(
+            recipient_id=stream.recipient_id, active=False, is_user_active=True
+        ).values_list("user_profile_id", flat=True)
+        stream_subscriber_user_ids = get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", flat=True)
+
+        old_can_access_stream_user_ids = (
+            set(stream_subscriber_user_ids)
+            | set(previously_subscribed_user_ids)
+            | {user.id for user in stream.realm.get_admin_users_and_bots()}
+        )
+        non_guest_user_ids = set(active_non_guest_user_ids(stream.realm_id))
+        notify_stream_creation_ids = non_guest_user_ids - old_can_access_stream_user_ids
+        send_stream_creation_event(stream, list(notify_stream_creation_ids))
+
+        # Add subscribers info to the stream object. We need to send peer_add
+        # events to users who were previously subscribed to the streams as
+        # they did not had subscribers data.
+        old_subscribers_access_user_ids = set(stream_subscriber_user_ids) | {
+            user.id for user in stream.realm.get_admin_users_and_bots()
+        }
+        peer_notify_user_ids = non_guest_user_ids - old_subscribers_access_user_ids
+        peer_add_event = dict(
+            type="subscription",
+            op="peer_add",
+            stream_ids=[stream.id],
+            user_ids=sorted(stream_subscriber_user_ids),
+        )
+        send_event(stream.realm, peer_add_event, peer_notify_user_ids)
+
     event = dict(
         op="update",
         type="stream",
@@ -954,7 +991,10 @@ def do_change_stream_permission(
         stream_id=stream.id,
         name=stream.name,
     )
-    send_event(stream.realm, event, can_access_stream_user_ids(stream))
+    # we do not need to send update events to the users who received creation event
+    # since they already have the updated stream info.
+    notify_stream_update_ids = can_access_stream_user_ids(stream) - notify_stream_creation_ids
+    send_event(stream.realm, event, notify_stream_update_ids)
 
     old_policy_name = get_stream_permission_policy_name(
         invite_only=old_invite_only_value,
