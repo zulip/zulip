@@ -14,7 +14,7 @@ tasks you need to go back to or documents you reference often.
 
 {tab|mobile}
 
-1. Long press on a message.
+1. Long-press on a message.
 
 1. Select **Star message** in the menu that appears.
 

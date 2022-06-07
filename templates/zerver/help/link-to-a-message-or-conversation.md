@@ -37,6 +37,7 @@ Topic: #**stream name>topic name**
 All URLs in Zulip are designed to be shareable.
 Copying the URL from the browser's address bar will work
 for all views, including searches.
+
 ### Get a link to a specific message
 
 This copies to your clipboard a permanent link to the message,
@@ -77,6 +78,12 @@ message](/help/quote-and-reply).
 
 1. Click **Copy link to topic**.
 
+{tab|mobile}
+
+1. Long-press on the topic title.
+
+1. Select **Copy link to topic**.
+
 {tab|via-browser-address-bar}
 
 1. Click on a topic in the left sidebar.
@@ -93,6 +100,12 @@ message](/help/quote-and-reply).
 1. Right-click on the stream in the left sidebar.
 
 1. Click **Copy Link**.
+
+{tab|mobile}
+
+1. Long-press on the stream in the Streams view.
+
+1. Select **Copy link to stream**.
 
 {tab|via-browser-address-bar}
 
