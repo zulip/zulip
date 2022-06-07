@@ -755,21 +755,22 @@ def ignore_unhashable_lru_cache(
             # change to refresh the source files from disk.
             return user_function
 
-        # Casting to Any since we're about to monkey-patch this.
-        cache_enabled_user_function: Any = internal_decorator(user_function)
+        cache_enabled_user_function = internal_decorator(user_function)
+        key_prefix = KEY_PREFIX
 
         def wrapper(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
-            if not hasattr(cache_enabled_user_function, "key_prefix"):
-                cache_enabled_user_function.key_prefix = KEY_PREFIX
+            nonlocal key_prefix
 
-            if cache_enabled_user_function.key_prefix != KEY_PREFIX:
+            if key_prefix != KEY_PREFIX:
                 # Clear cache when cache.KEY_PREFIX changes. This is used in
                 # tests.
                 cache_enabled_user_function.cache_clear()
-                cache_enabled_user_function.key_prefix = KEY_PREFIX
+                key_prefix = KEY_PREFIX
 
             try:
-                return cache_enabled_user_function(*args, **kwargs)
+                return cache_enabled_user_function(
+                    *args, **kwargs  # type: ignore[arg-type] # might be unhashable
+                )
             except TypeError:
                 # args or kwargs contains an element which is unhashable. In
                 # this case we don't cache the result.
