@@ -19,7 +19,7 @@ sending to see what the thumbnail will look like.
 
 ## Troubleshooting info
 
-Zulip does not generate thumbnails for messages with more than 5
+Zulip does not generate thumbnails for messages with more than ten
 attachments.
 
 The maximum file size for attachments is 25MB in most Zulip installations.
