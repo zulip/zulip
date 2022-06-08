@@ -1,11 +1,10 @@
 import datetime
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock
 
 import orjson
 from django.db import connection
-from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, Select, and_, column, select, table
@@ -58,6 +57,9 @@ from zerver.views.message_fetch import (
     ok_to_include_history,
     post_process_limited_query,
 )
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 def get_sqlalchemy_sql(query: ClauseElement) -> str:
@@ -1610,7 +1612,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.logout()
 
     def verify_web_public_query_result_success(
-        self, result: HttpResponse, expected_num_messages: int
+        self, result: "TestHttpResponse", expected_num_messages: int
     ) -> None:
         self.assert_json_success(result)
         messages = orjson.loads(result.content)["messages"]

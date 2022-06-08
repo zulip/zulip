@@ -4,12 +4,11 @@ import os
 import subprocess
 from email import message_from_string
 from email.message import EmailMessage, MIMEPart
-from typing import Any, Callable, Dict, Mapping, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional
 from unittest import mock
 
 import orjson
 from django.conf import settings
-from django.http import HttpResponse
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.streams import do_change_stream_post_policy
@@ -49,6 +48,9 @@ from zerver.models import (
     get_system_bot,
 )
 from zerver.worker.queue_processors import MirrorWorker
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 logger_name = "zerver.lib.email_mirror"
 
@@ -1357,7 +1359,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
         user_message = most_recent_usermessage(user_profile)
         return create_missed_message_address(user_profile, user_message.message)
 
-    def send_offline_message(self, to_address: str, sender: UserProfile) -> HttpResponse:
+    def send_offline_message(self, to_address: str, sender: UserProfile) -> "TestHttpResponse":
         mail_template = self.fixture_data("simple.txt", type="email")
         mail = mail_template.format(stream_to_address=to_address, sender=sender.delivery_email)
         msg_base64 = base64.b64encode(mail.encode()).decode()

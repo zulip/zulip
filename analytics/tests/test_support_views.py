@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import orjson
-from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.stripe import add_months, update_sponsorship_status
@@ -21,13 +21,16 @@ from zerver.models import (
     get_realm,
 )
 
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
 
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         reset_emails_in_zulip_realm()
 
         def assert_user_details_in_html_response(
-            html_response: HttpResponse, full_name: str, email: str, role: str
+            html_response: "TestHttpResponse", full_name: str, email: str, role: str
         ) -> None:
             self.assert_in_success_response(
                 [
@@ -40,7 +43,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 html_response,
             )
 
-        def check_hamlet_user_query_result(result: HttpResponse) -> None:
+        def check_hamlet_user_query_result(result: "TestHttpResponse") -> None:
             assert_user_details_in_html_response(
                 result, "King Hamlet", self.example_email("hamlet"), "Member"
             )
@@ -56,17 +59,17 @@ class TestSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_othello_user_query_result(result: HttpResponse) -> None:
+        def check_othello_user_query_result(result: "TestHttpResponse") -> None:
             assert_user_details_in_html_response(
                 result, "Othello, the Moor of Venice", self.example_email("othello"), "Member"
             )
 
-        def check_polonius_user_query_result(result: HttpResponse) -> None:
+        def check_polonius_user_query_result(result: "TestHttpResponse") -> None:
             assert_user_details_in_html_response(
                 result, "Polonius", self.example_email("polonius"), "Guest"
             )
 
-        def check_zulip_realm_query_result(result: HttpResponse) -> None:
+        def check_zulip_realm_query_result(result: "TestHttpResponse") -> None:
             zulip_realm = get_realm("zulip")
             first_human_user = zulip_realm.get_first_human_user()
             assert first_human_user is not None
@@ -87,7 +90,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_lear_realm_query_result(result: HttpResponse) -> None:
+        def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
             lear_realm = get_realm("lear")
             self.assert_in_success_response(
                 [
@@ -113,7 +116,7 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
         def check_preregistration_user_query_result(
-            result: HttpResponse, email: str, invite: bool = False
+            result: "TestHttpResponse", email: str, invite: bool = False
         ) -> None:
             self.assert_in_success_response(
                 [
@@ -142,7 +145,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     result,
                 )
 
-        def check_realm_creation_query_result(result: HttpResponse, email: str) -> None:
+        def check_realm_creation_query_result(result: "TestHttpResponse", email: str) -> None:
             self.assert_in_success_response(
                 [
                     '<span class="label">preregistration user</span>\n',
@@ -153,7 +156,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_multiuse_invite_link_query_result(result: HttpResponse) -> None:
+        def check_multiuse_invite_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
                     '<span class="label">multiuse invite</span>\n',
@@ -163,7 +166,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 result,
             )
 
-        def check_realm_reactivation_link_query_result(result: HttpResponse) -> None:
+        def check_realm_reactivation_link_query_result(result: "TestHttpResponse") -> None:
             self.assert_in_success_response(
                 [
                     '<span class="label">realm reactivation</span>\n',

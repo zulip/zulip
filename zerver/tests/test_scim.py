@@ -1,15 +1,17 @@
 import copy
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Iterator, Mapping
 from unittest import mock
 
 import orjson
 from django.conf import settings
-from django.http import HttpResponse
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import SCIMClient, UserProfile, get_realm
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class SCIMTestCase(ZulipTestCase):
@@ -39,7 +41,7 @@ class SCIMTestCase(ZulipTestCase):
             },
         }
 
-    def assert_uniqueness_error(self, result: HttpResponse, extra_message: str) -> None:
+    def assert_uniqueness_error(self, result: "TestHttpResponse", extra_message: str) -> None:
         self.assertEqual(result.status_code, 409)
         output_data = orjson.loads(result.content)
 

@@ -1,10 +1,10 @@
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 from unittest import mock
 
 import orjson
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.test import override_settings
 
 from zerver.lib.initial_password import initial_password
@@ -19,6 +19,9 @@ from zerver.models import (
     UserProfile,
     get_user_profile_by_api_key,
 )
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -411,7 +414,7 @@ class ChangeSettingsTest(ZulipTestCase):
             hamlet = self.example_user("hamlet")
             self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)
 
-    def do_change_emojiset(self, emojiset: str) -> HttpResponse:
+    def do_change_emojiset(self, emojiset: str) -> "TestHttpResponse":
         self.login("hamlet")
         data = {"emojiset": emojiset}
         result = self.client_patch("/json/settings", data)

@@ -1,9 +1,8 @@
-from typing import Any, List, Mapping, Set
+from typing import TYPE_CHECKING, Any, List, Mapping, Set
 from unittest import mock
 
 import orjson
 from django.db import connection
-from django.http import HttpResponse
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
@@ -34,6 +33,9 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 def check_flags(flags: List[str], expected: Set[str]) -> None:
@@ -1019,7 +1021,9 @@ class MessageAccessTests(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid message flag operation: 'bogus'")
 
-    def change_star(self, messages: List[int], add: bool = True, **kwargs: Any) -> HttpResponse:
+    def change_star(
+        self, messages: List[int], add: bool = True, **kwargs: Any
+    ) -> "TestHttpResponse":
         return self.client_post(
             "/json/messages/flags",
             {

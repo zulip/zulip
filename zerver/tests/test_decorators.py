@@ -4,7 +4,7 @@ import re
 import uuid
 from collections import defaultdict
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple
 from unittest import mock, skipUnless
 
 import orjson
@@ -89,6 +89,9 @@ from zerver.models import Realm, UserProfile, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class DecoratorTestCase(ZulipTestCase):
@@ -1772,7 +1775,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         )
         do_reactivate_realm(user_profile.realm)
 
-    def _do_test(self, user: UserProfile) -> HttpResponse:
+    def _do_test(self, user: UserProfile) -> "TestHttpResponse":
         stream_name = "stream name"
         self.common_subscribe_to_streams(user, [stream_name], allow_fail=True)
         data = {"password": initial_password(user.email), "stream": stream_name}
@@ -1815,7 +1818,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
             ],
         )
 
-    def _do_test(self, user_email: str) -> HttpResponse:
+    def _do_test(self, user_email: str) -> "TestHttpResponse":
         data = {"password": initial_password(user_email)}
         return self.client_post(r"/accounts/webathena_kerberos_login/", data)
 

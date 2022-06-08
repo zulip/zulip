@@ -2,7 +2,7 @@ import datetime
 import re
 import time
 import urllib
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Union
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
@@ -111,6 +111,9 @@ from zerver.views.development.registration import confirmation_key
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import accounts_home
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
@@ -1077,7 +1080,7 @@ class InviteUserBase(ZulipTestCase):
         invite_expires_in_minutes: Optional[int] = settings.INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -1162,7 +1165,7 @@ class InviteUserTest(InviteUserBase):
         realm.date_created = timezone_now()
         realm.save()
 
-        def try_invite() -> HttpResponse:
+        def try_invite() -> "TestHttpResponse":
             with self.settings(
                 OPEN_REALM_CREATION=True,
                 INVITES_DEFAULT_REALM_DAILY_MAX=site_max,
@@ -3860,7 +3863,7 @@ class RealmCreationTest(ZulipTestCase):
 
 
 class UserSignUpTest(InviteUserBase):
-    def _assert_redirected_to(self, result: HttpResponse, url: str) -> None:
+    def _assert_redirected_to(self, result: "TestHttpResponse", url: str) -> None:
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["LOCATION"], url)
 
@@ -3872,7 +3875,7 @@ class UserSignUpTest(InviteUserBase):
         full_name: str = "New user's name",
         realm: Optional[Realm] = None,
         subdomain: Optional[str] = None,
-    ) -> Union[UserProfile, HttpResponse]:
+    ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
         so will likely require adding new parameters."""
@@ -4081,6 +4084,8 @@ class UserSignUpTest(InviteUserBase):
         """
 
         result = self.verify_signup(full_name="<invalid>")
+        # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
+        assert not isinstance(result, UserProfile)
         self.assert_in_success_response(["Invalid characters in name!"], result)
 
         # Verify that the user is asked for name and password
@@ -4107,6 +4112,8 @@ class UserSignUpTest(InviteUserBase):
         email = "newguy@zulip.com"
         password = "newpassword"
         result = self.verify_signup(email=email, password=password, full_name="")
+        # _WSGIPatchedWSGIResponse does not exist in Django, thus the inverted isinstance check.
+        assert not isinstance(result, UserProfile)
         self.assert_in_success_response(["We just need you to do one last thing."], result)
 
         # Verify that the user is asked for name and password

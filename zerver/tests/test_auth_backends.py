@@ -9,7 +9,19 @@ import time
 import urllib
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple, Type
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+)
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -24,7 +36,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core import mail
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest
 from django.test import override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
@@ -141,6 +153,9 @@ from zproject.backends import (
     saml_auth_enabled,
     sync_user_from_ldap,
 )
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class AuthBackendTest(ZulipTestCase):
@@ -535,7 +550,7 @@ class AuthBackendTest(ZulipTestCase):
         }
 
         def patched_authenticate(
-            request: Optional[HttpResponse] = None,
+            request: Optional["TestHttpResponse"] = None,
             **kwargs: Any,
         ) -> Any:
             # This is how we pass the subdomain to the authentication
@@ -796,12 +811,12 @@ class CheckPasswordStrengthTest(ZulipTestCase):
 
 
 class DesktopFlowTestingLib(ZulipTestCase):
-    def verify_desktop_flow_app_page(self, response: HttpResponse) -> None:
+    def verify_desktop_flow_app_page(self, response: "TestHttpResponse") -> None:
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"<h1>Finish desktop login</h1>", response.content)
 
     def verify_desktop_flow_end_page(
-        self, response: HttpResponse, email: str, desktop_flow_otp: str
+        self, response: "TestHttpResponse", email: str, desktop_flow_otp: str
     ) -> None:
         self.assertEqual(response.status_code, 200)
 
@@ -930,12 +945,12 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def social_auth_test_finish(
         self,
-        result: HttpResponse,
+        result: "TestHttpResponse",
         account_data_dict: Dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         parsed_url = urllib.parse.urlparse(result["Location"])
         csrf_state = urllib.parse.parse_qs(parsed_url.query)["state"]
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
@@ -963,7 +978,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         alternative_start_url: Optional[str] = None,
         user_agent: Optional[str] = None,
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         """Main entry point for all social authentication tests.
 
         * account_data_dict: Dictionary containing the name/email data
@@ -1350,7 +1365,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
     def stage_two_of_registration(
         self,
-        result: HttpResponse,
+        result: "TestHttpResponse",
         realm: Realm,
         subdomain: str,
         email: str,
@@ -1895,7 +1910,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         user_agent: Optional[str] = None,
         extra_attributes: Mapping[str, List[str]] = {},
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         url, headers = self.prepare_login_url_and_headers(
             subdomain,
             mobile_flow_otp,
@@ -2011,7 +2026,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
 
     def make_idp_initiated_logout_request(
         self, email: str, make_validity_checks_pass: bool = True
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         samlrequest = self.generate_saml_logout_request_from_idp(email)
         parameters = {"SAMLRequest": samlrequest}
 
@@ -2962,12 +2977,12 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
 
     def social_auth_test_finish(
         self,
-        result: HttpResponse,
+        result: "TestHttpResponse",
         account_data_dict: Dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         parsed_url = urllib.parse.urlparse(result["Location"])
         state = urllib.parse.parse_qs(parsed_url.query)["state"]
         user_param = json.dumps(account_data_dict)
@@ -3140,7 +3155,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         skip_id_token: bool = False,
         user_agent: Optional[str] = None,
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         """In Apple's native authentication flow, the client app authenticates
         with Apple and receives the JWT id_token, before contacting
         the Zulip server.  The app sends an appropriate request with
@@ -3305,7 +3320,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
         self,
         *args: Any,
         **kwargs: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         # Example payload of the discovery endpoint (with appropriate values filled
         # in to match our test setup).
         # All the attributes below are REQUIRED per OIDC specification:
@@ -3344,7 +3359,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
 
         return result
 
-    def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> HttpResponse:
+    def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> "TestHttpResponse":
         # Trying to generate a (access_token, id_token) pair here in tests that would
         # successfully pass validation by validate_and_return_id_token is impractical
         # and unnecessary (see python-social-auth implementation of the method for
@@ -3512,13 +3527,13 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
     def social_auth_test_finish(
         self,
-        result: HttpResponse,
+        result: "TestHttpResponse",
         account_data_dict: Dict[str, str],
         expect_choose_email_screen: bool,
         headers: Any,
         expect_noreply_email_allowed: bool = False,
         **extra_data: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         parsed_url = urllib.parse.urlparse(result["Location"])
         csrf_state = urllib.parse.parse_qs(parsed_url.query)["state"]
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
@@ -4151,7 +4166,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         *,
         subdomain: str = "zulip",
         force_token: Optional[str] = None,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         if force_token is None:
             token = ExternalAuthResult(data_dict=data).store_data()
         else:
@@ -4160,7 +4175,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         return self.client_get(url_path, subdomain=subdomain)
 
     def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:
-        def test_redirect_to_next_url(next: str = "") -> HttpResponse:
+        def test_redirect_to_next_url(next: str = "") -> "TestHttpResponse":
             data: ExternalAuthDataDict = {
                 "full_name": "Hamlet",
                 "email": self.example_email("hamlet"),
@@ -4802,7 +4817,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
 class FetchAuthBackends(ZulipTestCase):
     def test_get_server_settings(self) -> None:
         def check_result(
-            result: HttpResponse, extra_fields: Sequence[Tuple[str, Validator[object]]] = []
+            result: "TestHttpResponse", extra_fields: Sequence[Tuple[str, Validator[object]]] = []
         ) -> None:
             authentication_methods_list = [
                 ("password", check_bool),
@@ -4991,7 +5006,7 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertIn("otp_device_id", list(self.client.session.keys()))
 
     def test_redirect_to_next_url(self) -> None:
-        def do_local_login(formaction: str) -> HttpResponse:
+        def do_local_login(formaction: str) -> "TestHttpResponse":
             user_email = self.example_email("hamlet")
             data = {"direct_email": user_email}
             return self.client_post(formaction, data)
@@ -5365,7 +5380,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         """This test verifies the behavior of the redirect_to logic in
         login_or_register_remote_user."""
 
-        def test_with_redirect_to_param_set_as_next(next: str = "") -> HttpResponse:
+        def test_with_redirect_to_param_set_as_next(next: str = "") -> "TestHttpResponse":
             user_profile = self.example_user("hamlet")
             email = user_profile.delivery_email
             with self.settings(
@@ -6621,9 +6636,9 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             self.assertIn("do_confirm/" + confirmation_key, result["Location"])
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
-        result = self.client_get(result["Location"])
-        self.assert_in_response('action="/accounts/register/"', result)
-        self.assert_in_response(f'value="{confirmation_key}" name="key"', result)
+        response = self.client_get(result["Location"])
+        self.assert_in_response('action="/accounts/register/"', response)
+        self.assert_in_response(f'value="{confirmation_key}" name="key"', response)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
         rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))

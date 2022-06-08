@@ -1,11 +1,10 @@
 import datetime
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from unittest import mock
 
 import orjson
 from django.db import IntegrityError
-from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_edit import (
@@ -30,6 +29,9 @@ from zerver.lib.user_topics import (
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class EditMessageTestCase(ZulipTestCase):
@@ -2730,17 +2732,17 @@ class DeleteMessageTest(ZulipTestCase):
             )
             self.assert_json_success(result)
 
-        def test_delete_message_by_admin(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_admin(msg_id: int) -> "TestHttpResponse":
             self.login("iago")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
-        def test_delete_message_by_owner(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_owner(msg_id: int) -> "TestHttpResponse":
             self.login("hamlet")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result
 
-        def test_delete_message_by_other_user(msg_id: int) -> HttpResponse:
+        def test_delete_message_by_other_user(msg_id: int) -> "TestHttpResponse":
             self.login("cordelia")
             result = self.client_delete(f"/json/messages/{msg_id}")
             return result

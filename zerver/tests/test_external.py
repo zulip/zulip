@@ -1,7 +1,7 @@
 import time
 import uuid
 from contextlib import contextmanager
-from typing import IO, Any, Callable, Iterator, Optional, Sequence
+from typing import IO, TYPE_CHECKING, Any, Callable, Iterator, Optional, Sequence
 from unittest import mock, skipUnless
 
 import DNS
@@ -9,7 +9,6 @@ import orjson
 from circuitbreaker import CircuitBreakerMonitor
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -29,6 +28,9 @@ from zerver.models import PushDeviceToken, UserProfile
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RateLimitedRemoteZulipServer, RemoteZulipServer
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class MITNameTest(ZulipTestCase):
@@ -109,7 +111,7 @@ class RateLimitTests(ZulipTestCase):
 
         super().tearDown()
 
-    def send_api_message(self, user: UserProfile, content: str) -> HttpResponse:
+    def send_api_message(self, user: UserProfile, content: str) -> "TestHttpResponse":
         return self.api_post(
             user,
             "/api/v1/messages",
@@ -121,7 +123,7 @@ class RateLimitTests(ZulipTestCase):
             },
         )
 
-    def send_unauthed_api_request(self, **kwargs: Any) -> HttpResponse:
+    def send_unauthed_api_request(self, **kwargs: Any) -> "TestHttpResponse":
         result = self.client_get("/json/messages", **kwargs)
         # We're not making a correct request here, but rate-limiting is supposed
         # to happen before the request fails due to not being correctly made. Thus
@@ -136,9 +138,9 @@ class RateLimitTests(ZulipTestCase):
         RateLimitedUser(user).clear_history()
 
         result = self.send_api_message(user, "some stuff")
-        self.assertTrue("X-RateLimit-Remaining" in result)
-        self.assertTrue("X-RateLimit-Limit" in result)
-        self.assertTrue("X-RateLimit-Reset" in result)
+        self.assertTrue("X-RateLimit-Remaining" in result.headers)
+        self.assertTrue("X-RateLimit-Limit" in result.headers)
+        self.assertTrue("X-RateLimit-Reset" in result.headers)
 
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user("hamlet")
@@ -152,20 +154,20 @@ class RateLimitTests(ZulipTestCase):
 
     def do_test_hit_ratelimits(
         self,
-        request_func: Callable[[], HttpResponse],
+        request_func: Callable[[], "TestHttpResponse"],
         is_json: bool = True,
-    ) -> HttpResponse:
-        def api_assert_func(result: HttpResponse) -> None:
+    ) -> None:
+        def api_assert_func(result: "TestHttpResponse") -> None:
             self.assertEqual(result.status_code, 429)
             self.assertEqual(result.headers["Content-Type"], "application/json")
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
             self.assertEqual(json.get("retry-after"), 0.5)
-            self.assertTrue("Retry-After" in result)
+            self.assertTrue("Retry-After" in result.headers)
             self.assertEqual(result["Retry-After"], "0.5")
 
-        def user_facing_assert_func(result: HttpResponse) -> None:
+        def user_facing_assert_func(result: "TestHttpResponse") -> None:
             self.assertEqual(result.status_code, 429)
             self.assertNotEqual(result.headers["Content-Type"], "application/json")
             self.assert_in_response("Rate limit exceeded.", result)
@@ -282,7 +284,7 @@ class RateLimitTests(ZulipTestCase):
         # Alternate requests to /new/ and /accounts/find/
         request_count = 0
 
-        def alternate_requests() -> HttpResponse:
+        def alternate_requests() -> "TestHttpResponse":
             nonlocal request_count
             request_count += 1
             if request_count % 2 == 1:
@@ -333,7 +335,7 @@ class RateLimitTests(ZulipTestCase):
         for ip in ["1.2.3.4", "5.6.7.8", "tor-exit-node"]:
             RateLimitedIPAddr(ip, domain="api_by_ip").clear_history()
 
-        def alternate_requests() -> HttpResponse:
+        def alternate_requests() -> "TestHttpResponse":
             nonlocal request_count
             request_count += 1
             if request_count % 2 == 1:
