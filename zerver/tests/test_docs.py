@@ -1,12 +1,11 @@
 import os
 import re
-from typing import Any, Dict, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Sequence
 from unittest import mock, skipUnless
 from urllib.parse import urlsplit
 
 import orjson
 from django.conf import settings
-from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -18,14 +17,17 @@ from zerver.lib.test_helpers import HostRequestMock
 from zerver.models import Realm, get_realm
 from zerver.views.documentation import add_api_uri_context
 
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
 
 class DocPageTest(ZulipTestCase):
-    def get_doc(self, url: str, subdomain: str) -> HttpResponse:
+    def get_doc(self, url: str, subdomain: str) -> "TestHttpResponse":
         if url[0:23] == "/integrations/doc-html/":
             return self.client_get(url, subdomain=subdomain, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         return self.client_get(url, subdomain=subdomain)
 
-    def print_msg_if_error(self, url: str, response: HttpResponse) -> None:  # nocoverage
+    def print_msg_if_error(self, url: str, response: "TestHttpResponse") -> None:  # nocoverage
         if response.status_code == 200:
             return
         print("Error processing URL:", url)

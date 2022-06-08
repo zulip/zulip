@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Mapping
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping
 from unittest import mock
 
 import orjson
-from django.http import HttpResponse
 
 from zerver.actions.reactions import notify_reaction_update
 from zerver.actions.streams import do_change_stream_permission
@@ -13,6 +12,9 @@ from zerver.lib.message import extract_message_dict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class ReactionEmojiTest(ZulipTestCase):
@@ -622,7 +624,7 @@ class EmojiReactionBase(ZulipTestCase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def post_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def post_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -630,7 +632,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def post_other_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def post_other_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_post(
@@ -638,7 +640,7 @@ class EmojiReactionBase(ZulipTestCase):
         )
         return result
 
-    def delete_reaction(self, reaction_info: Dict[str, str]) -> HttpResponse:
+    def delete_reaction(self, reaction_info: Dict[str, str]) -> "TestHttpResponse":
         message_id = 1
 
         result = self.api_delete(

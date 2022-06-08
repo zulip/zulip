@@ -2,13 +2,12 @@ import calendar
 import datetime
 import urllib
 from datetime import timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import orjson
 import pytz
 from django.conf import settings
-from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -38,6 +37,9 @@ from zerver.models import (
     get_user,
 )
 from zerver.worker.queue_processors import UserActivityWorker
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 logger_string = "zulip.soft_deactivation"
 
@@ -430,14 +432,14 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode()
         self.assertIn("test_stream_7", html)
 
-    def _get_home_page(self, **kwargs: Any) -> HttpResponse:
+    def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
         with patch("zerver.lib.events.request_event_queue", return_value=42), patch(
             "zerver.lib.events.get_user_events", return_value=[]
         ):
             result = self.client_get("/", dict(**kwargs))
         return result
 
-    def _sanity_check(self, result: HttpResponse) -> None:
+    def _sanity_check(self, result: "TestHttpResponse") -> None:
         """
         Use this for tests that are geared toward specific edge cases, but
         which still want the home page to load properly.

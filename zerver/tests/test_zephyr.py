@@ -1,13 +1,15 @@
 import subprocess
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import orjson
-from django.http import HttpResponse
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.users import get_api_key
 from zerver.models import get_realm, get_user
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class ZephyrTest(ZulipTestCase):
@@ -15,7 +17,7 @@ class ZephyrTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        def post(subdomain: Any, **kwargs: Any) -> HttpResponse:
+        def post(subdomain: Any, **kwargs: Any) -> "TestHttpResponse":
             params = {k: orjson.dumps(v).decode() for k, v in kwargs.items()}
             return self.client_post(
                 "/accounts/webathena_kerberos_login/", params, subdomain=subdomain

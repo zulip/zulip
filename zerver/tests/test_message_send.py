@@ -1,12 +1,11 @@
 import datetime
-from typing import Any, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set
 from unittest import mock
 
 import orjson
 import pytz
 from django.conf import settings
 from django.db.models import Q
-from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
@@ -65,6 +64,9 @@ from zerver.models import (
     get_user,
 )
 from zerver.views.message_send import InvalidMirrorInput
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class MessagePOSTTest(ZulipTestCase):
@@ -1350,7 +1352,7 @@ class ScheduledMessageTest(ZulipTestCase):
         tz_guess: str = "",
         delivery_type: str = "send_later",
         realm_str: str = "zulip",
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         self.login("hamlet")
 
         topic_name = ""

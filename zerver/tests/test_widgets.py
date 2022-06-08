@@ -1,14 +1,16 @@
 import re
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 import orjson
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import get_widget_data, get_widget_type
 from zerver.models import SubMessage, UserProfile
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class WidgetContentTestCase(ZulipTestCase):
@@ -238,7 +240,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         message = self.get_last_message()
 
-        def post(sender: UserProfile, data: Dict[str, object]) -> HttpResponse:
+        def post(sender: UserProfile, data: Dict[str, object]) -> "TestHttpResponse":
             payload = dict(
                 message_id=message.id, msg_type="widget", content=orjson.dumps(data).decode()
             )
@@ -266,7 +268,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         message = self.get_last_message()
 
-        def post_submessage(content: str) -> HttpResponse:
+        def post_submessage(content: str) -> "TestHttpResponse":
             payload = dict(
                 message_id=message.id,
                 msg_type="widget",
@@ -324,7 +326,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         message = self.get_last_message()
 
-        def post_submessage(content: str) -> HttpResponse:
+        def post_submessage(content: str) -> "TestHttpResponse":
             payload = dict(
                 message_id=message.id,
                 msg_type="widget",

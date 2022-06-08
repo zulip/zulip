@@ -33,6 +33,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.db.migrations.state import StateApps
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.request import QueryDict
+from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
 from moto import mock_s3
@@ -64,6 +65,8 @@ from zilencer.models import RemoteZulipServer
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
     # Avoid an import cycle; we only need these for type annotations.
     from zerver.lib.test_classes import ClientArg, MigrationsTestCase, ZulipTestCase
 
@@ -349,7 +352,7 @@ class HostRequestMock(HttpRequest):
 INSTRUMENTING = os.environ.get("TEST_INSTRUMENT_URL_COVERAGE", "") == "TRUE"
 INSTRUMENTED_CALLS: List[Dict[str, Any]] = []
 
-UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponse])  # TODO: make more specific
+UrlFuncT = TypeVar("UrlFuncT", bound=Callable[..., HttpResponseBase])  # TODO: make more specific
 
 
 def append_instrumentation_data(data: Dict[str, Any]) -> None:
@@ -363,7 +366,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
 
         def wrapper(
             self: "ZulipTestCase", url: str, info: object = {}, **kwargs: "ClientArg"
-        ) -> HttpResponse:
+        ) -> HttpResponseBase:
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
@@ -532,7 +535,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             sys.exit(1)
 
 
-def load_subdomain_token(response: HttpResponse) -> ExternalAuthDataDict:
+def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> ExternalAuthDataDict:
     assert isinstance(response, HttpResponseRedirect)
     token = response.url.rsplit("/", 1)[1]
     data = ExternalAuthResult(login_token=token, delete_stored_data=False).data_dict

@@ -9,7 +9,18 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+)
 from unittest.mock import Mock, patch
 
 import orjson
@@ -18,7 +29,6 @@ import stripe
 import stripe.util
 from django.conf import settings
 from django.core import signing
-from django.http import HttpResponse
 from django.urls.resolvers import get_resolver
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now as timezone_now
@@ -102,6 +112,9 @@ from zerver.models import (
     get_system_bot,
 )
 from zilencer.models import RemoteZulipServer, RemoteZulipServerAuditLog
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 CallableT = TypeVar("CallableT", bound=Callable[..., Any])
 ParamT = ParamSpec("ParamT")
@@ -422,11 +435,11 @@ class StripeTestCase(ZulipTestCase):
         self.next_month = datetime(2012, 2, 2, 3, 4, 5, tzinfo=timezone.utc)
         self.next_year = datetime(2013, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
 
-    def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_signed_seat_count_from_response(self, response: "TestHttpResponse") -> Optional[str]:
         match = re.search(r"name=\"signed_seat_count\" value=\"(.+)\"", response.content.decode())
         return match.group(1) if match else None
 
-    def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_salt_from_response(self, response: "TestHttpResponse") -> Optional[str]:
         match = re.search(r"name=\"salt\" value=\"(\w+)\"", response.content.decode())
         return match.group(1) if match else None
 
@@ -533,10 +546,10 @@ class StripeTestCase(ZulipTestCase):
         onboarding: bool = False,
         realm: Optional[Realm] = None,
         payment_method: Optional[stripe.PaymentMethod] = None,
-        upgrade_page_response: HttpResponse = None,
+        upgrade_page_response: Optional["TestHttpResponse"] = None,
         del_args: Sequence[str] = [],
         **kwargs: Any,
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         host_args = {}
         if realm is not None:  # nocoverage: TODO
             host_args["HTTP_HOST"] = realm.host

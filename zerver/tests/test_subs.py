@@ -2,7 +2,7 @@ import hashlib
 import random
 from datetime import timedelta
 from io import StringIO
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Set, Union
 from unittest import mock
 
 import orjson
@@ -104,6 +104,9 @@ from zerver.models import (
     validate_attachment_request_for_spectator_access,
 )
 from zerver.views.streams import compose_views
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class TestMiscStuff(ZulipTestCase):
@@ -2379,7 +2382,7 @@ class StreamAdminTest(ZulipTestCase):
         target_users_subbed: bool = True,
         using_legacy_emails: bool = False,
         other_sub_users: Sequence[UserProfile] = [],
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
 
         # Set up the main user, who is in most cases an admin.
         if is_realm_admin:
@@ -5699,7 +5702,7 @@ class GetSubscribersTest(ZulipTestCase):
 
     def make_subscriber_request(
         self, stream_id: int, user: Optional[UserProfile] = None
-    ) -> HttpResponse:
+    ) -> "TestHttpResponse":
         if user is None:
             user = self.user_profile
         return self.api_get(user, f"/api/v1/streams/{stream_id}/members")
