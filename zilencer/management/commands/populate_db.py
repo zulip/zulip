@@ -193,7 +193,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "-n", "--num-messages", type=int, default=500, help="The number of messages to create."
+            "-n", "--num-messages", type=int, default=1000, help="The number of messages to create."
         )
 
         parser.add_argument(
@@ -300,10 +300,11 @@ class Command(BaseCommand):
                 # eliminating the possibility of such coincidences.
                 cursor.execute("SELECT setval('zerver_recipient_id_seq', 100)")
 
-        # If max_topics is not set, we set it proportional to the
-        # number of messages.
         if options["max_topics"] is None:
-            options["max_topics"] = 1 + options["num_messages"] // 100
+            # If max_topics is not set, we use a default that's big
+            # enough "more topics" should appear, and scales slowly
+            # with the number of messages.
+            options["max_topics"] = 8 + options["num_messages"] // 1000
 
         if options["delete"]:
             # Start by clearing all the data in our database
@@ -1044,7 +1045,7 @@ def generate_and_send_messages(
     # Generate different topics for each stream
     possible_topics = {}
     for stream_id in recipient_streams:
-        possible_topics[stream_id] = generate_topics(options["max_topics"])
+        possible_topics[stream_id] = generate_topics(random.randint(1, options["max_topics"]))
 
     message_batch_size = options["batch_size"]
     num_messages = 0
