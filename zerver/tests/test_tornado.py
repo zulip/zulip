@@ -1,8 +1,8 @@
 import asyncio
 import urllib.parse
 from functools import wraps
-from typing import Any, Awaitable, Callable, Dict, Optional, TypeVar
-from unittest import TestResult
+from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, TypeVar
+from unittest import TestResult, mock
 
 import orjson
 from asgiref.sync import async_to_sync, sync_to_async
@@ -144,8 +144,14 @@ class EventsTestCase(TornadoWebTestCase):
             )
             process_event(event, users)
 
-        self.io_loop.call_later(0.1, process_events)
-        response = await self.client_get_async(path)
+        def wrapped_fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
+            ret = event_queue.fetch_events(query)
+            self.io_loop.add_callback(process_events)
+            return ret
+
+        with mock.patch("zerver.tornado.views.fetch_events", side_effect=wrapped_fetch_events):
+            response = await self.client_get_async(path)
+
         self.assertEqual(response.headers["Vary"], "Accept-Language, Cookie")
         data = orjson.loads(response.body)
         self.assertEqual(
