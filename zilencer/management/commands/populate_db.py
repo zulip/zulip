@@ -1045,7 +1045,16 @@ def generate_and_send_messages(
     # Generate different topics for each stream
     possible_topics = {}
     for stream_id in recipient_streams:
-        possible_topics[stream_id] = generate_topics(random.randint(1, options["max_topics"]))
+        # We want the test suite to have a predictable database state,
+        # since some tests depend on it; but for actual development,
+        # we want some streams to have more topics than others for
+        # realistic variety.
+        if not options["test_suite"]:
+            num_topics = random.randint(1, options["max_topics"])
+        else:
+            num_topics = options["max_topics"]
+
+        possible_topics[stream_id] = generate_topics(num_topics)
 
     message_batch_size = options["batch_size"]
     num_messages = 0
