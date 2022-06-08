@@ -675,6 +675,23 @@ def restore_retention_policy_deletions_for_stream(stream: Stream) -> None:
 
 
 def clean_archived_data() -> None:
+    """This function deletes archived data that was archived at least
+    settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS days ago.
+
+    It works by deleting ArchiveTransaction objects that are
+    sufficiently old. We've configured most archive tables, like
+    ArchiveMessage, with on_delete=CASCADE, so that deleting an
+    ArchiveTransaction entails deleting associated objects, including
+    ArchivedMessage, ArchivedUserMessage, ArchivedReaction.
+
+    The exception to this rule is ArchivedAttachment. Archive
+    attachment objects that were only referenced by ArchivedMessage
+    objects that have now been deleted will be left with an empty
+    `.messages` relation. A separate step,
+    delete_old_unclaimed_attachments, will delete those
+    ArchivedAttachment objects (and delete the files themselves from
+    the storage).
+    """
     logger.info("Cleaning old archive data.")
     check_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_VACUUMING_DELAY_DAYS)
     # Associated archived objects will get deleted through the on_delete=CASCADE property:

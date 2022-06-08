@@ -3340,6 +3340,16 @@ class ArchivedAttachment(AbstractAttachment):
     """Used as a temporary holding place for deleted Attachment objects
     before they are permanently deleted.  This is an important part of
     a robust 'message retention' feature.
+
+    Unlike the similar archive tables, ArchivedAttachment does not
+    have an ArchiveTransaction foreign key, and thus will not be
+    directly deleted by clean_archived_data. Instead, attachments that
+    were only referenced by now fully deleted messages will leave
+    ArchivedAttachment objects with empty `.messages`.
+
+    A second step, delete_old_unclaimed_attachments, will delete the
+    resulting orphaned ArchivedAttachment objects, along with removing
+    the associated uploaded files from storage.
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
