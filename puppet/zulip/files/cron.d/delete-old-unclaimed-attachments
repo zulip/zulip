@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+USER=zulip
+
+# Daily cronjob for cleaning up old, unclaimed attachments and their corresponding files.
+0 6 * * * zulip /home/zulip/deployments/current/manage.py delete_old_unclaimed_attachments -f >/dev/null
