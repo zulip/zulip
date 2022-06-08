@@ -125,6 +125,7 @@ def get_events_backend(
     assert tornado_handler is not None
     handler = tornado_handler()
     assert handler is not None
+    handler._request = request
 
     if user_client is None:
         valid_user_client = RequestNotes.get_notes(request).client
@@ -173,7 +174,6 @@ def get_events_backend(
         # Mark this response with .asynchronous; this will result in
         # Tornado discarding the response and instead long-polling the
         # request.  See zulip_finish for more design details.
-        handler._request = request
         response = json_success(request)
         response.asynchronous = True
         return response
