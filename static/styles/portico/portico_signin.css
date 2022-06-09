@@ -716,10 +716,6 @@ html {
     button {
         /* Avoid excessive space at top of login form */
         margin-top: 0;
-
-        .spectator_beta_text {
-            color: hsl(0, 0%, 90%);
-        }
     }
 }
 
@@ -774,18 +770,6 @@ button#register_auth_button_gitlab {
     }
 }
 
-#find-account-section {
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.8em;
-    line-height: 1.5;
-    vertical-align: top;
-
-    #find-account-link {
-        color: hsl(164, 100%, 23%);
-    }
-}
-
 .split-view .actions a,
 .back-to-login {
     color: hsl(164, 100%, 23%);
@@ -830,10 +814,6 @@ button#register_auth_button_gitlab {
         width: 330px;
         margin: 25px auto 10px;
         position: relative;
-
-        &.with-top-space {
-            margin-top: 50px;
-        }
 
         &.full-width {
             width: calc(100% - 20px);
@@ -954,16 +934,6 @@ button#register_auth_button_gitlab {
         }
     }
 
-    .external-host {
-        margin: 25px 0 0 -3px;
-        padding: 11.5px 10px;
-
-        font-weight: 400;
-        font-size: 1.2rem;
-
-        background-color: hsl(0, 0%, 87%);
-    }
-
     .center-block .pitch {
         margin-bottom: 0;
     }
@@ -1054,17 +1024,6 @@ button#register_auth_button_gitlab {
 
     #enter-realm-button {
         margin-top: 14px;
-    }
-
-    #find-account-section {
-        margin-top: 20px;
-        text-align: center;
-        font-weight: 500;
-        font-size: 0.9em;
-    }
-
-    .find-account-link {
-        color: hsl(165, 100%, 14.7%);
     }
 }
 
@@ -1240,11 +1199,6 @@ button#register_auth_button_gitlab {
 
     .white-box {
         box-shadow: none;
-    }
-
-    .footer-navigation li,
-    .footer-navigation li a {
-        font-size: 1em;
     }
 
     .account-creation {

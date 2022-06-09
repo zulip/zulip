@@ -523,7 +523,6 @@ li.expanded_private_message {
 }
 
 .zero-pm-unreads .pm-box,
-.zero-topic-unreads .more-topics-box,
 .zero-topic-unreads .topic-box {
     margin-right: 15px;
 }

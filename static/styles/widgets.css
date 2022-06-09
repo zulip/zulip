@@ -102,11 +102,6 @@ button {
         }
     }
 
-    &.task-completed {
-        border-color: hsl(157, 18%, 77%);
-        padding: 0;
-    }
-
     &.add-task,
     &.add-desc,
     &.poll-option,
@@ -119,10 +114,6 @@ button {
             border-color: hsl(0, 0%, 60%);
         }
     }
-}
-
-img.task-completed {
-    width: 15px;
 }
 
 input,

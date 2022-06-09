@@ -385,8 +385,7 @@ nav {
     padding: 0 !important;
 }
 
-.header,
-.portico-os-announcement {
+.header {
     display: none;
 }
 
@@ -633,13 +632,6 @@ nav {
             vertical-align: top;
         }
 
-        .headliner {
-            .feature-block {
-                margin: 0 10px;
-                width: calc(100% - 250px - 20px);
-            }
-        }
-
         h2 {
             font-size: 2.5em;
             text-align: center;
@@ -716,51 +708,6 @@ nav {
 
     overflow: hidden;
 
-    .waves {
-        position: absolute;
-
-        width: 150vw;
-        height: 150vw;
-
-        top: 650px;
-        left: -25vw;
-
-        z-index: 0;
-        opacity: 0.3;
-
-        .wave {
-            position: absolute;
-
-            width: 100%;
-            height: 100%;
-
-            background-color: hsl(0, 0%, 100%);
-            border-radius: 35%;
-
-            opacity: 0.3;
-
-            animation-name: waves;
-            animation-duration: 15s;
-            animation-iteration-count: infinite;
-            animation-timing-function: linear;
-
-            &.dark-blue {
-                background-color: hsl(219, 39%, 13%);
-            }
-
-            &.light-blue {
-                background-color: hsla(0, 67%, 57%, 0.9);
-                animation-duration: 18s;
-            }
-
-            &.light-green {
-                background-color: hsla(187, 98%, 75%, 0.75);
-                animation-name: wavesBackward;
-                animation-duration: 21s;
-            }
-        }
-    }
-
     .content {
         position: relative;
         z-index: 1;
@@ -823,17 +770,6 @@ nav {
             &:active {
                 box-shadow: 0 3px 20px hsla(0, 0%, 100%, 0.5);
             }
-        }
-
-        .download-button {
-            margin-top: 10px;
-        }
-
-        #see_all_apps {
-            display: inline-block;
-            margin-top: 10px;
-
-            font-weight: normal;
         }
     }
 }
@@ -911,30 +847,6 @@ nav {
     100% {
         transform: rotate(-360deg);
     }
-}
-
-.portico-landing.hello .col-3-5,
-.portico-landing.hello .col-2,
-.portico-landing.hello .col-4 {
-    margin-right: -4px;
-    display: inline-block;
-    vertical-align: top;
-}
-
-.portico-landing.hello .col-3-5 {
-    width: 60%;
-}
-
-.portico-landing.hello .col-2 {
-    width: 49.9%;
-}
-
-.portico-landing.hello .col-3 {
-    width: 33.3%;
-}
-
-.portico-landing.hello .col-4 {
-    width: 20%;
 }
 
 /* -- compare css -- */
@@ -1196,10 +1108,6 @@ nav {
             width: 15%;
         }
 
-        &.darker {
-            background-color: hsl(0, 0%, 73%);
-        }
-
         &.nano {
             display: inline-block;
             vertical-align: top;
@@ -1225,14 +1133,6 @@ nav {
 
         &.orange {
             background-color: hsl(30, 42%, 77%);
-        }
-    }
-
-    .col-4 .action-block {
-        margin: 20px;
-
-        .sub-block {
-            margin: 0 10px;
         }
     }
 
@@ -1378,29 +1278,6 @@ nav {
     padding: 50px 0 100px;
 
     background-color: hsl(0, 0%, 100%);
-
-    .col-2 {
-        text-align: center;
-
-        position: relative;
-        z-index: 1;
-
-        img {
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .il-block {
-            display: inline-block;
-            width: 75%;
-            text-align: left;
-        }
-
-        h2 {
-            font-weight: normal;
-        }
-    }
 }
 
 .portico-landing.hello .open-source {
@@ -1638,11 +1515,6 @@ nav {
 
 .tour .carousel-inner .comparison-slack img {
     margin: 0;
-
-    &.slack-unreads {
-        width: 250px;
-        margin: 15px 0 0 -10px;
-    }
 }
 
 .tour .carousel-inner .other-resources {
@@ -1763,11 +1635,6 @@ nav {
 
 .portico-landing .testimonials .text-header .text-content {
     float: left;
-}
-
-.portico-landing .testimonials .text-header .action-content {
-    float: right;
-    margin-top: 18px;
 }
 
 .portico-landing .testimonials .quote-container {
@@ -1906,16 +1773,6 @@ nav {
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.solano {
-    background-image: url("../../images/landing-page/logos/solano.png");
-    background-color: transparent;
-}
-
-.portico-landing .testimonials .company-box .company.veelo {
-    background-image: url("../../images/landing-page/logos/veelo.png");
-    background-color: transparent;
-}
-
 .portico-landing .testimonials .company-box .company.panjiva {
     background-image: url("../../images/landing-page/logos/panjiva.png");
     background-color: transparent;
@@ -1931,44 +1788,13 @@ nav {
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.wildfly {
-    background-image: url("../../images/landing-page/logos/wildfly.png");
-    background-color: transparent;
-}
-
 .portico-landing .testimonials .company-box .company.mariadb {
     background-image: url("../../images/landing-page/logos/mariadb.png");
     background-color: transparent;
 }
 
-.portico-landing .testimonials .company-box .company.infinispan {
-    background-image: url("../../images/landing-page/logos/infinispan.png");
-    background-color: transparent;
-    height: 50px;
-}
-
-.portico-landing .testimonials .company-box .company.hail {
-    background-image: url("../../images/landing-page/logos/hail.png");
-    background-color: transparent;
-}
-
-.portico-landing .testimonials .company-box .company.inspire-hep {
-    background-image: url("../../images/landing-page/logos/inspire-hep.png");
-    background-color: transparent;
-}
-
 .portico-landing .testimonials .company-box .company.wikimedia-outreach {
     background-image: url("../../images/landing-page/logos/wikimedia-outreach.png");
-    background-color: transparent;
-}
-
-.portico-landing .testimonials .company-box .company.fhir {
-    background-image: url("../../images/landing-page/logos/fhir.png");
-    background-color: transparent;
-}
-
-.portico-landing .testimonials .company-box .company.openshot {
-    background-image: url("../../images/landing-page/logos/openshot.png");
     background-color: transparent;
 }
 
@@ -2217,13 +2043,6 @@ nav {
 .portico-landing.apps .hero .info .cta {
     text-shadow: 0 0 60px hsla(0, 0%, 0%, 0.3);
     max-width: 600px;
-}
-
-.portico-landing.apps
-    .hero
-    .image
-    img[src="/static/images/landing-page/tar.gz.svg"] {
-    width: 50%;
 }
 
 .portico-landing.apps
@@ -2892,96 +2711,6 @@ nav {
     top: 6px;
 }
 
-/* while the overlay is showing, the transform properties should stay fixed
-   for the container that sits inline in the page. */
-
-.pricing-overlay.pricing-model {
-    position: fixed;
-    top: -140px;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-
-    opacity: 0;
-    pointer-events: none;
-
-    z-index: 10;
-    transition: all 0.3s ease;
-}
-
-.portico-landing.plans .pricing-overlay.pricing-model {
-    top: -220px;
-}
-
-.pricing-overlay.pricing-model .pricing-container {
-    padding: 50px;
-    text-align: left;
-}
-
-.pricing-overlay.pricing-model.active {
-    opacity: 1;
-    pointer-events: all;
-    background-color: hsla(0, 0%, 0%, 0.6);
-}
-
-.pricing-overlay.pricing-model .price-box {
-    vertical-align: top;
-}
-
-.pricing-overlay.pricing-model .info-box {
-    position: relative;
-    display: inline-block;
-    vertical-align: top;
-    margin-left: 50px;
-    margin-top: -2px;
-    width: calc(100% - 300px - 50px);
-
-    background-color: hsl(0, 0%, 100%);
-    opacity: 0;
-    transform: translateY(300px);
-
-    transition: all 0.3s ease;
-}
-
-.pricing-overlay.pricing-model .info-box.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.pricing-overlay.pricing-model .info-box .text-content {
-    position: relative;
-    display: inline-block;
-    height: calc(100% - 40px);
-    width: calc(100% - 300px - 40px);
-}
-
-.pricing-overlay.pricing-model .info-box .text-content h1 {
-    margin-top: 0;
-}
-
-.pricing-overlay.pricing-model .info-box .text-content p {
-    color: hsl(0, 0%, 53%);
-}
-
-.pricing-overlay.pricing-model .info-box .text-content .feature-detail-box {
-    position: absolute;
-    width: 100%;
-    bottom: 0;
-    text-align: center;
-}
-
-.pricing-overlay.pricing-model
-    .info-box
-    .text-content
-    .feature-detail-box
-    .feature {
-    display: inline-block;
-    width: calc(33% - 21px);
-    height: 200px;
-    background-color: hsl(0, 0%, 93%);
-    margin: 10px;
-}
-
 .text-content .pricing-details {
     padding: 15px 0;
     height: 25px;
@@ -2994,15 +2723,6 @@ nav {
     &.multi-line {
         padding: 5px 0 25px;
     }
-}
-
-.pricing-overlay.pricing-model .info-box .image {
-    width: 300px;
-    height: 100%;
-
-    float: right;
-
-    background-color: hsl(169, 45%, 43%);
 }
 
 .portico-landing.jobs h2 {
@@ -3068,40 +2788,6 @@ nav {
 @media (width <= 1376px) {
     .portico-landing.plans .price-box {
         margin: 20px;
-    }
-
-    .portico-landing.apps .main .details-container {
-        height: auto;
-    }
-
-    .portico-landing.apps .main .details-container .details-box {
-        display: none;
-        position: static;
-        height: auto;
-    }
-
-    .portico-landing.apps .main .details-container .details-box h1 {
-        margin-top: 0;
-        padding-top: 20px;
-    }
-
-    .portico-landing.apps .main .details-container .details-box.show {
-        display: block;
-    }
-
-    .portico-landing.apps .main .details-box[data-name="linux"] .image {
-        display: block;
-        height: auto;
-    }
-
-    .portico-landing.apps
-        .main
-        .details-box[data-name="linux"]
-        .image
-        .platform,
-    .portico-landing.apps .main .details-box[data-name="linux"] .instructions {
-        text-align: center;
-        width: calc(100% - 40px);
     }
 }
 
@@ -3215,17 +2901,6 @@ nav {
 
     .portico-landing.features-app {
         section {
-            .headliner {
-                .image {
-                    width: 200px;
-                    height: 200px;
-                }
-
-                .feature-box {
-                    width: calc(100% - 200px - 20px);
-                }
-            }
-
             &.messages {
                 display: block;
                 text-align: center;
@@ -3279,10 +2954,6 @@ nav {
             overflow: hidden;
             transform: translateY(-12px) translateX(2px);
         }
-    }
-
-    .screen.hero-screen .col-4 .action-block {
-        margin: 10px;
     }
 
     .portico-landing .testimonials .carousel-quotes {
@@ -3373,22 +3044,6 @@ nav {
 }
 
 @media (width <= 830px) {
-    .portico-landing.features-app {
-        section {
-            .headliner {
-                display: inline-flex;
-
-                width: auto;
-                height: 250px;
-
-                margin: 50px;
-
-                justify-content: center;
-                align-items: center;
-            }
-        }
-    }
-
     .portico-landing.hello .apps .left-side .platform-icons .group {
         margin: 50px 30px;
         display: block;
@@ -3420,10 +3075,6 @@ nav {
         .comparison-slack {
             width: 35%;
         }
-    }
-
-    .tour .carousel-inner .comparison-slack img.slack-unreads {
-        margin-left: 0;
     }
 
     .tour .carousel-inner .tour-item-header {
@@ -3518,10 +3169,6 @@ nav {
         width: 300px;
         height: 201px;
         padding: 43px 73px;
-    }
-
-    .portico-landing.hello .features .col-2 {
-        width: 100%;
     }
 
     .portico-landing.features-app {
@@ -3787,10 +3434,6 @@ nav {
         width: 80px;
         text-align: center;
         border-radius: 4px;
-    }
-
-    .portico-landing.apps .main .details-container {
-        width: 100%;
     }
 
     .portico-landing .testimonials .company-box .company {
@@ -4206,10 +3849,6 @@ nav {
 
     .topics-image {
         border: solid 2px hsl(0, 0%, 60%);
-    }
-
-    .feature-buttons {
-        margin: 0 auto;
     }
 }
 
