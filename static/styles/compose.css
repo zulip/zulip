@@ -33,10 +33,6 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-
-            .compose_reply_button_recipient_label {
-                color: hsl(215, 47%, 30%);
-            }
         }
     }
 
@@ -65,10 +61,6 @@
     display: flex;
     flex-flow: column;
     box-sizing: border-box;
-}
-
-.ztable_comp_col1 {
-    width: 10px;
 }
 
 .message_comp {
@@ -550,10 +542,6 @@ input.recipient_box {
     }
 }
 
-.compose_left_wrapper {
-    margin-right: auto;
-}
-
 #stream-message,
 #private-message {
     display: flex;
@@ -673,10 +661,6 @@ a.compose_control_button.hide {
     top: 23px;
     position: relative;
     cursor: ns-resize;
-}
-
-.inline-subscribe-error {
-    margin-left: 5px;
 }
 
 .preview_message_area {

@@ -18,16 +18,6 @@
             background-color: hsl(120, 70%, 76%);
         }
     }
-
-    tr.long_inactive {
-        td {
-            background-color: hsl(0, 97%, 83%);
-        }
-
-        &:nth-child(odd) td {
-            background-color: hsl(0, 70%, 76%);
-        }
-    }
 }
 
 td.number {

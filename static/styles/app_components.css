@@ -64,10 +64,6 @@ kbd {
     box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 }
 
-.bg-white {
-    background-color: hsl(0, 0%, 100%);
-}
-
 .clear-float {
     clear: both;
 }
@@ -153,19 +149,10 @@ input::placeholder {
             background-color: hsl(0, 0%, 67%);
         }
 
-        &.standalone {
-            margin-top: 10px;
-        }
-
         &.small {
             font-size: 0.8rem;
             min-width: inherit;
             padding: 6px 10px;
-        }
-
-        &.small-flex {
-            width: auto;
-            min-width: inherit;
         }
 
         &:hover,

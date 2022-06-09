@@ -10,75 +10,16 @@
     margin: 0;
 }
 
-.subscription-email-hint-image {
-    float: right;
-    width: 80px;
-}
-
 .subscription_header.collapsed {
     background-color: inherit;
-}
-
-.color_swatch {
-    display: inline-block;
-    height: 18px;
-    width: 18px;
-    padding: 0;
-    margin: 0 0 0 10px;
-    vertical-align: middle;
 }
 
 .subscriptions div #response {
     overflow-wrap: break-word;
 }
 
-.subscription-info-container {
-    display: inline-block;
-    /* subtract out the width of the subscribe button and arrow. */
-    width: calc(100% - 260px);
-    /* to center the container vertically. */
-    margin-top: 13px;
-}
-
-.subscription-setting-icon {
-    vertical-align: top;
-    display: inline-block;
-}
-
-.subscription-info {
-    display: inline-block;
-    /* to provide space for the setting-icon. */
-    max-width: calc(100% - 31px);
-    margin-top: 1px;
-    overflow: hidden;
-    word-wrap: normal;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.subscription-info .light {
-    font-weight: 300;
-}
-
 .subscription_header {
     min-height: 47px;
-}
-
-.subscription-name-row {
-    display: inline-block;
-}
-
-.subscription-name-row,
-.subscription-description-row {
-    vertical-align: top;
-}
-
-.subscription_header .subscription_lock {
-    font-size: 23px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 12px;
-    margin-right: 1px;
 }
 
 .subscription_settings .btn {
@@ -188,15 +129,6 @@ h4.stream_setting_subsection_title {
     line-height: 1.5;
 }
 
-.new-stream-name,
-.stream-rename-button {
-    margin-top: 10px;
-}
-
-.settings_committed {
-    margin: 10px;
-}
-
 .subscriber-list-box {
     text-align: center;
     border: 1px solid hsl(0, 0%, 87%);
@@ -209,10 +141,6 @@ h4.stream_setting_subsection_title {
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
-
-        .form_inline input {
-            vertical-align: top;
-        }
 
         .subscriber-list {
             width: 100%;
@@ -278,13 +206,6 @@ h4.stream_setting_subsection_title {
     }
 }
 
-.hide-subscriber-list {
-    display: block;
-    padding: 5px;
-    text-align: center;
-    color: hsl(0, 0%, 67%);
-}
-
 .subscriber-name,
 .subscriber-email {
     padding: 5px;
@@ -332,45 +253,15 @@ h4.stream_setting_subsection_title {
     margin: 0;
 }
 
-#subscription-status {
-    width: 200px;
-    position: absolute;
-    left: 50%;
-    margin-left: -100px;
-    bottom: 30px;
-    text-align: center;
-    border-radius: 2px;
-}
-
 #subscriptions h1 {
     font-size: 25px;
     font-weight: 300;
     padding-top: 40px;
 }
 
-#subscriptions .streams-icon {
-    margin-right: 10px;
-    font-size: 20px;
-}
-
 .change-stream-privacy {
     width: 100%;
     text-align: center;
-}
-
-.change-stream-privacy-feedback {
-    display: none;
-}
-
-.subscriptions-overlay-bg {
-    font: menu;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: hsla(0, 0%, 8%, 0.7);
-    color: hsl(0, 0%, 27%);
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
@@ -523,18 +414,6 @@ h4.stream_setting_subsection_title {
                     font-size: 15px;
                 }
             }
-        }
-
-        #preview_iframe {
-            width: 100%;
-            height: calc(100% - 45px);
-            border: none;
-            background-color: hsl(0, 0%, 98%);
-            box-shadow: inset 0 0 50px hsla(0, 0%, 0%, 0.5);
-            background-image: url("../images/preview-loading.png");
-            background-size: 150px auto;
-            background-position: center center;
-            background-repeat: no-repeat;
         }
     }
 
@@ -747,12 +626,6 @@ h4.stream_setting_subsection_title {
         vertical-align: top;
     }
 
-    .settings-dropdown-trigger {
-        float: right;
-        margin-left: 10px;
-        color: hsl(0, 0%, 67%);
-    }
-
     &:hover .check:not(.checked) svg,
     &.active:hover .check:not(.checked) svg {
         fill: hsl(0, 0%, 87%);
@@ -791,10 +664,6 @@ h4.stream_setting_subsection_title {
 
         .stream-creation-body {
             padding: 15px;
-        }
-
-        .add-user-label {
-            margin: 8px 0;
         }
 
         .add_all_users_to_stream {
@@ -1253,8 +1122,4 @@ h4.stream_setting_subsection_title {
             }
         }
     }
-}
-
-#stream-creation #invites-warning-modal .modal-footer {
-    position: static;
 }

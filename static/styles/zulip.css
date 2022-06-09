@@ -178,10 +178,6 @@ p.n-margin {
     margin: 0;
 }
 
-.border-radius {
-    border-radius: 4px;
-}
-
 .history-limited-box {
     color: hsl(16, 60%, 45%);
     border: 1px solid hsl(16, 60%, 45%);
@@ -545,10 +541,6 @@ li,
     margin-left: -8px;
 }
 
-.btn-large {
-    font-size: 115%;
-}
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
@@ -643,13 +635,6 @@ strong {
     &:hover {
         opacity: 1;
     }
-}
-
-.message-edit-tooltip-inner {
-    width: 200px;
-    position: absolute;
-    right: 7px;
-    top: -18px;
 }
 
 .narrow-filter {
@@ -1055,14 +1040,6 @@ td.pointer {
         display: block;
     }
 
-    /*
-       We can't collapse the floating recipient bar yet, so this is
-       just a temporary hack.
-    */
-    .messages-collapse {
-        display: none;
-    }
-
     .message_header_private_message {
         border-bottom: 0;
         border-left: 0;
@@ -1158,51 +1135,12 @@ td.pointer {
     }
 }
 
-.summary_row {
-    .message_header {
-        padding: 5px 0 4px 5px;
-        border-radius: 0;
-    }
-
-    &.last_message {
-        .message_header {
-            border-bottom-right-radius: 3px;
-            box-shadow: inset 0 2px 1px -2px hsl(0, 0%, 20%),
-                inset -2px 0 1px -2px hsl(0, 0%, 20%),
-                inset 0 -2px 1px -2px hsl(0, 0%, 20%);
-        }
-
-        .summary_colorblock {
-            border-bottom-left-radius: 3px;
-        }
-    }
-}
-
-.bookend_tr + .summary_row {
-    .message_header {
-        border-top-right-radius: 3px;
-    }
-
-    .summary_colorblock {
-        border-top-left-radius: 3px;
-    }
-}
-
 .copy-paste-text {
     /* Hide the text that we want copy paste to capture */
     position: absolute;
     text-indent: -99999px;
     float: left;
     width: 0;
-}
-
-.summary_row_private_message .summary_colorblock {
-    background-color: hsl(0, 0%, 0%);
-}
-
-.messages-expand,
-.messages-collapse {
-    cursor: pointer;
 }
 
 @keyframes rotate {
@@ -1425,18 +1363,6 @@ a.dark_background:hover,
     font-size: 60%;
 }
 
-.actions_hovered {
-    .message_time,
-    .info {
-        color: hsl(200, 100%, 40%);
-        cursor: pointer;
-    }
-
-    .actions_link {
-        text-decoration: underline;
-    }
-}
-
 .settings-forgot-password {
     display: inline-block;
     position: relative;
@@ -1584,15 +1510,6 @@ div.focused_table {
     justify-content: flex-start;
 }
 
-.select_edit_stream {
-    margin-bottom: 5px !important;
-    border-left: 0;
-    padding-left: 0;
-    border-radius: 3px;
-    margin-left: -10px;
-    text-indent: 10px;
-}
-
 #inline_topic_edit:focus,
 #message_edit_topic:focus {
     outline: none;
@@ -1687,14 +1604,6 @@ div.focused_table {
 
 .streamname {
     font-weight: bold;
-}
-
-.brand.skinny-user-gravatar {
-    display: table-cell;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-bottom: 0;
-    white-space: nowrap;
 }
 
 .top-navbar-border {
@@ -2229,19 +2138,6 @@ nav {
             height: 25px;
             max-width: 200px;
         }
-
-        .company-name {
-            display: inline-block;
-            vertical-align: top;
-            text-transform: uppercase;
-            margin-top: 12px;
-            margin-left: 8px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: hsl(170, 48%, 54%);
-            letter-spacing: 0.1em;
-            cursor: pointer;
-        }
     }
 
     a {
@@ -2384,10 +2280,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .message_edit_spinner .loading_indicator_spinner {
     width: 20px;
     height: 20px;
-}
-
-.topic_move_spinner {
-    margin: 0 auto;
 }
 
 #invitee_emails {
@@ -2534,11 +2426,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-bottom: 0;
 }
 
-/* Override padding-top on form labels when they label only text */
-.form-horizontal .label_for_text {
-    padding-top: 0;
-}
-
 #pw_change_controls {
     display: none;
 }
@@ -2680,18 +2567,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     z-index: 20000;
 }
 
-.tutorial-done-button {
-    text-align: right;
-    margin-top: 9px;
-    margin-bottom: 8px;
-}
-
-.btn-skip {
-    position: relative;
-    left: -10px;
-    margin-right: 25px;
-}
-
 .deactivated_user .deactivated-user-icon {
     color: inherit;
     margin-left: 2px;
@@ -2727,16 +2602,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     display: none !important;
 }
 
-.display-tooltip {
-    display: block !important;
-}
-
 .hotkey-hint {
     opacity: 0.75;
-}
-
-select.inline_select_topic_edit {
-    margin: 0;
 }
 
 .flatpickr-calendar {
@@ -2942,11 +2809,6 @@ select.inline_select_topic_edit {
 
     .app-main .column-middle .column-middle-inner {
         margin-right: 0;
-    }
-
-    .skinny-user-gravatar {
-        position: absolute;
-        top: 0;
     }
 
     #streamlist-toggle {

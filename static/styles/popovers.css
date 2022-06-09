@@ -36,23 +36,8 @@
     text-align: center;
 }
 
-.popover-left,
-.popover-right {
-    max-width: 200px;
-}
-
 .sp-container {
     z-index: 106;
-}
-
-.mobile-message-buttons-popover {
-    position: absolute;
-    top: auto !important;
-    right: 8px;
-    bottom: 48px;
-    left: auto !important;
-    width: 175px;
-    height: 65px;
 }
 
 .streams_popover {
@@ -128,38 +113,6 @@ ul {
                 font-size: 12px;
             }
         }
-
-        .admin-separator {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            font-size: 10px;
-
-            &::before,
-            &::after {
-                content: "";
-                flex: 1;
-                border-top: 1px solid hsl(0, 0%, 93%);
-                border-bottom: 1px solid hsl(0, 0%, 100%);
-            }
-
-            &::before {
-                margin-right: 8px;
-            }
-
-            &::after {
-                margin-left: 8px;
-            }
-        }
-    }
-
-    &.remind_me_popover .remind_icon {
-        text-align: center;
-    }
-
-    &.topic-move_popover {
-        max-height: 200px;
-        overflow-y: auto;
     }
 
     &.info_popover_actions i.fa-edit {

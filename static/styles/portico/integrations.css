@@ -369,11 +369,6 @@ $category-text: hsl(219, 23%, 33%);
             font-weight: 400;
             margin: 10px 4px 0;
 
-            &.create-your-own {
-                margin-top: 27px;
-                font-size: 1.1em !important;
-            }
-
             &.with-secondary {
                 font-size: 1.1em;
                 margin-top: 4px;
@@ -395,10 +390,6 @@ $category-text: hsl(219, 23%, 33%);
 
             .integration-name {
                 font-size: 1em;
-            }
-
-            .integration-name.create-your-own {
-                font-size: 0.95em !important;
             }
 
             .integration-category {
