@@ -118,8 +118,6 @@ paths:
             **Note:** This endpoint is only available on Zulip development
             servers; for obvious security reasons it will always return an error
             in a Zulip production server.
-
-        `POST {{ api_url }}/v1/dev_fetch_api_key`
       parameters:
         - name: username
           in: query
@@ -145,8 +143,6 @@ paths:
       summary: Get events from an event queue
       tags: ["real_time_events"]
       description: |
-        `GET {{ api_url }}/v1/events`
-
         This endpoint allows you to receive new events from
         [a registered event queue](/api/register-queue).
 
@@ -168,8 +164,8 @@ paths:
 
             **Note**: The parameters documented above are optional in the sense that
             even if you haven't registered a queue by explicitly requesting the
-            `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
-            [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
+            `POST /register` endpoint, you could pass the parameters for
+            [the `POST /register` endpoint](/api/register-queue) to this
             endpoint and a queue would be registered in the absence of a `queue_id`.
       x-python-examples-extra-imports: ["sys"]
       parameters:
@@ -4329,8 +4325,6 @@ paths:
       tags: ["real_time_events"]
       description: |
         Delete a previously registered queue.
-
-        `DELETE {{ api_url }}/v1/events`
       parameters:
         - $ref: "#/components/parameters/QueueId"
       responses:
@@ -4353,8 +4347,6 @@ paths:
       tags: ["streams"]
       description: |
         Get the unique ID of a given stream.
-
-        `GET {{ api_url }}/v1/get_stream_id`
       parameters:
         - name: stream
           in: query
@@ -4404,8 +4396,6 @@ paths:
       tags: ["messages"]
       description: |
         Marks all of the current user's unread messages as read.
-
-        `POST {{ api_url }}/v1/mark_all_as_read`
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -4462,8 +4452,6 @@ paths:
       tags: ["users"]
       description: |
         Fetch metadata on files uploaded by the requesting user.
-
-        `GET {{ api_url }}/v1/attachments`
       responses:
         "200":
           description: Success.
@@ -4576,8 +4564,6 @@ paths:
       summary: Get drafts
       description: |
         Fetch all drafts for the current user.
-
-        `GET {{ api_url }}/v1/drafts`
       responses:
         "200":
           description: Success.
@@ -4644,8 +4630,6 @@ paths:
       description: |
         Create one or more drafts on the server. These drafts will be automatically
         synchronized to other clients via `drafts` events.
-
-        `POST {{ api_url }}/v1/drafts`
       parameters:
         - name: drafts
           in: query
@@ -4717,8 +4701,6 @@ paths:
       description: |
         Edit a draft on the server. The edit will be automatically
         synchronized to other clients via `drafts` events.
-
-        `PATCH {{ api_url }}/v1/drafts/{draft_id}`
       parameters:
         - name: draft_id
           in: path
@@ -4765,8 +4747,6 @@ paths:
       description: |
         Delete a single draft from the server. The deletion will be automatically
         synchronized to other clients via a `drafts` event.
-
-        `DELETE {{ api_url }}/v1/drafts/{draft_id}`
       parameters:
         - name: draft_id
           in: path
@@ -4796,8 +4776,6 @@ paths:
       tags: ["messages"]
       description: |
         Fetch message history from a Zulip server.
-
-        `GET {{ api_url }}/v1/messages`
 
         This `GET /api/v1/messages` endpoint is the primary way to fetch
         message history from a Zulip server. It is useful both for Zulip
@@ -5105,8 +5083,6 @@ paths:
       tags: ["messages"]
       description: |
         Send a stream or a private message.
-
-        `POST {{ api_url }}/v1/messages`
       parameters:
         - name: type
           in: query
@@ -5229,8 +5205,6 @@ paths:
       tags: ["messages"]
       description: |
         Fetch the message edit history of a previously edited message.
-
-        `GET {{ api_url }}/v1/messages/{message_id}/history`
 
         Note that edit history may be disabled in some organizations; see the
         [Zulip Help Center documentation on editing messages][edit-settings].
@@ -5387,8 +5361,6 @@ paths:
         Add or remove personal message flags like `read` and `starred`
         on a collection of message IDs.
 
-        `POST {{ api_url }}/v1/messages/flags`
-
         For updating the `read` flag on common collections of messages, see also
         the
         [special endpoints for marking message as read in bulk](/api/mark-all-as-read).
@@ -5525,8 +5497,6 @@ paths:
       tags: ["messages"]
       description: |
         Render a message to HTML.
-
-        `POST {{ api_url }}/v1/messages/render`
       parameters:
         - $ref: "#/components/parameters/RequiredContent"
       responses:
@@ -5559,8 +5529,6 @@ paths:
       tags: ["messages"]
       description: |
         Add an [emoji reaction](/help/emoji-reactions) to a message.
-
-        `POST {{ api_url }}/v1/messages/{message_id}/reactions`
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -5610,8 +5578,6 @@ paths:
       tags: ["messages"]
       description: |
         Remove an [emoji reaction](/help/emoji-reactions) from a message.
-
-        `DELETE {{ api_url }}/v1/messages/{message_id}/reactions`
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -5661,8 +5627,6 @@ paths:
       tags: ["messages"]
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
-
-        `GET {{ api_url }}/v1/messages/matches_narrow`
 
         For many common narrows (E.g. a topic), clients can write an
         efficient client-side check to determine whether a
@@ -5759,8 +5723,6 @@ paths:
       tags: ["messages"]
       description: |
         Given a message ID, return the message object.
-
-        `GET {{ api_url }}/v1/messages/{msg_id}`
 
         Additionally, a `raw_content` field is included. This field is
         useful for clients that primarily work with HTML-rendered
@@ -5912,8 +5874,6 @@ paths:
       description: |
         Edit/update the content, topic, or stream of a message.
 
-        `PATCH {{ api_url }}/v1/messages/{msg_id}`
-
         `{msg_id}` in the above URL should be replaced with the ID of the
         message you wish you update.
 
@@ -6042,8 +6002,6 @@ paths:
       description: |
         Permanently delete a message.
 
-        `DELETE {{ api_url }}/v1/messages/{msg_id}`
-
         This API corresponds to the
         [delete a message completely][delete-completely] feature documented in
         the Zulip Help Center.
@@ -6083,8 +6041,6 @@ paths:
       tags: ["messages"]
       description: |
         Upload a single file and get the corresponding URI.
-
-        `POST {{ api_url }}/v1/user_uploads`
 
         Initially, only you will be able to access the link. To share the
         uploaded file, you'll need to [send a message][send-message]
@@ -6198,8 +6154,6 @@ paths:
       description: |
         Retrieve details on all users in the organization. Optionally
         includes values of [custom profile field](/help/add-custom-profile-fields).
-
-        `GET {{ api_url }}/v1/users`
 
         You can also [fetch details on a single user](/api/get-user).
       x-curl-examples-parameters:
@@ -6325,8 +6279,6 @@ paths:
       description: |
         Create a new user account via the API.
 
-        `POST {{ api_url }}/v1/users`
-
         !!! warn ""
 
             **Note**: This endpoint is limited to organization administrators
@@ -6412,8 +6364,6 @@ paths:
         [Reactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
-
-        `POST {{ api_url }}/v1/users/{user_id}/reactivate`
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:
@@ -6433,8 +6383,6 @@ paths:
         Zulip clients like mobile/desktop apps will want to use the main
         presence endpoint, which returns data for all active users in the
         organization, instead.
-
-        `GET {{ api_url }}/v1/users/{user_id_or_email}/presence`
 
         See
         [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
@@ -6516,8 +6464,6 @@ paths:
       tags: ["users"]
       description: |
         Get basic data about the user/bot that requests this endpoint.
-
-        `GET {{ api_url }}/v1/users/me`
       responses:
         "200":
           description: Success
@@ -6707,8 +6653,6 @@ paths:
         Deactivates the user's account. See also the administrative endpoint for
         [deactivating another user](/api/deactivate-user).
 
-        `DELETE {{ api_url }}/v1/users/me`
-
         This endpoint is primarily useful to Zulip clients providing a user settings UI.
       responses:
         "200":
@@ -6735,8 +6679,6 @@ paths:
       tags: ["users"]
       description: |
         Change your [status](/help/status-and-availability).
-
-        `POST {{ api_url }}/v1/users/me/status`
 
         A request to this endpoint will only change the parameters passed.
         For example, passing just `status_text` requests a change in the status
@@ -6893,8 +6835,6 @@ paths:
       tags: ["streams"]
       description: |
         Get all the topics in a specific stream
-
-        `GET {{ api_url }}/v1/users/me/{stream_id}/topics`
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
@@ -6960,8 +6900,6 @@ paths:
       tags: ["streams"]
       description: |
         Get all streams that the user is subscribed to.
-
-        `GET {{ api_url }}/v1/users/me/subscriptions`
       # operationId can be used to record which view function
       # corresponds to an endpoint.  TODO: Add these for more
       # endpoints, and perhaps use this to provide links to implementations.
@@ -7047,8 +6985,6 @@ paths:
       tags: ["streams"]
       description: |
         Subscribe one or more users to one or more streams.
-
-        `POST {{ api_url }}/v1/users/me/subscriptions`
 
         If any of the specified streams do not exist, they are automatically
         created. The initial [stream settings](/api/update-stream) will be determined
@@ -7333,8 +7269,6 @@ paths:
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
-
-        `DELETE {{ api_url }}/v1/users/me/subscriptions`
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -7417,9 +7351,6 @@ paths:
         This endpoint mutes/unmutes a topic within a stream that the current
         user is subscribed to. Muted topics are displayed faded in the Zulip
         UI, and are not included in the user's unread count totals.
-
-        `PATCH {{ api_url }}/v1/users/me/subscriptions/muted_topics`
-
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -7504,8 +7435,6 @@ paths:
         This endpoint [mutes a user](/help/mute-a-user). Messages sent by users
         you've muted will be automatically marked as read and hidden.
 
-        `POST {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
-
         Muted users should be implemented by clients as follows:
 
         - The server will immediately mark all messages sent by the muted
@@ -7565,8 +7494,6 @@ paths:
       description: |
         This endpoint unmutes a user.
 
-        `DELETE {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
-
         **Changes**: New in Zulip 4.0 (feature level 48).
       parameters:
         - $ref: "#/components/parameters/MutedUserId"
@@ -7597,8 +7524,6 @@ paths:
       tags: ["streams"]
       description: |
         Check whether a user is subscribed to a stream.
-
-        `GET {{ api_url }}/v1/users/{user_id}/subscriptions/{stream_id}`
 
         **Changes**: New in Zulip 3.0 (feature level 11).
       parameters:
@@ -7633,8 +7558,6 @@ paths:
         This endpoint is used to upload a custom emoji for use in the user's
         organization. Access to this endpoint depends on the
         [organization's configuration](https://zulip.com/help/only-allow-admins-to-add-emoji).
-
-        `POST {{ api_url }}/v1/realm/emoji/{emoji_name}`
       x-parameter-description: |
         As described above, the image file to upload must be provided in the
         request's body.
@@ -7681,8 +7604,6 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Get all the custom emoji in the user's organization.
-
-        `GET {{ api_url }}/v1/realm/emoji`
       responses:
         "200":
           description: Success.
@@ -7727,8 +7648,6 @@ paths:
       description: |
         Get all the [custom profile fields](/help/add-custom-profile-fields)
         configured for the user's organization.
-
-        `GET {{ api_url }}/v1/realm/profile_fields`
       responses:
         "200":
           description: Success.
@@ -7828,8 +7747,6 @@ paths:
       description: |
         Reorder the custom profile fields in the user's organization.
 
-        `PATCH {{ api_url }}/v1/realm/profile_fields`
-
         Custom profile fields are displayed in Zulip UI widgets in order; this
         endpoint allows administrative settings UI to change the field ordering.
 
@@ -7859,8 +7776,6 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
-
-        `POST {{ api_url }}/v1/realm/profile_fields`
       x-requires-administrator: true
       parameters:
         - name: name
@@ -7946,8 +7861,6 @@ paths:
         Change the [default values of settings][new-user-defaults] for new users
         joining the organization. Essentially all
         [personal preference settings](/api/update-settings) are supported.
-
-        `PATCH {{ api_url }}/v1/realm/user_settings_defaults`
 
         This feature can be invaluable for customizing Zulip's default
         settings for notifications or UI to be appropriate for how the
@@ -8334,8 +8247,6 @@ paths:
         streams they are subscribed to, including muting, color, pinning, and
         per-stream notification settings.
 
-        `POST {{ api_url }}/v1/users/me/subscriptions/properties`
-
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
         object included the `subscription_data` in the the
         request. The endpoint now returns the more ergonomic
@@ -8452,8 +8363,6 @@ paths:
         Fetch details for a single user in the organization given a Zulip display
         email address.
 
-        `GET {{ api_url }}/v1/users/{email}`
-
         Note that this endpoint uses Zulip display emails addresses
         for organizations that have configured limited [email address
         visibility](/help/restrict-visibility-of-email-addresses).
@@ -8555,8 +8464,6 @@ paths:
       description: |
         Fetch details for a single user in the organization.
 
-        `GET {{ api_url }}/v1/users/{user_id}`
-
         You can also fetch details on [all users in the organization](/api/get-users)
         or [by email](/api/get-user-by-email).
 
@@ -8645,8 +8552,6 @@ paths:
       description: |
         Administrative endpoint to update the details of another user in the organization.
 
-        `PATCH {{ api_url }}/v1/users/{user_id}`
-
         Supports everything an administrator can do to edit details of another
         user's account, including editing full name,
         [role](/help/roles-and-permissions), and [custom profile
@@ -8729,8 +8634,6 @@ paths:
         [Deactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
-
-        `DELETE {{ api_url }}/v1/users/{user_id}`
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:
@@ -8761,8 +8664,6 @@ paths:
         [linkifiers](/help/add-a-custom-linkifier), regular
         expression patterns that are automatically linkified when they appear
         in messages and topics.
-
-        `GET {{ api_url }}/v1/realm/linkifiers`
 
         **Changes**: New in Zulip 4.0 (feature level 54). On older versions,
         a similar `GET /realm/filters` endpoint was available with each entry in
@@ -8823,8 +8724,6 @@ paths:
         Configure [linkifiers](/help/add-a-custom-linkifier),
         regular expression patterns that are automatically linkified when they
         appear in messages and topics.
-
-        `POST {{ api_url }}/v1/realm/filters`
       parameters:
         - $ref: "#/components/parameters/LinkifierPattern"
         - $ref: "#/components/parameters/LinkifierURLFormatString"
@@ -8855,8 +8754,6 @@ paths:
         Remove [linkifiers](/help/add-a-custom-linkifier), regular
         expression patterns that are automatically linkified when they appear
         in messages and topics.
-
-        `DELETE {{ api_url }}/v1/realm/filters/{filter_id}`
       parameters:
         - name: filter_id
           in: path
@@ -8877,8 +8774,6 @@ paths:
         Update a [linkifier](/help/add-a-custom-linkifier), regular
         expression patterns that are automatically linkified when they appear
         in messages and topics.
-
-        `PATCH {{ api_url }}/v1/realm/filters/{filter_id}`
 
         **Changes**: New in Zulip 4.0 (feature level 57).
       parameters:
@@ -8902,8 +8797,6 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         Configure [code playgrounds](/help/code-blocks#code-playgrounds) for the organization.
-
-        `POST {{ api_url }}/v1/realm/playgrounds`
 
         **Changes**: New in Zulip 4.0 (feature level 49). A parameter encoding bug was
         fixed in Zulip 4.0 (feature level 57).
@@ -8962,8 +8855,6 @@ paths:
         Remove a [code playground](/help/code-blocks#code-playgrounds) previously
         configured for an organization.
 
-        `DELETE {{ api_url }}/v1/realm/playgrounds/{playground_id}`
-
         **Changes**: New in Zulip 4.0 (feature level 49).
       parameters:
         - name: playground_id
@@ -8983,8 +8874,6 @@ paths:
       summary: Register an event queue
       tags: ["real_time_events"]
       description: |
-        `POST {{ api_url }}/v1/register`
-
         This powerful endpoint can be used to register a Zulip "event queue"
         (subscribed to certain types of "events", or updates to the messages
         and other Zulip data the current user has access to), as well as to
@@ -12322,8 +12211,6 @@ paths:
       description: |
         Fetch global settings for a Zulip server.
 
-        `GET {{ api_url }}/v1/server_settings`
-
         **Note:** this endpoint does not require any authentication at all, and you can use it to check:
 
         - If this is a Zulip server, and if so, what version of Zulip it's running.
@@ -12598,8 +12485,6 @@ paths:
       tags: ["users"]
       description: |
         This endpoint is used to edit the current user's settings.
-
-        `PATCH {{ api_url }}/v1/settings`
 
         **Changes**: Prior to Zulip 5.0 (feature level 80), this
         endpoint only supported the `full_name`, `email`,
@@ -13176,8 +13061,6 @@ paths:
       tags: ["streams"]
       description: |
         Get all users subscribed to a stream.
-
-        `Get {{ api_url }}/v1/streams/{stream_id}/members`
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
@@ -13225,8 +13108,6 @@ paths:
       tags: ["streams"]
       description: |
         Get all streams that the user has access to.
-
-        `GET {{ api_url }}/v1/streams`
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -13402,8 +13283,6 @@ paths:
       description: |
         Fetch details for the stream with the ID `stream_id`.
 
-        `GET {{ api_url }}/v1/streams/{stream_id}`
-
         **Changes**: New in Zulip 6.0 (feature level 132).
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
@@ -13462,8 +13341,6 @@ paths:
       tags: ["streams"]
       description: |
         [Archive the stream](/help/archive-a-stream) with the ID `stream_id`.
-
-        `DELETE {{ api_url }}/v1/streams/{stream_id}`
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
       responses:
@@ -13497,8 +13374,6 @@ paths:
         - Stream [permissions](/help/stream-permissions), including
           [privacy](/help/change-the-privacy-of-a-stream) and [who can
           send](/help/stream-sending-policy).
-
-        `PATCH {{ api_url }}/v1/streams/{stream_id}`
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -13601,8 +13476,6 @@ paths:
       description: |
         Delete all messages in a topic.
 
-        `POST {{ api_url }}/v1/streams/{stream_id}/delete_topic`
-
         Topics are a field on messages (not an independent
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
@@ -13642,8 +13515,6 @@ paths:
       tags: ["users"]
       description: |
         Notify other users whether the current user is typing a message.
-
-        `POST {{ api_url }}/v1/typing`
 
         Clients implementing Zulip's typing notifications protocol should work as follows:
 
@@ -13769,8 +13640,6 @@ paths:
       tags: ["users"]
       description: |
         Create a new [user group](/help/user-groups).
-
-        `POST {{ api_url }}/v1/user_groups/create`
       parameters:
         - name: name
           in: query
@@ -13826,8 +13695,6 @@ paths:
       tags: ["users"]
       description: |
         Update the members of a [user group](/help/user-groups).
-
-        `POST {{ api_url }}/v1/user_groups/{user_group_id}/members`
       x-curl-examples-parameters:
         oneOf:
           - type: exclude
@@ -13870,8 +13737,6 @@ paths:
       description: |
         Get the members of a [user group](/help/user-groups).
 
-        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members`
-
         **Changes**: New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
@@ -13904,8 +13769,6 @@ paths:
       tags: ["users"]
       description: |
         Update the name or description of a [user group](/help/user-groups).
-
-        `PATCH {{ api_url }}/v1/user_groups/{user_group_id}`
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
         - name: name
@@ -13949,8 +13812,6 @@ paths:
       tags: ["users"]
       description: |
         Delete a [user group](/help/user-groups).
-
-        `DELETE {{ api_url }}/v1/user_groups/{user_group_id}`
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
       responses:
@@ -13980,8 +13841,6 @@ paths:
       tags: ["users"]
       description: |
         Fetches all of the user groups in the organization.
-
-        `GET {{ api_url }}/v1/user_groups`
 
         !!! warn ""
 
@@ -14078,8 +13937,6 @@ paths:
       description: |
         Update the subgroups of a [user group](/help/user-groups).
 
-        `POST {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
-
         **Changes**: New in Zulip 6.0 (feature level 127).
       x-curl-examples-parameters:
         oneOf:
@@ -14123,8 +13980,6 @@ paths:
       description: |
         Get the subgroups of a [user group](/help/user-groups).
 
-        `GET {{ api_url }}/v1/user_groups/{user_group_id}/subgroups`
-
         **Changes**: New in Zulip 6.0 (feature level 127).
       parameters:
         - $ref: "#/components/parameters/UserGroupId"
@@ -14166,8 +14021,6 @@ paths:
       tags: ["users"]
       description: |
         Check whether a user is member of user group.
-
-        `GET {{ api_url }}/v1/user_groups/{user_group_id}/members/{user_id}`
 
         **Changes**: New in Zulip 6.0 (feature level 127).
       parameters:

@@ -512,10 +512,11 @@ class APIHeaderPreprocessor(BasePreprocessor):
         path, method = function.rsplit(":", 1)
         raw_title = get_openapi_summary(path, method)
         description_dict = get_openapi_description(path, method)
-        description_dict = description_dict.replace("{{api_url}}", self.api_url)
         return [
             *("# " + line for line in raw_title.splitlines()),
             *(["{!api-admin-only.md!}"] if check_requires_administrator(path, method) else []),
+            "",
+            f"`{method.upper()} {self.api_url}/v1{path}`",
             "",
             *description_dict.splitlines(),
         ]
