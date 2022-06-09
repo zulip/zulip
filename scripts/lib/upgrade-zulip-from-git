@@ -74,14 +74,18 @@ try:
         ["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip
     )
 
-    # Check to see if it's the old "mirror" configuration
-    is_mirror = subprocess.check_output(
-        ["git", "config", "--bool", "--default=false", "remote.origin.mirror"],
+    fetch_spec = subprocess.check_output(
+        ["git", "config", "remote.origin.fetch"],
         preexec_fn=su_to_zulip,
         text=True,
-    )
-    if is_mirror.strip() == "true":
-        subprocess.check_call(
+    ).strip()
+    if fetch_spec in ("+refs/*:refs/*", "+refs/heads/*:refs/heads/*"):
+        # The refspec impinges on refs/heads/ -- this is an old mirror
+        # configuration.
+        logging.info("Cleaning up mirrored repository")
+        # remotes.origin.mirror may not be set -- we do not use
+        # check_call to ignore errors if it's already missing
+        subprocess.call(
             ["git", "config", "--unset", "remote.origin.mirror"],
             preexec_fn=su_to_zulip,
         )
