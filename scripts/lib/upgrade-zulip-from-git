@@ -60,10 +60,14 @@ try:
 
     # Populate LOCAL_GIT_CACHE_DIR with both the requested remote and zulip/zulip.
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
-        logging.info("Cloning the repository")
+        logging.info("Making local repository cache")
         subprocess.check_call(
-            ["git", "clone", "-q", remote_url, LOCAL_GIT_CACHE_DIR],
+            ["git", "init", "--bare", "-q", LOCAL_GIT_CACHE_DIR],
             stdout=subprocess.DEVNULL,
+        )
+        subprocess.check_call(
+            ["git", "remote", "add", "origin", remote_url],
+            cwd=LOCAL_GIT_CACHE_DIR,
         )
 
     if os.stat(LOCAL_GIT_CACHE_DIR).st_uid == 0:
