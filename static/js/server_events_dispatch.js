@@ -605,6 +605,7 @@ export function dispatch_normal_event(event) {
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "left_side_userlist",
+                "narrow_mode",
                 "timezone",
                 "twenty_four_hour_time",
                 "translate_emoticons",
@@ -644,6 +645,9 @@ export function dispatch_normal_event(event) {
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
                 $("body").toggleClass("more_dense_mode");
+            }
+            if (event.property === "narrow_mode") {
+                $("body").toggleClass("narrow_mode");
             }
             if (event.property === "color_scheme") {
                 $("body").fadeOut(300);

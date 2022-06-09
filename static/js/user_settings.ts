@@ -26,6 +26,7 @@ export type UserSettingsType = {
     high_contrast_mode: boolean;
     left_side_userlist: boolean;
     message_content_in_email_notifications: boolean;
+    narrow_mode: boolean;
     notification_sound: string;
     pm_content_in_desktop_notifications: boolean;
     presence_enabled: boolean;

@@ -1463,6 +1463,7 @@ class UserBaseSettings(models.Model):
     default_view: str = models.TextField(default="recent_topics")
     escape_navigates_to_default_view: bool = models.BooleanField(default=True)
     dense_mode: bool = models.BooleanField(default=True)
+    narrow_mode: bool = models.BooleanField(default=False)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
@@ -1559,6 +1560,7 @@ class UserBaseSettings(models.Model):
         default_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
+        narrow_mode=bool,
         emojiset=str,
         enable_drafts_synchronization=bool,
         enter_sends=bool,

@@ -896,6 +896,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__narrow_mode: {
+        type: "user_settings",
+        op: "update",
+        property: "narrow_mode",
+        value: true,
+    },
+
     user_settings__presence_enabled: {
         type: "user_settings",
         op: "update",

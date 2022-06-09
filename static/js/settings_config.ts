@@ -87,8 +87,9 @@ export const get_all_display_settings = (): DisplaySettings => ({
         user_display_settings: [
             "dense_mode",
             "high_contrast_mode",
-            "left_side_userlist",
             "fluid_layout_width",
+            "narrow_mode",
+            "left_side_userlist",
             "starred_message_counts",
         ],
     },
@@ -559,6 +560,7 @@ export const display_settings_labels = {
     left_side_userlist: $t({
         defaultMessage: "Show user list on left sidebar in narrow windows",
     }),
+    narrow_mode: $t({defaultMessage: "Hide user list (right sidebar)"}),
     starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
     twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     translate_emoticons: new Handlebars.SafeString(

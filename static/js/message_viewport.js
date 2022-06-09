@@ -7,6 +7,7 @@ import * as message_scroll from "./message_scroll";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import * as rows from "./rows";
+import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export let $message_pane;
@@ -317,7 +318,7 @@ export function is_narrow() {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
     // test for this.
-    return window.innerWidth < media_breakpoints_num.xl;
+    return window.innerWidth < media_breakpoints_num.xl || user_settings.narrow_mode;
 }
 
 export function system_initiated_animate_scroll(scroll_amount) {
