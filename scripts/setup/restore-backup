@@ -40,7 +40,6 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     from django.conf import settings
 
     paths = [
-        ("settings", "/etc/zulip"),
         # zproject will only be present for development environment backups.
         ("zproject", os.path.join(settings.DEPLOY_ROOT, "zproject")),
     ]
