@@ -31,7 +31,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     # next).  Ignore errors if zulip-backup/settings is not present
     # (E.g. because this is a development backup).
     tarball_file.seek(0, 0)
-    subprocess.call(
+    run(
         ["tar", "--directory=/etc/zulip", "--strip-components=2", "-xz", "zulip-backup/settings"],
         stdin=tarball_file,
     )
@@ -107,7 +107,7 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
         if settings.PRODUCTION:
             # In case we are restoring a backup from an older Zulip
             # version, there may be new secrets to generate.
-            subprocess.check_call(
+            run(
                 [
                     os.path.join(settings.DEPLOY_ROOT, "scripts", "setup", "generate_secrets.py"),
                     "--production",
