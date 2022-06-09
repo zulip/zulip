@@ -6,29 +6,18 @@ or **Recent topics**, nor do they generate notifications (including
 notifications), unless you are [mentioned](/help/mention-a-user-or-group).
 They also do not contribute to stream unread counts.
 
-## From the left sidebar
+## Mute a topic
 
 {start_tabs}
 
-1. In the left sidebar, click on the stream that
-   contains the topic you want to mute.
+{!topic-actions.md!}
 
-1. Hover over the topic in the left sidebar.
+1. Select **Mute topic**.
 
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
+!!! tip ""
 
-4. Select **Mute topic**.
-
-{end_tabs}
-
-### From the message recipient bar (alternate method)
-
-{start_tabs}
-
-1. Find a message belonging to the topic that you
-   wish to mute.
-
-1. Click on the <i class="fa fa-bell-slash"></i> to mute the topic.
+    You can also click on the <i class="fa fa-bell-slash"></i> in the message
+    recipient bar to mute the topic.
 
 {end_tabs}
 
@@ -38,9 +27,9 @@ They also do not contribute to stream unread counts.
 
 {settings_tab|muted-topics}
 
-{end_tabs}
+1. Review and unmute any muted topics.
 
-From there, you can review and unmute any muted topics.
+{end_tabs}
 
 ## Related articles
 
