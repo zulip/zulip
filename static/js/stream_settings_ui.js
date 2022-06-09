@@ -1127,14 +1127,4 @@ export function initialize() {
         $(".right").removeClass("show");
         $(".subscriptions-header").removeClass("slide-left");
     });
-
-    {
-        const sel = ".search-container, .streams-list, .subscriptions-header";
-
-        $("#manage_streams_container").on("click", sel, (e) => {
-            if ($(e.target).is(sel)) {
-                stream_edit.open_edit_panel_empty();
-            }
-        });
-    }
 }
