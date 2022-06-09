@@ -46,4 +46,14 @@ $(() => {
             $this.closest("ul .dropdown").removeClass("show");
         }
     });
+
+    $("body").on("click", ".hamburger-portico, .cross-portico", (e) => {
+        // Having a class which only works on mobile widths avoids it from still working when user resizes the window.
+        $(".portico-header .top-links .portico_nav_dropdown").toggleClass("show_mobile");
+        $(".portico-header .top-links .cross-portico").toggleClass("show_mobile");
+        $(".portico-header .top-links .hamburger-portico").toggleClass("hide_mobile");
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
 });

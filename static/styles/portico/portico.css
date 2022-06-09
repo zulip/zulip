@@ -980,7 +980,7 @@ input#terminal:checked ~ #tab-terminal {
     color: hsl(207, 89%, 54%);
 }
 
-.login-page {
+.login-page.new-style {
     text-align: center;
 
     .alert {
@@ -989,6 +989,21 @@ input#terminal:checked ~ #tab-terminal {
         margin-top: -30px;
         margin-bottom: 15px;
         text-align: center;
+    }
+
+    @media (width <= 425px) {
+        .white-box {
+            width: calc(100% - 80px);
+
+            .form-inline {
+                width: 280px;
+            }
+        }
+
+        button.full-width,
+        button.login-social-button {
+            width: 280px;
+        }
     }
 }
 
@@ -1016,6 +1031,10 @@ input.new-organization-button {
     /* plus input padding. */
     width: calc(300px - -28px);
     margin-bottom: 10px;
+
+    @media (width <= 425px) {
+        width: 280px;
+    }
 
     .direct-label {
         margin-top: 50px;
@@ -1788,5 +1807,69 @@ label.label-title {
     a {
         color: hsl(0, 0%, 100%);
         text-decoration: underline;
+    }
+}
+
+.header.portico-header {
+    padding: 15px 0;
+
+    .hamburger-portico {
+        display: none;
+        cursor: pointer;
+        font-size: 25px;
+    }
+
+    .portico_nav_dropdown {
+        display: inline-block;
+
+        li {
+            display: inline;
+            list-style: none;
+        }
+    }
+
+    .cross-portico {
+        display: none;
+        font-size: 20px;
+        color: hsl(0, 0%, 27%);
+        cursor: pointer;
+    }
+
+    @media (width <= 768px) {
+        .show_mobile {
+            display: block !important;
+        }
+
+        .hide_mobile {
+            display: none !important;
+        }
+
+        .hamburger-portico {
+            display: inline-block;
+        }
+
+        .top-links .portico_nav_dropdown {
+            display: none;
+            list-style: none;
+            background: hsl(43, 30%, 95%);
+            width: 100vw;
+            position: absolute;
+            left: 0;
+            top: 43px;
+            margin: 0;
+            text-align: center;
+            box-shadow: 0 2px 4px 0 hsla(0, 0%, 0%, 0.1);
+
+            li {
+                display: block;
+                margin: 5px 0;
+                text-align: center;
+
+                a {
+                    padding: 5px;
+                    width: 100%;
+                }
+            }
+        }
     }
 }
