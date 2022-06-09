@@ -15,9 +15,15 @@ POSTGRES_PWENT = get_postgres_pwent()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("tarball", help="Filename of input tarball")
+parser.add_argument(
+    "--keep-settings", help="Do not overwrite local /etc/zulip/settings.py", action="store_true"
+)
+parser.add_argument(
+    "--keep-zulipconf", help="Do not overwrite local /etc/zulip/zulip.conf", action="store_true"
+)
 
 
-def restore_backup(tarball_file: IO[bytes]) -> None:
+def restore_backup(tarball_file: IO[bytes], keep_settings: bool, keep_zulipconf: bool) -> None:
     assert_running_as_root()
     su_to_zulip(save_suid=True)
 
@@ -31,8 +37,20 @@ def restore_backup(tarball_file: IO[bytes]) -> None:
     # next).  Ignore errors if zulip-backup/settings is not present
     # (E.g. because this is a development backup).
     tarball_file.seek(0, 0)
+    excludes = []
+    if keep_settings:
+        excludes += ["--exclude=settings.py"]
+    if keep_zulipconf:
+        excludes += ["--exclude=zulip.conf"]
     run(
-        ["tar", "--directory=/etc/zulip", "--strip-components=2", "-xz", "zulip-backup/settings"],
+        [
+            "tar",
+            "--directory=/etc/zulip",
+            *excludes,
+            "--strip-components=2",
+            "-xz",
+            "zulip-backup/settings",
+        ],
         stdin=tarball_file,
     )
 
@@ -154,4 +172,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open(args.tarball, "rb") as tarball_file:
-        restore_backup(tarball_file)
+        restore_backup(tarball_file, args.keep_settings, args.keep_zulipconf)
