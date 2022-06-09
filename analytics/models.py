@@ -1,5 +1,4 @@
 import datetime
-from typing import Optional
 
 from django.db import models
 from django.db.models import Q, UniqueConstraint
@@ -9,13 +8,13 @@ from zerver.models import Realm, Stream, UserProfile
 
 
 class FillState(models.Model):
-    property: str = models.CharField(max_length=40, unique=True)
-    end_time: datetime.datetime = models.DateTimeField()
+    property = models.CharField(max_length=40, unique=True)
+    end_time = models.DateTimeField()
 
     # Valid states are {DONE, STARTED}
     DONE = 1
     STARTED = 2
-    state: int = models.PositiveSmallIntegerField()
+    state = models.PositiveSmallIntegerField()
 
     def __str__(self) -> str:
         return f"<FillState: {self.property} {self.end_time} {self.state}>"
@@ -34,10 +33,10 @@ class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    property: str = models.CharField(max_length=32)
-    subgroup: Optional[str] = models.CharField(max_length=16, null=True)
-    end_time: datetime.datetime = models.DateTimeField()
-    value: int = models.BigIntegerField()
+    property = models.CharField(max_length=32)
+    subgroup = models.CharField(max_length=16, null=True)
+    end_time = models.DateTimeField()
+    value = models.BigIntegerField()
 
     class Meta:
         abstract = True
