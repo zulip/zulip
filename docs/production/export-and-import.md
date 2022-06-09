@@ -106,6 +106,20 @@ Until you do, your Zulip server will think its user-facing hostname is
 still `zulip.example.com` and will return HTTP `400 BAD REQUEST`
 errors when trying to access it via `zuliptest.example.com`.
 
+#### Changing database settings
+
+If you wish to restore onto a very differently configured host (e.g. with
+`REMOTE_POSTGRES_HOST` set to a different value), you can edit
+`/etc/zulip/settings.py` to configure the host to suit the new host's needs,
+then restore with `--keep-settings`:
+
+```bash
+/home/zulip/deployments/current/scripts/setup/restore-backup --keep-settings /path/to/backup
+```
+
+You can also pass `--keep-zulipconf` if you wish to preserve the local
+`/etc/zulip/zulip.conf`.
+
 #### Inspecting a backup tarball
 
 If you're not sure what versions were in use when a given backup was
