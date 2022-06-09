@@ -9,7 +9,7 @@ from typing import IO
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BASE_DIR)
-from scripts.lib.zulip_tools import get_postgres_pwent, run, su_to_zulip
+from scripts.lib.zulip_tools import assert_running_as_root, get_postgres_pwent, run, su_to_zulip
 
 POSTGRES_PWENT = get_postgres_pwent()
 
@@ -18,7 +18,7 @@ parser.add_argument("tarball", help="Filename of input tarball")
 
 
 def restore_backup(tarball_file: IO[bytes]) -> None:
-
+    assert_running_as_root()
     su_to_zulip(save_suid=True)
 
     from scripts.lib.setup_path import setup_path
