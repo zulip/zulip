@@ -28,7 +28,6 @@ CUSTOM_EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f60d": {"canonical_name": "heart_eyes", "aliases": ["in_love"]},
     # blow_a_kiss from https://beebom.com/emoji-meanings/
     "1f618": {"canonical_name": "heart_kiss", "aliases": ["blow_a_kiss"]},
-    "1f617": {"canonical_name": "kiss", "aliases": []},
     "1f619": {"canonical_name": "kiss_smiling_eyes", "aliases": []},
     "1f61a": {"canonical_name": "kiss_with_blush", "aliases": []},
     "1f60b": {"canonical_name": "yum", "aliases": []},
@@ -411,10 +410,6 @@ CUSTOM_EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     # spiral_shell from Unicode/gemoji, the others seemed like reasonable
     # additions
     "1f41a": {"canonical_name": "shell", "aliases": ["seashell", "conch", "spiral_shell"]},
-    # Unicode/gemoji have lady_beetle; hopefully with ladybug we get both the
-    # people that prefer lady_beetle (with beetle) and ladybug. There is also
-    # ladybird, but seems a bit much for this to complete for bird.
-    "1f41e": {"canonical_name": "beetle", "aliases": ["ladybug"]},
     "1f41c": {"canonical_name": "ant", "aliases": []},
     "1f577": {"canonical_name": "spider", "aliases": []},
     "1f578": {"canonical_name": "web", "aliases": ["spider_web"]},
@@ -738,8 +733,6 @@ CUSTOM_EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f945": {"canonical_name": "gooooooooal", "aliases": ["goal"]},
     "1f3d2": {"canonical_name": "ice_hockey", "aliases": []},
     "1f3d1": {"canonical_name": "field_hockey", "aliases": []},
-    # would say bat, but taken by Nature/30
-    "1f3cf": {"canonical_name": "cricket", "aliases": ["cricket_bat"]},
     # hole_in_one seems like a more useful name to have. Sent golf to
     # Activity/39
     "26f3": {"canonical_name": "hole_in_one", "aliases": []},
@@ -1210,8 +1203,6 @@ CUSTOM_EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f4ee": {"canonical_name": "mail_dropoff", "aliases": []},
     "1f4ef": {"canonical_name": "horn", "aliases": []},
     "1f4dc": {"canonical_name": "scroll", "aliases": []},
-    # receipt seems more useful?
-    "1f4c3": {"canonical_name": "receipt", "aliases": []},
     "1f4c4": {"canonical_name": "document", "aliases": ["paper", "file", "page"]},
     "1f4d1": {"canonical_name": "place_holder", "aliases": []},
     "1f4ca": {"canonical_name": "bar_chart", "aliases": []},
