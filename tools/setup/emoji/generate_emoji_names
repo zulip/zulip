@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import json
 import os
+import re
 import sys
+from collections import defaultdict
 
 import orjson
 
@@ -10,11 +11,26 @@ from emoji_setup_utils import get_emoji_code
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 sys.path.append(ZULIP_PATH)
+CLDR_DATA_FILE = os.path.join(
+    ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
+)
+CLDR_DERIVED_DATA_FILE = os.path.join(
+    ZULIP_PATH,
+    "node_modules",
+    "cldr-annotations-derived-modern",
+    "annotationsDerived",
+    "en",
+    "annotations.json",
+)
 EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
 OUT_EMOJI_FILE = os.path.join(ZULIP_PATH, "tools", "setup", "emoji", "emoji_names.py")
 
 with open(EMOJI_DATA_FILE, "rb") as fp:
     EMOJI_DATA = orjson.loads(fp.read())
+with open(CLDR_DATA_FILE, "rb") as fp:
+    CLDR_DATA = orjson.loads(fp.read())["annotations"]["annotations"]
+with open(CLDR_DERIVED_DATA_FILE, "rb") as fp:
+    CLDR_DATA.update(orjson.loads(fp.read())["annotationsDerived"]["annotations"])
 
 # We don't include most clock emojis. See `custom_emoji_names` for more context.
 SKIPPED_CLOCK_EMOJI_CODES = [
@@ -53,17 +69,62 @@ SKIN_TONE_EMOJI_CODES = [
 ]
 
 
+def cleanup_name(name: str) -> str:
+    replacements = {
+        " ": "_",
+        "-": "_",
+        "–": "_",
+        "“": "",
+        "”": "",
+        ":": "",
+        ".": "",
+        "&": "and",
+        "‘": "'",
+        "’": "'",
+    }
+    for before, after in replacements.items():
+        name = name.replace(before, after)
+    name = re.sub("_{2,}", "_", name)
+    return name.lower()
+
+
+def convert_non_ascii_chars(name: str) -> str:
+    replacements = {
+        "è": "e",
+        "ǐ": "i",
+        "ó": "o",
+        "ā": "a",
+        "ō": "o",
+        "ñ": "n",
+        "ô": "o",
+        "ç": "c",
+        "é": "e",
+        "ã": "a",
+        "í": "i",
+        "å": "a",
+    }
+    for before, after in replacements.items():
+        name = name.replace(before, after)
+    assert (
+        name.isascii()
+    ), f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    return name
+
+
 def main() -> None:
     all_emojis = {}
     all_canonical_names = set()
 
+    alias_to_emoji_code = defaultdict(list)
+
+    # STEP 1: Generate first draft of all_emojis.
     for emoji_dict in EMOJI_DATA:
         emoji_code = get_emoji_code(emoji_dict)
         if emoji_code in SKIPPED_CLOCK_EMOJI_CODES or emoji_code in SKIN_TONE_EMOJI_CODES:
             continue
 
         if emoji_code in CUSTOM_EMOJI_NAME_MAPS:
-            canonical_name = CUSTOM_EMOJI_NAME_MAPS[emoji_code]["canonical_name"]
+            canonical_name = cleanup_name(CUSTOM_EMOJI_NAME_MAPS[emoji_code]["canonical_name"])
             if canonical_name in all_canonical_names:
                 raise Exception(
                     f"{canonical_name} was already added with a different codepoint. "
@@ -72,9 +133,70 @@ def main() -> None:
             all_canonical_names.add(canonical_name)
             all_emojis[emoji_code] = CUSTOM_EMOJI_NAME_MAPS[emoji_code]
         else:
-            continue  # this commit doesn't add CLDR data yet.
             # create the unicode character(s) for the emoji, since this is the key into the CLDR data
+            emoji = "".join(
+                chr(int(h, 16))
+                for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
+            )
+            if emoji not in CLDR_DATA:
+                print(
+                    f"{emoji} not found in custom emoji name maps, but also not found in CLDR data. Skipping."
+                )
+                continue
+            # CLDR_DATA[emoji] is of the form {'default': [...], 'tts': [...]}
+            # * "tts" is what's used for text-to-speech and always has one item, so we use that
+            #    as the canonical name.
+            # * "default" has several items in it that we use as aliases.
+            # See also: https://www.unicode.org/reports/tr35/tr35-general.html#14-annotations-and-labels
+            assert len(CLDR_DATA[emoji]["tts"]) == 1
+            canonical_name = cleanup_name(CLDR_DATA[emoji]["tts"][0].strip())
+            if canonical_name in all_canonical_names:
+                raise Exception(
+                    f"{canonical_name} was already added with a different codepoint. "
+                    f"Rename it in `custom_emoji_names` or add an entry for {emoji_code}."
+                )
+            aliases = [cleanup_name(alias.strip()) for alias in CLDR_DATA[emoji]["default"]]
+            all_emojis[emoji_code] = {"canonical_name": canonical_name, "aliases": aliases}
+            all_canonical_names.add(canonical_name)
 
+    # STEP 2: We don't support having aliases that collide with canonical names for emoji, so remove them.
+    for (emoji_code, emoji_names) in all_emojis.items():
+        # Copy the list to not iterate while elements are being deleted.
+        aliases = emoji_names["aliases"][:]
+        for alias in aliases:
+            if alias in all_canonical_names:
+                emoji_names["aliases"].remove(alias)
+            else:
+                alias_to_emoji_code[alias].append(emoji_code)  # This is used in STEP 3.
+
+    # STEP 3: We don't support multiple emoji sharing the same alias, but the CLDR data
+    # doesn't have that same restriction, so we have to fix this up to have unique aliases.
+    # If the alias was specifically specified in custom_emoji_names, then we can keep just
+    # that one, but otherwise there's no particular emoji that is an obvious candidate
+    # for the alias so just remove the alias for all relevant emoji.
+    for alias in alias_to_emoji_code.keys():
+        if len(alias_to_emoji_code[alias]) > 1:
+            for emoji_code in alias_to_emoji_code[alias]:
+                if emoji_code not in CUSTOM_EMOJI_NAME_MAPS:
+                    all_emojis[emoji_code]["aliases"].remove(alias)
+
+    # STEP 4: We keep non-ascii (non-"English") characters in some emoji names if that's the correct
+    # way to spell that word, but always add an alias for an ascii-only version of the word.
+    for (emoji_code, emoji_names) in all_emojis.items():
+        for name in [emoji_names["canonical_name"]] + emoji_names["aliases"]:
+            # These are known names where we don't have an ascii-only version and there are ascii aliases
+            # that a user can still enter instead to get the same emoji.
+            if name in ["ココ", "サ", "指", "空"]:
+                assert any(alias.isascii() for alias in aliases)
+                continue
+            if not name.isascii():
+                ascii_alias = convert_non_ascii_chars(name)
+                # Now no other emoji can use this alias.
+                for code in alias_to_emoji_code[ascii_alias]:
+                    all_emojis[code]["aliases"].remove(ascii_alias)
+                all_emojis[emoji_code]["aliases"].append(ascii_alias)
+
+    # STEP 5: Write final dictionary to `emoji_names.py`.
     with open(OUT_EMOJI_FILE, "w") as f:
         f.write(
             "from typing import Any, Dict\n\n"
@@ -82,7 +204,7 @@ def main() -> None:
             "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {\n"
         )
         for (key, emoji_names) in all_emojis.items():
-            f.write(f'    "{key}": {json.dumps(emoji_names)},\n')
+            f.write(f"    {key!r}: {emoji_names!r},\n")
         f.write("}\n")
 
     print(

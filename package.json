@@ -98,6 +98,8 @@
     "@typescript-eslint/parser": "^5.0.0",
     "babel-plugin-rewire-ts": "^1.4.0",
     "callsites": "^3.1.0",
+    "cldr-annotations-derived-modern": "^41.0.0",
+    "cldr-annotations-modern": "^41.0.0",
     "diff": "^5.0.0",
     "difflib": "^0.2.4",
     "enhanced-resolve": "^5.8.2",

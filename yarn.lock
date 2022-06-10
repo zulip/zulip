@@ -3073,6 +3073,16 @@ clamp@^1.0.1:
   resolved "https://registry.yarnpkg.com/clamp/-/clamp-1.0.1.tgz#66a0e64011816e37196828fdc8c8c147312c8634"
   integrity sha512-kgMuFyE78OC6Dyu3Dy7vcx4uy97EIbVxJB/B0eJ3bUNAkwdNcxYzgKltnyADiYwsR7SEqkkUPsEUT//OVS6XMA==
 
+cldr-annotations-derived-modern@^41.0.0:
+  version "41.0.0"
+  resolved "https://registry.yarnpkg.com/cldr-annotations-derived-modern/-/cldr-annotations-derived-modern-41.0.0.tgz#da55423006c5b9dd742d9395a2318b05d6a6efa2"
+  integrity sha512-V9N8CW+DDem3NZlpGKPdvTkoqZV/rNbZq27UZO1d0JXhM+pZo6e8n3+GSqSDgIAXphxn1v9Yd9U+X9NzZ+PCcA==
+
+cldr-annotations-modern@^41.0.0:
+  version "41.0.0"
+  resolved "https://registry.yarnpkg.com/cldr-annotations-modern/-/cldr-annotations-modern-41.0.0.tgz#5eeaef3b250e30e0dd7e8babc28a3a70c71a7192"
+  integrity sha512-ymcfrliWq6IFB9vnDuT9awT7z9bTkh03g39eeU5RIYK0hFuZAPsYdpgs461GEuUKCL7SmDXXyZJwmf9iGYsCdg==
+
 clean-css@^5.1.0, clean-css@^5.2.2:
   version "5.3.1"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-5.3.1.tgz#d0610b0b90d125196a2894d35366f734e5d7aa32"

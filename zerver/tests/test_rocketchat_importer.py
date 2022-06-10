@@ -758,14 +758,15 @@ class RocketChatImporter(ZulipTestCase):
             zerver_realmemoji=zerver_realmemoji,
         )
 
-        # :grin: and :star_struck: are not present in Zulip's default
-        # emoji set, or in Reaction.UNICODE_EMOJI reaction type.
-        self.assert_length(total_reactions, 7)
+        # :grin: is not present in Zulip's default emoji set,
+        # or in Reaction.UNICODE_EMOJI reaction type.
+        self.assert_length(total_reactions, 8)
 
         grinning_emoji_code = name_to_codepoint["grinning"]
         innocent_emoji_code = name_to_codepoint["innocent"]
         heart_emoji_code = name_to_codepoint["heart"]
         rocket_emoji_code = name_to_codepoint["rocket"]
+        star_struck_emoji_code = name_to_codepoint["star_struck"]
 
         realmemoji_code = {}
         for emoji in zerver_realmemoji:
@@ -777,7 +778,16 @@ class RocketChatImporter(ZulipTestCase):
         )
         self.assertEqual(
             self.get_set(total_reactions, "emoji_name"),
-            {"grinning", "innocent", "heart", "rocket", "check", "zulip", "harry-ron"},
+            {
+                "grinning",
+                "innocent",
+                "star_struck",
+                "heart",
+                "rocket",
+                "check",
+                "zulip",
+                "harry-ron",
+            },
         )
         self.assertEqual(
             self.get_set(total_reactions, "emoji_code"),
@@ -786,13 +796,14 @@ class RocketChatImporter(ZulipTestCase):
                 innocent_emoji_code,
                 heart_emoji_code,
                 rocket_emoji_code,
+                star_struck_emoji_code,
                 realmemoji_code["check"],
                 realmemoji_code["zulip"],
                 realmemoji_code["harry-ron"],
             },
         )
         self.assertEqual(self.get_set(total_reactions, "user_profile"), {2, 3, 4})
-        self.assert_length(self.get_set(total_reactions, "id"), 7)
+        self.assert_length(self.get_set(total_reactions, "id"), 8)
         self.assert_length(self.get_set(total_reactions, "message"), 1)
 
     def test_process_message_attachment(self) -> None:
