@@ -10,16 +10,8 @@
     margin: 0;
 }
 
-.subscription_header.collapsed {
-    background-color: inherit;
-}
-
 .subscriptions div #response {
     overflow-wrap: break-word;
-}
-
-.subscription_header {
-    min-height: 47px;
 }
 
 .subscription_settings .btn {
