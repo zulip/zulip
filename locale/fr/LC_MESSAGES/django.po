@@ -568,7 +568,7 @@ msgstr "Chargement en cours..."
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a "
 "id=\"reload-lnk\">reload</a> the page."
-msgstr "Si ce message en disparaît pas, patentier quelques secondes et <a id=\"reload-lnk\">recharger</a> la page."
+msgstr "Si ce message ne disparaît pas, patientez quelques secondes et <a id=\"reload-lnk\">rechargez</a> la page."
 
 #: templates/zerver/app/index.html:98
 msgid "Unable to connect to Zulip."
