@@ -1,1 +1,1 @@
-1. Press and hold the topic bar to access the long-press menu.
+1. Press and hold the topic title to access the long-press menu.
