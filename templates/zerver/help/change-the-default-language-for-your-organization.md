@@ -1,4 +1,4 @@
-# Configure organization notifications language
+# Configure organization language for automated messages and emails
 
 {!admin-only.md!}
 
@@ -9,7 +9,7 @@ support for new languages on **[Transifex](https://www.transifex.com/zulip/zulip
 Each user can use Zulip with [their preferred
 language](/help/change-your-language). In addition, if your
 organization has a primary language other than American English, you
-can set the notifications language for the organization. This setting:
+can set the language for automated messages and emails for the organization. This setting:
 
 * Determines the language used for automated messages sent to streams
   by [Notification
@@ -27,7 +27,7 @@ can set the notifications language for the organization. This setting:
 
 {settings_tab|organization-settings}
 
-2. Under **Notifications**, change the **Notifications language**.
+2. Under **Notifications**, change the **Language for automated messages and emails**.
 
 {!save-changes.md!}
 
