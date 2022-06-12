@@ -476,11 +476,13 @@ test("uppy_events", ({override, override_rewire}) => {
                 files = files.filter((file) => file.id !== file_id);
             },
             getState: () => ({
-                info: {
-                    type: state.type,
-                    details: state.details,
-                    message: state.message,
-                },
+                info: [
+                    {
+                        type: state.type,
+                        details: state.details,
+                        message: state.message,
+                    },
+                ],
             }),
         };
     };

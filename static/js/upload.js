@@ -175,7 +175,13 @@ export function setup_upload(config) {
         },
         locale: {
             strings: {
-                exceedsSize: $t({defaultMessage: "This file exceeds maximum allowed size of"}),
+                exceedsSize: $t(
+                    {
+                        defaultMessage:
+                            "%'{file}' exceeds the maximum file size for attachments ({variable} MB).",
+                    },
+                    {variable: `${page_params.max_file_upload_size_mib}`},
+                ),
                 failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },
         },
@@ -279,7 +285,14 @@ export function setup_upload(config) {
     });
 
     uppy.on("info-visible", () => {
-        const info = uppy.getState().info;
+        // Uppy's `info-visible` event is issued after prepending the
+        // notice details into the list of event events accessed via
+        // uppy.getState().info. Extract the notice details so that we
+        // can potentially act on the error.
+        //
+        // TODO: Ideally, we'd be using the `.error()` hook or
+        // something, not parsing error message strings.
+        const info = uppy.getState().info[0];
         if (info.type === "error" && info.message === "No Internet connection") {
             // server_events already handles the case of no internet.
             return;
