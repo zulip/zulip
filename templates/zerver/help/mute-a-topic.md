@@ -43,11 +43,11 @@ They also do not contribute to stream unread counts.
 
 {tab|mobile}
 
-1. Tap the streams (<i class="fa fa-hashtag"></i>) tab.
+1. Tap the **Streams** (<i class="fa fa-hashtag"></i>) tab.
 
 1. Select a stream containing topics you want to unmute.
 
-1. Tap the topics list (<i class="fa fa-list-ul"></i>) icon.
+1. Tap the **Topics list** (<i class="fa fa-list-ul"></i>) icon.
 
 1. Press and hold a topic name to access the long-press menu.
 
