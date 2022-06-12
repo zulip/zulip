@@ -39,7 +39,7 @@ They also do not contribute to stream unread counts.
 
 {settings_tab|muted-topics}
 
-1. Review and unmute any muted topics.
+1. Click **Unmute** next to each topic you want to unmute.
 
 {tab|mobile}
 
