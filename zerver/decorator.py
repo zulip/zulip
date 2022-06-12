@@ -187,13 +187,19 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
 
 def process_client(
     request: HttpRequest,
-    user: Union[UserProfile, AnonymousUser],
+    user: Union[UserProfile, AnonymousUser, None] = None,
     *,
     is_browser_view: bool = False,
     client_name: Optional[str] = None,
-    skip_update_user_activity: bool = False,
     query: Optional[str] = None,
 ) -> None:
+    """The optional user parameter requests that a UserActivity row be
+    created/updated to record this request.
+
+    In particular, unauthenticate requests and those authenticated to
+    a non-user object like RemoteZulipServer should not pass the
+    `user` parameter.
+    """
     request_notes = RequestNotes.get_notes(request)
     if client_name is None:
         client_name = request_notes.client_name
@@ -209,7 +215,7 @@ def process_client(
         client_name = "website"
 
     request_notes.client = get_client(client_name)
-    if not skip_update_user_activity and user.is_authenticated:
+    if user is not None and user.is_authenticated:
         update_user_activity(request, user, query)
 
 
@@ -260,7 +266,7 @@ def validate_api_key(
         request.user = remote_server
         remote_server.rate_limits = ""
         # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
-        process_client(request, remote_server, skip_update_user_activity=True)
+        process_client(request)
         return remote_server
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
@@ -782,9 +788,7 @@ def authenticate_log_and_execute_json(
 
         process_client(
             request,
-            request.user,
             is_browser_view=True,
-            skip_update_user_activity=True,
             query=view_func.__name__,
         )
         return limited_view_func(request, request.user, *args, **kwargs)
