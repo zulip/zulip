@@ -263,8 +263,7 @@ def validate_api_key(
 
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
-        request.user = remote_server
-        # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
+        RequestNotes.get_notes(request).remote_server = remote_server
         process_client(request)
         return remote_server
 
@@ -996,12 +995,13 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
                 return func(request, *args, **kwargs)
 
             user = request.user
+            remote_server = RequestNotes.get_notes(request).remote_server
 
-            if isinstance(user, AnonymousUser):
+            if settings.ZILENCER_ENABLED and remote_server is not None:
+                rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
+            elif not user.is_authenticated:
                 rate_limit_request_by_ip(request, domain="api_by_ip")
                 return func(request, *args, **kwargs)
-            elif settings.ZILENCER_ENABLED and isinstance(user, RemoteZulipServer):
-                rate_limit_remote_server(request, user, domain="api_by_remote_server")
             else:
                 assert isinstance(user, UserProfile)
                 rate_limit_user(request, user, domain="api_by_user")

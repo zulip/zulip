@@ -726,7 +726,7 @@ class RateLimitTestCase(ZulipTestCase):
         )
         META = {"REMOTE_ADDR": "3.3.3.3"}
 
-        req = HostRequestMock(client_name="external", user_profile=server, meta_data=META)
+        req = HostRequestMock(client_name="external", remote_server=server, meta_data=META)
 
         f = self.get_ratelimited_view()
 

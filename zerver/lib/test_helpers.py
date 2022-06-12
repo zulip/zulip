@@ -299,7 +299,8 @@ class HostRequestMock(HttpRequest):
     def __init__(
         self,
         post_data: Dict[str, Any] = {},
-        user_profile: Union[UserProfile, RemoteZulipServer, None] = None,
+        user_profile: Union[UserProfile, None] = None,
+        remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
@@ -335,6 +336,7 @@ class HostRequestMock(HttpRequest):
                 log_data={},
                 tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
+                remote_server=remote_server,
             ),
         )
 

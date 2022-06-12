@@ -21,6 +21,7 @@ from typing import (
 )
 
 import orjson
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -31,6 +32,9 @@ from zerver.lib.notes import BaseNotes
 from zerver.lib.types import Validator, ViewFuncT
 from zerver.lib.validator import check_anything
 from zerver.models import Client, Realm
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
 
 
 @dataclass
@@ -66,6 +70,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
     ignored_parameters: Set[str] = field(default_factory=set)
+    remote_server: Optional["RemoteZulipServer"] = None
 
     @classmethod
     def init_notes(cls) -> "RequestNotes":

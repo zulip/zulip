@@ -407,9 +407,9 @@ class LogRequests(MiddlewareMixin):
         request_notes = RequestNotes.get_notes(request)
         requestor_for_logs = request_notes.requestor_for_logs
         if requestor_for_logs is None:
-            # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
-            # if it is present.
-            if hasattr(request.user, "format_requestor_for_logs"):
+            if request_notes.remote_server is not None:
+                requestor_for_logs = request_notes.remote_server.format_requestor_for_logs()
+            elif request.user.is_authenticated:
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")

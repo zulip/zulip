@@ -251,7 +251,7 @@ class LogRequestsTest(ZulipTestCase):
 
     def test_requestor_for_logs_as_remote_server(self) -> None:
         remote_server = RemoteZulipServer()
-        request = HostRequestMock(user_profile=remote_server, meta_data=self.meta_data)
+        request = HostRequestMock(remote_server=remote_server, meta_data=self.meta_data)
         RequestNotes.get_notes(request).log_data = None
 
         with self.assertLogs("zulip.requests", level="INFO") as m:
