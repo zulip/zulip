@@ -34,7 +34,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,non_aws_host,zmirror,zmirror_main,flaky_servers
+       hostgroups       all,non_aws_host,zmirror,flaky_servers
        }
 <% end -%>
 
@@ -44,7 +44,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,non_aws_host,zmirror,zmirrorp,flaky_servers
+       hostgroups       all,non_aws_host,zmirrorp,flaky_servers
        }
 <% end -%>
 
