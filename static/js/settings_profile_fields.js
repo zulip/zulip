@@ -147,8 +147,8 @@ function create_choice_row(container) {
 }
 
 function clear_form_data() {
-    $("#profile_field_name").val("").closest(".control-group").show();
-    $("#profile_field_hint").val("").closest(".control-group").show();
+    $("#profile_field_name").val("").closest(".input-group").show();
+    $("#profile_field_hint").val("").closest(".input-group").show();
     // Set default type "Short text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from select field form
@@ -173,16 +173,16 @@ function set_up_create_field_form() {
         $field_elem.show();
         if ($("#profile_field_external_accounts_type").val() === "custom") {
             $field_url_pattern_elem.show();
-            $("#profile_field_name").val("").closest(".control-group").show();
-            $("#profile_field_hint").val("").closest(".control-group").show();
+            $("#profile_field_name").val("").closest(".input-group").show();
+            $("#profile_field_hint").val("").closest(".input-group").show();
         } else {
             $field_url_pattern_elem.hide();
-            $("#profile_field_name").closest(".control-group").hide();
-            $("#profile_field_hint").closest(".control-group").hide();
+            $("#profile_field_name").closest(".input-group").hide();
+            $("#profile_field_hint").closest(".input-group").hide();
         }
     } else {
-        $("#profile_field_name").closest(".control-group").show();
-        $("#profile_field_hint").closest(".control-group").show();
+        $("#profile_field_name").closest(".input-group").show();
+        $("#profile_field_hint").closest(".input-group").show();
         $field_url_pattern_elem.hide();
         $field_elem.hide();
     }

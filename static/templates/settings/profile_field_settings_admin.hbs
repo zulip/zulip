@@ -21,7 +21,7 @@
             <div class="new-profile-field-form wrapper">
                 <div class="settings-section-title new-profile-field-section-title inline-block">{{t "Add a new profile field" }}</div>
                 <div class="alert-notification" id="admin-add-profile-field-status"></div>
-                <div class="control-group">
+                <div class="input-group">
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
                     <select id="profile_field_type" name="field_type">
                         {{#each custom_profile_field_types}}
@@ -29,7 +29,7 @@
                         {{/each}}
                     </select>
                 </div>
-                <div class="control-group" id="profile_field_external_accounts">
+                <div class="input-group" id="profile_field_external_accounts">
                     <label for="profile_field_external_accounts_type" class="control-label">{{t "External account type" }}</label>
                     <select id="profile_field_external_accounts_type" name="external_acc_field_type">
                         {{#each realm_default_external_accounts}}
@@ -38,22 +38,22 @@
                         <option value="custom">{{t 'Custom' }}</option>
                     </select>
                 </div>
-                <div class="control-group">
+                <div class="input-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
                     <input type="text" id="profile_field_name" name="name" autocomplete="off" maxlength="40" />
                 </div>
-                <div class="control-group">
+                <div class="input-group">
                     <label for="profile_field_hint" class="control-label">{{t "Hint (up to 80 characters)" }}</label>
                     <input type="text" id="profile_field_hint" name="hint" autocomplete="off" maxlength="80" />
                     <div class="alert" id="admin-profile-field-hint-status"></div>
                 </div>
-                <div class="control-group" id="profile_field_choices_row">
+                <div class="input-group" id="profile_field_choices_row">
                     <label for="profile_field_choices" class="control-label">{{t "Field choices" }}</label>
                     <table class="profile_field_choices_table">
                         <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
                     </table>
                 </div>
-                <div class="control-group" id="custom_external_account_url_pattern">
+                <div class="input-group" id="custom_external_account_url_pattern">
                     <label for="custom_field_url_pattern" class="control-label">{{t "URL pattern" }}</label>
                     <input type="url" id="custom_field_url_pattern" name="url_pattern" autocomplete="off" maxlength="1024" placeholder="https://example.com/path/%(username)s"/>
                 </div>
