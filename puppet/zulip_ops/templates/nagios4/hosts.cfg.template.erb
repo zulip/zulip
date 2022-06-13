@@ -4,7 +4,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>
-       hostgroups       all,non_aws_host,web,frontends,staging_frontends,not_pageable_servers,postgresql,postgresql_primary
+       hostgroups       all,non_aws_host,web,frontends,not_pageable_servers,postgresql,postgresql_primary
        }
 <% end -%>
 
