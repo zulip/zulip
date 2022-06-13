@@ -2,11 +2,12 @@ import os
 import re
 import tempfile
 from argparse import ArgumentParser, RawTextHelpFormatter
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.core.management.base import CommandParser
 from django.db import connection
+from django.db.backends.postgresql.base import DatabaseWrapper
 from django.utils.timezone import now as timezone_now
 
 from scripts.lib.zulip_tools import TIMESTAMP_FORMAT, parse_os_release, run
@@ -51,6 +52,12 @@ class Command(ZulipBaseCommand):
             members.append("zulip-backup/os-version")
 
             with open(os.path.join(tmp, "zulip-backup", "postgres-version"), "w") as f:
+                # We are accessing a backend specific attribute via a proxy object, whose type
+                # cannot be narrowed with a regular isinstance assertion.
+                # This can be potentially fixed more cleanly with the recently added
+                # connection.get_database_version().
+                if TYPE_CHECKING:
+                    assert isinstance(connection, DatabaseWrapper)
                 print(connection.pg_version, file=f)
             members.append("zulip-backup/postgres-version")
 
