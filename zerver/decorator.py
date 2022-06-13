@@ -369,7 +369,9 @@ def webhook_view(
                     log_exception_to_webhook_logger(err)
                 raise err
 
-        _wrapped_func_arguments._all_event_types = all_event_types
+        # Store the event types registered for this webhook as an attribute, which can be access
+        # later conveniently in zerver.lib.test_classes.WebhookTestCase.
+        setattr(_wrapped_func_arguments, "_all_event_types", all_event_types)
         return _wrapped_func_arguments
 
     return _wrapped_view_func
