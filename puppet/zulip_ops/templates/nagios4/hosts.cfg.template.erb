@@ -4,7 +4,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,web,frontends,prod_frontends,pageable_servers
+       hostgroups       all,aws_host,web,frontends,prod_frontends,pageable_servers
        }
 <% end -%>
 
@@ -14,7 +14,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>
-       hostgroups       all,web,frontends,staging_frontends,not_pageable_servers,postgresql,postgresql_primary
+       hostgroups       all,non_aws_host,web,frontends,staging_frontends,not_pageable_servers,postgresql,postgresql_primary
        }
 <% end -%>
 
@@ -24,7 +24,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,web,frontends,staging_frontends,not_pageable_servers
+       hostgroups       all,aws_host,web,frontends,staging_frontends,not_pageable_servers
        }
 <% end -%>
 
@@ -34,7 +34,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,zmirror,zmirror_main
+       hostgroups       all,non_aws_host,zmirror,zmirror_main
        }
 <% end -%>
 
@@ -44,7 +44,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,zmirror,zmirrorp
+       hostgroups       all,non_aws_host,zmirror,zmirrorp
        }
 <% end -%>
 
@@ -54,7 +54,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgresql,postgresql_primary,pageable_servers
+       hostgroups       all,aws_host,postgresql,postgresql_primary,pageable_servers
        }
 <% end -%>
 
@@ -64,7 +64,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgresql,pageable_servers
+       hostgroups       all,aws_host,postgresql,pageable_servers
        }
 <% end -%>
 
@@ -74,7 +74,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,not_pageable_servers
+       hostgroups       all,aws_host,not_pageable_servers
        }
 <% end -%>
 
@@ -84,7 +84,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,not_pageable_servers, redis
+       hostgroups       all,aws_host,not_pageable_servers, redis
        }
 <% end -%>
 
@@ -94,6 +94,6 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,pageable_servers,smokescreen
+       hostgroups       all,aws_host,pageable_servers,smokescreen
        }
 <% end -%>
