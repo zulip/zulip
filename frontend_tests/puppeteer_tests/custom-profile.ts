@@ -9,18 +9,24 @@ const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(2)";
 const profile_field_form = "#admin_profile_fields_table tr:nth-last-child(1)";
 
 async function test_add_new_profile_field(page: Page): Promise<void> {
+    await page.click("#add-custom-profile-field-btn");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new custom profile field",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+    );
     await page.waitForSelector(".admin-profile-field-form", {visible: true});
     await common.fill_form(page, "form.admin-profile-field-form", {
         name: "Teams",
         field_type: "1",
     });
-    await page.click("form.admin-profile-field-form button[type='submit']");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForSelector("#admin-add-profile-field-status img", {visible: true});
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "div#admin-add-profile-field-status"),
-        "Saved",
-    );
     await page.waitForXPath(
         '//*[@id="admin_profile_fields_table"]//tr[last()-1]/td[normalize-space()="Teams"]',
     );
