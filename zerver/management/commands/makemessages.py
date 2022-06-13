@@ -227,7 +227,11 @@ class Command(makemessages.Command):
         exclude = self.frontend_exclude
         process_all = self.frontend_all
 
-        paths = glob.glob(f"{self.default_locale_path}/*")
+        # After calling super().handle(), default_locale_path gets set on self
+        # so that we can reuse it here. We have to use getattr it to access it without
+        # getting an attribute error from mypy.
+        default_locale_path = getattr(self, "default_locale_path")
+        paths = glob.glob(f"{default_locale_path}/*")
         all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 
         # Account for excluded locales
