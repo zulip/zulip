@@ -612,7 +612,7 @@ def is_free_trial_offer_enabled() -> bool:
     return settings.FREE_TRIAL_DAYS not in (None, 0)
 
 
-def ensure_realm_does_not_have_active_plan(realm: Customer) -> None:
+def ensure_realm_does_not_have_active_plan(realm: Realm) -> None:
     if get_current_plan_by_realm(realm) is not None:
         # Unlikely race condition from two people upgrading (clicking "Make payment")
         # at exactly the same time. Doesn't fully resolve the race condition, but having

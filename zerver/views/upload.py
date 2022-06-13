@@ -74,7 +74,7 @@ def serve_local(
 
 def serve_file_download_backend(
     request: HttpRequest, user_profile: UserProfile, realm_id_str: str, filename: str
-) -> HttpRequest:
+) -> HttpResponse:
     return serve_file(request, user_profile, realm_id_str, filename, url_only=False, download=True)
 
 
