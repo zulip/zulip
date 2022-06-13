@@ -296,7 +296,7 @@ class ZulipPasswordResetForm(PasswordResetForm):
         use_https: bool = False,
         token_generator: PasswordResetTokenGenerator = default_token_generator,
         from_email: Optional[str] = None,
-        request: HttpRequest = None,
+        request: Optional[HttpRequest] = None,
         html_email_template_name: Optional[str] = None,
         extra_email_context: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -312,6 +312,9 @@ class ZulipPasswordResetForm(PasswordResetForm):
         are an artifact of using Django's password reset framework).
         """
         email = self.cleaned_data["email"]
+        # The form is only used in zerver.views.auth.password_rest, we know that
+        # the request must not be None
+        assert request is not None
 
         realm = get_realm(get_subdomain(request))
 

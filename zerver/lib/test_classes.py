@@ -129,12 +129,12 @@ class UploadSerializeMixin(SerializeMixin):
     lockfile = "var/upload_lock"
 
     @classmethod
-    def setUpClass(cls: Any, *args: Any, **kwargs: Any) -> None:
+    def setUpClass(cls: Any) -> None:
         if not os.path.exists(cls.lockfile):
             with open(cls.lockfile, "w"):  # nocoverage - rare locking case
                 pass
 
-        super().setUpClass(*args, **kwargs)
+        super().setUpClass()
 
 
 # We could be more specific about which arguments are bool (Django's
@@ -1659,9 +1659,9 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         content_type: Optional[str] = "application/json",
         expect_noop: bool = False,
         **kwargs: ClientArg,
-    ) -> "TestHttpResponse":
+    ) -> None:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_user(user)
-        return self.check_webhook(
+        self.check_webhook(
             fixture_name, expected_topic, expected_message, content_type, expect_noop, **kwargs
         )
 
