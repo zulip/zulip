@@ -35,7 +35,7 @@ consumers: Dict[str, int] = defaultdict(int)
 
 queues = {
     *normal_queues,
-    # These queues may not be present if settings.TORNADO_PROCESSES > 1
+    # All tornado queues get grouped into this, even if sharded
     "notify_tornado",
 }
 
