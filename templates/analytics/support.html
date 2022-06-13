@@ -37,10 +37,10 @@
         <div class="support-query-result">
             <span class="label">user</span>
             <h3>{{ user.full_name }}</h3>
-            <b>Email</b>: {{ user.delivery_email }}<br />
-            <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
-            <b>Is active</b>: {{ user.is_active }}<br />
-            <b>Role</b>: {{ user.get_role_name() }}<br />
+            <strong>Email</strong>: {{ user.delivery_email }}<br />
+            <strong>Date joined</strong>: {{ user.date_joined|timesince }} ago<br />
+            <strong>Is active</strong>: {{ user.is_active }}<br />
+            <strong>Role</strong>: {{ user.get_role_name() }}<br />
             <hr />
             <div>
                 {% include "analytics/realm_details.html" %}
@@ -86,15 +86,15 @@
             <br />
             <br />
             {% if email %}
-            <b>Email</b>: {{ email }}<br />
+            <strong>Email</strong>: {{ email }}<br />
             {% endif %}
-            <b>Link</b>: {{ confirmation.url }}
+            <strong>Link</strong>: {{ confirmation.url }}
             <a title="Copy link" class="copy-button" data-copytext="{{ confirmation.url }}">
-                <i class="fa fa-copy"></i>
+                <em class="fa fa-copy"></em>
             </a><br />
-            <b>Expires in</b>: {{ confirmation.expires_in }}<br />
+            <strong>Expires in</strong>: {{ confirmation.expires_in }}<br />
             {% if confirmation.link_status %}
-            <b>Status</b>: {{ confirmation.link_status  }}
+            <strong>Status</strong>: {{ confirmation.link_status  }}
             {% endif %}
             <br />
             {% if show_realm_details %}
@@ -103,7 +103,7 @@
                 {% include "analytics/realm_details.html" %}
             </div>
             {% elif realm %}
-            <b>Realm</b>: {{ realm.string_id }}
+            <strong>Realm</strong>: {{ realm.string_id }}
             <br />
             {% endif %}
             <br />
