@@ -68,16 +68,6 @@ define host{
        }
 <% end -%>
 
-<% @hosts_stats.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,aws_host,not_pageable_servers
-       }
-<% end -%>
-
 <% @hosts_redis.each do |host| -%>
 define host{
        use              generic-host
