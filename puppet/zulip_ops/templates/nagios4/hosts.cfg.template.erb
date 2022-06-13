@@ -1,13 +1,3 @@
-<% @hosts_app_prod.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,aws_host,web,prod_frontends,pageable_servers
-       }
-<% end -%>
-
 <% @hosts_fullstack.each do |host| -%>
 define host{
        use              generic-host
@@ -15,6 +5,16 @@ define host{
        alias            <%= host %>
        address          <%= host %>
        hostgroups       all,non_aws_host,web,frontends,staging_frontends,not_pageable_servers,postgresql,postgresql_primary
+       }
+<% end -%>
+
+<% @hosts_app_prod.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @default_host_domain %>
+       hostgroups       all,aws_host,web,prod_frontends,pageable_servers
        }
 <% end -%>
 
