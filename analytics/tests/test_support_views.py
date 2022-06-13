@@ -36,9 +36,9 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     '<span class="label">user</span>\n',
                     f"<h3>{full_name}</h3>",
-                    f"<b>Email</b>: {email}",
-                    "<b>Is active</b>: True<br />",
-                    f"<b>Role</b>: {role}<br />",
+                    f"<strong>Email</strong>: {email}",
+                    "<strong>Is active</strong>: True<br />",
+                    f"<strong>Role</strong>: {role}<br />",
                 ],
                 html_response,
             )
@@ -49,8 +49,8 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             self.assert_in_success_response(
                 [
-                    f"<b>Admins</b>: {self.example_email('iago')}\n",
-                    f"<b>Owners</b>: {self.example_email('desdemona')}\n",
+                    f"<strong>Admins</strong>: {self.example_email('iago')}\n",
+                    f"<strong>Owners</strong>: {self.example_email('desdemona')}\n",
                     'class="copy-button" data-copytext="{}">'.format(self.example_email("iago")),
                     'class="copy-button" data-copytext="{}">'.format(
                         self.example_email("desdemona")
@@ -75,7 +75,7 @@ class TestSupportEndpoint(ZulipTestCase):
             assert first_human_user is not None
             self.assert_in_success_response(
                 [
-                    f"<b>First human user</b>: {first_human_user.delivery_email}\n",
+                    f"<strong>First human user</strong>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
                     '<option value="1" selected>Self-hosted</option>',
@@ -103,12 +103,12 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<option value="deactivated" >Deactivated</option>',
                     'scrub-realm-button">',
                     'data-string-id="lear"',
-                    "<b>Name</b>: Zulip Cloud Standard",
-                    "<b>Status</b>: Active",
-                    "<b>Billing schedule</b>: Annual",
-                    "<b>Licenses</b>: 2/10 (Manual)",
-                    "<b>Price per license</b>: $80.0",
-                    "<b>Next invoice date</b>: 02 January 2017",
+                    "<strong>Name</strong>: Zulip Cloud Standard",
+                    "<strong>Status</strong>: Active",
+                    "<strong>Billing schedule</strong>: Annual",
+                    "<strong>Licenses</strong>: 2/10 (Manual)",
+                    "<strong>Price per license</strong>: $80.0",
+                    "<strong>Next invoice date</strong>: 02 January 2017",
                     '<option value="send_invoice" selected>',
                     '<option value="charge_automatically" >',
                 ],
@@ -121,7 +121,7 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 [
                     '<span class="label">preregistration user</span>\n',
-                    f"<b>Email</b>: {email}",
+                    f"<strong>Email</strong>: {email}",
                 ],
                 result,
             )
@@ -129,8 +129,8 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_in_success_response(['<span class="label">invite</span>'], result)
                 self.assert_in_success_response(
                     [
-                        "<b>Expires in</b>: 1\xa0week, 3\xa0days",
-                        "<b>Status</b>: Link has never been clicked",
+                        "<strong>Expires in</strong>: 1\xa0week, 3\xa0days",
+                        "<strong>Status</strong>: Link has never been clicked",
                     ],
                     result,
                 )
@@ -139,8 +139,8 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_not_in_success_response(['<span class="label">invite</span>'], result)
                 self.assert_in_success_response(
                     [
-                        "<b>Expires in</b>: 1\xa0day",
-                        "<b>Status</b>: Link has never been clicked",
+                        "<strong>Expires in</strong>: 1\xa0day",
+                        "<strong>Status</strong>: Link has never been clicked",
                     ],
                     result,
                 )
@@ -150,8 +150,8 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     '<span class="label">preregistration user</span>\n',
                     '<span class="label">realm creation</span>\n',
-                    "<b>Link</b>: http://testserver/accounts/do_confirm/",
-                    "<b>Expires in</b>: 1\xa0day",
+                    "<strong>Link</strong>: http://testserver/accounts/do_confirm/",
+                    "<strong>Expires in</strong>: 1\xa0day",
                 ],
                 result,
             )
@@ -160,8 +160,8 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 [
                     '<span class="label">multiuse invite</span>\n',
-                    "<b>Link</b>: http://zulip.testserver/join/",
-                    "<b>Expires in</b>: 1\xa0week, 3\xa0days",
+                    "<strong>Link</strong>: http://zulip.testserver/join/",
+                    "<strong>Expires in</strong>: 1\xa0week, 3\xa0days",
                 ],
                 result,
             )
@@ -170,8 +170,8 @@ class TestSupportEndpoint(ZulipTestCase):
             self.assert_in_success_response(
                 [
                     '<span class="label">realm reactivation</span>\n',
-                    "<b>Link</b>: http://zulip.testserver/reactivate/",
-                    "<b>Expires in</b>: 1\xa0day",
+                    "<strong>Link</strong>: http://zulip.testserver/reactivate/",
+                    "<strong>Expires in</strong>: 1\xa0day",
                 ],
                 result,
             )
