@@ -2,11 +2,13 @@ import $ from "jquery";
 import {Sortable} from "sortablejs";
 
 import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
+import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.hbs";
 import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -166,6 +168,8 @@ function clear_form_data() {
 }
 
 function set_up_create_field_form() {
+    // Hide error on field type change.
+    $("#dialog_error").hide();
     const $field_elem = $("#profile_field_external_accounts");
     const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
 
@@ -199,35 +203,44 @@ function read_field_data_from_form(field_type_id, field_elem, old_field_data) {
     return undefined;
 }
 
-function create_profile_field(e) {
-    e.preventDefault();
-    e.stopPropagation();
+function open_custom_profile_field_form_modal() {
+    const html_body = render_add_new_custom_profile_field_form({
+        realm_default_external_accounts: page_params.realm_default_external_accounts,
+        custom_profile_field_types: page_params.custom_profile_field_types,
+    });
 
-    let field_data = {};
-    const field_type = $("#profile_field_type").val();
-    const opts = {
-        success_continuation: clear_form_data,
-    };
-    field_data = read_field_data_from_form(
-        Number.parseInt(field_type, 10),
-        $(".new-profile-field-form"),
-    );
+    function create_profile_field() {
+        let field_data = {};
+        const field_type = $("#profile_field_type").val();
+        field_data = read_field_data_from_form(
+            Number.parseInt(field_type, 10),
+            $(".new-profile-field-form"),
+        );
+        const data = {
+            name: $("#profile_field_name").val(),
+            hint: $("#profile_field_hint").val(),
+            field_type,
+            field_data: JSON.stringify(field_data),
+        };
+        const url = "/json/realm/profile_fields";
+        dialog_widget.submit_api_request(channel.post, url, data);
+    }
 
-    const form_data = {
-        name: $("#profile_field_name").val(),
-        field_type,
-        hint: $("#profile_field_hint").val(),
-        field_data: JSON.stringify(field_data),
-    };
+    function set_up_form_fields() {
+        set_up_select_field();
+        set_up_external_account_field();
+        clear_form_data();
+    }
 
-    settings_ui.do_settings_change(
-        channel.post,
-        "/json/realm/profile_fields",
-        form_data,
-        $("#admin-add-profile-field-status").expectOne(),
-        opts,
-    );
-    update_profile_fields_table_element();
+    dialog_widget.launch({
+        help_link: "/help/add-custom-profile-fields",
+        html_heading: $t_html({defaultMessage: "Add a new custom profile field"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Add"}),
+        on_click: create_profile_field,
+        post_render: set_up_form_fields,
+        loading_spinner: true,
+    });
 }
 
 function add_choice_row(e) {
@@ -523,6 +536,8 @@ function set_up_select_field() {
     }
 
     $("#profile_field_type").on("change", (e) => {
+        // Hide error on field type change.
+        $("#dialog_error").hide();
         const selected_field_id = Number.parseInt($(e.target).val(), 10);
         if (selected_field_id === field_types.SELECT.id) {
             $("#profile_field_choices_row").show();
@@ -570,9 +585,6 @@ export function build_page() {
     meta.loaded = true;
 
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
-    $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
+    $("#add-custom-profile-field-btn").on("click", open_custom_profile_field_form_modal);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
-    set_up_select_field();
-    set_up_external_account_field();
-    clear_form_data();
 }
