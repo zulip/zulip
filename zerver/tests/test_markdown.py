@@ -1,6 +1,7 @@
 import copy
 import os
 import re
+from html import escape
 from textwrap import dedent
 from typing import Any, Dict, List, Optional, Set, Tuple, cast
 from unittest import mock
@@ -1946,6 +1947,38 @@ class MarkdownTest(ZulipTestCase):
             '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
         )
         self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
+
+    def test_mention_with_valid_special_characters_before(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        valid_characters_before_mention = ["(", "{", "[", "/", "<"]
+        for character in valid_characters_before_mention:
+            content = f"{character}@**King Hamlet**"
+            rendering_result = render_markdown(msg, content)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f'<p>{escape(character)}<span class="user-mention" '
+                f'data-user-id="{user_id}">'
+                "@King Hamlet</span></p>",
+            )
+        self.assertEqual(rendering_result.mentions_user_ids, {user_profile.id})
+
+    def test_mention_with_invalid_special_characters_before(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        invalid_characters_before_mention = [".", ",", ";", ":", "#"]
+        for character in invalid_characters_before_mention:
+            content = f"{character}@**King Hamlet**"
+            rendering_result = render_markdown(msg, content)
+            unicode_character = escape(character)
+            self.assertEqual(
+                rendering_result.rendered_content,
+                f"<p>{unicode_character}@<strong>King Hamlet</strong></p>",
+            )
 
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
