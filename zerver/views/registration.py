@@ -753,6 +753,7 @@ def accounts_home(
         current_url=request.get_full_path,
         multiuse_object_key=multiuse_object_key,
         from_multiuse_invite=from_multiuse_invite,
+        next=next,
     )
     return render(request, "zerver/accounts_home.html", context=context)
 

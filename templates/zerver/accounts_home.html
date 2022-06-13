@@ -77,6 +77,7 @@ page can be easily identified in it's respective JavaScript file -->
                         <div class="login-social">
                             <form class="form-inline" action="{{ backend.signup_url }}" method="get">
                                 <input type='hidden' name='multiuse_object_key' value='{{ multiuse_object_key }}' />
+                                <input type='hidden' name='next' value='{{ next }}' />
                                 <button id="register_{{ backend.button_id_suffix }}" class="login-social-button full-width"
                                   {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>
                                     {{ _('Sign up with %(identity_provider)s', identity_provider=backend.display_name) }}
