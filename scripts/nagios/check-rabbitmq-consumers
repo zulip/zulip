@@ -23,7 +23,7 @@ if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
     print("This script must be run as the root or rabbitmq user")
 
 
-usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
+usage = """Usage: check-rabbitmq-consumers --min-threshold=[min-threshold]"""
 
 parser = argparse.ArgumentParser(usage=usage)
 parser.add_argument("--min-threshold", dest="min_count", type=int, default=1)
