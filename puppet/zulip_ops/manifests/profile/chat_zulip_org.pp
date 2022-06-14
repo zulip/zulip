@@ -8,4 +8,12 @@ class zulip_ops::profile::chat_zulip_org {
   zulip_ops::firewall_allow { 'http': }
   zulip_ops::firewall_allow { 'https': }
   zulip_ops::firewall_allow { 'smtp': }
+
+  file { '/etc/cron.d/check_send_receive_time':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/check_send_receive_time',
+  }
 }
