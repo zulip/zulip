@@ -80,11 +80,12 @@ Requester Bob <requester-bob@example.com> updated [ticket #11](http://test1234zz
         """
         self.url = self.build_webhook_url()
         payload = self.get_body("unknown_payload")
-        kwargs = {
-            "HTTP_AUTHORIZATION": self.encode_email(self.test_user.email),
-            "content_type": "application/x-www-form-urlencoded",
-        }
-        result = self.client_post(self.url, payload, **kwargs)
+        result = self.client_post(
+            self.url,
+            payload,
+            HTTP_AUTHORIZATION=self.encode_email(self.test_user.email),
+            content_type="application/x-www-form-urlencoded",
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 

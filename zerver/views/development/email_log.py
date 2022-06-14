@@ -69,15 +69,18 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     realm = get_realm("zulip")
     other_realm = Realm.objects.exclude(string_id="zulip").first()
     user = get_user_by_delivery_email(registered_email, realm)
-    host_kwargs = {"HTTP_HOST": realm.host}
 
     # Password reset emails
     # active account in realm
-    result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
+    result = client.post(
+        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+    )
     assert result.status_code == 302
     # deactivated user
     change_user_is_active(user, False)
-    result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
+    result = client.post(
+        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=realm.host
+    )
     assert result.status_code == 302
     change_user_is_active(user, True)
     # account on different realm
@@ -88,16 +91,16 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     assert result.status_code == 302
     # no account anywhere
     result = client.post(
-        "/accounts/password/reset/", {"email": unregistered_email_1}, **host_kwargs
+        "/accounts/password/reset/", {"email": unregistered_email_1}, HTTP_HOST=realm.host
     )
     assert result.status_code == 302
 
     # Confirm account email
-    result = client.post("/accounts/home/", {"email": unregistered_email_1}, **host_kwargs)
+    result = client.post("/accounts/home/", {"email": unregistered_email_1}, HTTP_HOST=realm.host)
     assert result.status_code == 302
 
     # Find account email
-    result = client.post("/accounts/find/", {"emails": registered_email}, **host_kwargs)
+    result = client.post("/accounts/find/", {"emails": registered_email}, HTTP_HOST=realm.host)
     assert result.status_code == 302
 
     # New login email
@@ -113,7 +116,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
             "invite_expires_in_minutes": invite_expires_in_minutes,
             "stream_ids": orjson.dumps([stream.id]).decode(),
         },
-        **host_kwargs,
+        HTTP_HOST=realm.host,
     )
     assert result.status_code == 200
 
@@ -122,7 +125,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
         "/json/settings",
         urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}),
         content_type="application/x-www-form-urlencoded",
-        **host_kwargs,
+        HTTP_HOST=realm.host,
     )
     assert result.status_code == 200
 

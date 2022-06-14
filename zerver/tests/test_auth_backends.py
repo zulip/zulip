@@ -5121,8 +5121,9 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         self.assertEqual(parsed_url.query, "param1=value1&params=value2")
 
     def test_start_remote_user_sso_with_desktop_app(self) -> None:
-        headers = dict(HTTP_USER_AGENT="ZulipElectron/5.0.0")
-        result = self.client_get("/accounts/login/start/sso/", {}, **headers)
+        result = self.client_get(
+            "/accounts/login/start/sso/", {}, HTTP_USER_AGENT="ZulipElectron/5.0.0"
+        )
         self.verify_desktop_flow_app_page(result)
 
     def test_login_success(self) -> None:
