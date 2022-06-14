@@ -32,4 +32,12 @@ class zulip_ops::prod_app_frontend_once {
     mode   => '0644',
     source => 'puppet:///modules/zulip_ops/cron.d/check_send_receive_time',
   }
+
+  file { '/etc/cron.d/check_user_zephyr_mirror_liveness':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+    source => 'puppet:///modules/zulip_ops/cron.d/check_user_zephyr_mirror_liveness',
+  }
 }
