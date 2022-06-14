@@ -77,10 +77,9 @@ class PagerDutyHookTests(WebhookTestCase):
         self.check_webhook("mp_fail", "Incident 48219", expected_message)
 
     def test_unsupported_webhook_event(self) -> None:
-        post_params = dict(content_type="application/json")
         for version in range(1, 4):
             payload = self.get_body(f"unsupported_v{version}")
-            result = self.client_post(self.url, payload, **post_params)
+            result = self.client_post(self.url, payload, content_type="application/json")
             self.assert_json_error(
                 result,
                 "The 'incident.unsupported' event isn't currently supported by the PagerDuty webhook",
