@@ -66,8 +66,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     async def tornado_client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
-        kwargs["skip_user_agent"] = True
-        self.set_http_headers(kwargs)
+        self.set_http_headers(kwargs, skip_user_agent=True)
         if "HTTP_HOST" in kwargs:
             kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
             del kwargs["HTTP_HOST"]
@@ -75,16 +74,14 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     async def fetch_async(self, method: str, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
-        kwargs["skip_user_agent"] = True
-        self.set_http_headers(kwargs)
+        self.set_http_headers(kwargs, skip_user_agent=True)
         if "HTTP_HOST" in kwargs:
             kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
             del kwargs["HTTP_HOST"]
         return await self.http_client.fetch(self.get_url(path), method=method, **kwargs)
 
     async def client_get_async(self, path: str, **kwargs: Any) -> HTTPResponse:
-        kwargs["skip_user_agent"] = True
-        self.set_http_headers(kwargs)
+        self.set_http_headers(kwargs, skip_user_agent=True)
         return await self.fetch_async("GET", path, **kwargs)
 
     def login_user(self, *args: Any, **kwargs: Any) -> None:
@@ -108,7 +105,6 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         response = await self.tornado_client_get(
             "/json/events?dont_block=true",
             subdomain="zulip",
-            skip_user_agent=True,
         )
         self.assertEqual(response.code, 200)
         body = orjson.loads(response.body)
