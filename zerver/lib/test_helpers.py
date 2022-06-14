@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
     # Avoid an import cycle; we only need these for type annotations.
-    from zerver.lib.test_classes import ClientArg, MigrationsTestCase, ZulipTestCase
+    from zerver.lib.test_classes import MigrationsTestCase, ZulipTestCase
 
 
 class MockLDAP(fakeldap.MockLDAP):
@@ -363,12 +363,13 @@ def append_instrumentation_data(data: Dict[str, Any]) -> None:
 
 
 def instrument_url(f: UrlFuncT) -> UrlFuncT:
+    # TODO: Type this with ParamSpec to preserve the function signature.
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
 
         def wrapper(
-            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: "ClientArg"
+            self: "ZulipTestCase", url: str, info: object = {}, **kwargs: Union[bool, str]
         ) -> HttpResponseBase:
             start = time.time()
             result = f(self, url, info, **kwargs)
