@@ -78,6 +78,17 @@ def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
     CustomProfileField.objects.filter(realm=realm).delete()
 
 
+def remove_custom_profile_field_value_if_required(
+    field: CustomProfileField, field_data: ProfileFieldData
+) -> None:
+    old_values = set(orjson.loads(field.field_data).keys())
+    new_values = set(field_data.keys())
+    removed_values = old_values - new_values
+
+    if removed_values:
+        CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+
+
 def try_update_realm_custom_profile_field(
     realm: Realm,
     field: CustomProfileField,
@@ -91,6 +102,9 @@ def try_update_realm_custom_profile_field(
         field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
+        if field.field_type == CustomProfileField.SELECT:
+            assert field_data is not None
+            remove_custom_profile_field_value_if_required(field, field_data)
         field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
     notify_realm_custom_profile_fields(realm)

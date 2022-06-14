@@ -727,6 +727,30 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             do_update_user_custom_profile_data_if_changed(iago, data)
             mock_notify.assert_not_called()
 
+    def test_removing_option_from_select_field(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
+        self.assertTrue(
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="vim").exists()
+        )
+        self.assertTrue(
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="emacs").exists()
+        )
+
+        new_options = {"emacs": {"text": "Emacs", "order": "1"}}
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={"name": "Favorite editor", "field_data": orjson.dumps(new_options).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="vim").exists()
+        )
+        self.assertTrue(
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="emacs").exists()
+        )
+
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:
