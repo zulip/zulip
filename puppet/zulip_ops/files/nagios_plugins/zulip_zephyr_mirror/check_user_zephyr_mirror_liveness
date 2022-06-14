@@ -35,6 +35,9 @@ states: Dict[str, int] = {
     "UNKNOWN": 3,
 }
 
+state_file_path = "/var/lib/nagios_state/check_user_zephyr_mirror_liveness"
+now = timezone_now()
+
 
 def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> None:
     too_old_data = ""
@@ -46,12 +49,13 @@ def report(state: str, short_msg: str, too_old: AbstractSet[Any] = set()) -> Non
             )
             for user in too_old
         )
-    print(f"{state}: {short_msg}{too_old_data}")
 
+    with open(state_file_path + ".tmp", "w") as f:
+        f.write(f"{now}|{states[state]}|{state}|{short_msg}{too_old_data}")
+    os.rename(state_file_path + ".tmp", state_file_path)
+    print(f"{state}: {short_msg}{too_old_data}")
     exit(states[state])
 
-
-now = timezone_now()
 
 all_users = UserActivity.objects.filter(
     query__in=["get_events", "/api/v1/events"], client__name="zephyr_mirror"
