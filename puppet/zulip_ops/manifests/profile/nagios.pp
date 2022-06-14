@@ -30,6 +30,7 @@ class zulip_ops::profile::nagios {
   $hosts_redis = split(zulipconf('nagios', 'hosts_redis', undef), ',')
   $hosts_fullstack = split(zulipconf('nagios', 'hosts_fullstack', undef), ',')
   $hosts_smokescreen = split(zulipconf('nagios', 'hosts_smokescreen', undef), ',')
+  $hosts_other = split(zulipconf('nagios', 'hosts_other', undef), ',')
 
   file { '/etc/nagios4/':
     recurse => true,

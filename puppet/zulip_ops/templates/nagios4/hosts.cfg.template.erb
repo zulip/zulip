@@ -87,3 +87,13 @@ define host{
        hostgroups       all,aws_host,pageable_servers,smokescreen
        }
 <% end -%>
+
+<% @hosts_other.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @default_host_domain %>
+       hostgroups       all,aws_host,not_pageable_servers,other
+       }
+<% end -%>
