@@ -55,6 +55,7 @@ from zerver.lib.request import (
     has_request_variables,
 )
 from zerver.lib.response import json_response, json_success
+from zerver.lib.server_initialization import create_internal_realm_bots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import DummyHandler, HostRequestMock
 from zerver.lib.types import Validator
@@ -85,7 +86,7 @@ from zerver.lib.validator import (
     to_wild_value,
 )
 from zerver.middleware import LogRequests, parse_client
-from zerver.models import Realm, UserProfile, get_realm, get_user
+from zerver.models import Realm, UserProfile, get_realm, get_system_bot, get_user
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemoteZulipServer
@@ -2240,3 +2241,45 @@ class TestRequestNotes(ZulipTestCase):
                 "There is no Zulip organization hosted at this subdomain.", result
             )
             mock_home_real.assert_not_called()
+
+
+class TestInternalBotRequest(ZulipTestCase):
+    def test_internal_on_root(self) -> None:
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        create_internal_realm_bots(internal_realm)
+
+        internal_bot = get_system_bot(settings.NAGIOS_SEND_BOT, internal_realm.id)
+
+        # Can't request to a random domain
+        with self.assertLogs(level="WARNING") as m:
+            response = self.api_get(internal_bot, "/api/v1/realm/linkifiers", subdomain="zulip")
+            self.assert_json_error_contains(
+                response, "Account is not associated with this subdomain", status_code=401
+            )
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:root:User {} ({}) attempted to access API on wrong subdomain ({})".format(
+                    settings.NAGIOS_SEND_BOT, settings.SYSTEM_BOT_REALM, "zulip"
+                )
+            ],
+        )
+
+        # Can request to zulipinternal
+        response = self.api_get(
+            internal_bot, "/api/v1/realm/linkifiers", subdomain=settings.SYSTEM_BOT_REALM
+        )
+        self.assert_json_success(response)
+
+        # Can request to root domain, even if it doesn't exist yet
+        response = self.api_get(
+            internal_bot, "/api/v1/realm/linkifiers", subdomain=Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        )
+        self.assert_json_success(response)
+
+        # Can request there even if it exists
+        do_create_realm("", "Root Domain")
+        response = self.api_get(
+            internal_bot, "/api/v1/realm/linkifiers", subdomain=Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        )
+        self.assert_json_success(response)

@@ -18,8 +18,6 @@ def server_initialized() -> bool:
 
 
 def create_internal_realm() -> None:
-    from zerver.actions.users import do_change_can_forge_sender
-
     realm = Realm.objects.create(string_id=settings.SYSTEM_BOT_REALM, name="System bot realm")
     RealmAuditLog.objects.create(
         realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
@@ -33,6 +31,12 @@ def create_internal_realm() -> None:
     get_client("website")
     get_client("ZulipMobile")
     get_client("ZulipElectron")
+
+    create_internal_realm_bots(realm)
+
+
+def create_internal_realm_bots(realm: Realm) -> None:
+    from zerver.actions.users import do_change_can_forge_sender
 
     internal_bots = [
         (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))

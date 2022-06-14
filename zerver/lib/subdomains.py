@@ -49,6 +49,11 @@ def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
 def user_matches_subdomain(realm_subdomain: Optional[str], user_profile: UserProfile) -> bool:
     if realm_subdomain is None:
         return True  # nocoverage # This state may no longer be possible.
+    if (
+        realm_subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        and user_profile.realm.string_id == settings.SYSTEM_BOT_REALM
+    ):
+        return True
     return user_profile.realm.subdomain == realm_subdomain
 
 
