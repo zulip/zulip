@@ -1,6 +1,6 @@
 import copy
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Mapping
+from typing import TYPE_CHECKING, Any, Dict, Iterator, TypedDict
 from unittest import mock
 
 import orjson
@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
+class SCIMHeadersDict(TypedDict):
+    HTTP_AUTHORIZATION: str
+
+
 class SCIMTestCase(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
@@ -22,7 +26,7 @@ class SCIMTestCase(ZulipTestCase):
             realm=self.realm, name=settings.SCIM_CONFIG["zulip"]["scim_client_name"]
         )
 
-    def scim_headers(self) -> Mapping[str, str]:
+    def scim_headers(self) -> SCIMHeadersDict:
         return {"HTTP_AUTHORIZATION": f"Bearer {settings.SCIM_CONFIG['zulip']['bearer_token']}"}
 
     def generate_user_schema(self, user_profile: UserProfile) -> Dict[str, Any]:
