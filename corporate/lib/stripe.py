@@ -1178,6 +1178,7 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
         LicenseLedger.objects.filter(is_renewal=True, plan=standard_plan).order_by("id").last()
     )
     assert standard_plan_last_renewal_ledger is not None
+    assert standard_plan.price_per_license is not None
     standard_plan_last_renewal_amount = (
         standard_plan_last_renewal_ledger.licenses * standard_plan.price_per_license
     )

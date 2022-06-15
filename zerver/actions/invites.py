@@ -266,6 +266,7 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
     invites = []
 
     for invitee in prereg_users:
+        assert invitee.referred_by is not None
         invites.append(
             dict(
                 email=invitee.email,

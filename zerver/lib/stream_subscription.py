@@ -93,6 +93,7 @@ def get_used_colors_for_user_ids(user_ids: List[int]) -> Dict[int, Set[str]]:
     result: Dict[int, Set[str]] = defaultdict(set)
 
     for row in list(query):
+        assert row["color"] is not None
         result[row["user_profile_id"]].add(row["color"])
 
     return result

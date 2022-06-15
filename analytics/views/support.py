@@ -165,6 +165,7 @@ def support(
         if len(keys) != 2:
             raise JsonableError(_("Invalid parameters"))
 
+        assert realm_id is not None
         realm = Realm.objects.get(id=realm_id)
 
         acting_user = request.user
