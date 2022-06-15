@@ -19,6 +19,7 @@ def do_mute_topic(
 ) -> None:
     if date_muted is None:
         date_muted = timezone_now()
+    assert stream.recipient_id is not None
     add_topic_mute(
         user_profile,
         stream.id,

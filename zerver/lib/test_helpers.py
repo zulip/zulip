@@ -271,6 +271,7 @@ def most_recent_message(user_profile: UserProfile) -> Message:
 def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
     recipient_id = stream.recipient_id
+    assert recipient_id is not None
     return Subscription.objects.get(
         user_profile=user_profile, recipient_id=recipient_id, active=True
     )

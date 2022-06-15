@@ -49,6 +49,7 @@ def set_topic_mutes(
     for stream_name, topic_name in muted_topics:
         stream = get_stream(stream_name, user_profile.realm)
         recipient_id = stream.recipient_id
+        assert recipient_id is not None
 
         add_topic_mute(
             user_profile=user_profile,
