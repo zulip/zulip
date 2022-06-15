@@ -396,7 +396,7 @@ def gather_subscriptions_helper(
     include_subscribers: bool = True,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
-    all_streams: QuerySet[RawStreamDict] = get_active_streams(realm).values(
+    all_streams = get_active_streams(realm).values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",
