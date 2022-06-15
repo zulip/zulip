@@ -532,18 +532,13 @@ h4.user_group_setting_subsection_title {
         background-position: center center;
 
         svg {
-            fill: transparent;
+            fill: hsl(0, 0%, 72%);
             width: 70%;
             margin: 0% 15%;
         }
 
         &.checked:hover svg {
             opacity: 0.5;
-        }
-
-        &.disabled {
-            pointer-events: none;
-            visibility: hidden;
         }
 
         .sub_unsub_status {
@@ -565,6 +560,11 @@ h4.user_group_setting_subsection_title {
 
     .checked svg {
         fill: hsl(170, 48%, 54%);
+    }
+
+    .check.disabled svg {
+        fill: hsl(0, 0%, 87%);
+        cursor: not-allowed;
     }
 
     .icon {
@@ -653,14 +653,14 @@ h4.user_group_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked) svg,
-    &.active:hover .check:not(.checked) svg {
+    &:hover .check.disabled:not(.checked) svg,
+    &.active:hover .check.disabled:not(.checked) svg {
         fill: hsl(0, 0%, 87%);
     }
 
-    .check:not(.checked):hover svg,
-    &.active .check:not(.checked):hover svg {
-        fill: hsl(0, 0%, 72%);
+    .check:not(.checked, .disabled):hover svg,
+    &.active .check:not(.checked, .disabled):hover svg {
+        fill: hsl(0, 0%, 27%);
     }
 
     &::selection,

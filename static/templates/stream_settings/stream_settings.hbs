@@ -2,7 +2,9 @@
     <div class="tab-container"></div>
     {{#with sub}}
     <div class="button-group">
-        <div class="sub_unsub_button_wrapper inline-block">
+        <div class="sub_unsub_button_wrapper inline-block {{#unless should_display_subscription_button}}tippy-zulip-tooltip{{/unless}}"
+          {{#unless should_display_subscription_button}} data-tooltip-template-id="subscription-button-tooltip"{{/unless}}>
+            <template id="subscription-button-tooltip">{{t 'Cannot subscribe to private stream'}} #{{name}}</template>
             <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}tippy-zulip-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}data-tippy-content="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                 {{#if subscribed }}
                     {{#tr}}Unsubscribe{{/tr}}
