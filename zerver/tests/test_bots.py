@@ -198,9 +198,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         users_result = self.client_get("/json/users")
         members = orjson.loads(users_result.content)["members"]
-        [bot] = [m for m in members if m["email"] == "hambot-bot@zulip.testserver"]
-        self.assertEqual(bot["bot_owner_id"], self.example_user("hamlet").id)
-        self.assertEqual(bot["user_id"], self.get_bot_user(email).id)
+        [bot_dict] = [m for m in members if m["email"] == "hambot-bot@zulip.testserver"]
+        self.assertEqual(bot_dict["bot_owner_id"], self.example_user("hamlet").id)
+        self.assertEqual(bot_dict["user_id"], self.get_bot_user(email).id)
 
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_fake_email_domain(self) -> None:
@@ -362,9 +362,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         users_result = self.client_get("/json/users")
         members = orjson.loads(users_result.content)["members"]
-        [bot] = [m for m in members if m["email"] == "hambot-bot@zulip.testserver"]
-        self.assertEqual(bot["bot_owner_id"], user.id)
-        self.assertEqual(bot["user_id"], self.get_bot_user(email).id)
+        [bot_dict] = [m for m in members if m["email"] == "hambot-bot@zulip.testserver"]
+        self.assertEqual(bot_dict["bot_owner_id"], user.id)
+        self.assertEqual(bot_dict["user_id"], self.get_bot_user(email).id)
 
     def test_bot_add_subscription(self) -> None:
         """

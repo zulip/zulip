@@ -76,8 +76,8 @@ def create_mirrored_message_users(
     for email in referenced_users:
         create_mirror_user_if_needed(user_profile.realm, email, fullname_function)
 
-    sender = get_user_including_cross_realm(sender_email, user_profile.realm)
-    return sender
+    sender_user_profile = get_user_including_cross_realm(sender_email, user_profile.realm)
+    return sender_user_profile
 
 
 def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:

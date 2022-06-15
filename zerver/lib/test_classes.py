@@ -1517,25 +1517,25 @@ Output:
         """
         dct = {}
 
-        for row in RealmEmoji.objects.all():
-            dct[row.id] = row
+        for realm_emoji in RealmEmoji.objects.all():
+            dct[realm_emoji.id] = realm_emoji
 
         if not dct:
             raise AssertionError("test needs RealmEmoji rows")
 
         count = 0
-        for row in Reaction.objects.filter(reaction_type=Reaction.REALM_EMOJI):
-            realm_emoji_id = int(row.emoji_code)
+        for reaction in Reaction.objects.filter(reaction_type=Reaction.REALM_EMOJI):
+            realm_emoji_id = int(reaction.emoji_code)
             assert realm_emoji_id in dct
-            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
-            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
+            self.assertEqual(dct[realm_emoji_id].name, reaction.emoji_name)
+            self.assertEqual(dct[realm_emoji_id].realm_id, reaction.user_profile.realm_id)
             count += 1
 
-        for row in UserStatus.objects.filter(reaction_type=UserStatus.REALM_EMOJI):
-            realm_emoji_id = int(row.emoji_code)
+        for user_status in UserStatus.objects.filter(reaction_type=UserStatus.REALM_EMOJI):
+            realm_emoji_id = int(user_status.emoji_code)
             assert realm_emoji_id in dct
-            self.assertEqual(dct[realm_emoji_id].name, row.emoji_name)
-            self.assertEqual(dct[realm_emoji_id].realm_id, row.user_profile.realm_id)
+            self.assertEqual(dct[realm_emoji_id].name, user_status.emoji_name)
+            self.assertEqual(dct[realm_emoji_id].realm_id, user_status.user_profile.realm_id)
             count += 1
 
         if count == 0:

@@ -41,8 +41,9 @@ class UserGroupTestCase(ZulipTestCase):
         realm = get_realm("zulip")
         user_group = UserGroup.objects.first()
         assert user_group is not None
-        membership = UserGroupMembership.objects.filter(user_group=user_group)
-        membership = membership.values_list("user_profile_id", flat=True)
+        membership = UserGroupMembership.objects.filter(user_group=user_group).values_list(
+            "user_profile_id", flat=True
+        )
         empty_user_group = create_user_group("newgroup", [], realm)
 
         user_groups = user_groups_in_realm_serialized(realm)
