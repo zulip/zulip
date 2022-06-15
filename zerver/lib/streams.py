@@ -358,6 +358,7 @@ def access_stream_common(
         raise AssertionError("user_profile and stream realms don't match")
 
     try:
+        assert stream.recipient_id is not None
         sub = Subscription.objects.get(
             user_profile=user_profile, recipient_id=stream.recipient_id, active=require_active
         )

@@ -506,6 +506,7 @@ def do_update_message(
         edit_history_event["prev_stream"] = stream_being_edited.id
         edit_history_event["stream"] = new_stream.id
         event[ORIG_TOPIC] = orig_topic_name
+        assert new_stream.recipient_id is not None
         target_message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
@@ -762,6 +763,7 @@ def do_update_message(
             # query. But it's nice to reuse code, and this bulk
             # operation is likely cheaper than a `GET /messages`
             # unless the topic has thousands of messages of history.
+            assert stream_being_edited.recipient_id is not None
             unmoved_messages = messages_for_topic(
                 stream_being_edited.recipient_id,
                 orig_topic_name,

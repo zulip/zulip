@@ -792,6 +792,7 @@ def get_topics_backend(
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
 
+        assert stream.recipient_id is not None
         result = get_topic_history_for_stream(
             user_profile=user_profile,
             recipient_id=stream.recipient_id,

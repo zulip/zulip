@@ -789,6 +789,7 @@ def do_change_stream_permission(
         if old_invite_only_value != stream.invite_only:
             # Reset the Attachment.is_realm_public cache for all
             # messages in the stream whose permissions were changed.
+            assert stream.recipient_id is not None
             Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
                 is_realm_public=None
             )
@@ -832,6 +833,7 @@ def do_change_stream_permission(
         if old_is_web_public_value != stream.is_web_public:
             # Reset the Attachment.is_realm_public cache for all
             # messages in the stream whose permissions were changed.
+            assert stream.recipient_id is not None
             Attachment.objects.filter(messages__recipient_id=stream.recipient_id).update(
                 is_web_public=None
             )
