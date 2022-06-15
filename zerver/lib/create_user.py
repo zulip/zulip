@@ -83,7 +83,7 @@ def create_user_profile(
     bot_owner: Optional[UserProfile],
     is_mirror_dummy: bool,
     tos_version: Optional[str],
-    timezone: Optional[str],
+    timezone: str,
     default_language: str = "en",
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     force_id: Optional[int] = None,
