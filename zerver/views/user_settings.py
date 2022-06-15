@@ -4,6 +4,7 @@ import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
@@ -42,7 +43,12 @@ from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
-from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
+from zerver.models import (
+    EmailChangeStatus,
+    UserProfile,
+    avatar_changes_disabled,
+    name_changes_disabled,
+)
 from zerver.views.auth import redirect_to_deactivation_notice
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -55,6 +61,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
+    assert isinstance(email_change_object, EmailChangeStatus)
     new_email = email_change_object.new_email
     old_email = email_change_object.old_email
     user_profile = email_change_object.user_profile
@@ -327,6 +334,8 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     user_file = list(request.FILES.values())[0]
+    assert isinstance(user_file, UploadedFile)
+    assert user_file.size is not None
     if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
