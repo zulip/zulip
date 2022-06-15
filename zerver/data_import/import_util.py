@@ -98,7 +98,7 @@ def build_user_profile(
     is_mirror_dummy: bool,
     realm_id: int,
     short_name: str,
-    timezone: Optional[str],
+    timezone: str,
     is_bot: bool = False,
     bot_type: Optional[int] = None,
 ) -> ZerverFieldsT:
