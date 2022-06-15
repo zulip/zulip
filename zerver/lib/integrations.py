@@ -3,8 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls import path
-from django.urls.resolvers import URLPattern
+from django.urls import URLResolver, path
 from django.utils.functional import Promise
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as gettext_lazy
@@ -223,7 +222,8 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> URLPattern:
+    def url_object(self) -> URLResolver:
+        assert self.function is not None
         return path(self.url, self.function)
 
 
