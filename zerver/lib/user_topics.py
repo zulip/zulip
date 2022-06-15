@@ -120,11 +120,12 @@ def exclude_topic_mutes(
         # by not considering topic mutes outside the stream.
         query = query.filter(stream_id=stream_id)
 
-    query = query.values(
-        "recipient_id",
-        "topic_name",
+    rows = list(
+        query.values(
+            "recipient_id",
+            "topic_name",
+        )
     )
-    rows = list(query)
 
     if not rows:
         return conditions
