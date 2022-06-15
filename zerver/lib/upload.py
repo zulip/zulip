@@ -377,6 +377,7 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Optional[str]]:
 
     uploaded_file_name = user_file.name
+    assert uploaded_file_name is not None
     content_type = request.GET.get("mimetype")
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
@@ -1201,6 +1202,7 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
     for realm_emoji in query:
         logger.info("Processing emoji %s", realm_emoji.id)
         emoji_filename = realm_emoji.file_name
+        assert emoji_filename is not None
         emoji_url = get_emoji_url(emoji_filename, realm_emoji.realm_id)
         if emoji_url.startswith("/"):
             emoji_url = urljoin(realm_emoji.realm.uri, emoji_url)
