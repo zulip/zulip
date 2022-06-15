@@ -19,7 +19,7 @@ from zerver.decorator import require_server_admin
 from zerver.models import Realm, UserActivity
 
 
-def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
+def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet[UserActivity]:
     fields = [
         "user_profile__full_name",
         "user_profile__delivery_email",
@@ -40,11 +40,11 @@ def get_user_activity_records_for_realm(realm: str, is_bot: bool) -> QuerySet:
 
 
 def realm_user_summary_table(
-    all_records: List[QuerySet], admin_emails: Set[str]
+    all_records: QuerySet[UserActivity], admin_emails: Set[str]
 ) -> Tuple[Dict[str, Any], str]:
     user_records = {}
 
-    def by_email(record: QuerySet) -> str:
+    def by_email(record: UserActivity) -> str:
         return record.user_profile.delivery_email
 
     for email, records in itertools.groupby(all_records, by_email):
@@ -236,7 +236,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     admin_emails = {admin.delivery_email for admin in admins}
 
     for is_bot, page_title in [(False, "Humans"), (True, "Bots")]:
-        all_records = list(get_user_activity_records_for_realm(realm_str, is_bot))
+        all_records = get_user_activity_records_for_realm(realm_str, is_bot)
 
         user_records, content = realm_user_summary_table(all_records, admin_emails)
         all_user_records.update(user_records)

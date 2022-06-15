@@ -6,7 +6,6 @@ from typing import Any, Collection, Dict, List, Optional, Sequence
 import pytz
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
-from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
 from markupsafe import Markup as mark_safe
@@ -92,7 +91,7 @@ def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, An
     #: for the user activity summary.
     summary: Dict[str, Any] = {}
 
-    def update(action: str, record: QuerySet) -> None:
+    def update(action: str, record: UserActivity) -> None:
         if action not in summary:
             summary[action] = dict(
                 count=record.count,
