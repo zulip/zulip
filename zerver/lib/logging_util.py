@@ -5,7 +5,7 @@ import threading
 import traceback
 from datetime import datetime, timedelta, timezone
 from logging import Logger
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import orjson
 from django.conf import settings
@@ -255,10 +255,11 @@ class ZulipWebhookFormatter(ZulipFormatter):
             return super().format(record)
 
         if request.content_type == "application/json":
-            payload = request.body
+            payload: Union[str, bytes, None] = request.body
         else:
             payload = request.POST.get("payload")
 
+        assert payload is not None
         try:
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
         except orjson.JSONDecodeError:
