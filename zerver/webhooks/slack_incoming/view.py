@@ -48,20 +48,22 @@ def api_slack_incoming_webhook(
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
-    body = ""
-
+    pieces = []
     if "blocks" in payload and payload["blocks"]:
         for block in payload["blocks"]:
-            body = add_block(block, body)
+            pieces.append(render_block(block))
 
     if "attachments" in payload and payload["attachments"]:
         for attachment in payload["attachments"]:
-            body = add_attachment(attachment, body)
+            pieces.append(render_attachment(attachment))
+
+    body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
     if body == "" and "text" in payload and payload["text"]:
-        body += payload["text"].tame(check_string)
         if "icon_emoji" in payload and payload["icon_emoji"]:
-            body = "{} {}".format(payload["icon_emoji"].tame(check_string), body)
+            body = payload["icon_emoji"].tame(check_string) + " "
+        body += payload["text"].tame(check_string)
+        body = body.strip()
 
     if body != "":
         body = replace_formatting(replace_links(body).strip())
@@ -69,9 +71,10 @@ def api_slack_incoming_webhook(
     return json_success(request)
 
 
-def add_block(block: WildValue, body: str) -> str:
+def render_block(block: WildValue) -> str:
     block_type = block["type"].tame(check_string)
     if block_type == "section":
+        body = ""
         if "text" in block:
             text = block["text"]
             while isinstance(text, WildValueDict):
@@ -86,11 +89,12 @@ def add_block(block: WildValue, body: str) -> str:
                 alt_text = accessory["alt_text"].tame(check_string)
                 image_url = accessory["image_url"].tame(check_url)
                 body += f"\n[{alt_text}]({image_url})"
+        return body
 
-    return body
+    return ""
 
 
-def add_attachment(attachment: WildValue, body: str) -> str:
+def render_attachment(attachment: WildValue) -> str:
     attachment_body = ""
     if "title" in attachment and "title_link" in attachment:
         title = attachment["title"].tame(check_string)
@@ -99,7 +103,7 @@ def add_attachment(attachment: WildValue, body: str) -> str:
     if "text" in attachment:
         attachment_body += attachment["text"].tame(check_string)
 
-    return body + attachment_body
+    return attachment_body
 
 
 def replace_links(text: str) -> str:
