@@ -402,7 +402,10 @@ def bulk_add_subscriptions(
     recipient_id_to_stream = {stream.recipient_id: stream for stream in streams}
 
     recipient_color_map = {}
+    recipient_ids_set: Set[int] = set()
     for stream in streams:
+        assert stream.recipient_id is not None
+        recipient_ids_set.add(stream.recipient_id)
         color: Optional[str] = color_map.get(stream.name, None)
         if color is not None:
             recipient_color_map[stream.recipient_id] = color
@@ -428,7 +431,7 @@ def bulk_add_subscriptions(
         # Make a fresh set of all new recipient ids, and then we will
         # remove any for which our user already has a subscription
         # (and we'll re-activate any subscriptions as needed).
-        new_recipient_ids: Set[int] = {stream.recipient_id for stream in streams}
+        new_recipient_ids: Set[int] = recipient_ids_set.copy()
 
         for sub in my_subs:
             if sub.recipient_id in new_recipient_ids:
