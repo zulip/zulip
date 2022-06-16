@@ -1,15 +1,15 @@
 # Webhooks for external integrations.
 import re
-from typing import Any, Dict, Optional
+from typing import Optional
 
-import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, RequestVariableMissingError, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, WildValueDict, check_string, check_url, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -38,13 +38,12 @@ def api_slack_incoming_webhook(
             val = request.GET[req_var]
         else:
             raise RequestVariableMissingError(req_var)
-    try:
-        payload = orjson.loads(val)
-    except orjson.JSONDecodeError:  # nocoverage
-        raise InvalidJSONError(_("Malformed JSON"))
+
+    payload = to_wild_value("payload", val)
 
     if user_specified_topic is None and "channel" in payload:
-        user_specified_topic = re.sub("^[@#]", "", payload["channel"])
+        channel = payload["channel"].tame(check_string)
+        user_specified_topic = re.sub("^[@#]", "", channel)
 
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
@@ -59,10 +58,10 @@ def api_slack_incoming_webhook(
         for attachment in payload["attachments"]:
             body = add_attachment(attachment, body)
 
-    if body == "" and "text" in payload and payload["text"] is not None:
-        body += payload["text"]
-        if "icon_emoji" in payload and payload["icon_emoji"] is not None:
-            body = "{} {}".format(payload["icon_emoji"], body)
+    if body == "" and "text" in payload and payload["text"]:
+        body += payload["text"].tame(check_string)
+        if "icon_emoji" in payload and payload["icon_emoji"]:
+            body = "{} {}".format(payload["icon_emoji"].tame(check_string), body)
 
     if body != "":
         body = replace_formatting(replace_links(body).strip())
@@ -70,31 +69,35 @@ def api_slack_incoming_webhook(
     return json_success(request)
 
 
-def add_block(block: Dict[str, Any], body: str) -> str:
-    block_type = block.get("type", None)
+def add_block(block: WildValue, body: str) -> str:
+    block_type = block["type"].tame(check_string)
     if block_type == "section":
         if "text" in block:
             text = block["text"]
-            while type(text) == dict:  # handle stuff like block["text"]["text"]
+            while isinstance(text, WildValueDict):
                 text = text["text"]
-            body += f"\n\n{text}"
+            body += "\n\n" + text.tame(check_string)
 
         if "accessory" in block:
             accessory = block["accessory"]
-            accessory_type = accessory["type"]
+            accessory_type = accessory["type"].tame(check_string)
             if accessory_type == "image":
                 # This should become ![text](url) once proper Markdown images are supported
-                body += "\n[{alt_text}]({image_url})".format(**accessory)
+                alt_text = accessory["alt_text"].tame(check_string)
+                image_url = accessory["image_url"].tame(check_url)
+                body += f"\n[{alt_text}]({image_url})"
 
     return body
 
 
-def add_attachment(attachment: Dict[str, Any], body: str) -> str:
+def add_attachment(attachment: WildValue, body: str) -> str:
     attachment_body = ""
     if "title" in attachment and "title_link" in attachment:
-        attachment_body += "[{title}]({title_link})\n".format(**attachment)
+        title = attachment["title"].tame(check_string)
+        title_link = attachment["title_link"].tame(check_string)
+        attachment_body += f"[{title}]({title_link})\n"
     if "text" in attachment:
-        attachment_body += attachment["text"]
+        attachment_body += attachment["text"].tame(check_string)
 
     return body + attachment_body
 
