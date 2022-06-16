@@ -29,6 +29,10 @@
 # however, we wish to import `zerver.settings` since we have no
 # /etc/zulip/zulip.conf to read, and that case _requires_ loading the
 # venv.
+#
+# We also must handle the cases where we are run as the `nagios` user,
+# which may not have permission to read all configuration files, and
+# thus (2) will look like (3).
 
 import argparse
 import configparser
@@ -134,7 +138,7 @@ try:
     pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
     pg_args["connect_timeout"] = "600"
     USING_PGROONGA = settings.USING_PGROONGA
-except ImportError:
+except (ImportError, PermissionError):
     # Case (3): we know that the PostgreSQL server is on this host.
     pg_args["user"] = "zulip"
 
