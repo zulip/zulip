@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import {$t} from "./i18n";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -329,7 +331,12 @@ export function clean_user_content_links(html) {
     return content.innerHTML;
 }
 
-export function filter_by_word_prefix_match(items, search_term, item_to_text) {
+export function filter_by_word_prefix_match(
+    items,
+    search_term,
+    item_to_text,
+    word_separator_regex = /\s/,
+) {
     if (search_term === "") {
         return items;
     }
@@ -340,9 +347,14 @@ export function filter_by_word_prefix_match(items, search_term, item_to_text) {
     const filtered_items = items.filter((item) =>
         search_terms.some((search_term) => {
             const lower_name = item_to_text(item).toLowerCase();
-            const cands = lower_name.split(" ");
-            cands.push(lower_name);
-            return cands.some((name) => name.startsWith(search_term));
+            // returns true if the item starts with the search term or if the
+            // search term with a word separator right before it appears in the item
+            return (
+                lower_name.startsWith(search_term) ||
+                new RegExp(word_separator_regex.source + _.escapeRegExp(search_term)).test(
+                    lower_name,
+                )
+            );
         }),
     );
 

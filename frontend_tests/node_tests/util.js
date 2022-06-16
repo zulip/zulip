@@ -288,3 +288,30 @@ run_test("clean_user_content_links", () => {
             "</div>",
     );
 });
+
+run_test("filter_by_word_prefix_match", () => {
+    const strings = ["stream-hyphen_underscore/slash", "three word stream"];
+    const values = [0, 1];
+    const item_to_string = (idx) => strings[idx];
+
+    // Default settings will match words with a space delimiter before them.
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "stream", item_to_string), [0, 1]);
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "word stream", item_to_string), [1]);
+
+    // Since - appears before `hyphen` in
+    // stream-hyphen_underscore/slash, we require `-` in the set of
+    // characters for it to match.
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string), []);
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s/_-]/), [
+        0,
+    ]);
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s-]/), [
+        0,
+    ]);
+
+    // Similarly `_` must be in the set of allowed characters to match "underscore".
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /[\s_]/), [
+        0,
+    ]);
+    assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
+});

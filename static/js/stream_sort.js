@@ -26,7 +26,14 @@ function compare_function(a, b) {
 
 export function sort_groups(streams, search_term) {
     const stream_id_to_name = (stream) => sub_store.get(stream).name;
-    streams = util.filter_by_word_prefix_match(streams, search_term, stream_id_to_name);
+    // Use -, _ and / as word separators apart from the default space character
+    const word_separator_regex = /[\s/_-]/;
+    streams = util.filter_by_word_prefix_match(
+        streams,
+        search_term,
+        stream_id_to_name,
+        word_separator_regex,
+    );
 
     function is_normal(sub) {
         return stream_data.is_active(sub);
