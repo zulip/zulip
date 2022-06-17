@@ -3,6 +3,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import (
@@ -13,15 +14,17 @@ from zerver.lib.validator import (
     check_union,
     check_url,
     to_wild_value,
+    WildValue,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
+from zerver.webhooks.alertmanager.view import alertmanager_hook
 
 GRAFANA_TOPIC_TEMPLATE = "{alert_title}"
 
 GRAFANA_ALERT_STATUS_TEMPLATE = "{alert_icon} **{alert_state}**\n\n"
 
-GRAFANA_MESSAGE_TEMPLATE = "{alert_status}{rule}\n\n{alert_message}{eval_matches}"
+GRAFANA8_MESSAGE_TEMPLATE = "{alert_status}{rule}\n\n{alert_message}{eval_matches}"
 
 ALL_EVENT_TYPES = ["ok", "pending", "alerting", "paused"]
 
@@ -34,6 +37,19 @@ def api_grafana_webhook(
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
+    if "version" not in payload:
+        # Version 9.0.0 changed alerting, and the payload for webhooks, significantly.  Recognize the new format via the `version` key: https://github.com/grafana/grafana/blob/v9.0.0/pkg/services/ngalert/notifier/channels/webhook.go#L98
+        return grafana_v8_webhook(request, user_profile, payload)
+    version = payload["version"].tame(check_string)
+    if version == "1":
+        return grafana_v9_webhook(request, user_profile, payload)
+    else:
+        raise UnsupportedWebhookEventType(f'version = "{version}"')
+
+
+def grafana_v8_webhook(
+    request: HttpRequest, user_profile: UserProfile, payload: WildValue
+) -> HttpResponse:
     # Webhook content has no specification, but is output from
     # https://github.com/grafana/grafana/blob/v8.5.x/pkg/services/alerting/notifiers/webhook.go
 
@@ -72,7 +88,7 @@ def api_grafana_webhook(
     if "ruleUrl" in payload:
         rule = f"[{rule}]({payload['ruleUrl'].tame(check_url)})"
 
-    body = GRAFANA_MESSAGE_TEMPLATE.format(
+    body = GRAFANA8_MESSAGE_TEMPLATE.format(
         alert_message=message_text,
         alert_status=alert_status,
         rule=rule,
@@ -90,3 +106,29 @@ def api_grafana_webhook(
     check_send_webhook_message(request, user_profile, topic, body, state)
 
     return json_success(request)
+
+
+def grafana_v9_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: WildValue,
+    name_field: str = REQ("name", default="instance"),
+    desc_field: str = REQ("desc", default="alertname"),
+) -> HttpResponse:
+    return alertmanager_hook(request, user_profile, payload, name_field, desc_field, grafana_v9_parts)
+
+def grafana_v9_parts(alert: WildValue) -> Dict[str, str]:
+    # These use check_string and not check_url because the latter does
+    # not support URLs without hostname or TLD, which may be common
+    # for internal services like grafana:
+    # https://code.djangoproject.com/ticket/25418
+
+    links = {
+        "alert": alert.get("generatorURL").tame(check_string),
+        "silence": alert.get("silenceURL").tame(check_string),
+    }
+    if panel := alert.get("panelURL").tame(check_string):
+        links["panel"] = panel
+    if image := alert.get("imageURL","").tame(check_string):
+        links["graph"] = image
+    return links

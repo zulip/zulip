@@ -1,0 +1,44 @@
+{
+  "receiver": "Webhook test",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Test alert",
+        "test": "true"
+      },
+      "annotations": {
+        "description": "This is a description",
+        "runbook_url": "https://runbook.example.com/",
+        "summary": "This is a summary field, failure on some_host"
+      },
+      "startsAt": "2022-06-17T00:41:00.782137894Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://grafana.example.com/alerting/grafana/zTjxv_C7k/view",
+      "fingerprint": "d8a21484c9c25a60",
+      "silenceURL": "https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=test%3Dtrue",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ var='B0' metric='Value' labels={__name__=some_metric, instance=some-value, job=jobname} value=24 ]"
+    }
+  ],
+  "groupLabels": {},
+  "commonLabels": {
+    "alertname": "Test alert",
+    "test": "true"
+  },
+  "commonAnnotations": {
+    "description": "This is a description",
+    "runbook_url": "https://runbook.example.com/",
+    "summary": "This is a summary field, failure on some_host"
+  },
+  "externalURL": "https://grafana.example.com/",
+  "version": "1",
+  "groupKey": "{}/{test=\"true\"}:{}",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "title": "[FIRING:1]  (Test alert true)",
+  "state": "alerting",
+  "message": "**Firing**\n\nValue: [ var='B0' metric='Value' labels={__name__=some_metric, instance=some-value, job=jobname} value=24 ]\nLabels:\n - alertname = Test alert\n - test = true\nAnnotations:\n - description = This is a description\n - runbook_url = https://runbook.example.com/\n - summary = This is a summary field, failure on some_host\nSource: https://grafana.example.com/alerting/grafana/zTjxv_C7k/view\nSilence: https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=test%3Dtrue\n"
+}

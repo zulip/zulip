@@ -1,0 +1,44 @@
+{
+  "receiver": "Webhook test",
+  "status": "resolved",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Test alert",
+        "test": "true"
+      },
+      "annotations": {
+        "description": "This is a description",
+        "runbook_url": "https://example.com/",
+        "summary": "This is a summary field, failure on <no value>"
+      },
+      "startsAt": "2022-06-17T00:41:00.782137894Z",
+      "endsAt": "2022-06-17T00:51:24.067337833Z",
+      "generatorURL": "https://grafana.example.com/alerting/grafana/zTjxv_C7k/view",
+      "fingerprint": "d8a21484c9c25a60",
+      "silenceURL": "https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=test%3Dtrue",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ var='B0' metric='Value' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=24 ]"
+    }
+  ],
+  "groupLabels": {},
+  "commonLabels": {
+    "alertname": "Test alert",
+    "test": "true"
+  },
+  "commonAnnotations": {
+    "description": "This is a description",
+    "runbook_url": "https://example.com/",
+    "summary": "This is a summary field, failure on <no value>"
+  },
+  "externalURL": "https://grafana.example.com/",
+  "version": "1",
+  "groupKey": "{}/{test=\"true\"}:{}",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "title": "[RESOLVED]  (Test alert true)",
+  "state": "ok",
+  "message": "**Resolved**\n\nValue: [ var='B0' metric='Value' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=24 ]\nLabels:\n - alertname = Test alert\n - test = true\nAnnotations:\n - description = This is a description\n - runbook_url = https://example.com/\n - summary = This is a summary field, failure on <no value>\nSource: https://grafana.example.com/alerting/grafana/zTjxv_C7k/view\nSilence: https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=test%3Dtrue\n"
+}

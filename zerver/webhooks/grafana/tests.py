@@ -135,3 +135,21 @@ Someone is testing the alert notification within grafana.
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
+
+
+class Grafana9HookTests(WebhookTestCase):
+    STREAM_NAME = "grafana"
+    URL_TEMPLATE = "/api/v1/external/grafana?&api_key={api_key}&stream={stream}"
+    WEBHOOK_DIR_NAME = "grafana"
+
+    def test_basic(self) -> None:
+        expected_topic = "(unknown)"
+        expected_message = """
+        """.strip()
+
+        self.check_webhook(
+            "alert-9",
+            expected_topic,
+            expected_message,
+            #            content_type="application/x-www-form-urlencoded",
+        )

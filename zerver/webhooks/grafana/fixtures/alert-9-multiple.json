@@ -1,0 +1,87 @@
+{
+  "receiver": "Webhook test",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Test alert",
+        "deploy": "prod",
+        "instance": "badhost.example.com",
+        "job": "rabbitmq",
+        "test": "true"
+      },
+      "annotations": {
+        "description": "This is a description",
+        "runbook_url": "https://example.com/",
+        "summary": "This is a summary field, failure on badhost.example.com"
+      },
+      "startsAt": "2022-06-17T01:11:00.782137894Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://grafana.example.com/alerting/grafana/zTjxv_C7k/view",
+      "fingerprint": "aaafafe0953f0962",
+      "silenceURL": "https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=deploy%3Dprod&matcher=instance%3Dbadhost.example.com&matcher=job%3Drabbitmq&matcher=test%3Dtrue",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ var='B' labels={__name__=rabbitmq_queues, deploy=prod, instance=badhost.example.com, job=rabbitmq} value=17 ], [ var='C' labels={__name__=rabbitmq_queues, deploy=prod, instance=badhost.example.com, job=rabbitmq} value=1 ]"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Test alert",
+        "deploy": "prod",
+        "instance": "otherhost.example.com",
+        "job": "rabbitmq",
+        "test": "true"
+      },
+      "annotations": {
+        "description": "This is a description",
+        "runbook_url": "https://example.com/",
+        "summary": "This is a summary field, failure on otherhost.example.com"
+      },
+      "startsAt": "2022-06-17T01:11:00.782137894Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://grafana.example.com/alerting/grafana/zTjxv_C7k/view",
+      "fingerprint": "fb31814ac93dbe7d",
+      "silenceURL": "https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=deploy%3Dprod&matcher=instance%3Dotherhost.example.com&matcher=job%3Drabbitmq&matcher=test%3Dtrue",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ var='B' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=24 ], [ var='C' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=1 ]"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Second webhook test",
+        "test": "true"
+      },
+      "annotations": {
+        "description": "Description **here**",
+        "runbook_url": "https://example.com/",
+        "summary": "Testing **another** failing alert"
+      },
+      "startsAt": "2022-06-17T01:03:00.782137894Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "https://grafana.example.com/alerting/grafana/_0rkK_C7z/view",
+      "fingerprint": "6f9cd313db421ef1",
+      "silenceURL": "https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DSecond+webhook+test&matcher=test%3Dtrue",
+      "dashboardURL": "",
+      "panelURL": "",
+      "valueString": "[ var='B0' metric='camo_build_info{goversion=\"go1.17.6\", instance=\"sadhost.example.com\", job=\"camo\", role=\"smokescreen\", version=\"2.4.0\"}' labels={__name__=camo_build_info, goversion=go1.17.6, instance=sadhost.example.com, job=camo, role=smokescreen, version=2.4.0} value=1 ]"
+    }
+  ],
+  "groupLabels": {},
+  "commonLabels": {
+    "test": "true"
+  },
+  "commonAnnotations": {
+    "runbook_url": "https://example.com/"
+  },
+  "externalURL": "https://grafana.example.com/",
+  "version": "1",
+  "groupKey": "{}/{test=\"true\"}:{}",
+  "truncatedAlerts": 0,
+  "orgId": 1,
+  "title": "[FIRING:3]  (true)",
+  "state": "alerting",
+  "message": "**Firing**\n\nValue: [ var='B' labels={__name__=rabbitmq_queues, deploy=prod, instance=badhost.example.com, job=rabbitmq} value=17 ], [ var='C' labels={__name__=rabbitmq_queues, deploy=prod, instance=badhost.example.com, job=rabbitmq} value=1 ]\nLabels:\n - alertname = Test alert\n - deploy = prod\n - instance = badhost.example.com\n - job = rabbitmq\n - test = true\nAnnotations:\n - description = This is a description\n - runbook_url = https://example.com/\n - summary = This is a summary field, failure on badhost.example.com\nSource: https://grafana.example.com/alerting/grafana/zTjxv_C7k/view\nSilence: https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=deploy%3Dprod&matcher=instance%3Dbadhost.example.com&matcher=job%3Drabbitmq&matcher=test%3Dtrue\n\nValue: [ var='B' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=24 ], [ var='C' labels={__name__=rabbitmq_queues, deploy=prod, instance=otherhost.example.com, job=rabbitmq} value=1 ]\nLabels:\n - alertname = Test alert\n - deploy = prod\n - instance = otherhost.example.com\n - job = rabbitmq\n - test = true\nAnnotations:\n - description = This is a description\n - runbook_url = https://example.com/\n - summary = This is a summary field, failure on otherhost.example.com\nSource: https://grafana.example.com/alerting/grafana/zTjxv_C7k/view\nSilence: https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DTest+alert&matcher=deploy%3Dprod&matcher=instance%3Dotherhost.example.com&matcher=job%3Drabbitmq&matcher=test%3Dtrue\n\nValue: [ var='B0' metric='camo_build_info{goversion=\"go1.17.6\", instance=\"sadhost.example.com\", job=\"camo\", role=\"smokescreen\", version=\"2.4.0\"}' labels={__name__=camo_build_info, goversion=go1.17.6, instance=sadhost.example.com, job=camo, role=smokescreen, version=2.4.0} value=1 ]\nLabels:\n - alertname = Second webhook test\n - test = true\nAnnotations:\n - description = Description **here**\n - runbook_url = https://example.com/\n - summary = Testing **another** failing alert\nSource: https://grafana.example.com/alerting/grafana/_0rkK_C7z/view\nSilence: https://grafana.example.com/alerting/silence/new?alertmanager=grafana&matcher=alertname%3DSecond+webhook+test&matcher=test%3Dtrue\n"
+}
