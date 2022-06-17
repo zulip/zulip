@@ -55,6 +55,14 @@ on when topic editing is allowed.
     You can also click on the **✔** icon in the message recipient bar to
     mark an unresolved topic as resolved.
 
+{tab|mobile}
+
+{!topic-long-press-menu.md!}
+
+1. Tap **Resolve topic**.
+
+{!topic-long-press-menu-tip.md!}
+
 {end_tabs}
 
 ## Mark a topic as unresolved
@@ -71,6 +79,14 @@ on when topic editing is allowed.
 
     You can also click on the **✔** icon in the message recipient bar to
     mark a resolved topic as unresolved.
+
+{tab|mobile}
+
+{!topic-long-press-menu.md!}
+
+1. Tap **Unresolve topic**.
+
+{!topic-long-press-menu-tip.md!}
 
 {end_tabs}
 
