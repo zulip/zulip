@@ -42,44 +42,37 @@ on when topic editing is allowed.
 
 ## Mark a topic as resolved
 
-### Via the message recipient bar
-
 {start_tabs}
 
-1. Click on the **✔** icon to mark an unresolved topic as resolved.
-
-{end_tabs}
-
-### Via the left sidebar
-
-{start_tabs}
+{tab|desktop-web}
 
 {!topic-actions.md!}
 
 1. Select **Mark as resolved**.
 
+!!! tip ""
+
+    You can also click on the **✔** icon in the message recipient bar to
+    mark an unresolved topic as resolved.
+
 {end_tabs}
 
 ## Mark a topic as unresolved
 
-### Via the message recipient bar
-
 {start_tabs}
 
-1. Click on the **✔** icon to mark a resolved topic as unresolved.
-
-{end_tabs}
-
-### Via the left sidebar
-
-{start_tabs}
+{tab|desktop-web}
 
 {!topic-actions.md!}
 
 1. Select **Mark as unresolved**.
 
-{end_tabs}
+!!! tip ""
 
+    You can also click on the **✔** icon in the message recipient bar to
+    mark a resolved topic as unresolved.
+
+{end_tabs}
 
 ## Details
 
