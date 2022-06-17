@@ -923,17 +923,22 @@ def apply_event(
         if event["op"] == "update":
             # For legacy reasons, we call stream data 'subscriptions' in
             # the state var here, for the benefit of the JS code.
-            for obj in state["subscriptions"]:
-                if obj["name"].lower() == event["name"].lower():
-                    obj[event["property"]] = event["value"]
-                    if event["property"] == "description":
-                        obj["rendered_description"] = event["rendered_description"]
-                    if event.get("history_public_to_subscribers") is not None:
-                        obj["history_public_to_subscribers"] = event[
-                            "history_public_to_subscribers"
-                        ]
-                    if event.get("is_web_public") is not None:
-                        obj["is_web_public"] = event["is_web_public"]
+            for sub_list in [
+                state["subscriptions"],
+                state["unsubscribed"],
+                state["never_subscribed"],
+            ]:
+                for obj in sub_list:
+                    if obj["name"].lower() == event["name"].lower():
+                        obj[event["property"]] = event["value"]
+                        if event["property"] == "description":
+                            obj["rendered_description"] = event["rendered_description"]
+                        if event.get("history_public_to_subscribers") is not None:
+                            obj["history_public_to_subscribers"] = event[
+                                "history_public_to_subscribers"
+                            ]
+                        if event.get("is_web_public") is not None:
+                            obj["is_web_public"] = event["is_web_public"]
             # Also update the pure streams data
             if "streams" in state:
                 for stream in state["streams"]:
