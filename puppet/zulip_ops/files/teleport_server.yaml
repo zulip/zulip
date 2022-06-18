@@ -15,8 +15,6 @@ auth_service:
       facets:
         - https://teleport.zulipchat.net:443
         - https://teleport.zulipchat.net
-        - teleport.zulipchat.net:443
-        - teleport.zulipchat.net
 
 proxy_service:
   enabled: "yes"
