@@ -818,16 +818,18 @@ input[type="checkbox"] {
     }
 }
 
+.edit-bot-name {
+    margin-bottom: 20px;
+}
+
+.avatar-section {
+    margin-bottom: 20px;
+}
+
 .edit_bot_form {
     font-size: 100%;
     margin: 0;
     padding: 0;
-
-    label {
-        font-weight: 600;
-        color: hsl(0, 0%, 67%);
-        margin-top: 5px;
-    }
 
     .buttons {
         margin: 10px 0 5px;
@@ -836,13 +838,11 @@ input[type="checkbox"] {
 
 .edit_bot_email {
     font-weight: 400;
-    font-size: 18px;
     text-align: left;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 
     overflow: hidden;
-    max-height: 1.1em;
     text-overflow: ellipsis;
     white-space: pre;
 }
