@@ -12,12 +12,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
 IGNORED_EVENTS = [
-    "downloadChart",
-    "deleteChart",
-    "uploadChart",
-    "pullImage",
-    "deleteImage",
-    "scanningFailed",
+    "DOWNLOAD_CHART",
+    "DELETE_CHART",
+    "UPLOAD_CHART",
+    "PULL_ARTIFACT",
+    "DELETE_ARTIFACT",
+    "SCANNING_FAILED",
 ]
 
 
@@ -45,14 +45,6 @@ def handle_push_image_event(
     return f"{operator_username} pushed image `{image_name}:{image_tag}`"
 
 
-VULNERABILITY_SEVERITY_NAME_MAP = {
-    1: "None",
-    2: "Unknown",
-    3: "Low",
-    4: "Medium",
-    5: "High",
-}
-
 SCANNING_COMPLETED_TEMPLATE = """
 Image scan completed for `{image_name}:{image_tag}`. Vulnerabilities by severity:
 
@@ -64,12 +56,17 @@ def handle_scanning_completed_event(
     payload: Dict[str, Any], user_profile: UserProfile, operator_username: str
 ) -> str:
     scan_results = ""
-    scan_summaries = payload["event_data"]["resources"][0]["scan_overview"]["components"]["summary"]
-    summaries_sorted = sorted(scan_summaries, key=lambda x: x["severity"], reverse=True)
-    for scan_summary in summaries_sorted:
-        scan_results += "* {}: **{}**\n".format(
-            VULNERABILITY_SEVERITY_NAME_MAP[scan_summary["severity"]], scan_summary["count"]
-        )
+    scan_overview = payload["event_data"]["resources"][0]["scan_overview"]
+    if "application/vnd.security.vulnerability.report; version=1.1" not in scan_overview:
+        raise UnsupportedWebhookEventType("Unsupported harbor scanning webhook payload")
+    scan_summaries = scan_overview["application/vnd.security.vulnerability.report; version=1.1"][
+        "summary"
+    ]["summary"]
+    if len(scan_summaries) > 0:
+        for severity, count in scan_summaries.items():
+            scan_results += "* {}: **{}**\n".format(severity, count)
+    else:
+        scan_results += "None\n"
 
     return SCANNING_COMPLETED_TEMPLATE.format(
         image_name=payload["event_data"]["repository"]["repo_full_name"],
@@ -79,8 +76,8 @@ def handle_scanning_completed_event(
 
 
 EVENT_FUNCTION_MAPPER = {
-    "pushImage": handle_push_image_event,
-    "scanningCompleted": handle_scanning_completed_event,
+    "PUSH_ARTIFACT": handle_push_image_event,
+    "SCANNING_COMPLETED": handle_scanning_completed_event,
 }
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())

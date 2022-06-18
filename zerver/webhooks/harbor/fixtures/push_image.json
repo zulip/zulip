@@ -1,5 +1,5 @@
 {
-    "type": "pushImage",
+    "type": "PUSH_ARTIFACT",
     "occur_at": 1571334632,
     "event_data": {
         "resources": [
