@@ -106,14 +106,14 @@ test("initialize", () => {
                     [
                         "stream:Verona",
                         {
-                            description: "Stream <strong>Ver</strong>ona",
+                            description_html: "Stream <strong>Ver</strong>ona",
                             search_string: "stream:Verona",
                         },
                     ],
                     [
                         "ver",
                         {
-                            description: "Search for ver",
+                            description_html: "Search for ver",
                             search_string: "ver",
                         },
                     ],

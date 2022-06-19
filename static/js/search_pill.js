@@ -3,10 +3,10 @@ import * as input_pill from "./input_pill";
 
 export function create_item_from_search_string(search_string) {
     const operator = Filter.parse(search_string);
-    const description = Filter.describe(operator);
+    const description_html = Filter.describe(operator);
     return {
         display_value: search_string,
-        description,
+        description_html,
     };
 }
 

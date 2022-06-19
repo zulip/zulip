@@ -11,12 +11,12 @@ const search_pill = zrequire("search_pill");
 
 const is_starred_item = {
     display_value: "is:starred",
-    description: "starred messages",
+    description_html: "starred messages",
 };
 
 const is_private_item = {
     display_value: "is:private",
-    description: "private messages",
+    description_html: "private messages",
 };
 
 run_test("create_item", () => {

@@ -69,7 +69,7 @@ export function initialize() {
     const $searchbox = $("#searchbox");
 
     // Data storage for the typeahead.
-    // This maps a search string to an object with a "description" field.
+    // This maps a search string to an object with a "description_html" field.
     // (It's a bit of legacy that we have an object with only one important
     // field.  There's also a "search_string" field on each element that actually
     // just represents the key of the hash, so it's redundant.)
@@ -94,7 +94,7 @@ export function initialize() {
         naturalSearch: true,
         highlighter(item) {
             const obj = search_map.get(item);
-            return obj.description;
+            return obj.description_html;
         },
         matcher() {
             return true;

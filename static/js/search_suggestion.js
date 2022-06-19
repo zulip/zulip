@@ -53,7 +53,7 @@ function check_validity(last, operators, valid, invalid) {
 
 function format_as_suggestion(terms) {
     return {
-        description: Filter.describe(terms),
+        description_html: Filter.describe(terms),
         search_string: Filter.unparse(terms),
     };
 }
@@ -113,14 +113,14 @@ function get_stream_suggestions(last, operators) {
         const prefix = "stream";
         const highlighted_stream = hilite(regex, stream);
         const verb = last.negated ? "exclude " : "";
-        const description = verb + prefix + " " + highlighted_stream;
+        const description_html = verb + prefix + " " + highlighted_stream;
         const term = {
             operator: "stream",
             operand: stream,
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description, search_string};
+        return {description_html, search_string};
     });
 
     return objs;
@@ -177,14 +177,14 @@ function get_group_suggestions(last, operators) {
             negated,
         };
         const name = highlight_person(person);
-        const description =
+        const description_html =
             prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
         let terms = [term];
         if (negated) {
             terms = [{operator: "is", operand: "private"}, term];
         }
         const search_string = Filter.unparse(terms);
-        return {description, search_string};
+        return {description_html, search_string};
     });
 
     return suggestions;
@@ -253,7 +253,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const objs = persons.map((person) => {
         const name = highlight_person(person);
-        const description = prefix + " " + name;
+        const description_html = prefix + " " + name;
         const terms = [
             {
                 operator: autocomplete_operator,
@@ -267,7 +267,7 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
             terms.unshift({operator: "is", operand: "private"});
         }
         const search_string = Filter.unparse(terms);
-        return {description, search_string};
+        return {description_html, search_string};
     });
 
     return objs;
@@ -277,7 +277,7 @@ function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the query that the
     // user typed. (The caller passes us the parsed query as "operators".)
     if (operators.length === 0) {
-        return {description: "", search_string: ""};
+        return {description_html: "", search_string: ""};
     }
     return format_as_suggestion(operators);
 }
@@ -430,7 +430,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     if (last.negated || is_search_operand_negated) {
         suggestions = suggestions.map((suggestion) => ({
             search_string: "-" + suggestion.search_string,
-            description: "exclude " + suggestion.description,
+            description_html: "exclude " + suggestion.description_html,
             invalid: suggestion.invalid,
         }));
     }
@@ -452,13 +452,13 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         return (
             s.search_string.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            s.description.toLowerCase().startsWith(last_string)
+            s.description_html.toLowerCase().startsWith(last_string)
         );
     });
 
     // Only show home if there's an empty bar
     if (operators.length === 0 && last_string === "") {
-        suggestions.unshift({search_string: "", description: "All messages"});
+        suggestions.unshift({search_string: "", description_html: "All messages"});
     }
     return suggestions;
 }
@@ -467,7 +467,7 @@ function get_streams_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "streams:public",
-            description: "All public streams in organization",
+            description_html: "All public streams in organization",
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -484,7 +484,7 @@ function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "is:private",
-            description: "private messages",
+            description_html: "private messages",
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -494,27 +494,27 @@ function get_is_filter_suggestions(last, operators) {
         },
         {
             search_string: "is:starred",
-            description: "starred messages",
+            description_html: "starred messages",
             invalid: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
-            description: "@-mentions",
+            description_html: "@-mentions",
             invalid: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
-            description: "alerted messages",
+            description_html: "alerted messages",
             invalid: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
-            description: "unread messages",
+            description_html: "unread messages",
             invalid: [{operator: "is", operand: "unread"}],
         },
         {
             search_string: "is:resolved",
-            description: "topics marked as resolved",
+            description_html: "topics marked as resolved",
             invalid: [{operator: "is", operand: "resolved"}],
         },
     ];
@@ -525,17 +525,17 @@ function get_has_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "has:link",
-            description: "messages with one or more link",
+            description_html: "messages with one or more link",
             invalid: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description: "messages with one or more image",
+            description_html: "messages with one or more image",
             invalid: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description: "messages with one or more attachment",
+            description_html: "messages with one or more attachment",
             invalid: [{operator: "has", operand: "attachment"}],
         },
     ];
@@ -553,7 +553,7 @@ function get_sent_by_me_suggestions(last, operators) {
     const sender_me_query = negated_symbol + "sender:me";
     const from_me_query = negated_symbol + "from:me";
     const sent_string = negated_symbol + "sent";
-    const description = verb + "sent by me";
+    const description_html = verb + "sent by me";
 
     const invalid = [{operator: "sender"}, {operator: "from"}];
 
@@ -570,14 +570,14 @@ function get_sent_by_me_suggestions(last, operators) {
         return [
             {
                 search_string: sender_query,
-                description,
+                description_html,
             },
         ];
     } else if (from_query.startsWith(last_string) || from_me_query.startsWith(last_string)) {
         return [
             {
                 search_string: from_query,
-                description,
+                description_html,
             },
         ];
     }
@@ -614,9 +614,10 @@ class Attacher {
     }
 
     prepend_base(suggestion) {
-        if (this.base && this.base.description.length > 0) {
+        if (this.base && this.base.description_html.length > 0) {
             suggestion.search_string = this.base.search_string + " " + suggestion.search_string;
-            suggestion.description = this.base.description + ", " + suggestion.description;
+            suggestion.description_html =
+                this.base.description_html + ", " + suggestion.description_html;
         }
     }
 
@@ -780,8 +781,8 @@ export function get_suggestions(base_query, query) {
 
 export function finalize_search_result(result) {
     for (const sug of result) {
-        const first = sug.description.charAt(0).toUpperCase();
-        sug.description = first + sug.description.slice(1);
+        const first = sug.description_html.charAt(0).toUpperCase();
+        sug.description_html = first + sug.description_html.slice(1);
     }
 
     // Typeahead expects us to give it strings, not objects,
