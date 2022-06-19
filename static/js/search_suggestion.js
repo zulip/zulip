@@ -168,7 +168,7 @@ function get_group_suggestions(last, operators) {
 
     const prefix = Filter.operator_to_prefix("pm-with", negated);
 
-    const highlight_person = make_person_highlighter(last_part);
+    const person_highlighter = make_person_highlighter(last_part);
 
     const suggestions = persons.map((person) => {
         const term = {
@@ -176,7 +176,7 @@ function get_group_suggestions(last, operators) {
             operand: all_but_last_part + "," + person.email,
             negated,
         };
-        const name = highlight_person(person);
+        const name = person_highlighter(person);
         const description_html =
             prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
         let terms = [term];
@@ -249,10 +249,10 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const prefix = Filter.operator_to_prefix(autocomplete_operator, last.negated);
 
-    const highlight_person = make_person_highlighter(query);
+    const person_highlighter = make_person_highlighter(query);
 
     const objs = persons.map((person) => {
-        const name = highlight_person(person);
+        const name = person_highlighter(person);
         const description_html = prefix + " " + name;
         const terms = [
             {
