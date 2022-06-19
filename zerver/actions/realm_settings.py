@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Literal, Optional, Sequence
 
 import orjson
 from django.conf import settings
@@ -186,13 +186,29 @@ def do_set_realm_message_editing(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_set_realm_notifications_stream(
-    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+def do_set_realm_stream(
+    realm: Realm,
+    field: Literal["notifications_stream", "signup_notifications_stream"],
+    stream: Optional[Stream],
+    stream_id: int,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
-    old_value = realm.notifications_stream_id
-    realm.notifications_stream = stream
+    # We could calculate more of these variables from `field`, but
+    # it's probably more readable to not do so.
+    if field == "notifications_stream":
+        old_value = realm.notifications_stream_id
+        realm.notifications_stream = stream
+        property = "notifications_stream_id"
+    elif field == "signup_notifications_stream":
+        old_value = realm.signup_notifications_stream_id
+        realm.signup_notifications_stream = stream
+        property = "signup_notifications_stream_id"
+    else:
+        raise AssertionError("Invalid realm stream field.")
+
     with transaction.atomic():
-        realm.save(update_fields=["notifications_stream"])
+        realm.save(update_fields=[field])
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
@@ -204,7 +220,7 @@ def do_set_realm_notifications_stream(
                 {
                     RealmAuditLog.OLD_VALUE: old_value,
                     RealmAuditLog.NEW_VALUE: stream_id,
-                    "property": "notifications_stream",
+                    "property": field,
                 }
             ).decode(),
         )
@@ -212,41 +228,24 @@ def do_set_realm_notifications_stream(
     event = dict(
         type="realm",
         op="update",
-        property="notifications_stream_id",
+        property=property,
         value=stream_id,
     )
     send_event(realm, event, active_user_ids(realm.id))
+
+
+def do_set_realm_notifications_stream(
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    do_set_realm_stream(realm, "notifications_stream", stream, stream_id, acting_user=acting_user)
 
 
 def do_set_realm_signup_notifications_stream(
     realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
-    old_value = realm.signup_notifications_stream_id
-    realm.signup_notifications_stream = stream
-    with transaction.atomic():
-        realm.save(update_fields=["signup_notifications_stream"])
-
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: stream_id,
-                    "property": "signup_notifications_stream",
-                }
-            ).decode(),
-        )
-    event = dict(
-        type="realm",
-        op="update",
-        property="signup_notifications_stream_id",
-        value=stream_id,
+    do_set_realm_stream(
+        realm, "signup_notifications_stream", stream, stream_id, acting_user=acting_user
     )
-    send_event(realm, event, active_user_ids(realm.id))
 
 
 def do_set_realm_user_default_setting(
