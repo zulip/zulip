@@ -19,13 +19,15 @@ function stream_matches_query(stream_name, q) {
 }
 
 function make_person_highlighter(query) {
-    const hilite = typeahead_helper.make_query_highlighter(query);
+    const highlight_query = typeahead_helper.make_query_highlighter(query);
 
     return function (person) {
         if (settings_data.show_email()) {
-            return hilite(person.full_name) + " &lt;" + hilite(person.email) + "&gt;";
+            return (
+                highlight_query(person.full_name) + " &lt;" + highlight_query(person.email) + "&gt;"
+            );
         }
-        return hilite(person.full_name);
+        return highlight_query(person.full_name);
     };
 }
 
@@ -107,11 +109,11 @@ function get_stream_suggestions(last, operators) {
     streams = typeahead_helper.sorter(query, streams);
 
     const regex = typeahead_helper.build_highlight_regex(query);
-    const hilite = typeahead_helper.highlight_with_escaping_and_regex;
+    const highlight_query = typeahead_helper.highlight_with_escaping_and_regex;
 
     const objs = streams.map((stream) => {
         const prefix = "stream";
-        const highlighted_stream = hilite(regex, stream);
+        const highlighted_stream = highlight_query(regex, stream);
         const verb = last.negated ? "exclude " : "";
         const description_html = verb + prefix + " " + highlighted_stream;
         const term = {
