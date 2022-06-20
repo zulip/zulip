@@ -2213,11 +2213,6 @@ div.floating_recipient {
     border-radius: 6px;
 }
 
-.table-striped thead th {
-    background-color: hsl(0, 0%, 27%);
-    color: hsl(0, 0%, 100%);
-}
-
 #create_stream_subscribers {
     margin-top: 10px;
 
