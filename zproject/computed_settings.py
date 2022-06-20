@@ -337,7 +337,7 @@ SESSION_ENGINE = "zerver.lib.safe_session_cached_db"
 
 MEMCACHED_PASSWORD = get_secret("memcached_password")
 
-CACHES = {
+CACHES: Dict[str, Dict[str, object]] = {
     "default": {
         "BACKEND": "zerver.lib.singleton_bmemcached.SingletonBMemcached",
         "LOCATION": MEMCACHED_LOCATION,
