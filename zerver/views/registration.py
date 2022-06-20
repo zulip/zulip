@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
-from django.contrib.sessions.models import Session
+from django.contrib.sessions.backends.base import SessionBase
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -540,7 +540,7 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
 
 def prepare_activation_url(
     email: str,
-    session: Session,
+    session: SessionBase,
     *,
     realm: Optional[Realm],
     realm_creation: bool = False,
