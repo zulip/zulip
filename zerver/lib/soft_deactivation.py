@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Optional, Set, Union
+from typing import Any, DefaultDict, Dict, List, Optional, Set, TypedDict, Union
 
 from django.conf import settings
 from django.db import transaction
@@ -28,15 +28,20 @@ log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
 BULK_CREATE_BATCH_SIZE = 10000
 
 
+class MissingMessageDict(TypedDict):
+    id: int
+    recipient__type_id: int
+
+
 def filter_by_subscription_history(
     user_profile: UserProfile,
-    all_stream_messages: DefaultDict[int, List[Message]],
+    all_stream_messages: DefaultDict[int, List[MissingMessageDict]],
     all_stream_subscription_logs: DefaultDict[int, List[RealmAuditLog]],
 ) -> List[UserMessage]:
     user_messages_to_insert: List[UserMessage] = []
     seen_message_ids: Set[int] = set()
 
-    def store_user_message_to_insert(message: Message) -> None:
+    def store_user_message_to_insert(message: MissingMessageDict) -> None:
         if message["id"] not in seen_message_ids:
             user_message = UserMessage(user_profile=user_profile, message_id=message["id"], flags=0)
             user_messages_to_insert.append(user_message)
@@ -213,7 +218,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # Filter those messages for which UserMessage rows have been already created
     all_stream_msgs = [msg for msg in all_stream_msgs if msg["id"] not in already_created_ums]
 
-    stream_messages: DefaultDict[int, List[Message]] = defaultdict(list)
+    stream_messages: DefaultDict[int, List[MissingMessageDict]] = defaultdict(list)
     for msg in all_stream_msgs:
         stream_messages[msg["recipient__type_id"]].append(msg)
 
