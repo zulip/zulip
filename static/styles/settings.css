@@ -1613,6 +1613,7 @@ input[type="checkbox"] {
  *the edit bot owner selection to
  *be visible */
     position: fixed;
+    z-index:1;
 }
 
 .subsection-failed-status p {
