@@ -66,15 +66,31 @@ function delete_profile_field(e) {
     update_profile_fields_table_element();
 }
 
-function read_select_field_data_from_form(field_elem) {
+function read_select_field_data_from_form(field_elem, old_field_data) {
     const field_data = {};
     let field_order = 1;
+
+    const old_option_value_map = new Map();
+    if (old_field_data !== undefined) {
+        for (const [value, choice] of Object.entries(old_field_data)) {
+            old_option_value_map.set(choice.text, value);
+        }
+    }
+
     $(field_elem)
         .find("div.choice-row")
         .each(function () {
             const text = $(this).find("input")[0].value;
             if (text) {
-                field_data[field_order - 1] = {text, order: field_order.toString()};
+                if (old_option_value_map.get(text) !== undefined) {
+                    // Resetting the data-value in the form is
+                    // important if the user removed an option string
+                    // and then added it back again before saving
+                    // changes.
+                    $(this).attr("data-value", old_option_value_map.get(text));
+                }
+                const value = $(this).attr("data-value");
+                field_data[value] = {text, order: field_order.toString()};
                 field_order += 1;
             }
         });
@@ -105,8 +121,23 @@ function update_choice_delete_btn($container, display_flag) {
     }
 }
 
+function get_value_for_new_option(container) {
+    const $choice_rows = $(container).find(".choice-row");
+    if ($choice_rows.length === 0) {
+        // Value for the first option is 0.
+        return 0;
+    }
+
+    const existing_option_values = [];
+    $choice_rows.each(function () {
+        existing_option_values.push(Number.parseInt($(this).attr("data-value"), 10));
+    });
+    existing_option_values.sort();
+    return existing_option_values[existing_option_values.length - 1] + 1;
+}
+
 function create_choice_row(container) {
-    const context = {};
+    const context = {value: get_value_for_new_option(container)};
     const row = render_settings_profile_field_choice(context);
     $(container).append(row);
 }
@@ -153,11 +184,11 @@ function set_up_create_field_form() {
     }
 }
 
-function read_field_data_from_form(field_type_id, field_elem) {
+function read_field_data_from_form(field_type_id, field_elem, old_field_data) {
     // Only read field data if we are creating a select field
     // or external account field.
     if (field_type_id === field_types.SELECT.id) {
-        return read_select_field_data_from_form(field_elem);
+        return read_select_field_data_from_form(field_elem, old_field_data);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         return read_external_account_field_data(field_elem);
     }
@@ -231,7 +262,7 @@ export function parse_field_choices_from_field_data(field_data) {
             order: choice.order,
         });
     }
-
+    choices.sort((a, b) => a.order - b.order);
     return choices;
 }
 
@@ -260,6 +291,7 @@ function set_up_select_field_edit_form(profile_field, field_data) {
         $choice_list.append(
             render_settings_profile_field_choice({
                 text: choice.text,
+                value: choice.value,
             }),
         );
     }
@@ -317,7 +349,11 @@ function open_edit_form(e) {
         data.name = profile_field.$form.find("input[name=name]").val();
         data.hint = profile_field.$form.find("input[name=hint]").val();
         data.field_data = JSON.stringify(
-            read_field_data_from_form(Number.parseInt(field.type, 10), profile_field.$form),
+            read_field_data_from_form(
+                Number.parseInt(field.type, 10),
+                profile_field.$form,
+                field_data,
+            ),
         );
 
         settings_ui.do_settings_change(
