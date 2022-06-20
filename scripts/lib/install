@@ -451,13 +451,6 @@ fi
 
 "$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
-if [ "$package_system" = apt ]; then
-    apt-get -y upgrade
-elif [ "$package_system" = yum ]; then
-    # No action is required because `yum update` already does upgrade.
-    :
-fi
-
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
         "$EXTERNAL_HOST" --email "$ZULIP_ADMINISTRATOR"
