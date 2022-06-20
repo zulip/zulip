@@ -183,9 +183,6 @@ h4.stream_setting_subsection_title {
             }
 
             thead th {
-                color: inherit;
-                background-color: hsl(0, 0%, 100%);
-
                 &:first-of-type {
                     border-top-left-radius: 4px;
                 }

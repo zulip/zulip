@@ -83,8 +83,8 @@ body.dark-theme {
     table.table-striped thead.table-sticky-headers th {
         background-color: hsl(0, 0%, 0%);
 
-        &:hover:not(.actions) {
-            background-color: hsl(211, 29%, 14%);
+        &[data-sort]:hover {
+            background-color: hsl(211, 29%, 14%) !important;
         }
     }
 
