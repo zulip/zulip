@@ -1608,6 +1608,13 @@ input[type="checkbox"] {
     }
 }
 
+#id_edit_bot_owner {
+    /* Allows the dropdown list menu for
+ *the edit bot owner selection to
+ *be visible */
+    position: fixed;
+}
+
 .subsection-failed-status p {
     background-color: hsl(0, 43%, 91%);
     padding: 2px 6px;
