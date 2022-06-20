@@ -7,6 +7,48 @@ up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
+### 5.3 -- 2022-06-21
+
+- CVE-2022-31017: Fixed message edit event exposure in
+  protected-history streams.
+  Zulip allows a stream to be configured as [private with protected
+  history](https://zulip.com/help/stream-permissions#stream-privacy-settings),
+  which means that new subscribers should only see messages sent after
+  they join. However, due to a logic bug in Zulip Server 2.1.0 through
+  5.2, when a message was edited, the server would incorrectly send an
+  API event that included both the edited and old content of the
+  message to all of the stream’s current subscribers, regardless of
+  whether they could see the original message. The impact of this
+  issue was reduced by the fact that this API event is ignored by
+  official clients, so it could only be observed by a user using a
+  modified client or their browser’s developer tools.
+- Adjusted upgrade steps to cause servers using PostgreSQL 14 to
+  upgrade to PostgreSQL 14.4, which fixes an important potential
+  database corruption issue.
+- Upgraded the asynchronous request handling to use Tornado 6.
+- Fixed a crash when displaying the error message for a failed attempt
+  to create a stream.
+- Optimized the steps during `upgrade-zulip`, to reduce the amount of
+  server downtime.
+- Added a `--skip-restart` flag to `upgrade-zulip` which prepares the
+  new version, but does not restart the server into it.
+- Stopped mirroring the entire remote Git repository directly into
+  `/srv/zulip.git`. This mirroring removed local branches and confused
+  the state of previous deployments.
+- Fixed a bug which could cause the `delete_old_unclaimed_attachments`
+  command-line tool to remove attachments that were still referenced
+  by deleted (but not yet permanently removed) messages.
+- Stopped enabling `USE_X_FORWARDED_HOST` by default, which was
+  generally unneeded; the proxy documentation now clarifies when it is
+  necessary.
+- Fixed the nginx configuration to include the default system-level
+  nginx modules.
+- Only attempt to fix the `certbot` SSL renewal configuration if HTTPS
+  is enabled; this addresses a regression in Zulip Server 5.2, where
+  the upgrade would fail if an improperly configured certificate
+  existed, but was both expired and not in use.
+- Improved proxy and database backup documentation.
+
 ### 5.2 -- 2022-05-03
 
 - Fixed a performance regression in the UI, introduced in 5.0, when
