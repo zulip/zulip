@@ -164,7 +164,7 @@ EXEMPT_FILES = make_set(
         "static/js/settings_streams.js",
         "static/js/settings_toggle.js",
         "static/js/settings_ui.js",
-        "static/js/settings_user_groups.js",
+        "static/js/settings_user_groups_legacy.js",
         "static/js/settings_users.js",
         "static/js/setup.js",
         "static/js/spectators.js",
