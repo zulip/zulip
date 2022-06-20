@@ -32,7 +32,7 @@ const ui_report = mock_esm("../../static/js/ui_report");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const settings_data = zrequire("settings_data");
-const settings_user_groups = zrequire("settings_user_groups");
+const settings_user_groups_legacy = zrequire("settings_user_groups_legacy");
 const user_pill = zrequire("user_pill");
 
 function reset_test_setup($pill_container_stub) {
@@ -52,7 +52,7 @@ function test_ui(label, f) {
 
 test_ui("can_edit", () => {
     settings_data.user_can_edit_user_groups = () => false;
-    assert.ok(!settings_user_groups.can_edit(1));
+    assert.ok(!settings_user_groups_legacy.can_edit(1));
 
     settings_data.user_can_edit_user_groups = () => true;
     user_groups.is_direct_member_of = (user_id, group_id) => {
@@ -60,14 +60,14 @@ test_ui("can_edit", () => {
         assert.equal(user_id, undefined);
         return false;
     };
-    assert.ok(!settings_user_groups.can_edit(1));
+    assert.ok(!settings_user_groups_legacy.can_edit(1));
 
     page_params.is_admin = true;
-    assert.ok(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups_legacy.can_edit(1));
 
     page_params.is_admin = false;
     page_params.is_moderator = true;
-    assert.ok(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups_legacy.can_edit(1));
 
     page_params.is_admin = false;
     page_params.is_moderator = false;
@@ -76,7 +76,7 @@ test_ui("can_edit", () => {
         assert.equal(user_id, undefined);
         return true;
     };
-    assert.ok(settings_user_groups.can_edit(1));
+    assert.ok(settings_user_groups_legacy.can_edit(1));
 });
 
 const user_group_selector = `#user-groups #${CSS.escape(1)}`;
@@ -320,14 +320,14 @@ test_ui("populate_user_groups", ({mock_template}) => {
     };
 
     reset_test_setup($pill_container_stub);
-    settings_user_groups.set_up();
+    settings_user_groups_legacy.set_up();
     assert.ok(templates_render_called);
     assert.ok(user_groups_list_append_called);
     assert.ok(get_by_user_id_called);
     assert.ok(input_typeahead_called);
     test_create_item(create_item_handler);
 
-    // Tests for settings_user_groups.set_up workflow.
+    // Tests for settings_user_groups_legacy.set_up workflow.
     assert.equal(typeof $("#user-groups").get_on_handler("click", ".delete"), "function");
     assert.equal(
         typeof $("#user-groups").get_on_handler("keypress", ".user-group h4 > span"),
@@ -359,7 +359,7 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
     override_rewire(user_pill, "append_person", noop);
 
     let can_edit_called = 0;
-    override_rewire(settings_user_groups, "can_edit", () => {
+    override_rewire(settings_user_groups_legacy, "can_edit", () => {
         can_edit_called += 1;
         return false;
     });
@@ -428,7 +428,7 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
 
     reset_test_setup($pill_container_stub);
 
-    settings_user_groups.set_up();
+    settings_user_groups_legacy.set_up();
 
     let set_parents_result_called = 0;
     let set_attributes_called = 0;
@@ -478,17 +478,17 @@ test_ui("with_external_user", ({override_rewire, mock_template}) => {
 test_ui("reload", ({override_rewire}) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    override_rewire(settings_user_groups, "populate_user_groups", () => {
+    override_rewire(settings_user_groups_legacy, "populate_user_groups", () => {
         populate_user_groups_called = true;
     });
-    settings_user_groups.reload();
+    settings_user_groups_legacy.reload();
     assert.ok(populate_user_groups_called);
     assert.equal($("#user-groups").html(), "");
 });
 
 test_ui("reset", () => {
-    settings_user_groups.reset();
-    const result = settings_user_groups.reload();
+    settings_user_groups_legacy.reset();
+    const result = settings_user_groups_legacy.reload();
     assert.equal(result, undefined);
 });
 
@@ -503,7 +503,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
     page_params.is_admin = true;
 
     (function test_admin_user_group_form_submit_triggered() {
-        const handler = settings_user_groups.add_user_group;
+        const handler = settings_user_groups_legacy.add_user_group;
         const event = {
             stopPropagation: noop,
             preventDefault: noop,
@@ -650,9 +650,9 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
             assert.ok(!api_endpoint_called);
 
             // Cancel button triggers blur event.
-            let settings_user_groups_reload_called = false;
-            override_rewire(settings_user_groups, "reload", () => {
-                settings_user_groups_reload_called = true;
+            let settings_user_groups_legacy_reload_called = false;
+            override_rewire(settings_user_groups_legacy, "reload", () => {
+                settings_user_groups_legacy_reload_called = true;
             });
             api_endpoint_called = false;
             $fake_this.closest = (class_name) => {
@@ -666,7 +666,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
             };
             handler.call($fake_this, event);
             assert.ok(!api_endpoint_called);
-            assert.ok(settings_user_groups_reload_called);
+            assert.ok(settings_user_groups_legacy_reload_called);
         }
     })();
 

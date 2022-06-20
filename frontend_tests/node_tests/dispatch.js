@@ -62,7 +62,7 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../../static/js/settings_realm_domains");
 const settings_streams = mock_esm("../../static/js/settings_streams");
-const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
+const settings_user_groups_legacy = mock_esm("../../static/js/settings_user_groups_legacy");
 const settings_users = mock_esm("../../static/js/settings_users");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
@@ -159,7 +159,7 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    override(settings_user_groups, "reload", noop);
+    override(settings_user_groups_legacy, "reload", noop);
     {
         const stub = make_stub();
         override(user_groups, "add", stub.f);
@@ -1089,7 +1089,7 @@ run_test("server_event_dispatch_op_errors", ({override}) => {
         sender: {user_id: 5},
         op: "other",
     });
-    override(settings_user_groups, "reload", noop);
+    override(settings_user_groups_legacy, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });
