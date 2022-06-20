@@ -228,7 +228,7 @@ if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
 if not (minimal_change or args.skip_puppet):
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])
-    subprocess.check_call(["apt-get", "-y", "upgrade"])
+    subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
 
 # To bootstrap zulip-puppet-apply, we need to install the system yaml
 # package; new installs get this, but old installs may not have it.
@@ -444,7 +444,7 @@ else:
         shutdown_server()
         logging.info("Applying Puppet changes...")
         subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
-        subprocess.check_call(["apt-get", "-y", "upgrade"])
+        subprocess.check_call(["apt-get", "-y", "--with-new-pkgs", "upgrade"])
         # Puppet may have reloaded supervisor, and in so doing started
         # services; mark as potentially needing to stop the server.
         IS_SERVER_UP = True
