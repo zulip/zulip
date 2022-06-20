@@ -1,24 +1,22 @@
 # Change your language
 
-Zulip has been translated or partially translated into dozens of
-languages. You can see which languages Zulip supports, and help add
-support for new languages on **[Transifex](https://www.transifex.com/zulip/zulip/)**.
+{!translation-project-info.md!}
 
 If your organization has a primary language other than American
 English, an administrator should also [set the organization
 notifications language][org-notifications-lang].
 
-### Change your language
+## Change your language
 
 {start_tabs}
 
 {settings_tab|display-settings}
 
-2. Under **Language and time**, click the button next to **Language**.
+1. Under **Language and time**, click the button under **Language**.
 
-3. Click on a language.
+1. Select a language.
 
-4. Click **Reload**.
+1. Click **Reload**.
 
 {end_tabs}
 
