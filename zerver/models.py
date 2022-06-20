@@ -4,6 +4,7 @@ import secrets
 import time
 from datetime import timedelta
 from typing import (
+    TYPE_CHECKING,
     AbstractSet,
     Any,
     Callable,
@@ -114,6 +115,10 @@ MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 
+if TYPE_CHECKING:
+    # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
+    from django.contrib.auth.backends import ModelBackend
+
 
 class EmojiInfo(TypedDict):
     id: str
@@ -216,10 +221,10 @@ def get_active_realm_emoji_cache_key(realm: "Realm") -> str:
 # these values cannot change in a running production system, but do
 # regularly change within unit tests; we address the latter by calling
 # clear_supported_auth_backends_cache in our standard tearDown code.
-supported_backends: Optional[Set[type]] = None
+supported_backends: Optional[List["ModelBackend"]] = None
 
 
-def supported_auth_backends() -> Set[type]:
+def supported_auth_backends() -> List["ModelBackend"]:
     global supported_backends
     # Caching temporarily disabled for debugging
     supported_backends = django.contrib.auth.get_backends()
