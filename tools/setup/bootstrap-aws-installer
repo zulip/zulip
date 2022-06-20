@@ -36,7 +36,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Dependencies to install AWS CLI
 (
     apt-get -qy update
-    apt-get -qy -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
+    apt-get -qy --with-new-pkgs -o "Dpkg::Options::=--force-confdef" -o "Dpkg::Options::=--force-confold" upgrade
     apt-get -qy install jq unzip curl
     apt-get -qy autoclean
 )
