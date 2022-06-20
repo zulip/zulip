@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Sequence
+from typing import Dict, List, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -7,6 +7,15 @@ from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+
+
+class UserGroupDict(TypedDict):
+    id: int
+    name: str
+    description: str
+    members: List[int]
+    direct_subgroup_ids: List[int]
+    is_system_group: bool
 
 
 def access_user_group_by_id(
@@ -48,14 +57,14 @@ def access_user_groups_as_potential_subgroups(
     return list(user_groups)
 
 
-def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
+def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
     UserGroup and UserGroupMembership that we need.
     """
     realm_groups = UserGroup.objects.filter(realm=realm)
-    group_dicts: Dict[str, Any] = {}
+    group_dicts: Dict[int, UserGroupDict] = {}
     for user_group in realm_groups:
         group_dicts[user_group.id] = dict(
             id=user_group.id,
