@@ -187,6 +187,23 @@ For more advice, see [What makes a great Zulip
 contributor?](https://zulip.readthedocs.io/en/latest/overview/contributing.html#what-makes-a-great-zulip-contributor)
 below.
 
+### Licensing your contribution
+
+Zulip doesn't require you to sign a copyright assignment or a
+contributor license agreement for your contribution. However, you must
+ensure that your contribution is compatible with the [Apache 2.0
+license](https://github.com/zulip/zulip/blob/main/LICENSE) under which
+Zulip is distributed.
+
+If any part of your contribution is from someone else (code snippets,
+images, sounds, or any other copyrightable work, modified or
+unmodified), then you need to check that they were distributed under a
+compatible open-source license, and add a correctly
+[formatted](https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/)
+entry to the [`docs/THIRDPARTY`
+file](https://github.com/zulip/zulip/blob/main/docs/THIRDPARTY) with
+their copyright and licensing information.
+
 ### Submitting a pull request
 
 When you believe your code is ready, follow the [guide on how to review
