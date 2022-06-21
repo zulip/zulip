@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -25,6 +26,8 @@ def upload_logo(
     if len(request.FILES) != 1:
         raise JsonableError(_("You must upload exactly one logo."))
     logo_file = list(request.FILES.values())[0]
+    assert isinstance(logo_file, UploadedFile)
+    assert logo_file.size is not None
     if (settings.MAX_LOGO_FILE_SIZE_MIB * 1024 * 1024) < logo_file.size:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(

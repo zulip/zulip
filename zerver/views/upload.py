@@ -3,6 +3,7 @@ from typing import Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.cache import patch_cache_control
@@ -137,7 +138,9 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         raise JsonableError(_("You may only upload one file at a time"))
 
     user_file = list(request.FILES.values())[0]
+    assert isinstance(user_file, UploadedFile)
     file_size = user_file.size
+    assert file_size is not None
     if settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024 < file_size:
         raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
