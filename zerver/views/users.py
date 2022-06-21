@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext as _
@@ -375,6 +376,8 @@ def patch_bot_backend(
         pass
     elif len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
+        assert isinstance(user_file, UploadedFile)
+        assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
@@ -511,6 +514,8 @@ def add_bot_backend(
     )
     if len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
+        assert isinstance(user_file, UploadedFile)
+        assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot_profile)
 
     if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
