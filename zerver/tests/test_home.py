@@ -190,6 +190,7 @@ class HomeTest(ZulipTestCase):
         "request_language",
         "search_pills_enabled",
         "server_avatar_changes_disabled",
+        "server_emoji_data_url",
         "server_generation",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",

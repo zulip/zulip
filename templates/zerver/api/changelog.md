@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 140**
+
+* [`POST /register`](/api/register-queue): Added string field `server_emoji_data_url`
+  to the response.
+
 **Feature level 139**
 
 * [`GET /get-events`](/api/get-events): When a user mutes or unmutes

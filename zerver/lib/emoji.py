@@ -3,6 +3,7 @@ import re
 from typing import Tuple
 
 import orjson
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -34,6 +35,15 @@ EMOTICON_RE = (
     + ")|(".join(possible_emoticon_regexes)
     + f"))(?![^{terminal_symbols}])"
 )
+
+
+def data_url() -> str:
+    # This bakes a hash into the URL, which looks something like
+    # static/webpack-bundles/files/64.0cdafdf0b6596657a9be.png
+    # This is how Django deals with serving static files in a cacheable way.
+    # See PR #22275 for details.
+    return staticfiles_storage.url("generated/emoji/emoji_api.json")
+
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: str) -> str:
