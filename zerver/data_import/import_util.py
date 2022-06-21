@@ -81,7 +81,7 @@ def build_zerver_realm(
         description=f"Organization imported from {other_product}!",
     )
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude="authentication_methods")
+    realm_dict = model_to_dict(realm, exclude=["authentication_methods"])
     realm_dict["authentication_methods"] = auth_methods
     return [realm_dict]
 
