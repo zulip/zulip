@@ -1,7 +1,7 @@
 import calendar
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -125,7 +125,7 @@ def build_page_params_for_home_page_load(
     first_in_realm: bool,
     prompt_for_invites: bool,
     needs_tutorial: bool,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Dict[str, object]]:
     """
     This function computes page_params for when we load the home page.
 
@@ -179,7 +179,7 @@ def build_page_params_for_home_page_load(
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
-    page_params = dict(
+    page_params: Dict[str, object] = dict(
         ## Server settings.
         test_suite=settings.TEST_SUITE,
         insecure_desktop_app=insecure_desktop_app,
