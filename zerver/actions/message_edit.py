@@ -356,7 +356,7 @@ def do_update_message(
     target_message: Message,
     new_stream: Optional[Stream],
     topic_name: Optional[str],
-    propagate_mode: str,
+    propagate_mode: Optional[str],
     send_notification_to_old_thread: bool,
     send_notification_to_new_thread: bool,
     content: Optional[str],
@@ -495,6 +495,7 @@ def do_update_message(
         )
 
     if topic_name is not None or new_stream is not None:
+        assert propagate_mode is not None
         orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
 
