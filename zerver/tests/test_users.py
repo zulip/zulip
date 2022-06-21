@@ -1514,11 +1514,15 @@ class ActivateTest(ZulipTestCase):
             3,
         )
         self.assertTrue(
-            Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            )
             > timezone_now()
         )
         self.assertTrue(
-            Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            )
             > timezone_now()
         )
         self.assertIsNone(
@@ -1547,15 +1551,23 @@ class ActivateTest(ZulipTestCase):
             3,
         )
         self.assertTrue(
-            Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=iago_multiuse_key).expiry_date
+            )
             <= timezone_now()
         )
         self.assertTrue(
-            Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            assert_is_not_none(
+                Confirmation.objects.get(confirmation_key=desdemona_multiuse_key).expiry_date
+            )
             > timezone_now()
         )
         self.assertTrue(
-            Confirmation.objects.get(confirmation_key=iago_never_expire_multiuse_key).expiry_date
+            assert_is_not_none(
+                Confirmation.objects.get(
+                    confirmation_key=iago_never_expire_multiuse_key
+                ).expiry_date
+            )
             <= timezone_now()
         )
         self.assertIsNone(
