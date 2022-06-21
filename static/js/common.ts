@@ -48,7 +48,11 @@ export function has_mac_keyboard(): boolean {
     return /mac/i.test(navigator.platform);
 }
 
-export function adjust_mac_shortcuts(key_elem_class: string, require_cmd_style = false): void {
+export function adjust_mac_shortcuts(
+    key_elem_class: string,
+    kbd_elem = true,
+    require_cmd_style = false,
+): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -56,26 +60,42 @@ export function adjust_mac_shortcuts(key_elem_class: string, require_cmd_style =
     const keys_map = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
-        ["Home", "Fn + ←"],
-        ["End", "Fn + →"],
-        ["PgUp", "Fn + ↑"],
-        ["PgDn", "Fn + ↓"],
+        ["Home", "←"],
+        ["End", "→"],
+        ["PgUp", "↑"],
+        ["PgDn", "↓"],
         ["Ctrl", "⌘"],
     ]);
 
+    const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
+
     $(key_elem_class).each(function () {
         let key_text = $(this).text();
-        const keys = key_text.match(/[^\s+]+/g) || [];
 
-        if (key_text.includes("Ctrl") && require_cmd_style) {
+        // There may be matches to `key_elem_class` that are not
+        // keyboard shortcuts. Since keyboard shortcuts should be an
+        // exact match to the text on a physical key of a keyboard,
+        // none of which have spaces, we check and return early for
+        // any matched element's text that contains whitespace.
+        if (/\s/.test(key_text)) {
+            return;
+        }
+
+        if (key_text === "Ctrl" && require_cmd_style) {
             $(this).addClass("mac-cmd-key");
         }
 
-        for (const key of keys) {
-            const replace_key = keys_map.get(key);
-            if (replace_key !== undefined) {
-                key_text = key_text.replace(key, replace_key);
+        if (fn_shortcuts.has(key_text)) {
+            if (kbd_elem) {
+                $(this).before("<kbd>Fn</kbd> + ");
+            } else {
+                $(this).before("<code>Fn</code> + ");
             }
+        }
+
+        const replace_key = keys_map.get(key_text);
+        if (replace_key !== undefined) {
+            key_text = replace_key;
         }
 
         $(this).text(key_text);
