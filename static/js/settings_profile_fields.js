@@ -1,12 +1,16 @@
 import $ from "jquery";
 import {Sortable} from "sortablejs";
 
+import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
 import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
 import render_settings_profile_field_choice from "../templates/settings/profile_field_choice.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_ui from "./settings_ui";
 
 const meta = {
@@ -242,6 +246,27 @@ function delete_choice_row(e) {
     update_choice_delete_btn($container, false);
 }
 
+function show_modal_for_deleting_options(field, deleted_values, update_profile_field) {
+    const active_user_ids = people.get_active_user_ids();
+    let users_count_with_deleted_option_selected = 0;
+    for (const user_id of active_user_ids) {
+        const field_value = people.get_custom_profile_data(user_id, field.id);
+        if (field_value && deleted_values.has(field_value.value)) {
+            users_count_with_deleted_option_selected += 1;
+        }
+    }
+    const html_body = render_confirm_delete_profile_field_option({
+        count: users_count_with_deleted_option_selected,
+        field_name: field.name,
+    });
+
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Delete option"}),
+        html_body,
+        on_click: update_profile_field,
+    });
+}
+
 function get_profile_field_info(id) {
     const info = {};
     info.$row = $(`tr.profile-field-row[data-profile-field-id='${CSS.escape(id)}']`);
@@ -332,6 +357,10 @@ function open_edit_form(e) {
     profile_field.$form.find("input[name=hint]").val(field.hint);
 
     profile_field.$form.find(".reset").on("click", () => {
+        // If we do not turn off the click handler, the code is called twice in case
+        // when the edit form is closed and then opened again. And in such case two
+        // modals are opened and one of them is shown randomly.
+        profile_field.$form.find(".submit").off("click");
         profile_field.$form.hide();
         profile_field.$row.show();
     });
@@ -348,20 +377,37 @@ function open_edit_form(e) {
 
         data.name = profile_field.$form.find("input[name=name]").val();
         data.hint = profile_field.$form.find("input[name=hint]").val();
-        data.field_data = JSON.stringify(
-            read_field_data_from_form(
-                Number.parseInt(field.type, 10),
-                profile_field.$form,
-                field_data,
-            ),
-        );
 
-        settings_ui.do_settings_change(
-            channel.patch,
-            "/json/realm/profile_fields/" + field_id,
-            data,
-            $profile_field_status,
+        const new_field_data = read_field_data_from_form(
+            Number.parseInt(field.type, 10),
+            profile_field.$form,
+            field_data,
         );
+        data.field_data = JSON.stringify(new_field_data);
+
+        function update_profile_field() {
+            settings_ui.do_settings_change(
+                channel.patch,
+                "/json/realm/profile_fields/" + field_id,
+                data,
+                $profile_field_status,
+            );
+        }
+
+        if (field.type === field_types.SELECT.id) {
+            const old_values = new Set(Object.keys(field_data));
+            const new_values = new Set(Object.keys(new_field_data));
+            const deleted_values = new Set(
+                [...old_values].filter((value) => !new_values.has(value)),
+            );
+
+            if (deleted_values.size !== 0) {
+                show_modal_for_deleting_options(field, deleted_values, update_profile_field);
+                return;
+            }
+        }
+
+        update_profile_field();
     });
 
     profile_field.$form
