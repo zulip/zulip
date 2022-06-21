@@ -64,8 +64,8 @@ paths:
             **Note:** If you signed up using passwordless authentication and
             never had a password, you can [reset your password](/help/change-your-password).
 
-            See the [API keys](/api/api-keys) documentation for
-            more details on how to download API key manually.
+        See the [API keys](/api/api-keys) documentation for more details
+        on how to download an API key manually.
 
         In a [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
         see also [the unauthenticated variant](/api/dev-fetch-api-key).
@@ -6319,11 +6319,24 @@ paths:
       summary: Create a user
       tags: ["users"]
       description: |
-        {!can-create-users-only.md!}
-
         Create a new user account via the API.
 
         `POST {{ api_url }}/v1/users`
+
+        !!! warn ""
+
+            **Note**: This endpoint is limited to organization administrators
+            who additionally have the `can_create_users` permission for the Zulip
+            organization. Zulip Cloud users can request the `can_create_users`
+            permission for a bot by contacting [Zulip Cloud support][support]
+            with an explanation for why it is needed. Self-hosted installations
+            can toggle `can_create_users` on an account using the `manage.py
+            change_user_role` command.
+
+        **Changes**: Before Zulip 4.0 (feature level 36), this endpoint was
+        available to all organization administrators.
+
+        [support]: /help/contact-support
       x-requires-administrator: true
       parameters:
         - name: email
@@ -13962,11 +13975,15 @@ paths:
       summary: Get user groups
       tags: ["users"]
       description: |
-        {!api-members-only.md!}
-
         Fetches all of the user groups in the organization.
 
         `GET {{ api_url }}/v1/user_groups`
+
+        !!! warn ""
+
+            **Note**: This endpoint is only available to [members and
+            administrators](/help/roles-and-permissions); bots and guests
+            cannot use this endpoint.
       responses:
         "200":
           description: Success.
