@@ -12,13 +12,22 @@ Muted streams still appear in the left sidebar, though they are grayed out.
     **Note**: Some parts of the Zulip experience may start to degrade
     if you receive more than a few hundred muted messages a day.
 
+
 ## Mute a stream
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
 3. Select **Mute stream**.
+
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+2. Tap **Mute stream**.
 
 {end_tabs}
 
@@ -27,11 +36,28 @@ Muted streams still appear in the left sidebar, though they are grayed out.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
 3. Select **Unmute stream**.
 
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+2. Tap **Unmute stream**.
+
 {end_tabs}
+
+!!! tip ""
+    The stream long-press menu for the mobile app can be accessed via the list of streams,
+    the stream name in the "inbox" (unreads) view, or the top bar in a stream narrow.
+
+!!! tip ""
+    Another way to mute/unmute a stream is via stream settings.
+
+
 
 ## Related articles
 
