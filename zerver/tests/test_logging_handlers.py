@@ -125,6 +125,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         report = self.run_handler(record)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -141,6 +142,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
         report = self.run_handler(record)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -162,6 +164,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -180,6 +183,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.request.get_host = orig_get_host
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -192,6 +196,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             record.request.method = "GET"
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -222,6 +227,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
@@ -233,6 +239,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             report = self.run_handler(record)
         self.assertIn("host", report)
         self.assertIn("user", report)
+        assert isinstance(report["user"], dict)
         self.assertIn("user_email", report["user"])
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
