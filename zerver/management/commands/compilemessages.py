@@ -96,7 +96,7 @@ class Command(compilemessages.Command):
             locales.append("en")
             locales = list(set(locales))
 
-        for locale in locales:
+        for locale in sorted(locales):
             if locale == "en":
                 data["languages"].append(
                     {
