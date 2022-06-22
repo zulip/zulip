@@ -544,17 +544,13 @@ class StripeTestCase(ZulipTestCase):
         invoice: bool = False,
         talk_to_stripe: bool = True,
         onboarding: bool = False,
-        realm: Optional[Realm] = None,
         payment_method: Optional[stripe.PaymentMethod] = None,
         upgrade_page_response: Optional["TestHttpResponse"] = None,
         del_args: Sequence[str] = [],
         **kwargs: Any,
     ) -> "TestHttpResponse":
-        host_args = {}
-        if realm is not None:  # nocoverage: TODO
-            host_args["HTTP_HOST"] = realm.host
         if upgrade_page_response is None:
-            upgrade_page_response = self.client_get("/upgrade/", {}, **host_args)
+            upgrade_page_response = self.client_get("/upgrade/", {})
         params: Dict[str, Any] = {
             "schedule": "annual",
             "signed_seat_count": self.get_signed_seat_count_from_response(upgrade_page_response),
@@ -584,7 +580,7 @@ class StripeTestCase(ZulipTestCase):
         if talk_to_stripe:
             [last_event] = stripe.Event.list(limit=1)
 
-        upgrade_json_response = self.client_post("/json/billing/upgrade", params, **host_args)
+        upgrade_json_response = self.client_post("/json/billing/upgrade", params)
 
         if invoice or not talk_to_stripe:
             return upgrade_json_response
