@@ -14,7 +14,6 @@ look at the newest features, consider the [beta releases](#install-a-beta-releas
 {tab|mac}
 
 #### Disk image (recommended)
-<!-- TODO why zip? -->
 
 1. Download [Zulip for macOS](https://zulip.com/apps/mac).
 
@@ -24,12 +23,12 @@ The app will update automatically to future versions.
 
 #### Homebrew
 
-1. Run `brew cask install zulip` in Terminal.
+1. Run the command `brew install --cask zulip` from a terminal.
 
-1. Run Zulip from `Applications`. <!-- TODO fact check -->
+1. Run Zulip from `Applications`.
 
-The app will update automatically to future versions. `brew upgrade` will
-also work, if you prefer.
+The app will update automatically to future versions. Alternatively, you can
+run the command `brew upgrade zulip` to immediately upgrade.
 
 {tab|windows}
 
