@@ -768,8 +768,7 @@ def ensure_stream(
     )[0]
 
 
-def get_occupied_streams(realm: Realm) -> QuerySet:
-    # TODO: Make a generic stub for QuerySet
+def get_occupied_streams(realm: Realm) -> QuerySet[Stream]:
     """Get streams with subscribers"""
     exists_expression = Exists(
         Subscription.objects.filter(
