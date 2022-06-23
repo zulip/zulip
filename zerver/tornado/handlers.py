@@ -27,9 +27,9 @@ def get_handler_by_id(handler_id: int) -> "AsyncDjangoHandler":
 def allocate_handler_id(handler: "AsyncDjangoHandler") -> int:
     global current_handler_id
     handlers[current_handler_id] = handler
-    handler.handler_id = current_handler_id
+    handler_id = current_handler_id
     current_handler_id += 1
-    return handler.handler_id
+    return handler_id
 
 
 def clear_handler_by_id(handler_id: int) -> None:
@@ -90,7 +90,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Handler IDs are allocated here, and the handler ID map must
         # be cleared when the handler finishes its response
-        allocate_handler_id(self)
+        self.handler_id = allocate_handler_id(self)
 
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
