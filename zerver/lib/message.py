@@ -3,6 +3,7 @@ import datetime
 import zlib
 from dataclasses import dataclass, field
 from typing import (
+    TYPE_CHECKING,
     Any,
     Collection,
     Dict,
@@ -67,6 +68,9 @@ from zerver.models import (
     get_usermessage_by_message_id,
     query_for_ids,
 )
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 class MessageDetailsDict(TypedDict, total=False):
@@ -886,7 +890,7 @@ def bulk_access_messages(
 
 def bulk_access_messages_expect_usermessage(
     user_profile_id: int, message_ids: Sequence[int]
-) -> List[int]:
+) -> "ValuesQuerySet[UserMessage, int]":
     """
     Like bulk_access_messages, but faster and potentially stricter.
 
