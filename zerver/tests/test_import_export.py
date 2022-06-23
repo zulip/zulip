@@ -7,6 +7,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
@@ -1078,7 +1079,7 @@ class RealmImportExportTest(ExportFile):
             return {"key": bot_config_data.key, "data": bot_config_data.value}
 
         # test messages
-        def get_stream_messages(r: Realm) -> Message:
+        def get_stream_messages(r: Realm) -> QuerySet[Message]:
             recipient = get_recipient_stream(r)
             messages = Message.objects.filter(recipient=recipient)
             return messages
