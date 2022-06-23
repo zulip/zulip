@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Iterable, List, Union, cast
 from unittest import mock
 
 import orjson
@@ -743,7 +743,10 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             .order_by("-order")
             .values_list("order", flat=True)
         )
-        try_reorder_realm_custom_profile_fields(realm, order)
+        # Until https://github.com/typeddjango/django-stubs/issues/444 gets resolved,
+        # we need the cast here to ensure the value list is correctly typed.
+        assert all(isinstance(item, int) for item in order)
+        try_reorder_realm_custom_profile_fields(realm, cast(Iterable[int], order))
         result = self.client_get("/json/realm/profile_fields")
         content = self.assert_json_success(result)
         self.assertListEqual(
