@@ -79,6 +79,7 @@ class OpenGraphTest(ZulipTestCase):
         open_graph_description = assert_is_not_none(
             bs.select_one('meta[property="og:description"]')
         ).get("content")
+        assert isinstance(open_graph_description, str)
         for substring in in_description:
             self.assertIn(substring, open_graph_description)
         for substring in not_in_description:
