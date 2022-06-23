@@ -21,9 +21,6 @@ echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 sed -i "s/localhost$/localhost $HOSTNAME $SERVER/" /etc/hosts
 
-# Delete the ubuntu user
-userdel ubuntu
-
 # Make sure root doesn't have a password
 passwd -d root
 
@@ -95,5 +92,8 @@ git -C zulip checkout "$BRANCH"
 )
 
 install_keys zulip
+
+# Delete the ubuntu user
+userdel ubuntu
 
 reboot
