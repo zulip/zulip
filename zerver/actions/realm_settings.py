@@ -1,8 +1,9 @@
-from typing import Any, Dict, Literal, Optional, Sequence
+from typing import Any, Dict, Literal, Optional
 
 import orjson
 from django.conf import settings
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
@@ -32,7 +33,7 @@ if settings.BILLING_ENABLED:
     from corporate.lib.stripe import downgrade_now_without_creating_additional_invoices
 
 
-def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
+def active_humans_in_realm(realm: Realm) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 
