@@ -287,7 +287,7 @@ def get_user_messages(user_profile: UserProfile) -> List[Message]:
 
 class DummyHandler(AsyncDjangoHandler):
     def __init__(self) -> None:
-        allocate_handler_id(self)
+        self.handler_id = allocate_handler_id(self)
 
 
 dummy_handler = DummyHandler()
