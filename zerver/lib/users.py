@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, TypedDict, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Sequence, TypedDict, Union, cast
 
 import dateutil.parser as date_parser
 from django.conf import settings
@@ -554,7 +554,7 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
 
 
 def get_custom_profile_field_values(
-    custom_profile_field_values: List[CustomProfileFieldValue],
+    custom_profile_field_values: Iterable[CustomProfileFieldValue],
 ) -> Dict[int, Dict[str, Any]]:
     profiles_by_user_id: Dict[int, Dict[str, Any]] = defaultdict(dict)
     for profile_field in custom_profile_field_values:

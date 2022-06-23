@@ -1,11 +1,12 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, List, Optional, Set, TypedDict, Union
+from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, Set, TypedDict, Union
 
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
+from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
@@ -259,7 +260,9 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     logger.info("Soft deactivated user %s", user_profile.id)
 
 
-def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_soft_deactivate_users(
+    users: Union[Sequence[UserProfile], QuerySet[UserProfile]]
+) -> List[UserProfile]:
     BATCH_SIZE = 100
     users_soft_deactivated = []
     while True:
@@ -346,7 +349,7 @@ def get_users_for_soft_deactivation(
     return users_to_deactivate
 
 
-def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_soft_activate_users(users: Iterable[UserProfile]) -> List[UserProfile]:
     users_soft_activated = []
     for user_profile in users:
         user_activated = reactivate_user_if_soft_deactivated(user_profile)
@@ -355,7 +358,7 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
     return users_soft_activated
 
 
-def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserProfile]:
+def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> List[UserProfile]:
     users_caught_up = []
     failures = []
     for user_profile in users:

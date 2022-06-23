@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from html import escape
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Collection, Dict, List, Optional, Sequence
 
 import pytz
 from django.conf import settings
@@ -10,6 +10,8 @@ from django.db.models.query import QuerySet
 from django.template import loader
 from django.urls import reverse
 from markupsafe import Markup as mark_safe
+
+from zerver.models import UserActivity
 
 eastern_tz = pytz.timezone("US/Eastern")
 
@@ -84,7 +86,7 @@ def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     return mark_safe(stats_link)
 
 
-def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Any]:
+def get_user_activity_summary(records: Collection[UserActivity]) -> Dict[str, Any]:
     #: The type annotation used above is clearly overly permissive.
     #: We should perhaps use TypedDict to clearly lay out the schema
     #: for the user activity summary.
@@ -104,8 +106,9 @@ def get_user_activity_summary(records: List[QuerySet]) -> Dict[str, Any]:
             )
 
     if records:
-        summary["name"] = records[0].user_profile.full_name
-        summary["user_profile_id"] = records[0].user_profile.id
+        first_record = next(iter(records))
+        summary["name"] = first_record.user_profile.full_name
+        summary["user_profile_id"] = first_record.user_profile.id
 
     for record in records:
         client = record.client.name

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 import orjson
 from django.db import transaction
@@ -96,7 +96,7 @@ def try_update_realm_custom_profile_field(
     notify_realm_custom_profile_fields(realm)
 
 
-def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
+def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
     custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
     for custom_profile_field in custom_profile_fields:

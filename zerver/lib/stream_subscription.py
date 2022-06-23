@@ -2,7 +2,7 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import AbstractSet, Any, Dict, List, Optional, Set
+from typing import AbstractSet, Any, Collection, Dict, List, Optional, Set
 
 from django.db.models import Q, QuerySet
 
@@ -164,7 +164,7 @@ def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
 
 def bulk_get_subscriber_peer_info(
     realm: Realm,
-    streams: List[Stream],
+    streams: Collection[Stream],
 ) -> SubscriberPeerInfo:
     """
     Glossary:

@@ -2,7 +2,7 @@
 import logging
 from argparse import ArgumentParser, RawTextHelpFormatter
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Collection, Dict, Optional
 
 from django.conf import settings
 from django.core import validators
@@ -116,7 +116,7 @@ server via `ps -ef` or reading bash history. Prefer
         realm: Optional[Realm],
         is_bot: Optional[bool] = None,
         include_deactivated: bool = False,
-    ) -> List[UserProfile]:
+    ) -> Collection[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
 

@@ -1,7 +1,7 @@
 import datetime
 import os
 import shutil
-from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
 import orjson
@@ -956,7 +956,7 @@ class RealmImportExportTest(ExportFile):
                 return {get_email(user_id) for user_id in user_id_list}
 
             def custom_profile_field_values_for(
-                fields: List[CustomProfileField],
+                fields: Iterable[CustomProfileField],
             ) -> Set[FrozenSet[str]]:
                 user_emails: Set[FrozenSet[str]] = set()
                 for field in fields:

@@ -182,7 +182,7 @@ def get_recipient_info(
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
         # de-duplicate using a set.
-        message_to_user_ids = list({recipient.type_id, sender_id})
+        message_to_user_ids: Collection[int] = list({recipient.type_id, sender_id})
         assert len(message_to_user_ids) in [1, 2]
 
     elif recipient.type == Recipient.STREAM:
