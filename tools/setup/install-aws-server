@@ -2,33 +2,68 @@
 set -eu
 set -o pipefail
 
-SERVER=${1:-}
-ROLES=${2:-}
-BRANCH=${3:-}
-if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
-    echo "USAGE: $0 server roles [branch]"
-    echo
-    echo "Installs an empty Ubuntu server in AWS with a Zulip server role."
-    echo
-    echo " * server is the local part of the hostname (e.g. postgres0)"
-    echo " * roles is a comma-separated list of Puppet profile names; these"
-    echo "   will get 'zulip_ops::profile::' prepended to them, and passed"
-    echo "   to scripts/lib/install -- e.g. 'postgresql'"
-    echo " * branch is used to override the default branch to install from."
-    echo
-    echo "Reads configuration from $HOME/.zulip-install-server.conf, which should look like:"
-    echo
-    echo "[repo]"
-    echo "repo_url=git@github.com:zulip/zulip.git"
-    echo "default_branch=main"
-    echo "[aws]"
-    echo "zone_id=Z2U988IEXAMPLE"
-    echo "security_groups=sg-01234567"
-    echo "image_id=ami-0dc45e3d9be6ab7b5"
-    echo "instance_type=m4.large"
-    echo "ssh_secret_id=prod/git/deploy"
+usage() {
+    cat <<EOF
+USAGE: $0 [--roles=roles] [--branch=main] server
+
+Installs an empty Ubuntu server in AWS with a Zulip server role.
+
+ * server is the local part of the hostname (e.g. postgres0)
+
+ * roles is a comma-separated list of Puppet profile names; these
+   will get 'zulip_ops::profile::' prepended to them, and passed
+   to scripts/lib/install -- e.g. 'postgresql'
+ * branch is used to override the default branch to install from.
+
+Reads configuration from $HOME/.zulip-install-server.conf, which should look like:
+
+[repo]
+repo_url=git@github.com:zulip/zulip.git
+[aws]
+zone_id=Z2U988IEXAMPLE
+security_groups=sg-01234567
+image_id=ami-0dc45e3d9be6ab7b5
+instance_type=m4.large
+ssh_secret_id=prod/git/deploy
+EOF
+    exit 1
+}
+
+args="$(getopt -o '' --long help,branch:,roles: -n "$0" -- "$@")" || usage
+eval "set -- $args"
+
+BRANCH="main"
+ROLES="base"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --roles)
+            shift
+            ROLES="$1"
+            shift
+            ;;
+        --branch)
+            shift
+            BRANCH="$1"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+if [ $# -ne 1 ]; then
+    usage
     exit 1
 fi
+
+SERVER="$1"
+
 set -x
 
 cd "$(dirname "$0")"
@@ -42,9 +77,6 @@ if [ ! -f "$zulip_install_config_file" ]; then
 fi
 
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
-if [ -z "$BRANCH" ]; then
-    BRANCH=$(crudini --get "$zulip_install_config_file" repo default_branch)
-fi
 
 for role in ${ROLES//,/ }; do
     if ! [ -f "../../puppet/zulip_ops/manifests/profile/$role.pp" ]; then
