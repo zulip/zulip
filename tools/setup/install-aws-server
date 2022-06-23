@@ -4,7 +4,7 @@ set -o pipefail
 
 usage() {
     cat <<EOF
-USAGE: $0 [--roles=roles] [--branch=main] server
+USAGE: $0 [--roles=roles] [--branch=main] [--debug-key=username] server
 
 Installs an empty Ubuntu server in AWS with a Zulip server role.
 
@@ -14,6 +14,9 @@ Installs an empty Ubuntu server in AWS with a Zulip server role.
    will get 'zulip_ops::profile::' prepended to them, and passed
    to scripts/lib/install -- e.g. 'postgresql'
  * branch is used to override the default branch to install from.
+ * username is the name of the AWS SSH key pair to allow logins as
+   'ubuntu' with during initial boot; this is purely for debugging the
+   bootstrapping process.
 
 Reads configuration from $HOME/.zulip-install-server.conf, which should look like:
 
@@ -29,11 +32,12 @@ EOF
     exit 1
 }
 
-args="$(getopt -o '' --long help,branch:,roles: -n "$0" -- "$@")" || usage
+args="$(getopt -o '' --long help,branch:,roles:,debug-key: -n "$0" -- "$@")" || usage
 eval "set -- $args"
 
 BRANCH="main"
 ROLES="base"
+DEBUG_KEY=""
 while true; do
     case "$1" in
         --help)
@@ -48,6 +52,11 @@ while true; do
         --branch)
             shift
             BRANCH="$1"
+            shift
+            ;;
+        --debug-key)
+            shift
+            DEBUG_KEY="$1"
             shift
             ;;
         --)
@@ -124,6 +133,12 @@ EXTRA_ARGS+=(
     --placement "AvailabilityZone=$AZ"
     --block-device-mappings "DeviceName=/dev/sda1,Ebs={VolumeSize=$DISK_SIZE,VolumeType=gp3,Throughput=125,Iops=3000,Encrypted=true}"
 )
+
+if [ -n "$DEBUG_KEY" ]; then
+    EXTRA_ARGS+=(
+        --key-name "$DEBUG_KEY"
+    )
+fi
 
 # Build up the provisioning script
 BOOTDATA=$(mktemp)
