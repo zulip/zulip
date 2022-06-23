@@ -30,7 +30,11 @@ from zerver.models import (
 
 
 def do_change_realm_subdomain(
-    realm: Realm, new_subdomain: str, *, acting_user: Optional[UserProfile]
+    realm: Realm,
+    new_subdomain: str,
+    *,
+    acting_user: Optional[UserProfile],
+    add_deactivated_redirect: bool = True,
 ) -> None:
     """Changing a realm's subdomain is a highly disruptive operation,
     because all existing clients will need to be updated to point to
@@ -69,9 +73,10 @@ def do_change_realm_subdomain(
     # deactivated. We are creating a deactivated realm using old subdomain and setting
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
-    placeholder_realm = do_create_realm(old_subdomain, realm.name)
-    do_deactivate_realm(placeholder_realm, acting_user=None)
-    do_add_deactivated_redirect(placeholder_realm, realm.uri)
+    if add_deactivated_redirect:
+        placeholder_realm = do_create_realm(old_subdomain, realm.name)
+        do_deactivate_realm(placeholder_realm, acting_user=None)
+        do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
 
 def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
