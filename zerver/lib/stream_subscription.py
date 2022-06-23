@@ -2,9 +2,12 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import AbstractSet, Any, Collection, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, AbstractSet, Any, Collection, Dict, List, Optional, Set
 
 from django.db.models import Q, QuerySet
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
 
@@ -24,8 +27,7 @@ class SubscriberPeerInfo:
 
 def get_active_subscriptions_for_stream_id(
     stream_id: int, *, include_deactivated_users: bool
-) -> QuerySet:
-    # TODO: Change return type to QuerySet[Subscription]
+) -> QuerySet[Subscription]:
     query = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
@@ -40,8 +42,7 @@ def get_active_subscriptions_for_stream_id(
     return query
 
 
-def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
-    # TODO: Change return type to QuerySet[Subscription]
+def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet[Subscription]:
     return Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
@@ -50,7 +51,9 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
     )
 
 
-def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
+def get_subscribed_stream_ids_for_user(
+    user_profile: UserProfile,
+) -> "ValuesQuerySet[Subscription, int]":
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,
@@ -58,7 +61,9 @@ def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
     ).values_list("recipient__type_id", flat=True)
 
 
-def get_subscribed_stream_recipient_ids_for_user(user_profile: UserProfile) -> QuerySet:
+def get_subscribed_stream_recipient_ids_for_user(
+    user_profile: UserProfile,
+) -> "ValuesQuerySet[Subscription, int]":
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,
@@ -66,8 +71,7 @@ def get_subscribed_stream_recipient_ids_for_user(user_profile: UserProfile) -> Q
     ).values_list("recipient_id", flat=True)
 
 
-def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
-    # TODO: Change return type to QuerySet[Subscription]
+def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet[Subscription]:
     return Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM,
@@ -307,7 +311,7 @@ def get_subscriptions_for_send_message(
     stream_id: int,
     possible_wildcard_mention: bool,
     possibly_mentioned_user_ids: AbstractSet[int],
-) -> QuerySet:
+) -> QuerySet[Subscription]:
     """This function optimizes an important use case for large
     streams. Open realms often have many long_term_idle users, which
     can result in 10,000s of long_term_idle recipients in default
