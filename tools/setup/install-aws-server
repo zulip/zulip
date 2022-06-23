@@ -19,7 +19,7 @@ if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo
     echo "[repo]"
     echo "repo_url=git@github.com:zulip/zulip.git"
-    echo "branch=main"
+    echo "default_branch=main"
     echo "[aws]"
     echo "zone_id=Z2U988IEXAMPLE"
     echo "security_groups=sg-01234567"
