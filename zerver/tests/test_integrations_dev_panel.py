@@ -22,7 +22,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             "custom_headers": "{}",
             "is_json": "true",
         }
-        with self.assertLogs(level="ERROR") as logs:
+        with self.assertLogs(level="ERROR") as logs, self.settings(TEST_SUITE=False):
             response = self.client_post(target_url, data)
 
             self.assertEqual(response.status_code, 500)  # Since the response would be forwarded.
