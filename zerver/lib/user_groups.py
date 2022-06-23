@@ -1,4 +1,4 @@
-from typing import Dict, List, Sequence, TypedDict
+from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -7,6 +7,9 @@ from django_cte import With
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 class UserGroupDict(TypedDict):
@@ -123,13 +126,15 @@ def create_user_group(
         return user_group
 
 
-def get_user_group_direct_member_ids(user_group: UserGroup) -> List[int]:
+def get_user_group_direct_member_ids(
+    user_group: UserGroup,
+) -> "ValuesQuerySet[UserGroupMembership, int]":
     return UserGroupMembership.objects.filter(user_group=user_group).values_list(
         "user_profile_id", flat=True
     )
 
 
-def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserGroup]:
+def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserProfile]:
     return user_group.direct_members.all()
 
 
@@ -185,7 +190,7 @@ def get_user_group_member_ids(
     user_group: UserGroup, *, direct_member_only: bool = False
 ) -> List[int]:
     if direct_member_only:
-        member_ids = get_user_group_direct_member_ids(user_group)
+        member_ids: Iterable[int] = get_user_group_direct_member_ids(user_group)
     else:
         member_ids = get_recursive_group_members(user_group).values_list("id", flat=True)
 
