@@ -81,7 +81,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             "django.request", level="ERROR"
         ) as request_error_log, self.assertLogs(
             "zerver.middleware.json_error_handler", level="ERROR"
-        ) as json_error_handler_log:
+        ) as json_error_handler_log, self.settings(
+            TEST_SUITE=False
+        ):
             rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
