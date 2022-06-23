@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Set, Tuple, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, TypedDict
 
 from zerver.lib.cache import (
     bulk_cached_fetch,
@@ -9,6 +9,9 @@ from zerver.lib.cache import (
 )
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Recipient, Stream, UserProfile, bulk_get_huddle_user_ids
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 display_recipient_fields = [
     "id",
@@ -96,7 +99,9 @@ def bulk_fetch_display_recipients(
     }
     personal_and_huddle_recipients = recipient_tuples - stream_recipients
 
-    def stream_query_function(recipient_ids: List[int]) -> List[TinyStreamResult]:
+    def stream_query_function(
+        recipient_ids: List[int],
+    ) -> "ValuesQuerySet[Stream, TinyStreamResult]":
         stream_ids = [
             recipient_id_to_type_pair_dict[recipient_id][1] for recipient_id in recipient_ids
         ]
