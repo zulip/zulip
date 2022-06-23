@@ -86,16 +86,18 @@ def topic_column_sa() -> ColumnElement[Text]:
     return column("subject", Text)
 
 
-def filter_by_exact_message_topic(query: QuerySet, message: Message) -> QuerySet:
+def filter_by_exact_message_topic(query: QuerySet[Message], message: Message) -> QuerySet[Message]:
     topic_name = message.topic_name()
     return query.filter(subject=topic_name)
 
 
-def filter_by_topic_name_via_message(query: QuerySet, topic_name: str) -> QuerySet:
+def filter_by_topic_name_via_message(
+    query: QuerySet[UserMessage], topic_name: str
+) -> QuerySet[UserMessage]:
     return query.filter(message__subject__iexact=topic_name)
 
 
-def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet:
+def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet[Message]:
     return Message.objects.filter(
         recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
