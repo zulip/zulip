@@ -9,6 +9,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmDomainDict,
     UserProfile,
     active_user_ids,
     get_realm_domains,
@@ -23,6 +24,7 @@ def do_add_realm_domain(
     realm_domain = RealmDomain.objects.create(
         realm=realm, domain=domain, allow_subdomains=allow_subdomains
     )
+    added_domain = RealmDomainDict(domain=domain, allow_subdomains=allow_subdomains)
 
     RealmAuditLog.objects.create(
         realm=realm,
@@ -32,7 +34,7 @@ def do_add_realm_domain(
         extra_data=orjson.dumps(
             {
                 "realm_domains": get_realm_domains(realm),
-                "added_domain": {"domain": domain, "allow_subdomains": allow_subdomains},
+                "added_domain": added_domain,
             }
         ).decode(),
     )
@@ -40,7 +42,7 @@ def do_add_realm_domain(
     event = dict(
         type="realm_domains",
         op="add",
-        realm_domain=dict(
+        realm_domain=RealmDomainDict(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
@@ -55,6 +57,10 @@ def do_change_realm_domain(
 ) -> None:
     realm_domain.allow_subdomains = allow_subdomains
     realm_domain.save(update_fields=["allow_subdomains"])
+    changed_domain = RealmDomainDict(
+        domain=realm_domain.domain,
+        allow_subdomains=realm_domain.allow_subdomains,
+    )
 
     RealmAuditLog.objects.create(
         realm=realm_domain.realm,
@@ -64,10 +70,7 @@ def do_change_realm_domain(
         extra_data=orjson.dumps(
             {
                 "realm_domains": get_realm_domains(realm_domain.realm),
-                "changed_domain": {
-                    "domain": realm_domain.domain,
-                    "allow_subdomains": realm_domain.allow_subdomains,
-                },
+                "changed_domain": changed_domain,
             }
         ).decode(),
     )
@@ -91,6 +94,10 @@ def do_remove_realm_domain(
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
+    removed_domain = RealmDomainDict(
+        domain=realm_domain.domain,
+        allow_subdomains=realm_domain.allow_subdomains,
+    )
 
     RealmAuditLog.objects.create(
         realm=realm,
@@ -100,10 +107,7 @@ def do_remove_realm_domain(
         extra_data=orjson.dumps(
             {
                 "realm_domains": get_realm_domains(realm),
-                "removed_domain": {
-                    "domain": realm_domain.domain,
-                    "allow_subdomains": realm_domain.allow_subdomains,
-                },
+                "removed_domain": removed_domain,
             }
         ).decode(),
     )

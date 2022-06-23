@@ -58,6 +58,7 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    RealmDomainDict,
     RealmPlayground,
     Recipient,
     Subscription,
@@ -684,10 +685,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
         now = timezone_now()
         realm_domain = do_add_realm_domain(user.realm, "zulip.org", False, acting_user=user)
-        added_domain: Dict[str, Union[str, bool]] = {
-            "domain": "zulip.org",
-            "allow_subdomains": False,
-        }
+        added_domain = RealmDomainDict(
+            domain="zulip.org",
+            allow_subdomains=False,
+        )
         expected_extra_data = {
             "realm_domains": initial_domains + [added_domain],
             "added_domain": added_domain,
@@ -705,10 +706,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
         now = timezone_now()
         do_change_realm_domain(realm_domain, True, acting_user=user)
-        changed_domain: Dict[str, Union[str, bool]] = {
-            "domain": "zulip.org",
-            "allow_subdomains": True,
-        }
+        changed_domain = RealmDomainDict(
+            domain="zulip.org",
+            allow_subdomains=True,
+        )
         expected_extra_data = {
             "realm_domains": initial_domains + [changed_domain],
             "changed_domain": changed_domain,
@@ -726,10 +727,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
         now = timezone_now()
         do_remove_realm_domain(realm_domain, acting_user=user)
-        removed_domain = {
-            "domain": "zulip.org",
-            "allow_subdomains": True,
-        }
+        removed_domain = RealmDomainDict(
+            domain="zulip.org",
+            allow_subdomains=True,
+        )
         expected_extra_data = {
             "realm_domains": initial_domains,
             "removed_domain": removed_domain,
