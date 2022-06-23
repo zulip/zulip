@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, TypedDict
 
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -131,7 +131,11 @@ def exclude_topic_mutes(
     if not rows:
         return conditions
 
-    def mute_cond(row: Dict[str, Any]) -> ClauseElement:
+    class RecipientTopicDict(TypedDict):
+        recipient_id: int
+        topic_name: str
+
+    def mute_cond(row: RecipientTopicDict) -> ClauseElement:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         stream_cond = column("recipient_id", Integer) == recipient_id
