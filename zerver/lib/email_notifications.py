@@ -560,10 +560,8 @@ def handle_missedmessage_emails(
         usermessage__user_profile_id=user_profile,
         id__in=message_ids,
         usermessage__flags=~UserMessage.flags.read,
-    )
-
-    # Cancel missed-message emails for deleted messages
-    messages = [um for um in messages if um.content != "(deleted)"]
+        # Cancel missed-message emails for deleted messages
+    ).exclude(content="(deleted)")
 
     if not messages:
         return
