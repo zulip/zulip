@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -546,7 +546,7 @@ def prepare_activation_url(
     *,
     realm: Optional[Realm],
     realm_creation: bool = False,
-    streams: Optional[List[Stream]] = None,
+    streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
 ) -> str:
     """

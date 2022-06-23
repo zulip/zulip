@@ -1,6 +1,6 @@
 import logging
 from argparse import ArgumentParser
-from typing import Any, List
+from typing import Any, Collection
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -18,7 +18,7 @@ log_to_file(logger, settings.LDAP_SYNC_LOG_PATH)
 # Run this on a cron job to pick up on name changes.
 @transaction.atomic
 def sync_ldap_user_data(
-    user_profiles: List[UserProfile], deactivation_protection: bool = True
+    user_profiles: Collection[UserProfile], deactivation_protection: bool = True
 ) -> None:
     logger.info("Starting update.")
     try:

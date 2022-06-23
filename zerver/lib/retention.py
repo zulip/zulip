@@ -29,7 +29,7 @@
 import logging
 import time
 from datetime import timedelta
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -629,7 +629,7 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
 
 
 def restore_data_from_archive_by_transactions(
-    archive_transactions: List[ArchiveTransaction],
+    archive_transactions: Iterable[ArchiveTransaction],
 ) -> int:
     # Looping over the list of ids means we're batching the restoration process by the size of the
     # transactions:

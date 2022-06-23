@@ -2,7 +2,7 @@ import datetime
 import heapq
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Collection, Dict, List, Set, Tuple
 
 from django.conf import settings
 from django.db import transaction
@@ -276,10 +276,12 @@ def get_slim_stream_map(stream_ids: Set[int]) -> Dict[int, Stream]:
     return {stream.id: stream for stream in streams}
 
 
-def bulk_get_digest_context(users: List[UserProfile], cutoff: float) -> Dict[int, Dict[str, Any]]:
+def bulk_get_digest_context(
+    users: Collection[UserProfile], cutoff: float
+) -> Dict[int, Dict[str, Any]]:
     # We expect a non-empty list of users all from the same realm.
     assert users
-    realm = users[0].realm
+    realm = next(iter(users)).realm
     for user in users:
         assert user.realm_id == realm.id
 

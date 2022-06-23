@@ -2,7 +2,19 @@ import copy
 import datetime
 import zlib
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple, TypedDict, Union
+from typing import (
+    Any,
+    Collection,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 import ahocorasick
 import orjson
@@ -835,7 +847,7 @@ def has_message_access(
 
 
 def bulk_access_messages(
-    user_profile: UserProfile, messages: Sequence[Message], *, stream: Optional[Stream] = None
+    user_profile: UserProfile, messages: Collection[Message], *, stream: Optional[Stream] = None
 ) -> List[Message]:
     """This function does the full has_message_access check for each
     message.  If stream is provided, it is used to avoid unnecessary

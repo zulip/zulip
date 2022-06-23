@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import Any, List
+from typing import Any, Collection, List
 
 from django.conf import settings
 from django.core.management.base import CommandError
@@ -70,7 +70,7 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         target_emails: List[str] = []
-        users: List[UserProfile] = []
+        users: Collection[UserProfile] = []
 
         if options["entire_server"]:
             users = UserProfile.objects.filter(

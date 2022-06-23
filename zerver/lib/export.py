@@ -14,7 +14,7 @@ import shutil
 import subprocess
 import tempfile
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypedDict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, Tuple, TypedDict
 
 import orjson
 from django.apps import apps
@@ -1199,7 +1199,7 @@ def export_partial_message_files(
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
-    def get_ids(records: List[Record]) -> Set[int]:
+    def get_ids(records: Iterable[Mapping[str, Any]]) -> Set[int]:
         return {x["id"] for x in records}
 
     # Basic security rule: You can export everything either...

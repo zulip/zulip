@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 from django.db import transaction
 from django.utils.translation import gettext as _
@@ -188,5 +188,7 @@ def streams_to_dicts_sorted(streams: List[Stream]) -> List[APIStreamDict]:
     return sorted((stream.to_dict() for stream in streams), key=lambda elt: elt["name"])
 
 
-def default_stream_groups_to_dicts_sorted(groups: List[DefaultStreamGroup]) -> List[Dict[str, Any]]:
+def default_stream_groups_to_dicts_sorted(
+    groups: Iterable[DefaultStreamGroup],
+) -> List[Dict[str, Any]]:
     return sorted((group.to_dict() for group in groups), key=lambda elt: elt["name"])

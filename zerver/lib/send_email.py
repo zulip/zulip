@@ -7,7 +7,7 @@ from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
 import orjson
@@ -497,7 +497,7 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 
 
 def send_custom_email(
-    users: List[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+    users: Iterable[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
