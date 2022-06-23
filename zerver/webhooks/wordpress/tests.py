@@ -92,11 +92,11 @@ class WordPressHookTests(WebhookTestCase):
         self.subscribe(self.test_user, self.STREAM_NAME)
 
         # post to the webhook url
-        post_params = {
-            "stream_name": self.STREAM_NAME,
-            "content_type": "application/x-www-form-urlencoded",
-        }
-        result = self.client_post(self.url, "unknown_action", **post_params)
+        result = self.client_post(
+            self.url,
+            self.get_body("unknown_action_no_data"),
+            content_type="application/x-www-form-urlencoded",
+        )
 
         # check that we got the expected error message
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
@@ -107,11 +107,11 @@ class WordPressHookTests(WebhookTestCase):
         # params but without the hook parameter. This should also return an error.
 
         self.subscribe(self.test_user, self.STREAM_NAME)
-        post_params = {
-            "stream_name": self.STREAM_NAME,
-            "content_type": "application/x-www-form-urlencoded",
-        }
-        result = self.client_post(self.url, "unknown_action", **post_params)
+        result = self.client_post(
+            self.url,
+            self.get_body("unknown_action_no_hook_provided"),
+            content_type="application/x-www-form-urlencoded",
+        )
 
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 
