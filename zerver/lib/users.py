@@ -164,7 +164,7 @@ def is_administrator_role(role: int) -> bool:
 
 
 def bulk_get_users(
-    emails: List[str], realm: Optional[Realm], base_query: QuerySet[UserProfile] = None
+    emails: List[str], realm: Optional[Realm], base_query: Optional[QuerySet[UserProfile]] = None
 ) -> Dict[str, UserProfile]:
     if base_query is None:
         assert realm is not None
@@ -180,7 +180,7 @@ def bulk_get_users(
         query = base_query
         realm_id = 0
 
-    def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
+    def fetch_users_by_email(emails: List[str]) -> QuerySet[UserProfile]:
         # This should be just
         #
         # UserProfile.objects.select_related("realm").filter(email__iexact__in=emails,
@@ -618,5 +618,5 @@ def get_raw_user_data(
     return result
 
 
-def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
+def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
