@@ -1,7 +1,18 @@
 import hashlib
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Collection, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+)
 
 import orjson
 from django.conf import settings
@@ -63,6 +74,9 @@ from zerver.models import (
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 @transaction.atomic(savepoint=False)
@@ -133,7 +147,9 @@ def do_deactivate_stream(
     )
 
 
-def get_subscriber_ids(stream: Stream, requesting_user: Optional[UserProfile] = None) -> List[str]:
+def get_subscriber_ids(
+    stream: Stream, requesting_user: Optional[UserProfile] = None
+) -> "ValuesQuerySet[Subscription, int]":
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     return subscriptions_query.values_list("user_profile_id", flat=True)
 

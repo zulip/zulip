@@ -370,8 +370,9 @@ def bulk_get_subscriber_user_ids(
     return result
 
 
-def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]) -> QuerySet:
-    # TODO: Make a generic stub for QuerySet
+def get_subscribers_query(
+    stream: Stream, requesting_user: Optional[UserProfile]
+) -> QuerySet[Subscription]:
     """Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
     'realm' is optional in stream.
