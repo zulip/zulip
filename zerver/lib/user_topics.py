@@ -121,11 +121,9 @@ def exclude_topic_mutes(
         # by not considering topic mutes outside the stream.
         query = query.filter(stream_id=stream_id)
 
-    rows = list(
-        query.values(
-            "recipient_id",
-            "topic_name",
-        )
+    rows = query.values(
+        "recipient_id",
+        "topic_name",
     )
 
     if not rows:
@@ -153,7 +151,6 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], 
         "recipient_id",
         "topic_name",
     )
-    rows = list(rows)
 
     tups = set()
     for row in rows:

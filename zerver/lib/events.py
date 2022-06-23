@@ -164,7 +164,7 @@ def fetch_initial_state_data(
         # `max_message_id` is primarily used for generating `local_id`
         # values that are higher than this.  We likely can eventually
         # remove this parameter from the API.
-        user_messages = []
+        user_messages = None
         if user_profile is not None:
             user_messages = (
                 UserMessage.objects.filter(user_profile=user_profile)

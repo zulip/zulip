@@ -140,10 +140,7 @@ server via `ps -ef` or reading bash history. Prefer
         if options["users"] is None:
             return []
         emails = {email.strip() for email in options["users"].split(",")}
-        user_profiles = []
-        for email in emails:
-            user_profiles.append(self.get_user(email, realm))
-        return user_profiles
+        return [self.get_user(email, realm) for email in emails]
 
     def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
 

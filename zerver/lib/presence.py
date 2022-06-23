@@ -177,12 +177,12 @@ def get_status_dict_by_realm(
         # a realm with 0 active users.
         return {}
 
-    mobile_query = query_for_ids(
+    mobile_query_ids = query_for_ids(
         query=mobile_query,
         user_ids=user_profile_ids,
         field="user_id",
     )
-    mobile_user_ids = set(mobile_query)
+    mobile_user_ids = set(mobile_query_ids)
 
     return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 

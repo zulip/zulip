@@ -571,8 +571,9 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
 def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
 
-    recipient_ids = Subscription.objects.filter(user_profile=user_profile)
-    recipient_ids = recipient_ids.values_list("recipient_id", flat=True)
+    recipient_ids = Subscription.objects.filter(user_profile=user_profile).values_list(
+        "recipient_id", flat=True
+    )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
     keys.append(display_recipient_bulk_get_users_by_id_cache_key(user_profile.id))
     cache_delete_many(keys)

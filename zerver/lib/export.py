@@ -1245,8 +1245,8 @@ def export_partial_message_files(
             user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
-        recipient_ids = set(public_stream_recipient_ids) | set(consented_recipient_ids)
-        recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids
+        recipient_ids_set = set(public_stream_recipient_ids) | set(consented_recipient_ids)
+        recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids_set
     else:
         recipient_ids_for_us = get_ids(response["zerver_recipient"])
         # For a full export, we have implicit consent for all users in the export.
