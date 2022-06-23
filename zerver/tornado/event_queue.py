@@ -182,6 +182,7 @@ class ClientDescriptor:
     def add_event(self, event: Mapping[str, Any]) -> None:
         if self.current_handler_id is not None:
             handler = get_handler_by_id(self.current_handler_id)
+            assert handler._request is not None
             async_request_timer_restart(handler._request)
 
         self.event_queue.push(event)

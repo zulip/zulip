@@ -1,6 +1,6 @@
 import logging
 import urllib
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import tornado.web
 from asgiref.sync import sync_to_async
@@ -54,6 +54,7 @@ def finish_handler(
         # get_events request has supplanted this request)
         handler = get_handler_by_id(handler_id)
         request = handler._request
+        assert request is not None
         async_request_timer_restart(request)
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
@@ -91,6 +92,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # Handler IDs are allocated here, and the handler ID map must
         # be cleared when the handler finishes its response
         self.handler_id = allocate_handler_id(self)
+
+        self._request: Optional[HttpRequest] = None
 
     def __repr__(self) -> str:
         descriptor = get_descriptor_by_handler_id(self.handler_id)
