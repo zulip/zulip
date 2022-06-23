@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple, Type, Union, cast
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union, cast
 
 from django.conf import settings
 from django.db.models.query import QuerySet
@@ -436,19 +436,22 @@ def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
     return [label for label, sort_value in sorted(label_sort_values.items(), key=lambda x: x[1])]
 
 
-def table_filtered_to_id(table: Type[BaseCount], key_id: int) -> QuerySet:
+CountT = TypeVar("CountT", bound=BaseCount)
+
+
+def table_filtered_to_id(table: Type[CountT], key_id: int) -> QuerySet[CountT]:
     if table == RealmCount:
-        return RealmCount.objects.filter(realm_id=key_id)
+        return table.objects.filter(realm_id=key_id)
     elif table == UserCount:
-        return UserCount.objects.filter(user_id=key_id)
+        return table.objects.filter(user_id=key_id)
     elif table == StreamCount:
-        return StreamCount.objects.filter(stream_id=key_id)
+        return table.objects.filter(stream_id=key_id)
     elif table == InstallationCount:
-        return InstallationCount.objects.all()
+        return table.objects.all()
     elif settings.ZILENCER_ENABLED and table == RemoteInstallationCount:
-        return RemoteInstallationCount.objects.filter(server_id=key_id)
+        return table.objects.filter(server_id=key_id)
     elif settings.ZILENCER_ENABLED and table == RemoteRealmCount:
-        return RemoteRealmCount.objects.filter(realm_id=key_id)
+        return table.objects.filter(realm_id=key_id)
     else:
         raise AssertionError(f"Unknown table: {table}")
 
