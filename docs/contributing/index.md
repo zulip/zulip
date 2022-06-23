@@ -10,6 +10,7 @@ code-style
 code-reviewing
 zulipbot-usage
 accessibility
+licensing
 bug-reports
 ../code-of-conduct
 gsoc
