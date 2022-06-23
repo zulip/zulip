@@ -1590,7 +1590,7 @@ class WebhookTestCase(ZulipTestCase):
                     complete_event_type is not None
                     and all_event_types is not None
                     and complete_event_type not in all_event_types
-                ):
+                ):  # nocoverage
                     raise Exception(
                         f"""
 Error: This test triggered a message using the event "{complete_event_type}", which was not properly
