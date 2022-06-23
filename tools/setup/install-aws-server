@@ -11,8 +11,9 @@ if [ -z "$SERVER" ] || [ -z "$ROLES" ]; then
     echo "Installs an empty Ubuntu server in AWS with a Zulip server role."
     echo
     echo " * server is the local part of the hostname (e.g. postgres0)"
-    echo " * roles is a comma-separated list of Puppet rules to be passed to scripts/lib/install"
-    echo "   E.g. 'zulip::profile::postgresql'"
+    echo " * roles is a comma-separated list of Puppet profile names; these"
+    echo "   will get 'zulip_ops::profile::' prepended to them, and passed"
+    echo "   to scripts/lib/install -- e.g. 'postgresql'"
     echo " * branch is used to override the default branch to install from."
     echo
     echo "Reads configuration from $HOME/.zulip-install-server.conf, which should look like:"
@@ -44,6 +45,14 @@ REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 if [ -z "$BRANCH" ]; then
     BRANCH=$(crudini --get "$zulip_install_config_file" repo default_branch)
 fi
+
+for role in ${ROLES//,/ }; do
+    if ! [ -f "../../puppet/zulip_ops/manifests/profile/$role.pp" ]; then
+        echo "No such role zulip_ops::profile::$role !"
+        exit 1
+    fi
+done
+FULL_ROLES=$(echo "$ROLES" | perl -pe '$_=join(",",map{"zulip_ops::profile::$_"} split ",")')
 
 function lookup() {
     KEY="$1"
@@ -90,14 +99,14 @@ BOOTDATA=$(mktemp)
     echo "#!/bin/bash"
     echo "SERVER=$SERVER"
     echo "HOSTNAME=$HOSTNAME"
-    echo "ROLES=$ROLES"
+    echo "FULL_ROLES=$FULL_ROLES"
     echo "REPO_URL=$REPO_URL"
     echo "BRANCH=$BRANCH"
     echo "SSH_SECRET_ID=$SSH_SECRET_ID"
     sed '/^AWS=/ r ./bootstrap-awscli.sh' bootstrap-aws-installer
 } >>"$BOOTDATA"
 
-TAG_ROLE_NAMES=$(echo "$ROLES" | perl -pe 's/\w+::profile::(\w+)/$1/g')
+TAG_ROLE_NAMES="$ROLES"
 TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$TAG_ROLE_NAMES\"}]"
 INSTANCE_DATA=$($AWS ec2 run-instances \
     --tag-specifications "ResourceType=instance,Tags=$TAGS" \
