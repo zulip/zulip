@@ -28,9 +28,9 @@ class zulip_ops::profile::nagios {
   $hosts_postgresql_primary = split(zulipconf('nagios', 'hosts_postgresql_primary', undef), ',')
   $hosts_postgresql_replica = split(zulipconf('nagios', 'hosts_postgresql_replica', undef), ',')
   $hosts_redis = split(zulipconf('nagios', 'hosts_redis', undef), ',')
-  $hosts_stats = split(zulipconf('nagios', 'hosts_stats', undef), ',')
   $hosts_fullstack = split(zulipconf('nagios', 'hosts_fullstack', undef), ',')
   $hosts_smokescreen = split(zulipconf('nagios', 'hosts_smokescreen', undef), ',')
+  $hosts_other = split(zulipconf('nagios', 'hosts_other', undef), ',')
 
   file { '/etc/nagios4/':
     recurse => true,

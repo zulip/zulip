@@ -14,17 +14,14 @@ location /static/ {
 
     # Set a nonexistent path, so we just serve the nice Django 404 page.
     error_page 404 /django_static_404.html;
-}
 
-# These files are hashed and thus immutable; cache them aggressively.
-location /static/webpack-bundles/ {
-    alias /home/zulip/prod-static/webpack-bundles/;
-    include /etc/nginx/zulip-include/headers;
-    add_header Access-Control-Allow-Origin *;
-    add_header Cache-Control "public, max-age=31536000, immutable";
-
-    # Set a nonexistent path, so we just serve the nice Django 404 page.
-    error_page 404 /django_static_404.html;
+    # These files are hashed and thus immutable; cache them aggressively.
+    # Django adds 12 hex digits; Webpack adds 20.
+    location ~ '\.[0-9a-f]{12}\.|[./][0-9a-f]{20}\.' {
+        include /etc/nginx/zulip-include/headers;
+        add_header Access-Control-Allow-Origin *;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
 }
 
 # Send longpoll requests to Tornado

@@ -1,20 +1,20 @@
-<% @hosts_app_prod.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,web,frontends,prod_frontends,singletornado_frontends,pageable_servers
-       }
-<% end -%>
-
 <% @hosts_fullstack.each do |host| -%>
 define host{
        use              generic-host
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>
-       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers,postgresql,postgresql_primary
+       hostgroups       all,fullstack,non_aws_host,frontends,not_pageable_servers,postgresql
+       }
+<% end -%>
+
+<% @hosts_app_prod.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @default_host_domain %>
+       hostgroups       all,aws_host,prod_frontends,pageable_servers
        }
 <% end -%>
 
@@ -24,7 +24,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,web,frontends,staging_frontends,singletornado_frontends,not_pageable_servers
+       hostgroups       all,aws_host,staging_frontends,not_pageable_servers
        }
 <% end -%>
 
@@ -34,7 +34,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,zmirror,zmirror_main
+       hostgroups       all,non_aws_host,zmirror,flaky_servers
        }
 <% end -%>
 
@@ -44,7 +44,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,zmirror,zmirrorp
+       hostgroups       all,non_aws_host,zmirrorp,flaky_servers
        }
 <% end -%>
 
@@ -54,7 +54,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgresql,postgresql_primary,pageable_servers
+       hostgroups       all,aws_host,postgresql_primary,pageable_servers
        }
 <% end -%>
 
@@ -64,17 +64,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,postgresql,pageable_servers
-       }
-<% end -%>
-
-<% @hosts_stats.each do |host| -%>
-define host{
-       use              generic-host
-       host_name        <%= host %>
-       alias            <%= host %>
-       address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,not_pageable_servers
+       hostgroups       all,aws_host,postgresql_replica,pageable_servers
        }
 <% end -%>
 
@@ -84,7 +74,7 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,not_pageable_servers, redis
+       hostgroups       all,aws_host,not_pageable_servers, redis
        }
 <% end -%>
 
@@ -94,6 +84,16 @@ define host{
        host_name        <%= host %>
        alias            <%= host %>
        address          <%= host %>.<%= @default_host_domain %>
-       hostgroups       all,pageable_servers,smokescreen
+       hostgroups       all,aws_host,pageable_servers,smokescreen
+       }
+<% end -%>
+
+<% @hosts_other.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @default_host_domain %>
+       hostgroups       all,aws_host,not_pageable_servers,other
        }
 <% end -%>
