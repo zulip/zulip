@@ -105,6 +105,14 @@ message](/help/quote-and-reply).
     If using Zulip in a browser, you can also click on a stream in the
     left sidebar, and copy the URL from your browser's address bar.
 
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Copy link to stream**.
+
+{!stream-long-press-menu-tip.md!}
+
 {end_tabs}
 
 ## Related articles
