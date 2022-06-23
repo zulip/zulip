@@ -17,7 +17,9 @@ if settings.BILLING_ENABLED:
     pass
 
 
-def get_user_activity_records(user_profile: UserProfile) -> List[QuerySet]:
+def get_user_activity_records(
+    user_profile: UserProfile,
+) -> QuerySet[UserActivity]:
     fields = [
         "user_profile__full_name",
         "query",
@@ -34,7 +36,7 @@ def get_user_activity_records(user_profile: UserProfile) -> List[QuerySet]:
     return records
 
 
-def raw_user_activity_table(records: List[QuerySet]) -> str:
+def raw_user_activity_table(records: QuerySet[UserActivity]) -> str:
     cols = [
         "query",
         "client",
@@ -42,7 +44,7 @@ def raw_user_activity_table(records: List[QuerySet]) -> str:
         "last_visit",
     ]
 
-    def row(record: QuerySet) -> List[Any]:
+    def row(record: UserActivity) -> List[Any]:
         return [
             record.query,
             record.client.name,
