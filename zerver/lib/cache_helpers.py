@@ -1,10 +1,11 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 import datetime
 import logging
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, Tuple
 
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 
 # This file needs to be different from cache.py because cache.py
@@ -29,6 +30,9 @@ from zerver.models import (
     get_client_cache_key,
     huddle_hash_cache_key,
 )
+
+if TYPE_CHECKING:
+    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 def user_cache_items(
@@ -65,7 +69,7 @@ def session_cache_items(items_for_remote_cache: Dict[str, str], session: Session
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 
-def get_active_realm_ids() -> List[int]:
+def get_active_realm_ids() -> "ValuesQuerySet[RealmCount, int]":
     """For installations like Zulip Cloud hosting a lot of realms, it only makes
     sense to do cache-filling work for realms that have any currently
     active users/clients.  Otherwise, we end up with every single-user
@@ -81,7 +85,7 @@ def get_active_realm_ids() -> List[int]:
     )
 
 
-def get_streams() -> List[Stream]:
+def get_streams() -> QuerySet[Stream]:
     return (
         Stream.objects.select_related()
         .filter(realm__in=get_active_realm_ids())
@@ -93,7 +97,7 @@ def get_streams() -> List[Stream]:
     )
 
 
-def get_users() -> List[UserProfile]:
+def get_users() -> QuerySet[UserProfile]:
     return UserProfile.objects.select_related().filter(
         long_term_idle=False, realm__in=get_active_realm_ids()
     )
