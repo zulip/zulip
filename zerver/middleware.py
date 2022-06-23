@@ -457,7 +457,7 @@ class JsonErrorHandler(MiddlewareMixin):
 
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
-        if RequestNotes.get_notes(request).error_format == "JSON":
+        if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
             json_error_logger.error(traceback.format_exc(), extra=dict(request=request))
