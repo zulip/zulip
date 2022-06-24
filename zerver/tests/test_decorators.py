@@ -56,7 +56,7 @@ from zerver.lib.request import (
 )
 from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import DummyHandler, HostRequestMock
+from zerver.lib.test_helpers import HostRequestMock, dummy_handler
 from zerver.lib.types import Validator
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key
@@ -1550,7 +1550,6 @@ class TestInternalNotifyView(ZulipTestCase):
         request = HostRequestMock(
             post_data=dict(secret=secret),
             meta_data=dict(REMOTE_ADDR="127.0.0.1"),
-            tornado_handler=None,
         )
 
         with self.settings(SHARED_SECRET=secret):
@@ -1567,9 +1566,8 @@ class TestInternalNotifyView(ZulipTestCase):
         request = HostRequestMock(
             post_data=dict(secret=secret),
             meta_data=dict(REMOTE_ADDR="127.0.0.1"),
-            tornado_handler=None,
+            tornado_handler=dummy_handler,
         )
-        RequestNotes.get_notes(request).tornado_handler = DummyHandler()
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(request))
             self.assertEqual(
