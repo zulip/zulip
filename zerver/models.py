@@ -2507,6 +2507,14 @@ class Stream(models.Model):
     }
     message_retention_days: Optional[int] = models.IntegerField(null=True, default=None)
 
+    # on_delete field here is set to RESTRICT because we don't want to allow
+    # deleting a user group in case it is referenced by this settig.
+    # We are not using PROTECT since we want to allow deletion of user groups
+    # when realm itself is deleted.
+    can_remove_subscribers_group: Optional[UserGroup] = models.ForeignKey(
+        UserGroup, null=True, on_delete=models.RESTRICT
+    )
+
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "more topics" for a
     # stream based on what messages they have cached.
