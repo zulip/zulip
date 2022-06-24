@@ -726,7 +726,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
                     request.upload_handlers,
                     request.encoding,
                 ).parse()
-            else:
+            elif request.content_type == "application/x-www-form-urlencoded":
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 
         return view_func(request, *args, **kwargs)

@@ -311,6 +311,7 @@ Output:
         We need to urlencode, since Django's function won't do it for us.
         """
         encoded = urllib.parse.urlencode(info)
+        kwargs["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.patch(url, encoded, **kwargs)
@@ -356,6 +357,7 @@ Output:
         self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
     ) -> "TestHttpResponse":
         encoded = urllib.parse.urlencode(info)
+        kwargs["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
@@ -373,6 +375,7 @@ Output:
         self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
     ) -> "TestHttpResponse":
         encoded = urllib.parse.urlencode(info)
+        kwargs["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.delete(url, encoded, **kwargs)
@@ -383,19 +386,17 @@ Output:
     def client_options(
         self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.options(url, encoded, **kwargs)
+        return django_client.options(url, info, **kwargs)
 
     @instrument_url
     def client_head(
         self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
     ) -> "TestHttpResponse":
-        encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
-        return django_client.head(url, encoded, **kwargs)
+        return django_client.head(url, info, **kwargs)
 
     @instrument_url
     def client_post(

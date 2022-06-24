@@ -119,7 +119,10 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # Verification for new email
     result = client.patch(
-        "/json/settings", urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}), **host_kwargs
+        "/json/settings",
+        urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}),
+        content_type="application/x-www-form-urlencoded",
+        **host_kwargs,
     )
     assert result.status_code == 200
 
