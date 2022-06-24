@@ -255,11 +255,10 @@ class ZulipWebhookFormatter(ZulipFormatter):
             return super().format(record)
 
         if request.content_type == "application/json":
-            payload: Union[str, bytes, None] = request.body
+            payload: Union[str, bytes] = request.body
         else:
-            payload = request.POST.get("payload")
+            payload = request.POST["payload"]
 
-        assert payload is not None
         try:
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
         except orjson.JSONDecodeError:
