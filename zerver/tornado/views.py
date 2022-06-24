@@ -123,11 +123,8 @@ def get_events_backend(
         raise JsonableError(_("User not authorized for this query"))
 
     # Extract the Tornado handler from the request
-    tornado_handler = RequestNotes.get_notes(request).tornado_handler
-    assert tornado_handler is not None
-    handler = tornado_handler()
-    assert handler is not None
-    handler._request = request
+    handler_id = RequestNotes.get_notes(request).tornado_handler_id
+    assert handler_id is not None
 
     if user_client is None:
         valid_user_client = RequestNotes.get_notes(request).client
@@ -160,7 +157,7 @@ def get_events_backend(
         last_event_id=last_event_id,
         client_type_name=valid_user_client.name,
         dont_block=dont_block,
-        handler_id=handler.handler_id,
+        handler_id=handler_id,
         new_queue_data=new_queue_data,
     )
     if "extra_log_data" in result:
