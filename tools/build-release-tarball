@@ -36,17 +36,17 @@ GITID=$(git rev-parse HEAD)
 
 umask 022
 
-TMPDIR=$(mktemp -d)
-TARBALL=$TMPDIR/$prefix.tar
+OUTPUT_DIR=${OUTPUT_DIR:-$(mktemp -d)}
+TARBALL=$OUTPUT_DIR/$prefix.tar
 BASEDIR=$(pwd)
 
 git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
-cd "$TMPDIR"
+cd "$OUTPUT_DIR"
 tar -xf "$TARBALL"
 while read -r i; do
-    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i"
-done <"$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
+    rm -r --interactive=never "${OUTPUT_DIR:?}/$prefix/$i"
+done <"$OUTPUT_DIR/$prefix/tools/release-tarball-exclude.txt"
 tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
 
@@ -58,7 +58,7 @@ fi
 cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
-git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
+git checkout-index -f -a --prefix "$OUTPUT_DIR/$prefix/"
 
 # Add the Git version information file
 ./tools/cache-zulip-git-version
@@ -75,9 +75,9 @@ if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
         exit 1
     fi
 fi
-mv zulip-git-version "$TMPDIR/$prefix/"
+mv zulip-git-version "$OUTPUT_DIR/$prefix/"
 
-cd "$TMPDIR/$prefix"
+cd "$OUTPUT_DIR/$prefix"
 
 ln -s "$BASEDIR/zulip-py3-venv" .
 
@@ -110,7 +110,7 @@ find prod-static/serve/generated/emoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png'
 echo "$GITID" >build_id
 echo "$version" >version
 
-cd "$TMPDIR"
+cd "$OUTPUT_DIR"
 
 tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 
@@ -119,4 +119,6 @@ rm -rf "$prefix"
 gzip "$TARBALL"
 
 set +x
-echo "Generated $TARBALL.gz"
+TARBALL="$TARBALL.gz"
+
+echo "Generated $TARBALL"
