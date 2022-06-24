@@ -19,6 +19,7 @@ from typing import (
     TypedDict,
     TypeVar,
     Union,
+    overload,
 )
 from uuid import uuid4
 
@@ -155,7 +156,27 @@ class AndNonZero(models.Lookup):
         return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
 
 
-def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
+ModelT = TypeVar("ModelT", bound=models.Model)
+RowT = TypeVar("RowT")
+
+
+@overload
+def query_for_ids(query: QuerySet[ModelT], user_ids: List[int], field: str) -> QuerySet[ModelT]:
+    ...
+
+
+@overload
+def query_for_ids(
+    query: "ValuesQuerySet[ModelT, RowT]", user_ids: List[int], field: str
+) -> "ValuesQuerySet[ModelT, RowT]":
+    ...
+
+
+def query_for_ids(
+    query: Union[QuerySet[models.Model], "ValuesQuerySet[models.Model, object]"],
+    user_ids: List[int],
+    field: str,
+) -> object:
     """
     This function optimizes searches of the form
     `user_profile_id in (1, 2, 3, 4)` by quickly
