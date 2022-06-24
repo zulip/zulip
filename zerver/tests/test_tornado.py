@@ -1,7 +1,7 @@
 import asyncio
 import urllib.parse
 from functools import wraps
-from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Optional, TypeVar
 from unittest import TestResult, mock
 
 import orjson
@@ -144,8 +144,8 @@ class EventsTestCase(TornadoWebTestCase):
             )
             process_event(event, users)
 
-        def wrapped_fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
-            ret = event_queue.fetch_events(query)
+        def wrapped_fetch_events(**query: Any) -> Dict[str, Any]:
+            ret = event_queue.fetch_events(**query)
             self.io_loop.add_callback(process_events)
             return ret
 
