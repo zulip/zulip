@@ -989,12 +989,8 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_gcm.json_request.return_value = {
                 "success": {device[2]: message.id for device in gcm_devices}
             }
-            result = mock.Mock()
-            result.is_successful = True
-            apns_context.apns.send_notification.return_value = asyncio.Future(
-                loop=apns_context.loop
-            )
-            apns_context.apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification = mock.AsyncMock()
+            apns_context.apns.send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 views_logger.output,
@@ -1049,13 +1045,9 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
-            result = mock.Mock()
-            result.is_successful = False
-            result.description = "Unregistered"
-            apns_context.apns.send_notification.return_value = asyncio.Future(
-                loop=apns_context.loop
-            )
-            apns_context.apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification = mock.AsyncMock()
+            apns_context.apns.send_notification.return_value.is_successful = False
+            apns_context.apns.send_notification.return_value.description = "Unregistered"
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 views_logger.output,
@@ -1629,12 +1621,8 @@ class TestAPNs(PushNotificationTest):
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            result = mock.Mock()
-            result.is_successful = True
-            apns_context.apns.send_notification.return_value = asyncio.Future(
-                loop=apns_context.loop
-            )
-            apns_context.apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification = mock.AsyncMock()
+            apns_context.apns.send_notification.return_value.is_successful = True
             self.send()
             for device in self.devices():
                 self.assertIn(
@@ -1647,11 +1635,8 @@ class TestAPNs(PushNotificationTest):
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            apns_context.apns.send_notification.return_value = asyncio.Future(
-                loop=apns_context.loop
-            )
-            apns_context.apns.send_notification.return_value.set_exception(
-                aioapns.exceptions.ConnectionError()
+            apns_context.apns.send_notification = mock.AsyncMock(
+                side_effect=aioapns.exceptions.ConnectionError()
             )
             self.send(devices=self.devices()[0:1])
             self.assertIn(
@@ -1664,13 +1649,9 @@ class TestAPNs(PushNotificationTest):
         with self.mock_apns() as apns_context, self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            result = mock.Mock()
-            result.is_successful = False
-            result.description = "InternalServerError"
-            apns_context.apns.send_notification.return_value = asyncio.Future(
-                loop=apns_context.loop
-            )
-            apns_context.apns.send_notification.return_value.set_result(result)
+            apns_context.apns.send_notification = mock.AsyncMock()
+            apns_context.apns.send_notification.return_value.is_successful = False
+            apns_context.apns.send_notification.return_value.description = "InternalServerError"
             self.send(devices=self.devices()[0:1])
             self.assertIn(
                 f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user <id:{self.user_profile.id}> to device {self.devices()[0].token}: InternalServerError",
