@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import time
-import weakref
 from contextlib import contextmanager
 from functools import wraps
 from typing import (
@@ -336,7 +335,7 @@ class HostRequestMock(HttpRequest):
             RequestNotes(
                 client_name="",
                 log_data={},
-                tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
+                tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
             ),
         )
