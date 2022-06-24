@@ -157,10 +157,10 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # will generate the appropriate HTTP response.
             raise MissingAuthenticationError()
 
-        if request.method not in ["GET", "POST"]:
+        if request.method in ["DELETE", "PATCH", "PUT"]:
             # process_as_post needs to be the outer decorator, because
             # otherwise we might access and thus cache a value for
-            # request.REQUEST.
+            # request.POST.
             target_function = process_as_post(target_function)
 
         return target_function(request, **kwargs)
