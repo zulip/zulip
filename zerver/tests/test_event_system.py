@@ -16,7 +16,12 @@ from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, queries_captured, stub_event_queue_user_events
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    dummy_handler,
+    queries_captured,
+    stub_event_queue_user_events,
+)
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     Realm,
@@ -207,7 +212,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(context.exception.http_status_code, 403)
 
         post_data["secret"] = settings.SHARED_SECRET
-        req = HostRequestMock(post_data, user_profile=None)
+        req = HostRequestMock(post_data, user_profile=None, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         result = self.client_post_request("/notify_tornado", req)
         self.assert_json_success(result)
@@ -220,7 +225,7 @@ class GetEventsTest(ZulipTestCase):
         user_profile: UserProfile,
         post_data: Dict[str, Any],
     ) -> HttpResponse:
-        request = HostRequestMock(post_data, user_profile)
+        request = HostRequestMock(post_data, user_profile, tornado_handler=dummy_handler)
         return view_func(request, user_profile)
 
     def test_get_events(self) -> None:
@@ -896,7 +901,9 @@ class RestartEventsTest(ZulipTestCase):
         post_data: Dict[str, Any],
         client_name: Optional[str] = None,
     ) -> HttpResponse:
-        request = HostRequestMock(post_data, user_profile, client_name=client_name)
+        request = HostRequestMock(
+            post_data, user_profile, client_name=client_name, tornado_handler=dummy_handler
+        )
         return view_func(request, user_profile)
 
     def test_restart(self) -> None:
