@@ -759,7 +759,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 3.x series
 
-### 3.4 -- April 14, 2021
+### 3.4 -- 2021-04-14
 
 - CVE-2021-30487: Prevent administrators from moving topics to
   disallowed streams.
@@ -781,7 +781,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Upgraded minor python dependencies.
 - Minor documentation fixes.
 
-### 3.3 -- December 1, 2020
+### 3.3 -- 2020-12-01
 
 - Guest users should not be allowed to post to streams marked “Only
   organization full members can post.” This flaw has existed since
@@ -799,7 +799,7 @@ log][commit-log] for an up-to-date list of raw changes.
   “Organization owner” roles.
 - Handle realm emojis that have been manually deleted more gracefully.
 
-### 3.2 -- September 15, 2020
+### 3.2 -- 2020-09-15
 
 - Switched from `libmemcached` to `python-binary-memcached`, a
   pure-Python implementation; this should eliminate memcached
@@ -821,7 +821,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Improved upgrade documentation.
 - Removed internal ID lists which could leak into the events API.
 
-### 3.1 -- July 30, 2020
+### 3.1 -- 2020-07-30
 
 - Removed unused `short_name` field from the User model. This field
   had no purpose and could leak the local part of email addresses
@@ -841,7 +841,7 @@ log][commit-log] for an up-to-date list of raw changes.
   included in this maintenance release to ensure backporting patches
   from `main` remains easy.
 
-### 3.0 -- July 16, 2020
+### 3.0 -- 2020-07-16
 
 #### Highlights
 
