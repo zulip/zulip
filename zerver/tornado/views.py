@@ -5,6 +5,7 @@ import orjson
 from asgiref.sync import async_to_sync
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_notify_view, process_client
 from zerver.lib.exceptions import JsonableError
@@ -21,19 +22,20 @@ from zerver.models import Client, UserProfile, get_client, get_user_profile_by_i
 from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
 from zerver.tornado.exceptions import BadEventQueueIdError
 
+P = ParamSpec("P")
 T = TypeVar("T")
 
 
-def in_tornado_thread(f: Callable[[], T]) -> T:
-    async def wrapped() -> T:
-        return f()
+def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
+    async def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+        return f(*args, **kwargs)
 
-    return async_to_sync(wrapped)()
+    return async_to_sync(wrapped)
 
 
 @internal_notify_view(True)
 def notify(request: HttpRequest) -> HttpResponse:
-    in_tornado_thread(lambda: process_notification(orjson.loads(request.POST["data"])))
+    in_tornado_thread(process_notification)(orjson.loads(request.POST["data"]))
     return json_success(request)
 
 
@@ -49,7 +51,7 @@ def cleanup_event_queue(
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
-    in_tornado_thread(client.cleanup)
+    in_tornado_thread(client.cleanup)()
     return json_success(request)
 
 
@@ -164,7 +166,7 @@ def get_events_backend(
             user_settings_object=user_settings_object,
         )
 
-    result = in_tornado_thread(lambda: fetch_events(events_query))
+    result = in_tornado_thread(fetch_events)(events_query)
     if "extra_log_data" in result:
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None
