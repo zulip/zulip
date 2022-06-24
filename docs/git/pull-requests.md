@@ -13,13 +13,12 @@ might also find GitHub's article
 [about pull requests][github-help-about-pr] helpful. That all said,
 the tutorial below will walk you through the process.
 
-## Work in progress pull requests
+## Draft pull requests
 
-In the Zulip project, we encourage submitting work-in-progress pull
-requests early and often. This allows you to share your code to make
-it easier to get feedback and help with your changes. Prefix the
-titles of work-in-progress pull requests with **[WIP]**, which in our
-project means that you don't think your pull request is ready to be
+In the Zulip project, we encourage submitting [draft pull
+requests][github-help-draft-pr] early and often. This allows you to
+share your code to make it easier to get feedback and help with your
+changes, even if you don't think your pull request is ready to be
 merged (e.g. it might not work or pass tests). This sets expectations
 correctly for any feedback from other developers, and prevents your
 work from being merged before you're confident in it.
@@ -121,8 +120,9 @@ You'll see the _Open a pull request_ page:
 
 ![images-create-pr]
 
-Provide a **title** and first comment for your pull request. Remember to prefix
-your pull request title with [WIP] if it is a [work-in-progress][wip-prs].
+Provide a **title** and first comment for your pull request. Remember to mark
+your pull request as a [draft][github-help-draft-pr] if it is a
+work-in-progress.
 
 If your pull request has an effect on the visuals of a component, you might want
 to include a screenshot of this change or a GIF of the interaction in your first
@@ -157,8 +157,8 @@ for another review.
 [edx-howto-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-help-about-pr]: https://help.github.com/en/articles/about-pull-requests
 [github-help-create-pr-fork]: https://help.github.com/en/articles/creating-a-pull-request-from-a-fork
+[github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [images-create-pr]: ../images/zulip-open-pr.png
 [keep-up-to-date]: using.md#keep-your-fork-up-to-date
 [self-push-commits]: using.md#push-your-commits-to-github
 [screenshots-gifs]: ../tutorials/screenshot-and-gif-software.md
-[wip-prs]: #work-in-progress-pull-requests

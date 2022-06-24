@@ -9,8 +9,9 @@ with these details in mind:
   [zulip/zulip][github-zulip-zulip] (or the appropriate
   [repository][github-zulip], if you are working on something else besides
   Zulip server) to your own account and then create feature/issue branches.
-  When you're ready to get feedback, submit a work-in-progress (WIP) pull
-  request. _We encourage you to submit WIP pull requests early and often._
+  When you're ready to get feedback, submit a [draft][github-help-draft-pr]
+  pull request. _We encourage you to submit draft pull requests early and
+  often._
 
 - We use a **[rebase][gitbook-rebase]-oriented workflow.** We do not use merge
   commits. This means you should use `git fetch` followed by `git rebase`
@@ -54,6 +55,7 @@ The following sections will help you be awesome with Zulip and Git/GitHub in a
 rebased-based workflow. Read through it if you're new to Git, to a rebase-based
 Git workflow, or if you'd like a Git refresher.
 
+[github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-rebase-pr]: https://github.com/edx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-zulip]: https://github.com/zulip/

@@ -59,7 +59,7 @@ feedback.
 - When asking for help, provide the details needed for others to help
   you. For example, include the **full traceback** in a [code
   block](/help/code-blocks) (not a screenshot), a link to the code or
-  a WIP PR you’re having trouble debugging, etc.
+  a draft PR you’re having trouble debugging, etc.
 - Ask questions on streams rather than PMing core contributors. You’ll
   get answers faster since other people can help, and it makes it
   possible for others to benefit from the discussion.
