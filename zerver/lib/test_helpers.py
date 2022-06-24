@@ -291,6 +291,9 @@ class DummyHandler(AsyncDjangoHandler):
         allocate_handler_id(self)
 
 
+dummy_handler = DummyHandler()
+
+
 class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
@@ -302,7 +305,7 @@ class HostRequestMock(HttpRequest):
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
-        tornado_handler: Optional[AsyncDjangoHandler] = DummyHandler(),
+        tornado_handler: Optional[AsyncDjangoHandler] = None,
         path: str = "",
     ) -> None:
         self.host = host
