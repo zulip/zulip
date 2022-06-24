@@ -135,21 +135,9 @@ def get_events_backend(
     else:
         valid_user_client = user_client
 
-    events_query = dict(
-        user_profile_id=user_profile.id,
-        queue_id=queue_id,
-        last_event_id=last_event_id,
-        event_types=event_types,
-        client_type_name=valid_user_client.name,
-        all_public_streams=all_public_streams,
-        lifespan_secs=lifespan_secs,
-        narrow=narrow,
-        dont_block=dont_block,
-        handler_id=handler.handler_id,
-    )
-
+    new_queue_data = None
     if queue_id is None:
-        events_query["new_queue_data"] = dict(
+        new_queue_data = dict(
             user_profile_id=user_profile.id,
             realm_id=user_profile.realm_id,
             event_types=event_types,
@@ -166,7 +154,15 @@ def get_events_backend(
             user_settings_object=user_settings_object,
         )
 
-    result = in_tornado_thread(fetch_events)(events_query)
+    result = in_tornado_thread(fetch_events)(
+        user_profile_id=user_profile.id,
+        queue_id=queue_id,
+        last_event_id=last_event_id,
+        client_type_name=valid_user_client.name,
+        dont_block=dont_block,
+        handler_id=handler.handler_id,
+        new_queue_data=new_queue_data,
+    )
     if "extra_log_data" in result:
         log_data = RequestNotes.get_notes(request).log_data
         assert log_data is not None

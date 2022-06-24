@@ -618,15 +618,15 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
     send_restart_events(immediate=settings.DEVELOPMENT)
 
 
-def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
-    queue_id: Optional[str] = query["queue_id"]
-    dont_block: bool = query["dont_block"]
-    last_event_id: Optional[int] = query["last_event_id"]
-    user_profile_id: int = query["user_profile_id"]
-    new_queue_data: Optional[MutableMapping[str, Any]] = query.get("new_queue_data")
-    client_type_name: str = query["client_type_name"]
-    handler_id: int = query["handler_id"]
-
+def fetch_events(
+    queue_id: Optional[str],
+    dont_block: bool,
+    last_event_id: Optional[int],
+    user_profile_id: int,
+    new_queue_data: Optional[MutableMapping[str, Any]],
+    client_type_name: str,
+    handler_id: int,
+) -> Dict[str, Any]:
     try:
         was_connected = False
         orig_queue_id = queue_id
