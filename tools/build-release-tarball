@@ -62,6 +62,19 @@ git checkout-index -f -a --prefix "$TMPDIR/$prefix/"
 
 # Add the Git version information file
 ./tools/cache-zulip-git-version
+if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    generated_version=$(head -n1 zulip-git-version)
+    base_version=$(head -n2 zulip-git-version | tail -n1)
+    if [ "$generated_version" != "$version" ]; then
+        echo "Version $version looks like a release version, but is not tagged yet!  Got $generated_version"
+        exit 1
+    fi
+    if [ "$base_version" != "$version" ]; then
+        remote="$(git config zulip.zulipRemote)" || remote=upstream
+        echo "Commit for $version have not been pushed to remote $remote -- 'branched from' reports $base_version, not $version"
+        exit 1
+    fi
+fi
 mv zulip-git-version "$TMPDIR/$prefix/"
 
 cd "$TMPDIR/$prefix"
