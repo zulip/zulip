@@ -422,10 +422,6 @@ def process_raw_message_batch(
     mention_map: Dict[int, Set[int]] = {}
     zerver_message = []
 
-    import html2text
-
-    h = html2text.HTML2Text()
-
     pm_members = {}
 
     for raw_message in raw_messages:
@@ -437,7 +433,9 @@ def process_raw_message_batch(
             content=raw_message["content"],
             mention_user_ids=mention_user_ids,
         )
-        content = h.handle(content)
+
+        # html2text is GPL licensed, so run it as a subprocess.
+        content = subprocess.check_output(["html2text"], input=content, text=True)
 
         if len(content) > 10000:  # nocoverage
             logging.info("skipping too-long message of length %s", len(content))
