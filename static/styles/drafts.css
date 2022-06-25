@@ -49,6 +49,21 @@
         }
     }
 
+    .drafts-tabs {
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        padding: 10px;
+
+        .btn-draft-tabs {
+            border-radius: 4px;
+            padding: 10px
+        }
+
+        .selected-tab {
+            background-color: hsl(0, 0%, 87%)
+        }
+    }
+
     .drafts-list {
         padding: 10px 25px;
         overflow: auto;

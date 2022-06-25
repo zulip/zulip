@@ -12,6 +12,10 @@
                     {{#tr}}Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.{{/tr}}
                 </div>
             </div>
+            <div class="drafts-tabs">
+                <button data-filter="normal" type="button" class="btn btn-default btn-draft-tabs selected-tab">{{t 'Normal drafts' }}</button>
+                <button data-filter="scheduled" type="button" class="btn btn-default btn-draft-tabs">{{t 'Scheduled messages' }}</button>
+            </div>
             <div class="drafts-list">
                 <div class="no-drafts">
                     {{t 'No drafts.'}}
