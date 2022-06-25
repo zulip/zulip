@@ -461,13 +461,14 @@ input.recipient_box {
     width: 100%;
 }
 
+#schedule-confirm,
 #compose-send-button {
-    height: 24px;
     padding-top: 3px;
     padding-bottom: 3px;
     margin-bottom: 0;
     font-weight: 600;
     font-size: 0.9em;
+    border-radius: 4px 0 0 4px;
 
     .loader {
         display: none;
@@ -625,11 +626,10 @@ input.recipient_box {
 
 .compose_right_float_container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
     white-space: nowrap;
-    gap: 4px;
     margin-top: 2px;
+    height: 24px;
 }
 
 a.compose_control_button {
@@ -712,6 +712,24 @@ a.compose_control_button.hide {
 .compose_mobile_stream_button i,
 .compose_mobile_private_button i {
     margin-right: 4px;
+}
+
+#send_later {
+    float: right;
+    color: hsl(0, 0%, 100%);
+    border-radius: 0 4px 4px 0;
+    border-left: 1px solid hsl(213, 14%, 12%, 0.15);
+    padding: 0;
+    margin: 0;
+
+    .zulip-icon-schedule {
+        padding: 4.5px 4px;
+    }
+
+    &:hover {
+        opacity: 1;
+        text-decoration: none;
+    }
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */

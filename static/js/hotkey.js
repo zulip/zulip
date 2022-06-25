@@ -439,6 +439,11 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (e.target.id === "send_later") {
+        $("#send_later i").trigger("click");
+        return true;
+    }
+
     if ($(e.target).attr("role") === "button") {
         e.target.click();
         return true;

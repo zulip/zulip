@@ -699,6 +699,11 @@ export function initialize() {
             return;
         }
 
+        if ($target.is("#send_later i")) {
+            e.stopPropagation();
+            return;
+        }
+
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {

@@ -16,6 +16,7 @@ import * as message_store from "./message_store";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
@@ -220,7 +221,12 @@ function handle_keydown(e) {
                     // could result in focus being moved to the "Send
                     // button" after sending the message, preventing
                     // typing a next message!
-                    $("#compose-send-button").trigger("focus");
+                    if (popover_menus.is_time_selected_for_schedule()) {
+                        $("#schedule-confirm").trigger("focus");
+                    } else {
+                        $("#compose-send-button").trigger("focus");
+                    }
+
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -228,10 +234,17 @@ function handle_keydown(e) {
                 // Enter
                 if (should_enter_send(e)) {
                     e.preventDefault();
-                    if (
-                        compose_validate.warn_for_text_overflow_when_tries_to_send() &&
-                        !$("#compose-send-button").prop("disabled")
-                    ) {
+
+                    if (!compose_validate.warn_for_text_overflow_when_tries_to_send()) {
+                        return;
+                    }
+
+                    if (popover_menus.is_time_selected_for_schedule()) {
+                        popover_menus.schedule_message_to_custom_date();
+                        return;
+                    }
+
+                    if (!$("#compose-send-button").prop("disabled")) {
                         $("#compose-send-button").prop("disabled", true);
                         compose.finish();
                     }

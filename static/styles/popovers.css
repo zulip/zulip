@@ -764,3 +764,18 @@ ul {
         column-count: 1;
     }
 }
+
+#send_later_popover {
+    hr {
+        margin: 5px 0;
+    }
+
+    .selected::before {
+        content: attr(data-before);
+        position: absolute;
+        width: 102px;
+        text-align: center;
+        background-color: hsl(0, 0%, 88%);
+        color: hsl(0, 0%, 27%);
+    }
+}

@@ -21,6 +21,7 @@ import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as popover_menus from "./popover_menus";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -268,13 +269,14 @@ export function send_message(request = create_message_object()) {
     }
 }
 
-export function enter_with_preview_open(ctrl_pressed = false) {
-    if (
-        (user_settings.enter_sends && !ctrl_pressed) ||
-        (!user_settings.enter_sends && ctrl_pressed)
-    ) {
-        // If this enter should send, we attempt to send the message.
-        finish();
+export function enter_with_preview_open() {
+    if (user_settings.enter_sends) {
+        // If enter_sends is enabled, we attempt to send the message
+        if (popover_menus.is_time_selected_for_schedule()) {
+            popover_menus.schedule_message_to_custom_date();
+        } else {
+            finish();
+        }
     } else {
         // Otherwise, we return to the normal compose state.
         clear_preview_area();

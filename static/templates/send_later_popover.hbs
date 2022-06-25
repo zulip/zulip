@@ -1,0 +1,23 @@
+<ul id="send_later_popover" class="nav nav-list">
+    {{#each send_later_hours}}
+        <li>
+            <a id="{{@key}}" class="send_later_hours" data-before="{{t 'Clear selected' }}">{{this.text}}</a>
+        </li>
+    {{/each}}
+    <hr />
+    {{#each send_later_tomorrow}}
+        <li>
+            <a id="{{@key}}" class="send_later_tomorrow" data-before="{{t 'Clear selected' }}">{{this.text}}</a>
+        </li>
+    {{/each}}
+    <hr />
+    {{#each send_later_days_and_weeks}}
+        <li>
+            <a id="{{@key}}" class="send_later_days_and_weeks" data-before="{{t 'Clear selected' }}">{{this.text}}</a>
+        </li>
+    {{/each}}
+    <hr />
+    <li class=>
+        <a id="send-later-custom-input" data-before="{{t 'Clear selected' }}">{{send_later_custom.text}}</a>
+    </li>
+</ul>

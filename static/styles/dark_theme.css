@@ -583,6 +583,11 @@ body.dark-theme {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    #send_later_popover .selected::before {
+        color: hsl(211, 18%, 25%);
+        background-color: hsl(0, 0%, 100%);
+    }
+
     .recent_topics_participant_overflow {
         color: hsl(0, 0%, 100%) !important;
         background-color: hsl(211, 18%, 25%) !important;
