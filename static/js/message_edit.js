@@ -417,6 +417,7 @@ function edit_message($row, raw_content) {
         editability === editability_types.TOPIC_ONLY ||
         editability === editability_types.FULL ||
         is_stream_editable;
+    const is_content_editable = editability === editability_types.FULL;
     // current message's stream has been already been added and selected in Handlebars
     const available_streams = is_stream_editable
         ? stream_data.subscribed_subs().map((stream) => ({
@@ -440,7 +441,7 @@ function edit_message($row, raw_content) {
             is_stream: message.type === "stream",
             message_id: message.id,
             is_editable,
-            is_content_editable: editability === editability_types.FULL,
+            is_content_editable,
             is_widget_message: is_widget_message(message),
             has_been_editable: editability !== editability_types.NO,
             topic: message.topic,
@@ -474,6 +475,17 @@ function edit_message($row, raw_content) {
     const $message_edit_breadcrumb_messages = $row.find("div.message_edit_breadcrumb_messages");
     const $message_edit_countdown_timer = $row.find(".message_edit_countdown_timer");
     const $copy_message = $row.find(".copy_message");
+
+    // One might expect us to initially show the message move
+    // propagation select UI if and only if the user has permission to
+    // edit the topic. However, in the common case that a user sent
+    // the message themselves and thus has permission to edit the
+    // content, this dropdown can feel like clutter, so we don't show
+    // it until the stream/topic has been changed in that case.
+    //
+    // So we show this widget initially if and only if the stream or
+    // topic is editable, but the content is not.
+    $message_edit_topic_propagate.toggle(is_editable && !is_content_editable);
 
     if (is_stream_editable) {
         stream_widget = new DropdownListWidget(opts);
@@ -619,7 +631,10 @@ function edit_message($row, raw_content) {
             : null;
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = is_stream_editable ? new_stream_id !== original_stream_id : false;
-        $message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
+
+        $message_edit_topic_propagate.toggle(
+            is_topic_edited || is_stream_edited || $message_edit_topic_propagate.is(":visible"),
+        );
         $message_edit_breadcrumb_messages.toggle(is_stream_edited);
 
         if (is_stream_edited) {
