@@ -3,12 +3,12 @@
 import logging
 import math
 import re
+import subprocess
 from collections import defaultdict
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-import html2text
 import lxml.html
 import pytz
 from bs4 import BeautifulSoup
@@ -739,8 +739,8 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
 
 
 def convert_html_to_markdown(html: str) -> str:
-    parser = html2text.HTML2Text()
-    markdown = parser.handle(html).strip()
+    # html2text is GPL licensed, so run it as a subprocess.
+    markdown = subprocess.check_output(["html2text"], input=html, text=True).strip()
 
     # We want images to get linked and inline previewed, but html2text will turn
     # them into links of the form `![](http://foo.com/image.png)`, which is
