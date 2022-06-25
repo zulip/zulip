@@ -278,6 +278,14 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="topic", operand="personal", negated=True)
         self._do_add_term_test(term, "WHERE upper(subject) != upper(%(param_1)s)")
 
+    def test_add_term_using_topic_operator_some_words_operand(self) -> None:
+        term = dict(operator="topic-contains", operand="some words")
+        self._do_add_term_test(term, "WHERE subject ILIKE %(subject_1)s")
+
+    def test_add_term_using_topic_operator_some_words_operand_and_negated(self) -> None:  # NEGATED
+        term = dict(operator="topic-contains", operand="some words", negated=True)
+        self._do_add_term_test(term, "WHERE subject NOT ILIKE %(subject_1)s")
+
     def test_add_term_using_sender_operator(self) -> None:
         term = dict(operator="sender", operand=self.othello_email)
         self._do_add_term_test(term, "WHERE sender_id = %(param_1)s")

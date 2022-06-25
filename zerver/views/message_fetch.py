@@ -51,6 +51,7 @@ from zerver.lib.topic import (
     MATCH_TOPIC,
     get_resolved_topic_condition_sa,
     topic_column_sa,
+    topic_contains_sa,
     topic_match_sa,
 )
 from zerver.lib.types import Validator
@@ -359,6 +360,12 @@ class NarrowBuilder:
             return query.where(maybe_negate(cond))
 
         cond = topic_match_sa(operand)
+        return query.where(maybe_negate(cond))
+
+    def by_topic_contains(
+        self, query: Select, operand: str, maybe_negate: ConditionTransform
+    ) -> Select:
+        cond = topic_contains_sa(operand)
         return query.where(maybe_negate(cond))
 
     def by_sender(
