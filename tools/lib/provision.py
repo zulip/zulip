@@ -97,6 +97,8 @@ elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
     POSTGRESQL_VERSION = "10"
+elif vendor == "gentoo":
+    POSTGRESQL_VERSION = "14"
 else:
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     sys.exit(1)
@@ -161,6 +163,31 @@ COMMON_YUM_DEPENDENCIES = [
     "xorg-x11-server-Xvfb",
     # Puppeteer dependencies end here.
 ]
+COMMON_GENTOO_DEPENDENCIES = [
+    "dev-db/postgresql",
+    "net-misc/memcached",
+    "net-misc/rabbitmq-server",
+    "app-admin/supervisor",
+    "dev-vcs/git",
+    "net-misc/curl",
+    "app-misc/ca-certificates",
+    "app-admin/puppet",
+    "app-i18n/transifex-client",
+    "sys-apps/moreutils",
+    "app-arch/unzip",
+    "x11-misc/xdg-utils",
+    "dev-db/redis",
+    "app-text/hunspell",
+    "x11-misc/xvfb-run",
+    "=net-libs/nodejs-16*",
+    "app-misc/jq",
+    "dev-python/python-ldap",
+    "dev-libs/xmlsec",
+    "dev-libs/msgpack",
+    "app-text/groonga",
+    "app-dicts/myspell-en",
+    "net-nds/openldap[sasl]",
+]
 
 BUILD_PGROONGA_FROM_SOURCE = False
 if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in []:
@@ -220,9 +247,18 @@ elif "fedora" in os_families():
         *VENV_DEPENDENCIES,
     ]
     BUILD_PGROONGA_FROM_SOURCE = True
+elif "gentoo" in os_families():
+    BUILD_PGROONGA_FROM_SOURCE = True
+
+    SYSTEM_DEPENDENCIES = [
+        *COMMON_GENTOO_DEPENDENCIES,
+        *VENV_DEPENDENCIES,
+    ]
 
 if "fedora" in os_families():
     TSEARCH_STOPWORDS_PATH = f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/"
+elif "gentoo" in os_families():
+    TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql-{POSTGRESQL_VERSION}/tsearch_data/"
 else:
     TSEARCH_STOPWORDS_PATH = f"/usr/share/postgresql/{POSTGRESQL_VERSION}/tsearch_data/"
 REPO_STOPWORDS_PATH = os.path.join(
@@ -244,6 +280,8 @@ def install_system_deps() -> None:
         install_yum_deps(deps_to_install)
     elif "debian" in os_families():
         install_apt_deps(deps_to_install)
+    elif "gentoo" in os_families():
+        install_gentoo_deps(deps_to_install)
     else:
         raise AssertionError("Invalid vendor")
 
@@ -350,6 +388,28 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     )
 
 
+def install_gentoo_deps(deps_to_install: List[str]) -> None:
+    print(WARNING + "Gentoo support is still experimental.", ENDC)
+    run_as_root(["emerge", "-q", "-u", *deps_to_install])
+    # Link in tsearch data files
+    run_as_root(
+        [
+            "ln",
+            "-nsf",
+            "/usr/share/myspell/en_US.dic",
+            f"/usr/share/postgresql-{POSTGRESQL_VERSION}/tsearch_data/en_us.dict",
+        ]
+    )
+    run_as_root(
+        [
+            "ln",
+            "-nsf",
+            "/usr/share/myspell/en_US.aff",
+            f"/usr/share/postgresql-{POSTGRESQL_VERSION}/tsearch_data/en_us.affix",
+        ]
+    )
+
+
 def main(options: argparse.Namespace) -> "NoReturn":
 
     # yarn and management commands expect to be run from the root of the
@@ -422,7 +482,9 @@ def main(options: argparse.Namespace) -> "NoReturn":
         "https_proxy=" + os.environ.get("https_proxy", ""),
         "no_proxy=" + os.environ.get("no_proxy", ""),
     ]
-    run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
+    if "gentoo" not in os_families():
+        run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
+
     run_as_root([*proxy_env, "scripts/lib/install-yarn"])
 
     if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):

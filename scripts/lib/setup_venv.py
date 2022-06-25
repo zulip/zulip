@@ -69,6 +69,11 @@ FEDORA_VENV_DEPENDENCIES = [
     "virtualenv",  # see https://unix.stackexchange.com/questions/27877/install-virtualenv-on-fedora-16
 ]
 
+GENTOO_VENV_DEPENDENCIES = [
+    "dev-python/pip",
+    "dev-python/virtualenv",
+]
+
 
 def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
     if "debian" in os_families():
@@ -77,6 +82,8 @@ def get_venv_dependencies(vendor: str, os_version: str) -> List[str]:
         return REDHAT_VENV_DEPENDENCIES
     elif "fedora" in os_families():
         return FEDORA_VENV_DEPENDENCIES
+    elif "gentoo" in os_families():
+        return GENTOO_VENV_DEPENDENCIES
     else:
         raise AssertionError("Invalid vendor")
 
