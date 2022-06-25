@@ -34,7 +34,7 @@ preparing a new release.
 - Update the Paper blog post draft with any new commits.
 - _Except minor releases:_ Download updated translation strings from
   Transifex and commit them.
-- Use `build-release-tarball` to generate a release tarball.
+- Use `build-release-tarball` to generate a pre-release tarball.
 - Test the new tarball extensively, both new install and upgrade from last
   release, on Ubuntu 20.04.
 - Repeat until release is ready.
@@ -56,18 +56,7 @@ preparing a new release.
   - Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
   - _Except minor releases:_ Update `API_FEATURE_LEVEL` to a feature
     level for the final release, and document a reserved range.
-- Tag that commit with an unsigned Git tag named the release number.
-- Use `build-release-tarball` to generate a final release tarball.
-- Push the tag and release commit.
-- Upload the tarball using `tools/upload-release`.
-- Post the release by [editing the latest tag on
-  GitHub](https://github.com/zulip/zulip/tags); use the text from
-  `changelog.md` for the release notes.
-
-  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/main/tools/oneclickapps/README.md)
-  for updating DigitalOcean one-click app image. The action uses the latest release
-  tarball published on `download.zulip.com` for creating the image.
-
+- Run `tools/release` with the release version.
 - Update the [Docker image](https://github.com/zulip/docker-zulip):
   - Update `ZULIP_GIT_REF` in `Dockerfile`
   - Update `README.md`
