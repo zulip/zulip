@@ -370,7 +370,7 @@ p.n-margin {
 .dropdown-menu .org-head .org-uri {
     text-align: center;
     line-height: 100%;
-    color: rgb(118, 121, 123);
+    color: hsl(0, 0%, 52%)
 }
 
 .dropdown-menu .org-head .org-plan {
