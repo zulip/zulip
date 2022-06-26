@@ -2,7 +2,7 @@ Get Zulip notifications for your Statuspage.io subscriptions!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Statuspage Dashboard, and click on **Notifications**
    near the bottom-left corner. Select the **Webhook** tab. If webhook

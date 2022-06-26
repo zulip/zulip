@@ -4,7 +4,7 @@ sent by Zapier directly in Zulip.
 
 1. {!create-stream.md!}
 
-1. {!create-a-bot-indented.md!}
+1. {!create-a-bot.md!}
 
 1. Create an account on [Zapier](https://zapier.com).
 

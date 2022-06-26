@@ -1,12 +1,12 @@
 Get Zulip notifications for your Git repositories!
 
-1. {!create-a-bot-indented.md!}
+1. {!create-a-bot.md!}
 
 1. {!download-python-bindings.md!}
 
 1. {!create-stream.md!}
 
-1. {!change-zulip-config-file-indented.md!}
+1. {!change-zulip-config-file.md!}
 
     You may also need to change the value of `STREAM_NAME`.
 

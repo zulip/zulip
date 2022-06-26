@@ -2,7 +2,7 @@ Receive Greenhouse notifications in Zulip!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. On your Greenhouse **Dashboard**, click on the
    **gear** (<i class="fa fa-cog"></i>) icon in the upper right

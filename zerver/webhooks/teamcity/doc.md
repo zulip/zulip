@@ -2,7 +2,7 @@ Get Zulip notifications for your TeamCity builds!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Install the [tcWebHooks plugin](https://github.com/tcplugins/tcWebHooks/releases)
    onto your TeamCity server. Follow the plugin instructions in your

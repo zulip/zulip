@@ -1,6 +1,6 @@
 Get Zulip notifications for your Capistrano deploys!
 
-1.  {!create-a-bot-indented.md!}
+1.  {!create-a-bot.md!}
 
 1.  {!download-python-bindings.md!}
 

@@ -6,7 +6,7 @@ us](/help/contact-support) if a platform you care about is missing.
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
+2. {!create-bot-construct-url.md!}
 
     The default topic, if not set in the URL, will be the title of the
     issue or event.
