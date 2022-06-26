@@ -2087,48 +2087,38 @@ class TestIgnoreUnhashableLRUCache(ZulipTestCase):
         def f(arg: Any) -> Any:
             return arg
 
-        def get_cache_info() -> Tuple[int, int, int]:
-            info = getattr(f, "cache_info")()
-            hits = getattr(info, "hits")
-            misses = getattr(info, "misses")
-            currsize = getattr(info, "currsize")
-            return hits, misses, currsize
-
-        def clear_cache() -> None:
-            getattr(f, "cache_clear")()
-
         # Check hashable argument.
         result = f(1)
-        hits, misses, currsize = get_cache_info()
+        info = f.cache_info()
         # First one should be a miss.
-        self.assertEqual(hits, 0)
-        self.assertEqual(misses, 1)
-        self.assertEqual(currsize, 1)
+        self.assertEqual(info.hits, 0)
+        self.assertEqual(info.misses, 1)
+        self.assertEqual(info.currsize, 1)
         self.assertEqual(result, 1)
 
         result = f(1)
-        hits, misses, currsize = get_cache_info()
+        info = f.cache_info()
         # Second one should be a hit.
-        self.assertEqual(hits, 1)
-        self.assertEqual(misses, 1)
-        self.assertEqual(currsize, 1)
+        self.assertEqual(info.hits, 1)
+        self.assertEqual(info.misses, 1)
+        self.assertEqual(info.currsize, 1)
         self.assertEqual(result, 1)
 
         # Check unhashable argument.
         result = f({1: 2})
-        hits, misses, currsize = get_cache_info()
+        info = f.cache_info()
         # Cache should not be used.
-        self.assertEqual(hits, 1)
-        self.assertEqual(misses, 1)
-        self.assertEqual(currsize, 1)
+        self.assertEqual(info.hits, 1)
+        self.assertEqual(info.misses, 1)
+        self.assertEqual(info.currsize, 1)
         self.assertEqual(result, {1: 2})
 
         # Clear cache.
-        clear_cache()
-        hits, misses, currsize = get_cache_info()
-        self.assertEqual(hits, 0)
-        self.assertEqual(misses, 0)
-        self.assertEqual(currsize, 0)
+        f.cache_clear()
+        info = f.cache_info()
+        self.assertEqual(info.hits, 0)
+        self.assertEqual(info.misses, 0)
+        self.assertEqual(info.currsize, 0)
 
     def test_cache_hit_dict_args(self) -> None:
         @ignore_unhashable_lru_cache()
@@ -2136,60 +2126,50 @@ class TestIgnoreUnhashableLRUCache(ZulipTestCase):
         def g(arg: Any) -> Any:
             return arg
 
-        def get_cache_info() -> Tuple[int, int, int]:
-            info = getattr(g, "cache_info")()
-            hits = getattr(info, "hits")
-            misses = getattr(info, "misses")
-            currsize = getattr(info, "currsize")
-            return hits, misses, currsize
-
-        def clear_cache() -> None:
-            getattr(g, "cache_clear")()
-
-        # Not used as a decorator on the definition to allow defining
-        # get_cache_info and clear_cache
+        # Not used as a decorator on the definition to allow calling
+        # cache_info and cache_clear
         f = dict_to_items_tuple(g)
 
         # Check hashable argument.
         result = f(1)
-        hits, misses, currsize = get_cache_info()
+        info = g.cache_info()
         # First one should be a miss.
-        self.assertEqual(hits, 0)
-        self.assertEqual(misses, 1)
-        self.assertEqual(currsize, 1)
+        self.assertEqual(info.hits, 0)
+        self.assertEqual(info.misses, 1)
+        self.assertEqual(info.currsize, 1)
         self.assertEqual(result, 1)
 
         result = f(1)
-        hits, misses, currsize = get_cache_info()
+        info = g.cache_info()
         # Second one should be a hit.
-        self.assertEqual(hits, 1)
-        self.assertEqual(misses, 1)
-        self.assertEqual(currsize, 1)
+        self.assertEqual(info.hits, 1)
+        self.assertEqual(info.misses, 1)
+        self.assertEqual(info.currsize, 1)
         self.assertEqual(result, 1)
 
         # Check dict argument.
         result = f({1: 2})
-        hits, misses, currsize = get_cache_info()
+        info = g.cache_info()
         # First one is a miss
-        self.assertEqual(hits, 1)
-        self.assertEqual(misses, 2)
-        self.assertEqual(currsize, 2)
+        self.assertEqual(info.hits, 1)
+        self.assertEqual(info.misses, 2)
+        self.assertEqual(info.currsize, 2)
         self.assertEqual(result, {1: 2})
 
         result = f({1: 2})
-        hits, misses, currsize = get_cache_info()
+        info = g.cache_info()
         # Second one should be a hit.
-        self.assertEqual(hits, 2)
-        self.assertEqual(misses, 2)
-        self.assertEqual(currsize, 2)
+        self.assertEqual(info.hits, 2)
+        self.assertEqual(info.misses, 2)
+        self.assertEqual(info.currsize, 2)
         self.assertEqual(result, {1: 2})
 
         # Clear cache.
-        clear_cache()
-        hits, misses, currsize = get_cache_info()
-        self.assertEqual(hits, 0)
-        self.assertEqual(misses, 0)
-        self.assertEqual(currsize, 0)
+        g.cache_clear()
+        info = g.cache_info()
+        self.assertEqual(info.hits, 0)
+        self.assertEqual(info.misses, 0)
+        self.assertEqual(info.currsize, 0)
 
 
 class TestRequestNotes(ZulipTestCase):
