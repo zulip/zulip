@@ -370,7 +370,7 @@ p.n-margin {
 .dropdown-menu .org-head .org-uri {
     text-align: center;
     line-height: 100%;
-    color: hsl(0, 0%, 52%)
+    color: hsl(0, 0%, 52%);
 }
 
 .dropdown-menu .org-head .org-plan {
@@ -378,7 +378,7 @@ p.n-margin {
     line-height: 2.5em;
     font-size: medium;
     font-weight: 200px;
-    color: hsl(0, 0%, 52%)
+    color: hsl(0, 0%, 52%);
 }
 
 .dropdown-menu .org-head .text {
@@ -387,8 +387,7 @@ p.n-margin {
     padding-bottom: 10px;
     font-weight: lighter;
     font-weight: 400;
-    color: hsl(0, 0%, 52%)
-
+    color: hsl(0, 0%, 52%);
 }
 
 .app {
