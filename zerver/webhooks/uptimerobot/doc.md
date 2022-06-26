@@ -2,7 +2,7 @@ Receive Zulip notifications from UptimeRobot!
 
 1. {!create-stream.md!}
 
-1. {!create-a-bot-indented.md!}
+1. {!create-a-bot.md!}
 
     Construct the URL for the {{ integration_display_name }}
     bot using the bot's API key and the desired stream name:

@@ -2,7 +2,7 @@ Get Zulip notifications for your Sonarqube code analysis!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. To configure webhooks for a specific SonarQube project, go to the project and select **Administration**. Select
  **Webhooks** and click **Create**. **Note**: you can also configure webhooks globally by going to **Configurations** ->

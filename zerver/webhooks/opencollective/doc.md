@@ -3,7 +3,7 @@ when a new member signs-up on an **Open Collective** page.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to [Open Collective Website](https://opencollective.com/), find
 your desired collective page, then go to *Settings* -> *Webhooks*, paste the

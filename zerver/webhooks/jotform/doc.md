@@ -2,7 +2,7 @@ Get Zulip notifications for your Jotform responses!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
    By default, the integration will use the form's title as the topic.
 
 1. In Jotform, go to **Form Builder**, and click on **Settings** tab.
