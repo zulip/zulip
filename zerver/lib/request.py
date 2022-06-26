@@ -1,5 +1,4 @@
 import threading
-import weakref
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import wraps
@@ -27,7 +26,6 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
 import zerver.lib.rate_limiter as rate_limiter
-import zerver.tornado.handlers as handlers
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
 from zerver.lib.types import Validator, ViewFuncT
@@ -65,9 +63,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
-    # tornado_handler is a weak reference to work around a memory leak
-    # in WeakKeyDictionary (https://bugs.python.org/issue44680).
-    tornado_handler: Optional["weakref.ReferenceType[handlers.AsyncDjangoHandler]"] = None
+    tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
     ignored_parameters: Set[str] = field(default_factory=set)
 

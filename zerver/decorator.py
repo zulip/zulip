@@ -728,7 +728,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
                     request.upload_handlers,
                     request.encoding,
                 ).parse()
-            else:
+            elif request.content_type == "application/x-www-form-urlencoded":
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 
         return view_func(request, *args, **kwargs)
@@ -837,7 +837,7 @@ def internal_notify_view(
             if not authenticate_notify(request):
                 raise AccessDeniedError()
             request_notes = RequestNotes.get_notes(request)
-            is_tornado_request = request_notes.tornado_handler is not None
+            is_tornado_request = request_notes.tornado_handler_id is not None
             # These next 2 are not security checks; they are internal
             # assertions to help us find bugs.
             if is_tornado_view and not is_tornado_request:

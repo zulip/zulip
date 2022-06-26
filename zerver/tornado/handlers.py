@@ -1,6 +1,5 @@
 import logging
 import urllib
-import weakref
 from typing import Any, Dict, List
 
 import tornado.web
@@ -111,16 +110,16 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
         signals.request_started.send(sender=self.__class__)
-        request = WSGIRequest(environ)
+        self._request = WSGIRequest(environ)
 
         # We do the import during runtime to avoid cyclic dependency
         from zerver.lib.request import RequestNotes
 
         # Provide a way for application code to access this handler
         # given the HttpRequest object.
-        RequestNotes.get_notes(request).tornado_handler = weakref.ref(self)
+        RequestNotes.get_notes(self._request).tornado_handler_id = self.handler_id
 
-        return request
+        return self._request
 
     async def write_django_response_as_tornado_response(self, response: HttpResponse) -> None:
         # This takes a Django HttpResponse and copies its HTTP status

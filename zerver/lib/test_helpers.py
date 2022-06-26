@@ -3,7 +3,6 @@ import os
 import re
 import sys
 import time
-import weakref
 from contextlib import contextmanager
 from functools import wraps
 from typing import (
@@ -291,6 +290,9 @@ class DummyHandler(AsyncDjangoHandler):
         allocate_handler_id(self)
 
 
+dummy_handler = DummyHandler()
+
+
 class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
@@ -302,7 +304,7 @@ class HostRequestMock(HttpRequest):
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
-        tornado_handler: Optional[AsyncDjangoHandler] = DummyHandler(),
+        tornado_handler: Optional[AsyncDjangoHandler] = None,
         path: str = "",
     ) -> None:
         self.host = host
@@ -333,7 +335,7 @@ class HostRequestMock(HttpRequest):
             RequestNotes(
                 client_name="",
                 log_data={},
-                tornado_handler=None if tornado_handler is None else weakref.ref(tornado_handler),
+                tornado_handler_id=None if tornado_handler is None else tornado_handler.handler_id,
                 client=get_client(client_name) if client_name is not None else None,
             ),
         )

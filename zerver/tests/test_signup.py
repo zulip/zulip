@@ -178,8 +178,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         for url in ("/register/", "/login/"):
             result = self.client_get(url)
-            self.assertEqual(result.status_code, 302)
-            self.assertIn("deactivated", result["Location"])
+            self.assertRedirects(result, "/accounts/deactivated/", status_code=302)
 
     def test_redirection_for_active_realm(self) -> None:
         for url in ("/register/", "/login/"):
@@ -188,15 +187,15 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
     def test_deactivation_notice_when_realm_is_active(self) -> None:
         result = self.client_get("/accounts/deactivated/")
-        self.assertEqual(result.status_code, 302)
-        self.assertIn("login", result["Location"])
+        self.assertRedirects(result, "/devlogin/", status_code=302)
 
     def test_deactivation_notice_when_deactivated(self) -> None:
         realm = get_realm("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.client_get("/accounts/deactivated/")
+        result = self.client_get("/login/", follow=True)
+        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
@@ -206,7 +205,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.deactivated_redirect = "http://example.zulipchat.com"
         realm.save(update_fields=["deactivated", "deactivated_redirect"])
 
-        result = self.client_get("/accounts/deactivated/")
+        result = self.client_get("/login/", follow=True)
         self.assertIn(
             'It has moved to <a href="http://example.zulipchat.com">http://example.zulipchat.com</a>.',
             result.content.decode(),
@@ -216,9 +215,22 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
-        result = self.client_get("/accounts/deactivated/")
+        result = self.client_get("/login/", follow=True)
         self.assertIn(
             'It has moved to <a href="http://new-subdomain-name.testserver">http://new-subdomain-name.testserver</a>.',
+            result.content.decode(),
+        )
+
+    def test_no_deactivation_notice_with_no_rediect(self) -> None:
+        realm = get_realm("zulip")
+        do_change_realm_subdomain(
+            realm, "new-subdomain-name", acting_user=None, add_deactivated_redirect=False
+        )
+
+        result = self.client_get("/login/", follow=True)
+        self.assertEqual(result.status_code, 404)
+        self.assertNotIn(
+            "new-subdomain-name",
             result.content.decode(),
         )
 
@@ -228,7 +240,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm = get_realm("zulip")
         do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
-        result = self.client_get("/accounts/deactivated/")
+        result = self.client_get("/login/", follow=True)
         self.assertIn(
             'It has moved to <a href="http://new-name-1.testserver">http://new-name-1.testserver</a>.',
             result.content.decode(),
@@ -236,7 +248,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
         realm = get_realm("new-name-1")
         do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
-        result = self.client_get("/accounts/deactivated/")
+        result = self.client_get("/login/", follow=True)
         self.assertIn(
             'It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
             result.content.decode(),

@@ -329,7 +329,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
-## Zulip 4.11 -- 2022-03-15
+### 4.11 -- 2022-03-15
 
 - CVE-2022-24751: Zulip Server 4.0 and above were susceptible to a
   race condition during user deactivation, where a simultaneous access
@@ -342,7 +342,7 @@ log][commit-log] for an up-to-date list of raw changes.
   - The server is upgraded, which clears the cache.
 - Updated translations.
 
-## Zulip 4.10 -- 2022-02-25
+### 4.10 -- 2022-02-25
 
 - CVE-2022-21706: Reusable invitation links could be improperly used
   for other organizations.
@@ -359,7 +359,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fix ARM64 support; however, the wal-g binary is not yet supported on
   ARM64 (zulip/zulip#21070).
 
-## Zulip 4.9 -- 2022-01-24
+### 4.9 -- 2022-01-24
 
 - CVE-2021-43799: Remote execution of code involving RabbitMQ.
 - Closed access to RabbitMQ port 25672; initial installs tried to
@@ -397,7 +397,7 @@ log][commit-log] for an up-to-date list of raw changes.
   `upgrade-zulip-from-git` require 3 GB of RAM, or 2 GB and at least 1
   GB of swap.
 
-## Zulip 4.8 -- 2021-12-01
+### 4.8 -- 2021-12-01
 
 - CVE-2021-43791: Zulip could fail to enforce expiration dates
   on confirmation keys, allowing users to potentially use expired
@@ -759,7 +759,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 3.x series
 
-### 3.4 -- April 14, 2021
+### 3.4 -- 2021-04-14
 
 - CVE-2021-30487: Prevent administrators from moving topics to
   disallowed streams.
@@ -781,7 +781,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Upgraded minor python dependencies.
 - Minor documentation fixes.
 
-### 3.3 -- December 1, 2020
+### 3.3 -- 2020-12-01
 
 - Guest users should not be allowed to post to streams marked “Only
   organization full members can post.” This flaw has existed since
@@ -799,7 +799,7 @@ log][commit-log] for an up-to-date list of raw changes.
   “Organization owner” roles.
 - Handle realm emojis that have been manually deleted more gracefully.
 
-### 3.2 -- September 15, 2020
+### 3.2 -- 2020-09-15
 
 - Switched from `libmemcached` to `python-binary-memcached`, a
   pure-Python implementation; this should eliminate memcached
@@ -821,7 +821,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Improved upgrade documentation.
 - Removed internal ID lists which could leak into the events API.
 
-### 3.1 -- July 30, 2020
+### 3.1 -- 2020-07-30
 
 - Removed unused `short_name` field from the User model. This field
   had no purpose and could leak the local part of email addresses
@@ -841,7 +841,7 @@ log][commit-log] for an up-to-date list of raw changes.
   included in this maintenance release to ensure backporting patches
   from `main` remains easy.
 
-### 3.0 -- July 16, 2020
+### 3.0 -- 2020-07-16
 
 #### Highlights
 
