@@ -361,33 +361,34 @@ p.n-margin {
     }
 }
 
-.dropdown-menu .org-head .org-name{
-   font-size: large;
-   text-align: center;
-   font-weight: bold;
+.dropdown-menu .org-head .org-name {
+    font-size: large;
+    text-align: center;
+    font-weight: bold;
 }
 
-.dropdown-menu .org-head .org-uri{
+.dropdown-menu .org-head .org-uri {
     text-align: center;
     line-height: 100%;
     color: rgb(118, 121, 123);
 }
 
-.dropdown-menu .org-head .org-plan{
+.dropdown-menu .org-head .org-plan {
     text-align: center;
     line-height: 2.5em;
     font-size: medium;
     font-weight: 200px;
-    color:rgb(69, 151, 245)
+    color: hsl(0, 0%, 52%)
 }
 
-.dropdown-menu .org-head .text{
+.dropdown-menu .org-head .text {
     text-align: center;
-    line-height:0%;
+    line-height: 0%;
     padding-bottom: 10px;
     font-weight: lighter;
     font-weight: 400;
-    color: rgb(118, 121, 123);
+    color: hsl(0, 0%, 52%)
+
 }
 
 .app {
