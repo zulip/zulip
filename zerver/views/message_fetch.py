@@ -105,10 +105,10 @@ TS_STOP = "</ts-match>"
 
 
 def ts_locs_array(
-    config: "ColumnElement[Text]",
-    text: "ColumnElement[Text]",
-    tsquery: "ColumnElement[Any]",
-) -> "ColumnElement[ARRAY[Integer]]":
+    config: ColumnElement[Text],
+    text: ColumnElement[Text],
+    tsquery: ColumnElement[Any],
+) -> ColumnElement[ARRAY[Integer]]:
     options = f"HighlightAll = TRUE, StartSel = {TS_START}, StopSel = {TS_STOP}"
     delimited = func.ts_headline(config, text, tsquery, options, type_=Text)
     part = func.unnest(
@@ -149,7 +149,7 @@ class NarrowBuilder:
     def __init__(
         self,
         user_profile: Optional[UserProfile],
-        msg_id_column: "ColumnElement[Integer]",
+        msg_id_column: ColumnElement[Integer],
         realm: Realm,
         is_web_public_query: bool = False,
     ) -> None:
@@ -771,7 +771,7 @@ def exclude_muting_conditions(
 
 def get_base_query_for_search(
     user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
-) -> Tuple[Select, "ColumnElement[Integer]"]:
+) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
     if not need_user_message:
         assert need_message
@@ -809,7 +809,7 @@ def get_base_query_for_search(
 
 def add_narrow_conditions(
     user_profile: Optional[UserProfile],
-    inner_msg_id_col: "ColumnElement[Integer]",
+    inner_msg_id_col: ColumnElement[Integer],
     query: Select,
     narrow: OptionalNarrowListT,
     is_web_public_query: bool,
@@ -1181,7 +1181,7 @@ def limit_query_to_range(
     anchor: int,
     anchored_to_left: bool,
     anchored_to_right: bool,
-    id_col: "ColumnElement[Integer]",
+    id_col: ColumnElement[Integer],
     first_visible_message_id: int,
 ) -> SelectBase:
     """

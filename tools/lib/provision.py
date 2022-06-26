@@ -6,13 +6,13 @@ import os
 import platform
 import subprocess
 import sys
+from typing import List, NoReturn
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
-from typing import TYPE_CHECKING, List
 
 from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
 from scripts.lib.setup_venv import get_venv_dependencies
@@ -26,9 +26,6 @@ from scripts.lib.zulip_tools import (
     run_as_root,
 )
 from tools.setup import setup_venvs
-
-if TYPE_CHECKING:
-    from typing import NoReturn
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
@@ -350,7 +347,7 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     )
 
 
-def main(options: argparse.Namespace) -> "NoReturn":
+def main(options: argparse.Namespace) -> NoReturn:
 
     # yarn and management commands expect to be run from the root of the
     # project.
