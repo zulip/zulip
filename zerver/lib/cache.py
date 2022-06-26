@@ -7,12 +7,13 @@ import secrets
 import sys
 import time
 import traceback
-from functools import lru_cache, wraps
+from functools import _lru_cache_wrapper, lru_cache, wraps
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
+    Generic,
     Iterable,
     List,
     Optional,
@@ -737,9 +738,41 @@ def flush_submessage(*, instance: "SubMessage", **kwargs: object) -> None:
     cache_delete(to_dict_cache_key_id(message_id))
 
 
+class IgnoreUnhashableLruCacheWrapper(Generic[ParamT, ReturnT]):
+    def __init__(
+        self, function: Callable[ParamT, ReturnT], cached_function: "_lru_cache_wrapper[ReturnT]"
+    ):
+        self.key_prefix = KEY_PREFIX
+        self.function = function
+        self.cached_function = cached_function
+        self.cache_info = cached_function.cache_info
+        self.cache_clear = cached_function.cache_clear
+
+    def __call__(self, *args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
+        if self.key_prefix != KEY_PREFIX:
+            # Clear cache when cache.KEY_PREFIX changes. This is used in
+            # tests.
+            self.cache_clear()
+            self.key_prefix = KEY_PREFIX
+
+        try:
+            return self.cached_function(
+                *args, **kwargs  # type: ignore[arg-type] # might be unhashable
+            )
+        except TypeError:
+            # args or kwargs contains an element which is unhashable. In
+            # this case we don't cache the result.
+            pass
+
+        # Deliberately calling this function from outside of exception
+        # handler to get a more descriptive traceback. Otherwise traceback
+        # can include the exception from cached_function as well.
+        return self.function(*args, **kwargs)
+
+
 def ignore_unhashable_lru_cache(
     maxsize: int = 128, typed: bool = False
-) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
+) -> Callable[[Callable[ParamT, ReturnT]], IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]]:
     """
     This is a wrapper over lru_cache function. It adds following features on
     top of lru_cache:
@@ -749,42 +782,10 @@ def ignore_unhashable_lru_cache(
     """
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
-    def decorator(user_function: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
-        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
-            # In the development environment, we want every file
-            # change to refresh the source files from disk.
-            return user_function
-
-        cache_enabled_user_function = internal_decorator(user_function)
-        key_prefix = KEY_PREFIX
-
-        def wrapper(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
-            nonlocal key_prefix
-
-            if key_prefix != KEY_PREFIX:
-                # Clear cache when cache.KEY_PREFIX changes. This is used in
-                # tests.
-                cache_enabled_user_function.cache_clear()
-                key_prefix = KEY_PREFIX
-
-            try:
-                return cache_enabled_user_function(
-                    *args, **kwargs  # type: ignore[arg-type] # might be unhashable
-                )
-            except TypeError:
-                # args or kwargs contains an element which is unhashable. In
-                # this case we don't cache the result.
-                pass
-
-            # Deliberately calling this function from outside of exception
-            # handler to get a more descriptive traceback. Otherwise traceback
-            # can include the exception from cached_enabled_user_function as
-            # well.
-            return user_function(*args, **kwargs)
-
-        setattr(wrapper, "cache_info", cache_enabled_user_function.cache_info)
-        setattr(wrapper, "cache_clear", cache_enabled_user_function.cache_clear)
-        return wrapper
+    def decorator(
+        user_function: Callable[ParamT, ReturnT]
+    ) -> IgnoreUnhashableLruCacheWrapper[ParamT, ReturnT]:
+        return IgnoreUnhashableLruCacheWrapper(user_function, internal_decorator(user_function))
 
     return decorator
 
