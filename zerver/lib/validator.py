@@ -696,7 +696,7 @@ class WildValueDict(WildValue):
 
         return wrap_wild_value(var_name, item)
 
-    def get(self, key: str, default: object = None) -> "WildValue":
+    def get(self, key: str, default: object = None) -> WildValue:
         item = self.value.get(key, default)
         if isinstance(item, WildValue):
             return item
@@ -705,11 +705,11 @@ class WildValueDict(WildValue):
     def keys(self) -> Iterator[str]:
         yield from self.value.keys()
 
-    def values(self) -> Iterator["WildValue"]:
+    def values(self) -> Iterator[WildValue]:
         for key, value in self.value.items():
             yield wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 
-    def items(self) -> Iterator[Tuple[str, "WildValue"]]:
+    def items(self) -> Iterator[Tuple[str, WildValue]]:
         for key, value in self.value.items():
             yield key, wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 

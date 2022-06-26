@@ -14,10 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from typing import NoReturn
+from typing import NoReturn, Optional
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -47,7 +44,7 @@ logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s", level=logging.INFO)
 
 
-def error_desupported_os(vendor: str, os_version: str) -> "NoReturn":
+def error_desupported_os(vendor: str, os_version: str) -> NoReturn:
     # Link to documentation for how to correctly upgrade the OS.
     logging.critical("Unsupported platform: %s %s", vendor, os_version)
     logging.info(

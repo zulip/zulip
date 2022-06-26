@@ -120,7 +120,7 @@ def get_user_group_direct_member_ids(user_group: UserGroup) -> List[int]:
     )
 
 
-def get_user_group_direct_members(user_group: UserGroup) -> "QuerySet[UserGroup]":
+def get_user_group_direct_members(user_group: UserGroup) -> QuerySet[UserGroup]:
     return user_group.direct_members.all()
 
 
@@ -141,7 +141,7 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: List[UserPro
 # https://code.djangoproject.com/ticket/28919
 
 
-def get_recursive_subgroups(user_group: UserGroup) -> "QuerySet[UserGroup]":
+def get_recursive_subgroups(user_group: UserGroup) -> QuerySet[UserGroup]:
     cte = With.recursive(
         lambda cte: UserGroup.objects.filter(id=user_group.id)
         .values("id")
@@ -150,11 +150,11 @@ def get_recursive_subgroups(user_group: UserGroup) -> "QuerySet[UserGroup]":
     return cte.join(UserGroup, id=cte.col.id).with_cte(cte)
 
 
-def get_recursive_group_members(user_group: UserGroup) -> "QuerySet[UserProfile]":
+def get_recursive_group_members(user_group: UserGroup) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(direct_groups__in=get_recursive_subgroups(user_group))
 
 
-def get_recursive_membership_groups(user_profile: UserProfile) -> "QuerySet[UserGroup]":
+def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
     cte = With.recursive(
         lambda cte: user_profile.direct_groups.values("id").union(
             cte.join(UserGroup, direct_subgroups=cte.col.id).values("id")
