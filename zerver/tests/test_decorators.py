@@ -1856,8 +1856,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
         request.session = self.client.session
 
         response = test_view(request)
-        content = getattr(response, "content")
-        self.assertEqual(content.decode(), "Success")
+        self.assertEqual(response.content.decode(), "Success")
 
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
             user = hamlet = self.example_user("hamlet")
@@ -1872,11 +1871,9 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 
             response = test_view(request)
 
-            status_code = getattr(response, "status_code")
-            self.assertEqual(status_code, 302)
+            self.assertEqual(response.status_code, 302)
 
-            url = getattr(response, "url")
-            response_url = url.split("?")[0]
+            response_url = response["Location"].split("?")[0]
             self.assertEqual(response_url, settings.HOME_NOT_LOGGED_IN)
 
     def test_2fa_success(self) -> None:
@@ -1901,8 +1898,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             self.create_default_device(request.user)
 
             response = test_view(request)
-            content = getattr(response, "content")
-            self.assertEqual(content.decode(), "Success")
+            self.assertEqual(response.content.decode(), "Success")
 
 
 class TestRequireDecorators(ZulipTestCase):

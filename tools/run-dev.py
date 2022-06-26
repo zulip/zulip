@@ -258,7 +258,7 @@ class BaseHandler(web.RequestHandler):
                 method=self.request.method,
                 headers=self._add_request_headers(["upgrade-insecure-requests"]),
                 follow_redirects=False,
-                body=getattr(self.request, "body"),
+                body=self.request.body,
                 allow_nonstandard_methods=True,
                 # use large timeouts to handle polling requests
                 connect_timeout=240.0,

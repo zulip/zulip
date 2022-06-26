@@ -251,8 +251,7 @@ class LoggingConfigTest(ZulipTestCase):
     def all_loggers() -> Iterator[logging.Logger]:
         # There is no documented API for enumerating the loggers; but the
         # internals of `logging` haven't changed in ages, so just use them.
-        loggerDict: Dict[str, object] = getattr(logging.Logger, "manager").loggerDict
-        for logger in loggerDict.values():
+        for logger in logging.Logger.manager.loggerDict.values():
             if not isinstance(logger, logging.Logger):
                 continue
             yield logger
