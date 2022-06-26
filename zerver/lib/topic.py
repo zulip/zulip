@@ -70,19 +70,19 @@ DB_TOPIC_NAME = "subject"
 MESSAGE__TOPIC = "message__subject"
 
 
-def topic_match_sa(topic_name: str) -> "ColumnElement[Boolean]":
+def topic_match_sa(topic_name: str) -> ColumnElement[Boolean]:
     # _sa is short for SQLAlchemy, which we use mostly for
     # queries that search messages
     topic_cond = func.upper(column("subject", Text)) == func.upper(literal(topic_name))
     return topic_cond
 
 
-def get_resolved_topic_condition_sa() -> "ColumnElement[Boolean]":
+def get_resolved_topic_condition_sa() -> ColumnElement[Boolean]:
     resolved_topic_cond = column("subject", Text).startswith(RESOLVED_TOPIC_PREFIX)
     return resolved_topic_cond
 
 
-def topic_column_sa() -> "ColumnElement[Text]":
+def topic_column_sa() -> ColumnElement[Text]:
     return column("subject", Text)
 
 
