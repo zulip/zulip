@@ -65,8 +65,8 @@ def display_list(values: List[str], display_limit: int) -> str:
     return display_string
 
 
-md_extensions: Optional[List[Any]] = None
-md_macro_extension: Optional[Any] = None
+md_extensions: Optional[List[markdown.Extension]] = None
+md_macro_extension: Optional[markdown.Extension] = None
 # Prevent the automatic substitution of macros in these docs. If
 # they contain a macro, it is always used literally for documenting
 # the macro system.
