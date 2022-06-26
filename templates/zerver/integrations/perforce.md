@@ -8,7 +8,7 @@ that fires once a changelist is submitted and committed.
 1.  The Perforce trigger will be installed to a location like
     `/usr/local/share/zulip/integrations/perforce`.
 
-1.  {!change-zulip-config-file-indented.md!}
+1.  {!change-zulip-config-file.md!}
 
 1.  If you have a P4Web viewer set up, you may change `P4_WEB`
     to point at the base URL of the server. If this is configured,

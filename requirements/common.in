@@ -61,9 +61,6 @@ premailer
 # Needed for JWT-based auth
 PyJWT
 
-# Needed for including other Markdown files for user docs
-markdown-include
-
 # Needed to access RabbitMQ
 pika
 

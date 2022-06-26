@@ -69,7 +69,6 @@ module = [
     "gitlint.*",
     "jsonref.*",
     "ldap.*",
-    "markdown_include.*",
     "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
     "openapi_core.*",

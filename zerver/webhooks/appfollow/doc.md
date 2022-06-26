@@ -3,7 +3,7 @@ using the Zulip AppFollow integration!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. In AppFollow, click on **Integrations** on the left sidebar, and click **Add new integration**.
 Click on your app under **Tracked apps**.

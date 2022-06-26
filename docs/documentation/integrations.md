@@ -76,7 +76,7 @@ Here are a few common macros used to document Zulip's integrations:
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!create-bot-construct-url-indented.md!}` macro - Instructs users to create a bot
+- `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
   for a given integration and construct a webhook URL using the bot API key
   and stream name. The URL is generated automatically for every incoming webhook
   by using attributes in the `WebhookIntegration` class in
@@ -94,12 +94,12 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!append-stream-name.md!}` macro - Recommends appending `&stream=stream_name`
   to a URL in cases where supplying a stream name in the URL is optional.
   Supplying a stream name is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
+  `{!create-bot-construct-url.md!}`, this macro need not be used.
 
 - `{!append-topic.md!}` macro - Recommends appending `&topic=my_topic` to a URL
   to supply a custom topic for webhook notification messages. Supplying a custom
   topic is optional for most Zulip integrations. If you use
-  `{!create-bot-construct-url-indented.md!}`, this macro need not be used.
+  `{!create-bot-construct-url.md!}`, this macro need not be used.
 
 - `{!congrats.md!}` macro - Inserts congratulatory lines signifying the
   successful setup of a given integration. This macro is usually used at
@@ -127,7 +127,7 @@ Here are a few common macros used to document Zulip's integrations:
   see the last paragraph of **Step 2** in
   [the docs for Zulip's GitHub integration][github-integration].
 
-- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url-indented.md!}`
+- `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
   to generate the webhook URL.
 
 - `{!zulip-config.md!}` - Used internally by `{!change-zulip-config-file.md!}`
@@ -202,7 +202,7 @@ A typical doc will then have the following steps.
 
 ##### "Create the bot" step
 
-- Typically, use the `create-bot-construct-url-indented` macro.
+- Typically, use the `create-bot-construct-url` macro.
 - [Existing macros](#markdown-macros) should be used for this if they exist, but if the macro
   defaults don’t work, it may make sense to write something custom for the
   integration in question. This step is mandatory for all integrations.

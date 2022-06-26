@@ -2191,6 +2191,7 @@ class Markdown(markdown.Markdown):
         parser.blockprocessors.register(OListProcessor(parser), "olist", 65)
         parser.blockprocessors.register(UListProcessor(parser), "ulist", 60)
         parser.blockprocessors.register(BlockQuoteProcessor(parser), "quote", 55)
+        # We get priority 51 from our 'include' extension
         parser.blockprocessors.register(
             markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 50
         )

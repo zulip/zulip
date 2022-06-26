@@ -8,8 +8,8 @@ Bitbucket Cloud (SAAS service) click [here](./bitbucket2).
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
-   {!git-webhook-url-with-branches-indented.md!}
+2. {!create-bot-construct-url.md!}
+   {!git-webhook-url-with-branches.md!}
 
 3. On your repository's web page, click on **Settings**. Select
    **Webhooks**, and click **Add webhook**.

@@ -2,7 +2,7 @@ Get Zulip notifications for your Netlify deployments!
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
+2. {!create-bot-construct-url.md!}
 
 3. Go to your Netlify project, and click **Settings**. Click **Build & deploy**, and select **Deploy notifications**.
    Click **Add Notification**, and select **Outgoing webhook**.

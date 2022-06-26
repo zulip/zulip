@@ -3,7 +3,7 @@ events in Basecamp.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your project on Basecamp. From the **Settings** menu in
    the top right corner, choose **Set up webhooks**. Click on
