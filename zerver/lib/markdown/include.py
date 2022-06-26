@@ -6,7 +6,7 @@ import markdown
 from markdown_include.include import IncludePreprocessor, MarkdownInclude
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 INC_SYNTAX = re.compile(r"\{!\s*(.+?)\s*!\}")
 

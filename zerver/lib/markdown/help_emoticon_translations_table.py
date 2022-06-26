@@ -6,7 +6,7 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 from zerver.lib.emoji import EMOTICON_CONVERSIONS, name_to_codepoint
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 REGEXP = re.compile(r"\{emoticon_translations\}")
 
