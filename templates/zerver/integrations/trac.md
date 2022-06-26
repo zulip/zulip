@@ -2,7 +2,7 @@
 
 1.  {!download-python-bindings.md!}
 
-1.  {!change-zulip-config-file-indented.md!}
+1.  {!change-zulip-config-file.md!}
 
 1.  Also, change the following lines:
 

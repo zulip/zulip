@@ -5,11 +5,11 @@ Get Codebase notifications in Zulip!
    updates. We recommend naming the streams `codebase` and `tickets`, respectively.
    After creating these streams, make sure to subscribe all interested parties.
 
-1. {!create-a-bot-indented.md!}
+1. {!create-a-bot.md!}
 
 1. {!download-python-bindings.md!}
 
-1. {!change-zulip-config-file-indented.md!}
+1. {!change-zulip-config-file.md!}
 
     You may also need to update the value of `ZULIP_TICKETS_STREAM_NAME` and
     `ZULIP_COMMITS_STREAM_NAME`.

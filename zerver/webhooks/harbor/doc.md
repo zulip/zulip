@@ -4,7 +4,7 @@ Harbor's webhooks feature is available in version 1.9 and later.
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
 1. Go to your Harbor **Projects** page. Open a project and click on the **Webhooks** tab.
 

@@ -10,8 +10,6 @@ PREPROCESSOR_PRIORITES = {
     "generate_code_example": 525,
     "generate_return_values": 510,
     "generate_api_arguments": 505,
-    "include": 500,
-    # "include_wrapper": 500,
     "help_relative_links": 475,
     "setting": 450,
     # "normalize_whitespace": 30,
@@ -20,4 +18,8 @@ PREPROCESSOR_PRIORITES = {
     "tabbed_sections": -500,
     "nested_code_blocks": -500,
     "emoticon_translations": -505,
+}
+
+BLOCK_PROCESSOR_PRIORITIES = {
+    "include": 51,
 }

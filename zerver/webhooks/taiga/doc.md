@@ -2,7 +2,7 @@ Receive Zulip notifications for your Taiga projects!
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
     Make sure to specify the topic in the URL above. Otherwise, the
     default topic `General` will be used.
