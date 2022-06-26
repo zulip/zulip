@@ -1125,10 +1125,10 @@ class RealmAPITest(ZulipTestCase):
 
         for val in vals[1:]:
             realm = self.update_with_api("org_type", val)
-            self.assertEqual(getattr(realm, "org_type"), val)
+            self.assertEqual(realm.org_type, val)
 
         realm = self.update_with_api("org_type", vals[0])
-        self.assertEqual(getattr(realm, "org_type"), vals[0])
+        self.assertEqual(realm.org_type, vals[0])
 
         # Now we test an invalid org_type id.
         invalid_org_type = 1
