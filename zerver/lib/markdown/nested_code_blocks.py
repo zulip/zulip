@@ -5,7 +5,7 @@ import markdown
 from markdown.extensions import Extension
 
 from zerver.lib.markdown import ResultWithFamily, walk_tree_with_family
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 
 class NestedCodeBlocksRenderer(Extension):

@@ -5,7 +5,7 @@ from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
-from zerver.lib.markdown.preprocessor_priorities import PREPROCESSOR_PRIORITES
+from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 # There is a lot of duplicated code between this file and
 # help_settings_links.py. So if you're making a change here consider making
