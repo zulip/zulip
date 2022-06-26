@@ -6,7 +6,7 @@ first install the
 
 1. {!create-stream.md!}
 
-1. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url.md!}
 
     **Important:** The HookPress plugin requires URL parameters to
     be delimited by semicolons instead of ampersands. If you have a
