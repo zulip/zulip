@@ -31,9 +31,9 @@
    If you don't specify a custom topic, the project name will be used as the
    topic instead. Then click **Save**.
 
-   ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
+    ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
 
-   When your builds fail or succeed, you'll see a message as shown below.
+    When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 
