@@ -464,12 +464,20 @@ class CommonUtils {
     }
 
     async open_streams_modal(page: Page): Promise<void> {
-        const all_streams_selector = "#add-stream-link";
+        const unsubscribed_streams_selector = "#add-stream-link";
+        await page.waitForSelector(unsubscribed_streams_selector, {visible: true});
+        await page.click(unsubscribed_streams_selector);
+
+        await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
+        let url = await this.page_url_with_fragment(page);
+        assert.ok(url.includes("#streams/notsubscribed"));
+
+        const all_streams_selector = ".ind-tab.last[data-tab-key='all-streams']";
         await page.waitForSelector(all_streams_selector, {visible: true});
         await page.click(all_streams_selector);
 
         await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
-        const url = await this.page_url_with_fragment(page);
+        url = await this.page_url_with_fragment(page);
         assert.ok(url.includes("#streams/all"));
     }
 
