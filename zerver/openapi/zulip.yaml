@@ -7736,6 +7736,16 @@ paths:
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
+
+        In addition to managing the current user's subscriptions, this
+        endpoint can be used by organization administrators to remove
+        other users from streams, or to remove a bot that the current
+        user is the `bot_owner` for from any stream that the current
+        user can access.
+
+        **Changes**: Before Zulip 6.0 (feature level 145), only
+        organization administrators could remove other users from
+        streams.
       x-curl-examples-parameters:
         oneOf:
           - type: include
