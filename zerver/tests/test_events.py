@@ -79,6 +79,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -2883,6 +2884,17 @@ class SubscribeActionTest(BaseAction):
             stream, self.example_user("hamlet"), -1
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_update("events[0]", events[0])
+
+        moderators_group = UserGroup.objects.get(
+            name=UserGroup.MODERATORS_GROUP_NAME,
+            is_system_group=True,
+            realm=self.user_profile.realm,
+        )
+        action = lambda: do_change_can_remove_subscribers_group(
+            stream, moderators_group, acting_user=self.example_user("hamlet")
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

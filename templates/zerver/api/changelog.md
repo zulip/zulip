@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 142**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+  /streams`](/api/get-streams), [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_remove_subscribers_group_id`
+  field to Stream and Subscription objects.
+
 **Feature level 141**
 
 * [`POST /register`](/api/register-queue), [`PATCH

@@ -177,6 +177,7 @@ class RawStreamDict(TypedDict):
     are needed to encode the stream for the API.
     """
 
+    can_remove_subscribers_group_id: int
     date_created: datetime.datetime
     description: str
     email_token: str
@@ -216,6 +217,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: Optional[bool]
+    can_remove_subscribers_group_id: int
     color: str
     date_created: int
     description: str
@@ -242,6 +244,7 @@ class SubscriptionStreamDict(TypedDict):
 
 
 class NeverSubscribedStreamDict(TypedDict):
+    can_remove_subscribers_group_id: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -264,6 +267,7 @@ class APIStreamDict(TypedDict):
     with few exceptions and possible additional fields.
     """
 
+    can_remove_subscribers_group_id: int
     date_created: int
     description: str
     first_message_id: Optional[int]

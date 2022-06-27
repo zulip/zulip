@@ -2552,6 +2552,7 @@ class Stream(models.Model):
         "name",
         "rendered_description",
         "stream_post_policy",
+        "can_remove_subscribers_group_id",
     ]
 
     @staticmethod
@@ -2561,6 +2562,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> APIStreamDict:
         return APIStreamDict(
+            can_remove_subscribers_group_id=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
             description=self.description,
             first_message_id=self.first_message_id,
@@ -4364,6 +4366,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_REACTIVATED = 604
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
     STREAM_PROPERTY_CHANGED = 607
+    STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED = 608
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
