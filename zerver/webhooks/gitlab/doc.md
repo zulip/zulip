@@ -8,6 +8,7 @@ Receive GitLab notifications in Zulip!
     title of the GitLab merge request.  You can change the topic format to
     just contain the merge request ID by adding
     `&use_merge_request_title=false` at the end of the URL.
+
     {!git-webhook-url-with-branches.md!}
 
 1. Go to your repository on GitLab and click **Settings** on the left
