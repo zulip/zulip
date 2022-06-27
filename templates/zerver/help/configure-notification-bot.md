@@ -17,12 +17,12 @@ for some user specific events, such as [being subscribed to a
 stream][add-users-to-stream] by another user.
 
 Organization administrators can configure where (and whether)
-[new stream](#new-stream-notifications) and
-[new user](#new-user-notifications) announcement messages are sent.
+[new stream](#new-stream-announcements) and
+[new user](#new-user-announcements) announcement messages are sent.
 
 Stream messages sent by the notification bot (including the topic)
 are translated into the language that the organization has configured
-as the [organization notifications language][org-notifications-lang].
+as the [organization language for automated messages and emails][org-notifications-lang].
 Notification bot messages sent to a single user will use
 [their preferred language](/help/change-your-language).
 
@@ -30,34 +30,34 @@ Notification bot messages sent to a single user will use
 
 {!admin-only.md!}
 
-### New stream notifications
+### New stream announcements
 
 You can configure where the Zulip notification bot
 [announces][new-stream-options] new public streams, or disable the new
-stream notification messages entirely. The topic for these messages
+stream announcements messages entirely. The topic for these messages
 is "new streams".
 
 {start_tabs}
 
 {settings_tab|organization-settings}
 
-1. Under **Notifications**, configure **New stream notifications**.
+1. Under **Automated messages and emails**, configure **New stream announcements**.
 
 {!save-changes.md!}
 
 {end_tabs}
 
-### New user notifications
+### New user announcements
 
 You can configure where the Zulip notification bot announces new users,
-or disable the new user notification messages entirely. The topic for
+or disable the new user announcements messages entirely. The topic for
 these messages is "signups".
 
 {start_tabs}
 
 {settings_tab|organization-settings}
 
-1. Under **Notifications**, configure **New user notifications**.
+1. Under **Automated messages and emails**, configure **New user announcements**.
 
 {!save-changes.md!}
 
@@ -65,7 +65,7 @@ these messages is "signups".
 
 ## Related articles
 
-* [Organization notifications language][org-notifications-lang]
+* [Organization language for automated messages and emails][org-notifications-lang]
 * [Streams and topics](/help/streams-and-topics)
 
 [add-users-to-stream]: /help/add-or-remove-users-from-a-stream#add-users-to-a-stream
