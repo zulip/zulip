@@ -55,7 +55,7 @@ function initialize_bot_owner(element_id, bot_id) {
 
 function format_user_stream_list_item(stream, user) {
     const show_unsubscribe_button =
-        people.is_my_user_id(user.user_id) || settings_data.user_can_unsubscribe_other_users();
+        people.can_admin_user(user) || settings_data.user_can_unsubscribe_other_users();
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
     return render_user_stream_list_item({
@@ -252,7 +252,6 @@ function handle_remove_stream_subscription(target_user_id, sub, success, failure
             error: failure,
         });
     } else {
-        // Unsubscribed by admin.
         subscriber_api.remove_user_id_from_stream(target_user_id, sub, success, failure);
     }
 }

@@ -316,6 +316,9 @@ test_people("basics", () => {
 
     assert.equal(people.get_bot_owner_user(bot_botson).full_name, "Isaac Newton");
 
+    assert.equal(people.can_admin_user(me), true);
+    assert.equal(people.can_admin_user(bot_botson), false);
+
     // Add our cross-realm bot.  It won't add to our human
     // count, and it has no owner.
     people.add_cross_realm_user(welcome_bot);
