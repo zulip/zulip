@@ -1,11 +1,11 @@
-# Stream notifications
+# Stream announcements
 
 You can configure desktop, mobile, and email notifications on a stream by
 stream basis.
 
-## Set notifications for a single stream
+## Set announcements for a single stream
 
-These settings will override any default stream notification settings.
+These settings will override any default stream announcements settings.
 
 {start_tabs}
 
@@ -23,7 +23,7 @@ These settings will override any default stream notification settings.
 
 {end_tabs}
 
-## Set default notifications for all streams
+## Set default announcements for all streams
 
 These settings only apply to streams where you have not
 explicitly set a notification preference.
