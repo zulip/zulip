@@ -531,7 +531,7 @@ export function send_test_notification(content) {
 }
 
 // Note that this returns values that are not HTML-escaped, for use in
-// handlebars templates that will do further escaping.
+// Handlebars templates that will do further escaping.
 function get_message_header(message) {
     if (message.type === "stream") {
         return message.stream + " > " + message.topic;

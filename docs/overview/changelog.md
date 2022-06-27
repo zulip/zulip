@@ -2314,7 +2314,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 ### 1.5.2 -- 2017-06-01
 
 - CVE-2017-0896: Restricting inviting new users to admins was broken.
-- CVE-2015-8861: Insecure old version of handlebars templating engine.
+- CVE-2015-8861: Insecure old version of Handlebars templating engine.
 
 ### 1.5.1 -- 2017-02-07
 

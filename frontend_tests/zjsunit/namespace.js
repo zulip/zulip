@@ -264,7 +264,7 @@ exports.zrequire = function (short_fn) {
             There is no need to zrequire templates.js.
 
             The test runner automatically registers the
-            Handlebar extensions.
+            Handlebars extensions.
         `,
     );
 

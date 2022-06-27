@@ -9,7 +9,7 @@ patterns that can lead to security bugs.
 ## Overview
 
 Zulip does extensive linting of much of its source code, including
-Python/JavaScript/TypeScript files, HTML templates (Django/handlebars), CSS files,
+Python/JavaScript/TypeScript files, HTML templates (Django/Handlebars), CSS files,
 JSON fixtures, Markdown documents, puppet manifests, and shell scripts.
 
 For some files we simply check for small things like trailing whitespace,

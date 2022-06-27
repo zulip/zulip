@@ -293,7 +293,7 @@ translated block, because they don't work properly with translation.
 The Handlebars expression would be evaluated before the string is
 processed by FormatJS, so that the string to be translated wouldn't be
 constant. We have a linter to enforce that translated blocks don't
-contain handlebars.
+contain Handlebars.
 
 Restrictions on including HTML tags in translated strings are the same
 as in JavaScript. You can insert more complex markup using a local
