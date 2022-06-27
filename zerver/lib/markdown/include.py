@@ -47,7 +47,9 @@ class IncludeBlockProcessor(BlockProcessor):
         return "\n".join(lines)
 
     def run(self, parent: Element, blocks: List[str]) -> None:
-        blocks[:1] = self.RE.sub(self.expand_include, blocks[0]).split("\n\n")
+        self.parser.state.set("include")
+        self.parser.parseChunk(parent, self.RE.sub(self.expand_include, blocks.pop(0)))
+        self.parser.state.reset()
 
 
 def makeExtension(base_path: str) -> IncludeExtension:
