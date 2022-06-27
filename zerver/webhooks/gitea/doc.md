@@ -4,7 +4,7 @@ Receive Gitea notifications in Zulip!
 
 1. {!create-bot-construct-url.md!}
 
-   {!git-webhook-url-with-branches.md!}
+    {!git-webhook-url-with-branches.md!}
 
 1. Go to your repository on Gitea and click on **Settings**. Select
    **Webhooks** on the left sidebar, and click **Add Webhook**.
