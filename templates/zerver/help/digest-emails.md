@@ -21,7 +21,7 @@ if `https://zulip.example.com` is your Zulip server URL.
 
 {settings_tab|organization-settings}
 
-1. Under **Notifications**, toggle
+1. Under **Automated messages and emails**, toggle
    **Send weekly digest emails to inactive users**.
 
 {end_tabs}

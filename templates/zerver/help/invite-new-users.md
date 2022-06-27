@@ -8,8 +8,8 @@ Prior to inviting users to your organization, it is recommended that administrat
 * Configure [default settings](/help/configure-default-new-user-settings) for
   new users.
 
-* Configure the [notifications language][org-notifications-language] for your
-  organization, which is used for email invitations.
+* Configure the [organization language for automated messages and invitation
+  emails][org-lang] for your organization.
 
 When you invite users, you can:
 
@@ -95,7 +95,7 @@ for invitations for the organization owners role.
 * [Restrict account creation](/help/restrict-account-creation)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Configure organization notifications language][org-notifications-language]
+* [Configure organization language for automated messages and invitation emails][org-lang]
 * [Roles and permissions](/help/roles-and-permissions)
 
-[org-notifications-language]: /help/change-the-default-language-for-your-organization
+[org-lang]: /help/change-the-default-language-for-your-organization
