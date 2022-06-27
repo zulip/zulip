@@ -25,7 +25,7 @@ import django.contrib.auth
 import orjson
 import re2
 from bitfield import BitField
-from bitfield.types import BitHandler
+from bitfield.types import Bit, BitHandler
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -3181,14 +3181,7 @@ class AbstractUserMessage(models.Model):
         unique_together = ("user_profile", "message")
 
     @staticmethod
-    def where_unread() -> str:
-        # Use this for Django ORM queries to access unread message.
-        # This custom SQL plays nice with our partial indexes.  Grep
-        # the code for example usage.
-        return "flags & 1 = 0"
-
-    @staticmethod
-    def where_starred() -> str:
+    def where_flag_is_present(flagattr: Bit) -> str:
         # Use this for Django ORM queries to access starred messages.
         # This custom SQL plays nice with our partial indexes.  Grep
         # the code for example usage.
@@ -3196,12 +3189,27 @@ class AbstractUserMessage(models.Model):
         # The key detail is that e.g.
         #   UserMessage.objects.filter(user_profile=user_profile, flags=UserMessage.flags.starred)
         # will generate a query involving `flags & 2 = 2`, which doesn't match our index.
-        return "flags & 2 <> 0"
+        return f"flags & {1 << flagattr.number} <> 0"
+
+    @staticmethod
+    def where_flag_is_absent(flagattr: Bit) -> str:
+        return f"flags & {1 << flagattr.number} = 0"
+
+    @staticmethod
+    def where_unread() -> str:
+        return AbstractUserMessage.where_flag_is_absent(getattr(AbstractUserMessage.flags, "read"))
+
+    @staticmethod
+    def where_starred() -> str:
+        return AbstractUserMessage.where_flag_is_present(
+            getattr(AbstractUserMessage.flags, "starred")
+        )
 
     @staticmethod
     def where_active_push_notification() -> str:
-        # See where_starred for documentation.
-        return "flags & 4096 <> 0"
+        return AbstractUserMessage.where_flag_is_present(
+            getattr(AbstractUserMessage.flags, "active_mobile_push_notification")
+        )
 
     def flags_list(self) -> List[str]:
         flags = int(self.flags)
