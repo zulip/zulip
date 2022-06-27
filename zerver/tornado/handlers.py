@@ -98,7 +98,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         descriptor = get_descriptor_by_handler_id(self.handler_id)
         return f"AsyncDjangoHandler<{self.handler_id}, {descriptor}>"
 
-    def convert_tornado_request_to_django_request(self) -> HttpRequest:
+    async def convert_tornado_request_to_django_request(self) -> HttpRequest:
         # This takes the WSGI environment that Tornado received (which
         # fully describes the HTTP request that was sent to Tornado)
         # and pass it to Django's WSGIRequest to generate a Django
@@ -111,7 +111,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # Django's WSGIHandler.__call__ before the call to
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
-        signals.request_started.send(sender=self.__class__)
+        await sync_to_async(
+            lambda: signals.request_started.send(sender=self.__class__), thread_sensitive=True
+        )()
         request = WSGIRequest(environ)
 
         # We do the import during runtime to avoid cyclic dependency
@@ -149,7 +151,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.finish()
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
-        request = self.convert_tornado_request_to_django_request()
+        request = await self.convert_tornado_request_to_django_request()
         response = await sync_to_async(lambda: self.get_response(request), thread_sensitive=True)()
 
         try:
@@ -228,7 +230,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         # to automatically return our data in its response, and call
         # Django's main self.get_response() handler to generate an
         # HttpResponse with all Django middleware run.
-        request = self.convert_tornado_request_to_django_request()
+        request = await self.convert_tornado_request_to_django_request()
 
         # We import RequestNotes during runtime to avoid
         # cyclic import
