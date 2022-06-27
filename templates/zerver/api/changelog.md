@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 145**
+
+* [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can
+  now remove bots that they own from streams.
+
 **Feature level 144**
 
 * [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):

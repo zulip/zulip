@@ -130,19 +130,14 @@ def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) ->
         raise PrincipalError(principal)
 
 
-def check_if_removing_someone_else(
-    user_profile: UserProfile, principals: Optional[Union[List[str], List[int]]]
-) -> bool:
-    if principals is None or len(principals) == 0:
-        return False
-
-    if len(principals) > 1:
+def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) -> bool:
+    """Returns whether the target user is either the current user or a bot
+    owned by the current user"""
+    if user_profile == target:
         return True
-
-    if isinstance(principals[0], int):
-        return principals[0] != user_profile.id
-    else:
-        return principals[0] != user_profile.email
+    if target.is_bot and target.bot_owner == user_profile:
+        return True
+    return False
 
 
 def deactivate_stream_backend(
@@ -464,22 +459,27 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
 
     realm = user_profile.realm
-    removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
     streams_as_dict: List[StreamDict] = []
     for stream_name in streams_raw:
         streams_as_dict.append({"name": stream_name.strip()})
 
-    streams, __ = list_to_streams(
-        streams_as_dict, user_profile, unsubscribing_others=removing_someone_else
-    )
-
+    unsubscribing_others = False
     if principals:
-        people_to_unsub = {
-            principal_to_user_profile(user_profile, principal) for principal in principals
-        }
+        people_to_unsub = set()
+        for principal in principals:
+            target_user = principal_to_user_profile(user_profile, principal)
+            people_to_unsub.add(target_user)
+            if not user_directly_controls_user(user_profile, target_user):
+                unsubscribing_others = True
     else:
         people_to_unsub = {user_profile}
+
+    streams, __ = list_to_streams(
+        streams_as_dict,
+        user_profile,
+        unsubscribing_others=unsubscribing_others,
+    )
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(

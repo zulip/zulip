@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -2236,12 +2237,12 @@ class StreamAdminTest(ZulipTestCase):
 
         return result
 
-    def test_cant_remove_others_from_stream(self) -> None:
+    def test_cant_remove_other_users_from_stream(self) -> None:
         """
-        If you're not an admin, you can't remove other people from streams.
+        If you're not an admin, you can't remove other people from streams except your own bots.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=6,
+            query_count=7,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
@@ -2279,10 +2280,11 @@ class StreamAdminTest(ZulipTestCase):
               using a queue.
         """
         target_users = [
-            self.example_user(name) for name in ["cordelia", "prospero", "iago", "hamlet", "ZOE"]
+            self.example_user(name)
+            for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=26,
+            query_count=27,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -2331,7 +2333,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=6,
+            query_count=7,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -2385,6 +2387,34 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 0)
         self.assert_length(json["not_removed"], 1)
+
+    def test_bot_owner_can_remove_bot_from_stream(self) -> None:
+        user_profile = self.example_user("hamlet")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=14,
+            target_users=[webhook_bot],
+            is_realm_admin=False,
+            is_subbed=True,
+            invite_only=False,
+            target_users_subbed=True,
+        )
+        self.assert_json_success(result)
+
+    def test_non_bot_owner_cannot_remove_bot_from_stream(self) -> None:
+        other_user = self.example_user("cordelia")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=8,
+            target_users=[webhook_bot],
+            is_realm_admin=False,
+            is_subbed=True,
+            invite_only=False,
+            target_users_subbed=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_can_remove_subscribers_group(self) -> None:
         realm = get_realm("zulip")
