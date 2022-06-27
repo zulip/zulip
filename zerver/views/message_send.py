@@ -1,6 +1,6 @@
+import sys
 from typing import Iterable, Optional, Sequence, Union, cast
 
-import pytz
 from dateutil.parser import parse as dateparser
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -35,6 +35,11 @@ from zerver.models import (
     email_to_domain,
     get_user_including_cross_realm,
 )
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 
 class InvalidMirrorInput(Exception):
@@ -159,8 +164,8 @@ def handle_deferred_message(
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
-        user_tz = pytz.timezone(local_tz)
-        deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))
+        user_tz = zoneinfo.ZoneInfo(local_tz)
+        deliver_at_usertz = deliver_at.replace(tzinfo=user_tz)
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():

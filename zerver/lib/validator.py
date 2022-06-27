@@ -28,6 +28,7 @@ for any particular type of object.
 
 """
 import re
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -49,7 +50,6 @@ from typing import (
 )
 
 import orjson
-import pytz
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
@@ -57,6 +57,11 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import ProfileFieldData, Validator
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 ResultT = TypeVar("ResultT")
 
@@ -125,6 +130,17 @@ def check_string_fixed_length(length: int) -> Validator[str]:
 
 def check_long_string(var_name: str, val: object) -> str:
     return check_capped_string(500)(var_name, val)
+
+
+def check_timezone(var_name: str, val: object) -> str:
+    s = check_string(var_name, val)
+    try:
+        zoneinfo.ZoneInfo(s)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+        raise ValidationError(
+            _("{var_name} is not a recognized time zone").format(var_name=var_name)
+        )
+    return s
 
 
 def check_date(var_name: str, val: object) -> str:
@@ -564,10 +580,12 @@ def to_decimal(var_name: str, s: str) -> Decimal:
 
 
 def to_timezone_or_empty(var_name: str, s: str) -> str:
-    if s in pytz.all_timezones_set:
-        return canonicalize_timezone(s)
-    else:
+    try:
+        zoneinfo.ZoneInfo(s)
+    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
         return ""
+    else:
+        return canonicalize_timezone(s)
 
 
 def to_converted_or_fallback(

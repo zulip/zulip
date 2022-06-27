@@ -11,7 +11,6 @@ from email.headerregistry import Address
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import lxml.html
-import pytz
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
@@ -45,6 +44,11 @@ from zerver.models import (
     get_display_recipient,
     get_user_profile_by_id,
 )
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 logger = logging.getLogger(__name__)
 
@@ -620,7 +624,7 @@ def followup_day2_email_delay(user: UserProfile) -> timedelta:
     user_tz = user.timezone
     if user_tz == "":
         user_tz = "UTC"
-    signup_day = user.date_joined.astimezone(pytz.timezone(user_tz)).isoweekday()
+    signup_day = user.date_joined.astimezone(zoneinfo.ZoneInfo(user_tz)).isoweekday()
     if signup_day == 5:
         # If the day is Friday then delay should be till Monday
         days_to_delay = 3

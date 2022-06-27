@@ -410,6 +410,8 @@ class ChangeSettingsTest(ZulipTestCase):
             expected_error_msg = f"Invalid {setting_name}"
             if setting_name == "notification_sound":
                 expected_error_msg = f"Invalid notification sound '{invalid_value}'"
+            elif setting_name == "timezone":
+                expected_error_msg = "timezone is not a recognized time zone"
             self.assert_json_error(result, expected_error_msg)
             hamlet = self.example_user("hamlet")
             self.assertNotEqual(getattr(hamlet, setting_name), invalid_value)

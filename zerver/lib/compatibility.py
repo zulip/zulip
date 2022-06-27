@@ -3,7 +3,6 @@ import os
 import re
 from typing import List, Optional, Tuple
 
-import pytz
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -16,7 +15,7 @@ from zerver.signals import get_device_browser
 if settings.PRODUCTION:  # nocoverage
     timestamp = os.path.basename(os.path.abspath(settings.DEPLOY_ROOT))
     LAST_SERVER_UPGRADE_TIME = datetime.datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
-        tzinfo=pytz.utc
+        tzinfo=datetime.timezone.utc
     )
 else:
     LAST_SERVER_UPGRADE_TIME = timezone_now()
@@ -31,7 +30,7 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
     git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
     release_build_time = datetime.datetime.utcfromtimestamp(
         os.path.getmtime(git_version_path)
-    ).replace(tzinfo=pytz.utc)
+    ).replace(tzinfo=datetime.timezone.utc)
 
     version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
     deadline = version_no_newer_than + datetime.timedelta(

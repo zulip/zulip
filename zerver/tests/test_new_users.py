@@ -1,8 +1,8 @@
 import datetime
+import sys
 from typing import Sequence
 from unittest import mock
 
-import pytz
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
@@ -15,6 +15,11 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, Stream, UserProfile, get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 
 class SendLoginEmailTest(ZulipTestCase):
@@ -47,7 +52,7 @@ class SendLoginEmailTest(ZulipTestCase):
             firefox_windows = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
-            user_tz = pytz.timezone(user.timezone)
+            user_tz = zoneinfo.ZoneInfo(user.timezone)
             mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=datetime.timezone.utc)
             reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M%p %Z")
             with mock.patch("zerver.signals.timezone_now", return_value=mock_time):

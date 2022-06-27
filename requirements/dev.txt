@@ -93,6 +93,26 @@ backoff-stubs==1.11.1 \
     --hash=sha256:3fd641261cfe9cd657ebb7fc8a1dc700efa3f1b63e82fe0235d74bb73f8b85da \
     --hash=sha256:8b56cf2cfaf64abc1623544bd725b21566b5b92cf790a97d33e7437fb131251e
     # via -r requirements/mypy.in
+backports.zoneinfo==0.2.1 ; python_version < "3.9" \
+    --hash=sha256:17746bd546106fa389c51dbea67c8b7c8f0d14b5526a579ca6ccf5ed72c526cf \
+    --hash=sha256:1b13e654a55cd45672cb54ed12148cd33628f672548f373963b0bff67b217328 \
+    --hash=sha256:1c5742112073a563c81f786e77514969acb58649bcdf6cdf0b4ed31a348d4546 \
+    --hash=sha256:4a0f800587060bf8880f954dbef70de6c11bbe59c673c3d818921f042f9954a6 \
+    --hash=sha256:5c144945a7752ca544b4b78c8c41544cdfaf9786f25fe5ffb10e838e19a27570 \
+    --hash=sha256:7b0a64cda4145548fed9efc10322770f929b944ce5cee6c0dfe0c87bf4c0c8c9 \
+    --hash=sha256:8439c030a11780786a2002261569bdf362264f605dfa4d65090b64b05c9f79a7 \
+    --hash=sha256:8961c0f32cd0336fb8e8ead11a1f8cd99ec07145ec2931122faaac1c8f7fd987 \
+    --hash=sha256:89a48c0d158a3cc3f654da4c2de1ceba85263fafb861b98b59040a5086259722 \
+    --hash=sha256:a76b38c52400b762e48131494ba26be363491ac4f9a04c1b7e92483d169f6582 \
+    --hash=sha256:da6013fd84a690242c310d77ddb8441a559e9cb3d3d59ebac9aca1a57b2e18bc \
+    --hash=sha256:e55b384612d93be96506932a786bbcde5a2db7a9e6a4bb4bffe8b733f5b9036b \
+    --hash=sha256:e81b76cace8eda1fca50e345242ba977f9be6ae3945af8d46326d776b4cf78d1 \
+    --hash=sha256:e8236383a20872c0cdf5a62b554b27538db7fa1bbec52429d8d106effbaeca08 \
+    --hash=sha256:f04e857b59d9d1ccc39ce2da1021d196e47234873820cbeaad210724b1ee28ac \
+    --hash=sha256:fadbfe37f74051d024037f223b8e001611eac868b5c5b06144ef4d8b799862f2
+    # via
+    #   -r requirements/common.in
+    #   django
 beautifulsoup4==4.11.1 \
     --hash=sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30 \
     --hash=sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693
@@ -439,9 +459,9 @@ distro==1.7.0 \
     --hash=sha256:151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39 \
     --hash=sha256:d596311d707e692c2160c37807f83e3820c5d539d5a83e87cfb6babd8ba3a06b
     # via zulip
-django[argon2]==3.2.14 \
-    --hash=sha256:677182ba8b5b285a4e072f3ac17ceee6aff1b5ce77fd173cc5b6a2d3dc022fcf \
-    --hash=sha256:a8681e098fa60f7c33a4b628d6fcd3fe983a0939ff1301ecacac21d0b38bad56
+django[argon2]==4.0.6 \
+    --hash=sha256:a67a793ff6827fd373555537dca0da293a63a316fe34cb7f367f898ccca3c3ae \
+    --hash=sha256:ca54ebedfcbc60d191391efbf02ba68fb52165b8bf6ccd6fe71f098cac1fe59e
     # via
     #   -r requirements/common.in
     #   django-auth-ldap
@@ -456,9 +476,8 @@ django-auth-ldap==4.1.0 \
     --hash=sha256:68870e7921e84b1a9867e268a9c8a3e573e8a0d95ea08bcf31be178f5826ff36 \
     --hash=sha256:77f749d3b17807ce8eb56a9c9c8e5746ff316567f81d5ba613495d9c7495a949
     # via -r requirements/common.in
-django-bitfield==2.1.0 \
-    --hash=sha256:158f1056e22cce450d0a49633ea77bfd84b85a2294b1ef03faa775a485f4065d \
-    --hash=sha256:a55859fd16ce4269d5ceed3e20cf8fc3c2df866f0a78b90c60a19a0e76aa5fd8
+django-bitfield==2.2.0 \
+    --hash=sha256:1b21262acc4ec0af3f82ed04498a056cd9d5452532ac02771e004835a34e0b1b
     # via -r requirements/common.in
 django-bmemcached==0.3.0 \
     --hash=sha256:4e4b7d97216dbae331c1de10e699ca22804b94ec3a90d2762dd5d146e6986a8a
@@ -1606,9 +1625,7 @@ pytz==2022.1 \
     --hash=sha256:1e760e2fe6a8163bc0b3d9a19c4f84342afa0a2affebfaa84b01b978a02ecaa7 \
     --hash=sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c
     # via
-    #   -r requirements/common.in
     #   babel
-    #   django
     #   moto
     #   twilio
 pyuca==1.2 \
@@ -2135,10 +2152,6 @@ types-pygments==2.12.1 \
 types-python-dateutil==2.8.18 \
     --hash=sha256:8695c7d7a5b1aef4002f3ab4e1247e23b1d41cd7cc1286d4594c2d8c5593c991 \
     --hash=sha256:fd5ed97262b76ae684695ea38ace8dd7c1bc9491aba7eb4edf6654b7ecabc870
-    # via -r requirements/mypy.in
-types-pytz==2022.1.1 \
-    --hash=sha256:4e7add70886dc2ee6ee7535c8184a26eeb0ac9dbafae9962cb882d74b9f67330 \
-    --hash=sha256:581467742f32f15fff1098698b11fd511057a2a8a7568d33b604083f2b03c24f
     # via -r requirements/mypy.in
 types-pyyaml==6.0.9 \
     --hash=sha256:33ae75c84b8f61fddf0c63e9c7e557db9db1694ad3c2ee8628ec5efebb5a5e9b \

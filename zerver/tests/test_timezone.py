@@ -1,10 +1,15 @@
+import sys
 from datetime import datetime
 
-import pytz
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timezone import canonicalize_timezone, common_timezones
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 
 class TimeZoneTest(ZulipTestCase):
@@ -32,10 +37,11 @@ class TimeZoneTest(ZulipTestCase):
         now = timezone_now()
         dates = [datetime(now.year, 6, 21), datetime(now.year, 12, 21)]
         extra = {*common_timezones.items(), *ambiguous_abbrevs}
-        for name in pytz.all_timezones:
-            tz = pytz.timezone(name)
+        for name in zoneinfo.available_timezones():
+            tz = zoneinfo.ZoneInfo(name)
             for date in dates:
                 abbrev = tz.tzname(date)
+                assert abbrev is not None
                 if abbrev.startswith(("-", "+")):
                     continue
                 delta = tz.utcoffset(date)

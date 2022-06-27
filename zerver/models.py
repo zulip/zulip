@@ -1810,7 +1810,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
-    # A time zone name from the `tzdata` database, as found in pytz.all_timezones.
+    # A time zone name from the `tzdata` database, as found in zoneinfo.available_timezones().
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
     # like a safe choice.
