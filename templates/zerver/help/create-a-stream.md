@@ -39,8 +39,8 @@ There are several parameters you can set while creating a stream. All but
 * **Who can access the stream?**: See [Stream permissions](/help/stream-permissions).
 
 * **Announce stream**: Posts a message to `#general` advertising the new
-  stream. Organization administrators can change the stream used for stream
-  creation announcements.
+  stream. Organization administrators can change the stream used for [stream
+  creation announcements](/help/configure-notification-bot#new-stream-announcements).
 
 * **Who can post to the stream?**: See [Stream permissions](/help/stream-permissions).
 

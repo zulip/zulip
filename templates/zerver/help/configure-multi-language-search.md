@@ -14,5 +14,7 @@ for setup instructions.
 
 ## Related articles
 
-* [Configure organization notifications language](/help/change-the-default-language-for-your-organization)
+* [Configure organization language for automated messages and invitation emails][org-lang]
 * [Searching for messages](/help/search-for-messages)
+
+[org-lang]: change-the-default-language-for-your-organization

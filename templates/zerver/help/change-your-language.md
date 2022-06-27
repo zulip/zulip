@@ -23,6 +23,6 @@ messages you receive.
 
 ## Related articles
 
-* [Configure organization notifications language][change-org-lang]
+* [Configure organization language for automated messages and invitation emails][org-lang]
 
-[change-org-lang]: change-the-default-language-for-your-organization
+[org-lang]: change-the-default-language-for-your-organization
