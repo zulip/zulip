@@ -7,7 +7,6 @@ content-language: en
 strict-transport-security: max-age=15768000
 x-frame-options: DENY
 x-content-type-options: nosniff
-x-xss-protection: 1; mode=block
 access-control-allow-origin: *
 access-control-allow-headers: Authorization
 access-control-allow-methods: GET, POST, DELETE, PUT, PATCH, HEAD
