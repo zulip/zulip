@@ -10,7 +10,7 @@ const $ = require("../zjsunit/zjquery");
     Until now, we had seen various testing techniques, learned
     how to use helper functions like `mock_esm`, `override` of
     `run_test` etc., but we didn't see how to deal with
-    render calls to handlebars templates. We'll learn that
+    render calls to Handlebars templates. We'll learn that
     in this test.
 
     The below code tests the rendering of typing notifications which

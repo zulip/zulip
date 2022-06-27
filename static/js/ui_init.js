@@ -590,7 +590,7 @@ export function initialize_everything() {
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
     // expect DOM elements to always exist (As that did before these
-    // modules were migrated from Django templates to handlebars).
+    // modules were migrated from Django templates to Handlebars).
     initialize_left_sidebar();
     initialize_right_sidebar();
     initialize_compose_box();

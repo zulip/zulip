@@ -417,7 +417,7 @@ function edit_message($row, raw_content) {
         editability === editability_types.TOPIC_ONLY ||
         editability === editability_types.FULL ||
         is_stream_editable;
-    // current message's stream has been already been added and selected in handlebar
+    // current message's stream has been already been added and selected in Handlebars
     const available_streams = is_stream_editable
         ? stream_data.subscribed_subs().map((stream) => ({
               name: stream.name,
