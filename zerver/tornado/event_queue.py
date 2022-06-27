@@ -195,7 +195,6 @@ class ClientDescriptor:
                     self.current_handler_id,
                     self.event_queue.id,
                     self.event_queue.contents(),
-                    self.apply_markdown,
                 )
             except Exception:
                 logging.exception(

@@ -40,9 +40,7 @@ def handler_stats_string() -> str:
     return f"{len(handlers)} handlers, latest ID {current_handler_id}"
 
 
-def finish_handler(
-    handler_id: int, event_queue_id: str, contents: List[Dict[str, Any]], apply_markdown: bool
-) -> None:
+def finish_handler(handler_id: int, event_queue_id: str, contents: List[Dict[str, Any]]) -> None:
     try:
         # We do the import during runtime to avoid cyclic dependency
         # with zerver.lib.request
@@ -67,7 +65,6 @@ def finish_handler(
             handler.zulip_finish,
             dict(result="success", msg="", events=contents, queue_id=event_queue_id),
             request,
-            apply_markdown=apply_markdown,
         )
     except Exception as e:
         if not (
@@ -206,18 +203,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         if client_descriptor is not None:
             client_descriptor.disconnect_handler(client_closed=True)
 
-    async def zulip_finish(
-        self, result_dict: Dict[str, Any], old_request: HttpRequest, apply_markdown: bool
-    ) -> None:
+    async def zulip_finish(self, result_dict: Dict[str, Any], old_request: HttpRequest) -> None:
         # Function called when we want to break a long-polled
         # get_events request and return a response to the client.
 
         # Marshall the response data from result_dict.
-        if result_dict["result"] == "success" and "messages" in result_dict and apply_markdown:
-            for msg in result_dict["messages"]:
-                if msg["content_type"] != "text/html":
-                    self.set_status(500)
-                    await self.finish("Internal error: bad message format")
         if result_dict["result"] == "error":
             self.set_status(400)
 
