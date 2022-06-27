@@ -1,13 +1,13 @@
 # Webhooks for external integrations.
-from typing import Any, Mapping, Optional, Tuple
+from typing import Optional, Tuple
 
-import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,10 +21,9 @@ from .card_actions import IGNORED_CARD_ACTIONS, SUPPORTED_CARD_ACTIONS, process_
 def api_trello_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Mapping[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    payload = orjson.loads(request.body)
-    action_type = payload["action"].get("type")
+    action_type = payload["action"]["type"].tame(check_string)
     message = get_subject_and_body(payload, action_type)
     if message is None:
         return json_success(request)
@@ -35,7 +34,7 @@ def api_trello_webhook(
     return json_success(request)
 
 
-def get_subject_and_body(payload: Mapping[str, Any], action_type: str) -> Optional[Tuple[str, str]]:
+def get_subject_and_body(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
     if action_type in SUPPORTED_CARD_ACTIONS:
         return process_card_action(payload, action_type)
     if action_type in IGNORED_CARD_ACTIONS:
