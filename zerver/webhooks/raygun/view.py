@@ -1,5 +1,4 @@
 import time
-from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
@@ -7,6 +6,14 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_anything,
+    check_int,
+    check_list,
+    check_string,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -18,14 +25,14 @@ ALL_EVENT_TYPES = ["error_notification", "error_activity"]
 def api_raygun_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
     # happens when an action is being taken for the error itself
     # (ignored/resolved/assigned/etc.).
-    event = payload["event"]
+    event = payload["event"].tame(check_string)
 
     # Because we wanted to create a message for all of the payloads, it is best
     # to handle them separately. This is because some payload keys don't exist
@@ -45,7 +52,7 @@ def api_raygun_webhook(
     return json_success(request)
 
 
-def make_user_stats_chunk(error_dict: Dict[str, Any]) -> str:
+def make_user_stats_chunk(error_dict: WildValue) -> str:
     """Creates a stat chunk about total occurrences and users affected for the
     error.
 
@@ -56,14 +63,14 @@ def make_user_stats_chunk(error_dict: Dict[str, Any]) -> str:
     values
     :returns: A message chunk that will be added to the main message
     """
-    users_affected = error_dict["usersAffected"]
-    total_occurrences = error_dict["totalOccurrences"]
+    users_affected = error_dict["usersAffected"].tame(check_int)
+    total_occurrences = error_dict["totalOccurrences"].tame(check_int)
 
     # One line is subjectively better than two lines for this.
     return f"* {users_affected} users affected with {total_occurrences} total occurrences\n"
 
 
-def make_time_chunk(error_dict: Dict[str, Any]) -> str:
+def make_time_chunk(error_dict: WildValue) -> str:
     """Creates a time message chunk.
 
     Example: firstOccurredOn: "X", lastOccurredOn: "Y"
@@ -76,8 +83,8 @@ def make_time_chunk(error_dict: Dict[str, Any]) -> str:
     :returns: A message chunk that will be added to the main message
     """
     # Make the timestamp more readable to a human.
-    time_first = parse_time(error_dict["firstOccurredOn"])
-    time_last = parse_time(error_dict["lastOccurredOn"])
+    time_first = parse_time(error_dict["firstOccurredOn"].tame(check_string))
+    time_last = parse_time(error_dict["lastOccurredOn"].tame(check_string))
 
     # Provide time information about this error,
     return f"* **First occurred**: {time_first}\n* **Last occurred**: {time_last}\n"
@@ -97,19 +104,19 @@ def make_message_chunk(message: str) -> str:
     return f"* **Message**: {message}\n" if message != "" else ""
 
 
-def make_app_info_chunk(app_dict: Dict[str, str]) -> str:
+def make_app_info_chunk(app_dict: WildValue) -> str:
     """Creates a message chunk that contains the application info and the link
     to the Raygun dashboard about the application.
 
     :param app_dict: The application dictionary obtained from the payload
     :returns: A message chunk that will be added to the main message
     """
-    app_name = app_dict["name"]
-    app_url = app_dict["url"]
+    app_name = app_dict["name"].tame(check_string)
+    app_url = app_dict["url"].tame(check_string)
     return f"* **Application details**: [{app_name}]({app_url})\n"
 
 
-def notification_message_follow_up(payload: Dict[str, Any]) -> str:
+def notification_message_follow_up(payload: WildValue) -> str:
     """Creates a message for a repeating error follow up
 
     :param payload: Raygun payload
@@ -118,9 +125,9 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
     message = ""
 
     # Link to Raygun about the follow up
-    followup_link_md = "[follow-up error]({})".format(payload["error"]["url"])
+    followup_link_md = "[follow-up error]({})".format(payload["error"]["url"].tame(check_string))
 
-    followup_type = payload["eventType"]
+    followup_type = payload["eventType"].tame(check_string)
 
     if followup_type == "HourlyFollowUp":
         prefix = "Hourly"
@@ -133,7 +140,7 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
     message += f"{prefix} {followup_link_md}:\n"
 
     # Get the message of the error.
-    payload_msg = payload["error"]["message"]
+    payload_msg = payload["error"]["message"].tame(check_string)
 
     message += make_message_chunk(payload_msg)
     message += make_time_chunk(payload["error"])
@@ -143,7 +150,7 @@ def notification_message_follow_up(payload: Dict[str, Any]) -> str:
     return message
 
 
-def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
+def notification_message_error_occurred(payload: WildValue) -> str:
     """Creates a message for a new error or reoccurred error
 
     :param payload: Raygun payload
@@ -152,16 +159,16 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
     message = ""
 
     # Provide a clickable link that goes to Raygun about this error.
-    error_link_md = "[Error]({})".format(payload["error"]["url"])
+    error_link_md = "[Error]({})".format(payload["error"]["url"].tame(check_string))
 
     # Stylize the message based on the event type of the error.
-    if payload["eventType"] == "NewErrorOccurred":
+    if payload["eventType"].tame(check_string) == "NewErrorOccurred":
         message += "{}:\n".format(f"New {error_link_md} occurred")
-    elif payload["eventType"] == "ErrorReoccurred":
+    elif payload["eventType"].tame(check_string) == "ErrorReoccurred":
         message += "{}:\n".format(f"{error_link_md} reoccurred")
 
     # Get the message of the error. This value can be empty (as in "").
-    payload_msg = payload["error"]["message"]
+    payload_msg = payload["error"]["message"].tame(check_string)
 
     message += make_message_chunk(payload_msg)
     message += make_time_chunk(payload["error"])
@@ -184,24 +191,24 @@ def notification_message_error_occurred(payload: Dict[str, Any]) -> str:
     custom_data = error_instance["customData"]
 
     if tags is not None:
-        message += "* **Tags**: {}\n".format(", ".join(tags))
+        message += "* **Tags**: {}\n".format(", ".join(tags.tame(check_list(check_string))))
 
     if affected_user is not None:
-        user_uuid = affected_user["UUID"]
+        user_uuid = affected_user["UUID"].tame(check_string)
         message += f"* **Affected user**: {user_uuid[:6]}...{user_uuid[-5:]}\n"
 
     if custom_data is not None:
         # We don't know what the keys and values beforehand, so we are forced
         # to iterate.
         for key in sorted(custom_data.keys()):
-            message += f"* **{key}**: {custom_data[key]}\n"
+            message += f"* **{key}**: {custom_data[key].tame(check_anything)}\n"
 
     message += make_app_info_chunk(payload["application"])
 
     return message
 
 
-def compose_notification_message(payload: Dict[str, Any]) -> str:
+def compose_notification_message(payload: WildValue) -> str:
     """Composes a message that contains information on the error
 
     :param payload: Raygun payload
@@ -211,7 +218,7 @@ def compose_notification_message(payload: Dict[str, Any]) -> str:
     # Get the event type of the error. This can be "NewErrorOccurred",
     # "ErrorReoccurred", "OneMinuteFollowUp", "FiveMinuteFollowUp", ...,
     # "HourlyFollowUp" for notification error.
-    event_type = payload["eventType"]
+    event_type = payload["eventType"].tame(check_string)
 
     # "NewErrorOccurred" and "ErrorReoccurred" contain error instance
     # information, meaning that it has payload['error']['instance']. The other
@@ -228,7 +235,7 @@ def compose_notification_message(payload: Dict[str, Any]) -> str:
         raise UnsupportedWebhookEventType(event_type)
 
 
-def activity_message(payload: Dict[str, Any]) -> str:
+def activity_message(payload: WildValue) -> str:
     """Creates a message from an activity that is being taken for an error
 
     :param payload: Raygun payload
@@ -236,29 +243,31 @@ def activity_message(payload: Dict[str, Any]) -> str:
     """
     message = ""
 
-    error_link_md = "[Error]({})".format(payload["error"]["url"])
+    error_link_md = "[Error]({})".format(payload["error"]["url"].tame(check_string))
 
-    event_type = payload["eventType"]
+    event_type = payload["eventType"].tame(check_string)
 
-    user = payload["error"]["user"]
+    user = payload["error"]["user"].tame(check_string)
     if event_type == "StatusChanged":
-        error_status = payload["error"]["status"]
+        error_status = payload["error"]["status"].tame(check_string)
         message += f"{error_link_md} status changed to **{error_status}** by {user}:\n"
     elif event_type == "CommentAdded":
-        comment = payload["error"]["comment"]
+        comment = payload["error"]["comment"].tame(check_string)
         message += f"{user} commented on {error_link_md}:\n\n``` quote\n{comment}\n```\n"
     elif event_type == "AssignedToUser":
-        assigned_to = payload["error"]["assignedTo"]
+        assigned_to = payload["error"]["assignedTo"].tame(check_string)
         message += f"{user} assigned {error_link_md} to {assigned_to}:\n"
 
-    message += "* **Timestamp**: {}\n".format(parse_time(payload["error"]["activityDate"]))
+    message += "* **Timestamp**: {}\n".format(
+        parse_time(payload["error"]["activityDate"].tame(check_string))
+    )
 
     message += make_app_info_chunk(payload["application"])
 
     return message
 
 
-def compose_activity_message(payload: Dict[str, Any]) -> str:
+def compose_activity_message(payload: WildValue) -> str:
     """Composes a message that contains an activity that is being taken to
     an error, such as commenting, assigning an error to a user, ignoring the
     error, etc.
@@ -267,7 +276,7 @@ def compose_activity_message(payload: Dict[str, Any]) -> str:
     :return: Returns a response message
     """
 
-    event_type = payload["eventType"]
+    event_type = payload["eventType"].tame(check_string)
 
     # Activity is separated into three main categories: status changes (
     # ignores, resolved), error is assigned to user, and comment added to
