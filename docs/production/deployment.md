@@ -339,7 +339,8 @@ server's incoming proxies, so we know how much of the
 
 1. Determine the IP addresses of all reverse proxies you are setting up, as seen
    from the Zulip host. Depending on your network setup, these may not be the
-   same as the public IP addresses of the reverse proxies.
+   same as the public IP addresses of the reverse proxies. These can also be IP
+   address ranges, as expressed in CIDR notation.
 
 1. Add the following block to `/etc/zulip/zulip.conf`.
 
@@ -782,8 +783,9 @@ configured to consume; defaults to 1/8th of the total server memory.
 
 #### `ips`
 
-Comma-separated list of IP addresses or netmasks of external
-load balancers whose `X-Forwarded-For` should be respected.
+Comma-separated list of IP addresses or netmasks of external load balancers
+whose `X-Forwarded-For` should be respected. These can be individual IP
+addresses, or CIDR IP address ranges.
 
 ### `[http_proxy]`
 
