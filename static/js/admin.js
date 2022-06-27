@@ -24,8 +24,8 @@ const admin_settings_label = {
     // Organization settings
     realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
     realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
-    realm_notifications_stream: $t({defaultMessage: "New stream notifications"}),
-    realm_signup_notifications_stream: $t({defaultMessage: "New user notifications"}),
+    realm_notifications_stream: $t({defaultMessage: "New stream announcements"}),
+    realm_signup_notifications_stream: $t({defaultMessage: "New user announcements"}),
     realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
     realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
@@ -49,7 +49,9 @@ const admin_settings_label = {
     realm_invite_required: $t({
         defaultMessage: "Invitations are required for joining this organization",
     }),
-    realm_default_language: $t({defaultMessage: "Notification language"}),
+    realm_default_language: $t({
+        defaultMessage: "Language for automated messages and invitation emails",
+    }),
 };
 
 function insert_tip_box() {
