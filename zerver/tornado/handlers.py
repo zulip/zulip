@@ -11,6 +11,7 @@ from django.core.handlers.wsgi import WSGIRequest, get_script_name
 from django.http import HttpRequest, HttpResponse
 from django.urls import set_script_prefix
 from django.utils.cache import patch_vary_headers
+from tornado.iostream import StreamClosedError
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import AsynchronousResponse, json_response
@@ -146,7 +147,12 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self.write(response.content)
 
         # Close the connection.
-        await self.finish()
+        try:
+            await self.finish()
+        except StreamClosedError:
+            # While writing the response, we might realize that the
+            # user already closed the connection; that is fine.
+            pass
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = await self.convert_tornado_request_to_django_request()
