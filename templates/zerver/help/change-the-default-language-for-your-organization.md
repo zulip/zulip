@@ -13,7 +13,7 @@ can set the language for automated messages and emails for the organization. Thi
 
 * Determines the language used for automated messages sent to streams
   by [Notification
-  Bot](/help/configure-notification-bot). (Notifications sent to a
+  Bot](/help/configure-notification-bot). (Automated messages sent to a
   single user will use that user's language).
 * Determines the language used for outgoing
   [invitation emails](/help/invite-new-users).
@@ -27,7 +27,7 @@ can set the language for automated messages and emails for the organization. Thi
 
 {settings_tab|organization-settings}
 
-2. Under **Notifications**, change the **Language for automated messages and emails**.
+2. Under **Automated messages and emails**, change the **Language for automated messages and emails**.
 
 {!save-changes.md!}
 
