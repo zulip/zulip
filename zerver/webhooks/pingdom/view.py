@@ -1,12 +1,11 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -44,7 +43,7 @@ ALL_EVENT_TYPES = list(SUPPORTED_CHECK_TYPES)
 def api_pingdom_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     check_type = get_check_type(payload)
 
@@ -58,23 +57,25 @@ def api_pingdom_webhook(
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
-    return PINGDOM_TOPIC_TEMPLATE.format(name=payload["check_name"])
+def get_subject_for_http_request(payload: WildValue) -> str:
+    return PINGDOM_TOPIC_TEMPLATE.format(name=payload["check_name"].tame(check_string))
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> str:
-    current_state = payload["current_state"]
-    previous_state = payload["previous_state"]
+def get_body_for_http_request(payload: WildValue) -> str:
+    current_state = payload["current_state"].tame(check_string)
+    previous_state = payload["previous_state"].tame(check_string)
 
     data = {
-        "service_url": payload["check_params"]["hostname"],
+        "service_url": payload["check_params"]["hostname"].tame(check_string),
         "previous_state": previous_state,
         "current_state": current_state,
         "type": get_check_type(payload),
     }
     body = MESSAGE_TEMPLATE.format(**data)
     if current_state == "DOWN" and previous_state == "UP":
-        description = DESC_TEMPLATE.format(description=payload["long_description"])
+        description = DESC_TEMPLATE.format(
+            description=payload["long_description"].tame(check_string)
+        )
         body += description
     else:
         body = f"{body[:-1]}."
@@ -82,5 +83,5 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     return body
 
 
-def get_check_type(payload: Dict[str, Any]) -> str:
-    return payload["check_type"]
+def get_check_type(payload: WildValue) -> str:
+    return payload["check_type"].tame(check_string)
