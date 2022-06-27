@@ -130,9 +130,6 @@ Here are a few common macros used to document Zulip's integrations:
 - `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
   to generate the webhook URL.
 
-- `{!zulip-config.md!}` - Used internally by `{!change-zulip-config-file.md!}`
-  to specify the lines in the config file for a non-webhook integration.
-
 - `{!webhook-url-with-bot-email.md!}` - Used in certain non-webhook integrations
   to generate URLs of the form:
 
