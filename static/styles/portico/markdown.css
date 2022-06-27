@@ -135,12 +135,6 @@
                 text-align: center;
             }
 
-            & > .codehilite,
-            & > p:not(:first-child) {
-                padding-left: 24px;
-                margin-left: 5px;
-            }
-
             .codehilite {
                 background-color: hsl(0, 0%, 100%);
             }
