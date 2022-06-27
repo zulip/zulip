@@ -1,9 +1,9 @@
 import re
+import sys
 from datetime import datetime
 from html import escape
 from typing import Any, Collection, Dict, List, Optional, Sequence
 
-import pytz
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 from django.template import loader
@@ -12,7 +12,12 @@ from markupsafe import Markup as mark_safe
 
 from zerver.models import UserActivity
 
-eastern_tz = pytz.timezone("US/Eastern")
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
+
+eastern_tz = zoneinfo.ZoneInfo("America/New_York")
 
 
 if settings.BILLING_ENABLED:

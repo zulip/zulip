@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 import uuid
-from typing import Any, Dict, List, Sequence, Set
+from typing import IO, Any, Dict, List, Sequence, Set
 from urllib.parse import SplitResult
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
@@ -443,6 +443,20 @@ def os_families() -> Set[str]:
     """
     distro_info = parse_os_release()
     return {distro_info["ID"], *distro_info.get("ID_LIKE", "").split()}
+
+
+def get_tzdata_zi() -> IO[str]:
+    if sys.version_info < (3, 9):  # nocoverage
+        from backports import zoneinfo
+    else:  # nocoverage
+        import zoneinfo
+
+    for path in zoneinfo.TZPATH:
+        filename = os.path.join(path, "tzdata.zi")
+        if os.path.exists(filename):
+            return open(filename)
+    else:
+        raise RuntimeError("Missing time zone data (tzdata.zi)")
 
 
 def files_and_string_digest(filenames: Sequence[str], extra_strings: Sequence[str]) -> str:

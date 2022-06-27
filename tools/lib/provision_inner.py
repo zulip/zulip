@@ -10,13 +10,13 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 import pygments
-from pytz import VERSION as timezones_version
 
 from scripts.lib import clean_unused_caches
 from scripts.lib.zulip_tools import (
     ENDC,
     OKBLUE,
     get_dev_uuid_var_path,
+    get_tzdata_zi,
     is_digest_obsolete,
     run,
     run_as_root,
@@ -27,6 +27,11 @@ from version import PROVISION_VERSION
 
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
+
+with get_tzdata_zi() as f:
+    line = f.readline()
+    assert line.startswith("# version ")
+    timezones_version = line[len("# version ") :]
 
 
 def create_var_directories() -> None:

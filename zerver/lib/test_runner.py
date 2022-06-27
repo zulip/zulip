@@ -102,7 +102,7 @@ def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
 
 
 SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool]
+SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
 
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
@@ -110,8 +110,8 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     test_helpers.INSTRUMENTED_CALLS = []
     # The first argument is the test runner class but we don't need it
     # because we run our own version of the runner class.
-    _, subsuite_index, subsuite, failfast = args
-    runner = RemoteTestRunner(failfast=failfast)
+    _, subsuite_index, subsuite, failfast, buffer = args
+    runner = RemoteTestRunner(failfast=failfast, buffer=buffer)
     result = runner.run(deserialize_suite(subsuite))
     # Now we send instrumentation related events. This data will be
     # appended to the data structure in the main thread. For Mypy,
@@ -237,8 +237,14 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
     init_worker = init_worker
 
-    def __init__(self, suite: TestSuite, processes: int, failfast: bool) -> None:
-        super().__init__(suite, processes, failfast)
+    def __init__(
+        self,
+        subsuites: List[TestSuite],
+        processes: int,
+        failfast: bool = False,
+        buffer: bool = False,
+    ) -> None:
+        super().__init__(subsuites=subsuites, processes=processes, failfast=failfast, buffer=buffer)
         # We can't specify a consistent type for self.subsuites, since
         # the whole idea here is to monkey-patch that so we can use
         # most of django_runner.ParallelTestSuite with our own suite

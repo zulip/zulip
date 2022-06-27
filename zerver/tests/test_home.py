@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import orjson
-import pytz
 from django.conf import settings
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -878,7 +877,7 @@ class HomeTest(ZulipTestCase):
         # Check when server_upgrade_nag_deadline > last_server_upgrade_time
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
-        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=pytz.utc)
+        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=datetime.timezone.utc)
         with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=10)):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)

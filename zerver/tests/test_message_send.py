@@ -1,9 +1,9 @@
 import datetime
+import sys
 from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set
 from unittest import mock
 
 import orjson
-import pytz
 from django.conf import settings
 from django.db.models import Q
 from django.test import override_settings
@@ -64,6 +64,11 @@ from zerver.models import (
     get_user,
 )
 from zerver.views.message_send import InvalidMirrorInput
+
+if sys.version_info < (3, 9):  # nocoverage
+    from backports import zoneinfo
+else:  # nocoverage
+    import zoneinfo
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -1432,8 +1437,8 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 6")
-        local_tz = pytz.timezone(tz_guess)
-        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
+        local_tz = zoneinfo.ZoneInfo(tz_guess)
+        utz_defer_until = defer_until.replace(tzinfo=local_tz)
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(utz_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 
@@ -1446,8 +1451,8 @@ class ScheduledMessageTest(ZulipTestCase):
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 7")
-        local_tz = pytz.timezone(user.timezone)
-        utz_defer_until = local_tz.normalize(local_tz.localize(defer_until))
+        local_tz = zoneinfo.ZoneInfo(user.timezone)
+        utz_defer_until = defer_until.replace(tzinfo=local_tz)
         self.assertEqual(message.scheduled_timestamp, convert_to_UTC(utz_defer_until))
         self.assertEqual(message.delivery_type, ScheduledMessage.SEND_LATER)
 

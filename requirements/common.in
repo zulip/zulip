@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==3.2.*
+Django[argon2]==4.0.*
 
 # needed for NotRequired, ParamSpec
 typing-extensions
@@ -77,7 +77,7 @@ django-bmemcached
 python-dateutil
 
 # Needed for time zone work
-pytz
+backports.zoneinfo ; python_version < "3.9"
 
 # Needed for Redis
 redis

@@ -1,6 +1,5 @@
 from typing import Any, Dict, Optional
 
-import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
@@ -42,7 +41,13 @@ from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
+from zerver.lib.validator import (
+    check_bool,
+    check_int,
+    check_int_in,
+    check_string_in,
+    check_timezone,
+)
 from zerver.models import (
     EmailChangeStatus,
     UserProfile,
@@ -164,9 +169,7 @@ def json_change_settings(
     demote_inactive_streams: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
-    timezone: Optional[str] = REQ(
-        str_validator=check_string_in(pytz.all_timezones_set), default=None
-    ),
+    timezone: Optional[str] = REQ(str_validator=check_timezone, default=None),
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None
     ),
