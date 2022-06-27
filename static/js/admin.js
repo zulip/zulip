@@ -49,7 +49,7 @@ const admin_settings_label = {
     realm_invite_required: $t({
         defaultMessage: "Invitations are required for joining this organization",
     }),
-    realm_default_language: $t({defaultMessage: "Notification language"}),
+    realm_default_language: $t({defaultMessage: "Language for automated messages and emails"}),
 };
 
 function insert_tip_box() {
