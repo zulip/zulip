@@ -477,6 +477,8 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
+    stream_list.update_no_streams_label(hidden_ids.size, stream_ids.length);
+
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];

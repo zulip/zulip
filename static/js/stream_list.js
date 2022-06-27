@@ -28,6 +28,14 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
+export function update_no_streams_label(hidden_id_array_size, stream_ids_array_size) {
+    if (hidden_id_array_size === stream_ids_array_size) {
+        $(".no-streams").css("display", "block");
+    } else {
+        $(".no-streams").css("display", "none");
+    }
+}
+
 export function update_count_in_dom($stream_li, count) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the

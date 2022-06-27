@@ -347,6 +347,20 @@ h4.stream_setting_subsection_title {
             display: flex;
             justify-content: space-between;
         }
+
+        .no-streams {
+            display: none;
+            margin-top: calc(45vh - 100px);
+            text-align: center;
+            font-size: 1em;
+            margin-left: 2em;
+            margin-right: 2em;
+
+            span {
+                display: block;
+                color: hsl(0, 0%, 67%);
+            }
+        }
     }
 
     .right {
