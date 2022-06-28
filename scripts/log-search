@@ -84,6 +84,9 @@ def parser() -> argparse.ArgumentParser:
     filtering.add_argument(
         "--report", "-r", help="Include timing report paths", action="store_true"
     )
+    filtering.add_argument(
+        "--no-other", "-O", help="Exclude paths not explicitly included", action="store_true"
+    )
 
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
@@ -318,24 +321,24 @@ def passes_filters(
         return True
 
     path = match["path"]
-    if path.startswith("/static/") and not args.static:
-        return False
-    if path.startswith("/user_uploads/") and not args.uploads:
-        return False
-    if path.startswith(("/user_avatars/", "/avatar/")) and not args.avatars:
-        return False
-    if re.match(r"/(json|api/v1)/events($|\?|/)", path) and not args.events:
-        return False
-    if path in ("/api/v1/typing", "/json/typing") and not args.typing:
-        return False
-    if re.match(r"/(json|api/v1)/messages($|\?|/)", path) and not args.messages:
-        return False
-    if path in ("/api/v1/users/me/presence", "/json/users/me/presence") and not args.presence:
-        return False
-    if path.startswith(("/api/v1/report/", "/json/report/")) and not args.report:
-        return False
-
-    return True
+    if path.startswith("/static/"):
+        return args.static
+    elif path.startswith("/user_uploads/"):
+        return args.uploads
+    elif path.startswith(("/user_avatars/", "/avatar/")):
+        return args.avatars
+    elif re.match(r"/(json|api/v1)/events($|\?|/)", path):
+        return args.events
+    elif path in ("/api/v1/typing", "/json/typing"):
+        return args.typing
+    elif re.match(r"/(json|api/v1)/messages($|\?|/)", path):
+        return args.messages
+    elif path in ("/api/v1/users/me/presence", "/json/users/me/presence"):
+        return args.presence
+    elif path.startswith(("/api/v1/report/", "/json/report/")):
+        return args.report
+    else:
+        return not args.no_other
 
 
 def print_line(
