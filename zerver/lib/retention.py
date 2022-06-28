@@ -147,8 +147,9 @@ def run_archiving_in_chunks(
             new_chunk = move_rows(
                 Message,
                 query,
+                src_db_table=None,
                 chunk_size=Literal(chunk_size),
-                returning_id=Literal(True),
+                returning_id=True,
                 archive_transaction_id=Literal(archive_transaction.id),
                 **kwargs,
             )
@@ -539,7 +540,7 @@ def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
         Message,
         query,
         src_db_table="zerver_archivedmessage",
-        returning_id=Literal(True),
+        returning_id=True,
         archive_transaction_id=Literal(archive_transaction_id),
     )
 
