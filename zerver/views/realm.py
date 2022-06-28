@@ -330,6 +330,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
         realm = get_object_from_key(confirmation_key, [Confirmation.REALM_REACTIVATION])
     except ConfirmationKeyException:
         return render(request, "zerver/realm_reactivation_link_error.html")
+    assert isinstance(realm, Realm)
     do_reactivate_realm(realm)
     context = {"realm": realm}
     return render(request, "zerver/realm_reactivation.html", context)

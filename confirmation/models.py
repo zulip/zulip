@@ -54,7 +54,7 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus]
+ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus, UserProfile, Realm]
 
 
 def get_object_from_key(

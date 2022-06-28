@@ -136,6 +136,7 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
     ]
 
     prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
+    assert isinstance(prereg_user, PreregistrationUser)
 
     if prereg_user.status == confirmation_settings.STATUS_REVOKED:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
@@ -740,9 +741,11 @@ def accounts_home(
 
 def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     realm = get_realm_from_request(request)
-    multiuse_object = None
+    multiuse_object: Optional[MultiuseInvite] = None
     try:
-        multiuse_object = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
+        confirmation_obj = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
+        assert isinstance(confirmation_obj, MultiuseInvite)
+        multiuse_object = confirmation_obj
         if realm != multiuse_object.realm:
             return render(request, "confirmation/link_does_not_exist.html", status=404)
         # Required for OAuth 2
