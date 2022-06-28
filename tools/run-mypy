@@ -8,9 +8,10 @@ from typing import List
 from zulint import lister
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(os.path.dirname(TOOLS_DIR))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+os.chdir(ROOT_DIR)
 
-sys.path.append(os.path.dirname(TOOLS_DIR))
+sys.path.append(ROOT_DIR)
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
 exclude = """
