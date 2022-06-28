@@ -691,10 +691,6 @@ all at once. This decreases the number of 502's served to clients, at
 the cost of slightly increased memory usage, and the possibility that
 different requests will be served by different versions of the code.
 
-#### `uwsgi_buffer_size`
-
-Override the default uwsgi buffer size of 8192.
-
 #### `uwsgi_listen_backlog_limit`
 
 Override the default uwsgi backlog of 128 connections.
