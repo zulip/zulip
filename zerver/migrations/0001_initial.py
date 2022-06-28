@@ -128,7 +128,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                 ),
                 ("rate_limits", models.CharField(default="", max_length=100)),
                 ("default_all_public_streams", models.BooleanField(default=False)),
-                ("enter_sends", models.NullBooleanField(default=True)),
+                ("enter_sends", models.BooleanField(null=True, default=True)),
                 ("autoscroll_forever", models.BooleanField(default=False)),
                 ("twenty_four_hour_time", models.BooleanField(default=False)),
                 (
@@ -401,7 +401,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                     ),
                 ),
                 ("name", models.CharField(db_index=True, max_length=60)),
-                ("invite_only", models.NullBooleanField(default=False)),
+                ("invite_only", models.BooleanField(null=True, default=False)),
                 (
                     "email_token",
                     models.CharField(default=generate_email_token_for_stream, max_length=32),
@@ -427,7 +427,7 @@ CREATE TRIGGER zerver_message_update_search_tsvector_async
                     ),
                 ),
                 ("active", models.BooleanField(default=True)),
-                ("in_home_view", models.NullBooleanField(default=True)),
+                ("in_home_view", models.BooleanField(null=True, default=True)),
                 ("color", models.CharField(default="#c2c2c2", max_length=10)),
                 ("desktop_notifications", models.BooleanField(default=True)),
                 ("audible_notifications", models.BooleanField(default=True)),

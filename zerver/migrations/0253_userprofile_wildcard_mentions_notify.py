@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="subscription",
             name="wildcard_mentions_notify",
-            field=models.NullBooleanField(default=None),
+            field=models.BooleanField(null=True, default=None),
         ),
     ]
