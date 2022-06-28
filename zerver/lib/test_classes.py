@@ -651,9 +651,13 @@ Output:
     def logout(self) -> None:
         self.client.logout()
 
-    def register(self, email: str, password: str, **kwargs: Any) -> "TestHttpResponse":
-        self.client_post("/accounts/home/", {"email": email}, **kwargs)
-        return self.submit_reg_form_for_user(email, password, **kwargs)
+    def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
+        response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"/accounts/send_confirm/{email}")
+        response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
 
     def submit_reg_form_for_user(
         self,
