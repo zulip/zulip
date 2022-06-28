@@ -3,6 +3,7 @@ from typing import Iterable, Optional, Tuple
 from django.conf import settings
 
 from zerver.lib.bulk_create import bulk_create_users
+from zerver.lib.user_groups import create_system_user_groups_for_realm
 from zerver.models import (
     Realm,
     RealmAuditLog,
@@ -25,6 +26,7 @@ def create_internal_realm() -> None:
         realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
     )
     RealmUserDefault.objects.create(realm=realm)
+    create_system_user_groups_for_realm(realm)
 
     # Create some client objects for common requests.  Not required;
     # just ensures these get low IDs in production, and in development
