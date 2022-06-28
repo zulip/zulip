@@ -22,6 +22,7 @@ def process_unsubscribe(
     except ConfirmationKeyException:
         return render(request, "zerver/unsubscribe_link_error.html")
 
+    assert isinstance(user_profile, UserProfile)
     unsubscribe_function(user_profile)
     context = common_context(user_profile)
     context.update(subscription_type=subscription_type)
