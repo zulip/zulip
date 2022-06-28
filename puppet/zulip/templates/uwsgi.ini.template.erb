@@ -38,8 +38,10 @@ harakiri=20
 
 
 
-# Size of HTTP headers to read
-buffer-size=<%= @uwsgi_buffer_size %>
+# Default buffer for client HTTP headers is 4k, and nginx gets a 502
+# if the client sends more.  Set this high; nginx limits headers to
+# 32k, and will 400 requests with more than that.
+buffer-size=65535
 
 # The master process will buffer requests with bodies longer than 4096
 # bytes, freeing up workers from hanging around waiting to read them.
