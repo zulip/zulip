@@ -2224,7 +2224,7 @@ class StreamAdminTest(ZulipTestCase):
         if cache_count is not None:
             self.assert_length(cache_tries, cache_count)
 
-        # If the removal succeeded, then assert that Cordelia is no longer subscribed.
+        # If the removal succeeded, assert all target users are no longer subscribed.
         if result.status_code not in [400]:
             subbed_users = self.users_subscribed_to_stream(stream_name, user_profile.realm)
             for user in target_users:
