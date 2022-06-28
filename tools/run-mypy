@@ -28,12 +28,16 @@ parser.add_argument(
 parser.add_argument(
     "-a", "--all", action="store_true", help="check all files, bypassing the default exclude list"
 )
+parser.add_argument("-d", "--use-daemon", action="store_true", help="run mypy daemon instead")
 add_provision_check_override_param(parser)
 parser.add_argument("--quiet", action="store_true", help="suppress mypy summary output")
 args = parser.parse_args()
 assert_provisioning_status_ok(args.skip_provision_check)
 
-command_name = "mypy"
+if args.use_daemon:
+    command_name = "dmypy"
+else:
+    command_name = "mypy"
 
 # Use zulip-py3-venv's mypy if it's available.
 VENV_DIR = "/srv/zulip-py3-venv"
@@ -69,6 +73,9 @@ if not python_files and not pyi_files:
     sys.exit(0)
 
 mypy_args: List[str] = []
+# --no-error-summary is a mypy flag that comes after all dmypy options
+if args.use_daemon:
+    mypy_args += ["run", "--"]
 if args.quiet:
     mypy_args += ["--no-error-summary"]
 mypy_args += ["--", *python_files, *pyi_files]
