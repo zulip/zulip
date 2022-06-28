@@ -190,11 +190,14 @@ def maybe_send_to_registration(
     if multiuse_object_key:
         from_multiuse_invite = True
         try:
-            multiuse_obj = get_object_from_key(multiuse_object_key, [Confirmation.MULTIUSE_INVITE])
+            confirmation_obj = get_object_from_key(
+                multiuse_object_key, [Confirmation.MULTIUSE_INVITE]
+            )
         except ConfirmationKeyException as exception:
             return render_confirmation_key_error(request, exception)
 
-        assert multiuse_obj is not None
+        assert isinstance(confirmation_obj, MultiuseInvite)
+        multiuse_obj = confirmation_obj
         if realm != multiuse_obj.realm:
             return render(request, "confirmation/link_does_not_exist.html", status=404)
 
