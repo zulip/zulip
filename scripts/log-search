@@ -330,7 +330,7 @@ def passes_filters(
         return False
     if re.match(r"/(json|api/v1)/messages($|\?|/)", path) and not args.messages:
         return False
-    if path in ("/api/v1/users/me/presence", "/json/users/me/presence") and not args.messages:
+    if path in ("/api/v1/users/me/presence", "/json/users/me/presence") and not args.presence:
         return False
     if path.startswith(("/api/v1/report/", "/json/report/")) and not args.report:
         return False
