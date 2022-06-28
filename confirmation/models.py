@@ -4,7 +4,7 @@ __revision__ = "$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $"
 import datetime
 import secrets
 from base64 import b32encode
-from typing import List, Mapping, Optional, Protocol, Union
+from typing import List, Mapping, Optional, Union
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -19,14 +19,6 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
-
-
-class HasRealmObject(Protocol):
-    realm: Realm
-
-
-class OptionalHasRealmObject(Protocol):
-    realm: Optional[Realm]
 
 
 class ConfirmationKeyException(Exception):
@@ -82,7 +74,7 @@ def get_object_from_key(
 
 
 def create_confirmation_link(
-    obj: Union[Realm, HasRealmObject, OptionalHasRealmObject],
+    obj: ConfirmationObjT,
     confirmation_type: int,
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
@@ -92,10 +84,10 @@ def create_confirmation_link(
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    realm = None
+    realm: Optional[Realm]
     if isinstance(obj, Realm):
         realm = obj
-    elif hasattr(obj, "realm"):
+    else:
         realm = obj.realm
 
     current_time = timezone_now()
