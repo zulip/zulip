@@ -7,6 +7,9 @@ To run a Zulip server, you will need:
   - Ubuntu 20.04
   - Ubuntu 22.04
   - Debian 11
+- A supported CPU architecture:
+  - x86-64
+  - aarch64
 - At least 2 GB RAM, and 10 GB disk space
   - If you expect 100+ users: 4 GB RAM, and 2 CPUs
   - If you intend to [upgrade from Git][upgrade-from-git]: 3 GB RAM, or
