@@ -12,12 +12,10 @@
         <button type="button" class="button no-style user-status-value">
             {{#if emoji.emoji_alt_code}}
                 <div class="emoji_alt_code">&nbsp:{{emoji.emoji_name}}:</div>
-            {{else}}
-                {{#if emoji.url}}
+            {{else if emoji.url}}
                 <img src="{{emoji.url}}" class="emoji status_emoji" />
-                {{else}}
+            {{else}}
                 <div class="emoji status_emoji emoji-{{emoji.emoji_code}}"></div>
-                {{/if}}
             {{/if}}
             {{status_text}}
         </button>

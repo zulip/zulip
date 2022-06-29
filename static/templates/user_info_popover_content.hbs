@@ -35,12 +35,10 @@
                         {{bot_owner.full_name}}
                     </span>
                 </li>
-            {{else}}
-                {{#if is_system_bot}}
+            {{else if is_system_bot}}
                 <li>{{#tr}}System bot{{/tr}}</li>
-                {{else}}
+            {{else}}
                 <li>{{#tr}}Bot{{/tr}}</li>
-                {{/if}}
             {{/if}}
         {{else}}
             <li>{{ user_type }}</li>
@@ -88,12 +86,10 @@
                 {{#if status_emoji_info}}
                     {{#if status_emoji_info.emoji_alt_code}}
                         <div class="emoji_alt_code">&nbsp:{{status_emoji_info.emoji_name}}:</div>
-                    {{else}}
-                        {{#if status_emoji_info.url}}
+                    {{else if status_emoji_info.url}}
                         <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
-                        {{else}}
+                    {{else}}
                         <div class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}"></div>
-                        {{/if}}
                     {{/if}}
                 {{/if}}
                 {{status_text}}

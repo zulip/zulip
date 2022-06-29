@@ -2,14 +2,12 @@
 <div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
     {{t "SAVING" }}
 </div>
+{{else if moved}}
+<div class="message_edit_notice auto-select" title="{{#tr}}Moved ({last_edit_timestr}){{/tr}}">
+    {{t "MOVED" }}
+</div>
 {{else}}
-{{#if moved}}
-    <div class="message_edit_notice auto-select" title="{{#tr}}Moved ({last_edit_timestr}){{/tr}}">
-        {{t "MOVED" }}
-    </div>
-{{else}}
-    <div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
-        {{t "EDITED" }}
-    </div>
-{{/if}}
+<div class="message_edit_notice auto-select" title="{{#tr}}Edited ({last_edit_timestr}){{/tr}}">
+    {{t "EDITED" }}
+</div>
 {{/if}}

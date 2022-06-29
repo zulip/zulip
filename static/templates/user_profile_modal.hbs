@@ -56,12 +56,10 @@
                                         <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
                                     {{else if this.is_external_account}}
                                         <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                    {{else}}
-                                        {{#if this.rendered_value}}
+                                    {{else if this.rendered_value}}
                                         <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
-                                        {{else}}
+                                    {{else}}
                                         <div class="value">{{this.value}}</div>
-                                        {{/if}}
                                     {{/if}}
                                 </div>
                             {{/each}}

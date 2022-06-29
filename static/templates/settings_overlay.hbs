@@ -88,10 +88,8 @@
                         <div class="text">{{t "Custom emoji" }}</div>
                         {{#if is_guest}}
                             <i class="locked fa fa-lock" title="{{t 'Guest users cannot edit custom emoji.' }}"></i>
-                        {{else}}
-                            {{#if show_emoji_settings_lock}}
+                        {{else if show_emoji_settings_lock}}
                             <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.'}}"></i>
-                            {{/if}}
                         {{/if}}
                     </li>
                     {{#unless is_guest}}
