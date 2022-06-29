@@ -769,6 +769,9 @@ def process_messages(
                 parent_stream_name = get_stream_name(parent_rc_channel)
 
                 zulip_mention = f"#**{parent_stream_name}>{converted_topic_name}**"
+            else:  # nocoverage
+                logging.info("Failed to map mention '%s' to zulip syntax.", mention)
+                continue
 
             mention_data = {"rc_mention": rc_mention, "zulip_mention": zulip_mention}
             rc_channel_mention_data.append(mention_data)
