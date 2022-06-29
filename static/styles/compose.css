@@ -388,6 +388,24 @@ div[id^="message-edit-send-status"],
 .compose-notifications-content {
     padding: 4px 22px;
     text-align: center;
+
+    .compose_notification_narrow_by_topic {
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .compose-lock-icon,
+    .compose-globe-icon,
+    .hashtag {
+        vertical-align: baseline;
+        line-height: 17px;
+        margin-left: 2px;
+    }
+
+    .hashtag {
+        vertical-align: middle;
+    }
 }
 
 .composition-area {

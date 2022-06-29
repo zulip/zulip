@@ -166,17 +166,25 @@ export function is_window_focused() {
 export function notify_above_composebox(
     note,
     link_class,
+    is_private_stream,
+    is_global_stream,
+    is_stream_message,
     above_composebox_narrow_url,
     link_msg_id,
-    link_text,
+    default_message,
+    message_recipient,
 ) {
     const $notification = $(
         render_compose_notification({
             note,
             link_class,
+            is_private_stream,
+            is_global_stream,
+            is_stream_message,
             above_composebox_narrow_url,
             link_msg_id,
-            link_text,
+            default_message,
+            message_recipient,
         }),
     );
     clear_compose_notifications();
@@ -617,6 +625,9 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
         let reason = get_local_notify_mix_reason(message);
 
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
+        const is_global_stream = stream_data.is_web_public_by_stream_name(message.stream);
+        const is_private_stream = stream_data.is_invite_only_by_stream_name(message.stream);
+        const is_stream_message = message.type === "stream";
 
         if (!reason) {
             if (need_user_to_scroll) {
@@ -634,17 +645,22 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         const link_msg_id = message.id;
         const link_class = "compose_notification_narrow_by_topic";
-        const link_text = $t(
-            {defaultMessage: "Narrow to {message_recipient}"},
+        const default_message = $t({defaultMessage: "Narrow to "});
+        const message_recipient = $t(
+            {defaultMessage: "{message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
 
         notify_above_composebox(
             reason,
             link_class,
+            is_private_stream,
+            is_global_stream,
+            is_stream_message,
             above_composebox_narrow_url,
             link_msg_id,
-            link_text,
+            default_message,
+            message_recipient,
         );
     }
 }
@@ -670,16 +686,24 @@ export function notify_messages_outside_current_search(messages) {
             continue;
         }
         const above_composebox_narrow_url = get_above_composebox_narrow_url(message);
-        const link_text = $t(
-            {defaultMessage: "Narrow to {message_recipient}"},
+        const is_stream_message = message.type === "stream";
+        const is_global_stream = stream_data.is_web_public_by_stream_name(message.stream);
+        const is_private_stream = stream_data.is_invite_only_by_stream_name(message.stream);
+        const default_message = $t({defaultMessage: "Narrow to "});
+        const message_recipient = $t(
+            {defaultMessage: "{message_recipient}"},
             {message_recipient: get_message_header(message)},
         );
         notify_above_composebox(
             $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
             "compose_notification_narrow_by_topic",
+            is_global_stream,
+            is_private_stream,
+            is_stream_message,
             above_composebox_narrow_url,
             message.id,
-            link_text,
+            default_message,
+            message_recipient,
         );
     }
 }
