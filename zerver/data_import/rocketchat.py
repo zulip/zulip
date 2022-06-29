@@ -634,6 +634,11 @@ def process_messages(
             usernames = reactions[react_code]["usernames"]
 
             for username in usernames:
+                if username not in username_to_user_id_map:  # nocoverage
+                    # This can happen with production data when old user names no longer exist. We cannot do
+                    # much about it here so we just ignore the unknown user name.
+                    continue
+
                 rc_user_id = username_to_user_id_map[username]
                 user_id = user_id_mapper.get(rc_user_id)
                 reactions_list.append({"name": name, "user_id": user_id})
