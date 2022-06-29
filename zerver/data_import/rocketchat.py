@@ -370,6 +370,10 @@ def process_message_attachment(
         logging.info("Skipping unknown attachment of message_id: %s", message_id)
         return "", False
 
+    if "type" not in upload:  # nocoverage
+        logging.info("Skipping attachment without type of message_id: %s", message_id)
+        return "", False
+
     upload_file_data = upload_id_to_upload_data_map[upload["_id"]]
     file_name = upload["name"]
     file_ext = f'.{upload["type"].split("/")[-1]}'
