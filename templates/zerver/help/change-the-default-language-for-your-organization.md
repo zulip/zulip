@@ -2,9 +2,7 @@
 
 {!admin-only.md!}
 
-Zulip has been translated or partially translated into dozens of
-languages. You can see which languages Zulip supports, and help add
-support for new languages on **[Transifex](https://www.transifex.com/zulip/zulip/)**.
+{!translation-project-info.md!}
 
 Each user can use Zulip with [their preferred
 language](/help/change-your-language). In addition, if your
@@ -21,13 +19,13 @@ can set the notifications language for the organization. This setting:
   cannot detect their language preferences from their browser,
   including all users [created via the Zulip API][api-create-user].
 
-### Configure the organization notifications language
+## Configure the organization notifications language
 
 {start_tabs}
 
 {settings_tab|organization-settings}
 
-2. Under **Notifications**, change the **Notifications language**.
+1. Under **Notifications**, change the **Notifications language**.
 
 {!save-changes.md!}
 
