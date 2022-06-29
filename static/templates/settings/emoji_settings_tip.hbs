@@ -1,13 +1,11 @@
 {{#if is_guest}}
     <div class='tip'>{{t "Guests cannot edit custom emoji." }}</div>
-{{else}}
-    {{#if (eq realm_add_custom_emoji_policy policy_values.by_admins_only.code) }}
+{{else if (eq realm_add_custom_emoji_policy policy_values.by_admins_only.code) }}
     <div class='tip'>{{t "Only organization administrators can add custom emoji in this organization." }}</div>
-    {{else if (eq realm_add_custom_emoji_policy policy_values.by_moderators_only.code)}}
+{{else if (eq realm_add_custom_emoji_policy policy_values.by_moderators_only.code)}}
     <div class='tip'>{{t 'Only organization administrators and moderators can add custom emoji in this organization.'}}</div>
-    {{else if (eq realm_add_custom_emoji_policy policy_values.by_full_members.code)}}
+{{else if (eq realm_add_custom_emoji_policy policy_values.by_full_members.code)}}
     <div class='tip'>{{t 'Only organization full members can add custom emoji in this organization.'}}</div>
-    {{else}}
+{{else}}
     <div class='tip'>{{t "Any member of this organization can add custom emoji." }}</div>
-    {{/if}}
 {{/if}}
