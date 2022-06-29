@@ -3,6 +3,7 @@ import os
 import random
 import secrets
 import subprocess
+import uuid
 from typing import Any, Dict, List, Set, Tuple
 
 import bson
@@ -373,12 +374,22 @@ def process_message_attachment(
     if file_ext.lower() in IMAGE_EXTENSIONS:
         has_image = True
 
+    try:
+        sanitized_name = sanitize_name(file_name)
+    except AssertionError:  # nocoverage
+        logging.info("Replacing invalid attachment name with random uuid: %s", file_name)
+        sanitized_name = uuid.uuid4().hex
+
+    if len(sanitized_name) >= 255:  # nocoverage
+        logging.info("Replacing too long attachment name with random uuid: %s", file_name)
+        sanitized_name = uuid.uuid4().hex
+
     s3_path = "/".join(
         [
             str(realm_id),
             format(random.randint(0, 255), "x"),
             secrets.token_urlsafe(18),
-            sanitize_name(file_name),
+            sanitized_name,
         ]
     )
 
