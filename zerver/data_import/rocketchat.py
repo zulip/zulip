@@ -648,7 +648,15 @@ def process_messages(
     def message_to_dict(message: Dict[str, Any]) -> Dict[str, Any]:
         rc_sender_id = message["u"]["_id"]
         sender_id = user_id_mapper.get(rc_sender_id)
-        content = message["msg"]
+        if "msg" in message:
+            content = message["msg"]
+        else:  # nocoverage
+            content = "This message imported from Rocket.Chat had no body in the data export."
+            logging.info(
+                "Message %s contains no message content: %s",
+                message["_id"],
+                message,
+            )
 
         if message.get("reactions"):
             reactions = list_reactions(message["reactions"])
