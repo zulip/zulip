@@ -5,8 +5,8 @@ import * as stream_data from "./stream_data";
 
 function update_compose_stream_icon(stream_name) {
     const $streamfield = $("#stream_message_recipient_stream");
-    const $globe_icon = $("#compose-globe-icon");
-    const $lock_icon = $("#compose-lock-icon");
+    const $globe_icon = $("#stream-message .compose-globe-icon");
+    const $lock_icon = $("#stream-message .compose-lock-icon");
 
     // Reset state
     $globe_icon.hide();
