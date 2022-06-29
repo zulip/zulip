@@ -21,6 +21,7 @@ from zerver.data_import.rocketchat import (
     process_users,
     rocketchat_data_to_dict,
     separate_channel_private_and_livechat_messages,
+    truncate_name,
 )
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.user_handler import UserHandler
@@ -1031,3 +1032,8 @@ class RocketChatImporter(ZulipTestCase):
         )
 
         self.verify_emoji_code_foreign_keys()
+
+    def test_truncate_name(self) -> None:
+        self.assertEqual("foobar", truncate_name("foobar", 42, 60))
+
+        self.assertEqual("1234567890 [42]", truncate_name("12345678901234567890", 42, 15))
