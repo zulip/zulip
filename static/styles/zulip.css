@@ -375,10 +375,10 @@ p.n-margin {
 
 .dropdown-menu .org-head .org-plan {
     text-align: center;
-    line-height: 2.5em;
-    font-size: medium;
+    font-size: 15px;
+    padding-top: 10px;
     font-weight: 200px;
-    color: hsl(0, 0%, 52%);
+    color: hsl(226, 82%, 60%);
 }
 
 .dropdown-menu .org-head .text {
