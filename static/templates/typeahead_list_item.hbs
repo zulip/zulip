@@ -5,21 +5,17 @@
         <span class='emoji emoji-{{ emoji_code }}'></span>
     {{/if}}
     &nbsp;&nbsp;
-{{else}}
-    {{#if is_person}}
-        {{#if user_circle_class}}
-        <span class="{{user_circle_class}} user_circle"></span>
-        {{/if}}
-        {{#if has_image}}
-        <img class="typeahead-image" src="{{ img_src }}" />
-        {{else}}
-        <span class='typeahead-image fa fa-bullhorn no-presence-circle'></span>
-        {{/if}}
-    {{else}}
-        {{#if is_user_group}}
-        <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>
-        {{/if}}
+{{else if is_person}}
+    {{#if user_circle_class}}
+    <span class="{{user_circle_class}} user_circle"></span>
     {{/if}}
+    {{#if has_image}}
+    <img class="typeahead-image" src="{{ img_src }}" />
+    {{else}}
+    <span class='typeahead-image fa fa-bullhorn no-presence-circle'></span>
+    {{/if}}
+{{else if is_user_group}}
+    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>
 {{/if}}
 <strong>
     {{~ primary ~}}

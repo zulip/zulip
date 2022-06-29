@@ -963,8 +963,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
         expected_value =
-            `        <span class="user_circle_empty user_circle"></span>\n` +
-            `        <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
+            `    <span class="user_circle_empty user_circle"></span>\n` +
+            `    <img class="typeahead-image" src="http://zulip.zulipdev.com/avatar/${othello.user_id}?s&#x3D;50" />\n` +
             `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
             `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
         assert.equal(actual_value, expected_value);
@@ -972,7 +972,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
         fake_this = {completing: "mention", token: "hamletcharacters"};
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
         expected_value =
-            '        <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
+            '    <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
 
         // matching
