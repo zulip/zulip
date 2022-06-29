@@ -135,11 +135,22 @@ def process_users(
             bot_user["bot_owner"] = realm_owners[0]
 
 
+def truncate_name(name: str, name_id: int, max_length: int = 60) -> str:
+    if len(name) > max_length:
+        name_id_suffix = f" [{name_id}]"
+        name = name[0 : max_length - len(name_id_suffix)] + name_id_suffix
+    return name
+
+
 def get_stream_name(rc_channel: Dict[str, Any]) -> str:
     if rc_channel.get("teamMain"):
-        return f'[TEAM] {rc_channel["name"]}'
+        stream_name = f'[TEAM] {rc_channel["name"]}'
     else:
-        return rc_channel["name"]
+        stream_name = rc_channel["name"]
+
+    stream_name = truncate_name(stream_name, rc_channel["_id"])
+
+    return stream_name
 
 
 def convert_channel_data(
@@ -575,15 +586,15 @@ def get_topic_name(
         return ""
     elif message["rid"] in dsc_id_to_dsc_map:
         dsc_channel_name = dsc_id_to_dsc_map[message["rid"]]["fname"]
-        return f"{dsc_channel_name} (Imported from Rocket.Chat)"
+        return truncate_name(f"{dsc_channel_name} (Imported from Rocket.Chat)", message["rid"])
     elif message.get("replies"):
         # Message is the start of a thread
         thread_id = thread_id_mapper.get(message["_id"])
-        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+        return truncate_name(f"Thread {thread_id} (Imported from Rocket.Chat)", message["_id"])
     elif message.get("tmid"):
         # Message is a part of a thread
         thread_id = thread_id_mapper.get(message["tmid"])
-        return f"Thread {thread_id} (Imported from Rocket.Chat)"
+        return truncate_name(f"Thread {thread_id} (Imported from Rocket.Chat)", message["tmid"])
     else:
         # Normal channel message
         return "Imported from Rocket.Chat"
