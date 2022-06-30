@@ -1,4 +1,5 @@
 import urllib
+from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
@@ -16,6 +17,7 @@ from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
+from corporate.models import Customer, CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
@@ -127,6 +129,14 @@ VALID_BILLING_METHODS = [
     "send_invoice",
     "charge_automatically",
 ]
+
+
+@dataclass
+class PlanData:
+    customer: Optional[Customer] = None
+    current_plan: Optional[CustomerPlan] = None
+    licenses: Optional[int] = None
+    licenses_used: Optional[int] = None
 
 
 @require_server_admin
@@ -277,27 +287,30 @@ def support(
             except ValidationError:
                 users.update(UserProfile.objects.filter(full_name__iexact=key_word))
 
+        plan_data: Dict[int, PlanData] = {}
         for realm in realms:
-            realm.customer = get_customer_by_realm(realm)
-
             current_plan = get_current_plan_by_realm(realm)
+            plan_data[realm.id] = PlanData(
+                customer=get_customer_by_realm(realm),
+                current_plan=current_plan,
+            )
             if current_plan is not None:
                 new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
                     current_plan, timezone_now()
                 )
                 if last_ledger_entry is not None:
                     if new_plan is not None:
-                        realm.current_plan = new_plan
+                        plan_data[realm.id].current_plan = new_plan
                     else:
-                        realm.current_plan = current_plan
-                    realm.current_plan.licenses = last_ledger_entry.licenses
-                    realm.current_plan.licenses_used = get_latest_seat_count(realm)
-
+                        plan_data[realm.id].current_plan = current_plan
+                    plan_data[realm.id].licenses = last_ledger_entry.licenses
+                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
         # full_names can have , in them
         users.update(UserProfile.objects.filter(full_name__iexact=query))
 
         context["users"] = users
         context["realms"] = realms
+        context["plan_data"] = plan_data
 
         confirmations: List[Dict[str, Any]] = []
 
