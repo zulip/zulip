@@ -1,25 +1,37 @@
 # View and edit your message drafts
 
-When you close the compose box, Zulip stores the content in a draft, so that
-you never lose your work. Drafts are saved for **30 days**.
+When you close the compose box, Zulip stores the content in a draft,
+so that you never lose your work. Drafts are saved for 30 days.
 
 !!! warn ""
 
-    **Note:** Drafts are local to your client. For
-    example, drafts you create in the web application will not be accessible
-    from the mobile app, and vice versa.
+    **Note**: Drafts are local to your client, and are not synced to
+    other devices and browsers.
 
-## Desktop and web
+## Save a draft
 
-To **save a draft**, simply close the compose box. You can hit `Esc`, click
+{start_tabs}
+
+{tab|desktop-web}
+
+Simply close the compose box. You can hit `Esc`, click
 the <i class="fa fa-remove"></i> in the upper right corner of the
 compose box, or click on an empty part of the app.
 
-To **view your drafts**, click on `Drafts` in the left sidebar.
-From there, you can **delete** or **restore** any of your drafts.
+{end_tabs}
+
+## View your drafts
+
+{start_tabs}
+
+{tab|desktop-web}
+
+Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
+From there, you can delete or restore any of your drafts.
+
+{end_tabs}
 
 !!! tip ""
 
-    Use `d` to bring up the list of drafts. From there you can use the arrow
-    keys, `Backspace`/`Delete`, or `Enter` to restore. A common pattern is `d` +
-    `Enter` to restore the last draft.
+    Use `d` to bring up the list of drafts. Check out other keyboard shortcuts
+    related to drafts [here](/help/keyboard-shortcuts#drafts)
