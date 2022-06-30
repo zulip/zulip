@@ -71,6 +71,7 @@ export function set_name_in_mention_element(element, name) {
 }
 
 export const update_elements = ($content) => {
+    console.log('content: ', JSON.stringify($content, null, 2))
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction($content.text()) === "rtl") {
         $content.addClass("rtl");

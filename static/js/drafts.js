@@ -435,17 +435,28 @@ function show_scheduled_messages() {
     const scheduled_messages = page_params.scheduled_messages;
     console.log('scheduled messages: ', JSON.stringify(scheduled_messages, null, 2))
 
-    let html = [];
+    let html = '';
 
     $(".drafts-list").html('')
 
     for(const message of scheduled_messages) {
-        const message_template = render_draft()
+        const stream_color = stream_data.get_color(message.stream);
 
-        html.push(message_template)
+        const message_template = render_draft({
+            is_stream: message.type === 'stream',
+            stream_name: message.stream,
+            topic: message.topic,
+            time_stamp: message.deliver_at,
+            content: `<p>${message.content}</p>`,
+            stream_color: stream_color,
+            dark_background: color_class.get_css_class(stream_color)
+        })
+        console.log('template: ', message_template)
+
+        html += message_template
     }
 
-    $(".drafts-list").appendTo(html)
+    $(".drafts-list").html(html)
 }
 
 export function launch() {
@@ -528,6 +539,20 @@ export function launch() {
 
         $(".scheduled-messages").on("click", function () {
             show_scheduled_messages()
+        });
+
+        $(".normal-drafts").on("click", function () {
+            const drafts = format_drafts(draft_model.get());
+
+            let drafts_list = ''
+            
+            for(const draft of drafts) {
+                const draft_template = render_draft(draft);
+
+                drafts_list += draft_template;
+            }
+
+            $(".drafts-list").html(drafts_list)
         })
     }
 
