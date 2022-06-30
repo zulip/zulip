@@ -325,7 +325,12 @@ ul {
     }
 
     .col-left {
-        max-width: 60%;
+        padding: 0 10px 0 0;
+        word-break: break-all;
+    }
+
+    .col-right {
+        width: fit-content;
     }
 
     &.no-fields {
