@@ -6,6 +6,7 @@ import tippy from "tippy.js";
 
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
+import render_draft from "../templates/draft.hbs"
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -22,6 +23,7 @@ import * as markdown from "./markdown";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import { page_params } from "./page_params";
 import * as people from "./people";
 import * as rendered_markdown from "./rendered_markdown";
 import * as stream_data from "./stream_data";
@@ -428,6 +430,24 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
     }
 }
 
+function show_scheduled_messages() {
+    console.log('show scheduled messages')
+    const scheduled_messages = page_params.scheduled_messages;
+    console.log('scheduled messages: ', JSON.stringify(scheduled_messages, null, 2))
+
+    let html = [];
+
+    $(".drafts-list").html('')
+
+    for(const message of scheduled_messages) {
+        const message_template = render_draft()
+
+        html.push(message_template)
+    }
+
+    $(".drafts-list").appendTo(html)
+}
+
 export function launch() {
     function format_drafts(data) {
         for (const [id, draft] of Object.entries(data)) {
@@ -505,6 +525,10 @@ export function launch() {
 
             remove_draft($draft_row);
         });
+
+        $(".scheduled-messages").on("click", function () {
+            show_scheduled_messages()
+        })
     }
 
     function current_recipient_data() {

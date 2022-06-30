@@ -101,6 +101,13 @@ export function schedule_message(request = compose.create_message_object(), succ
     want slash commands to be blocking in nature. */
     $("#compose-textarea").prop("disabled", true);
 
+    if(!page_params.scheduled_messages) {
+        page_params.scheduled_messages = []
+    }
+    page_params.scheduled_messages.push(request)
+
+    console.log('Scheduled messages: ', JSON.stringify(page_params.scheduled_messages, null, 2))
+
     const future_message = true;
     transmit.send_message(request, success, error, future_message);
 }
