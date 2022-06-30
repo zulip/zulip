@@ -260,6 +260,12 @@ ul {
         justify-content: space-between;
     }
 
+    @media (width < $ml_min) {
+        .top {
+            flex-direction: column-reverse;
+        }
+    }
+
     #avatar {
         display: inline-block;
         height: 180px;
@@ -298,6 +304,7 @@ ul {
 
     #user-status {
         text-align: center;
+        margin: 0 0 10px;
     }
 
     hr {
