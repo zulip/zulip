@@ -726,8 +726,8 @@ class Command(BaseCommand):
                 hint="Or drink, if you'd prefer",
             )
             field_data: ProfileFieldData = {
-                "vim": {"text": "Vim", "order": "1"},
-                "emacs": {"text": "Emacs", "order": "2"},
+                "0": {"text": "Vim", "order": "1"},
+                "1": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
                 zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
@@ -754,7 +754,7 @@ class Command(BaseCommand):
                     {"id": phone_number.id, "value": "+1-234-567-8901"},
                     {"id": biography.id, "value": "Betrayer of Othello."},
                     {"id": favorite_food.id, "value": "Apples"},
-                    {"id": favorite_editor.id, "value": "emacs"},
+                    {"id": favorite_editor.id, "value": "1"},
                     {"id": birthday.id, "value": "2000-01-01"},
                     {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                     {"id": mentor.id, "value": [hamlet.id]},
@@ -770,7 +770,7 @@ class Command(BaseCommand):
                         "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                     },
                     {"id": favorite_food.id, "value": "Dark chocolate"},
-                    {"id": favorite_editor.id, "value": "vim"},
+                    {"id": favorite_editor.id, "value": "0"},
                     {"id": birthday.id, "value": "1900-01-01"},
                     {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                     {"id": mentor.id, "value": [iago.id]},

@@ -608,7 +608,7 @@ class PermissionTest(ZulipTestCase):
             "Phone number": "short text data",
             "Biography": "long text data",
             "Favorite food": "short text data",
-            "Favorite editor": "vim",
+            "Favorite editor": "0",
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],

@@ -1624,7 +1624,7 @@ paths:
                                         "name": "Favorite editor",
                                         "type": 3,
                                         "hint": "",
-                                        "field_data": '{"vim":{"text":"Vim","order":"1"},"emacs":{"text":"Emacs","order":"2"}}',
+                                        "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
                                       },
                                       {
@@ -6243,7 +6243,7 @@ paths:
                               "is_guest": false,
                               "profile_data":
                                 {
-                                  "4": {"value": "vim"},
+                                  "4": {"value": "0"},
                                   "2":
                                     {
                                       "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
@@ -7753,7 +7753,7 @@ paths:
                               "name": "Favorite editor",
                               "type": 3,
                               "hint": "",
-                              "field_data": '{"vim":{"text":"Vim","order":"1"},"emacs":{"text":"Emacs","order":"2"}}',
+                              "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
                             },
                             {
@@ -8482,7 +8482,7 @@ paths:
                             "is_guest": false,
                             "profile_data":
                               {
-                                "4": {"value": "vim"},
+                                "4": {"value": "0"},
                                 "2":
                                   {
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
@@ -8572,7 +8572,7 @@ paths:
                             "is_guest": false,
                             "profile_data":
                               {
-                                "4": {"value": "vim"},
+                                "4": {"value": "0"},
                                 "2":
                                   {
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
@@ -8666,7 +8666,7 @@ paths:
                 items:
                   type: object
               example:
-                [{"id": 4, "value": "vim"}, {"id": 5, "value": "1909-04-05"}]
+                [{"id": 4, "value": "0"}, {"id": 5, "value": "1909-04-05"}]
           required: false
 
       responses:

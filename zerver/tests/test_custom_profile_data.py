@@ -106,8 +106,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "python": {"text": "Python"},
-                "java": {"text": "Java"},
+                "0": {"text": "Python"},
+                "1": {"text": "Java"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -115,8 +115,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "python": {"text": "Python", "order": ""},
-                "java": {"text": "Java", "order": "2"},
+                "0": {"text": "Python", "order": ""},
+                "1": {"text": "Java", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -125,7 +125,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["field_data"] = orjson.dumps(
             {
                 "": {"text": "Python", "order": "1"},
-                "java": {"text": "Java", "order": "2"},
+                "1": {"text": "Java", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -133,8 +133,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "python": {"text": "Python", "order": 1},
-                "java": {"text": "Java", "order": "2"},
+                "0": {"text": "Python", "order": 1},
+                "1": {"text": "Java", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -146,8 +146,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "python": {"text": "Duplicate", "order": "1"},
-                "java": {"text": "Duplicate", "order": "2"},
+                "0": {"text": "Duplicate", "order": "1"},
+                "1": {"text": "Duplicate", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -155,8 +155,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
-                "python": {"text": "Python", "order": "1"},
-                "java": {"text": "Java", "order": "2"},
+                "0": {"text": "Python", "order": "1"},
+                "1": {"text": "Java", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -497,8 +497,8 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         field_data = orjson.dumps(
             {
-                "vim": "Vim",
-                "emacs": {"order": "2", "text": "Emacs"},
+                "0": "Vim",
+                "1": {"order": "2", "text": "Emacs"},
             }
         ).decode()
         result = self.client_patch(
@@ -509,9 +509,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         field_data = orjson.dumps(
             {
-                "vim": {"order": "1", "text": "Vim"},
-                "emacs": {"order": "2", "text": "Emacs"},
-                "notepad": {"order": "3", "text": "Notepad"},
+                "0": {"order": "1", "text": "Vim"},
+                "1": {"order": "2", "text": "Emacs"},
+                "2": {"order": "3", "text": "Notepad"},
             }
         ).decode()
         result = self.client_patch(
@@ -594,7 +594,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
-            ("Favorite editor", "vim"),
+            ("Favorite editor", "0"),
             ("Birthday", "1909-03-05"),
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
@@ -667,7 +667,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data = [
             {
                 "id": field.id,
-                "value": "emacs",
+                "value": "1",
             }
         ]
 
@@ -732,23 +732,23 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         self.assertTrue(
-            CustomProfileFieldValue.objects.filter(field_id=field.id, value="vim").exists()
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="0").exists()
         )
         self.assertTrue(
-            CustomProfileFieldValue.objects.filter(field_id=field.id, value="emacs").exists()
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
 
-        new_options = {"emacs": {"text": "Emacs", "order": "1"}}
+        new_options = {"1": {"text": "Emacs", "order": "1"}}
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "Favorite editor", "field_data": orjson.dumps(new_options).decode()},
         )
         self.assert_json_success(result)
         self.assertFalse(
-            CustomProfileFieldValue.objects.filter(field_id=field.id, value="vim").exists()
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="0").exists()
         )
         self.assertTrue(
-            CustomProfileFieldValue.objects.filter(field_id=field.id, value="emacs").exists()
+            CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
 
 
