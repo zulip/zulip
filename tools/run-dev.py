@@ -338,7 +338,7 @@ def print_listeners() -> None:
     print()
 
 
-children = []
+children: List["subprocess.Popen[bytes]"] = []
 
 
 async def serve() -> None:
