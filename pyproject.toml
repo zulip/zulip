@@ -38,6 +38,10 @@ show_error_codes = true
 # Warn of unreachable or redundant code.
 warn_unreachable = true
 
+# dmypy enables local_partial_types implicitly. We need mypy to align
+# with this behavior.
+local_partial_types = true
+
 [[tool.mypy.overrides]]
 module = ["zproject.configured_settings", "zproject.settings"]
 no_implicit_reexport = false
