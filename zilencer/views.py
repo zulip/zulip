@@ -1,11 +1,12 @@
 import datetime
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
+from django.db.models import Model
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -314,10 +315,13 @@ def validate_incoming_table_data(
         last_id = row["id"]
 
 
+ModelT = TypeVar("ModelT", bound=Model)
+
+
 def batch_create_table_data(
     server: RemoteZulipServer,
-    model: Any,
-    row_objects: Union[List[RemoteRealmCount], List[RemoteInstallationCount]],
+    model: Type[ModelT],
+    row_objects: List[ModelT],
 ) -> None:
     BATCH_SIZE = 1000
     while len(row_objects) > 0:
@@ -388,7 +392,7 @@ def remote_server_post_analytics(
     if realmauditlog_rows is not None:
         validate_incoming_table_data(server, RemoteRealmAuditLog, realmauditlog_rows)
 
-    row_objects = [
+    remote_realm_counts = [
         RemoteRealmCount(
             property=row["property"],
             realm_id=row["realm"],
@@ -400,9 +404,9 @@ def remote_server_post_analytics(
         )
         for row in realm_counts
     ]
-    batch_create_table_data(server, RemoteRealmCount, row_objects)
+    batch_create_table_data(server, RemoteRealmCount, remote_realm_counts)
 
-    row_objects = [
+    remote_installation_counts = [
         RemoteInstallationCount(
             property=row["property"],
             remote_id=row["id"],
@@ -413,10 +417,10 @@ def remote_server_post_analytics(
         )
         for row in installation_counts
     ]
-    batch_create_table_data(server, RemoteInstallationCount, row_objects)
+    batch_create_table_data(server, RemoteInstallationCount, remote_installation_counts)
 
     if realmauditlog_rows is not None:
-        row_objects = [
+        remote_realm_audit_logs = [
             RemoteRealmAuditLog(
                 realm_id=row["realm"],
                 remote_id=row["id"],
@@ -430,7 +434,7 @@ def remote_server_post_analytics(
             )
             for row in realmauditlog_rows
         ]
-        batch_create_table_data(server, RemoteRealmAuditLog, row_objects)
+        batch_create_table_data(server, RemoteRealmAuditLog, remote_realm_audit_logs)
 
     return json_success(request)
 
