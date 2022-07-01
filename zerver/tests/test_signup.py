@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.core.mail.message import EmailMultiAlternatives
 from django.http import HttpRequest, HttpResponse
 from django.test import Client, override_settings
 from django.urls import reverse
@@ -1821,6 +1822,8 @@ earl-test@zulip.com""",
         self.check_sent_emails(["newuser@zulip.com"])
         from django.core.mail import outbox
 
+        assert isinstance(outbox[0], EmailMultiAlternatives)
+        assert isinstance(outbox[0].alternatives[0][0], str)
         body = self.normalize_string(outbox[0].alternatives[0][0])
 
         # Verify that one can't get Zulip to send invitation emails

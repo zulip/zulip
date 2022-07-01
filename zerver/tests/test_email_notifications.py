@@ -11,6 +11,7 @@ import lxml.html
 import orjson
 from django.conf import settings
 from django.core import mail
+from django.core.mail.message import EmailMultiAlternatives
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.config import LDAPSearch
@@ -467,6 +468,7 @@ class TestMissedMessages(ZulipTestCase):
         else:
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
+        assert isinstance(msg, EmailMultiAlternatives)
         from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
         self.assert_length(mail.outbox, 1)
         if send_as_user:
@@ -478,6 +480,7 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn(msg.reply_to[0], reply_to_emails)
         if verify_html_body:
             for text in verify_body_include:
+                assert isinstance(msg.alternatives[0][0], str)
                 self.assertIn(text, self.normalize_string(msg.alternatives[0][0]))
         else:
             for text in verify_body_include:
@@ -1132,12 +1135,16 @@ class TestMissedMessages(ZulipTestCase):
             ],
         )
 
+        assert isinstance(mail.outbox[0], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[0].alternatives[0][0], str)
         self.assertIn("Iago: @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
         # If message content starts with <p> tag the sender name is appended inside the <p> tag.
         self.assertIn(
             '<p><b>Iago</b>: <span class="user-mention"', mail.outbox[0].alternatives[0][0]
         )
 
+        assert isinstance(mail.outbox[1], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[1].alternatives[0][0], str)
         self.assertIn("Iago: * 1\n *2\n\n--\nYou are receiving", mail.outbox[1].body)
         # If message content does not starts with <p> tag sender name is appended before the <p> tag
         self.assertIn(
@@ -1145,6 +1152,8 @@ class TestMissedMessages(ZulipTestCase):
             mail.outbox[1].alternatives[0][0],
         )
 
+        assert isinstance(mail.outbox[2], EmailMultiAlternatives)
+        assert isinstance(mail.outbox[2].alternatives[0][0], str)
         self.assertEqual("Hello\n\n--\n\nReply", mail.outbox[2].body[:16])
         # Sender name is not appended to message for PM missed messages
         self.assertIn(
