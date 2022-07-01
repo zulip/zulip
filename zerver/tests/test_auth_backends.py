@@ -2366,7 +2366,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post("/complete/saml/", post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
-        self.assertTrue(m.output != "")
+        self.assert_length(m.output, 2)
 
         with self.assertLogs(self.logger_string, level="INFO") as m:
             relay_state = orjson.dumps(
@@ -2378,7 +2378,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post("/complete/saml/", post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
-        self.assertTrue(m.output != "")
+        self.assert_length(m.output, 2)
 
         with self.assertLogs(self.logger_string, level="INFO") as m:
             relay_state = orjson.dumps(
@@ -2393,7 +2393,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             result = self.client_post("/complete/saml/", post_params)
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
-        self.assertTrue(m.output != "")
+        self.assert_length(m.output, 2)
 
     def test_social_auth_complete_no_subdomain(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:
@@ -2471,7 +2471,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             self.assertEqual(result.status_code, 302)
             self.assertIn("login", result["Location"])
 
-        self.assertTrue(m.output != "")
+        self.assert_length(m.output, 1)
 
     def test_social_auth_saml_bad_idp_param_on_login_page(self) -> None:
         with self.assertLogs(self.logger_string, level="INFO") as m:
