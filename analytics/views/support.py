@@ -1,7 +1,7 @@
 import urllib
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -68,7 +68,7 @@ def get_plan_name(plan_type: int) -> str:
 
 
 def get_confirmations(
-    types: List[int], object_ids: List[int], hostname: Optional[str] = None
+    types: List[int], object_ids: Iterable[int], hostname: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     lowest_datetime = timezone_now() - timedelta(days=30)
     confirmations = Confirmation.objects.filter(
@@ -301,15 +301,19 @@ def support(
 
         confirmations: List[Dict[str, Any]] = []
 
-        preregistration_users = PreregistrationUser.objects.filter(email__in=key_words)
+        preregistration_user_ids = [
+            user.id for user in PreregistrationUser.objects.filter(email__in=key_words)
+        ]
         confirmations += get_confirmations(
             [Confirmation.USER_REGISTRATION, Confirmation.INVITATION, Confirmation.REALM_CREATION],
-            preregistration_users,
+            preregistration_user_ids,
             hostname=request.get_host(),
         )
 
-        multiuse_invites = MultiuseInvite.objects.filter(realm__in=realms)
-        confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invites)
+        multiuse_invite_ids = [
+            invite.id for invite in MultiuseInvite.objects.filter(realm__in=realms)
+        ]
+        confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invite_ids)
 
         confirmations += get_confirmations(
             [Confirmation.REALM_REACTIVATION], [realm.id for realm in realms]
