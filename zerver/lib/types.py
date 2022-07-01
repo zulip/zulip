@@ -273,3 +273,9 @@ class RealmPlaygroundDict(TypedDict):
     name: str
     pygments_language: str
     url_prefix: str
+
+
+class SCIMConfigDict(TypedDict):
+    bearer_token: str
+    scim_client_name: str
+    name_formatted_included: bool
