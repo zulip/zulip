@@ -14,9 +14,9 @@ from zerver.views.auth import create_preregistration_user
 from zerver.views.registration import accounts_register
 
 
-# This is used only by the Puppeteer test in 01-realm-creation.js.
+# This is used only by the Puppeteer test in realm-creation.ts.
 def confirmation_key(request: HttpRequest) -> HttpResponse:
-    return json_success(request, data=request.session.get("confirmation_key"))
+    return json_success(request, data=request.session["confirmation_key"])
 
 
 def modify_postdata(request: HttpRequest, **kwargs: Any) -> None:
