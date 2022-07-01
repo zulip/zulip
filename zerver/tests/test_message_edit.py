@@ -101,9 +101,9 @@ class EditMessageTestCase(ZulipTestCase):
 
         self.login(user_email)
         stream = self.make_stream(old_stream)
-        new_stream = self.make_stream(new_stream)
+        stream_to = self.make_stream(new_stream)
         self.subscribe(user_profile, stream.name)
-        self.subscribe(user_profile, new_stream.name)
+        self.subscribe(user_profile, stream_to.name)
         msg_id = self.send_stream_message(
             user_profile, stream.name, topic_name=topic, content="First"
         )
@@ -113,7 +113,7 @@ class EditMessageTestCase(ZulipTestCase):
 
         self.send_stream_message(user_profile, stream.name, topic_name=topic, content="third")
 
-        return (user_profile, stream, new_stream, msg_id, msg_id_lt)
+        return (user_profile, stream, stream_to, msg_id, msg_id_lt)
 
 
 class EditMessagePayloadTest(EditMessageTestCase):
