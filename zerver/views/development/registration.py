@@ -1,6 +1,6 @@
 import random
 import string
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -13,6 +13,8 @@ from zerver.models import Realm, UserProfile
 from zerver.views.auth import create_preregistration_user
 from zerver.views.registration import accounts_register
 
+if TYPE_CHECKING:
+    from django.http.request import _ImmutableQueryDict
 
 # This is used only by the Puppeteer test in realm-creation.ts.
 def confirmation_key(request: HttpRequest) -> HttpResponse:
@@ -20,10 +22,11 @@ def confirmation_key(request: HttpRequest) -> HttpResponse:
 
 
 def modify_postdata(request: HttpRequest, **kwargs: Any) -> None:
-    request.POST._mutable = True
+    new_post = request.POST.copy()
     for key, value in kwargs.items():
-        request.POST[key] = value
-    request.POST._mutable = False
+        new_post[key] = value
+    new_post._mutable = False
+    request.POST = cast("_ImmutableQueryDict", new_post)
 
 
 def generate_demo_realm_name() -> str:
