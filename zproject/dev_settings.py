@@ -1,8 +1,9 @@
 import os
 import pwd
-from typing import Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from scripts.lib.zulip_tools import deport
+from zerver.lib.types import SCIMConfigDict
 
 ZULIP_ADMINISTRATOR = "desdemona+admin@zulip.com"
 
@@ -186,7 +187,7 @@ SOCIAL_AUTH_SUBDOMAIN = "auth"
 
 MEMCACHED_USERNAME: Optional[str] = None
 
-SCIM_CONFIG = {
+SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",

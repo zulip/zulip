@@ -5,7 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
-from zerver.lib.types import SAMLIdPConfigDict
+from zerver.lib.types import SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
@@ -272,7 +272,7 @@ RATE_LIMITING_RULES: Dict[str, List[Tuple[int, int]]] = {
 
 FREE_TRIAL_DAYS: Optional[int] = None
 
-SCIM_CONFIG = {
+SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
     "zulip": {
         "bearer_token": "token1234",
         "scim_client_name": "test-scim-client",
