@@ -1263,6 +1263,8 @@ def export_partial_message_files(
             messages_we_received,
         ]
     else:
+        message_queries = []
+
         # We capture most messages here: Messages that were sent by
         # anyone in the export and received by any of the users who we
         # have consent to export.
@@ -1270,6 +1272,7 @@ def export_partial_message_files(
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
         )
+        message_queries.append(messages_we_received)
 
         if consent_message_id is not None:
             # Export with member consent requires some careful handling to make sure
@@ -1288,6 +1291,8 @@ def export_partial_message_files(
                 ),
                 has_usermessage=True,
             )
+
+            message_queries.append(messages_we_received_in_protected_history_streams)
 
         # The above query is missing some messages that consenting
         # users have access to, namely, PMs sent by one of the users
@@ -1308,12 +1313,7 @@ def export_partial_message_files(
             recipient__in=recipient_ids_for_them,
         )
 
-        message_queries = [
-            messages_we_received,
-            messages_we_sent_to_them,
-        ]
-        if consent_message_id is not None:
-            message_queries.append(messages_we_received_in_protected_history_streams)
+        message_queries.append(messages_we_sent_to_them)
 
     all_message_ids: Set[int] = set()
 
