@@ -182,11 +182,13 @@ class TestSCIMUser(SCIMTestCase):
             "totalResults": UserProfile.objects.filter(realm=realm, is_bot=False).count(),
             "itemsPerPage": 50,
             "startIndex": 1,
-            "Resources": [],
+            "Resources": [
+                self.generate_user_schema(user_profile)
+                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
+                    "id"
+                )
+            ],
         }
-        for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by("id"):
-            user_schema = self.generate_user_schema(user_profile)
-            expected_response_schema["Resources"].append(user_schema)
 
         self.assertEqual(output_data_all, expected_response_schema)
 
@@ -264,11 +266,13 @@ class TestSCIMUser(SCIMTestCase):
             "totalResults": user_query.count(),
             "itemsPerPage": 50,
             "startIndex": 1,
-            "Resources": [],
+            "Resources": [
+                self.generate_user_schema(user_profile)
+                for user_profile in UserProfile.objects.filter(realm=realm, is_bot=False).order_by(
+                    "id"
+                )
+            ],
         }
-        for user_profile in user_query.order_by("id"):
-            user_schema = self.generate_user_schema(user_profile)
-            expected_response_schema["Resources"].append(user_schema)
 
         self.assertEqual(output_data, expected_response_schema)
 
