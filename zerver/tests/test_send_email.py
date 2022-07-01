@@ -23,7 +23,7 @@ class TestBuildEmail(ZulipTestCase):
         limit_length_name = "a" * (320 - len(sanitize_address(FromAddress.NOREPLY, "utf-8")) - 3)
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
+            to_emails=[hamlet.email],
             from_name=limit_length_name,
             from_address=FromAddress.NOREPLY,
             language="en",
@@ -33,7 +33,7 @@ class TestBuildEmail(ZulipTestCase):
         # One more character makes it flip to just the address, with no name
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
+            to_emails=[hamlet.email],
             from_name=limit_length_name + "a",
             from_address=FromAddress.NOREPLY,
             language="en",
@@ -111,7 +111,7 @@ class TestSendEmail(ZulipTestCase):
         # Used to check the output
         mail = build_email(
             "zerver/emails/password_reset",
-            to_emails=[hamlet],
+            to_emails=[hamlet.email],
             from_name=from_name,
             from_address=address,
             language="en",
@@ -136,7 +136,7 @@ class TestSendEmail(ZulipTestCase):
                     with self.assertRaises(EmailNotDeliveredException):
                         send_email(
                             "zerver/emails/password_reset",
-                            to_emails=[hamlet],
+                            to_emails=[hamlet.email],
                             from_name=from_name,
                             from_address=FromAddress.NOREPLY,
                             language="en",
@@ -155,7 +155,7 @@ class TestSendEmail(ZulipTestCase):
             with self.assertLogs(logger=logger, level="ERROR") as error_log:
                 send_email(
                     "zerver/emails/password_reset",
-                    to_emails=[hamlet],
+                    to_emails=[hamlet.email],
                     from_name="From Name",
                     from_address=FromAddress.NOREPLY,
                     language="en",
@@ -173,7 +173,7 @@ class TestSendEmail(ZulipTestCase):
         with self.settings(EMAIL_HOST_USER="test", EMAIL_HOST_PASSWORD=""):
             send_email(
                 "zerver/emails/password_reset",
-                to_emails=[hamlet],
+                to_emails=[hamlet.email],
                 from_name="From Name",
                 from_address=FromAddress.NOREPLY,
                 language="en",
