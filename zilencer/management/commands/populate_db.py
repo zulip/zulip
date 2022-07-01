@@ -249,7 +249,7 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--stickyness",
+            "--stickiness",
             type=float,
             default=20,
             help="The percent of messages to repeat recent folks.",
@@ -1032,7 +1032,7 @@ def generate_and_send_messages(
         randkey = random.randint(1, random_max)
         if (
             num_messages > 0
-            and random.randint(1, random_max) * 100.0 / random_max < options["stickyness"]
+            and random.randint(1, random_max) * 100.0 / random_max < options["stickiness"]
         ):
             # Use an old recipient
             message_type, recipient_id, saved_data = recipients[num_messages - 1]
