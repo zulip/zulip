@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List, Set, cast
 from zerver.models import Draft, Recipient, ScheduledMessage, UserProfile
 from zerver.tornado.django_api import send_event
@@ -9,6 +10,8 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+import re
 
 def further_validated_scheduled_message_dict(
     draft_dict: Dict[str, Any], user_profile: UserProfile
@@ -19,14 +22,20 @@ def further_validated_scheduled_message_dict(
     for which can be used to directly create a Draft object."""
 
     content = normalize_body(draft_dict["content"])
+    
+    print('content: ' + content)
 
-    timestamp = draft_dict.get("timestamp", time.time())
-    timestamp = round(timestamp, 6)
-    if timestamp < 0:
-        # While it's not exactly an invalid timestamp, it's not something
-        # we want to allow either.
-        raise JsonableError(_("Timestamp must not be negative."))
-    last_edit_time = timestamp_to_datetime(timestamp)
+    timestamp = draft_dict.get("deliver_at")
+    if re.match(r".* [1-9] .*", timestamp):
+      print('TEST')
+    # timestamp = round(timestamp, 6)
+    # if timestamp < 0:
+    #     # While it's not exactly an invalid timestamp, it's not something
+    #     # we want to allow either.
+    #     raise JsonableError(_("Timestamp must not be negative."))
+    deliver_at = datetime.strptime(timestamp, '%b %d %Y %I:%M%p')
+    
+    print('deliver at: ' + deliver_at)
 
     topic = ""
     recipient = None
@@ -50,7 +59,7 @@ def further_validated_scheduled_message_dict(
         "recipient": recipient,
         "topic": topic,
         "content": content,
-        "last_edit_time": last_edit_time,
+        "scheduled_timestamp": deliver_at,
     }
 
 def do_create_scheduled_messages(scheduled_message_dicts: List[Dict[str, Any]], user_profile: UserProfile) -> List[ScheduledMessage]:

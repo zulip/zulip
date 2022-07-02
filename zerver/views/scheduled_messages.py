@@ -4,7 +4,7 @@ from zerver.models import Draft, ScheduledMessage, UserProfile
 from zerver.lib.response import json_success
 from zerver.lib.request import REQ, has_request_variables
 from typing import Any, Dict, List
-from zerver.lib.validator import check_dict, check_list, check_string
+from zerver.lib.validator import check_dict, check_list, check_string, check_union, check_int, check_float
 from zerver.lib.drafts import (
     do_create_drafts,
     do_delete_draft,
@@ -24,7 +24,7 @@ def create_scheduled_messages(
     request: HttpRequest,
     user_profile: UserProfile,
     scheduled_messages: List[Dict[str, Any]] = REQ(
-        json_validator=check_list(check_dict([("type", check_string)]))
+        json_validator=check_list(check_dict([("type", check_string), ("deliver_at", check_string)]))
     ),
 ) -> HttpResponse:
     print("in create_scheduled_messages")
