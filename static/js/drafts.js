@@ -31,6 +31,8 @@ import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
+import * as channel from "./channel"
+import { message } from "./ui_report";
 
 function set_count(count) {
     const $drafts_li = $(".top_left_drafts");
@@ -455,6 +457,16 @@ function show_scheduled_messages() {
 
         html += message_template
     }
+
+    channel.post({
+        url: "/json/scheduled_messages",
+        data: {
+            scheduled_messages: JSON.stringify(scheduled_messages)
+        },
+        success(data) {
+            console.log("Data: ", JSON.stringify(data))
+        }
+    })
 
     $(".drafts-list").html(html)
 }
