@@ -441,6 +441,8 @@ function show_scheduled_messages() {
 
     $(".drafts-list").html('')
 
+    const request = []
+
     for(const message of scheduled_messages) {
         const stream_color = stream_data.get_color(message.stream);
 
@@ -456,12 +458,20 @@ function show_scheduled_messages() {
         console.log('template: ', message_template)
 
         html += message_template
+
+        const request_part = {
+            type: message.type,
+            deliver_at: new Date(message.deliver_at).getTime() / 1000,
+            content: message.content    
+        }
+
+        request.push(request_part)
     }
 
     channel.post({
         url: "/json/scheduled_messages",
         data: {
-            scheduled_messages: JSON.stringify(scheduled_messages)
+            scheduled_messages: JSON.stringify(request)
         },
         success(data) {
             console.log("Data: ", JSON.stringify(data))
