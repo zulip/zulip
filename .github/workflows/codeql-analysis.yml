@@ -6,6 +6,10 @@ on:
       - dependabot/** # https://github.com/github/codeql-action/pull/435
   pull_request: {}
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
 jobs:
   CodeQL:
     if: ${{!github.event.repository.private}}
