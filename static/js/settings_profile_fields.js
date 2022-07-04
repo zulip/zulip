@@ -392,9 +392,6 @@ function open_edit_form_modal(e) {
         $profile_field_form
             .find(".edit_profile_field_choices_container")
             .on("click", "button.delete-choice", delete_choice_row);
-        $(".profile_field_external_accounts_edit select").on("change", () => {
-            set_up_external_account_field_edit_form($profile_field_form, "");
-        });
     }
 
     function submit_form() {
