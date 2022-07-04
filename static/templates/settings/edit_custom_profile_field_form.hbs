@@ -24,7 +24,7 @@
     {{#if is_external_account_field}}
     <div class="input-group profile_field_external_accounts_edit">
         <label for="external_acc_field_type">{{t "External account type" }}</label>
-        <select name="external_acc_field_type">
+        <select name="external_acc_field_type" disabled>
             {{#each ../realm_default_external_accounts}}
                 <option value='{{@key}}'>{{this.text}}</option>
             {{/each}}
