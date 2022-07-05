@@ -7,11 +7,6 @@ export const enum StreamPostPolicy {
     MODERATORS = 4,
 }
 
-export const enum SubscriptionRole {
-    STREAM_ADMINISTRATOR = 20,
-    MEMBER = 50,
-}
-
 export type Stream = {
     date_created: number;
     description: string;
@@ -37,7 +32,6 @@ export type StreamSubscription = Stream & {
     is_muted: boolean;
     pin_to_top: boolean;
     push_notifications: boolean | null;
-    role: SubscriptionRole;
     stream_weekly_traffic: number | null;
     subscribers?: number[];
     wildcard_mentions_notify: boolean | null;
