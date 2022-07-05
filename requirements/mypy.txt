@@ -305,6 +305,10 @@ types-urllib3==1.26.15 \
     --hash=sha256:6011befa13f901fc934f59bb1fd6973be6f3acf4ebfce427593a27e7f492918f \
     --hash=sha256:c89283541ef92e344b7f59f83ea9b5a295b16366ceee3f25ecfc5593c79f794e
     # via types-requests
+types-zxcvbn==4.4.0 \
+    --hash=sha256:661f437fb7b770014bd2906f399d749ff76cbb7a09c4fe6c034c4a362a7ffe34 \
+    --hash=sha256:a583047302853a2daf4cb528d00e0e9cebabda5087e56ab723928cf6d486b592
+    # via -r requirements/mypy.in
 typing-extensions==4.2.0 \
     --hash=sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708 \
     --hash=sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376
