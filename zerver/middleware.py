@@ -658,11 +658,10 @@ def alter_content(request: HttpRequest, content: bytes) -> bytes:
 
 class FinalizeOpenGraphDescription(MiddlewareMixin):
     def process_response(
-        self, request: HttpRequest, response: StreamingHttpResponse
-    ) -> StreamingHttpResponse:
-
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         if RequestNotes.get_notes(request).placeholder_open_graph_description is not None:
-            assert not response.streaming
+            assert isinstance(response, HttpResponse)
             response.content = alter_content(request, response.content)
         return response
 
