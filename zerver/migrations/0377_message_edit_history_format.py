@@ -1,5 +1,5 @@
 import time
-from typing import List, Optional, TypedDict
+from typing import List, Optional, Type, TypedDict
 
 import orjson
 from django.db import migrations, transaction
@@ -37,7 +37,9 @@ class EditHistoryEvent(TypedDict, total=False):
 
 
 @transaction.atomic
-def backfill_message_edit_history_chunk(first_id: int, last_id: int, message_model: Model) -> None:
+def backfill_message_edit_history_chunk(
+    first_id: int, last_id: int, message_model: Type[Model]
+) -> None:
     """
     Migrate edit history events for the messages in the provided range to:
     * Rename prev_subject => prev_topic.
