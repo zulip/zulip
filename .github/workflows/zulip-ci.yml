@@ -4,7 +4,12 @@
 
 name: Zulip CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"

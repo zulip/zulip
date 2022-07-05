@@ -2,9 +2,10 @@ name: "Code scanning"
 
 on:
   push:
-    branches-ignore:
-      - dependabot/** # https://github.com/github/codeql-action/pull/435
-  pull_request: {}
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"

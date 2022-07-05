@@ -1,7 +1,9 @@
 name: Zulip production suite
 
 on:
-  push: {}
+  push:
+    branches: ["*.x", chat.zulip.org, main]
+    tags: ["*"]
   pull_request:
     paths:
       - .github/workflows/production-suite.yml
@@ -21,6 +23,7 @@ on:
       - zerver/lib/push_notifications.py
       - zerver/decorator.py
       - zproject/**
+  workflow_dispatch:
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
