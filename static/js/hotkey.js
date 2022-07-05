@@ -22,6 +22,7 @@ import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
+import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as narrow from "./narrow";
@@ -840,27 +841,33 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.down(true); // with_centering
             return true;
         case "up_arrow":
         case "vim_up":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.up();
             return true;
         case "home":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.to_home();
             return true;
         case "end":
         case "G_end":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.to_end();
             return true;
         case "page_up":
         case "vim_page_up":
         case "shift_spacebar":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.page_up();
             return true;
         case "page_down":
         case "vim_page_down":
         case "spacebar":
+            message_scroll.mark_keyboard_triggered_current_scroll();
             navigate.page_down();
             return true;
         case "copy_with_c":

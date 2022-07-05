@@ -25,6 +25,13 @@ export function suppress_selection_update_on_next_scroll() {
     update_selection_on_next_scroll = false;
 }
 
+// Whether a keyboard shortcut is triggering a message feed scroll event.
+let keyboard_triggered_current_scroll = false;
+
+export function mark_keyboard_triggered_current_scroll() {
+    keyboard_triggered_current_scroll = true;
+}
+
 let loading_older_messages_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
 
@@ -217,7 +224,14 @@ export function scroll_finished() {
 let scroll_timer;
 function scroll_finish() {
     actively_scrolling = true;
-    show_scroll_to_bottom_button();
+
+    // Don't present the "scroll to bottom" widget if the current
+    // scroll was triggered by the keyboard.
+    if (!keyboard_triggered_current_scroll) {
+        show_scroll_to_bottom_button();
+    }
+    keyboard_triggered_current_scroll = false;
+
     clearTimeout(scroll_timer);
     scroll_timer = setTimeout(scroll_finished, 100);
 }
