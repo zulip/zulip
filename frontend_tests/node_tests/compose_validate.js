@@ -306,7 +306,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert.ok(compose_validate.wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
-        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
+        settings_config.wildcard_mention_policy_values.by_admins_only.code;
     page_params.is_admin = false;
     assert.ok(!compose_validate.wildcard_mention_allowed());
 
