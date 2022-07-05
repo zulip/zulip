@@ -1605,10 +1605,6 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
         return sender.is_realm_admin or sender.is_moderator
 
-    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS:
-        # TODO: Change this when we implement stream administrators
-        return sender.is_realm_admin
-
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS:
         return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
 

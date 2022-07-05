@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 133**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Removed
+  stream administrators option from `wildcard_mention_policy` setting.
+
 **Feature level 132**
 
 * [`GET /streams/{stream_id}`](/api/get-stream-by-id):
