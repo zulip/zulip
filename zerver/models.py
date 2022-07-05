@@ -3584,10 +3584,6 @@ class Subscription(models.Model):
     def __str__(self) -> str:
         return f"<Subscription: {self.user_profile} -> {self.recipient}>"
 
-    @property
-    def is_stream_admin(self) -> bool:
-        return self.role == Subscription.ROLE_STREAM_ADMINISTRATOR
-
     # Subscription fields included whenever a Subscription object is provided to
     # Zulip clients via the API.  A few details worth noting:
     # * These fields will generally be merged with Stream.API_FIELDS

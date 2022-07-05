@@ -312,9 +312,6 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
-    if sub is not None and sub.is_stream_admin:
-        return
-
     raise OrganizationAdministratorRequired()
 
 
