@@ -554,60 +554,6 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assert_json_error(result, "Must be an organization administrator")
 
-        sub = get_subscription("private_stream_2", user_profile)
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assert_json_success(result)
-
-        stream = get_stream("private_stream_2", realm)
-        self.assertFalse(stream.invite_only)
-        self.assertTrue(stream.history_public_to_subscribers)
-
-        messages = get_topic_messages(user_profile, stream, "stream events")
-        self.assert_length(messages, 1)
-        expected_notification = (
-            f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Private, protected history** to **Public**."
-        )
-        self.assertEqual(messages[0].content, expected_notification)
-
-        history_public_to_subscribers_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert history_public_to_subscribers_log is not None
-
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
-                "property": "history_public_to_subscribers",
-            }
-        ).decode()
-        self.assertEqual(history_public_to_subscribers_log.extra_data, expected_extra_data)
-
-        invite_only_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).order_by("-id")[1]
-        assert invite_only_log is not None
-
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
-                "property": "invite_only",
-            }
-        ).decode()
-        self.assertEqual(invite_only_log.extra_data, expected_extra_data)
-
     def test_make_stream_private(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -681,60 +627,6 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assertFalse(stream.invite_only)
         self.assert_json_error(result, "Must be an organization administrator")
-
-        sub = get_subscription("public_stream_2", user_profile)
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-        result = self.client_patch(f"/json/streams/{stream.id}", params)
-        self.assert_json_success(result)
-
-        stream = get_stream("public_stream_2", realm)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
-
-        messages = get_topic_messages(user_profile, stream, "stream events")
-        self.assert_length(messages, 1)
-        expected_notification = (
-            f"@_**King Hamlet|{user_profile.id}** changed the [access permissions](/help/stream-permissions) "
-            "for this stream from **Public** to **Private, protected history**."
-        )
-        self.assertEqual(messages[0].content, expected_notification)
-
-        history_public_to_subscribers_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert history_public_to_subscribers_log is not None
-
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: True,
-                RealmAuditLog.NEW_VALUE: False,
-                "property": "history_public_to_subscribers",
-            }
-        ).decode()
-        self.assertEqual(history_public_to_subscribers_log.extra_data, expected_extra_data)
-
-        invite_only_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).order_by("-id")[1]
-        assert invite_only_log is not None
-
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: False,
-                RealmAuditLog.NEW_VALUE: True,
-                "property": "invite_only",
-            }
-        ).decode()
-        self.assertEqual(invite_only_log.extra_data, expected_extra_data)
 
     def test_create_web_public_stream(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1227,30 +1119,6 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assertFalse(subscription_exists)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        stream = self.make_stream("new_stream_2")
-        self.subscribe(user_profile, stream.name)
-        sub = get_subscription(stream.name, user_profile)
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-
-        result = self.client_delete(f"/json/streams/{stream.id}")
-        self.assert_json_success(result)
-        subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
-            .filter(
-                user_profile=user_profile,
-            )
-            .exists()
-        )
-        self.assertFalse(subscription_exists)
-
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
         do_add_default_stream(stream)
@@ -1334,8 +1202,6 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         stream = self.subscribe(user_profile, "new_stream")
-        sub = get_subscription("new_stream", user_profile)
-        self.assertFalse(sub.is_stream_admin)
 
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_error(result, "Must be an organization administrator")
@@ -1497,37 +1363,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assertIn(user_profile.id, notified_user_ids)
         self.assertNotIn(self.example_user("prospero").id, notified_user_ids)
 
-        # Test renaming of stream by stream admin.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        new_stream = self.make_stream("new_stream", realm=user_profile.realm)
-        self.subscribe(user_profile, "new_stream")
-        sub = get_subscription("new_stream", user_profile)
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            new_stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-        with self.tornado_redirected_to_list(events, expected_num_events=3):
-            result = self.client_patch(
-                f"/json/streams/{new_stream.id}",
-                {"new_name": "stream_rename"},
-            )
-        self.assert_json_success(result)
-
-        stream_rename_exists = get_stream("stream_rename", realm)
-        self.assertTrue(stream_rename_exists)
-
     def test_rename_stream_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         self.make_stream("stream_name1")
         self.subscribe(user_profile, "stream_name1")
-
-        sub = get_subscription("stream_name1", user_profile)
-        self.assertFalse(sub.is_stream_admin)
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
@@ -1757,55 +1597,6 @@ class StreamAdminTest(ZulipTestCase):
             '<p>See <a href="https://zulip.com/team">https://zulip.com/team</a></p>',
         )
 
-        # Test changing stream description by stream admin.
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        sub = get_subscription("stream_name1", user_profile)
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-
-        stream_id = get_stream("stream_name1", realm).id
-        result = self.client_patch(
-            f"/json/streams/{stream_id}",
-            {"description": "Test description"},
-        )
-        self.assert_json_success(result)
-        stream = get_stream("stream_name1", realm)
-        self.assertEqual(stream.description, "Test description")
-
-        messages = get_topic_messages(user_profile, stream, "stream events")
-        expected_notification = (
-            f"@_**{user_profile.full_name}|{user_profile.id}** changed the description for this stream.\n\n"
-            "* **Old description:**\n"
-            "```` quote\n"
-            "See https://zulip.com/team\n"
-            "````\n"
-            "* **New description:**\n"
-            "```` quote\n"
-            "Test description\n"
-            "````"
-        )
-        self.assertEqual(messages[-1].content, expected_notification)
-
-        realm_audit_log = RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-            modified_stream=stream,
-        ).last()
-        assert realm_audit_log is not None
-        expected_extra_data = orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: "See https://zulip.com/team",
-                RealmAuditLog.NEW_VALUE: "Test description",
-                "property": "description",
-            }
-        ).decode()
-        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
-
     def test_change_stream_description_requires_admin(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -1895,48 +1686,6 @@ class StreamAdminTest(ZulipTestCase):
         for policy in policies:
             test_non_admin(how_old=15, is_new=False, policy=policy)
             test_non_admin(how_old=5, is_new=True, policy=policy)
-
-        do_change_subscription_property(
-            user_profile,
-            sub,
-            stream,
-            "role",
-            Subscription.ROLE_STREAM_ADMINISTRATOR,
-            acting_user=None,
-        )
-
-        for policy in policies:
-            stream = get_stream("stream_name1", user_profile.realm)
-            old_post_policy = stream.stream_post_policy
-            result = self.client_patch(
-                f"/json/streams/{stream.id}", {"stream_post_policy": orjson.dumps(policy).decode()}
-            )
-            self.assert_json_success(result)
-            stream = get_stream("stream_name1", user_profile.realm)
-            self.assertEqual(stream.stream_post_policy, policy)
-
-            messages = get_topic_messages(user_profile, stream, "stream events")
-            expected_notification = (
-                f"@_**{user_profile.full_name}|{user_profile.id}** changed the "
-                "[posting permissions](/help/stream-sending-policy) for this stream:\n\n"
-                f"* **Old permissions**: {Stream.POST_POLICIES[old_post_policy]}.\n"
-                f"* **New permissions**: {Stream.POST_POLICIES[policy]}."
-            )
-            self.assertEqual(messages[-1].content, expected_notification)
-
-            realm_audit_log = RealmAuditLog.objects.filter(
-                event_type=RealmAuditLog.STREAM_PROPERTY_CHANGED,
-                modified_stream=stream,
-            ).last()
-            assert realm_audit_log is not None
-            expected_extra_data = orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_post_policy,
-                    RealmAuditLog.NEW_VALUE: policy,
-                    "property": "stream_post_policy",
-                }
-            ).decode()
-            self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
@@ -2375,7 +2124,6 @@ class StreamAdminTest(ZulipTestCase):
         query_count: int,
         cache_count: Optional[int] = None,
         is_realm_admin: bool = False,
-        is_stream_admin: bool = False,
         is_subbed: bool = True,
         invite_only: bool = False,
         target_users_subbed: bool = True,
@@ -2405,17 +2153,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
-            stream = self.subscribe(user_profile, stream_name)
-            if is_stream_admin:
-                sub = get_subscription(stream_name, user_profile)
-                do_change_subscription_property(
-                    user_profile,
-                    sub,
-                    stream,
-                    "role",
-                    Subscription.ROLE_STREAM_ADMINISTRATOR,
-                    acting_user=None,
-                )
+            self.subscribe(user_profile, stream_name)
         if target_users_subbed:
             for user in target_users:
                 self.subscribe(user, stream_name)
@@ -2451,7 +2189,6 @@ class StreamAdminTest(ZulipTestCase):
             query_count=5,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
-            is_stream_admin=False,
             is_subbed=True,
             invite_only=False,
             target_users_subbed=True,
@@ -2537,66 +2274,10 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_length(json["removed"], 1)
         self.assert_length(json["not_removed"], 0)
 
-    def test_stream_admin_remove_others_from_public_stream(self) -> None:
-        """
-        You can remove others from public streams you're a stream administrator of.
-        """
-        result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
-            target_users=[self.example_user("cordelia")],
-            is_realm_admin=False,
-            is_stream_admin=True,
-            is_subbed=True,
-            invite_only=False,
-            target_users_subbed=True,
-        )
-        json = self.assert_json_success(result)
-        self.assert_length(json["removed"], 1)
-        self.assert_length(json["not_removed"], 0)
-
-    def test_stream_admin_remove_multiple_users_from_stream(self) -> None:
-        """
-        You can remove multiple users from public streams you're a stream administrator of.
-        """
-        target_users = [
-            self.example_user(name) for name in ["cordelia", "prospero", "othello", "hamlet", "ZOE"]
-        ]
-        result = self.attempt_unsubscribe_of_principal(
-            query_count=25,
-            cache_count=9,
-            target_users=target_users,
-            is_realm_admin=False,
-            is_stream_admin=True,
-            is_subbed=True,
-            invite_only=False,
-            target_users_subbed=True,
-        )
-        json = self.assert_json_success(result)
-        self.assert_length(json["removed"], 5)
-        self.assert_length(json["not_removed"], 0)
-
-    def test_stream_admin_remove_others_from_private_stream(self) -> None:
-        """
-        You can remove others from private streams you're a stream administrator of.
-        """
-        result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
-            target_users=[self.example_user("cordelia")],
-            is_realm_admin=False,
-            is_stream_admin=True,
-            is_subbed=True,
-            invite_only=True,
-            target_users_subbed=True,
-        )
-        json = self.assert_json_success(result)
-        self.assert_length(json["removed"], 1)
-        self.assert_length(json["not_removed"], 0)
-
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
             query_count=5,
             is_realm_admin=False,
-            is_stream_admin=False,
             is_subbed=True,
             invite_only=False,
             target_users=[self.example_user("cordelia")],
