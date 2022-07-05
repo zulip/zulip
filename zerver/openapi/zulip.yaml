@@ -608,6 +608,9 @@ paths:
                                   description: |
                                     A list of dictionaries where each dictionary contains
                                     information about one of the subscribed streams.
+
+                                    **Changes**: Removed `role` field from the dictionary
+                                    in Zulip 6.0 (feature level 133).
                                   items:
                                     $ref: "#/components/schemas/Subscriptions"
                               additionalProperties: false
@@ -6961,6 +6964,9 @@ paths:
                         description: |
                           A list of dictionaries where each dictionary contains
                           information about one of the subscribed streams.
+
+                          **Changes**: Removed `role` field from the dictionary
+                          in Zulip 6.0 (feature level 133).
                         items:
                           $ref: "#/components/schemas/Subscriptions"
                     example:
@@ -6980,7 +6986,6 @@ paths:
                               "name": "Denmark",
                               "pin_to_top": false,
                               "push_notifications": false,
-                              "role": 20,
                               "stream_id": 1,
                               "subscribers": [7, 10, 11, 12, 14],
                             },
@@ -6995,7 +7000,6 @@ paths:
                               "name": "Scotland",
                               "pin_to_top": false,
                               "push_notifications": false,
-                              "role": 50,
                               "stream_id": 3,
                               "subscribers": [7, 11, 12, 14],
                             },
@@ -9552,6 +9556,9 @@ paths:
                           A array of dictionaries where each dictionary describes the properties
                           of a stream the user is subscribed to (as well as that user's
                           personal per-stream settings).
+
+                          **Changes**: Removed `role` field from the dictionary
+                          in Zulip 6.0 (feature level 133).
                       unsubscribed:
                         type: array
                         items:
@@ -9565,6 +9572,9 @@ paths:
 
                           Unlike `never_subscribed`, the user might have messages in their personal
                           message history that were sent to these streams.
+
+                          **Changes**: Removed `role` field from the dictionary
+                          in Zulip 6.0 (feature level 133).
                       never_subscribed:
                         type: array
                         items:
@@ -15097,20 +15107,6 @@ components:
           description: |
             Whether the stream has been configured to allow unauthenticated
             access to its message history from the web.
-        role:
-          type: integer
-          enum:
-            - 20
-            - 50
-          description: |
-            The user's role within the stream (distinct from the user's
-            [organization-level role](/help/roles-and-permissions)).
-            Valid values are:
-
-            - 20 => Stream administrator.
-            - 50 => Subscriber.
-
-            **Changes**: New in Zulip 4.0 (feature level 31).
         color:
           type: string
           description: |

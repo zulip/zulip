@@ -166,7 +166,6 @@ class RawSubscriptionDict(TypedDict):
     pin_to_top: bool
     push_notifications: Optional[bool]
     recipient_id: int
-    role: int
     wildcard_mentions_notify: Optional[bool]
 
 
@@ -196,7 +195,6 @@ class SubscriptionStreamDict(TypedDict):
     pin_to_top: bool
     push_notifications: Optional[bool]
     rendered_description: str
-    role: int
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: Optional[int]
@@ -255,7 +253,6 @@ class APISubscriptionDict(APIStreamDict):
     is_muted: bool
     pin_to_top: bool
     push_notifications: Optional[bool]
-    role: int
     wildcard_mentions_notify: Optional[bool]
     # Computed fields not specified in `Subscription.API_FIELDS`
     email_address: str

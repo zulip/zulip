@@ -29,7 +29,6 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_post_policy,
-    do_change_subscription_property,
     do_deactivate_stream,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
@@ -1601,13 +1600,8 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        stream = self.subscribe(user_profile, "stream_name1")
-        sub = get_subscription("stream_name1", user_profile)
-
+        self.subscribe(user_profile, "stream_name1")
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=None
-        )
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(
@@ -1658,12 +1652,8 @@ class StreamAdminTest(ZulipTestCase):
         self.login_user(user_profile)
 
         stream = self.subscribe(user_profile, "stream_name1")
-        sub = get_subscription("stream_name1", user_profile)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=None
-        )
 
         do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
 
