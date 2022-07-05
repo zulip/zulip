@@ -8,7 +8,7 @@ import re
 import signal
 import sys
 from enum import Enum, auto
-from typing import List, Set, TextIO, Tuple
+from typing import List, Match, Set, TextIO, Tuple
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -168,9 +168,7 @@ class FilterType(Enum):
 
 
 class FilterFunc(Protocol):
-    def __call__(
-        self, m: re.Match, t: str = ...  # type: ignore[type-arg]  # Requires Python 3.9
-    ) -> bool:
+    def __call__(self, m: Match[str], t: str = ...) -> bool:
         ...
 
 
@@ -311,7 +309,7 @@ def parse_filters(
 
 def passes_filters(
     string_filters: List[FilterFunc],
-    match: re.Match,  # type: ignore[type-arg]  # Requires Python 3.9
+    match: Match[str],
     args: argparse.Namespace,
 ) -> bool:
     if not all(f(match) for f in string_filters):
@@ -342,7 +340,7 @@ def passes_filters(
 
 
 def print_line(
-    match: re.Match,  # type: ignore[type-arg]  # Requires Python 3.9
+    match: Match[str],
     args: argparse.Namespace,
     filter_types: Set[FilterType],
 ) -> None:
