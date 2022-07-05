@@ -60,7 +60,7 @@ class TextTestResult(runner.TextTestResult):
 
     def startTest(self, test: TestCase) -> None:
         TestResult.startTest(self, test)
-        self.stream.writeln(f"Running {test.id()}")  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
+        self.stream.write(f"Running {test.id()}\n")
         self.stream.flush()
 
     def addSuccess(self, *args: Any, **kwargs: Any) -> None:
@@ -78,9 +78,7 @@ class TextTestResult(runner.TextTestResult):
 
     def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
-        self.stream.writeln(  # type: ignore[attr-defined] # https://github.com/python/typeshed/issues/3139
-            f"** Skipping {test.id()}: {reason}"
-        )
+        self.stream.write(f"** Skipping {test.id()}: {reason}\n")
         self.stream.flush()
 
 
