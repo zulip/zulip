@@ -25,8 +25,6 @@ from scripts.lib.zulip_tools import (
 from tools.setup.generate_zulip_bots_static_files import generate_zulip_bots_static_files
 from version import PROVISION_VERSION
 
-pygments_version = pygments.__version__  # type: ignore[attr-defined] # private member missing from stubs
-
 VENV_PATH = "/srv/zulip-py3-venv"
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
@@ -150,7 +148,7 @@ def need_to_run_build_pygments_data() -> bool:
     return is_digest_obsolete(
         "build_pygments_data_hash",
         build_pygments_data_paths(),
-        [pygments_version],
+        [pygments.__version__],
     )
 
 
@@ -228,7 +226,7 @@ def main(options: argparse.Namespace) -> int:
         write_new_digest(
             "build_pygments_data_hash",
             build_pygments_data_paths(),
-            [pygments_version],
+            [pygments.__version__],
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")

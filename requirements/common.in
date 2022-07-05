@@ -162,6 +162,7 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
+openapi-schema-validator<0.3.0  # 0.3.0 requires jsonschema 4, which conflicts with semgrep: https://github.com/returntocorp/semgrep/issues/4739
 
 # For reporting errors to sentry.io
 sentry-sdk
