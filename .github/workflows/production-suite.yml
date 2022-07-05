@@ -58,7 +58,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Create cache directories
         run: |
@@ -67,21 +67,21 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /srv/zulip-npm-cache
           key: v1-yarn-deps-focal-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
           restore-keys: v1-yarn-deps-focal
 
       - name: Restore python cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /srv/zulip-venv-cache
           key: v1-venv-focal-${{ hashFiles('requirements/dev.txt') }}
           restore-keys: v1-venv-focal
 
       - name: Restore emoji cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-focal-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
@@ -91,7 +91,7 @@ jobs:
         run: ./tools/ci/production-build
 
       - name: Upload production build artifacts for install jobs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: production-tarball
           path: /tmp/production-build
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: production-tarball
           path: /tmp
@@ -163,7 +163,7 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /srv/zulip-npm-cache
           key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('/tmp/package.json') }}-${{ hashFiles('/tmp/yarn.lock') }}
@@ -231,7 +231,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: production-tarball
           path: /tmp
