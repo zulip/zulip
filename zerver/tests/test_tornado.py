@@ -1,4 +1,5 @@
 import asyncio
+import socket
 import urllib.parse
 from functools import wraps
 from typing import Any, Awaitable, Callable, Dict, Mapping, Optional, TypeVar
@@ -10,11 +11,9 @@ from django.conf import settings
 from django.core import signals
 from django.db import close_old_connections
 from django.test import override_settings
-from tornado.httpclient import HTTPResponse
-from tornado.ioloop import IOLoop
-from tornado.platform.asyncio import AsyncIOMainLoop
-from tornado.testing import AsyncHTTPTestCase, AsyncTestCase
-from tornado.web import Application
+from tornado import netutil
+from tornado.httpclient import AsyncHTTPClient, HTTPResponse
+from tornado.httpserver import HTTPServer
 from typing_extensions import ParamSpec
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -38,40 +37,31 @@ async def in_django_thread(f: Callable[[], T]) -> T:
     return await asyncio.create_task(sync_to_async(f)())
 
 
-class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
+class TornadoWebTestCase(ZulipTestCase):
     @async_to_sync_decorator
     async def setUp(self) -> None:
         super().setUp()
+
+        with override_settings(DEBUG=False):
+            self.http_server = HTTPServer(create_tornado_application())
+        sock = netutil.bind_sockets(0, "127.0.0.1", family=socket.AF_INET)[0]
+        self.port = sock.getsockname()[1]
+        self.http_server.add_sockets([sock])
+        self.http_client = AsyncHTTPClient()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
         self.session_cookie: Optional[Dict[str, str]] = None
 
     @async_to_sync_decorator
     async def tearDown(self) -> None:
-        # Skip tornado.testing.AsyncTestCase.tearDown because it tries to kill
-        # the current task.
-        super(AsyncTestCase, self).tearDown()
+        self.http_client.close()
+        self.http_server.stop()
+        super().tearDown()
 
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:
         return async_to_sync(
             sync_to_async(super().run, thread_sensitive=False), force_new_loop=True
         )(result)
-
-    def get_new_ioloop(self) -> IOLoop:
-        return AsyncIOMainLoop()
-
-    @override_settings(DEBUG=False)
-    def get_app(self) -> Application:
-        return create_tornado_application()
-
-    async def tornado_client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
-        self.add_session_cookie(kwargs)
-        kwargs["skip_user_agent"] = True
-        self.set_http_headers(kwargs)
-        if "HTTP_HOST" in kwargs:
-            kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
-            del kwargs["HTTP_HOST"]
-        return await self.http_client.fetch(self.get_url(path), method="GET", **kwargs)
 
     async def fetch_async(self, method: str, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
@@ -80,12 +70,9 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         if "HTTP_HOST" in kwargs:
             kwargs["headers"]["Host"] = kwargs["HTTP_HOST"]
             del kwargs["HTTP_HOST"]
-        return await self.http_client.fetch(self.get_url(path), method=method, **kwargs)
-
-    async def client_get_async(self, path: str, **kwargs: Any) -> HTTPResponse:
-        kwargs["skip_user_agent"] = True
-        self.set_http_headers(kwargs)
-        return await self.fetch_async("GET", path, **kwargs)
+        return await self.http_client.fetch(
+            f"http://127.0.0.1:{self.port}{path}", method=method, **kwargs
+        )
 
     def login_user(self, *args: Any, **kwargs: Any) -> None:
         super().login_user(*args, **kwargs)
@@ -105,10 +92,8 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
         kwargs["headers"] = headers
 
     async def create_queue(self, **kwargs: Any) -> str:
-        response = await self.tornado_client_get(
-            "/json/events?dont_block=true",
-            subdomain="zulip",
-            skip_user_agent=True,
+        response = await self.fetch_async(
+            "GET", "/json/events?dont_block=true", subdomain="zulip", skip_user_agent=True
         )
         self.assertEqual(response.code, 200)
         body = orjson.loads(response.body)
@@ -146,11 +131,11 @@ class EventsTestCase(TornadoWebTestCase):
 
         def wrapped_fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
             ret = event_queue.fetch_events(query)
-            self.io_loop.add_callback(process_events)
+            asyncio.get_running_loop().call_soon(process_events)
             return ret
 
         with mock.patch("zerver.tornado.views.fetch_events", side_effect=wrapped_fetch_events):
-            response = await self.client_get_async(path)
+            response = await self.fetch_async("GET", path)
 
         self.assertEqual(response.headers["Vary"], "Accept-Language, Cookie")
         data = orjson.loads(response.body)
