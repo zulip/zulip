@@ -5871,7 +5871,7 @@ class NoReplyEmailTest(ZulipTestCase):
 
 
 class TwoFactorAuthTest(ZulipTestCase):
-    @patch("two_factor.models.totp")
+    @patch("two_factor.plugins.phonenumber.models.totp")
     def test_two_factor_login(self, mock_totp: MagicMock) -> None:
         token = 123456
         email = self.example_email("hamlet")

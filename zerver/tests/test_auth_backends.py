@@ -4891,7 +4891,7 @@ class TestTwoFactor(ZulipTestCase):
             # User logs in when otp device exists.
             self.assertIn("otp_device_id", self.client.session.keys())
 
-    @mock.patch("two_factor.models.totp")
+    @mock.patch("two_factor.plugins.phonenumber.models.totp")
     def test_two_factor_login_with_ldap(self, mock_totp: mock.MagicMock) -> None:
         token = 123456
         email = self.example_email("hamlet")
