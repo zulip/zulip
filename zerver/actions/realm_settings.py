@@ -430,7 +430,7 @@ def do_change_realm_plan_type(
         realm.message_visibility_limit = None
         realm.upload_quota_gb = Realm.UPLOAD_QUOTA_STANDARD
     elif plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
-        realm.max_invites = None  # type: ignore[assignment] # Apparent mypy bug with Optional[int] setter.
+        realm.max_invites = None  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
         realm.message_visibility_limit = None
         realm.upload_quota_gb = None
     elif plan_type == Realm.PLAN_TYPE_STANDARD_FREE:
