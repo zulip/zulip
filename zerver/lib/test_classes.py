@@ -44,7 +44,7 @@ from django.utils import translation
 from django.utils.module_loading import import_string
 from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
-from two_factor.models import PhoneDevice
+from two_factor.plugins.phonenumber.models import PhoneDevice
 
 from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.actions.message_send import check_send_message, check_send_stream_message
