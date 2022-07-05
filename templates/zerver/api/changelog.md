@@ -24,6 +24,9 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Removed
   stream administrators option from `wildcard_mention_policy` setting.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
+  `role` field from subscription objects.
 
 **Feature level 132**
 

@@ -64,7 +64,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
         is_muted = False
         pin_to_top = False
         push_notifications = True
-        role = Subscription.ROLE_MEMBER
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, {}
         )
@@ -90,7 +89,6 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
             pin_to_top=pin_to_top,
             push_notifications=push_notifications,
             rendered_description=rendered_description,
-            role=role,
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
@@ -133,7 +131,6 @@ def build_stream_dict_for_sub(
     email_notifications = sub_dict["email_notifications"]
     push_notifications = sub_dict["push_notifications"]
     wildcard_mentions_notify = sub_dict["wildcard_mentions_notify"]
-    role = sub_dict["role"]
 
     # Backwards-compatibility for clients that haven't been
     # updated for the in_home_view => is_muted API migration.
@@ -174,7 +171,6 @@ def build_stream_dict_for_sub(
         pin_to_top=pin_to_top,
         push_notifications=push_notifications,
         rendered_description=rendered_description,
-        role=role,
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,

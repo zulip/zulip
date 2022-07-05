@@ -3562,16 +3562,6 @@ class Subscription(models.Model):
     # we may be creating Subscription objects for a user that's deactivated.
     is_user_active: bool = models.BooleanField()
 
-    ROLE_STREAM_ADMINISTRATOR = 20
-    ROLE_MEMBER = 50
-
-    ROLE_TYPES = [
-        ROLE_STREAM_ADMINISTRATOR,
-        ROLE_MEMBER,
-    ]
-
-    role: int = models.PositiveSmallIntegerField(default=ROLE_MEMBER, db_index=True)
-
     # Whether this user had muted this stream.
     is_muted: bool = models.BooleanField(default=False)
 
@@ -3623,7 +3613,6 @@ class Subscription(models.Model):
         "is_muted",
         "pin_to_top",
         "push_notifications",
-        "role",
         "wildcard_mentions_notify",
     ]
 

@@ -281,7 +281,6 @@ def send_subscription_add_events(
                 is_muted=subscription.is_muted,
                 pin_to_top=subscription.pin_to_top,
                 push_notifications=subscription.push_notifications,
-                role=subscription.role,
                 wildcard_mentions_notify=subscription.wildcard_mentions_notify,
                 # Computed fields not present in Subscription.API_FIELDS
                 email_address=stream_info.email_address,
