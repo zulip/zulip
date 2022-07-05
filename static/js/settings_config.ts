@@ -207,20 +207,11 @@ export const wildcard_mention_policy_values = {
         code: 7,
         description: $t({defaultMessage: "Admins and moderators"}),
     },
-    // Until we add stream administrators, we mislabel this choice
-    // (which we intend to be the long-term default) as "Admins only"
-    // and don't offer the long-term "Admins only" option.
-    by_stream_admins_only: {
+    by_admins_only: {
         order: 5,
-        code: 4,
-        //  description: $t({defaultMessage: "Organization and stream admins"}),
+        code: 5,
         description: $t({defaultMessage: "Admins only"}),
     },
-    // by_admins_only: {
-    //     order: 5,
-    //     code: 5,
-    //     description: $t({defaultMessage: "Admins only"}),
-    // },
     nobody: {
         order: 6,
         code: 6,

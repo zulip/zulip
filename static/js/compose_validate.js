@@ -327,7 +327,7 @@ export function wildcard_mention_allowed() {
     }
     if (
         page_params.realm_wildcard_mention_policy ===
-        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code
+        settings_config.wildcard_mention_policy_values.by_admins_only.code
     ) {
         // TODO: Check the user's stream-level role once stream-level admins exist.
         return page_params.is_admin;
