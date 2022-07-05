@@ -39,11 +39,7 @@ Hello, world.
 
     def test_message_without_payload(self) -> None:
         self.url = self.build_webhook_url()
-        result = self.client_post(
-            self.url,
-            None,  # type: ignore[arg-type] # we need to simulate a http request that doesn't send any payload
-            content_type="multipart/form-data; boundary=14537ad40cab4c77b6699c9c0fa9c82f",
-        )
+        result = self.client_post(self.url)
         self.assert_json_error(result, "Missing 'payload' argument")
 
     def test_message_with_actions(self) -> None:
