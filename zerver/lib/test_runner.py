@@ -55,10 +55,6 @@ class TextTestResult(runner.TextTestResult):
         super().__init__(*args, **kwargs)
         self.failed_tests: List[str] = []
 
-    def addInfo(self, test: TestCase, msg: str) -> None:
-        self.stream.write(msg)
-        self.stream.flush()
-
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
@@ -93,9 +89,6 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     The class follows the unpythonic style of function names of the
     base class.
     """
-
-    def addInfo(self, test: TestCase, msg: str) -> None:
-        self.events.append(("addInfo", self.test_index, msg))
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
