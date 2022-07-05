@@ -6,7 +6,7 @@ jobs:
   update-digitalocean-oneclick-app:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Update DigitalOcean one click app
         env:
           DIGITALOCEAN_API_KEY: ${{ secrets.ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY }}
