@@ -31,7 +31,7 @@ class IncludeBlockProcessor(BlockProcessor):
         super().__init__(parser)
         self.base_path = base_path
 
-    def test(self, parent: Element, block: str) -> bool:  # type: ignore[override] # https://github.com/python/typeshed/pull/8166
+    def test(self, parent: Element, block: str) -> bool:
         return bool(self.RE.search(block))
 
     def expand_include(self, m: Match[str]) -> str:
