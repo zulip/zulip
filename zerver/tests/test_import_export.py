@@ -131,6 +131,7 @@ class ExportFile(ZulipTestCase):
 
     def setUp(self) -> None:
         super().setUp()
+        assert settings.LOCAL_UPLOADS_DIR is not None
         self.rm_tree(settings.LOCAL_UPLOADS_DIR)
 
         # Deleting LOCAL_UPLOADS_DIR results in the test database
