@@ -368,7 +368,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
             return;
         }
 
-        const original_items = this.checked_items ? this.checked_items : this.initial_value;
+        const original_items = this.checked_items ?? this.initial_value;
         const items_added = _.difference(this.data_selected, original_items);
 
         // Removing the unnecessary items from dropdown.
