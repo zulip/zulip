@@ -3274,7 +3274,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         )
 
         with self.apple_jwk_url_mock(), self.assertLogs(self.logger_string, level="INFO") as m:
-            result = self.client_get(url, **headers)
+            self.client_get(url, **headers)
 
         self.assertEqual(
             m.output,
@@ -3285,7 +3285,6 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
                 )
             ],
         )
-        return result
 
     def test_social_auth_desktop_success(self) -> None:
         """
