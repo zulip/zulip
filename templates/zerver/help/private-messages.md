@@ -42,4 +42,5 @@ There are several ways to access an existing PM or group PM.
 
 ## Related articles
 
-* [Typing notifications](/help/status-and-availability#typing-notifications)
+* [Typing notifications](/help/typing-notifications)
+
