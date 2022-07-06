@@ -403,6 +403,7 @@ class PreviewTestCase(ZulipTestCase):
 
         # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
         self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', msg.rendered_content)
 
         self.create_mock_response(url, relative_url=relative_url)
@@ -449,6 +450,7 @@ class PreviewTestCase(ZulipTestCase):
                 in info_logs.output[0]
             )
             msg = Message.objects.select_related("sender").get(id=msg_id)
+            assert msg.rendered_content is not None
             # The content of the message has changed since the event for original_url has been created,
             # it should not be rendered. Another, up-to-date event will have been sent (edited_url).
             self.assertNotIn(

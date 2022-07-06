@@ -3795,6 +3795,7 @@ def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
         and user_profile.default_events_register_stream.invite_only
     )
     if is_private_bot:
+        assert user_profile.bot_owner_id is not None
         return {user_profile.bot_owner_id}
     else:
         users = {user.id for user in user_profile.realm.get_human_admin_users()}
