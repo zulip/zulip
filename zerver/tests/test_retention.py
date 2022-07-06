@@ -976,7 +976,7 @@ class TestGetRealmAndStreamsForArchiving(ZulipTestCase):
         # so we use a helper to order both structures in a consistent manner. This wouldn't be necessary
         # if python had a true "unordered list" data structure. Set doesn't do the job, because it requires
         # elements to be hashable.
-        expected_result = [
+        expected_result: List[Tuple[Realm, List[Stream]]] = [
             (zulip_realm, list(Stream.objects.filter(realm=zulip_realm).exclude(id=verona.id))),
             (zephyr_realm, [archiving_enabled_zephyr_stream]),
             (realm_all_streams_archiving_disabled, []),
