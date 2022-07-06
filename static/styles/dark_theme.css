@@ -244,7 +244,7 @@ body.dark-theme {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
+        &:not(.sea-green, .btn-danger, .btn-warning, .btn-link, .poll-vote) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
