@@ -1,13 +1,55 @@
+import re
 from typing import List, Optional, Tuple
 
 from django.http import HttpRequest
 from django_scim.filters import UserFilterQuery
+from scim2_filter_parser.queries.sql import SQLQuery
 
 from zerver.lib.request import RequestNotes
 
-
 # This is in a separate file due to circular import issues django-scim2 runs into
 # when this is placed in zerver.lib.scim.
+
+
+class CaseInsensitiveUserNameSQLQuery(SQLQuery):
+    """
+    This is another ugly hack to work around the fact that per
+    the RFC https://datatracker.ietf.org/doc/html/rfc7643#section-4.1.1
+    the userName attribute is case insensitive, but this behavior is not
+    implemented in django-scim2. userName maps to our
+    zerver_userprofile.delivery_email in  SQL queries.
+
+    We do some hacky modification of the relevant SQL to enforce
+    case-insensitivity.
+
+    Aside of the hackiness, the limitation is that this *only* works
+    for the "eq" filter operator. Other filter operators of the SCIM2 protocol
+    will not have the correct case-insensitive behavior - but that's okay for now,
+    as the SCIM2 providers we support don't use that.
+
+    Ideally this gets resolved upstream - https://github.com/15five/django-scim2/issues/76
+    """
+
+    def build_where_sql(self) -> None:
+        super().build_where_sql()
+
+        # self.where_sql was populated, with a string possibly containing
+        # something of the form
+        # zerver_userprofile.delivery_email = {a}
+        # This relies on the django-scim2 implementation detail
+        # that this involves always a single, lowercase ascii character, like {a}.
+        # Later on in the codepath this placeholder gets appropriately replaced
+        # with a value.
+        pattern = r"zerver_userprofile.delivery_email = ({[a-zA-Z]})"
+
+        # This pattern is to be found if it occurs and replaced
+        # with
+        # UPPER(zerver_userprofile.delivery_email) = UPPER({a})
+        # which is how case-insensitive equality is ensured.
+        repl = r"UPPER(zerver_userprofile.delivery_email) = UPPER(\1)"
+        self.where_sql: str = re.sub(pattern, repl, self.where_sql)
+
+
 class ZulipUserFilterQuery(UserFilterQuery):
     """This class implements the filter functionality of SCIM2.
     E.g. requests such as
@@ -43,6 +85,8 @@ class ZulipUserFilterQuery(UserFilterQuery):
     # because we need to limit the results to the realm (subdomain)
     # of the request.
     joins = ("INNER JOIN zerver_realm ON zerver_realm.id = realm_id",)
+
+    query_class = CaseInsensitiveUserNameSQLQuery
 
     @classmethod
     def get_extras(cls, q: str, request: Optional[HttpRequest] = None) -> Tuple[str, List[object]]:
