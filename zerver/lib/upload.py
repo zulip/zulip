@@ -716,7 +716,6 @@ class S3UploadBackend(ZulipUploadBackend):
         )
 
         image_data = emoji_file.read()
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         upload_image_to_s3(
             self.avatar_bucket,
             ".".join((emoji_path, "original")),
@@ -724,6 +723,8 @@ class S3UploadBackend(ZulipUploadBackend):
             user_profile,
             image_data,
         )
+
+        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         upload_image_to_s3(
             self.avatar_bucket,
             emoji_path,
@@ -989,8 +990,8 @@ class LocalUploadBackend(ZulipUploadBackend):
         )
 
         image_data = emoji_file.read()
-        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         write_local_file("avatars", ".".join((emoji_path, "original")), image_data)
+        resized_image_data, is_animated, still_image_data = resize_emoji(image_data)
         write_local_file("avatars", emoji_path, resized_image_data)
         if is_animated:
             assert still_image_data is not None
