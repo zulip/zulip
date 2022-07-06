@@ -125,6 +125,7 @@
         "unicorn/prefer-node-protocol": "off",
         "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
+        "unicorn/prefer-top-level-await": "off",
         "unicorn/prevent-abbreviations": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],
         "yoda": "error"
