@@ -27,6 +27,14 @@
               widget_name="edit_bot_owner"
               list_placeholder=(t 'Filter users')}}
         </div>
+        <div class="input-group edit-avatar-section">
+            <label>Avatar</label>
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
+            <div class="edit_bot_avatar_file"></div>
+            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+            <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
+            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+        </div>
         <div class="input-group new-style">
             <button class="button rounded btn-danger deactivate_bot_button">
                 {{t 'Deactivate bot' }}

@@ -20,6 +20,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as ui_report from "./ui_report";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
@@ -254,26 +255,45 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     });
 
     let owner_widget;
+    let avatar_widget;
 
     function submit_bot_details() {
         const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
         const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
+        const url = "/json/bots/" + encodeURIComponent(bot.user_id);
 
-        const url = "/json/bots/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
-            role: JSON.stringify(role),
-        };
+        const formData = new FormData();
+        formData.append("csrfmiddlewaretoken", csrf_token);
+        formData.append("full_name", $full_name.val());
+        formData.append("role", JSON.stringify(role));
 
         if (owner_widget === undefined) {
             blueslip.error("get_bot_owner_widget not called");
         }
         const human_user_id = owner_widget.value();
         if (human_user_id) {
-            data.bot_owner_id = human_user_id;
+            formData.append("bot_owner_id", human_user_id);
         }
 
-        dialog_widget.submit_api_request(channel.patch, url, data);
+        const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
+        for (const [i, file] of Array.prototype.entries.call($file_input[0].files)) {
+            formData.append("file-" + i, file);
+        }
+
+        channel.patch({
+            url,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success() {
+                avatar_widget.clear();
+                dialog_widget.close_modal();
+            },
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                dialog_widget.hide_dialog_spinner();
+            },
+        });
     }
 
     function edit_bot_post_render() {
@@ -302,6 +322,8 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
                 .hide();
         }
+
+        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
             e.preventDefault();
