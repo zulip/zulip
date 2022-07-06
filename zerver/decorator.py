@@ -542,7 +542,7 @@ def web_public_view(
     view_func: ViewFuncT,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
+) -> ViewFuncT:
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
