@@ -83,6 +83,7 @@ def init_fakeldap(
     mock_ldap = MockLDAP()
     mock_initialize.return_value = mock_ldap
 
+    assert settings.FAKE_LDAP_MODE is not None
     mock_ldap.directory = directory or generate_dev_ldap_dir(
         settings.FAKE_LDAP_MODE, settings.FAKE_LDAP_NUM_USERS
     )

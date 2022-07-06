@@ -107,6 +107,7 @@ class Command(ZulipBaseCommand):
             print("Mobile Push Notification Service registration successfully updated!")
 
     def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
+        assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
         try:
