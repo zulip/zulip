@@ -244,7 +244,7 @@ body.dark-theme {
     .new-style .button {
         background-color: hsla(0, 0%, 0%, 0.2);
 
-        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote) {
+        &:not(.sea-green):not(.btn-danger):not(.btn-warning):not(.btn-link):not(.poll-vote):not(.poll-button):not(.add-task-button) {
             border-color: hsla(0, 0%, 0%, 0.6);
             color: inherit;
         }
@@ -1138,7 +1138,7 @@ body.dark-theme {
     }
 
     a:not(:active):focus,
-    button:focus,
+    button:not(.poll-vote):not(.add-task-button):not(.poll-button):focus,
     .new-style label.checkbox input[type="checkbox"]:focus ~ span,
     i.fa:focus,
     i.zulip-icon:focus,
@@ -1184,6 +1184,27 @@ body.dark-theme {
 
         .poll-names {
             color: hsl(236, 15%, 70%);
+        }
+    }
+
+    /* Widgets: Todo */
+    .todo-widget {
+        label.checkbox {
+            input[type="checkbox"] {
+                ~ span {
+                    border-color: hsl(185, 40%, 45%);
+                    opacity: 0.7;
+                }
+
+                &:checked ~ span {
+                    background-color: hsl(185, 40%, 45%);
+                    opacity: 0.7;
+                }
+
+                &:focus ~ span {
+                    outline-color: hsla(0, 0%, 100%, 0);
+                }
+            }
         }
     }
 

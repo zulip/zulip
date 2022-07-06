@@ -453,7 +453,7 @@ label {
 
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
-button:focus,
+button:not(.poll-button):not(.add-task-button):not(.poll-vote):focus,
 .new-style label.checkbox input[type="checkbox"]:focus ~ span,
 i.fa:focus,
 i.zulip-icon:focus,
