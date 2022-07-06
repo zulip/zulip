@@ -311,6 +311,7 @@ def sanity_check_output(data: TableData) -> None:
         + list(apps.get_app_config("django_otp").get_models(include_auto_created=True))
         + list(apps.get_app_config("otp_static").get_models(include_auto_created=True))
         + list(apps.get_app_config("otp_totp").get_models(include_auto_created=True))
+        + list(apps.get_app_config("phonenumber").get_models(include_auto_created=True))
         + list(apps.get_app_config("social_django").get_models(include_auto_created=True))
         + list(apps.get_app_config("two_factor").get_models(include_auto_created=True))
         + list(apps.get_app_config("zerver").get_models(include_auto_created=True))
