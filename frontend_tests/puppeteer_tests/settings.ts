@@ -217,6 +217,8 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     await page.waitForFunction(
         (cancel_button_selector: string) =>
             !document.querySelector(cancel_button_selector)?.hasAttribute("disabled"),
+        {},
+        cancel_button_selector,
     );
     await page.click(cancel_button_selector);
     await page.waitForXPath(
