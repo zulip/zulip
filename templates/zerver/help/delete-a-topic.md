@@ -22,9 +22,9 @@ whereas [archiving a stream](/help/archive-a-stream) does not.
 
 {start_tabs}
 
-1. Hover over the topic in the **left sidebar**.
+{tab|desktop-web}
 
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
+{!topic-actions.md!}
 
 1. Click **Delete topic**.
 
