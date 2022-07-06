@@ -8234,7 +8234,7 @@ paths:
         - name: send_private_typing_notifications
           in: query
           description: |
-            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            Whether [typing notifications](/help/typing-notifications) be sent when composing
             private messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
@@ -8244,7 +8244,7 @@ paths:
         - name: send_stream_typing_notifications
           in: query
           description: |
-            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            Whether [typing notifications](/help/typing-notifications) be sent when composing
             stream messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
@@ -10125,7 +10125,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the user has chosen to send [typing
-                              notifications](/help/status-and-availability#typing-notifications)
+                              notifications](/help/typing-notifications)
                               when composing private messages. The client should send typing
                               notifications for private messages if and only if this setting is enabled.
 
@@ -10134,7 +10134,7 @@ paths:
                             type: boolean
                             description: |
                               Whether the user has chosen to send [typing
-                              notifications](/help/status-and-availability#typing-notifications)
+                              notifications](/help/typing-notifications)
                               when composing stream messages. The client should send typing
                               notifications for stream messages if and only if this setting is enabled.
 
@@ -11936,14 +11936,14 @@ paths:
                           send_private_typing_notifications:
                             type: boolean
                             description: |
-                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              Whether [typing notifications](/help/typing-notifications) be sent when composing
                               private messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
                           send_stream_typing_notifications:
                             type: boolean
                             description: |
-                              Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+                              Whether [typing notifications](/help/typing-notifications) be sent when composing
                               stream messages.
 
                               **Changes**: New in Zulip 5.0 (feature level 105).
@@ -13046,7 +13046,7 @@ paths:
         - name: send_private_typing_notifications
           in: query
           description: |
-            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            Whether [typing notifications](/help/typing-notifications) be sent when composing
             private messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
@@ -13056,7 +13056,7 @@ paths:
         - name: send_stream_typing_notifications
           in: query
           description: |
-            Whether [typing notifications](/help/status-and-availability#typing-notifications) be sent when composing
+            Whether [typing notifications](/help/typing-notifications) be sent when composing
             stream messages.
 
             **Changes**: New in Zulip 5.0 (feature level 105).
