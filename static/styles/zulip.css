@@ -2976,11 +2976,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #scroll-to-bottom-button-container {
-    display: none;
-    z-index: 3;
+    display: block;
     position: absolute;
     bottom: 41px;
     right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 500ms, opacity 500ms ease-in-out;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
 
     #scroll-to-bottom-button-clickable-area {
         width: 60px;

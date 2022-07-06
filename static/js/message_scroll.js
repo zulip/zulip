@@ -137,7 +137,7 @@ export function hide_scroll_to_bottom() {
     if (message_viewport.bottom_message_visible() || message_lists.current.empty()) {
         // If last message is visible, just hide the
         // scroll to bottom button.
-        $show_scroll_to_bottom_button.fadeOut(500);
+        $show_scroll_to_bottom_button.removeClass("show");
         return;
     }
 
@@ -148,7 +148,7 @@ export function hide_scroll_to_bottom() {
             !narrow_state.narrowed_by_topic_reply() &&
             !$show_scroll_to_bottom_button.get(0).matches(":hover")
         ) {
-            $show_scroll_to_bottom_button.fadeOut(500);
+            $show_scroll_to_bottom_button.removeClass("show");
         }
     }, 3000);
 }
@@ -162,7 +162,7 @@ export function show_scroll_to_bottom_button() {
     }
 
     clearTimeout(hide_scroll_to_bottom_timer);
-    $("#scroll-to-bottom-button-container").fadeIn(500);
+    $("#scroll-to-bottom-button-container").addClass("show");
 }
 
 $(document).on("keydown", (e) => {
@@ -172,7 +172,7 @@ $(document).on("keydown", (e) => {
 
     // Hide scroll to bottom button on any keypress.
     // Keyboard users are very less likely to use this button.
-    $("#scroll-to-bottom-button-container").fadeOut(500);
+    $("#scroll-to-bottom-button-container").removeClass("show");
 });
 
 export function is_actively_scrolling() {
