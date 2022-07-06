@@ -60,6 +60,7 @@
 * [Resize the compose box](/help/resize-the-compose-box)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Mention a user or group](/help/mention-a-user-or-group)
+* [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
 * [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
