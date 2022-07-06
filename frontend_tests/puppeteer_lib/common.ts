@@ -103,7 +103,7 @@ class CommonUtils {
         // This function hacks around that issue; once it's fixed in
         // puppeteer upstream, we can delete this function and return
         // its callers to using `page.url()`
-        return await page.evaluate("location.href");
+        return await page.evaluate(() => window.location.href);
     }
 
     // This function will clear the existing value of the element and
@@ -280,13 +280,13 @@ class CommonUtils {
     }
 
     async assert_compose_box_content(page: Page, expected_value: string): Promise<void> {
-        await page.waitForSelector("#compose-textarea");
-
-        const compose_box_element = await page.$("#compose-textarea");
-        const compose_box_content = await page.evaluate(
-            (element: HTMLTextAreaElement) => element.value,
-            compose_box_element,
-        );
+        const compose_box_element = await page.waitForSelector("#compose-textarea");
+        const compose_box_content = await page.evaluate((element) => {
+            if (!(element instanceof HTMLTextAreaElement)) {
+                throw new TypeError("expected HTMLTextAreaElement");
+            }
+            return element.value;
+        }, compose_box_element);
         assert.equal(
             compose_box_content,
             expected_value,
@@ -501,12 +501,12 @@ class CommonUtils {
             `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
             {visible: true},
         );
-        const entry_x = (await entry?.boundingBox())?.x;
-        const entry_y = (await entry?.boundingBox())?.y;
-        if (entry_x && entry_y) {
-            await page.mouse.move(entry_x, entry_y);
-        }
+        assert.ok(entry);
+        await entry.hover();
         await page.evaluate((entry) => {
+            if (!(entry instanceof HTMLElement)) {
+                throw new TypeError("expected HTMLElement");
+            }
             entry.click();
         }, entry);
     }
