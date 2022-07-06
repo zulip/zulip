@@ -1046,10 +1046,13 @@ def custom_fetch_user_profile_cross_realm(response: TableData, context: Context)
         )
 
 
-def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[int]) -> None:
-    filter_args = {"realm_id": realm_id}
-    query = Attachment.objects.filter(**filter_args)
-    response["zerver_attachment"] = make_raw(list(query))
+def fetch_attachment_data(
+    response: TableData, realm_id: int, message_ids: Set[int]
+) -> List[Attachment]:
+    attachments = list(
+        Attachment.objects.filter(realm_id=realm_id, messages__in=message_ids).distinct()
+    )
+    response["zerver_attachment"] = make_raw(attachments)
     floatify_datetime_fields(response, "zerver_attachment")
 
     """
@@ -1062,16 +1065,7 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
         filterer_message_ids = set(row["messages"]).intersection(message_ids)
         row["messages"] = sorted(filterer_message_ids)
 
-    """
-    Attachments can be connected to multiple messages, although
-    it's most common to have just one message. Regardless,
-    if none of those message(s) survived the filtering above
-    for a particular attachment, then we won't export the
-    attachment row.
-    """
-    response["zerver_attachment"] = [
-        row for row in response["zerver_attachment"] if row["messages"]
-    ]
+    return attachments
 
 
 def custom_fetch_realm_audit_logs_for_user(response: TableData, context: Context) -> None:
@@ -1357,7 +1351,11 @@ def write_message_partials(
 
 
 def export_uploads_and_avatars(
-    realm: Realm, *, user: Optional[UserProfile], output_dir: Path
+    realm: Realm,
+    *,
+    attachments: Optional[List[Attachment]] = None,
+    user: Optional[UserProfile],
+    output_dir: Path,
 ) -> None:
     uploads_output_dir = os.path.join(output_dir, "uploads")
     avatars_output_dir = os.path.join(output_dir, "avatars")
@@ -1379,7 +1377,7 @@ def export_uploads_and_avatars(
     if user is None:
         handle_system_bots = True
         users = list(UserProfile.objects.filter(realm=realm))
-        attachments = list(Attachment.objects.filter(realm_id=realm.id))
+        assert attachments is not None
         realm_emojis = list(RealmEmoji.objects.filter(realm_id=realm.id))
     else:
         handle_system_bots = False
@@ -1838,9 +1836,6 @@ def do_export_realm(
 
     sanity_check_output(response)
 
-    logging.info("Exporting uploaded files and avatars")
-    export_uploads_and_avatars(realm, user=None, output_dir=output_dir)
-
     # We (sort of) export zerver_message rows here.  We write
     # them to .partial files that are subsequently fleshed out
     # by parallel processes to add in zerver_usermessage data.
@@ -1869,7 +1864,12 @@ def do_export_realm(
     export_analytics_tables(realm=realm, output_dir=output_dir)
 
     # zerver_attachment
-    export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
+    attachments = export_attachment_table(
+        realm=realm, output_dir=output_dir, message_ids=message_ids
+    )
+
+    logging.info("Exporting uploaded files and avatars")
+    export_uploads_and_avatars(realm, attachments=attachments, user=None, output_dir=output_dir)
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(
@@ -1893,11 +1893,16 @@ def do_export_realm(
     return tarball_path
 
 
-def export_attachment_table(realm: Realm, output_dir: Path, message_ids: Set[int]) -> None:
+def export_attachment_table(
+    realm: Realm, output_dir: Path, message_ids: Set[int]
+) -> List[Attachment]:
     response: TableData = {}
-    fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
+    attachments = fetch_attachment_data(
+        response=response, realm_id=realm.id, message_ids=message_ids
+    )
     output_file = os.path.join(output_dir, "attachment.json")
     write_table_data(output_file=output_file, data=response)
+    return attachments
 
 
 def create_soft_link(source: Path, in_progress: bool = True) -> None:
