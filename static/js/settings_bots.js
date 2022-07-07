@@ -17,6 +17,10 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 
+const OUTGOING_WEBHOOK_BOT_TYPE = "3";
+const GENERIC_BOT_TYPE = "1";
+const EMBEDDED_BOT_TYPE = "4";
+
 export function hide_errors() {
     $("#bot_table_error").hide();
     $(".bot_error").hide();
@@ -257,9 +261,6 @@ export function set_up() {
     );
 
     const create_avatar_widget = avatar.build_bot_create_widget();
-    const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-    const GENERIC_BOT_TYPE = "1";
-    const EMBEDDED_BOT_TYPE = "4";
 
     const GENERIC_INTERFACE = "1";
 
