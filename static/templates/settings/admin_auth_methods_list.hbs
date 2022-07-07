@@ -1,12 +1,8 @@
-<tr class="method_row" data-method="{{method}}">
-    <td>
-        <label class="checkbox">
-            <input type="checkbox" {{#if enabled}}checked="checked"{{/if}} {{#unless is_owner}}disabled{{/unless}}/>
-            <span></span>
-        </label>
-    </td>
-    <td>
-        <span class="method">{{method}}</span>
-    </td>
-
-</tr>
+<div class="method_row" data-method="{{method}}">
+    {{> settings_checkbox
+      setting_name="realm_authentication_methods"
+      prefix=prefix
+      is_checked=enabled
+      label=method
+      is_disabled=(not is_owner) }}
+</div>
