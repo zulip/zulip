@@ -191,6 +191,7 @@
 * [Weekly digest emails](/help/digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
 * [Configure notification bot](/help/configure-notification-bot)
+* [Configure multi-language search](/help/configure-multi-language-search)
 
 ## Bots & integrations
 * [Bots and integrations](/help/bots-and-integrations)

@@ -12,7 +12,7 @@ app's gear menu.
 
 ## The default full-text search implementation
 
-Zulip's uses [PostgreSQL's built-in full-text search
+Zulip uses [PostgreSQL's built-in full-text search
 feature](https://www.postgresql.org/docs/current/textsearch.html),
 with a custom set of English stop words to improve the quality of the
 search results.
