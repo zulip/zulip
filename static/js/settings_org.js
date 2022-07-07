@@ -418,7 +418,7 @@ export function populate_auth_methods(auth_methods) {
     if (!meta.loaded) {
         return;
     }
-    const $auth_methods_table = $("#id_realm_authentication_methods").expectOne();
+    const $auth_methods_list = $("#id_realm_authentication_methods").expectOne();
     auth_methods = sort_object_by_key(auth_methods);
     let rendered_auth_method_rows = "";
     for (const [auth_method, value] of Object.entries(auth_methods)) {
@@ -435,7 +435,7 @@ export function populate_auth_methods(auth_methods) {
             prefix: "id_authmethod" + auth_method.toLowerCase().replace(/[^\da-z]/g, "") + "_",
         });
     }
-    $auth_methods_table.html(rendered_auth_method_rows);
+    $auth_methods_list.html(rendered_auth_method_rows);
 }
 
 function update_dependent_subsettings(property_name) {
@@ -720,7 +720,7 @@ export function set_up() {
     maybe_disable_widgets();
 }
 
-function get_auth_method_table_data() {
+function get_auth_method_list_data() {
     const new_auth_methods = {};
     const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
@@ -755,7 +755,7 @@ function check_property_changed(elem, for_realm_default_settings) {
         case "realm_authentication_methods":
             current_val = sort_object_by_key(current_val);
             current_val = JSON.stringify(current_val);
-            changed_val = get_auth_method_table_data();
+            changed_val = get_auth_method_list_data();
             changed_val = JSON.stringify(changed_val);
             break;
         case "realm_notifications_stream_id":
@@ -1003,7 +1003,7 @@ export function register_save_discard_widget_handlers(
             }
             case "auth_settings":
                 data = {};
-                data.authentication_methods = JSON.stringify(get_auth_method_table_data());
+                data.authentication_methods = JSON.stringify(get_auth_method_list_data());
                 break;
         }
         return data;
