@@ -103,6 +103,7 @@ export function initialize() {
         realm_name: page_params.realm_name,
         realm_uri: new URL(page_params.realm_uri).hostname,
         is_owner: page_params.is_owner,
+        is_admin: page_params.is_admin,
         zulip_plan: page_params.zulip_plan_is_not_limited,
         apps_page_url: page_params.apps_page_url,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
