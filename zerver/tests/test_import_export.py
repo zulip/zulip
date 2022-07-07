@@ -301,6 +301,7 @@ class RealmImportExportTest(ExportFile):
         realm: Realm,
         exportable_user_ids: Optional[Set[int]] = None,
         consent_message_id: Optional[int] = None,
+        public_only: bool = False,
     ) -> None:
         output_dir = make_export_output_dir()
         with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
@@ -310,6 +311,7 @@ class RealmImportExportTest(ExportFile):
                 threads=0,
                 exportable_user_ids=exportable_user_ids,
                 consent_message_id=consent_message_id,
+                public_only=public_only,
             )
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
@@ -329,6 +331,39 @@ class RealmImportExportTest(ExportFile):
         self.verify_avatars(user)
         self.verify_emojis(user, is_s3=False)
         self.verify_realm_logo_and_icon()
+
+    def test_public_only_export_files_private_uploads_not_included(self) -> None:
+        """
+        This test verifies that when doing a public_only export, private uploads
+        don't get included in the exported data.
+        """
+
+        user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+
+        # We create an attachment tied to a personal message. That means it shouldn't be
+        # included in a public export, as it's private data.
+        personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
+        url = upload_message_file(
+            "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
+        )
+        attachment_path_id = url.replace("/user_uploads/", "")
+        attachment = claim_attachment(
+            user_profile=user_profile,
+            path_id=attachment_path_id,
+            message=Message.objects.get(id=personal_message_id),
+            is_message_realm_public=True,
+        )
+
+        self.export_realm(realm, public_only=True)
+
+        # The attachment row shouldn't have been exported:
+        self.assertEqual((read_json("attachment.json")["zerver_attachment"]), [])
+
+        # Aside of the attachment row, we also need to verify that the file itself
+        # isn't included.
+        fn = export_fn(f"uploads/{attachment.path_id}")
+        self.assertFalse(os.path.exists(fn))
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
