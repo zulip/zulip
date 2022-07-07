@@ -82,6 +82,38 @@ const markdown_help_rows = [
         output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
     },
     {
+        markdown: `/poll What did you drink this morning?
+Milk
+Tea
+Coffee`,
+        output_html: `\
+<div class="poll-widget">
+    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
+    <i class="fa fa-pencil poll-edit-question"></i>
+    <ul class="poll-widget">
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Milk</span>
+    </li>
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Tea</span>
+    </li>
+    <li>
+        <button class="poll-vote">
+            0
+        </button>
+        <span>Coffee</span>
+    </li>
+    </ul>
+</div>
+`,
+    },
+    {
         markdown: "Some inline `code`",
     },
     {
