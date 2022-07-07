@@ -12,6 +12,7 @@ import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
+import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -516,4 +517,5 @@ export function remove_messages(message_ids) {
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_topics_ui.update_topics_of_deleted_message_ids(message_ids);
+    message_list_data.remove_message_ids(message_ids);
 }

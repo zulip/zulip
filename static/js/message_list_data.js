@@ -9,6 +9,8 @@ import {page_params} from "./page_params";
 import * as unread from "./unread";
 import * as util from "./util";
 
+export const msg_list_data_map = new Map(); // Key = JSON.stringify(Filter()._operators)
+
 export class MessageListData {
     constructor({excludes_muted_topics, filter = new Filter()}) {
         this.excludes_muted_topics = excludes_muted_topics;
@@ -323,6 +325,11 @@ export class MessageListData {
 
     remove(message_ids) {
         const msg_ids_to_remove = new Set(message_ids);
+        // Check if we have any of the message_ids that needs to be removed to save time.
+        if (![...this._hash.keys()].some((msg_id) => msg_ids_to_remove.has(msg_id))) {
+            return;
+        }
+
         for (const id of msg_ids_to_remove) {
             this._hash.delete(id);
             this._local_only.delete(id);
@@ -540,5 +547,54 @@ export class MessageListData {
         }
         const msg = this._items[msg_index];
         return msg;
+    }
+}
+
+export function get_message_list_data(excludes_muted_topics, filter = new Filter()) {
+    /* `excludes_muted_topics` is not included in the key since we can determine `excludes_muted_topics`
+       from the filter itself. So, `excludes_muted_topics` doesn't vary with the filter.
+    */
+    const data_key = JSON.stringify(filter._operators);
+    let msg_data = msg_list_data_map.get(data_key);
+    if (!msg_data) {
+        msg_data = new MessageListData({excludes_muted_topics, filter});
+        msg_list_data_map.set(data_key, msg_data);
+    }
+    return msg_data;
+}
+
+export function clear_message_list_data_for_filter(filter) {
+    msg_list_data_map.delete(JSON.stringify(filter._operators));
+}
+
+export function remove_message_ids(message_ids) {
+    for (const msg_data of msg_list_data_map.values()) {
+        msg_data.remove(message_ids);
+    }
+}
+
+export function clear_data_storage() {
+    msg_list_data_map.clear();
+}
+
+export function update_data_for_muted_topic(stream_name) {
+    for (const key of msg_list_data_map.keys()) {
+        // Update the stream narrow of the topic.
+        if (
+            key.includes(JSON.stringify({negated: false, operator: "stream", operand: stream_name}))
+        ) {
+            msg_list_data_map.get(key).update_items_for_muting();
+        }
+        // Update the non-stream narrows except pms.
+        if (
+            !key.includes(
+                JSON.stringify({negated: true, operator: "stream", operand: stream_name}),
+            ) ||
+            !key.includes('"negated":false,"operator":"stream"') ||
+            !key.includes("pm-with") ||
+            !key.includes("private")
+        ) {
+            msg_list_data_map.get(key).update_items_for_muting();
+        }
     }
 }

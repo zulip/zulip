@@ -5,6 +5,7 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
+import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as muted_topics from "./muted_topics";
 import * as overlays from "./overlays";
@@ -33,6 +34,7 @@ export function rerender_for_muted_topic(old_muted_topics) {
 
     for (const topic_data of maybe_affected_topics) {
         recent_topics_ui.update_topic_is_muted(topic_data.stream_id, topic_data.topic);
+        message_list_data.update_data_for_muted_topic(topic_data.stream);
     }
 }
 

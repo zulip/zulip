@@ -15,3 +15,4 @@ export {cancel as cancel_compose} from "./compose_actions";
 export {page_params, page_params_parse_time} from "./page_params";
 export {initiate as initiate_reload} from "./reload";
 export {add_user_id_to_new_stream} from "./stream_create_subscribers";
+export {msg_list_data_map} from "./message_list_data";

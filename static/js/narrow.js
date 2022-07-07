@@ -15,7 +15,7 @@ import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
-import {MessageListData} from "./message_list_data";
+import * as message_list_data from "./message_list_data";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
@@ -445,10 +445,7 @@ export function activate(raw_operators, opts) {
 
     const excludes_muted_topics = narrow_state.excludes_muted_topics();
 
-    let msg_data = new MessageListData({
-        filter: narrow_state.filter(),
-        excludes_muted_topics,
-    });
+    let msg_data = message_list_data.get_message_list_data(excludes_muted_topics, filter);
 
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
@@ -466,10 +463,8 @@ export function activate(raw_operators, opts) {
         // messages in the MessageListData built inside
         // maybe_add_local_messages is likely not be contiguous with
         // the block we're about to request from the server instead.
-        msg_data = new MessageListData({
-            filter: narrow_state.filter(),
-            excludes_muted_topics,
-        });
+        message_list_data.clear_message_list_data_for_filter(filter);
+        msg_data = message_list_data.get_message_list_data(excludes_muted_topics, filter);
     }
 
     const msg_list = new message_list.MessageList({
