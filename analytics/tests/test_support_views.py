@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         reset_emails_in_zulip_realm()
+        lear_realm = get_realm("lear")
 
         def assert_user_details_in_html_response(
             html_response: "TestHttpResponse", full_name: str, email: str, role: str
@@ -106,7 +107,6 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
         def check_lear_realm_query_result(result: "TestHttpResponse") -> None:
-            lear_realm = get_realm("lear")
             self.assert_in_success_response(
                 [
                     f'<input type="hidden" name="realm_id" value="{lear_realm.id}"',
@@ -213,7 +213,7 @@ class TestSupportEndpoint(ZulipTestCase):
             acting_user=None,
         )
 
-        customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_123")
+        customer = Customer.objects.create(realm=lear_realm, stripe_customer_id="cus_123")
         now = datetime(2016, 1, 2, tzinfo=timezone.utc)
         plan = CustomerPlan.objects.create(
             customer=customer,
