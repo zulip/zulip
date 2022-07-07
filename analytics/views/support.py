@@ -287,30 +287,11 @@ def support(
             except ValidationError:
                 users.update(UserProfile.objects.filter(full_name__iexact=key_word))
 
-        plan_data: Dict[int, PlanData] = {}
-        for realm in realms:
-            current_plan = get_current_plan_by_realm(realm)
-            plan_data[realm.id] = PlanData(
-                customer=get_customer_by_realm(realm),
-                current_plan=current_plan,
-            )
-            if current_plan is not None:
-                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
-                    current_plan, timezone_now()
-                )
-                if last_ledger_entry is not None:
-                    if new_plan is not None:
-                        plan_data[realm.id].current_plan = new_plan
-                    else:
-                        plan_data[realm.id].current_plan = current_plan
-                    plan_data[realm.id].licenses = last_ledger_entry.licenses
-                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
         # full_names can have , in them
         users.update(UserProfile.objects.filter(full_name__iexact=query))
 
         context["users"] = users
         context["realms"] = realms
-        context["plan_data"] = plan_data
 
         confirmations: List[Dict[str, Any]] = []
 
@@ -333,6 +314,39 @@ def support(
         )
 
         context["confirmations"] = confirmations
+
+        # We want a union of all realms that might appear in the search result,
+        # but not necessary as a separate result item.
+        # Therefore, we do not modify the realms object in the context.
+        all_realms = realms.union(
+            [
+                confirmation["object"].realm
+                for confirmation in confirmations
+                # For confirmations, we only display realm details when the type is USER_REGISTRATION
+                # or INVITATION.
+                if confirmation["type"] in (Confirmation.USER_REGISTRATION, Confirmation.INVITATION)
+            ]
+            + [user.realm for user in users]
+        )
+        plan_data: Dict[int, PlanData] = {}
+        for realm in all_realms:
+            current_plan = get_current_plan_by_realm(realm)
+            plan_data[realm.id] = PlanData(
+                customer=get_customer_by_realm(realm),
+                current_plan=current_plan,
+            )
+            if current_plan is not None:
+                new_plan, last_ledger_entry = make_end_of_cycle_updates_if_needed(
+                    current_plan, timezone_now()
+                )
+                if last_ledger_entry is not None:
+                    if new_plan is not None:
+                        plan_data[realm.id].current_plan = new_plan
+                    else:
+                        plan_data[realm.id].current_plan = current_plan
+                    plan_data[realm.id].licenses = last_ledger_entry.licenses
+                    plan_data[realm.id].licenses_used = get_latest_seat_count(realm)
+        context["plan_data"] = plan_data
 
     def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
