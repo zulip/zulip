@@ -909,15 +909,11 @@ export function register_click_handlers() {
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_private_messages", (e) => {
-        const user_id = elem_to_user_id($(e.target).parents("ul"));
-        const email = people.get_by_user_id(user_id).email;
         hide_all();
         if (overlays.settings_open()) {
             overlays.close_overlay("settings");
         }
-        narrow.by("pm-with", email, {trigger: "user sidebar popover"});
         e.stopPropagation();
-        e.preventDefault();
     });
 
     $("body").on("click", ".info_popover_actions .narrow_to_messages_sent", (e) => {
