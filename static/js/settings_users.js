@@ -672,7 +672,7 @@ function handle_bot_form($tbody) {
             dialog_widget.submit_api_request(channel.patch, url, data);
         }
 
-        function get_bot_owner_widget_and_set_role_values() {
+        function edit_bot_post_render() {
             const owner_id = bot_data.get(user_id).owner_id;
 
             const user_ids = people.get_active_human_ids();
@@ -709,7 +709,7 @@ function handle_bot_form($tbody) {
             html_body,
             id: "edit_bot_modal",
             on_click: submit_bot_details,
-            post_render: get_bot_owner_widget_and_set_role_values,
+            post_render: edit_bot_post_render,
         });
     });
 }
