@@ -776,6 +776,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return attr_value_upper in true_values
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
+        realm_access_control = settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL
         # org_membership takes priority over AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL.
         if "org_membership" in settings.AUTH_LDAP_USER_ATTR_MAP:
             org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
@@ -783,20 +784,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             if is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs):
                 return False
             # If Advanced is not configured, forbid access
-            if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
+            if realm_access_control is None:
                 return True
 
         # If neither setting is configured, allow access.
-        if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
+        if realm_access_control is None:
             return False
 
         # With settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL, we
         # allow access if and only if one of the entries for the
         # target subdomain matches the user's LDAP attributes.
-        realm_access_control = settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL
         if not (
-            isinstance(realm_access_control, dict)
-            and realm.subdomain in realm_access_control
+            realm.subdomain in realm_access_control
             and isinstance(realm_access_control[realm.subdomain], list)
             and len(realm_access_control[realm.subdomain]) > 0
         ):
