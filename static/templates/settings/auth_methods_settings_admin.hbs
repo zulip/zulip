@@ -11,15 +11,9 @@
 
             <div>
                 <p>{{t "Configure the authentication methods for your organization."}}</p>
-                <table id="id_realm_authentication_methods"
-                  class="table table-condensed table-striped prop-element">
-                    <thead>
-                        <th>{{t "Method" }}</th>
-                        <th>{{t "Enabled" }}</th>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <div id="id_realm_authentication_methods">
+                    {{! Empty div is intentional, it will get populated by a dedicated template }}
+                </div>
             </div>
         </div>
     </form>

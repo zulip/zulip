@@ -218,6 +218,17 @@ export function extract_property_name($elem, for_realm_default_settings) {
         // ID approach.
         return $elem.attr("name");
     }
+
+    if ($elem.attr("id").startsWith("id_authmethod")) {
+        // Authentication Method component IDs include authentication method name
+        // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+        // We need to strip that whole construct down to extract the actual property name.
+        // The [\da-z]+ part of the regexp covers the auth method name itself.
+        // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+        // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+        return /^id_authmethod[\da-z]+_(.*)$/.exec($elem.attr("id"))[1];
+    }
+
     return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
@@ -415,6 +426,13 @@ export function populate_auth_methods(auth_methods) {
             method: auth_method,
             enabled: value,
             is_owner: page_params.is_owner,
+            // The negated character class regexp serves as an allowlist - the replace() will
+            // remove *all* symbols *but* digits (\d) and lowecase letters (a-z),
+            // so that we can make assumptions on this string elsewhere in the code.
+            // As a result, the only two "incoming" assumptions on the auth method name are:
+            // 1) It contains at least one allowed symbol
+            // 2) No two auth method names are identical after this allowlist filtering
+            prefix: "id_authmethod" + auth_method.toLowerCase().replace(/[^\da-z]/g, "") + "_",
         });
     }
     $auth_methods_table.html(rendered_auth_method_rows);
@@ -704,7 +722,7 @@ export function set_up() {
 
 function get_auth_method_table_data() {
     const new_auth_methods = {};
-    const $auth_method_rows = $("#id_realm_authentication_methods").find("tr.method_row");
+    const $auth_method_rows = $("#id_realm_authentication_methods").find("div.method_row");
 
     for (const method_row of $auth_method_rows) {
         new_auth_methods[$(method_row).data("method")] = $(method_row)
@@ -1016,6 +1034,16 @@ export function register_save_discard_widget_handlers(
                         // IDs, and also the emojiset input is not compatible with the
                         // ID approach.
                         property_name = $input_elem.attr("name");
+                    } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
+                        // Authentication Method component IDs include authentication method name
+                        // for uniqueness, anchored to "id_authmethod" prefix, e.g. "id_authmethodapple_<property_name>".
+                        // We need to strip that whole construct down to extract the actual property name.
+                        // The [\da-z]+ part of the regexp covers the auth method name itself.
+                        // We assume it's not an empty string and can contain only digits and lowercase ASCII letters,
+                        // this is ensured by a respective allowlist-based filter in populate_auth_methods().
+                        [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec(
+                            $input_elem.attr("id"),
+                        );
                     } else {
                         [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
                     }

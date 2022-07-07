@@ -285,14 +285,6 @@ td .button {
         z-index: 1;
     }
 
-    #id_realm_authentication_methods {
-        width: 20%;
-
-        td {
-            border: none;
-        }
-    }
-
     #admin_page_users_loading_indicator,
     #attachments_loading_indicator,
     #admin_page_deactivated_users_loading_indicator,
