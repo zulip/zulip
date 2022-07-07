@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from unittest import mock
 
 import orjson
@@ -41,6 +41,21 @@ class TestSupportEndpoint(ZulipTestCase):
                     f"<b>Role</b>: {role}<br />",
                 ],
                 html_response,
+            )
+
+        def create_invitation(
+            stream: str, invitee_email: str, realm: Optional[Realm] = None
+        ) -> None:
+            invite_expires_in_minutes = 10 * 24 * 60
+            self.client_post(
+                "/json/invites",
+                {
+                    "invitee_emails": [invitee_email],
+                    "stream_ids": orjson.dumps([self.get_stream_id(stream, realm)]).decode(),
+                    "invite_expires_in_minutes": invite_expires_in_minutes,
+                    "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                },
+                subdomain=realm.string_id if realm is not None else "zulip",
             )
 
         def check_hamlet_user_query_result(result: "TestHttpResponse") -> None:
@@ -268,18 +283,7 @@ class TestSupportEndpoint(ZulipTestCase):
             check_preregistration_user_query_result(result, self.nonreg_email("test"))
             check_zulip_realm_query_result(result)
 
-            invite_expires_in_minutes = 10 * 24 * 60
-            stream_ids = [self.get_stream_id("Denmark")]
-            invitee_emails = [self.nonreg_email("test1")]
-            self.client_post(
-                "/json/invites",
-                {
-                    "invitee_emails": invitee_emails,
-                    "stream_ids": orjson.dumps(stream_ids).decode(),
-                    "invite_expires_in_minutes": invite_expires_in_minutes,
-                    "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
-                },
-            )
+            create_invitation("Denmark", self.nonreg_email("test1"))
             result = get_check_query_result(self.nonreg_email("test1"), 1)
             check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
             check_zulip_realm_query_result(result)
@@ -289,6 +293,7 @@ class TestSupportEndpoint(ZulipTestCase):
             result = get_check_query_result(email, 1)
             check_realm_creation_query_result(result, email)
 
+            invite_expires_in_minutes = 10 * 24 * 60
             do_create_multiuse_invite_link(
                 self.example_user("hamlet"),
                 invited_as=1,
