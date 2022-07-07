@@ -80,7 +80,6 @@ const markdown_help_rows = [
     {
         markdown: "/me is busy working",
         output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
-        usage_html: "(send a status message as user Iago)",
     },
     {
         markdown: "Some inline `code`",
