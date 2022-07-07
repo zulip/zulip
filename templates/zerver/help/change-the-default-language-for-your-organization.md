@@ -34,3 +34,8 @@ can set the notifications language for the organization. This setting:
 {end_tabs}
 
 [api-create-user]: https://zulip.com/api/create-user
+
+## Related articles
+
+* [Change your language](/help/change-your-language)
+* [Configure multi-language search](/help/configure-multi-language-search)
