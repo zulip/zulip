@@ -407,8 +407,6 @@ export function set_up() {
         });
     });
 
-    let image_version = 0;
-
     $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -440,7 +438,6 @@ export function set_up() {
         function edit_bot_post_render() {
             const avatar_widget = avatar.build_bot_edit_widget($(".edit_bot_form"));
             const $form = $(".edit_bot_form");
-            const $image = $li.find(".image");
             const $errors = $form.find(".bot_edit_errors");
 
             const opts = {
@@ -510,20 +507,8 @@ export function set_up() {
                         cache: false,
                         processData: false,
                         contentType: false,
-                        success(data) {
+                        success() {
                             avatar_widget.clear();
-                            if (data.avatar_url) {
-                                // Note that the avatar_url won't actually change on the backend
-                                // when the user had a previous uploaded avatar.  Only the content
-                                // changes, so we version it to get an uncached copy.
-                                image_version += 1;
-                                $image
-                                    .find("img")
-                                    .attr(
-                                        "src",
-                                        data.avatar_url + "&v=" + image_version.toString(),
-                                    );
-                            }
                             dialog_widget.close_modal();
                         },
                         error(xhr) {
