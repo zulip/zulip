@@ -26,7 +26,7 @@
             {{#if can_invite_others_to_realm}}
             <a id="invite-user-link" href="#invite"><i class="fa fa-user-plus" aria-hidden="true"></i>{{t 'Invite more users' }}</a>
             {{/if}}
-            <a id="sidebar-keyboard-shortcuts" data-overlay-trigger="keyboard-shortcuts" class="hidden-for-spectators">
+            <a href="#keyboard-shortcuts" id="sidebar-keyboard-shortcuts" class="hidden-for-spectators">
                 <i class="fa fa-keyboard-o fa-2x tippy-zulip-tooltip" id="keyboard-icon" data-tooltip-template-id="keyboard-icon-tooltip"></i>
                 <template id="keyboard-icon-tooltip">{{t 'Keyboard shortcuts' }} <span class="hotkey-hint">(?)</span></template>
             </a>
