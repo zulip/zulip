@@ -28,6 +28,9 @@ if TYPE_CHECKING:
 class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         reset_emails_in_zulip_realm()
+        lear_user = self.lear_user("king")
+        lear_user.is_staff = True
+        lear_user.save(update_fields=["is_staff"])
         lear_realm = get_realm("lear")
 
         def assert_user_details_in_html_response(
@@ -73,6 +76,11 @@ class TestSupportEndpoint(ZulipTestCase):
                     ),
                 ],
                 result,
+            )
+
+        def check_lear_user_query_result(result: "TestHttpResponse") -> None:
+            assert_user_details_in_html_response(
+                result, lear_user.full_name, lear_user.email, "Member"
             )
 
         def check_othello_user_query_result(result: "TestHttpResponse") -> None:
@@ -240,6 +248,10 @@ class TestSupportEndpoint(ZulipTestCase):
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
 
+        result = get_check_query_result(lear_user.email, 1)
+        check_lear_user_query_result(result)
+        check_lear_realm_query_result(result)
+
         result = get_check_query_result(self.example_email("polonius"), 1)
         check_polonius_user_query_result(result)
         check_zulip_realm_query_result(result)
@@ -308,6 +320,18 @@ class TestSupportEndpoint(ZulipTestCase):
             result = get_check_query_result("zulip", 2)
             check_realm_reactivation_link_query_result(result)
             check_zulip_realm_query_result(result)
+
+            lear_nonreg_email = "newguy@lear.org"
+            self.client_post("/accounts/home/", {"email": lear_nonreg_email}, subdomain="lear")
+            result = get_check_query_result(lear_nonreg_email, 1)
+            check_preregistration_user_query_result(result, lear_nonreg_email)
+            check_lear_realm_query_result(result)
+
+            self.login_user(lear_user)
+            create_invitation("general", "newguy2@lear.org", lear_realm)
+            result = get_check_query_result("newguy2@lear.org", 1, lear_realm.string_id)
+            check_preregistration_user_query_result(result, "newguy2@lear.org", invite=True)
+            check_lear_realm_query_result(result)
 
     def test_get_org_type_display_name(self) -> None:
         self.assertEqual(get_org_type_display_name(Realm.ORG_TYPES["business"]["id"]), "Business")
