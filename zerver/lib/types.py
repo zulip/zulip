@@ -33,6 +33,11 @@ class ProfileDataElement(ProfileDataElementBase):
     rendered_value: Optional[str]
 
 
+class ProfileDataElementUpdateDict(TypedDict):
+    id: int
+    value: ProfileDataElementValue
+
+
 ProfileData = List[ProfileDataElement]
 
 FieldElement = Tuple[int, Promise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
