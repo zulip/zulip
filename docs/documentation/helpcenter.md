@@ -112,6 +112,10 @@ existing help center articles:
   of the article that again links to any help center documentation
   mentioned in the text or related to the feature.
 
+If your updates to the existing article will change the name of the
+markdown file, then see section below on [redirecting an existing
+article](#redirecting-an-existing-article).
+
 Creating robust and informative help center articles with good links
 will allow users to navigate the help center much more effectively.
 
@@ -147,6 +151,57 @@ filling out forms, interacting with UI widgets (e.g. typeaheads), interacting
 with modals, etc. should never go in the help center documentation.
 In such cases, you may be able to fix the problem by adding text in-app,
 where the user will see it as they are interacting with the feature.
+
+### Redirecting an existing article
+
+From time to time, we might want to rename an article in the help
+center, or REST API documentation. This change will break incoming
+links, including links in published Zulip blog posts, links in other
+branches of the repository that haven't been rebased, and more
+importantly links from previous versions of Zulip.
+
+To fix these broken links, you can easily add a URL redirect in:
+`zerver/lib/url_redirects.py`.
+
+For help center documentation, once you've renamed the file in your
+branch (e.g., `git mv path/to/foo.md path/to/bar.md`), go to
+`url_redirects.py` and add a new `URLRedirect` to the
+`HELP_DOCUMENTATION_REDIRECTS` list:
+
+```python
+HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+    # Add URL redirects for help center documentation here:
+    URLRedirect("/help/foo", "/help/bar"),
+    ...
+```
+
+Note that you will also need to add redirects when you're deleting
+a help center article and adding its content to an existing article
+as a section. In that case, the new URL will include the new section
+header: `URLRedirect("/help/foo", "/help/bar#new-section-header"),`.
+
+For REST API documentation, you will either need to rename the file
+as above, or you will need to update the endpoint's `operationId` in
+`zerver/openapi/zulip.yaml`. Then, you would add a new `URLRedirect`
+to the `API_DOCUMENTATION_REDIRECTS` list in `url_redirects.py`.
+
+You should still check for references to the old URL in your branch
+and replace those with the new URL (e.g., `git grep "/help/foo"`).
+Updating section headers in existing help center articles does not
+require adding a URL redirect, but you will need to update any
+existing links to that article's section in your branch.
+
+If you have the Zulip development environment set up, you can manually
+test your changes by loading the old URL in your browser (e.g.,
+`http://localhost:9991/help/foo`), and confirming that it redirects to
+the new url (e.g., `http://localhost:9991/help/bar`).
+
+There is also an automated test in `zerver/tests/test_urls.py` that
+checks all the URL redirects, which you can run from the command line:
+
+```console
+./tools/test-backend zerver.tests.test_urls.URLRedirectTest
+```
 
 ## Writing style
 
