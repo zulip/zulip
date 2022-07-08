@@ -48,7 +48,7 @@ from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_fi
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_response_from_error, json_success
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
-from zerver.lib.types import ProfileDataElementValue, Validator
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue, Validator
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import (
@@ -211,9 +211,10 @@ def update_user_backend(
         check_change_full_name(target, full_name, user_profile)
 
     if profile_data is not None:
-        clean_profile_data = []
+        clean_profile_data: List[ProfileDataElementUpdateDict] = []
         for entry in profile_data:
             assert isinstance(entry["id"], int)
+            assert not isinstance(entry["value"], int)
             if entry["value"] is None or not entry["value"]:
                 field_id = entry["id"]
                 check_remove_custom_profile_field_value(target, field_id)
