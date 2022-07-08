@@ -18,6 +18,7 @@ from django.views.generic import RedirectView, TemplateView
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
+from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.attachments import list_by_user, remove
@@ -780,98 +781,19 @@ policy_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html",
     policies_view=True,
 )
+
+# Redirects due to us having moved help center, API or policy documentation pages:
+for redirect in DOCUMENTATION_REDIRECTS:
+    old_url = redirect.old_url.lstrip("/")
+    urls += [path(old_url, RedirectView.as_view(url=redirect.new_url, permanent=True))]
+
 urls += [
-    # Redirects due to us having moved the docs:
-    path(
-        "help/delete-a-stream", RedirectView.as_view(url="/help/archive-a-stream", permanent=True)
-    ),
-    path("api/delete-stream", RedirectView.as_view(url="/api/archive-stream", permanent=True)),
-    path(
-        "help/change-the-topic-of-a-message",
-        RedirectView.as_view(url="/help/rename-a-topic", permanent=True),
-    ),
-    path(
-        "help/configure-missed-message-emails",
-        RedirectView.as_view(url="/help/email-notifications", permanent=True),
-    ),
-    path(
-        "help/add-an-alert-word",
-        RedirectView.as_view(
-            url="/help/pm-mention-alert-notifications#alert-words", permanent=True
-        ),
-    ),
-    path(
-        "help/test-mobile-notifications",
-        RedirectView.as_view(url="/help/mobile-notifications", permanent=True),
-    ),
-    path(
-        "help/troubleshooting-desktop-notifications",
-        RedirectView.as_view(
-            url="/help/desktop-notifications#troubleshooting-desktop-notifications", permanent=True
-        ),
-    ),
-    path(
-        "help/change-notification-sound",
-        RedirectView.as_view(
-            url="/help/desktop-notifications#change-notification-sound", permanent=True
-        ),
-    ),
-    path(
-        "help/configure-message-notification-emails",
-        RedirectView.as_view(url="/help/email-notifications", permanent=True),
-    ),
-    path(
-        "help/disable-new-login-emails",
-        RedirectView.as_view(url="/help/email-notifications#new-login-emails", permanent=True),
-    ),
-    # This redirect is particularly important, because the old URL
-    # appears in links from Welcome Bot messages.
-    path(
-        "help/about-streams-and-topics",
-        RedirectView.as_view(url="/help/streams-and-topics", permanent=True),
-    ),
-    path(
-        "help/community-topic-edits",
-        RedirectView.as_view(url="/help/configure-who-can-edit-topics", permanent=True),
-    ),
-    path(
-        "help/only-allow-admins-to-add-emoji",
-        RedirectView.as_view(
-            url="/help/custom-emoji#change-who-can-add-custom-emoji", permanent=True
-        ),
-    ),
-    path(
-        "help/configure-who-can-add-custom-emoji",
-        RedirectView.as_view(
-            url="/help/custom-emoji#change-who-can-add-custom-emoji", permanent=True
-        ),
-    ),
-    path(
-        "help/add-custom-emoji",
-        RedirectView.as_view(url="/help/custom-emoji", permanent=True),
-    ),
-    path(
-        "help/night-mode",
-        RedirectView.as_view(url="/help/dark-theme", permanent=True),
-    ),
-    path(
-        "help/web-public-streams",
-        RedirectView.as_view(url="/help/public-access-option", permanent=True),
-    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
     path("api/<slug:article>", api_documentation_view),
     path("policies/", policy_documentation_view),
     path("policies/<slug:article>", policy_documentation_view),
-    path(
-        "privacy/",
-        RedirectView.as_view(url="/policies/privacy"),
-    ),
-    path(
-        "terms/",
-        RedirectView.as_view(url="/policies/terms"),
-    ),
 ]
 
 # Two-factor URLs
