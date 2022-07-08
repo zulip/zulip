@@ -5886,7 +5886,7 @@ paths:
       summary: Edit a message
       tags: ["messages"]
       description: |
-        Edit/update the content or topic of a message.
+        Edit/update the content, topic, or stream of a message.
 
         `PATCH {{ api_url }}/v1/messages/{msg_id}`
 
@@ -5896,9 +5896,8 @@ paths:
         You can [resolve topics](/help/resolve-a-topic) by editing the
         topic to `✔ {original_topic}`.
 
-        **Note**: See [configuring message
-        editing][config-message-editing] for detailed documentation on
-        when users are allowed to edit topics.
+        **Note**: See [configuring message editing][config-message-editing]
+        for detailed documentation on when users are allowed to edit topics.
 
         [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:
@@ -5913,10 +5912,10 @@ paths:
           in: query
           description: |
             The topic to move the message(s) to, to request changing the topic.
+            Maximum length of 60 characters.
+
             Should only be sent when changing the topic, and will throw an error
             if the target message is not a stream message.
-
-            Maximum length of 60 characters.
 
             **Changes**: New in Zulip 2.0. Previous Zulip releases encoded
             this as `subject`, which is currently a deprecated alias.
@@ -5926,12 +5925,14 @@ paths:
         - name: propagate_mode
           in: query
           description: |
-            Which message(s) should be edited: just the one indicated in
-            `message_id`, messages in the same topic that had been sent after this
-            one, or all of them.
+            Which message(s) should be edited:
 
-            Only the default value of `change_one` is valid when
-            editing only the content of a message.
+            - `"change_later"`: The target message and all following messages.
+            - `"change_one"`: Only the target message.
+            - `"change_all"`: All messages in this topic.
+
+            Only the default value of `"change_one"` is valid when editing
+            only the content of a message.
 
             This parameter determines both which messages get moved and also whether
             clients that are currently narrowed to the topic containing the message
@@ -5976,6 +5977,10 @@ paths:
 
             Should only be sent when changing the stream, and will throw an error
             if the target message is not a stream message.
+
+            Note that a message's content and stream cannot be changed at the
+            same time, so sending both `content` and `stream_id` parameters will
+            throw an error.
           schema:
             type: integer
           example: 43
@@ -16251,7 +16256,12 @@ components:
       name: content
       in: query
       description: |
-        The content of the message. Maximum message size of 10000 bytes.
+        The updated content of the target message. Maximum message size of
+        10000 bytes.
+
+        Note that a message's content and stream cannot be changed at the
+        same time, so sending both `content` and `stream_id` parameters will
+        throw an error.
       schema:
         type: string
       example: Hello
