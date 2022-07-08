@@ -257,6 +257,9 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
     let owner_widget;
     let avatar_widget;
 
+    const bot_type = bot.bot_type.toString();
+    const service = bot_data.get_services(bot.user_id)[0];
+
     function submit_bot_details() {
         const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
         const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
@@ -273,6 +276,19 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         const human_user_id = owner_widget.value();
         if (human_user_id) {
             formData.append("bot_owner_id", human_user_id);
+        }
+
+        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            const service_payload_url = $("#edit_service_base_url").val();
+            const service_interface = $("#edit_service_interface :selected").val();
+            formData.append("service_payload_url", JSON.stringify(service_payload_url));
+            formData.append("service_interface", service_interface);
+        } else if (bot_type === EMBEDDED_BOT_TYPE && service !== undefined) {
+            const config_data = {};
+            $("#config_edit_inputbox input").each(function () {
+                config_data[$(this).attr("name")] = $(this).val();
+            });
+            formData.append("config_data", JSON.stringify(config_data));
         }
 
         const $file_input = $("#bot-edit-form").find(".edit_bot_avatar_file_input");
@@ -324,6 +340,22 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
         }
 
         avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
+
+        if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
+            $("#service_data").append(
+                render_settings_edit_outgoing_webhook_service({
+                    service,
+                }),
+            );
+            $("#edit_service_interface").val(service.interface);
+        }
+        if (bot_type === EMBEDDED_BOT_TYPE) {
+            $("#service_data").append(
+                render_settings_edit_embedded_bot_service({
+                    service,
+                }),
+            );
+        }
 
         $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
             e.preventDefault();
