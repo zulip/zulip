@@ -34,6 +34,7 @@ from zerver.decorator import (
     validate_api_key,
     webhook_view,
     zulip_login_required,
+    zulip_otp_required,
 )
 from zerver.forms import OurAuthenticationForm
 from zerver.lib.cache import dict_to_items_tuple, ignore_unhashable_lru_cache, items_tuple_to_dict
@@ -1897,6 +1898,17 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             assert type(request.user) is UserProfile
             self.create_default_device(request.user)
 
+            response = test_view(request)
+            self.assertEqual(response.content.decode(), "Success")
+
+    def test_otp_not_authenticated(self) -> None:
+        @zulip_otp_required()
+        def test_view(request: HttpRequest) -> HttpResponse:
+            return HttpResponse("Success")
+
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            user = AnonymousUser()
+            request = HostRequestMock(user_profile=user)
             response = test_view(request)
             self.assertEqual(response.content.decode(), "Success")
 
