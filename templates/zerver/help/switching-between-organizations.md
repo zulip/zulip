@@ -4,6 +4,12 @@ This article assumes you've [logged in](/help/logging-in) to each organization a
 
 {start_tabs}
 
+{tab|web}
+
+You can log in to multiple Zulip organizations by opening multiple tabs, and
+logging into one Zulip organization in each tab. To switch Zulip organizations,
+just switch tabs.
+
 {tab|desktop}
 
 1. Open the **left sidebar** (`Ctrl` + `Shift` + `s`).
@@ -18,16 +24,10 @@ This article assumes you've [logged in](/help/logging-in) to each organization a
 
 {tab|mobile}
 
-1. From the home screen, tap your **profile picture** in the lower right.
+{!mobile-profile-menu.md!}
 
 1. Tap **Switch account**.
 
 1. Tap on the desired Zulip organization.
-
-{tab|web}
-
-You can log in to multiple Zulip organizations by opening multiple tabs, and
-logging into one Zulip organization in each tab. To switch Zulip organizations,
-just switch tabs.
 
 {end_tabs}

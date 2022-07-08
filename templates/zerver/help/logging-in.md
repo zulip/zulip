@@ -13,10 +13,15 @@ how you signed up. E.g. if you originally signed up using your Google
 account, you can later log in using GitHub, as long as your Google account
 and GitHub account use the same email address.
 
-
 ### Log in to a Zulip organization for the first time
 
 {start_tabs}
+
+{tab|web}
+
+1. Go to your organization's **Zulip URL**.
+
+1. Follow the on-screen instructions.
 
 {tab|desktop}
 
@@ -33,19 +38,13 @@ and GitHub account use the same email address.
 
 {tab|mobile}
 
-1. From the home screen, tap your **profile picture** in the lower right.
+{!mobile-profile-menu.md!}
 
 1. Tap **Switch account**.
 
 1. Tap **Add new account**.
 
 1. Enter your Zulip URL, and tap **Enter**.
-
-1. Follow the on-screen instructions.
-
-{tab|web}
-
-1. Go to your organization's **Zulip URL**.
 
 1. Follow the on-screen instructions.
 
