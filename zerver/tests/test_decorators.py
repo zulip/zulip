@@ -1849,19 +1849,18 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             "PATH_INFO": "",
         }
         user = hamlet = self.example_user("hamlet")
-        user.is_verified = lambda: False
         self.login_user(hamlet)
         request = HostRequestMock(
             client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
         )
         request.session = self.client.session
 
-        response = test_view(request)
-        self.assertEqual(response.content.decode(), "Success")
+        with mock.patch("zerver.lib.users.is_verified", lambda _: False):
+            response = test_view(request)
+            self.assertEqual(response.content.decode(), "Success")
 
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
             user = hamlet = self.example_user("hamlet")
-            user.is_verified = lambda: False
             self.login_user(hamlet)
             request = HostRequestMock(
                 client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
@@ -1870,7 +1869,8 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             assert type(request.user) is UserProfile
             self.create_default_device(request.user)
 
-            response = test_view(request)
+            with mock.patch("zerver.lib.users.is_verified", lambda _: False):
+                response = test_view(request)
 
             self.assertEqual(response.status_code, 302)
 
@@ -1889,7 +1889,6 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
                 "PATH_INFO": "",
             }
             user = hamlet = self.example_user("hamlet")
-            user.is_verified = lambda: True
             self.login_user(hamlet)
             request = HostRequestMock(
                 client_name="", user_profile=user, meta_data=meta_data, host="zulip.testserver"
@@ -1898,8 +1897,9 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             assert type(request.user) is UserProfile
             self.create_default_device(request.user)
 
-            response = test_view(request)
-            self.assertEqual(response.content.decode(), "Success")
+            with mock.patch("zerver.lib.users.is_verified", lambda _: True):
+                response = test_view(request)
+                self.assertEqual(response.content.decode(), "Success")
 
     def test_otp_not_authenticated(self) -> None:
         @zulip_otp_required()

@@ -67,7 +67,7 @@ from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.types import ViewFuncT
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key
+from zerver.lib.users import get_api_key, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
 from zerver.models import (
@@ -760,7 +760,7 @@ def login_page(
     # logged-in app.
     is_preview = "preview" in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-        if request.user and request.user.is_verified():
+        if request.user and is_2fa_verified(request.user):
             return HttpResponseRedirect(request.user.realm.uri)
     elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
