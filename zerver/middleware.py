@@ -2,18 +2,7 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import (
-    Any,
-    AnyStr,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    MutableMapping,
-    Optional,
-    Tuple,
-)
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -425,13 +414,10 @@ class LogRequests(MiddlewareMixin):
             else:
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
 
-        if response.streaming:
-            assert isinstance(response, StreamingHttpResponse)
-            content_iter: Optional[Iterator[bytes]] = response.streaming_content
-            content = None
-        else:
-            content = response.content
-            content_iter = None
+        content_iter = (
+            response.streaming_content if isinstance(response, StreamingHttpResponse) else None
+        )
+        content = response.content if isinstance(response, HttpResponse) else None
 
         assert request_notes.client_name is not None and request_notes.log_data is not None
         assert request.method is not None
