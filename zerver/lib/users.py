@@ -5,10 +5,12 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, TypedDict, Uni
 
 import dateutil.parser as date_parser
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.utils.translation import gettext as _
+from django_otp.middleware import is_verified
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.lib.avatar import avatar_url, get_avatar_field
@@ -620,3 +622,17 @@ def get_raw_user_data(
 
 def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserProfile]:
     return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
+
+
+def is_2fa_verified(user: Union[UserProfile, AnonymousUser]) -> bool:
+    """
+    It is generally unsafe to call is_verified directly on `request.user` since
+    the attribute `otp_device` does not exist on an `AnonymousUser`, and `is_verified`
+    does not make sense without 2FA being enabled.
+
+    This wraps the checks for all these assumptions to make sure the call is safe.
+    """
+    # Explicitly require the caller to ensure that settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+    # is True before calling `is_2fa_verified`.
+    assert settings.TWO_FACTOR_AUTHENTICATION_ENABLED
+    return user.is_authenticated and is_verified(user)
