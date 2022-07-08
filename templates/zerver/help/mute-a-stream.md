@@ -54,11 +54,8 @@ Muted streams still appear in the left sidebar, though they are grayed out.
     The stream long-press menu for the mobile app can be accessed via the list of streams,
     the stream name in the "inbox" (unreads) view, or the top bar in a stream narrow.
 
-!!! tip ""
-    Another way to mute/unmute a stream is via stream settings.
-
-
-
+{!stream-long-press-menu-tip.md!}
+You can also mute/unmute a stream via the stream settings menu.
 ## Related articles
 
 * [Mute a topic](/help/mute-a-topic)
