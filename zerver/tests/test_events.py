@@ -199,6 +199,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import create_user_group
 from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
@@ -1013,7 +1014,7 @@ class NormalActionsTest(BaseAction):
         field_id = self.user_profile.realm.customprofilefield_set.get(
             realm=self.user_profile.realm, name="Biography"
         ).id
-        field = {
+        field: ProfileDataElementUpdateDict = {
             "id": field_id,
             "value": "New value",
         }

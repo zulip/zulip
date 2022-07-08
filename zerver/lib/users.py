@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Sequence, TypedDict, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Sequence, TypedDict, Union
 
 import dateutil.parser as date_parser
 from django.conf import settings
@@ -26,7 +26,7 @@ from zerver.lib.exceptions import (
     OrganizationOwnerRequired,
 )
 from zerver.lib.timezone import canonicalize_timezone
-from zerver.lib.types import ProfileDataElementValue
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -378,7 +378,7 @@ def validate_user_custom_profile_field(
 
 
 def validate_user_custom_profile_data(
-    realm_id: int, profile_data: List[Dict[str, Union[int, ProfileDataElementValue]]]
+    realm_id: int, profile_data: List[ProfileDataElementUpdateDict]
 ) -> None:
     # This function validate all custom field values according to their field type.
     for item in profile_data:
@@ -389,9 +389,7 @@ def validate_user_custom_profile_data(
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
         try:
-            validate_user_custom_profile_field(
-                realm_id, field, cast(ProfileDataElementValue, item["value"])
-            )
+            validate_user_custom_profile_field(realm_id, field, item["value"])
         except ValidationError as error:
             raise JsonableError(error.message)
 

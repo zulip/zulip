@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.streams import render_stream_description
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -122,7 +122,7 @@ def notify_user_update_custom_profile_data(
 
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
-    data: List[Dict[str, Union[int, ProfileDataElementValue]]],
+    data: List[ProfileDataElementUpdateDict],
 ) -> None:
     with transaction.atomic():
         for custom_profile_field in data:

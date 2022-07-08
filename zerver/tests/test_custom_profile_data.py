@@ -13,6 +13,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -374,7 +375,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_error(result, f"Field id {invalid_field_id} not found.")
 
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
-        data: List[Dict[str, Union[int, str, List[int]]]] = [
+        data: List[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
         do_update_user_custom_profile_data_if_changed(iago, data)
@@ -404,7 +405,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         user_profile = self.example_user("iago")
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data: List[Dict[str, Union[int, str, List[int]]]] = [
+        data: List[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": "123456"},
         ]
         do_update_user_custom_profile_data_if_changed(user_profile, data)
@@ -693,7 +694,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertIsNone(value)
         self.assertIsNone(rendered_value)
 
-        update_dict: Dict[str, Union[int, str, List[int]]] = {
+        update_dict: ProfileDataElementUpdateDict = {
             "id": quote.id,
             "value": "***beware*** of jealousy...",
         }
@@ -713,7 +714,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         # Set field value:
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
-        data: List[Dict[str, Union[int, str, List[int]]]] = [
+        data: List[ProfileDataElementUpdateDict] = [
             {"id": field.id, "value": [self.example_user("aaron").id]},
         ]
         do_update_user_custom_profile_data_if_changed(iago, data)

@@ -86,7 +86,7 @@ from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_di
 from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import ProfileDataElementValue
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -1361,7 +1361,7 @@ def sync_user_profile_custom_fields(
         var_name = "_".join(data["name"].lower().split(" "))
         existing_values[var_name] = data["value"]
 
-    profile_data: List[Dict[str, Union[int, ProfileDataElementValue]]] = []
+    profile_data: List[ProfileDataElementUpdateDict] = []
     for var_name, value in custom_field_name_to_value.items():
         try:
             field = fields_by_var_name[var_name]
