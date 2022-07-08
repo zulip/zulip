@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import List, cast
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -20,7 +20,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.types import ProfileDataElementValue, ProfileFieldData, Validator
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, Validator
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
     check_capped_string,
@@ -197,19 +197,25 @@ def remove_user_custom_profile_data(
     return json_success(request)
 
 
+check_profile_data_element_update_dict = cast(
+    Validator[ProfileDataElementUpdateDict],
+    check_dict_only(
+        [
+            ("id", check_int),
+            ("value", check_union([check_string, check_list(check_int)])),
+        ]
+    ),
+)
+
+
 @human_users_only
 @has_request_variables
 def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    data: List[Dict[str, Union[int, ProfileDataElementValue]]] = REQ(
+    data: List[ProfileDataElementUpdateDict] = REQ(
         json_validator=check_list(
-            check_dict_only(
-                [
-                    ("id", check_int),
-                    ("value", check_union([check_string, check_list(check_int)])),
-                ]
-            ),
+            check_profile_data_element_update_dict,
         )
     ),
 ) -> HttpResponse:
