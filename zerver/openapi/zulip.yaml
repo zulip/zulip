@@ -113,9 +113,11 @@ paths:
         implement analogues of the one-click login process available for Zulip
         development servers on the web).
 
-        **Note:** This endpoint is only available on Zulip development
-        servers; for obvious security reasons it will always return an error
-        in a Zulip production server.
+        !!! warn ""
+
+            **Note:** This endpoint is only available on Zulip development
+            servers; for obvious security reasons it will always return an error
+            in a Zulip production server.
 
         `POST {{ api_url }}/v1/dev_fetch_api_key`
       parameters:
@@ -162,11 +164,13 @@ paths:
                 - queue_id
                 - last_event_id
       x-parameter-description: |
-        **Note**: The parameters documented above are optional in the sense that
-        even if you haven't registered a queue by explicitly requesting the
-        `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
-        [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
-        endpoint and a queue would be registered in the absence of a `queue_id`.
+        !!! warn ""
+
+            **Note**: The parameters documented above are optional in the sense that
+            even if you haven't registered a queue by explicitly requesting the
+            `{{ api_url}}/v1/register` endpoint, you could pass the parameters for
+            [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
+            endpoint and a queue would be registered in the absence of a `queue_id`.
       x-python-examples-extra-imports: ["sys"]
       parameters:
         - $ref: "#/components/parameters/QueueId"
