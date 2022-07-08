@@ -38,7 +38,6 @@ from django.contrib.auth import authenticate
 from django.core import mail
 from django.http import HttpRequest
 from django.test import override_settings
-from django.test.client import RequestFactory
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 from django_auth_ldap.backend import LDAPSearch, _LDAPUser
@@ -78,6 +77,7 @@ from zerver.lib.storage import static_path
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     create_s3_buckets,
     load_subdomain_token,
     read_test_image_file,
@@ -6613,10 +6613,7 @@ class TestRequireEmailFormatUsernames(ZulipTestCase):
 
 class TestMaybeSendToRegistration(ZulipTestCase):
     def test_sso_only_when_preregistration_user_does_not_exist(self) -> None:
-        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
-        request = rf.get("/")
-        request.session = {}
-        request.user = None
+        request = HostRequestMock(host=Realm.host_for_subdomain("zulip"))
 
         # Creating a mock Django form in order to keep the test simple.
         # This form will be returned by the create_homepage_form function
@@ -6643,10 +6640,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         self.assert_in_response(f'value="{confirmation_key}" name="key"', response)
 
     def test_sso_only_when_preregistration_user_exists(self) -> None:
-        rf = RequestFactory(HTTP_HOST=Realm.host_for_subdomain("zulip"))
-        request = rf.get("/")
-        request.session = {}
-        request.user = None
+        request = HostRequestMock(host=Realm.host_for_subdomain("zulip"))
 
         realm = get_realm("zulip")
 
