@@ -6,21 +6,15 @@
 1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the top
 right corner of the app.
 
-2. Click **Log out**.
+1. Click **Log out**.
 
-{tab|ios}
+{tab|mobile}
 
-1. Tap the menu (<i class="fa fa-reorder"></i>) icon in the top left
-corner of the screen.
+{!mobile-profile-menu.md!}
 
-2. Tap **Log out**.
+1. Tap **Log out**.
 
-{tab|android}
-
-1. Tap the overflow ( <i class="fa fa-ellipsis-v"></i> ) icon in
-the top right corner of the screen.
-
-2. Tap **Log out**.
+1. Approve by tapping **Log out**.
 
 {end_tabs}
 
@@ -29,3 +23,9 @@ the top right corner of the screen.
     Logging out doesn't affect any other organizations you may be logged in
     to. To log out of all your Zulip organizations, repeat the steps above
     for each one.
+
+## Related articles
+
+* [Logging in](logging-in)
+* [Switching between organizations](switching-between-organizations)
+* [Deactivate your account](deactivate-your-account)
