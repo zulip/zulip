@@ -14,6 +14,16 @@ sidebar.
 
 {end_tabs}
 
+## Unpin a stream
+
+{start_tabs}
+
+{!stream-actions.md!}
+
+1. Click **Unpin stream from top**.
+
+{end_tabs}
+
 ### From the streams page (alternate method)
 
 {start_tabs}
