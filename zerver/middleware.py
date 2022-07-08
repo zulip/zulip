@@ -434,6 +434,7 @@ class LogRequests(MiddlewareMixin):
             content_iter = None
 
         assert request_notes.client_name is not None and request_notes.log_data is not None
+        assert request.method is not None
         write_log_line(
             request_notes.log_data,
             request.path,
