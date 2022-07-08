@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable, List, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 from unittest import mock
 
 import orjson
@@ -13,7 +13,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -590,7 +590,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields = [
+        fields: List[Tuple[str, Union[str, List[int]]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
@@ -601,7 +601,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("GitHub", "zulip-mobile"),
         ]
 
-        data = []
+        data: List[ProfileDataElementUpdateDict] = []
+        expected_value: Dict[int, ProfileDataElementValue] = {}
+        expected_rendered_value: Dict[int, Optional[str]] = {}
         for i, field_value in enumerate(fields):
             name, value = field_value
             field = CustomProfileField.objects.get(name=name, realm=realm)
@@ -609,8 +611,13 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
                 {
                     "id": field.id,
                     "value": value,
-                    "field": field,
                 }
+            )
+            expected_value[field.id] = value
+            expected_rendered_value[field.id] = (
+                markdown_convert(value).rendered_content
+                if field.is_renderable() and isinstance(value, str)
+                else None
             )
 
         # Update value of field
@@ -621,13 +628,6 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
 
         iago = self.example_user("iago")
-        expected_value = {f["id"]: f["value"] for f in data}
-        expected_rendered_value: Dict[Union[int, float, str, None], Union[str, None]] = {}
-        for f in data:
-            if f["field"].is_renderable():
-                expected_rendered_value[f["id"]] = markdown_convert(f["value"]).rendered_content
-            else:
-                expected_rendered_value[f["id"]] = None
 
         for field_dict in iago.profile_data():
             self.assertEqual(field_dict["value"], expected_value[field_dict["id"]])
