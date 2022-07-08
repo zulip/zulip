@@ -106,7 +106,7 @@ SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
 
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
-HOME_NOT_LOGGED_IN: Optional[str] = None
+CUSTOM_HOME_NOT_LOGGED_IN: Optional[str] = None
 
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")

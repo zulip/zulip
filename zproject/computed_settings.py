@@ -28,6 +28,7 @@ from .configured_settings import (
     AUTH_LDAP_SERVER_URI,
     AUTHENTICATION_BACKENDS,
     CAMO_URI,
+    CUSTOM_HOME_NOT_LOGGED_IN,
     DEBUG,
     DEBUG_ERROR_REPORTING,
     EMAIL_BACKEND,
@@ -38,7 +39,6 @@ from .configured_settings import (
     EXTERNAL_URI_SCHEME,
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
-    HOME_NOT_LOGGED_IN,
     INVITATION_LINK_VALIDITY_DAYS,
     IS_DEV_DROPLET,
     LOCAL_UPLOADS_DIR,
@@ -1039,11 +1039,15 @@ ONLY_LDAP = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipLDAPAuthBackend"
 USING_APACHE_SSO = "zproject.backends.ZulipRemoteUserBackend" in AUTHENTICATION_BACKENDS
 ONLY_SSO = AUTHENTICATION_BACKENDS == ("zproject.backends.ZulipRemoteUserBackend",)
 
-if HOME_NOT_LOGGED_IN is None:
-    if ONLY_SSO:
-        HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
-    else:
-        HOME_NOT_LOGGED_IN = "/login/"
+if CUSTOM_HOME_NOT_LOGGED_IN is not None:
+    # We import this with a different name to avoid a mypy bug with
+    # type-narrowed default parameter values.
+    # https://github.com/python/mypy/issues/13087
+    HOME_NOT_LOGGED_IN = CUSTOM_HOME_NOT_LOGGED_IN
+elif ONLY_SSO:
+    HOME_NOT_LOGGED_IN = "/accounts/login/sso/"
+else:
+    HOME_NOT_LOGGED_IN = "/login/"
 
 AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipDummyBackend",)
 

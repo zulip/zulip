@@ -79,7 +79,7 @@ WEB_PUBLIC_STREAMS_ENABLED = True
 INVITES_MIN_USER_AGE_DAYS = 0
 
 # Redirect to /devlogin/ by default in dev mode
-HOME_NOT_LOGGED_IN = "/devlogin/"
+CUSTOM_HOME_NOT_LOGGED_IN = "/devlogin/"
 LOGIN_URL = "/devlogin/"
 
 # For development convenience, configure the ToS/Privacy Policies
