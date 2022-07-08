@@ -1,6 +1,7 @@
 
+import json
 from typing import Any, Dict, List, Set, cast
-from zerver.models import Draft, Recipient, ScheduledMessage, UserProfile
+from zerver.models import Client, Draft, Realm, Recipient, ScheduledMessage, UserProfile, get_realm
 from zerver.tornado.django_api import send_event
 from zerver.lib.message import normalize_body, truncate_topic
 import time
@@ -34,10 +35,17 @@ def further_validated_scheduled_message_dict(
     
     print('deliver at: ')
     print(deliver_at)
+    
+    realms = Realm.objects.all()
+    print('Realms:')
+    print(realms)
 
     topic = ""
     recipient = None
-    to = draft_dict["to"]
+    to = json.loads(draft_dict["to"])
+    sending_client = draft_dict["sending_client"]
+    stream = draft_dict["stream"]
+    realm_name = draft_dict["realm_name"]
     if draft_dict["type"] == "stream":
         topic = truncate_topic(draft_dict["topic"])
         if "\0" in topic:
@@ -55,9 +63,12 @@ def further_validated_scheduled_message_dict(
 
     return {
         "recipient": recipient,
-        "topic": topic,
+        "subject": topic,
         "content": content,
         "scheduled_timestamp": deliver_at,
+        "sending_client": sending_client,
+        "stream": stream,
+        "realm_name": realm_name
     }
 
 def do_create_scheduled_messages(scheduled_message_dicts: List[Dict[str, Any]], user_profile: UserProfile) -> List[ScheduledMessage]:
@@ -68,15 +79,17 @@ def do_create_scheduled_messages(scheduled_message_dicts: List[Dict[str, Any]], 
     scheduled_message_objects = []
     for scheduled_message_dict in scheduled_message_dicts:
         valid_schedule_message_dict = further_validated_scheduled_message_dict(scheduled_message_dict, user_profile)
+        print('valid_schedule_message_dict')
+        print(valid_schedule_message_dict)
         scheduled_message_objects.append(
             ScheduledMessage(
               sender=user_profile,
               recipient=valid_schedule_message_dict["recipient"],
               subject=valid_schedule_message_dict["subject"],
               content=valid_schedule_message_dict["content"],
-              sending_client=valid_schedule_message_dict["sending_client"],
+              sending_client=Client(valid_schedule_message_dict["sending_client"]),
               stream=valid_schedule_message_dict["stream"],
-              realm=valid_schedule_message_dict["realm"],
+              realm=user_profile.realm,
               scheduled_timestamp=valid_schedule_message_dict["scheduled_timestamp"]
             )
         )

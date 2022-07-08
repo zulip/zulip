@@ -4316,6 +4316,20 @@ class ScheduledMessage(models.Model):
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
         return f"<ScheduledMessage: {display_recipient} {self.subject} {self.sender} {self.scheduled_timestamp}>"
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "sender": self.sender,
+            "recipient": self.recipient.__str__(),
+            "subject": self.subject,
+            "content": self.content,
+            "sending_client": self.sending_client.__str__(),
+            "stream": self.stream.__str__(),
+            "realm": self.realm.__str__(),
+            "scheduled_timestamp": self.scheduled_timestamp.timestamp(),
+            "delivered": self.delivered
+        }
 
 
 EMAIL_TYPES = {

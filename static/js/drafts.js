@@ -462,7 +462,12 @@ function show_scheduled_messages() {
         const request_part = {
             type: message.type,
             deliver_at: new Date(message.deliver_at).getTime() / 1000,
-            content: message.content    
+            content: message.content,
+            to: message.to,
+            topic: message.topic,
+            sending_client: 1,
+            stream: message.stream,
+            realm_name: page_params.realm_name
         }
 
         request.push(request_part)
