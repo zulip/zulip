@@ -612,7 +612,7 @@ ul {
     }
 }
 
-@media (max-width: 768px) {
+@media (width < $md_min) {
     #giphy_grid_in_popover {
         position: static;
         top: 0 !important;
