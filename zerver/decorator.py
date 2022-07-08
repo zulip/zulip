@@ -1052,9 +1052,7 @@ def zulip_otp_required(
 
         # This request is unauthenticated (logged-out) access; 2FA is
         # not required or possible.
-        #
-        # TODO: Add a test for 2FA-enabled with web-public views.
-        if not user.is_authenticated:  # nocoverage
+        if not user.is_authenticated:
             return True
 
         # If the user doesn't have 2FA set up, we can't enforce 2FA.
