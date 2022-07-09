@@ -18,6 +18,9 @@ const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
 });
+mock_esm("../../static/js/overlays", {
+    open_overlay: noop,
+});
 mock_esm("../../static/js/stream_data", {
     get_color() {
         return "#FFFFFF";
@@ -89,10 +92,10 @@ const short_msg = {
 };
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         $("#draft_overlay").css = () => {};
         window.localStorage.clear();
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 
@@ -419,7 +422,6 @@ test("format_drafts", ({override_rewire, mock_template}) => {
         return "<draft table stub>";
     });
 
-    override_rewire(drafts, "open_overlay", noop);
     override_rewire(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
@@ -440,5 +442,4 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.launch();
-    timerender.__Rewire__("render_now", stub_render_now);
 });

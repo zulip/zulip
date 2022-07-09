@@ -5,9 +5,13 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
-const typing_events = zrequire("typing_events");
+const {Filter} = zrequire("filter");
+const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
+const typing_data = zrequire("typing_data");
+const typing_events = zrequire("typing_events");
 
 const anna = {
     email: "anna@example.com",
@@ -38,18 +42,20 @@ people.add_active_user(vronsky);
 people.add_active_user(levin);
 people.add_active_user(kitty);
 
-run_test("render_notifications_for_narrow", ({override_rewire, mock_template}) => {
-    const $typing_notifications = $("#typing_notifications");
+run_test("render_notifications_for_narrow", ({override, mock_template}) => {
+    override(page_params, "user_id", anna.user_id);
+    const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
+    const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
+    narrow_state.set_current_filter(new Filter([{operator: "pm-with", operand: group_emails}]));
 
-    const two_typing_users_ids = [anna.user_id, vronsky.user_id];
-    const three_typing_users_ids = [anna.user_id, vronsky.user_id, levin.user_id];
-    const four_typing_users_ids = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
+    const $typing_notifications = $("#typing_notifications");
 
     mock_template("typing_notifications.hbs", true, (args, rendered_html) => rendered_html);
 
     // Having only two(<MAX_USERS_TO_DISPLAY_NAME) typists, both of them
     // should be rendered but not 'Several people are typing…'
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
+    typing_data.add_typist(group, anna.user_id);
+    typing_data.add_typist(group, vronsky.user_id);
     typing_events.render_notifications_for_narrow();
     assert.ok($typing_notifications.visible());
     assert.ok($typing_notifications.html().includes(`${anna.full_name} is typing…`));
@@ -57,7 +63,7 @@ run_test("render_notifications_for_narrow", ({override_rewire, mock_template}) =
     assert.ok(!$typing_notifications.html().includes("Several people are typing…"));
 
     // Having 3(=MAX_USERS_TO_DISPLAY_NAME) typists should also display only names
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => three_typing_users_ids);
+    typing_data.add_typist(group, levin.user_id);
     typing_events.render_notifications_for_narrow();
     assert.ok($typing_notifications.visible());
     assert.ok($typing_notifications.html().includes(`${anna.full_name} is typing…`));
@@ -66,7 +72,7 @@ run_test("render_notifications_for_narrow", ({override_rewire, mock_template}) =
     assert.ok(!$typing_notifications.html().includes("Several people are typing…"));
 
     // Having 4(>MAX_USERS_TO_DISPLAY_NAME) typists should display "Several people are typing…"
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
+    typing_data.add_typist(group, kitty.user_id);
     typing_events.render_notifications_for_narrow();
     assert.ok($typing_notifications.visible());
     assert.ok($typing_notifications.html().includes("Several people are typing…"));
@@ -76,7 +82,10 @@ run_test("render_notifications_for_narrow", ({override_rewire, mock_template}) =
     assert.ok(!$typing_notifications.html().includes(`${kitty.full_name} is typing…`));
 
     // #typing_notifications should be hidden when there are no typists.
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => []);
+    typing_data.remove_typist(group, anna.user_id);
+    typing_data.remove_typist(group, vronsky.user_id);
+    typing_data.remove_typist(group, levin.user_id);
+    typing_data.remove_typist(group, kitty.user_id);
     typing_events.render_notifications_for_narrow();
     assert.ok(!$typing_notifications.visible());
 });

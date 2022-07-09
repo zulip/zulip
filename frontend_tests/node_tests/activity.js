@@ -20,6 +20,7 @@ const _document = {
 
 const channel = mock_esm("../../static/js/channel");
 const compose_state = mock_esm("../../static/js/compose_state");
+const narrow = mock_esm("../../static/js/narrow");
 const padded_widget = mock_esm("../../static/js/padded_widget");
 const pm_list = mock_esm("../../static/js/pm_list");
 const popovers = mock_esm("../../static/js/popovers");
@@ -33,7 +34,6 @@ const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
 const keydown_util = zrequire("keydown_util");
 const muted_users = zrequire("muted_users");
-const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
@@ -94,8 +94,6 @@ function clear_buddy_list() {
     });
 }
 
-let presence_info;
-
 function test(label, f) {
     run_test(label, (helpers) => {
         user_settings.presence_enabled = true;
@@ -109,16 +107,13 @@ function test(label, f) {
             });
         });
 
-        presence_info = new Map();
-        presence.__Rewire__("presence_info", presence_info);
-
-        presence_info.set(alice.user_id, {status: "active"});
-        presence_info.set(fred.user_id, {status: "active"});
-        presence_info.set(jill.user_id, {status: "active"});
-        presence_info.set(mark.user_id, {status: "idle"});
-        presence_info.set(norbert.user_id, {status: "active"});
-        presence_info.set(zoe.user_id, {status: "active"});
-        presence_info.set(me.user_id, {status: "active"});
+        presence.presence_info.set(alice.user_id, {status: "active"});
+        presence.presence_info.set(fred.user_id, {status: "active"});
+        presence.presence_info.set(jill.user_id, {status: "active"});
+        presence.presence_info.set(mark.user_id, {status: "idle"});
+        presence.presence_info.set(norbert.user_id, {status: "active"});
+        presence.presence_info.set(zoe.user_id, {status: "active"});
+        presence.presence_info.set(me.user_id, {status: "active"});
 
         clear_buddy_list();
         muted_users.set_muted_users([]);
@@ -127,6 +122,8 @@ function test(label, f) {
         activity.set_cursor_and_filter();
 
         f(helpers);
+
+        presence.clear_internal_data();
     });
 }
 
@@ -150,17 +147,17 @@ test("get_status", () => {
     user_settings.presence_enabled = true;
     assert.equal(presence.get_status(page_params.user_id), "active");
 
-    presence_info.delete(zoe.user_id);
+    presence.presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");
 
-    presence_info.set(alice.user_id, {status: "whatever"});
+    presence.presence_info.set(alice.user_id, {status: "whatever"});
     assert.equal(presence.get_status(alice.user_id), "whatever");
 });
 
 test("sort_users", () => {
     const user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    presence_info.delete(alice.user_id);
+    presence.presence_info.delete(alice.user_id);
 
     buddy_data.sort_users(user_ids);
 
@@ -271,7 +268,7 @@ test("PM_update_dom_counts", () => {
     assert.equal($count.text(), "");
 });
 
-test("handlers", ({override, override_rewire, mock_template}) => {
+test("handlers", ({override, mock_template}) => {
     let filter_key_handlers;
 
     mock_template("presence_rows.hbs", false, () => {});
@@ -294,7 +291,7 @@ test("handlers", ({override, override_rewire, mock_template}) => {
 
     let narrowed;
 
-    override_rewire(narrow, "by", (method, email) => {
+    override(narrow, "by", (method, email) => {
         assert.equal(email, "alice@zulip.com");
         narrowed = true;
     });
@@ -562,7 +559,7 @@ test("redraw_muted_user", () => {
     assert.equal($("#user_presences").html(), "never-been-set");
 });
 
-test("update_presence_info", ({override, override_rewire}) => {
+test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", () => {});
 
     page_params.realm_presence_disabled = false;
@@ -574,8 +571,6 @@ test("update_presence_info", ({override, override_rewire}) => {
             timestamp: server_time,
         },
     };
-
-    override_rewire(buddy_data, "matches_filter", () => true);
 
     const $alice_li = $.create("alice stub");
     buddy_list_add(alice.user_id, $alice_li);

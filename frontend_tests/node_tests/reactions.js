@@ -110,9 +110,9 @@ people.add_active_user(cali);
 people.add_active_user(alexus);
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         page_params.user_id = alice_user_id;
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 
@@ -357,6 +357,23 @@ test("sending", ({override, override_rewire}) => {
     });
 });
 
+function stub_reactions(message_id) {
+    const $message_row = $.create("message-row-stub");
+    const $message_reactions = $.create("reactions-stub");
+    $(".message_table").set_find_results(`[zid='${CSS.escape(message_id)}']`, $message_row);
+    $message_row.set_find_results(".message_reactions", $message_reactions);
+    return $message_reactions;
+}
+
+function stub_reaction(message_id, local_id) {
+    const $reaction = $.create("reaction-stub");
+    stub_reactions(message_id).set_find_results(
+        `[data-reaction-id='${CSS.escape(local_id)}']`,
+        $reaction,
+    );
+    return $reaction;
+}
+
 test("set_reaction_count", () => {
     const $count_element = $.create("count-stub");
     const $reaction_element = $.create("reaction-stub");
@@ -368,32 +385,16 @@ test("set_reaction_count", () => {
     assert.equal($count_element.text(), "5");
 });
 
-test("find_reaction", ({override_rewire}) => {
+test("find_reaction", () => {
     const message_id = 99;
     const local_id = "unicode_emoji,1f44b";
-    const $reaction_section = $.create("section-stub");
+    const $reaction = stub_reaction(message_id, local_id);
 
-    const reaction_stub = "reaction-stub";
-    $reaction_section.set_find_results(
-        `[data-reaction-id='${CSS.escape(local_id)}']`,
-        reaction_stub,
-    );
-
-    override_rewire(reactions, "get_reaction_section", (arg) => {
-        assert.equal(arg, message_id);
-        return $reaction_section;
-    });
-
-    assert.equal(reactions.find_reaction(message_id, local_id), reaction_stub);
+    assert.equal(reactions.find_reaction(message_id, local_id), $reaction);
 });
 
 test("get_reaction_section", () => {
-    const $message_table = $.create(".message_table");
-    const $message_row = $.create("some-message-row");
-    const $message_reactions = $.create("our-reactions-section");
-
-    $message_table.set_find_results(`[zid='${CSS.escape(555)}']`, $message_row);
-    $message_row.set_find_results(".message_reactions", $message_reactions);
+    const $message_reactions = stub_reactions(555);
 
     const $section = reactions.get_reaction_section(555);
 
@@ -587,7 +588,7 @@ test("add_reaction/remove_reaction", ({override}) => {
     });
 });
 
-test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_template}) => {
+test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
     const opts = {
         message_id: 501,
         reaction_type: "unicode_emoji",
@@ -596,13 +597,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_te
         user_id: alice.user_id,
     };
 
-    const $message_reactions = $.create("our-reactions");
-
-    override_rewire(reactions, "get_reaction_section", (message_id) => {
-        assert.equal(message_id, opts.message_id);
-        return $message_reactions;
-    });
-
+    const $message_reactions = stub_reactions(opts.message_id);
     $message_reactions.find = (selector) => {
         assert.equal(selector, ".reaction_button");
         return "reaction-button-stub";
@@ -634,7 +629,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({override_rewire, mock_te
     assert.ok(insert_called);
 });
 
-test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_template}) => {
+test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
     const opts = {
         message_id: 502,
         reaction_type: "realm_emoji",
@@ -643,13 +638,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_te
         user_id: bob.user_id,
     };
 
-    const $message_reactions = $.create("our-reactions");
-
-    override_rewire(reactions, "get_reaction_section", (message_id) => {
-        assert.equal(message_id, opts.message_id);
-        return $message_reactions;
-    });
-
+    const $message_reactions = stub_reactions(opts.message_id);
     $message_reactions.find = (selector) => {
         assert.equal(selector, ".reaction_button");
         return "reaction-button-stub";
@@ -683,7 +672,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({override_rewire, mock_te
     assert.ok(insert_called);
 });
 
-test("view.update_existing_reaction (me)", ({override_rewire}) => {
+test("view.update_existing_reaction (me)", () => {
     const opts = {
         message_id: 503,
         reaction_type: "unicode_emoji",
@@ -693,21 +682,13 @@ test("view.update_existing_reaction (me)", ({override_rewire}) => {
         user_list: [alice.user_id, bob.user_id],
     };
 
-    const $our_reaction = $.create("our-reaction-stub");
-
-    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
-        assert.equal(message_id, opts.message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
-        assert.equal(reaction, $our_reaction);
-        assert.equal(count, 2);
-    });
+    const $our_reaction = stub_reaction(opts.message_id, "unicode_emoji,1f3b1");
+    const $reaction_count = $.create("reaction-count-stub");
+    $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
     reactions.view.update_existing_reaction(opts);
 
+    assert.equal($reaction_count.text(), "2");
     assert.ok($our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
@@ -715,7 +696,7 @@ test("view.update_existing_reaction (me)", ({override_rewire}) => {
     );
 });
 
-test("view.update_existing_reaction (them)", ({override_rewire}) => {
+test("view.update_existing_reaction (them)", () => {
     const opts = {
         message_id: 504,
         reaction_type: "unicode_emoji",
@@ -725,21 +706,13 @@ test("view.update_existing_reaction (them)", ({override_rewire}) => {
         user_list: [alice.user_id, bob.user_id, cali.user_id, alexus.user_id],
     };
 
-    const $our_reaction = $.create("our-reaction-stub");
-
-    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
-        assert.equal(message_id, opts.message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
-        assert.equal(reaction, $our_reaction);
-        assert.equal(count, 4);
-    });
+    const $our_reaction = stub_reaction(opts.message_id, "unicode_emoji,1f3b1");
+    const $reaction_count = $.create("reaction-count-stub");
+    $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
     reactions.view.update_existing_reaction(opts);
 
+    assert.equal($reaction_count.text(), "4");
     assert.ok(!$our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
@@ -747,7 +720,7 @@ test("view.update_existing_reaction (them)", ({override_rewire}) => {
     );
 });
 
-test("view.remove_reaction (me)", ({override_rewire}) => {
+test("view.remove_reaction (me)", () => {
     const opts = {
         message_id: 505,
         reaction_type: "unicode_emoji",
@@ -757,22 +730,14 @@ test("view.remove_reaction (me)", ({override_rewire}) => {
         user_list: [bob.user_id, cali.user_id],
     };
 
-    const $our_reaction = $.create("our-reaction-stub");
+    const $our_reaction = stub_reaction(opts.message_id, "unicode_emoji,1f3b1");
+    const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.addClass("reacted");
-
-    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
-        assert.equal(message_id, opts.message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
-        assert.equal(reaction, $our_reaction);
-        assert.equal(count, 2);
-    });
+    $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
     reactions.view.remove_reaction(opts);
 
+    assert.equal($reaction_count.text(), "2");
     assert.ok(!$our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
@@ -780,7 +745,7 @@ test("view.remove_reaction (me)", ({override_rewire}) => {
     );
 });
 
-test("view.remove_reaction (them)", ({override_rewire}) => {
+test("view.remove_reaction (them)", () => {
     const opts = {
         message_id: 506,
         reaction_type: "unicode_emoji",
@@ -790,23 +755,15 @@ test("view.remove_reaction (them)", ({override_rewire}) => {
         user_list: [alice.user_id],
     };
 
-    const $our_reaction = $.create("our-reaction-stub");
+    const $our_reaction = stub_reaction(opts.message_id, "unicode_emoji,1f3b1");
+    const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.addClass("reacted");
-
-    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
-        assert.equal(message_id, opts.message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
-
-    override_rewire(reactions, "set_reaction_count", (reaction, count) => {
-        assert.equal(reaction, $our_reaction);
-        assert.equal(count, 1);
-    });
+    $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
     $our_reaction.addClass("reacted");
     reactions.view.remove_reaction(opts);
 
+    assert.equal($reaction_count.text(), "1");
     assert.ok($our_reaction.hasClass("reacted"));
     assert.equal(
         $our_reaction.attr("aria-label"),
@@ -814,7 +771,7 @@ test("view.remove_reaction (them)", ({override_rewire}) => {
     );
 });
 
-test("view.remove_reaction (last person)", ({override_rewire}) => {
+test("view.remove_reaction (last person)", () => {
     const opts = {
         message_id: 507,
         reaction_type: "unicode_emoji",
@@ -824,13 +781,7 @@ test("view.remove_reaction (last person)", ({override_rewire}) => {
         user_list: [],
     };
 
-    const $our_reaction = $.create("our-reaction-stub");
-
-    override_rewire(reactions, "find_reaction", (message_id, local_id) => {
-        assert.equal(message_id, opts.message_id);
-        assert.equal(local_id, "unicode_emoji,1f3b1");
-        return $our_reaction;
-    });
+    const $our_reaction = stub_reaction(opts.message_id, "unicode_emoji,1f3b1");
 
     let removed;
     $our_reaction.remove = () => {

@@ -3,12 +3,17 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
+
+class Clipboard {
+    on() {}
+}
+mock_cjs("clipboard", Clipboard);
 
 const rows = mock_esm("../../static/js/rows");
 mock_esm("../../static/js/emoji_picker", {
@@ -97,16 +102,13 @@ function make_image_stubber() {
 }
 
 function test_ui(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (handlers) => {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
-        override_rewire(popovers, "clipboard_enable", () => ({
-            on: noop,
-        }));
         popovers.clear_for_testing();
         popovers.register_click_handlers();
-        f({override, override_rewire, mock_template});
+        f(handlers);
     });
 }
 
@@ -214,7 +216,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
     // todo: load image
 });
 
-test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
+test_ui("actions_popover", ({override, mock_template}) => {
     override($.fn, "popover", noop);
 
     const $target = $.create("click target");
@@ -226,6 +228,7 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
         topic: "Actions (1)",
         type: "stream",
         stream_id: 123,
+        sent_by_me: true,
     };
 
     message_lists.current.get = (msg_id) => {
@@ -240,7 +243,9 @@ test_ui("actions_popover", ({override, override_rewire, mock_template}) => {
         };
     };
 
-    override_rewire(message_edit, "get_editability", () => 4);
+    override(page_params, "realm_allow_message_editing", true);
+    override(page_params, "realm_message_content_edit_limit_seconds", 0);
+    assert.equal(message_edit.get_editability(message), message_edit.editability_types.FULL);
 
     $target.closest = (sel) => {
         assert.equal(sel, ".message_row");

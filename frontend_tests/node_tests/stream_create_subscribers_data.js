@@ -34,7 +34,7 @@ const test_user103 = {
 };
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         page_params.is_admin = false;
         people.init();
         people.add_active_user(me);
@@ -43,7 +43,7 @@ function test(label, f) {
         people.add_active_user(test_user103);
         page_params.user_id = me.user_id;
         people.initialize_current_user(me.user_id);
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 

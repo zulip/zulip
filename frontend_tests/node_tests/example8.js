@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 /*
     Until now, we had seen various testing techniques, learned
@@ -21,8 +22,11 @@ const $ = require("../zjsunit/zjquery");
     as that would help better understand the below test.
 */
 
-const typing_events = zrequire("typing_events");
+const {Filter} = zrequire("filter");
+const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
+const typing_data = zrequire("typing_data");
+const typing_events = zrequire("typing_events");
 
 // Let us add a few users to use as typists.
 const anna = {
@@ -65,20 +69,23 @@ people.add_active_user(kitty);
 
     It's usage below will make it more clear to you.
 */
-run_test("typing_events.render_notifications_for_narrow", ({override_rewire, mock_template}) => {
+run_test("typing_events.render_notifications_for_narrow", ({override, mock_template}) => {
     // All typists are rendered in `#typing_notifications`.
     const $typing_notifications = $("#typing_notifications");
 
-    const two_typing_users_ids = [anna.user_id, vronsky.user_id];
-    const two_typing_users = [anna, vronsky];
+    // Narrow to a PM group with four users.
+    override(page_params, "user_id", anna.user_id);
+    const group = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
+    const group_emails = `${anna.email},${vronsky.email},${levin.email},${kitty.email}`;
+    narrow_state.set_current_filter(new Filter([{operator: "pm-with", operand: group_emails}]));
 
     // Based on typing_events.MAX_USERS_TO_DISPLAY_NAME (which is currently 3),
     // we display either the list of all users typing (if they do not exceed
     // MAX_USERS_TO_DISPLAY_NAME) or 'Several people are typing…'
 
-    // As we are not testing any functionality of `get_users_typing_for_narrow`,
-    // let's override it to return two typists.
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => two_typing_users_ids);
+    // For now, set two of the users as being typists.
+    typing_data.add_typist(group, anna.user_id);
+    typing_data.add_typist(group, vronsky.user_id);
 
     const two_typing_users_rendered_html = "Two typing users rendered html stub";
 
@@ -99,7 +106,7 @@ run_test("typing_events.render_notifications_for_narrow", ({override_rewire, moc
     // We often use the function in third argument, like below, to make sure
     // the arguments passed to the template are what we expect.
     mock_template("typing_notifications.hbs", false, (args) => {
-        assert.deepEqual(args.users, two_typing_users);
+        assert.deepEqual(args.users, [anna, vronsky]);
         assert.ok(!args.several_users); // Whether to show 'Several people are typing…'
         return two_typing_users_rendered_html;
     });
@@ -124,8 +131,8 @@ run_test("typing_events.render_notifications_for_narrow", ({override_rewire, moc
 
     // Change to having four typists and verify the rendered html has
     // 'Several people are typing…' but not the list of users.
-    const four_typing_users_ids = [anna.user_id, vronsky.user_id, levin.user_id, kitty.user_id];
-    override_rewire(typing_events, "get_users_typing_for_narrow", () => four_typing_users_ids);
+    typing_data.add_typist(group, levin.user_id);
+    typing_data.add_typist(group, kitty.user_id);
 
     typing_events.render_notifications_for_narrow();
     assert.ok($typing_notifications.html().includes("Several people are typing…"));

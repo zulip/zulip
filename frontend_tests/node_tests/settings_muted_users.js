@@ -6,23 +6,25 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const list_widget = mock_esm("../../static/js/list_widget");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 
 const settings_muted_users = zrequire("settings_muted_users");
 const muted_users = zrequire("muted_users");
+const people = zrequire("people");
 
 const noop = () => {};
 
-run_test("settings", ({override_rewire}) => {
+run_test("settings", ({override}) => {
+    people.add_active_user({user_id: 5, email: "five@zulip.com", full_name: "Feivel Fiverson"});
     muted_users.add_muted_user(5, 1577836800);
     let populate_list_called = false;
-    override_rewire(settings_muted_users, "populate_list", () => {
-        const opts = muted_users.get_muted_users();
-        assert.deepEqual(opts, [
+    override(list_widget, "create", ($container, list) => {
+        assert.deepEqual(list, [
             {
-                date_muted: 1577836800000,
                 date_muted_str: "Jan\u00A001,\u00A02020",
-                id: 5,
+                user_id: 5,
+                user_name: "Feivel Fiverson",
             },
         ]);
         populate_list_called = true;

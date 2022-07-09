@@ -8,39 +8,29 @@ const {run_test} = require("../zjsunit/test");
 const color_data = zrequire("color_data");
 
 run_test("pick_color", () => {
-    color_data.__Rewire__("colors", ["blue", "orange", "red", "yellow"]);
-
     color_data.reset();
 
     color_data.claim_colors([
-        {color: "orange"},
+        {color: color_data.colors[1]},
         {foo: "whatever"},
-        {color: "yellow"},
+        {color: color_data.colors[3]},
         {color: "bogus"},
     ]);
 
     const expected_colors = [
-        "blue",
-        "red",
+        color_data.colors[0],
+        color_data.colors[2],
+        ...color_data.colors.slice(4),
         // ok, now we'll cycle through all colors
-        "blue",
-        "orange",
-        "red",
-        "yellow",
-        "blue",
-        "orange",
-        "red",
-        "yellow",
-        "blue",
-        "orange",
-        "red",
-        "yellow",
+        ...color_data.colors,
+        ...color_data.colors,
+        ...color_data.colors,
     ];
 
     for (const expected_color of expected_colors) {
         assert.equal(color_data.pick_color(), expected_color);
     }
 
-    color_data.claim_color("blue");
-    assert.equal(color_data.pick_color(), "orange");
+    color_data.claim_color(color_data.colors[0]);
+    assert.equal(color_data.pick_color(), color_data.colors[1]);
 });

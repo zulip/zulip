@@ -2,16 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+
+const muted_topics = mock_esm("../../static/js/muted_topics");
+const stream_data = mock_esm("../../static/js/stream_data");
+const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
+const unread = mock_esm("../../static/js/unread");
 
 const pm_conversations = zrequire("pm_conversations");
 pm_conversations.recent = {};
 
-const muted_topics = zrequire("muted_topics");
-const unread = zrequire("unread");
-const stream_data = zrequire("stream_data");
-const stream_topic_history = zrequire("stream_topic_history");
 const stream_sort = zrequire("stream_sort");
 const tg = zrequire("topic_generator");
 
@@ -39,7 +40,7 @@ run_test("streams", () => {
     assert_prev_stream("announce", "test here");
 });
 
-run_test("topics", ({override_rewire}) => {
+run_test("topics", ({override}) => {
     const streams = [1, 2, 3, 4];
     const topics = new Map([
         [1, ["read", "read", "1a", "1b", "read", "1c"]],
@@ -85,7 +86,7 @@ run_test("topics", ({override_rewire}) => {
         devel: devel_stream_id,
     };
 
-    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
                 return ["ms-topic1", "ms-topic2"];
@@ -96,19 +97,15 @@ run_test("topics", ({override_rewire}) => {
         return [];
     });
 
-    override_rewire(stream_data, "get_stream_id", (stream_name) => stream_id_dct[stream_name]);
+    override(stream_data, "get_stream_id", (stream_name) => stream_id_dct[stream_name]);
 
-    override_rewire(
-        stream_data,
-        "is_stream_muted_by_name",
-        (stream_name) => stream_name === "muted",
-    );
+    override(stream_data, "is_stream_muted_by_name", (stream_name) => stream_name === "muted");
 
-    override_rewire(unread, "topic_has_any_unread", (stream_id) =>
+    override(unread, "topic_has_any_unread", (stream_id) =>
         [devel_stream_id, muted_stream_id].includes(stream_id),
     );
 
-    override_rewire(muted_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
+    override(muted_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {
@@ -123,10 +120,10 @@ run_test("topics", ({override_rewire}) => {
     });
 });
 
-run_test("get_next_unread_pm_string", ({override_rewire}) => {
+run_test("get_next_unread_pm_string", ({override}) => {
     pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
-    override_rewire(unread, "num_unread_for_person", (user_ids_string) => {
+    override(unread, "num_unread_for_person", (user_ids_string) => {
         if (user_ids_string === "unk") {
             return undefined;
         }
@@ -146,7 +143,7 @@ run_test("get_next_unread_pm_string", ({override_rewire}) => {
     assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
 
-    override_rewire(unread, "num_unread_for_person", () => 0);
+    override(unread, "num_unread_for_person", () => 0);
 
     assert.equal(tg.get_next_unread_pm_string("2,3"), undefined);
 });

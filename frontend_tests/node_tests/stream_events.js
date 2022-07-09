@@ -29,6 +29,9 @@ mock_esm("../../static/js/all_messages_data", {
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
 });
+const message_view_header = mock_esm("../../static/js/message_view_header", {
+    maybe_rerender_title_area_for_stream() {},
+});
 mock_esm("../../static/js/recent_topics_ui", {
     complete_rerender: () => {},
 });
@@ -39,7 +42,6 @@ mock_esm("../../static/js/settings_notifications", {
 mock_esm("../../static/js/overlays", {streams_open: () => true});
 
 const {Filter} = zrequire("../js/filter");
-const message_view_header = zrequire("message_view_header");
 const narrow_state = zrequire("narrow_state");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -84,9 +86,9 @@ function narrow_to_frontend() {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -263,10 +265,9 @@ test("marked_subscribed (error)", () => {
     blueslip.reset();
 });
 
-test("marked_subscribed (normal)", ({override, override_rewire}) => {
+test("marked_subscribed (normal)", ({override}) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
-    override_rewire(stream_data, "subscribe_myself", noop);
     override(stream_color, "update_stream_color", noop);
 
     narrow_to_frontend();
@@ -280,7 +281,11 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
 
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
     override(message_util, "do_unread_count_updates", message_util_stub.f);
-    override_rewire(message_view_header, "render_title_area", message_view_header_stub.f);
+    override(
+        message_view_header,
+        "maybe_rerender_title_area_for_stream",
+        message_view_header_stub.f,
+    );
     override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
     });
@@ -300,8 +305,7 @@ test("marked_subscribed (normal)", ({override, override_rewire}) => {
     narrow_state.reset_current_filter();
 });
 
-test("marked_subscribed (color)", ({override, override_rewire}) => {
-    override_rewire(stream_data, "subscribe_myself", noop);
+test("marked_subscribed (color)", ({override}) => {
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
 
@@ -312,6 +316,7 @@ test("marked_subscribed (color)", ({override, override_rewire}) => {
         is_muted: true,
         invite_only: false,
     };
+    stream_data.add_sub(sub);
 
     override(color_data, "pick_color", () => "green");
 
@@ -353,31 +358,34 @@ test("marked_subscribed (emails)", ({override}) => {
     assert.deepEqual(sub, args.sub);
 });
 
-test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override, override_rewire}) => {
+test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     // Test unsubscribe
     const sub = {...dev_help};
-    assert.ok(sub.subscribed);
+    stream_data.add_sub(sub);
+    stream_data.subscribe_myself(sub);
 
     const stub = make_stub();
 
     override(stream_settings_ui, "update_settings_for_unsubscribed", stub.f);
     override(stream_list, "remove_sidebar_row", noop);
-    override_rewire(stream_data, "unsubscribe_myself", noop);
 
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
     assert.deepEqual(args.sub, sub);
 });
 
-test("mark_unsubscribed (render_title_area)", ({override, override_rewire}) => {
+test("mark_unsubscribed (render_title_area)", ({override}) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 
     // Test update bookend and remove done event
     narrow_to_frontend();
     const message_view_header_stub = make_stub();
-    override_rewire(message_view_header, "render_title_area", message_view_header_stub.f);
-    override_rewire(stream_data, "unsubscribe_myself", noop);
+    override(
+        message_view_header,
+        "maybe_rerender_title_area_for_stream",
+        message_view_header_stub.f,
+    );
     override(stream_settings_ui, "update_settings_for_unsubscribed", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);

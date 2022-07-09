@@ -60,9 +60,9 @@ people.add_cross_realm_user(welcome_bot);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         $("#compose-textarea").val("some message");
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 

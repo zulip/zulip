@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const {page_params} = require("../zjsunit/zpage_params");
+const {page_params, user_settings} = require("../zjsunit/zpage_params");
+
+const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
@@ -97,7 +99,7 @@ stream_data.create_streams([
 ]);
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         pm_conversations.clear_for_testing();
         recent_senders.clear_for_testing();
         peer_data.clear_for_testing();
@@ -107,11 +109,11 @@ function test(label, f) {
         page_params.realm_email_address_visibility =
             settings_config.email_address_visibility_values.admins_only.code;
 
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 
-test("sort_streams", ({override_rewire}) => {
+test("sort_streams", ({override}) => {
     let test_streams = [
         {
             stream_id: 101,
@@ -150,7 +152,17 @@ test("sort_streams", ({override_rewire}) => {
         },
     ];
 
-    override_rewire(stream_data, "is_active", (sub) => sub.name !== "dead");
+    override(
+        user_settings,
+        "demote_inactive_streams",
+        settings_config.demote_inactive_streams_values.always.code,
+    );
+    stream_data.set_filter_out_inactives();
+    override(
+        stream_topic_history,
+        "stream_has_topics",
+        (stream_id) => ![105, 205].includes(stream_id),
+    );
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first

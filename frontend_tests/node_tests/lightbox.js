@@ -16,20 +16,20 @@ mock_esm("../../static/js/overlays", {
 mock_esm("../../static/js/popovers", {
     hide_all: () => {},
 });
+const rows = mock_esm("../../static/js/rows");
 
 const message_store = mock_esm("../../static/js/message_store");
-const rows = zrequire("rows");
 
 const lightbox = zrequire("lightbox");
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         lightbox.clear_for_testing();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
-test("pan_and_zoom", ({override_rewire}) => {
+test("pan_and_zoom", ({override}) => {
     const $img = $.create("img-stub");
     const $link = $.create("link-stub");
     const $msg = $.create("msg-stub");
@@ -39,7 +39,7 @@ test("pan_and_zoom", ({override_rewire}) => {
     $img.set_parent($link);
     $link.closest = () => $msg;
 
-    override_rewire(rows, "id", ($row) => {
+    override(rows, "id", ($row) => {
         assert.equal($row, $msg);
         return 1234;
     });
@@ -53,20 +53,20 @@ test("pan_and_zoom", ({override_rewire}) => {
         return "message-stub";
     };
 
-    override_rewire(lightbox, "render_lightbox_list_images", () => {});
+    $.create(".focused_table .message_inline_image img", {children: []});
     const open_image = lightbox.build_open_image_function();
     open_image($img);
 
     assert.equal(fetched_zid, 1234);
 });
 
-test("youtube", ({override_rewire}) => {
+test("youtube", ({override}) => {
     const href = "https://youtube.com/some-random-clip";
     const $img = $.create("img-stub");
     const $link = $.create("link-stub");
     const $msg = $.create("msg-stub");
 
-    override_rewire(rows, "id", ($row) => {
+    override(rows, "id", ($row) => {
         assert.equal($row, $msg);
         return 4321;
     });
@@ -86,7 +86,7 @@ test("youtube", ({override_rewire}) => {
     $link.closest = () => $msg;
     $link.attr("href", href);
 
-    override_rewire(lightbox, "render_lightbox_list_images", () => {});
+    $.create(".focused_table .message_inline_image img", {children: []});
 
     const open_image = lightbox.build_open_image_function();
     open_image($img);

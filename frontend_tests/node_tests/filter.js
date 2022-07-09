@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -61,9 +62,9 @@ function make_sub(name, stream_id) {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -1666,13 +1667,13 @@ test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), default_redirect.redirect_url);
 });
 
-test("error_cases", ({override_rewire}) => {
+test("error_cases", () => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
-    override_rewire(people, "pm_with_user_ids", () => {});
 
     const predicate = get_predicate([["pm-with", "Joe@example.com"]]);
-    assert.ok(!predicate({type: "private"}));
+    blueslip.expect("error", "Empty recipient list in message");
+    assert.ok(!predicate({type: "private", display_recipient: []}));
 });
 
 run_test("is_spectator_compatible", () => {

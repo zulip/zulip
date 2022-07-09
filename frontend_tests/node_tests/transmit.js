@@ -95,7 +95,7 @@ run_test("transmit_message_ajax_reload_pending", () => {
     assert.ok(reload_initiated);
 });
 
-run_test("reply_message_stream", ({override_rewire}) => {
+run_test("reply_message_stream", ({override}) => {
     const stream_message = {
         type: "stream",
         stream: "social",
@@ -108,8 +108,8 @@ run_test("reply_message_stream", ({override_rewire}) => {
 
     let send_message_args;
 
-    override_rewire(transmit, "send_message", (args) => {
-        send_message_args = args;
+    override(channel, "post", ({data}) => {
+        send_message_args = data;
     });
 
     page_params.user_id = 44;
@@ -132,7 +132,7 @@ run_test("reply_message_stream", ({override_rewire}) => {
     });
 });
 
-run_test("reply_message_private", ({override_rewire}) => {
+run_test("reply_message_private", ({override}) => {
     const fred = {
         user_id: 3,
         email: "fred@example.com",
@@ -149,8 +149,8 @@ run_test("reply_message_private", ({override_rewire}) => {
 
     let send_message_args;
 
-    override_rewire(transmit, "send_message", (args) => {
-        send_message_args = args;
+    override(channel, "post", ({data}) => {
+        send_message_args = data;
     });
 
     page_params.user_id = 155;

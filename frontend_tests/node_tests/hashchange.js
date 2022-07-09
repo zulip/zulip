@@ -22,8 +22,9 @@ const drafts = mock_esm("../../static/js/drafts");
 const floating_recipient_bar = mock_esm("../../static/js/floating_recipient_bar");
 const info_overlay = mock_esm("../../static/js/info_overlay");
 const message_viewport = mock_esm("../../static/js/message_viewport");
-const narrow = zrequire("../../static/js/narrow");
+const narrow = mock_esm("../../static/js/narrow");
 const overlays = mock_esm("../../static/js/overlays");
+const recent_topics_ui = mock_esm("../../static/js/recent_topics_ui");
 const settings = mock_esm("../../static/js/settings");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const ui_util = mock_esm("../../static/js/ui_util");
@@ -38,9 +39,6 @@ const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
 const stream_data = zrequire("stream_data");
-
-const recent_topics_util = zrequire("recent_topics_util");
-const recent_topics_ui = zrequire("recent_topics_ui");
 
 run_test("operators_round_trip", () => {
     let operators;
@@ -117,7 +115,7 @@ run_test("people_slugs", () => {
     assert.equal(hash, "#narrow/pm-with/42-alice");
 });
 
-function test_helper({override, override_rewire, change_tab}) {
+function test_helper({override, change_tab}) {
     let events = [];
     let narrow_terms;
 
@@ -143,7 +141,7 @@ function test_helper({override, override_rewire, change_tab}) {
             events.push("change_tab_to " + hash);
         });
 
-        override_rewire(narrow, "activate", (terms) => {
+        override(narrow, "activate", (terms) => {
             narrow_terms = terms;
             events.push("narrow.activate");
         });
@@ -164,15 +162,14 @@ function test_helper({override, override_rewire, change_tab}) {
     };
 }
 
-run_test("hash_interactions", ({override, override_rewire}) => {
+run_test("hash_interactions", ({override}) => {
     $window_stub = $.create("window-stub");
     user_settings.default_view = "recent_topics";
 
-    override_rewire(recent_topics_util, "is_visible", () => false);
-    const helper = test_helper({override, override_rewire, change_tab: true});
+    const helper = test_helper({override, change_tab: true});
 
     let recent_topics_ui_shown = false;
-    override_rewire(recent_topics_ui, "show", () => {
+    override(recent_topics_ui, "show", () => {
         recent_topics_ui_shown = true;
     });
     window.location.hash = "#unknown_hash";
@@ -317,10 +314,8 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     helper.assert_events([[ui_util, "blur_active_element"]]);
 });
 
-run_test("save_narrow", ({override, override_rewire}) => {
-    override_rewire(recent_topics_util, "is_visible", () => false);
-
-    const helper = test_helper({override, override_rewire});
+run_test("save_narrow", ({override}) => {
+    const helper = test_helper({override});
 
     let operators = [{operator: "is", operand: "private"}];
 

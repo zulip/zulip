@@ -42,7 +42,7 @@ const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
         page_params.is_admin = false;
         page_params.realm_domains = [
@@ -51,7 +51,7 @@ function test(label, f) {
         ];
         page_params.realm_authentication_methods = {};
         settings_org.reset();
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 
@@ -506,12 +506,8 @@ function test_discard_changes_button(discard_changes) {
         $message_content_delete_limit_minutes,
     ];
 
-    $("#org-discard-msg-editing").closest = () => $discard_button_parent;
-
-    const stubbed_function = settings_org.change_save_button_state;
-    settings_org.__Rewire__("change_save_button_state", (save_button_controls, state) => {
-        assert.equal(state, "discarded");
-    });
+    const {$discard_button, props} = createSaveButtons("msg-editing");
+    $discard_button.closest = (selector) => $(selector);
 
     discard_changes(ev);
 
@@ -524,8 +520,7 @@ function test_discard_changes_button(discard_changes) {
     assert.equal($message_content_edit_limit_minutes.val(), "60");
     assert.equal($msg_delete_limit_setting.val(), "upto_two_min");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
-
-    settings_org.__Rewire__("change_save_button_state", stubbed_function);
+    assert.ok(props.hidden);
 }
 
 test("set_up", ({override, override_rewire}) => {
@@ -575,7 +570,7 @@ test("set_up", ({override, override_rewire}) => {
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
-    override_rewire(settings_org, "maybe_disable_widgets", noop);
+    override(page_params, "is_owner", true);
     settings_org.set_up();
 
     test_submit_settings_form(

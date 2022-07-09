@@ -107,6 +107,9 @@ const narrow = mock_esm("../../static/js/narrow", {
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
+mock_esm("../../static/js/popovers", {
+    any_active: () => false,
+});
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
@@ -153,6 +156,7 @@ mock_esm("../../static/js/unread", {
 const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
 const rt = zrequire("recent_topics_ui");
+const recent_topics_util = zrequire("recent_topics_util");
 const rt_data = zrequire("recent_topics_data");
 
 people.is_my_user_id = (id) => id === 1;
@@ -320,11 +324,11 @@ function stub_out_filter_buttons() {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire, mock_template}) => {
+    run_test(label, (helpers) => {
         $(".header").css = () => {};
 
         messages = sample_messages.map((message) => ({...message}));
-        f({override, override_rewire, mock_template});
+        f(helpers);
     });
 }
 
@@ -363,7 +367,7 @@ test("test_recent_topics_show", ({mock_template, override}) => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-test("test_filter_all", ({override_rewire, mock_template}) => {
+test("test_filter_all", ({mock_template}) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     page_params.is_spectator = true;
@@ -392,7 +396,7 @@ test("test_filter_all", ({override_rewire, mock_template}) => {
     i = row_data.length;
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    override_rewire(rt, "is_visible", () => true);
+    recent_topics_util.set_visible(true);
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
@@ -412,11 +416,11 @@ test("test_filter_all", ({override_rewire, mock_template}) => {
     row_data = generate_topic_data([[1, "topic-1", 0, false, true]]);
     i = row_data.length;
     rt.set_default_focus();
-    override_rewire(rt, "is_in_focus", () => false);
+    $(".home-page-input").trigger("focus");
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
-test("test_filter_unread", ({override_rewire, mock_template}) => {
+test("test_filter_unread", ({mock_template}) => {
     let expected_filter_unread = false;
     page_params.is_spectator = false;
 
@@ -460,12 +464,12 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
     });
 
     rt.clear_for_tests();
-    override_rewire(rt, "is_visible", () => true);
+    recent_topics_util.set_visible(true);
     rt.set_default_focus();
 
     stub_out_filter_buttons();
     rt.process_messages(messages);
-    override_rewire(rt, "is_in_focus", () => false);
+    $(".home-page-input").trigger("focus");
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 
     $("#recent_topics_filter_buttons").removeClass("btn-recent-selected");
@@ -526,7 +530,7 @@ test("test_filter_unread", ({override_rewire, mock_template}) => {
     rt.set_filter("all");
 });
 
-test("test_filter_participated", ({override_rewire, mock_template}) => {
+test("test_filter_participated", ({mock_template}) => {
     let expected_filter_participated;
 
     page_params.is_spectator = false;
@@ -569,13 +573,13 @@ test("test_filter_participated", ({override_rewire, mock_template}) => {
     });
 
     rt.clear_for_tests();
-    override_rewire(rt, "is_visible", () => true);
+    recent_topics_util.set_visible(true);
     rt.set_default_focus();
     stub_out_filter_buttons();
     expected_filter_participated = false;
     rt.process_messages(messages);
 
-    override_rewire(rt, "is_in_focus", () => false);
+    $(".home-page-input").trigger("focus");
     assert.equal(rt.inplace_rerender("1:topic-4"), true);
 
     // Set muted filter
@@ -635,8 +639,8 @@ test("test_filter_participated", ({override_rewire, mock_template}) => {
     rt.set_filter("all");
 });
 
-test("test_update_unread_count", ({override_rewire}) => {
-    override_rewire(rt, "is_visible", () => false);
+test("test_update_unread_count", () => {
+    recent_topics_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -647,7 +651,7 @@ test("test_update_unread_count", ({override_rewire}) => {
     rt.update_topic_unread_count(messages[9]);
 });
 
-test("basic assertions", ({override_rewire, mock_template}) => {
+test("basic assertions", ({mock_template}) => {
     rt.clear_for_tests();
 
     mock_template("recent_topics_table.hbs", false, () => {});
@@ -656,7 +660,7 @@ test("basic assertions", ({override_rewire, mock_template}) => {
     });
 
     stub_out_filter_buttons();
-    override_rewire(rt, "is_visible", () => true);
+    recent_topics_util.set_visible(true);
     rt.set_default_focus();
     rt.set_filter("all");
     rt.process_messages(messages);
@@ -764,19 +768,19 @@ test("basic assertions", ({override_rewire, mock_template}) => {
     // update_topic_is_muted now relies on external libraries completely
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, false, true]]);
-    override_rewire(rt, "is_in_focus", () => false);
+    $(".home-page-input").trigger("focus");
     assert.equal(rt.update_topic_is_muted(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
-test("test_reify_local_echo_message", ({override_rewire, mock_template}) => {
+test("test_reify_local_echo_message", ({mock_template}) => {
     mock_template("recent_topics_table.hbs", false, () => {});
     mock_template("recent_topic_row.hbs", false, () => {});
 
     rt.clear_for_tests();
     stub_out_filter_buttons();
-    override_rewire(rt, "is_visible", () => true);
+    recent_topics_util.set_visible(true);
     rt.set_filter("all");
     rt.process_messages(messages);
 
@@ -822,8 +826,8 @@ test("test_reify_local_echo_message", ({override_rewire, mock_template}) => {
     );
 });
 
-test("test_delete_messages", ({override, override_rewire}) => {
-    override_rewire(rt, "is_visible", () => false);
+test("test_delete_messages", ({override}) => {
+    recent_topics_util.set_visible(false);
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -861,9 +865,9 @@ test("test_delete_messages", ({override, override_rewire}) => {
     rt.update_topics_of_deleted_message_ids([-1]);
 });
 
-test("test_topic_edit", ({override, override_rewire}) => {
+test("test_topic_edit", ({override}) => {
     override(all_messages_data, "all_messages", () => messages);
-    override_rewire(rt, "is_visible", () => false);
+    recent_topics_util.set_visible(false);
 
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();

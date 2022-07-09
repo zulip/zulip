@@ -72,7 +72,7 @@ const denmark_stream = {
     subscribed: false,
 };
 
-run_test("unread_ops", ({override, override_rewire}) => {
+run_test("unread_ops", ({override}) => {
     stream_data.clear_subscriptions();
     stream_data.add_sub(denmark_stream);
     message_store.clear_for_testing();
@@ -90,7 +90,7 @@ run_test("unread_ops", ({override, override_rewire}) => {
     ];
 
     // We don't want recent topics to process message for this test.
-    override_rewire(recent_topics_util, "is_visible", () => false);
+    recent_topics_util.set_visible(false);
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.

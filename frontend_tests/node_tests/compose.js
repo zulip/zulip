@@ -28,6 +28,8 @@ const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
+const compose_fade = mock_esm("../../static/js/compose_fade");
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
 const notifications = mock_esm("../../static/js/notifications");
@@ -39,16 +41,14 @@ const server_events = mock_esm("../../static/js/server_events");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const subscriber_api = mock_esm("../../static/js/subscriber_api");
 const transmit = mock_esm("../../static/js/transmit");
+const upload = mock_esm("../../static/js/upload");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
-const compose_fade = zrequire("compose_fade");
-const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const upload = zrequire("upload");
 
 function reset_jquery() {
     // Avoid leaks.
@@ -100,9 +100,11 @@ function test_ui(label, f) {
     run_test(label, f);
 }
 
-function initialize_handlers({override, override_rewire}) {
-    override_rewire(compose, "compute_show_video_chat_button", () => false);
-    override_rewire(upload, "setup_upload", () => undefined);
+function initialize_handlers({override}) {
+    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(page_params, "realm_video_chat_provider", 0);
+    override(upload, "setup_upload", () => undefined);
+    override(upload, "feature_check", () => {});
     override(resize, "watch_manual_resize", () => {});
     compose.initialize();
 }
@@ -155,7 +157,7 @@ test_ui("send_message", ({override, override_rewire}) => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = new_user.user_id;
-        override_rewire(compose_state, "private_message_recipient", () => "alice@example.com");
+        override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
         override_rewire(echo, "insert_message", (message) => {
@@ -359,8 +361,8 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
-        override_rewire(compose_state, "private_message_recipient", () => "bob@example.com");
-        override_rewire(compose_pm_pill, "get_user_ids", () => []);
+        override(compose_pm_pill, "get_emails", () => "bob@example.com");
+        override(compose_pm_pill, "get_user_ids", () => []);
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
@@ -384,7 +386,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("stream");
-        override_rewire(compose_state, "stream_name", () => "social");
+        compose_state.stream_name("social");
         override_rewire(people, "get_by_user_id", () => []);
         compose_finished_event_checked = false;
         let schedule_message = false;
@@ -402,7 +404,7 @@ test_ui("finish", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("initialize", ({override, override_rewire}) => {
+test_ui("initialize", ({override}) => {
     let compose_actions_expected_opts;
     let compose_actions_start_checked;
 
@@ -416,7 +418,8 @@ test_ui("initialize", ({override, override_rewire}) => {
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
 
-    override_rewire(compose, "compute_show_video_chat_button", () => false);
+    override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
+    override(page_params, "realm_video_chat_provider", 0);
 
     let resize_watch_manual_resize_checked = false;
     override(resize, "watch_manual_resize", (elem) => {
@@ -424,23 +427,11 @@ test_ui("initialize", ({override, override_rewire}) => {
         resize_watch_manual_resize_checked = true;
     });
 
-    let xmlhttprequest_checked = false;
-    set_global(
-        "XMLHttpRequest",
-        class XMLHTTPRequest {
-            upload = true;
-            constructor() {
-                xmlhttprequest_checked = true;
-            }
-        },
-    );
-    $("#compose .compose_upload_file").addClass("notdisplayed");
-
     page_params.max_file_upload_size_mib = 512;
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    override_rewire(upload, "setup_upload", (config) => {
+    override(upload, "setup_upload", (config) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
@@ -449,12 +440,11 @@ test_ui("initialize", ({override, override_rewire}) => {
             },
         };
     });
+    override(upload, "feature_check", () => {});
 
     compose.initialize();
 
     assert.ok(resize_watch_manual_resize_checked);
-    assert.ok(xmlhttprequest_checked);
-    assert.ok(!$("#compose .compose_upload_file").hasClass("notdisplayed"));
     assert.ok(setup_upload_called);
 
     function set_up_compose_start_mock(expected_opts) {
@@ -495,8 +485,8 @@ test_ui("initialize", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("update_fade", ({override, override_rewire}) => {
-    initialize_handlers({override, override_rewire});
+test_ui("update_fade", ({override}) => {
+    initialize_handlers({override});
 
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
@@ -506,12 +496,12 @@ test_ui("update_fade", ({override, override_rewire}) => {
     let update_all_called = false;
     let update_narrow_to_recipient_visibility_called = false;
 
-    override_rewire(compose_fade, "set_focused_recipient", (msg_type) => {
+    override(compose_fade, "set_focused_recipient", (msg_type) => {
         assert.equal(msg_type, "private");
         set_focused_recipient_checked = true;
     });
 
-    override_rewire(compose_fade, "update_all", () => {
+    override(compose_fade, "update_all", () => {
         update_all_called = true;
     });
 
@@ -535,7 +525,7 @@ test_ui("update_fade", ({override, override_rewire}) => {
 });
 
 test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
-    initialize_handlers({override, override_rewire});
+    initialize_handlers({override});
 
     let prevent_default_checked = false;
     let compose_finish_checked = false;
@@ -557,7 +547,7 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 });
 
 test_ui("on_events", ({override, override_rewire}) => {
-    initialize_handlers({override, override_rewire});
+    initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
 
@@ -917,12 +907,12 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("create_message_object", ({override_rewire}) => {
+test_ui("create_message_object", ({override, override_rewire}) => {
     $("#stream_message_recipient_stream").val("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
 
-    override_rewire(compose_state, "get_message_type", () => "stream");
+    compose_state.set_message_type("stream");
 
     let message = compose.create_message_object();
     assert.equal(message.to, social.stream_id);
@@ -937,11 +927,8 @@ test_ui("create_message_object", ({override_rewire}) => {
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    override_rewire(compose_state, "get_message_type", () => "private");
-    compose_state.__Rewire__(
-        "private_message_recipient",
-        () => "alice@example.com, bob@example.com",
-    );
+    compose_state.set_message_type("private");
+    override(compose_pm_pill, "get_emails", () => "alice@example.com,bob@example.com");
 
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.user_id, bob.user_id]);

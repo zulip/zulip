@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
+
 const typing = zrequire("typing");
-const compose_pm_pill = zrequire("compose_pm_pill");
 const typing_status = zrequire("../shared/js/typing_status");
 
 function make_time(secs) {
@@ -20,7 +21,7 @@ function returns_time(secs) {
     };
 }
 
-run_test("basics", ({override_rewire}) => {
+run_test("basics", ({override, override_rewire}) => {
     typing_status.initialize_state();
 
     // invalid conversation basically does nothing
@@ -263,7 +264,7 @@ run_test("basics", ({override_rewire}) => {
     // test that we correctly detect if worker.get_recipient
     // and typing_status.state.current_recipient are the same
 
-    override_rewire(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
+    override(compose_pm_pill, "get_user_ids_string", () => "1,2,3");
     typing_status.state.current_recipient = typing.get_recipient();
 
     const call_count = {
@@ -294,14 +295,14 @@ run_test("basics", ({override_rewire}) => {
 
     // change in recipient and new_recipient should make us
     // call typing_status.stop_last_notification
-    override_rewire(compose_pm_pill, "get_user_ids_string", () => "2,3,4");
+    override(compose_pm_pill, "get_user_ids_string", () => "2,3,4");
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);
     assert.deepEqual(call_count.stop_last_notification, 1);
 
     // Stream messages are represented as get_user_ids_string being empty
-    override_rewire(compose_pm_pill, "get_user_ids_string", () => "");
+    override(compose_pm_pill, "get_user_ids_string", () => "");
     typing_status.update(worker, typing.get_recipient());
     assert.deepEqual(call_count.maybe_ping_server, 2);
     assert.deepEqual(call_count.start_or_extend_idle_timer, 3);

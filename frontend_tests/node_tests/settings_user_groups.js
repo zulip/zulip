@@ -86,7 +86,7 @@ const name_selector = `#user-groups #${CSS.escape(1)} .name`;
 const description_selector = `#user-groups #${CSS.escape(1)} .description`;
 const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-test_ui("populate_user_groups", ({override_rewire, mock_template}) => {
+test_ui("populate_user_groups", ({mock_template}) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -147,7 +147,7 @@ test_ui("populate_user_groups", ({override_rewire, mock_template}) => {
         return people.get_by_user_id !== undefined && people.get_by_user_id !== noop;
     };
 
-    override_rewire(settings_user_groups, "can_edit", () => true);
+    page_params.is_admin = true;
 
     const all_pills = new Map();
 
@@ -500,7 +500,7 @@ test_ui("on_events", ({override_rewire, mock_template}) => {
         return "stub";
     });
 
-    override_rewire(settings_user_groups, "can_edit", () => true);
+    page_params.is_admin = true;
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = settings_user_groups.add_user_group;
