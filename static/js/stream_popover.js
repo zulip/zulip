@@ -11,7 +11,6 @@ import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.h
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
 
 import * as blueslip from "./blueslip";
-import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
@@ -227,6 +226,8 @@ function build_topic_link_clipboard(url) {
 function build_stream_popover(opts) {
     const elt = opts.elt;
     const stream_id = opts.stream_id;
+    const sub = sub_store.get(stream_id);
+    const stream_edit_hash = hash_util.stream_edit_url(sub);
 
     if (stream_popped() && current_stream_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
@@ -239,6 +240,7 @@ function build_stream_popover(opts) {
 
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
+        stream_edit_hash,
     });
 
     $(elt).popover({
@@ -588,11 +590,8 @@ export function register_click_handlers() {
 export function register_stream_handlers() {
     // Stream settings
     $("body").on("click", ".open_stream_settings", (e) => {
-        const sub = stream_popover_sub(e);
         hide_stream_popover();
-
-        const stream_edit_hash = hash_util.stream_edit_url(sub);
-        browser_history.go_to_location(stream_edit_hash);
+        e.stopPropagation();
     });
 
     // Pin/unpin
