@@ -102,6 +102,10 @@
         top: 0;
         z-index: 1;
         color: hsl(0, 0%, 20%);
+
+        ~ .collapse .presence_row {
+            padding-left: 16px;
+        }
     }
 
     ul {
