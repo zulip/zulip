@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -39,9 +39,7 @@ mock_esm("../../static/js/stream_popover", {
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
-
-// Bypass some scary code that runs when we import the module.
-const popovers = with_field($.fn, "popover", noop, () => zrequire("popovers"));
+const popovers = zrequire("popovers");
 
 const alice = {
     email: "alice@example.com",

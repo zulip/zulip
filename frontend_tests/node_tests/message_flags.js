@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field_rewire, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = mock_esm("../../static/js/channel");
@@ -151,7 +151,8 @@ run_test("read", ({override}) => {
 
     // For testing purpose limit the batch size value to 5 instead of 1000
     function send_read(messages) {
-        with_field_rewire(message_flags, "_unread_batch_size", 5, () => {
+        with_overrides(({override_rewire}) => {
+            override_rewire(message_flags, "_unread_batch_size", 5);
             message_flags.send_read(messages);
         });
     }
@@ -270,7 +271,8 @@ run_test("read_empty_data", ({override}) => {
 
     // For testing purpose limit the batch size value to 5 instead of 1000
     function send_read(messages) {
-        with_field_rewire(message_flags, "_unread_batch_size", 5, () => {
+        with_overrides(({override_rewire}) => {
+            override_rewire(message_flags, "_unread_batch_size", 5);
             message_flags.send_read(messages);
         });
     }

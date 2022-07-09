@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -92,14 +92,14 @@ function override_private_message_recipient({override_rewire}) {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         // We don't test the css calls; we just skip over them.
         $("#compose").css = () => {};
         $(".new_message_textarea").css = () => {};
 
         people.init();
         compose_state.set_message_type(false);
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -318,7 +318,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-test("quote_and_reply", ({override, override_rewire}) => {
+test("quote_and_reply", ({disallow, override, override_rewire}) => {
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
@@ -390,15 +390,9 @@ test("quote_and_reply", ({override, override_rewire}) => {
         raw_content: "Testing.",
     };
 
-    /* istanbul ignore next */
-    function whiny_get() {
-        assert.fail("channel.get should not be used if raw_content is present");
-    }
-
     replaced = false;
-    with_field(channel, "get", whiny_get, () => {
-        quote_and_reply(opts);
-    });
+    disallow(channel, "get");
+    quote_and_reply(opts);
     assert.ok(replaced);
 
     selected_message = {

@@ -2,13 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {
-    mock_esm,
-    set_global,
-    with_field_rewire,
-    with_function_call_disallowed_rewire,
-    zrequire,
-} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -473,13 +467,10 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@back";
     fake_this.token = "back";
-    with_function_call_disallowed_rewire(
-        compose_validate,
-        "warn_if_mentioning_unsubscribed_user",
-        () => {
-            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-        },
-    );
+    with_overrides(({disallow_rewire}) => {
+        disallow_rewire(compose_validate, "warn_if_mentioning_unsubscribed_user");
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -493,13 +484,10 @@ test("content_typeahead_selected", ({override_rewire}) => {
     fake_this.completing = "silent_mention";
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    with_function_call_disallowed_rewire(
-        compose_validate,
-        "warn_if_mentioning_unsubscribed_user",
-        () => {
-            actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
-        },
-    );
+    with_overrides(({disallow_rewire}) => {
+        disallow_rewire(compose_validate, "warn_if_mentioning_unsubscribed_user");
+        actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    });
 
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
@@ -524,13 +512,10 @@ test("content_typeahead_selected", ({override_rewire}) => {
 
     fake_this.query = "@_back";
     fake_this.token = "back";
-    with_function_call_disallowed_rewire(
-        compose_validate,
-        "warn_if_mentioning_unsubscribed_user",
-        () => {
-            actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-        },
-    );
+    with_overrides(({disallow_rewire}) => {
+        disallow_rewire(compose_validate, "warn_if_mentioning_unsubscribed_user");
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
     expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -1618,7 +1603,7 @@ test("typeahead_results", () => {
     assert_stream_matches("city", []);
 });
 
-test("message people", ({override}) => {
+test("message people", ({override, override_rewire}) => {
     let results;
 
     /*
@@ -1631,6 +1616,7 @@ test("message people", ({override}) => {
 
     let user_ids = [hal.user_id, harry.user_id];
     override(message_user_ids, "user_ids", () => user_ids);
+    override_rewire(ct, "max_num_items", 2);
 
     const opts = {
         want_broadcast: false,
@@ -1638,28 +1624,22 @@ test("message people", ({override}) => {
         filter_pills: false,
     };
 
-    function get_results(search_key) {
-        return with_field_rewire(ct, "max_num_items", 2, () =>
-            ct.get_person_suggestions(search_key, opts),
-        );
-    }
-
-    results = get_results("Ha");
+    results = ct.get_person_suggestions("Ha", opts);
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     // Now let's exclude Hal.
     user_ids = [hamlet.user_id, harry.user_id];
 
-    results = get_results("Ha");
+    results = ct.get_person_suggestions("Ha", opts);
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
 
-    results = get_results("Ha");
+    results = ct.get_person_suggestions("Ha", opts);
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     people.deactivate(harry);
-    results = get_results("Ha");
+    results = ct.get_person_suggestions("Ha", opts);
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });

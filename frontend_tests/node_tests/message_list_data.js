@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_function_call_disallowed_rewire, zrequire} = require("../zjsunit/namespace");
+const {with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -145,14 +145,16 @@ run_test("muting", () => {
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    with_function_call_disallowed_rewire(muted_topics, "is_topic_muted", () => {
+    with_overrides(({disallow_rewire}) => {
+        disallow_rewire(muted_topics, "is_topic_muted");
         const res = mld.messages_filtered_for_topic_mutes(msgs);
         assert.deepEqual(res, msgs);
     });
 
     // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
     // filtering messages.
-    with_function_call_disallowed_rewire(muted_users, "is_user_muted", () => {
+    with_overrides(({disallow_rewire}) => {
+        disallow_rewire(muted_users, "is_user_muted");
         const res = mld.messages_filtered_for_user_mutes(msgs);
         assert.deepEqual(res, msgs);
     });

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 set_global("document", {});
@@ -100,36 +100,27 @@ run_test("same_recipient", () => {
     assert.ok(!util.same_recipient(undefined, undefined));
 });
 
-run_test("robust_uri_decode", () => {
+run_test("robust_uri_decode", ({override}) => {
     assert.equal(util.robust_uri_decode("xxx%3Ayyy"), "xxx:yyy");
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
-    let error_message;
-    with_field(
-        global,
-        "decodeURIComponent",
+    override(global, "decodeURIComponent", () => {
+        throw new Error("foo");
+    });
+    assert.throws(
         () => {
-            throw new Error("foo");
+            util.robust_uri_decode("%E0%A4%A");
         },
-        () => {
-            try {
-                util.robust_uri_decode("%E0%A4%A");
-            } catch (error) {
-                error_message = error.message;
-            }
-        },
+        {name: "Error", message: "foo"},
     );
-
-    assert.equal(error_message, "foo");
 });
 
-run_test("dumb_strcmp", () => {
-    with_field(Intl, "Collator", undefined, () => {
-        const strcmp = util.make_strcmp();
-        assert.equal(strcmp("a", "b"), -1);
-        assert.equal(strcmp("c", "c"), 0);
-        assert.equal(strcmp("z", "y"), 1);
-    });
+run_test("dumb_strcmp", ({override}) => {
+    override(Intl, "Collator", undefined);
+    const strcmp = util.make_strcmp();
+    assert.equal(strcmp("a", "b"), -1);
+    assert.equal(strcmp("c", "c"), 0);
+    assert.equal(strcmp("z", "y"), 1);
 });
 
 run_test("get_edit_event_orig_topic", () => {

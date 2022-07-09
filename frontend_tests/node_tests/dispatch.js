@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -328,14 +328,10 @@ run_test("realm settings", ({override}) => {
     override(notifications, "redraw_title", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
-        let called = false;
-
-        with_field(electron_bridge, "send_event", fake_send_event, () => {
+        with_overrides(({override}) => {
+            override(electron_bridge, "send_event", fake_send_event);
             dispatch(event);
-            called = true;
         });
-
-        assert.ok(called);
     }
 
     // realm

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire, set_global} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -89,19 +89,13 @@ test("videos", ({override, override_rewire}) => {
             },
         };
 
-        override_rewire(
-            compose_ui,
-            "insert_syntax_and_focus",
-            /* istanbul ignore next */
-            () => {
-                throw new Error("unexpected insert_syntax_and_focus call");
-            },
-        );
-
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        handler(ev);
+        with_overrides(({disallow_rewire}) => {
+            disallow_rewire(compose_ui, "insert_syntax_and_focus");
+            handler(ev);
+        });
     })();
 
     (function test_jitsi_video_link_compose_clicked() {
