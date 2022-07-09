@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 // Dependencies
@@ -20,7 +21,6 @@ set_global("navigator", _navigator);
 
 const muted_topics = zrequire("muted_topics");
 const stream_data = zrequire("stream_data");
-const ui = zrequire("ui");
 const spoilers = zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
@@ -50,14 +50,14 @@ stream_data.add_sub(muted);
 muted_topics.add_muted_topic(general.stream_id, "muted topic");
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         user_settings.enable_desktop_notifications = true;
         user_settings.enable_sounds = true;
         user_settings.wildcard_mentions_notify = true;
         user_settings.notification_sound = "ding";
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -280,8 +280,8 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
-test("basic_notifications", ({override_rewire}) => {
-    override_rewire(ui, "replace_emoji_with_text", () => {});
+test("basic_notifications", () => {
+    $("<div>").set_find_results(".emoji", {replaceWith() {}});
 
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;

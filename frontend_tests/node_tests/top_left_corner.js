@@ -6,25 +6,25 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const pm_list = mock_esm("../../static/js/pm_list");
 mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
 const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");
-const pm_list = zrequire("pm_list");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", ({override_rewire}) => {
+run_test("narrowing", ({override}) => {
     // activating narrow
 
     let pm_expanded;
     let pm_closed;
 
-    override_rewire(pm_list, "close", () => {
+    override(pm_list, "close", () => {
         pm_closed = true;
     });
-    override_rewire(pm_list, "expand", () => {
+    override(pm_list, "expand", () => {
         pm_expanded = true;
     });
 

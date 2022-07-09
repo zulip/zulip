@@ -40,7 +40,7 @@ function contains_sub(subs, sub) {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         page_params.is_admin = false;
         page_params.realm_users = [];
         page_params.is_guest = false;
@@ -48,7 +48,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         stream_data.clear_subscriptions();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -764,7 +764,7 @@ test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-test("create_sub", ({override_rewire}) => {
+test("create_sub", () => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -783,11 +783,9 @@ test("create_sub", ({override_rewire}) => {
         color: "#76ce90",
     };
 
-    override_rewire(color_data, "pick_color", () => "#bd86e5");
-
     const india_sub = stream_data.create_sub_from_server_data(india);
     assert.ok(india_sub);
-    assert.equal(india_sub.color, "#bd86e5");
+    assert.equal(india_sub.color, color_data.colors[0]);
     const new_sub = stream_data.create_sub_from_server_data(india);
     // make sure sub doesn't get created twice
     assert.equal(india_sub, new_sub);

@@ -6,6 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
+const list_widget = mock_esm("../../static/js/list_widget");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 
 const settings_muted_topics = zrequire("settings_muted_topics");
@@ -20,12 +21,11 @@ const frontend = {
 };
 stream_data.add_sub(frontend);
 
-run_test("settings", ({override_rewire}) => {
+run_test("settings", ({override}) => {
     muted_topics.add_muted_topic(frontend.stream_id, "js", 1577836800);
     let populate_list_called = false;
-    override_rewire(settings_muted_topics, "populate_list", () => {
-        const opts = muted_topics.get_muted_topics();
-        assert.deepEqual(opts, [
+    override(list_widget, "create", ($container, list) => {
+        assert.deepEqual(list, [
             {
                 date_muted: 1577836800000,
                 date_muted_str: "Jan\u00A001,\u00A02020",

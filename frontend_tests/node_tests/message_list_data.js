@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_overrides, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -143,26 +143,20 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ];
 
+    muted_topics.add_muted_topic(1, "muted");
+    muted_users.add_muted_user(10);
+
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    with_overrides(({disallow_rewire}) => {
-        disallow_rewire(muted_topics, "is_topic_muted");
-        const res = mld.messages_filtered_for_topic_mutes(msgs);
-        assert.deepEqual(res, msgs);
-    });
+    assert.deepEqual(mld.messages_filtered_for_topic_mutes(msgs), msgs);
 
     // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
     // filtering messages.
-    with_overrides(({disallow_rewire}) => {
-        disallow_rewire(muted_users, "is_user_muted");
-        const res = mld.messages_filtered_for_user_mutes(msgs);
-        assert.deepEqual(res, msgs);
-    });
+    assert.deepEqual(mld.messages_filtered_for_user_mutes(msgs), msgs);
 
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
     mld.filter = new Filter([{operator: "stream", operand: "general"}]);
-    muted_topics.add_muted_topic(1, "muted");
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
@@ -177,7 +171,6 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
 
-    muted_users.add_muted_user(10);
     const res_user = mld.messages_filtered_for_user_mutes(msgs);
     assert.deepEqual(res_user, [
         // `messages_filtered_for_user_mutes` does not affect stream messages

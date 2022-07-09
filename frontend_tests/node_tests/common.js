@@ -16,6 +16,7 @@ mock_esm("tippy.js", {
 });
 
 set_global("document", {});
+const navigator = set_global("navigator", {});
 
 const common = zrequire("common");
 
@@ -79,8 +80,8 @@ run_test("copy_data_attribute_value", ({override}) => {
     assert.ok(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", ({override_rewire}) => {
-    override_rewire(common, "has_mac_keyboard", () => false);
+run_test("adjust_mac_shortcuts non-mac", ({override}) => {
+    override(navigator, "platform", "Windows");
 
     // The adjust_mac_shortcuts has a really simple guard
     // at the top, and we just test the early-return behavior
@@ -90,7 +91,7 @@ run_test("adjust_mac_shortcuts non-mac", ({override_rewire}) => {
 
 // Test non-default value of adjust_mac_shortcuts boolean parameter:
 // `kbd_elem = false`.
-run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
+run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -109,7 +110,7 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
     const inserted_fn_key = "<code>Fn</code> + ";
 
-    override_rewire(common, "has_mac_keyboard", () => true);
+    override(navigator, "platform", "MacIntel");
 
     const test_items = [];
     let key_no = 1;
@@ -143,7 +144,7 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
 
 // Test default value of adjust_mac_shortcuts boolean parameter:
 // `kbd_elem = true`.
-run_test("adjust_mac_shortcuts mac defaults", ({override_rewire}) => {
+run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -159,7 +160,7 @@ run_test("adjust_mac_shortcuts mac defaults", ({override_rewire}) => {
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
     const inserted_fn_key = "<kbd>Fn</kbd> + ";
 
-    override_rewire(common, "has_mac_keyboard", () => true);
+    override(navigator, "platform", "MacIntel");
 
     const test_items = [];
     let key_no = 1;

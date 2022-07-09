@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const input_pill = mock_esm("../../static/js/input_pill");
+
 const search_pill = zrequire("search_pill");
-const input_pill = zrequire("input_pill");
 
 const is_starred_item = {
     display_value: "is:starred",
@@ -70,10 +71,10 @@ run_test("get_items", () => {
     );
 });
 
-run_test("create_pills", ({override_rewire}) => {
+run_test("create_pills", ({override}) => {
     let input_pill_create_called = false;
 
-    override_rewire(input_pill, "create", () => {
+    override(input_pill, "create", () => {
         input_pill_create_called = true;
         return {dummy: "dummy"};
     });

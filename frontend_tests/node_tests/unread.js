@@ -55,10 +55,10 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         unread.declare_bankruptcy();
         muted_topics.set_muted_topics([]);
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -244,15 +244,11 @@ test("muting", () => {
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 });
 
-test("num_unread_for_topic", ({override_rewire}) => {
+test("num_unread_for_topic", () => {
     // Test the num_unread_for_topic() function using many
     // messages.
     const stream_id = 301;
-
-    override_rewire(sub_store, "get", (arg) => {
-        assert.equal(arg, stream_id);
-        return {name: "Some stream"};
-    });
+    sub_store.add_hydrated_sub(stream_id, {stream_id, name: "Some stream"});
 
     let count = unread.num_unread_for_topic(stream_id, "lunch");
     assert.equal(count, 0);
@@ -315,15 +311,15 @@ test("num_unread_for_topic", ({override_rewire}) => {
     assert.deepEqual(msg_ids, []);
 });
 
-test("home_messages", ({override_rewire}) => {
-    override_rewire(stream_data, "is_subscribed", () => true);
-    override_rewire(stream_data, "is_muted", () => false);
-
+test("home_messages", () => {
     const stream_id = 401;
-
-    override_rewire(sub_store, "get", () => ({
+    const sub = {
+        stream_id,
         name: "whatever",
-    }));
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(stream_id, sub);
 
     const message = {
         id: 15,
@@ -354,7 +350,7 @@ test("home_messages", ({override_rewire}) => {
     test_notifiable_count(counts.home_unread_messages, 0);
 
     // Now unsubscribe all our streams.
-    override_rewire(stream_data, "is_subscribed", () => false);
+    sub.subscribed = false;
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
     test_notifiable_count(counts.home_unread_messages, 0);

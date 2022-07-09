@@ -16,6 +16,7 @@ const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
 
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
 mock_esm("../../static/js/spectators", {
     login_to_access: () => {},
 });
@@ -653,7 +654,7 @@ run_test("narrow_to_compose_target streams", ({override_rewire}) => {
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 });
 
-run_test("narrow_to_compose_target PMs", ({override_rewire}) => {
+run_test("narrow_to_compose_target PMs", ({override, override_rewire}) => {
     const args = {called: false};
     override_rewire(narrow, "activate", (operators, opts) => {
         args.operators = operators;
@@ -662,7 +663,7 @@ run_test("narrow_to_compose_target PMs", ({override_rewire}) => {
     });
 
     let emails;
-    override_rewire(compose_state, "private_message_recipient", () => emails);
+    override(compose_pm_pill, "get_emails", () => emails);
 
     compose_state.set_message_type("private");
     people.add_active_user(ray);

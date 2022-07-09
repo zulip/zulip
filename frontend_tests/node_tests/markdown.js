@@ -181,10 +181,10 @@ markdown.initialize(markdown_config.get_helpers());
 linkifiers.initialize(example_realm_linkifiers);
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         page_params.realm_users = [];
         linkifiers.update_linkifier_rules(example_realm_linkifiers);
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -824,7 +824,7 @@ test("parse_non_message", () => {
     assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
 });
 
-test("missing unicode emojis", ({override_rewire}) => {
+test("missing unicode emojis", ({override}) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
@@ -833,11 +833,8 @@ test("missing unicode emojis", ({override_rewire}) => {
         '<p><span aria-label="bike" class="emoji emoji-1f6b2" role="img" title="bike">:bike:</span></p>',
     );
 
-    override_rewire(emoji, "get_emoji_name", (codepoint) => {
-        // Now simulate that we don't know any emoji names.
-        assert.equal(codepoint, "1f6b2");
-        // return undefined
-    });
+    // Now simulate that we don't know this emoji name.
+    override(emoji_codes.codepoint_to_name, "1f6b2", undefined);
 
     markdown.initialize(markdown_config.get_helpers());
     markdown.apply_markdown(message);

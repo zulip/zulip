@@ -38,9 +38,9 @@ function get_list_info(zoomed) {
 }
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         stream_topic_history.reset();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
@@ -120,18 +120,29 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.num_possible_topics, 2);
 });
 
-test("get_list_info unreads", ({override, override_rewire}) => {
+test("get_list_info unreads", ({override}) => {
     let list_info;
 
-    override_rewire(stream_topic_history, "get_recent_topic_names", () =>
-        _.range(15).map((i) => "topic " + i),
-    );
+    let message_id = 0;
+    for (let i = 14; i >= 0; i -= 1) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            message_id: (message_id += 1),
+            topic_name: `topic ${i}`,
+        });
+    }
 
-    const unread_cnt = new Map();
-    override_rewire(unread, "num_unread_for_topic", (stream_id, topic_name) => {
-        assert.equal(stream_id, general.stream_id);
-        return unread_cnt.get(topic_name) || 0;
-    });
+    function add_unreads(topic, count) {
+        unread.process_loaded_messages(
+            Array.from({length: count}, () => ({
+                id: (message_id += 1),
+                stream_id: general.stream_id,
+                topic,
+                type: "stream",
+                unread: true,
+            })),
+        );
+    }
 
     /*
         We have 15 topics, but we only show up
@@ -142,8 +153,8 @@ test("get_list_info unreads", ({override, override_rewire}) => {
         So first we'll get 7 topics, where 2 are
         unread.
     */
-    unread_cnt.set("topic 8", 8);
-    unread_cnt.set("topic 9", 9);
+    add_unreads("topic 8", 8);
+    add_unreads("topic 9", 9);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 7);
@@ -155,8 +166,8 @@ test("get_list_info unreads", ({override, override_rewire}) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 8", "topic 9"],
     );
 
-    unread_cnt.set("topic 6", 6);
-    unread_cnt.set("topic 7", 7);
+    add_unreads("topic 6", 6);
+    add_unreads("topic 7", 7);
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
@@ -168,9 +179,9 @@ test("get_list_info unreads", ({override, override_rewire}) => {
         ["topic 0", "topic 1", "topic 2", "topic 3", "topic 4", "topic 6", "topic 7", "topic 8"],
     );
 
-    unread_cnt.set("topic 4", 4);
-    unread_cnt.set("topic 5", 5);
-    unread_cnt.set("topic 13", 13);
+    add_unreads("topic 4", 4);
+    add_unreads("topic 5", 5);
+    add_unreads("topic 13", 13);
 
     override(muted_topics, "is_topic_muted", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);

@@ -96,10 +96,10 @@ people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         narrow_state.reset_current_filter();
         pm_conversations.clear_for_testing();
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 

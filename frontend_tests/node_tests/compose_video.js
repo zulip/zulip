@@ -10,6 +10,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 const events = require("./lib/events");
 
 const channel = mock_esm("../../static/js/channel");
+const compose_ui = mock_esm("../../static/js/compose_ui");
 const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
@@ -26,7 +27,6 @@ set_global(
 );
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-const compose_ui = zrequire("compose_ui");
 const compose_closed = zrequire("compose_closed_ui");
 const compose = zrequire("compose");
 function stub_out_video_calls() {
@@ -61,13 +61,13 @@ const realm_available_video_chat_providers = {
 };
 
 function test(label, f) {
-    run_test(label, ({override, override_rewire}) => {
+    run_test(label, (helpers) => {
         page_params.realm_available_video_chat_providers = realm_available_video_chat_providers;
-        f({override, override_rewire});
+        f(helpers);
     });
 }
 
-test("videos", ({override, override_rewire}) => {
+test("videos", ({override}) => {
     page_params.realm_video_chat_provider = realm_available_video_chat_providers.disabled.id;
 
     override(upload, "setup_upload", () => {});
@@ -92,8 +92,8 @@ test("videos", ({override, override_rewire}) => {
         const handler = $("body").get_on_handler("click", ".video_link");
         $("#compose-textarea").val("");
 
-        with_overrides(({disallow_rewire}) => {
-            disallow_rewire(compose_ui, "insert_syntax_and_focus");
+        with_overrides(({disallow}) => {
+            disallow(compose_ui, "insert_syntax_and_focus");
             handler(ev);
         });
     })();
@@ -113,7 +113,7 @@ test("videos", ({override, override_rewire}) => {
             },
         };
 
-        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -151,7 +151,7 @@ test("videos", ({override, override_rewire}) => {
             },
         };
 
-        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });
@@ -197,7 +197,7 @@ test("videos", ({override, override_rewire}) => {
             },
         };
 
-        override_rewire(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
             syntax_to_insert = syntax;
             called = true;
         });

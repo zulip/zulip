@@ -40,7 +40,7 @@ run_test("is_my_user_id", () => {
     assert.equal(people.is_my_user_id(me.user_id.toString()), true);
 });
 
-run_test("blueslip", ({override_rewire}) => {
+run_test("blueslip", () => {
     const unknown_email = "alicebobfred@example.com";
 
     blueslip.expect("debug", "User email operand unknown: " + unknown_email);
@@ -104,10 +104,9 @@ run_test("blueslip", ({override_rewire}) => {
     const reply_to = people.pm_reply_to(message);
     assert.ok(reply_to.includes("?"));
 
-    override_rewire(people, "pm_with_user_ids", () => [42]);
-    override_rewire(people, "get_by_user_id", () => {});
+    blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("error", "Unknown people in message");
-    const uri = people.pm_with_url({});
+    const uri = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
     assert.equal(uri.indexOf("unk"), uri.length - 3);
 
     blueslip.expect("error", "Undefined field id");
