@@ -37,6 +37,9 @@ PUSH_DELETE_BRANCH_MESSAGE_TEMPLATE = (
 PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE = (
     "{user_name} [pushed]({compare_url}) the branch {branch_name}."
 )
+PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE = (
+    "{user_name} pushed the branch {branch_name}."
+)
 PUSH_COMMITS_MESSAGE_EXTENSION = "Commits by {}"
 PUSH_COMMITTERS_LIMIT_INFO = 3
 
@@ -81,9 +84,14 @@ def get_push_commits_event_message(
         )
 
     if not commits_data and not deleted:
-        return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+        if compare_url:
+            return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_TEMPLATE.format(
+                user_name=user_name,
+                compare_url=compare_url,
+                branch_name=branch_name,
+            )
+        return PUSH_LOCAL_BRANCH_WITHOUT_COMMITS_MESSAGE_WITHOUT_URL_TEMPLATE.format(
             user_name=user_name,
-            compare_url=compare_url,
             branch_name=branch_name,
         )
 

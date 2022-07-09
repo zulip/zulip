@@ -433,6 +433,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("radarr", ["entertainment"], display_name="Radarr"),
     WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
     WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
+    WebhookIntegration("rhodecode", ["version-control"], display_name="RhodeCode"),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
@@ -773,6 +774,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "radarr": [ScreenshotConfig("radarr_movie_grabbed.json")],
     "raygun": [ScreenshotConfig("new_error.json")],
     "reviewboard": [ScreenshotConfig("review_request_published.json")],
+    "rhodecode": [ScreenshotConfig("push.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
     "sentry": [
         ScreenshotConfig("event_for_exception_python.json"),
