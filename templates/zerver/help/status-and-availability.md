@@ -31,6 +31,17 @@ You can set a status emoji, status message, or both.
 
 1. Click **Save**.
 
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Set a status**.
+
+1. Tap to select one of the common statuses, *or* choose any emoji and/or
+   write a short message.
+
+1. Tap **Save**.
+
 {end_tabs}
 
 ### View a status
@@ -74,6 +85,12 @@ unavailable).
 {!self-user-actions-menu.md!}
 
 1. Click **Set yourself as unavailable**.
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Toggle **Set yourself to away**.
 
 {end_tabs}
 
