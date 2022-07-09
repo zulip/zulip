@@ -8,9 +8,19 @@ sidebar.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
 1. Click **Pin stream to top**.
+
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Pin to top**.
+
+{!stream-long-press-menu-tip.md!}
 
 {end_tabs}
 
@@ -18,15 +28,27 @@ sidebar.
 
 {start_tabs}
 
+{tab|desktop-web}
+
 {!stream-actions.md!}
 
 1. Click **Unpin stream from top**.
 
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Unpin from top**.
+
+{!stream-long-press-menu-tip.md!}
+
 {end_tabs}
 
-### From the streams page (alternate method)
+### Alternate method
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {relative|stream|subscribed}
 
@@ -35,5 +57,15 @@ sidebar.
 {!select-stream-view-personal.md!}
 
 1. Under **Personal settings**, toggle **Pin stream to top of left sidebar**.
+
+{tab|mobile}
+
+{!stream-long-press-menu.md!}
+
+1. Tap **Stream settings**.
+
+1. Toggle **Pinned**.
+
+{!mobile-stream-settings-menu-tip.md!}
 
 {end_tabs}
