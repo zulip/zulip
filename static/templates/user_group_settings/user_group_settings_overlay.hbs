@@ -20,6 +20,23 @@
                 </div>
             </div>
             <div class="right">
+                <div class="display-type">
+                    <div id="user_group_settings_title" class="user-group-info-title">{{t 'User group settings' }}</div>
+                </div>
+                <div class="nothing-selected">
+                    {{#if can_create_or_edit_user_groups}}
+                    <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
+                    <span>
+                        {{#tr}}
+                            First time? Read our <z-link>guidelines</z-link> for creating user groups.
+                            {{#*inline "z-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                        {{/tr}}
+                    </span>
+                    {{/if}}
+                </div>
+                <div id="user_group_settings" class="settings" data-simplebar data-simplebar-auto-hide="false">
+                    {{!-- edit user group here --}}
+                </div>
             </div>
         </div>
     </div>
