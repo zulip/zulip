@@ -389,7 +389,8 @@ h4.stream_setting_subsection_title {
                 content: "Preferences";
             }
 
-            .stream-info-title {
+            .stream-info-title,
+            .user-group-info-title {
                 display: none;
                 font-size: 1.5em;
                 line-height: 1;
@@ -997,6 +998,7 @@ h4.stream_setting_subsection_title {
         max-width: 95%;
     }
 
+    #groups_overlay,
     #subscription_overlay {
         .left {
             width: 40%;
@@ -1043,6 +1045,8 @@ h4.stream_setting_subsection_title {
         }
     }
 
+    #groups_overlay .left,
+    #groups_overlay .right,
     #subscription_overlay .left,
     #subscription_overlay .right,
     #settings_page .left,
@@ -1056,6 +1060,7 @@ h4.stream_setting_subsection_title {
         border: none;
     }
 
+    #groups_overlay .right,
     #subscription_overlay .right,
     #settings_page .content-wrapper.right {
         position: absolute;

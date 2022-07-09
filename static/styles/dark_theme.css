@@ -654,6 +654,7 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    .user-groups-container .right .display-type,
     .subscriptions-container .right .display-type,
     .stream-row,
     .group-row,

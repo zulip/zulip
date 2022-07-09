@@ -7,6 +7,7 @@ import * as browser_history from "./browser_history";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import * as people from "./people";
+import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as user_groups from "./user_groups";
 
@@ -26,7 +27,11 @@ export function set_up_click_handlers() {
 
 export function setup_page(callback) {
     function populate_and_fill() {
-        const rendered = render_user_group_settings_overlay();
+        const template_data = {
+            can_create_or_edit_user_groups: settings_data.user_can_edit_user_groups(),
+        };
+
+        const rendered = render_user_group_settings_overlay(template_data);
 
         const $manage_groups_container = ui.get_content_element($("#manage_groups_container"));
         $manage_groups_container.empty();
@@ -58,6 +63,9 @@ export function setup_page(callback) {
         });
 
         set_up_click_handlers();
+
+        // show the "User group settings" header by default.
+        $(".display-type #user_group_settings_title").show();
 
         if (callback) {
             callback();
