@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = mock_esm("../../static/js/channel");
@@ -15,10 +15,10 @@ const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
 function test(label, f) {
-    run_test(label, ({override}) => {
+    run_test(label, (helpers) => {
         unread.declare_bankruptcy();
         stream_topic_history.reset();
-        f({override});
+        f(helpers);
     });
 }
 
@@ -121,7 +121,7 @@ test("basics", () => {
     });
 });
 
-test("is_complete_for_stream_id", () => {
+test("is_complete_for_stream_id", ({override_rewire}) => {
     const sub = {
         name: "devel",
         stream_id: 444,
@@ -129,30 +129,28 @@ test("is_complete_for_stream_id", () => {
     };
     stream_data.add_sub(sub);
 
-    const all_messages_data_stub = {
+    override_rewire(all_messages_data, "all_messages_data", {
         empty: () => false,
         fetch_status: {
             has_found_newest: () => true,
         },
         first: () => ({id: 5}),
-    };
-
-    with_field_rewire(all_messages_data, "all_messages_data", all_messages_data_stub, () => {
-        assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-        // Now simulate a more recent message id.
-        all_messages_data.all_messages_data.first = () => ({id: sub.first_message_id + 1});
-
-        // Note that we'll return `true` here due to
-        // fetched_stream_ids having the stream_id now.
-        assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-        // But now clear the data to see what we'd have without
-        // the previous call.
-        stream_topic_history.reset();
-
-        assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
     });
+
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
+
+    // Now simulate a more recent message id.
+    all_messages_data.all_messages_data.first = () => ({id: sub.first_message_id + 1});
+
+    // Note that we'll return `true` here due to
+    // fetched_stream_ids having the stream_id now.
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
+
+    // But now clear the data to see what we'd have without
+    // the previous call.
+    stream_topic_history.reset();
+
+    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
 });
 
 test("server_history", () => {

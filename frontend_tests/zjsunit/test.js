@@ -31,8 +31,11 @@ exports.run_test = (label, f, opts) => {
 
     try {
         namespace._start_template_mocking();
-        namespace.with_overrides(({override, override_rewire}) => {
-            f({override, override_rewire, mock_template: namespace._mock_template});
+        namespace.with_overrides((helpers) => {
+            f({
+                ...helpers,
+                mock_template: namespace._mock_template,
+            });
         });
         namespace._finish_template_mocking();
     } catch (error) /* istanbul ignore next */ {

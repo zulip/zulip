@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -919,9 +919,10 @@ test("people_suggestion (Admin only email visibility)", ({override_rewire}) => {
     people_suggestion_setup();
 
     const query = "te";
-    const suggestions = with_field(page_params, "is_admin", false, () =>
-        get_suggestions("", query),
-    );
+    const suggestions = with_overrides(({override}) => {
+        override(page_params, "is_admin", false);
+        return get_suggestions("", query);
+    });
 
     const expected = [
         "te",

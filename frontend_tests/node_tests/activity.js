@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -680,16 +680,12 @@ test("electron_bridge", ({override_rewire}) => {
     override_rewire(activity, "send_presence_to_server", () => {});
 
     function with_bridge_idle(bridge_idle, f) {
-        with_field(
-            window,
-            "electron_bridge",
-            {
+        with_overrides(({override}) => {
+            override(window, "electron_bridge", {
                 get_idle_on_system: () => bridge_idle,
-            },
-            () => {
-                f();
-            },
-        );
+            });
+            return f();
+        });
     }
 
     with_bridge_idle(true, () => {
@@ -699,7 +695,8 @@ test("electron_bridge", ({override_rewire}) => {
         assert.equal(activity.compute_active_status(), "idle");
     });
 
-    with_field(window, "electron_bridge", undefined, () => {
+    with_overrides(({override}) => {
+        override(window, "electron_bridge", undefined);
         activity.mark_client_idle();
         assert.equal(activity.compute_active_status(), "idle");
         activity.mark_client_active();

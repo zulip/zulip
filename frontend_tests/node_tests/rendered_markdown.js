@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -275,7 +275,7 @@ run_test("timestamp", ({mock_template}) => {
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });
 
-run_test("timestamp-twenty-four-hour-time", ({mock_template}) => {
+run_test("timestamp-twenty-four-hour-time", ({mock_template, override}) => {
     mock_template("markdown_timestamp.hbs", true, (data, html) => {
         // sanity check incoming data
         assert.ok(data.text.startsWith("Wed, Jul 15 2020, "));
@@ -288,18 +288,13 @@ run_test("timestamp-twenty-four-hour-time", ({mock_template}) => {
     $content.set_find_results("time", $array([$timestamp]));
 
     // We will temporarily change the 24h setting for this test.
-    with_field(user_settings, "twenty_four_hour_time", true, () => {
-        rm.update_elements($content);
-        assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
-    });
+    override(user_settings, "twenty_four_hour_time", true);
+    rm.update_elements($content);
+    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
 
-    with_field(user_settings, "twenty_four_hour_time", false, () => {
-        rm.update_elements($content);
-        assert.equal(
-            $timestamp.html(),
-            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM\n',
-        );
-    });
+    override(user_settings, "twenty_four_hour_time", false);
+    rm.update_elements($content);
+    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM\n');
 });
 
 run_test("timestamp-error", () => {

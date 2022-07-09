@@ -2,13 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {
-    mock_esm,
-    set_global,
-    with_field,
-    with_overrides,
-    zrequire,
-} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 
@@ -264,7 +258,7 @@ function test_normal_typing() {
     assert_unmapped('~!@#$%^*()_+{}:"<>');
 }
 
-run_test("allow normal typing when processing text", ({override_rewire}) => {
+run_test("allow normal typing when processing text", ({override, override_rewire}) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
@@ -273,16 +267,17 @@ run_test("allow normal typing when processing text", ({override_rewire}) => {
     // All letters should return false if we are composing text.
     override_rewire(hotkey, "processing_text", () => true);
 
-    for (const settings_open of [() => true, () => false]) {
-        for (const is_active of [() => true, () => false]) {
-            for (const info_overlay_open of [() => true, () => false]) {
-                with_field(overlays, "is_active", is_active, () => {
-                    with_field(overlays, "settings_open", settings_open, () => {
-                        with_field(overlays, "info_overlay_open", info_overlay_open, () => {
-                            test_normal_typing();
-                        });
-                    });
-                });
+    let settings_open;
+    let is_active;
+    let info_overlay_open;
+    override(overlays, "is_active", () => is_active);
+    override(overlays, "settings_open", () => settings_open);
+    override(overlays, "info_overlay_open", () => info_overlay_open);
+
+    for (settings_open of [true, false]) {
+        for (is_active of [true, false]) {
+            for (info_overlay_open of [true, false]) {
+                test_normal_typing();
             }
         }
     }

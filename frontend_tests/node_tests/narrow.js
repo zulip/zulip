@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {with_function_call_disallowed_rewire, zrequire, mock_esm} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -592,21 +592,17 @@ run_test("show_invalid_narrow_message", ({mock_template}) => {
     );
 });
 
-run_test("narrow_to_compose_target errors", () => {
-    function test() {
-        with_function_call_disallowed_rewire(narrow, "activate", () => {
-            narrow.to_compose_target();
-        });
-    }
+run_test("narrow_to_compose_target errors", ({disallow_rewire}) => {
+    disallow_rewire(narrow, "activate");
 
     // No-op when not composing.
     compose_state.set_message_type(false);
-    test();
+    narrow.to_compose_target();
 
     // No-op when empty stream.
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
-    test();
+    narrow.to_compose_target();
 });
 
 run_test("narrow_to_compose_target streams", ({override_rewire}) => {

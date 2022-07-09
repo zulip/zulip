@@ -313,180 +313,142 @@ exports.finish = function () {
     new_globals.clear();
 };
 
-exports.with_field = function (obj, field, val, f) {
-    assert.ok(
-        !("__esModule" in obj && "__Rewire__" in obj),
-        "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
-    );
-
-    const had_val = Object.hasOwn(obj, field);
-    const old_val = obj[field];
-    try {
-        obj[field] = val;
-        return f();
-    } finally {
-        if (had_val) {
-            obj[field] = old_val;
-        } else {
-            delete obj[field];
-        }
-    }
-};
-
-exports.with_field_rewire = function (obj, field, val, f) {
-    // This is deprecated because it relies on the slow
-    // babel-plugin-rewire-ts plugin.  Consider alternatives such
-    // as exporting a helper function for tests from the module
-    // containing the function you need to mock.
-
-    // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
-    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
-
-    assert.notEqual(
-        typeof old_val,
-        "function",
-        "Please try to avoid mocking here, or use override_rewire.",
-    );
-
-    try {
-        obj.__Rewire__(field, val);
-        return f();
-    } finally {
-        obj.__Rewire__(field, old_val);
-    }
-};
-
-exports.with_function_call_disallowed_rewire = function (obj, field, f) {
-    // This is deprecated because it relies on the slow
-    // babel-plugin-rewire-ts plugin.
-
-    // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
-    const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
-
-    assert.equal(typeof old_val, "function", `Expected a function for ${field}`);
-
-    try {
-        obj.__Rewire__(
-            field,
-            /* istanbul ignore next */
-            () => {
-                throw new Error(`unexpected call to ${field}`);
-            },
-        );
-        return f();
-    } finally {
-        obj.__Rewire__(field, old_val);
-    }
-};
-
 exports.with_overrides = function (test_function) {
     // This function calls test_function() and passes in
     // a way to override the namespace temporarily.
 
     const restore_callbacks = [];
-    const unused_funcs = new Map();
-    const override = function (obj, func_name, f) {
+    let ok = false;
+
+    const override = function (obj, prop, value, {unused = true} = {}) {
         // Given an object `obj` (which is usually a module object),
-        // we re-map `obj[func_name]` to the `f` passed in by the caller.
+        // we re-map `obj[prop]` to the `value` passed in by the caller.
         // Then the outer function here (`with_overrides`) automatically
-        // restores the original value of `obj[func_name]` as its last
+        // restores the original value of `obj[prop]` as its last
         // step.  Generally our code calls `run_test`, which wraps
         // `with_overrides`.
+
+        assert.ok(
+            typeof obj === "object" || typeof obj === "function",
+            `We cannot override a function for ${typeof obj} objects`,
+        );
 
         assert.ok(
             !("__esModule" in obj && "__Rewire__" in obj),
             "Cannot mutate an ES module from outside. Consider exporting a test helper function from it instead.",
         );
 
-        assert.equal(
-            typeof f,
-            "function",
-            "You can only override with a function. Use with_field for non-functions.",
-        );
+        const had_value = Object.hasOwn(obj, prop);
+        const old_value = obj[prop];
+        let new_value = value;
 
-        assert.ok(
-            typeof obj === "object" || typeof obj === "function",
-            `We cannot override a function for ${typeof obj} objects`,
-        );
+        if (typeof value === "function") {
+            assert.ok(
+                old_value === undefined || typeof old_value === "function",
+                `
+                    You are overriding a non-function with a function.
+                    This is almost certainly an error.
+                `,
+            );
 
-        assert.ok(
-            obj[func_name] === undefined || typeof obj[func_name] === "function",
-            `
-                You are overriding a non-function with a function.
-                This is almost certainly an error.
-            `,
-        );
+            new_value = function (...args) {
+                unused = false;
+                return value.apply(this, args);
+            };
 
-        if (!unused_funcs.has(obj)) {
-            unused_funcs.set(obj, new Map());
+            // Let zjquery know this function was patched with override,
+            // so it doesn't complain about us modifying it.  (Other
+            // code can also use this, as needed.)
+            new_value._patched_with_override = true;
+        } else {
+            unused = false;
         }
 
-        unused_funcs.get(obj).set(func_name, true);
-
-        const old_f = obj[func_name];
-        const new_f = function (...args) {
-            unused_funcs.get(obj).delete(func_name);
-            return f.apply(this, args);
-        };
-
-        // Let zjquery know this function was patched with override,
-        // so it doesn't complain about us modifying it.  (Other
-        // code can also use this, as needed.)
-        new_f._patched_with_override = true;
-
-        obj[func_name] = new_f;
+        obj[prop] = new_value;
         restore_callbacks.push(() => {
-            obj[func_name] = old_f;
+            if (ok) {
+                assert.ok(!unused, `${prop} never got invoked!`);
+            }
+            if (had_value) {
+                obj[prop] = old_value;
+            } else {
+                delete obj[prop];
+            }
         });
     };
 
-    const override_rewire = function (obj, func_name, f) {
+    const disallow = function (obj, prop) {
+        override(
+            obj,
+            prop,
+            // istanbul ignore next
+            () => {
+                throw new Error(`unexpected call to ${prop}`);
+            },
+            {unused: false},
+        );
+    };
+
+    const override_rewire = function (obj, prop, value, {unused = true} = {}) {
         // This is deprecated because it relies on the slow
         // babel-plugin-rewire-ts plugin.  Consider alternatives such
         // as exporting a helper function for tests from the module
         // containing the function you need to mock.
 
-        assert.equal(
-            typeof f,
-            "function",
-            "You can only override with a function. Use with_field for non-functions.",
-        );
-
         assert.ok(
             typeof obj === "object" || typeof obj === "function",
             `We cannot override a function for ${typeof obj} objects`,
         );
 
-        assert.ok(
-            obj[func_name] === undefined || typeof obj[func_name] === "function",
-            `
-                You are overriding a non-function with a function.
-                This is almost certainly an error.
-            `,
-        );
+        // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
+        const old_value = prop in obj ? obj[prop] : obj.__GetDependency__(prop);
+        let new_value = value;
 
-        if (!unused_funcs.has(obj)) {
-            unused_funcs.set(obj, new Map());
+        if (typeof value === "function") {
+            assert.ok(
+                obj[prop] === undefined || typeof obj[prop] === "function",
+                `
+                    You are overriding a non-function with a function.
+                    This is almost certainly an error.
+                `,
+            );
+
+            new_value = function (...args) {
+                unused = false;
+                return value.apply(this, args);
+            };
+        } else {
+            unused = false;
         }
 
-        unused_funcs.get(obj).set(func_name, true);
-
-        // https://github.com/rosswarren/babel-plugin-rewire-ts/issues/15
-        const old_f = func_name in obj ? obj[func_name] : obj.__GetDependency__(func_name);
-
-        const new_f = function (...args) {
-            unused_funcs.get(obj).delete(func_name);
-            return f.apply(this, args);
-        };
-
-        obj.__Rewire__(func_name, new_f);
+        obj.__Rewire__(prop, new_value);
         restore_callbacks.push(() => {
-            obj.__Rewire__(func_name, old_f);
+            if (ok) {
+                assert.ok(!unused, `${prop} never got invoked!`);
+            }
+            obj.__Rewire__(prop, old_value);
         });
     };
 
+    const disallow_rewire = function (obj, prop) {
+        // This is deprecated because it relies on the slow
+        // babel-plugin-rewire-ts plugin.
+
+        override_rewire(
+            obj,
+            prop,
+            // istanbul ignore next
+            () => {
+                throw new Error(`unexpected call to ${prop}`);
+            },
+            {unused: false},
+        );
+    };
+
+    let ret;
     try {
-        test_function({override, override_rewire});
+        ret = test_function({override, override_rewire, disallow, disallow_rewire});
+        ok = true;
     } finally {
         restore_callbacks.reverse();
         for (const restore_callback of restore_callbacks) {
@@ -494,10 +456,5 @@ exports.with_overrides = function (test_function) {
         }
     }
 
-    for (const module_unused_funcs of unused_funcs.values()) {
-        for (const unused_name of module_unused_funcs.keys()) {
-            /* istanbul ignore next */
-            throw new Error(unused_name + " never got invoked!");
-        }
-    }
+    return ret;
 };

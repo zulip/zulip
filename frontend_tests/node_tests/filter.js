@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -533,7 +533,7 @@ test("new_style_operators", () => {
     assert.ok(filter.can_bucket_by("stream"));
 });
 
-test("public_operators", () => {
+test("public_operators", ({override}) => {
     stream_data.clear_subscriptions();
     let operators = [
         {operator: "stream", operand: "some_stream"},
@@ -542,16 +542,14 @@ test("public_operators", () => {
     ];
 
     let filter = new Filter(operators);
-    with_field(page_params, "narrow_stream", undefined, () => {
-        assert_same_operators(filter.public_operators(), operators);
-    });
+    override(page_params, "narrow_stream", undefined);
+    assert_same_operators(filter.public_operators(), operators);
     assert.ok(filter.can_bucket_by("stream"));
 
     operators = [{operator: "stream", operand: "default"}];
     filter = new Filter(operators);
-    with_field(page_params, "narrow_stream", "default", () => {
-        assert_same_operators(filter.public_operators(), []);
-    });
+    override(page_params, "narrow_stream", "default");
+    assert_same_operators(filter.public_operators(), []);
 });
 
 test("redundancies", () => {
@@ -695,7 +693,8 @@ test("predicate_basics", () => {
     assert.ok(!predicate({stream_id: unknown_stream_id, stream: "unknown"}));
     assert.ok(predicate({type: "private"}));
 
-    with_field(page_params, "narrow_stream", "kiosk", () => {
+    with_overrides(({override}) => {
+        override(page_params, "narrow_stream", "kiosk");
         assert.ok(predicate({stream: "kiosk"}));
     });
 
@@ -906,10 +905,9 @@ function test_mit_exceptions() {
     assert.ok(!predicate({type: "stream", stream: "foo", topic: "bar"}));
 }
 
-test("mit_exceptions", () => {
-    with_field(page_params, "realm_is_zephyr_mirror_realm", true, () => {
-        test_mit_exceptions();
-    });
+test("mit_exceptions", ({override}) => {
+    override(page_params, "realm_is_zephyr_mirror_realm", true);
+    test_mit_exceptions();
 });
 
 test("predicate_edge_cases", () => {

@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, with_field_rewire, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
@@ -365,7 +365,7 @@ test("muted users excluded from search", () => {
     assert.ok(buddy_data.matches_filter("sel", selma.user_id));
 });
 
-test("bulk_data_hacks", () => {
+test("bulk_data_hacks", ({override_rewire}) => {
     // sanity check
     assert.equal(mark.user_id, 1005);
 
@@ -418,9 +418,8 @@ test("bulk_data_hacks", () => {
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
-    with_field_rewire(buddy_data, "max_size_before_shrinking", 50000, () => {
-        user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
-    });
+    override_rewire(buddy_data, "max_size_before_shrinking", 50000);
+    user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
     assert.equal(user_ids.length, 700);
 });
 
