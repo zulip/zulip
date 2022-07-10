@@ -241,12 +241,6 @@
             box-shadow: none;
             border: none;
         }
-
-        &.mobile-icon {
-            width: 24px;
-            box-shadow: none;
-            border: none;
-        }
     }
 
     .warn,
