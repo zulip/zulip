@@ -10,21 +10,16 @@ streams for which [you can see all subscribers](/help/stream-permissions).
 
 ## View someone's profile
 
-### Via the message list
-
 {start_tabs}
 
-1. Click on a user's profile picture.
-
-1. Click **View full profile**.
-
-{end_tabs}
-
-### Via the right sidebar
-
-{start_tabs}
+{tab|desktop-web}
 
 {!right-sidebar-view-full-profile.md!}
+
+!!! Tip ""
+
+    If you are viewing a list of messages, you can also click on a user's
+    profile picture or name and skip to the last step.
 
 {end_tabs}
 
