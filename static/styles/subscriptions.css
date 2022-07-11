@@ -497,13 +497,13 @@ h4.stream_setting_subsection_title {
         background-repeat: no-repeat;
         background-position: center center;
 
-        svg {
+        .zulip-icon-check {
             fill: transparent;
             width: 70%;
             margin: 0% 15%;
         }
 
-        &.checked:hover svg {
+        &.checked:hover .zulip-icon-check {
             opacity: 0.5;
         }
 
@@ -529,8 +529,8 @@ h4.stream_setting_subsection_title {
         }
     }
 
-    .checked svg {
-        fill: hsl(170, 48%, 54%);
+    .checked .zulip-icon-check {
+        color: hsl(170, 48%, 54%);
     }
 
     .icon {
@@ -616,14 +616,14 @@ h4.stream_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked) svg,
-    &.active:hover .check:not(.checked) svg {
-        fill: hsl(0, 0%, 87%);
+    &:hover .check:not(.checked) .zulip-icon-check,
+    &.active:hover .check:not(.checked) .zulip-icon-check {
+        color: hsl(0, 0%, 87%);
     }
 
-    .check:not(.checked):hover svg,
-    &.active .check:not(.checked):hover svg {
-        fill: hsl(0, 0%, 72%);
+    .check:not(.checked):hover .zulip-icon-check,
+    &.active .check:not(.checked):hover .zulip-icon-check {
+        color: hsl(0, 0%, 72%);
     }
 
     &::selection,
