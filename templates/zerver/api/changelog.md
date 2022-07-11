@@ -1048,7 +1048,8 @@ No changes; feature level used for Zulip 3.0 release.
   stream name, the topic name, and the time when the topic was muted.
   Previously, they were 2-item tuples and did not include the time when
   the topic was muted.
-* `GitLab` authentication is now available.
+* [`GET /server_settings`](/api/get-server-settings): Added `gitlab` boolean
+  to deprecated `authentication_methods` object.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: None added as an option for the realm setting
   `video_chat_provider` to disable video call UI.
