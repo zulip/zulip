@@ -55,7 +55,7 @@ stream](/help/unsubscribe-from-a-stream).
 
 {end_tabs}
 
-## Related topics
+## Related articles
 
 * [Stream permissions](/help/stream-permissions)
 * [Roles and permissions](/help/roles-and-permissions)
