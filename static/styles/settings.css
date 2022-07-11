@@ -794,15 +794,6 @@ input[type="checkbox"] {
     margin-bottom: 0 !important;
 }
 
-.edit_bot h3 {
-    margin: 0;
-    font-weight: 400;
-}
-
-.bot_edit_errors {
-    margin: 0;
-}
-
 #bots_lists_navbar .active a {
     background-color: hsl(0, 0%, 98%);
 }
@@ -829,25 +820,6 @@ input[type="checkbox"] {
 
     #bot-role-select:disabled {
         opacity: 1;
-    }
-
-    .edit-bot-name {
-        margin-bottom: 20px;
-    }
-
-    .avatar-section {
-        margin-bottom: 20px;
-    }
-
-    .edit_bot_email {
-        font-weight: 400;
-        text-align: left;
-        margin-top: 0;
-        margin-bottom: 20px;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: pre;
     }
 }
 
