@@ -12370,6 +12370,8 @@ paths:
                           gitlab:
                             description: |
                               Whether the user can authenticate using their GitLab account.
+
+                              **Changes**: New in Zulip 3.0 (feature level 1).
                             type: boolean
                           apple:
                             description: |
