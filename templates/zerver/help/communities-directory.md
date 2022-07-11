@@ -47,7 +47,7 @@ service.
     If you administer a non-public organization, please check the box to request
     to be listed in the future.
 
-## Related topics
+## Related articles
 
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Public access option](/help/public-access-option)

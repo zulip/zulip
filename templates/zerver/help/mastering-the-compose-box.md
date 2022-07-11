@@ -20,7 +20,7 @@ which you are composing.
 While the button is only shown when composing to a stream, the keyboard shortcut
 will work in both stream messages and private messages.
 
-## Related topics
+## Related articles
 
 * [Resize the compose box](/help/resize-the-compose-box)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
