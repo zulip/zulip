@@ -22,12 +22,11 @@ set_global("getSelection", () => ({
 
 const input_pill = zrequire("input_pill");
 
-function pill_html(value, data_id, img_src, status_emoji_info) {
+function pill_html(value, img_src, status_emoji_info) {
     const has_image = img_src !== undefined;
     const has_status = status_emoji_info !== undefined;
 
     const opts = {
-        id: data_id,
         display_value: value,
         has_image,
         has_status,
@@ -44,26 +43,12 @@ function pill_html(value, data_id, img_src, status_emoji_info) {
     return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-function override_random_id({override_rewire}) {
-    let id_seq = 0;
-    override_rewire(input_pill, "random_id", () => {
-        id_seq += 1;
-        return "some_id" + id_seq;
-    });
-}
-
-run_test("random_id", () => {
-    // just get coverage on a simple one-liner:
-    input_pill.random_id();
-});
-
-run_test("basics", ({override_rewire, mock_template}) => {
+run_test("basics", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(data.display_value, "JavaScript");
         return html;
     });
 
-    override_random_id({override_rewire});
     const config = {};
 
     blueslip.expect("error", "Pill needs container.");
@@ -99,7 +84,7 @@ run_test("basics", ({override_rewire, mock_template}) => {
     };
 
     let inserted_before;
-    const expected_html = pill_html("JavaScript", "some_id1", example_img_link, status_emoji_info);
+    const expected_html = pill_html("JavaScript", example_img_link, status_emoji_info);
 
     $pill_input.before = ($elem) => {
         inserted_before = true;
@@ -158,14 +143,13 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", ({override_rewire, mock_template}) => {
+run_test("copy from pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
         $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
-    override_random_id({override_rewire});
     const info = set_up();
     const config = info.config;
     const $container = info.$container;
@@ -178,7 +162,7 @@ run_test("copy from pill", ({override_rewire, mock_template}) => {
     let copied_text;
 
     const $pill_stub = {
-        [0]: "<pill-stub RED>"
+        [0]: "<pill-stub RED>",
     };
 
     const e = {
@@ -402,7 +386,7 @@ run_test("Enter key with text", ({mock_template}) => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", ({override_rewire, mock_template}) => {
+run_test("insert_remove", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
@@ -410,7 +394,6 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
         return html;
     });
 
-    override_random_id({override_rewire});
     const info = set_up();
 
     const config = info.config;
@@ -442,9 +425,9 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
     assert.ok(!removed);
 
     assert.deepEqual(inserted_html, [
-        pill_html("BLUE", "some_id1", example_img_link),
-        pill_html("RED", "some_id2"),
-        pill_html("YELLOW", "some_id3"),
+        pill_html("BLUE", example_img_link),
+        pill_html("RED"),
+        pill_html("YELLOW"),
     ]);
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
@@ -510,7 +493,7 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
     assert.ok(next_pill_focused);
 });
 
-run_test("exit button on pill", ({override_rewire, mock_template}) => {
+run_test("exit button on pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
@@ -518,7 +501,6 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
         return html;
     });
 
-    override_random_id({override_rewire});
     const info = set_up();
 
     const config = info.config;
