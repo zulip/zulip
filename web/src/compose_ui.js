@@ -5,6 +5,7 @@ import autosize from "autosize";
 import $ from "jquery";
 import {insert, replace, set, wrapSelection} from "text-field-edit";
 
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as common from "./common";
 import {$t} from "./i18n";
 import * as loading from "./loading";
@@ -352,14 +353,23 @@ export function format_text($textarea, type, inserted_content) {
     const field = $textarea.get(0);
     let range = $textarea.range();
     let text = $textarea.val();
-    const selected_text = range.text;
 
-    // Remove new line and space around selected text.
-    const left_trim_length = range.text.length - range.text.trimStart().length;
-    const right_trim_length = range.text.length - range.text.trimEnd().length;
+    // Remove new line and space around selected text, except list formatting,
+    // where we want to especially preserve any selected new line character
+    // before the selected text, as it is conventionally depicted with a highlight
+    // at the end of the previous line, which we would like to format.
+    const TRIM_ONLY_END_TYPES = ["bulleted"];
 
-    field.setSelectionRange(range.start + left_trim_length, range.end - right_trim_length);
+    let start_trim_length;
+    if (TRIM_ONLY_END_TYPES.includes(type)) {
+        start_trim_length = 0;
+    } else {
+        start_trim_length = range.text.length - range.text.trimStart().length;
+    }
+    const end_trim_length = range.text.length - range.text.trimEnd().length;
+    field.setSelectionRange(range.start + start_trim_length, range.end - end_trim_length);
     range = $textarea.range();
+    const selected_text = range.text;
 
     const is_selection_bold = () =>
         // First check if there are enough characters before/after selection.
@@ -374,6 +384,52 @@ export function format_text($textarea, type, inserted_content) {
         range.length > 4 &&
         selected_text.slice(0, bold_syntax.length) === bold_syntax &&
         selected_text.slice(-bold_syntax.length) === bold_syntax;
+
+    const section_off_selected_lines = () => {
+        // Divide all lines of text (separated by `\n`) into those entirely or
+        // partially selected, and those before and after these selected lines.
+        const before = text.slice(0, range.start);
+        const after = text.slice(range.end);
+        let separating_new_line_before = false;
+        let closest_new_line_beginning_before_index;
+        if (before.includes("\n")) {
+            separating_new_line_before = true;
+            closest_new_line_beginning_before_index = before.lastIndexOf("\n");
+        } else {
+            separating_new_line_before = false;
+            // The beginning of the entire text acts as a new line.
+            closest_new_line_beginning_before_index = -1;
+        }
+        let separating_new_line_after = false;
+        let closest_new_line_char_after_index;
+        if (after.includes("\n")) {
+            separating_new_line_after = true;
+            closest_new_line_char_after_index =
+                after.indexOf("\n") + before.length + selected_text.length;
+        } else {
+            separating_new_line_after = false;
+            // The end of the entire text acts as a new line.
+            closest_new_line_char_after_index = text.length;
+        }
+        // selected_lines neither includes the `\n` character that marks its
+        // beginning (which exists if there are before_lines) nor the one
+        // that marks its end (which exists if there are after_lines).
+        const selected_lines = text.slice(
+            closest_new_line_beginning_before_index + 1,
+            closest_new_line_char_after_index,
+        );
+        // before_lines excludes the `\n` character that separates it from selected_lines.
+        const before_lines = text.slice(0, Math.max(0, closest_new_line_beginning_before_index));
+        // after_lines excludes the `\n` character that separates it from selected_lines.
+        const after_lines = text.slice(closest_new_line_char_after_index + 1);
+        return {
+            before_lines,
+            separating_new_line_before,
+            selected_lines,
+            separating_new_line_after,
+            after_lines,
+        };
+    };
 
     switch (type) {
         case "bold":
@@ -495,6 +551,64 @@ export function format_text($textarea, type, inserted_content) {
 
             wrapSelection(field, italic_syntax);
             break;
+        case "bulleted": {
+            // We toggle complete lines even when they are partially selected (and just selecting the
+            // newline character after a line counts as partial selection too).
+            const sections = section_off_selected_lines();
+            let {before_lines, selected_lines, after_lines} = sections;
+            const {separating_new_line_before, separating_new_line_after} = sections;
+            // If there is even a single unbulleted line selected, we bullet all.
+            const should_bullet = selected_lines
+                .split("\n")
+                .some((line) => !bulleted_numbered_list_util.is_bulleted(line));
+            if (should_bullet) {
+                selected_lines = selected_lines
+                    .split("\n")
+                    .map((line) => "- " + line)
+                    .join("\n");
+                // We always ensure a blank line before and after the list, as we want
+                // a clean separation between the list and the rest of the text, especially
+                // when the markdown is rendered.
+
+                // Add blank line between text before and list if not already present.
+                if (before_lines.length && before_lines.at(-1) !== "\n") {
+                    before_lines += "\n";
+                }
+                // Add blank line between list and rest of text if not already present.
+                if (after_lines.length && after_lines.at(0) !== "\n") {
+                    after_lines = "\n" + after_lines;
+                }
+            } else {
+                // Unbullet all bulleted lines by removing the 2 bullet syntax characters.
+                selected_lines = selected_lines
+                    .split("\n")
+                    .map((line) => bulleted_numbered_list_util.strip_bullet(line))
+                    .join("\n");
+            }
+            // Restore the separating newlines that were removed by section_off_selected_lines.
+            if (separating_new_line_before) {
+                before_lines += "\n";
+            }
+            if (separating_new_line_after) {
+                after_lines = "\n" + after_lines;
+            }
+            text = before_lines + selected_lines + after_lines;
+            set(field, text);
+            // If no text was selected, that is, bullet was added to the line with the
+            // cursor, nothing will be selected and the cursor will remain as it was.
+            if (selected_text === "") {
+                field.setSelectionRange(
+                    before_lines.length + selected_lines.length,
+                    before_lines.length + selected_lines.length,
+                );
+            } else {
+                field.setSelectionRange(
+                    before_lines.length,
+                    before_lines.length + selected_lines.length,
+                );
+            }
+            break;
+        }
         case "link": {
             // Ctrl + L: Insert a link to selected text
             wrapSelection(field, "[", "](url)");
