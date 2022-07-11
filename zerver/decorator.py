@@ -528,7 +528,7 @@ def zulip_login_required(
         login_url=login_url,
         redirect_field_name=redirect_field_name,
     )(
-        zulip_otp_required(
+        zulip_otp_required_if_logged_in(
             redirect_field_name=redirect_field_name,
             login_url=login_url,
         )(add_logging_data(function))
@@ -548,7 +548,7 @@ def web_public_view(
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
     """
-    actual_decorator = lambda view_func: zulip_otp_required(
+    actual_decorator = lambda view_func: zulip_otp_required_if_logged_in(
         redirect_field_name=redirect_field_name, login_url=login_url
     )(add_logging_data(view_func))
 
@@ -1021,7 +1021,7 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
 
-def zulip_otp_required(
+def zulip_otp_required_if_logged_in(
     redirect_field_name: str = "next",
     login_url: str = settings.HOME_NOT_LOGGED_IN,
 ) -> Callable[[ViewFuncT], ViewFuncT]:
@@ -1033,7 +1033,7 @@ def zulip_otp_required(
 
     Similar to :func:`~django.contrib.auth.decorators.login_required`, but
     requires the user to be :term:`verified`. By default, this redirects users
-    to :setting:`OTP_LOGIN_URL`.
+    to :setting:`OTP_LOGIN_URL`. Returns True if the user is not authenticated.
     """
 
     def test(user: Union[UserProfile, AnonymousUser]) -> bool:
