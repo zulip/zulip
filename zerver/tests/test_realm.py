@@ -20,7 +20,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
-from zerver.actions.streams import do_deactivate_stream
+from zerver.actions.streams import do_deactivate_stream, merge_streams
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -443,6 +443,31 @@ class RealmTest(ZulipTestCase):
         assert notifications_stream is not None
         self.assertEqual(notifications_stream.id, verona.id)
         do_deactivate_stream(notifications_stream, acting_user=None)
+        self.assertIsNone(realm.get_notifications_stream())
+
+    def test_merge_streams(self) -> None:
+        realm = get_realm("zulip")
+        denmark = get_stream("Denmark", realm)
+        cordelia = self.example_user("cordelia")
+        notifications_stream = realm.get_notifications_stream()
+        assert notifications_stream is not None
+
+        create_stream_if_needed(realm, "Atlantis")
+        self.subscribe(cordelia, "Atlantis")
+        self.send_stream_message(cordelia, "Atlantis")
+        atlantis = get_stream("Atlantis", realm)
+
+        stats = merge_streams(realm, denmark, denmark)
+        self.assertEqual(stats, (0, 0, 0))
+
+        stats = merge_streams(realm, denmark, atlantis)
+        self.assertEqual(stats, (1, 1, 1))
+
+        with self.assertRaises(Stream.DoesNotExist):
+            get_stream("Atlantis", realm)
+
+        stats = merge_streams(realm, denmark, notifications_stream)
+        self.assertEqual(stats, (2, 1, 10))
         self.assertIsNone(realm.get_notifications_stream())
 
     def test_change_signup_notifications_stream(self) -> None:
