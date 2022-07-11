@@ -28,6 +28,26 @@ kbd {
     user-select: none;
 }
 
+@media (width < $mc_min) {
+    .hide-mc {
+        display: none !important;
+    }
+
+    .show-mc {
+        display: block !important;
+    }
+}
+
+@media (width < $md_min) {
+    .hide-md {
+        display: none !important;
+    }
+
+    .show-md {
+        display: flex !important;
+    }
+}
+
 @media (width < $sm_min) {
     .hide-sm {
         display: none !important;

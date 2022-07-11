@@ -504,7 +504,14 @@ run_test("format_text", ({override}) => {
 
     const $textarea = $("#compose-textarea");
     $textarea.get = () => ({
-        setSelectionRange() {},
+        setSelectionRange(start, end) {
+            $textarea.range = () => ({
+                start,
+                end,
+                text: $textarea.val().slice(start, end),
+                length: end - start,
+            });
+        },
     });
 
     function init_textarea(val, range) {
@@ -534,7 +541,7 @@ run_test("format_text", ({override}) => {
         start: 2,
         end: 5,
         text: "abc",
-        length: 7,
+        length: 3,
     });
     compose_ui.format_text($textarea, "bold");
     assert.equal(set_text, "abc");
@@ -635,6 +642,54 @@ run_test("format_text", ({override}) => {
     });
     compose_ui.format_text($textarea, "italic");
     assert.equal(set_text, "**abc**");
+    assert.equal(wrap_selection_called, false);
+
+    // Test bulleted list addition
+    reset_state();
+    init_textarea("first_item\nsecond_item", {
+        start: 0,
+        end: 22,
+        text: "first_item\nsecond_item",
+        length: 22,
+    });
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(set_text, "- first_item\n- second_item");
+    assert.equal(wrap_selection_called, false);
+
+    // Test bulleted list addition with newline at start
+    reset_state();
+    init_textarea("\nfirst_item\nsecond_item", {
+        start: 0,
+        end: 23,
+        text: "\nfirst_item\nsecond_item",
+        length: 23,
+    });
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(set_text, "- \n- first_item\n- second_item");
+    assert.equal(wrap_selection_called, false);
+
+    // Test bulleted list removal
+    reset_state();
+    init_textarea("- first_item\n- second_item", {
+        start: 0,
+        end: 26,
+        text: "- first_item\n- second_item",
+        length: 26,
+    });
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(set_text, "first_item\nsecond_item");
+    assert.equal(wrap_selection_called, false);
+
+    // Test bulleted list removal with *s
+    reset_state();
+    init_textarea("* first_item\n* second_item", {
+        start: 0,
+        end: 26,
+        text: "* first_item\n* second_item",
+        length: 26,
+    });
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(set_text, "first_item\nsecond_item");
     assert.equal(wrap_selection_called, false);
 });
 
