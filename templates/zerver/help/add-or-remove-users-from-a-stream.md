@@ -88,7 +88,7 @@ This method is useful if you need to remove one user from multiple streams.
 
 {end_tabs}
 
-## Related topics
+## Related articles
 
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
