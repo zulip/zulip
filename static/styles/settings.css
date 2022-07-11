@@ -827,6 +827,10 @@ input[type="checkbox"] {
         margin: 10px 0 5px;
     }
 
+    #bot-role-select:disabled {
+        opacity: 1;
+    }
+
     .edit-bot-name {
         margin-bottom: 20px;
     }

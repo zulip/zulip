@@ -162,15 +162,15 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
 
-    const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
-    const name_field_selector = edit_form_selector + " [name=bot_name]";
+    const name_field_selector = edit_form_selector + " [name=full_name]";
     assert.equal(
         await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
         "Bot 1",
     );
 
-    await common.fill_form(page, edit_form_selector, {bot_name: "Bot one"});
+    await common.fill_form(page, edit_form_selector, {full_name: "Bot one"});
     const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
@@ -193,24 +193,24 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
 
-    const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    const edit_form_selector = `#bot-edit-form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.waitForSelector(edit_form_selector, {visible: true});
-    const name_field_selector = edit_form_selector + " [name=bot_name]";
+    const name_field_selector = edit_form_selector + " [name=full_name]";
     assert.equal(
         await page.$eval(name_field_selector, (el) => (el as HTMLInputElement).value),
         "Bot one",
     );
 
-    await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
+    await common.fill_form(page, edit_form_selector, {full_name: "Bot 2"});
     const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
     await common.wait_for_micromodal_to_open(page);
-    await page.waitForSelector(".bot_edit_errors", {visible: true});
+    await page.waitForSelector("#dialog_error", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "div.bot_edit_errors"),
-        "Name is already in use!",
+        await common.get_text_from_selector(page, "#dialog_error"),
+        "Failed: Name is already in use!",
     );
 
     const cancel_button_selector = "#edit_bot_modal .dialog_cancel_button";
