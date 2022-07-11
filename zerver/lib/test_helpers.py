@@ -300,7 +300,7 @@ class HostRequestMock(HttpRequest):
     def __init__(
         self,
         post_data: Dict[str, Any] = {},
-        user_profile: Optional[Union[UserProfile, AnonymousUser, RemoteZulipServer]] = None,
+        user_profile: Union[UserProfile, RemoteZulipServer, None] = None,
         host: str = settings.EXTERNAL_HOST,
         client_name: Optional[str] = None,
         meta_data: Optional[Dict[str, Any]] = None,
@@ -325,7 +325,7 @@ class HostRequestMock(HttpRequest):
         else:
             self.META = meta_data
         self.path = path
-        self.user = user_profile
+        self.user = user_profile or AnonymousUser()
         self._body = b""
         self.content_type = ""
         BaseNotes[str, str].get_notes

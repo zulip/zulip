@@ -204,7 +204,7 @@ class EventsEndpointTest(ZulipTestCase):
                 ),
             ).decode(),
         )
-        req = HostRequestMock(post_data, user_profile=None)
+        req = HostRequestMock(post_data)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         with self.assertRaises(AccessDeniedError) as context:
             result = self.client_post_request("/notify_tornado", req)
@@ -212,7 +212,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(context.exception.http_status_code, 403)
 
         post_data["secret"] = settings.SHARED_SECRET
-        req = HostRequestMock(post_data, user_profile=None, tornado_handler=dummy_handler)
+        req = HostRequestMock(post_data, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         result = self.client_post_request("/notify_tornado", req)
         self.assert_json_success(result)

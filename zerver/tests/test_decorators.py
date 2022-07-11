@@ -650,9 +650,8 @@ class RateLimitTestCase(ZulipTestCase):
 
     def test_internal_local_clients_skip_rate_limiting(self) -> None:
         META = {"REMOTE_ADDR": "127.0.0.1"}
-        user = AnonymousUser()
 
-        request = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
+        request = HostRequestMock(client_name="internal", meta_data=META)
 
         f = self.get_ratelimited_view()
 
@@ -668,9 +667,8 @@ class RateLimitTestCase(ZulipTestCase):
 
     def test_debug_clients_skip_rate_limiting(self) -> None:
         META = {"REMOTE_ADDR": "3.3.3.3"}
-        user = AnonymousUser()
 
-        req = HostRequestMock(client_name="internal", user_profile=user, meta_data=META)
+        req = HostRequestMock(client_name="internal", meta_data=META)
 
         f = self.get_ratelimited_view()
 
@@ -742,9 +740,8 @@ class RateLimitTestCase(ZulipTestCase):
 
     def test_rate_limiting_happens_by_ip_if_unauthed(self) -> None:
         META = {"REMOTE_ADDR": "3.3.3.3"}
-        user = AnonymousUser()
 
-        req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
+        req = HostRequestMock(client_name="external", meta_data=META)
 
         f = self.get_ratelimited_view()
 
