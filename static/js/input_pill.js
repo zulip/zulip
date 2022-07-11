@@ -9,9 +9,6 @@ import * as compose from "./compose";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
-export function random_id() {
-    return Math.random().toString(16);
-}
 
 export function create(opts) {
     if (!opts.$container) {
@@ -81,8 +78,6 @@ export function create(opts) {
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item) {
-            const id = random_id();
-
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
                 return;
@@ -94,7 +89,6 @@ export function create(opts) {
             }
 
             const payload = {
-                id,
                 item,
             };
 
@@ -103,7 +97,6 @@ export function create(opts) {
             const has_image = item.img_src !== undefined;
 
             const opts = {
-                id: payload.id,
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,

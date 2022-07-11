@@ -107,7 +107,6 @@ for (const sub of subs) {
 
 run_test("set_up", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
-        assert.equal(typeof data.id, "string");
         assert.equal(typeof data.display_value, "string");
         assert.equal(typeof data.has_image, "boolean");
         return html;
