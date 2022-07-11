@@ -1049,7 +1049,9 @@ No changes; feature level used for Zulip 3.0 release.
   Previously, they were 2-item tuples and did not include the time when
   the topic was muted.
 * `GitLab` authentication is now available.
-* Added `None` as a video call provider option.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: None added as an option for the realm setting
+  `video_chat_provider` to disable video call UI.
 
 ## Changes in Zulip 2.1
 

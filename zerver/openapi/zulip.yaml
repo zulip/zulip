@@ -4037,7 +4037,16 @@ paths:
                                     video_chat_provider:
                                       type: integer
                                       description: |
-                                        The configured video call provider for the organization.
+                                        The configured [video call provider](/help/start-a-call) for the
+                                        organization.
+
+                                        - 0 = None
+                                        - 1 = Jitsi Meet
+                                        - 3 = Zoom
+                                        - 4 = BigBlueButton
+
+                                        **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                                        to disable video call UI.
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -11135,7 +11144,16 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The configured video call provider for the organization.
+                          The configured [video call provider](/help/start-a-call) for the
+                          organization.
+
+                          - 0 = None
+                          - 1 = Jitsi Meet
+                          - 3 = Zoom
+                          - 4 = BigBlueButton
+
+                          **Changes**: None added as an option in Zulip 3.0 (feature level 1)
+                          to disable video call UI.
                       realm_giphy_rating:
                         type: integer
                         description: |
@@ -11368,7 +11386,7 @@ paths:
                           organization administrator.
 
                           Useful for administrative settings UI that allows changing the
-                          video call provider.
+                          realm setting `video_chat_provider`.
                         additionalProperties:
                           description: |
                             `{provider_name}`: Dictionary containing the details of the
