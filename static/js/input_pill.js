@@ -152,14 +152,14 @@ export function create(opts) {
             return true;
         },
 
-        // this searches given a particular pill ID for it, removes the node
+        // this searches given the DOM node for a pill, removes the node
         // from the DOM, removes it from the array and returns it.
         // this would generally be used for DOM-provoked actions, such as a user
         // clicking on a pill to remove it.
-        removePill(id) {
+        removePill(element) {
             let idx;
             for (let x = 0; x < store.pills.length; x += 1) {
-                if (store.pills[x].id === id) {
+                if (store.pills[x].$element[0] === element) {
                     idx = x;
                 }
             }
@@ -228,8 +228,8 @@ export function create(opts) {
             return drafts.length === 0;
         },
 
-        getByID(id) {
-            return store.pills.find((pill) => pill.id === id);
+        getByElement(element) {
+            return store.pills.find((pill) => pill.$element[0] === element);
         },
 
         _get_pills_for_testing() {
@@ -324,8 +324,7 @@ export function create(opts) {
                     break;
                 case "Backspace": {
                     const $next = $pill.next();
-                    const id = $pill.data("id");
-                    funcs.removePill(id);
+                    funcs.removePill($pill[0]);
                     $next.trigger("focus");
                     // the "Backspace" key in Firefox will go back a page if you do
                     // not prevent it.
@@ -363,9 +362,8 @@ export function create(opts) {
             e.stopPropagation();
             const $pill = $(this).closest(".pill");
             const $next = $pill.next();
-            const id = $pill.data("id");
 
-            funcs.removePill(id);
+            funcs.removePill($pill[0]);
             $next.trigger("focus");
 
             compose.update_fade();
@@ -378,8 +376,8 @@ export function create(opts) {
         });
 
         store.$parent.on("copy", ".pill", (e) => {
-            const id = store.$parent.find(":focus").data("id");
-            const data = funcs.getByID(id);
+            const $element = store.$parent.find(":focus");
+            const data = funcs.getByElement($element[0]);
             e.originalEvent.clipboardData.setData(
                 "text/plain",
                 store.get_text_from_item(data.item),
@@ -393,7 +391,7 @@ export function create(opts) {
         appendValue: funcs.appendPill.bind(funcs),
         appendValidatedData: funcs.appendValidatedData.bind(funcs),
 
-        getByID: funcs.getByID,
+        getByElement: funcs.getByElement,
         items: funcs.items,
 
         onPillCreate(callback) {

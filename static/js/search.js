@@ -184,8 +184,8 @@ export function initialize() {
         // really it would be OK if they did).
 
         if (page_params.search_pills_enabled) {
-            const pill_id = $(e.relatedTarget).closest(".pill").data("id");
-            const search_pill = search_pill_widget.widget.getByID(pill_id);
+            const $element = $(e.relatedTarget).closest(".pill");
+            const search_pill = search_pill_widget.widget.getByElement($element[0]);
             if (search_pill) {
                 // The searchbox loses focus while the search
                 // pill element gains focus.
