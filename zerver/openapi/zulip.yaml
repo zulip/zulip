@@ -1859,10 +1859,14 @@ paths:
                                   type: array
                                   description: |
                                     Array of tuples, where each tuple describes a muted topic.
-                                    The first element of tuple is the stream name in which the topic
+                                    The first element of the tuple is the stream name in which the topic
                                     has to be muted, the second element is the topic name to be muted
                                     and the third element is an integer UNIX timestamp representing
                                     when the topic was muted.
+
+                                    **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                                    array objects were 2-item tuples and did not include the timestamp
+                                    information for when the topic was muted.
                                   items:
                                     type: array
                                     items:
@@ -3782,11 +3786,13 @@ paths:
                                         The [policy][permission-level] for which users in this organization can see
                                         the real email addresses of other users.
 
-                                        - 1 = everyone
-                                        - 2 = members only
-                                        - 3 = administrators only
-                                        - 4 = nobody (though note that administrators can change this setting).
-                                        - 5 = moderators only
+                                        - 1 = Everyone
+                                        - 2 = Members only
+                                        - 3 = Administrators only
+                                        - 4 = Nobody (though note that administrators can change this setting)
+                                        - 5 = Moderators only
+
+                                        **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                     email_changes_disabled:
@@ -3998,6 +4004,8 @@ paths:
 
                                         - 1 = Everyone
                                         - 2 = Nobody
+
+                                        **Changes**: New in Zulip 3.0 (feature level 1).
                                     send_welcome_emails:
                                       type: boolean
                                       description: |
@@ -6125,6 +6133,8 @@ paths:
       tags: ["messages"]
       description: |
         Get a temporary URL for access to the file that doesn't require authentication.
+
+        **Changes**: New in Zulip 3.0 (feature level 1).
       parameters:
         - name: realm_id_str
           in: path
@@ -9132,6 +9142,8 @@ paths:
                         type: integer
                         description: |
                           The server's current [Zulip feature level](/api/changelog).
+
+                          **Changes**: New in Zulip 3.0 (feature level 1).
                       zulip_version:
                         type: string
                         description: |
@@ -9302,10 +9314,14 @@ paths:
                           Present if `muted_topics` is present in `fetch_event_types`.
 
                           Array of tuples, where each tuple describes a muted topic.
-                          The first element of tuple is the stream name in which the topic
+                          The first element of the tuple is the stream name in which the topic
                           has to be muted, the second element is the topic name to be muted
                           and the third element is an integer UNIX timestamp representing
                           when the topic was muted.
+
+                          **Changes**: Before Zulip 3.0 (feature level 1), the `muted_topics`
+                          array objects were 2-item tuples and did not include the timestamp
+                          information for when the topic was muted.
                         items:
                           type: array
                           items:
@@ -10940,11 +10956,13 @@ paths:
                           The [policy][permission-level] for which users in this organization can see
                           the real email addresses of other users.
 
-                          - 1 = everyone
-                          - 2 = members only
-                          - 3 = administrators only
-                          - 4 = nobody (though note that administrators can change this setting).
-                          - 5 = moderators only
+                          - 1 = Everyone
+                          - 2 = Members only
+                          - 3 = Administrators only
+                          - 4 = Nobody (though note that administrators can change this setting)
+                          - 5 = Moderators only
+
+                          **Changes**: Nobody added as an option in Zulip 3.0 (feature level 1).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                       realm_email_changes_disabled:
@@ -11154,6 +11172,8 @@ paths:
 
                           - 1 = Everyone
                           - 2 = Nobody
+
+                          **Changes**: New in Zulip 3.0 (feature level 1).
                       realm_user_group_edit_policy:
                         type: integer
                         description: |
