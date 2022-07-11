@@ -161,6 +161,7 @@ function set_up() {
 run_test("copy from pill", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.ok(["BLUE", "RED"].includes(data.display_value));
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
@@ -177,10 +178,7 @@ run_test("copy from pill", ({override_rewire, mock_template}) => {
     let copied_text;
 
     const $pill_stub = {
-        data: (field) => {
-            assert.equal(field, "id");
-            return "some_id2";
-        },
+        [0]: "<pill-stub RED>"
     };
 
     const e = {
@@ -408,6 +406,7 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
@@ -496,10 +495,7 @@ run_test("insert_remove", ({override_rewire, mock_template}) => {
 
     const $focus_pill_stub = {
         next: () => $next_pill_stub,
-        data: (field) => {
-            assert.equal(field, "id");
-            return "some_id1";
-        },
+        [0]: "<pill-stub BLUE>",
     };
 
     $container.set_find_results(".pill:focus", $focus_pill_stub);
@@ -518,6 +514,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
         assert.ok(html.startsWith, "<div class='pill'");
+        $(html)[0] = `<pill-stub ${data.display_value}>`;
         return html;
     });
 
@@ -549,10 +546,7 @@ run_test("exit button on pill", ({override_rewire, mock_template}) => {
 
     const $curr_pill_stub = {
         next: () => $next_pill_stub,
-        data: (field) => {
-            assert.equal(field, "id");
-            return "some_id1";
-        },
+        [0]: "<pill-stub BLUE>",
     };
 
     const exit_button_stub = {

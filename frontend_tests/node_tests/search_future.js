@@ -17,7 +17,7 @@ const search_suggestion = mock_esm("../../static/js/search_suggestion");
 
 mock_esm("../../static/js/search_pill_widget", {
     widget: {
-        getByID: () => true,
+        getByElement: () => true,
     },
 });
 mock_esm("../../static/js/ui_util", {
