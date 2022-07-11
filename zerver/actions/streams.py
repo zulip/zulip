@@ -170,15 +170,10 @@ def merge_streams(
     # the stream to be removed and deactivate the stream, and add
     # new subscriptions to the stream to keep for any users who
     # were only on the now-deactivated stream.
-
-    # Move the messages, and delete the old copies from caches.
-    message_ids_to_clear = list(
-        Message.objects.filter(recipient=recipient_to_destroy).values_list("id", flat=True)
-    )
-    count = Message.objects.filter(recipient=recipient_to_destroy).update(
-        recipient=recipient_to_keep
-    )
-    bulk_delete_cache_keys(message_ids_to_clear)
+    #
+    # The order of operations is carefully chosen so that calling this
+    # function again is likely to be an effective way to recover if
+    # this process is interrupted by an error.
 
     # Move the Subscription objects.  This algorithm doesn't
     # preserve any stream settings/colors/etc. from the stream
@@ -193,6 +188,21 @@ def merge_streams(
         if not users_already_subscribed.get(sub.user_profile_id, False)
     ]
 
+    if len(users_to_activate) > 0:
+        bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
+
+    # Move the messages, and delete the old copies from caches. We do
+    # this before removing the subscription objects, to avoid messages
+    # "disappearing" if an error interrupts this function.
+    message_ids_to_clear = list(
+        Message.objects.filter(recipient=recipient_to_destroy).values_list("id", flat=True)
+    )
+    count = Message.objects.filter(recipient=recipient_to_destroy).update(
+        recipient=recipient_to_keep
+    )
+    bulk_delete_cache_keys(message_ids_to_clear)
+
+    # Remove subscriptions to the old stream.
     if len(subs_to_deactivate) > 0:
         bulk_remove_subscriptions(
             realm,
@@ -200,9 +210,9 @@ def merge_streams(
             [stream_to_destroy],
             acting_user=None,
         )
+
     do_deactivate_stream(stream_to_destroy, acting_user=None)
-    if len(users_to_activate) > 0:
-        bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
+
     return (len(users_to_activate), count, len(subs_to_deactivate))
 
 
