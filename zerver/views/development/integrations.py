@@ -57,7 +57,7 @@ def send_webhook_fixture_message(
 
 
 @has_request_variables
-def get_fixtures(request: HttpResponse, integration_name: str = REQ()) -> HttpResponse:
+def get_fixtures(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
     valid_integration_name = get_valid_integration_name(integration_name)
     if not valid_integration_name:
         raise ResourceNotFoundError(f'"{integration_name}" is not a valid webhook integration.')

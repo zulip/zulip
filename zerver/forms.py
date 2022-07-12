@@ -428,6 +428,7 @@ class OurAuthenticationForm(AuthenticationForm):
         password = self.cleaned_data.get("password")
 
         if username is not None and password:
+            assert self.request is not None
             subdomain = get_subdomain(self.request)
             realm = get_realm(subdomain)
 
