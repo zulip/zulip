@@ -171,6 +171,9 @@ custom_profile_field_type = DictType(
         ("field_data", str),
         ("order", int),
     ],
+    optional_keys=[
+        ("display_in_profile_summary", bool),
+    ],
 )
 
 custom_profile_fields_event = event_dict_type(

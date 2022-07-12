@@ -1,4 +1,4 @@
-from typing import List, cast
+from typing import List, Optional, cast
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -23,6 +23,7 @@ from zerver.lib.response import json_success
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, Validator
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import (
+    check_bool,
     check_capped_string,
     check_dict,
     check_dict_only,
@@ -70,6 +71,19 @@ def validate_custom_field_data(field_type: int, field_data: ProfileFieldData) ->
         raise JsonableError(error.message)
 
 
+def validate_display_in_profile_summary_field(
+    field_type: int, display_in_profile_summary: bool
+) -> None:
+    if not display_in_profile_summary:
+        return
+
+    # The LONG_TEXT field type doesn't make sense visually for profile
+    # field summaries. The USER field type will require some further
+    # client support.
+    if field_type == CustomProfileField.LONG_TEXT or field_type == CustomProfileField.USER:
+        raise JsonableError(_("Field type not supported for display in profile summary."))
+
+
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
         return False
@@ -79,7 +93,11 @@ def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> 
 
 
 def validate_custom_profile_field(
-    name: str, hint: str, field_type: int, field_data: ProfileFieldData
+    name: str,
+    hint: str,
+    field_type: int,
+    field_data: ProfileFieldData,
+    display_in_profile_summary: bool,
 ) -> None:
     # Validate field data
     validate_custom_field_data(field_type, field_data)
@@ -94,10 +112,34 @@ def validate_custom_profile_field(
     if field_type not in field_types:
         raise JsonableError(_("Invalid field type."))
 
+    validate_display_in_profile_summary_field(field_type, display_in_profile_summary)
+
 
 check_profile_field_data: Validator[ProfileFieldData] = check_dict(
     value_validator=check_union([check_dict(value_validator=check_string), check_string])
 )
+
+
+def update_only_display_in_profile_summary(
+    requested_name: str,
+    requested_hint: str,
+    requested_field_data: ProfileFieldData,
+    existing_field: CustomProfileField,
+) -> bool:
+    if (
+        requested_name != existing_field.name
+        or requested_hint != existing_field.hint
+        or requested_field_data != orjson.loads(existing_field.field_data)
+    ):
+        return False
+    return True
+
+
+def display_in_profile_summary_limit_reached(profile_field_id: Optional[int] = None) -> bool:
+    query = CustomProfileField.objects.filter(display_in_profile_summary=True)
+    if profile_field_id is not None:
+        query = query.exclude(id=profile_field_id)
+    return query.count() >= CustomProfileField.MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS
 
 
 @require_realm_admin
@@ -109,8 +151,14 @@ def create_realm_custom_profile_field(
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
     field_type: int = REQ(json_validator=check_int),
+    display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
-    validate_custom_profile_field(name, hint, field_type, field_data)
+    if display_in_profile_summary and display_in_profile_summary_limit_reached():
+        raise JsonableError(
+            _("Only 2 custom profile fields can be displayed in the profile summary.")
+        )
+
+    validate_custom_profile_field(name, hint, field_type, field_data, display_in_profile_summary)
     try:
         if is_default_external_field(field_type, field_data):
             field_subtype = field_data["subtype"]
@@ -118,6 +166,7 @@ def create_realm_custom_profile_field(
             field = try_add_realm_default_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
+                display_in_profile_summary=display_in_profile_summary,
             )
             return json_success(request, data={"id": field.id})
         else:
@@ -127,6 +176,7 @@ def create_realm_custom_profile_field(
                 field_data=field_data,
                 field_type=field_type,
                 hint=hint,
+                display_in_profile_summary=display_in_profile_summary,
             )
             return json_success(request, data={"id": field.id})
     except IntegrityError:
@@ -155,6 +205,7 @@ def update_realm_custom_profile_field(
     name: str = REQ(default="", converter=lambda var_name, x: x.strip()),
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, json_validator=check_profile_field_data),
+    display_in_profile_summary: bool = REQ(default=False, json_validator=check_bool),
 ) -> HttpResponse:
     realm = user_profile.realm
     try:
@@ -162,13 +213,34 @@ def update_realm_custom_profile_field(
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
+    if display_in_profile_summary and display_in_profile_summary_limit_reached(field.id):
+        raise JsonableError(
+            _("Only 2 custom profile fields can be displayed in the profile summary.")
+        )
+
     if field.field_type == CustomProfileField.EXTERNAL_ACCOUNT:
-        if is_default_external_field(field.field_type, orjson.loads(field.field_data)):
+        # HACK: Allow changing the display_in_profile_summary property
+        # of default external account types, but not any others.
+        #
+        # TODO: Make the name/hint/field_data parameters optional, and
+        # just require that None was passed for all of them for this case.
+        if is_default_external_field(
+            field.field_type, orjson.loads(field.field_data)
+        ) and not update_only_display_in_profile_summary(name, hint, field_data, field):
             raise JsonableError(_("Default custom field cannot be updated."))
 
-    validate_custom_profile_field(name, hint, field.field_type, field_data)
+    validate_custom_profile_field(
+        name, hint, field.field_type, field_data, display_in_profile_summary
+    )
     try:
-        try_update_realm_custom_profile_field(realm, field, name, hint=hint, field_data=field_data)
+        try_update_realm_custom_profile_field(
+            realm,
+            field,
+            name,
+            hint=hint,
+            field_data=field_data,
+            display_in_profile_summary=display_in_profile_summary,
+        )
     except IntegrityError:
         raise JsonableError(_("A field with that label already exists."))
     return json_success(request)

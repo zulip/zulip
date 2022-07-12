@@ -26,7 +26,9 @@ def notify_realm_custom_profile_fields(realm: Realm) -> None:
 
 
 def try_add_realm_default_custom_profile_field(
-    realm: Realm, field_subtype: str
+    realm: Realm,
+    field_subtype: str,
+    display_in_profile_summary: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
@@ -35,6 +37,7 @@ def try_add_realm_default_custom_profile_field(
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data["hint"],
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
+        display_in_profile_summary=display_in_profile_summary,
     )
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
@@ -49,8 +52,14 @@ def try_add_realm_custom_profile_field(
     field_type: int,
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
+    display_in_profile_summary: bool = False,
 ) -> CustomProfileField:
-    custom_profile_field = CustomProfileField(realm=realm, name=name, field_type=field_type)
+    custom_profile_field = CustomProfileField(
+        realm=realm,
+        name=name,
+        field_type=field_type,
+        display_in_profile_summary=display_in_profile_summary,
+    )
     custom_profile_field.hint = hint
     if (
         custom_profile_field.field_type == CustomProfileField.SELECT
@@ -95,9 +104,11 @@ def try_update_realm_custom_profile_field(
     name: str,
     hint: str = "",
     field_data: Optional[ProfileFieldData] = None,
+    display_in_profile_summary: bool = False,
 ) -> None:
     field.name = name
     field.hint = hint
+    field.display_in_profile_summary = display_in_profile_summary
     if (
         field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT

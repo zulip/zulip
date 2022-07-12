@@ -985,9 +985,12 @@ class NormalActionsTest(BaseAction):
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
+        display_in_profile_summary = False
 
         events = self.verify_action(
-            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint)
+            lambda: try_update_realm_custom_profile_field(
+                realm, field, name, hint=hint, display_in_profile_summary=display_in_profile_summary
+            )
         )
         check_custom_profile_fields("events[0]", events[0])
 

@@ -4540,12 +4540,19 @@ class CustomProfileField(models.Model):
 
     HINT_MAX_LENGTH = 80
     NAME_MAX_LENGTH = 40
+    MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS = 2
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name: str = models.CharField(max_length=NAME_MAX_LENGTH)
     hint: str = models.CharField(max_length=HINT_MAX_LENGTH, default="")
+
+    # Sort order for display of custom profile fields.
     order: int = models.IntegerField(default=0)
+
+    # Whether the field should be displayed in smaller summary
+    # sections of a page displaying custom profile fields.
+    display_in_profile_summary: bool = models.BooleanField(default=False)
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
@@ -4619,7 +4626,7 @@ class CustomProfileField(models.Model):
         unique_together = ("realm", "name")
 
     def as_dict(self) -> ProfileDataElementBase:
-        return {
+        data_as_dict: ProfileDataElementBase = {
             "id": self.id,
             "name": self.name,
             "type": self.field_type,
@@ -4627,6 +4634,10 @@ class CustomProfileField(models.Model):
             "field_data": self.field_data,
             "order": self.order,
         }
+        if self.display_in_profile_summary:
+            data_as_dict["display_in_profile_summary"] = True
+
+        return data_as_dict
 
     def is_renderable(self) -> bool:
         if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:

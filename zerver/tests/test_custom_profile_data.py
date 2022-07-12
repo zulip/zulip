@@ -60,11 +60,19 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["hint"] = "*" * 81
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
-        msg = "hint is too long (limit: 80 characters)"
-        self.assert_json_error(result, msg)
+        self.assert_json_error(result, "hint is too long (limit: 80 characters)")
 
         data["name"] = "Phone"
         data["hint"] = "Contact number"
+        data["field_type"] = CustomProfileField.LONG_TEXT
+        data["display_in_profile_summary"] = "true"
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field type not supported for display in profile summary.")
+
+        data["field_type"] = CustomProfileField.USER
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "Field type not supported for display in profile summary.")
+
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
@@ -75,12 +83,19 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["name"] = "Name "
         data["hint"] = "Some name"
         data["field_type"] = CustomProfileField.SHORT_TEXT
+        data["display_in_profile_summary"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(name="Name", realm=realm)
         self.assertEqual(field.id, field.order)
 
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(
+            result, "Only 2 custom profile fields can be displayed in the profile summary."
+        )
+
+        data["display_in_profile_summary"] = "false"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "A field with that label already exists.")
 
@@ -202,13 +217,25 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         )
         self.assert_json_success(result)
 
-        # Default external account field data cannot be updated
+        # Default external account field data cannot be updated except "display_in_profile_summary" field
         field = CustomProfileField.objects.get(name="Twitter username", realm=realm)
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
             info={"name": "Twitter", "field_type": CustomProfileField.EXTERNAL_ACCOUNT},
         )
         self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": field.name,
+                "hint": field.hint,
+                "field_type": field_type,
+                "field_data": field_data,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_success(result)
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
@@ -470,6 +497,18 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             info={
                 "name": "New phone number",
                 "hint": "New contact number",
+                "display_in_profile_summary": "invalid value",
+            },
+        )
+        msg = 'Argument "display_in_profile_summary" is not valid JSON.'
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "New phone number",
+                "hint": "New contact number",
+                "display_in_profile_summary": "true",
             },
         )
         self.assert_json_success(result)
@@ -479,14 +518,16 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.hint, "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+        self.assertEqual(field.display_in_profile_summary, True)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Name "},
+            info={"name": "Name ", "display_in_profile_summary": "true"},
         )
         self.assert_json_success(result)
         field.refresh_from_db()
         self.assertEqual(field.name, "Name")
+        self.assertEqual(field.display_in_profile_summary, True)
 
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)
         result = self.client_patch(
@@ -516,9 +557,26 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         ).decode()
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
-            info={"name": "Favorite editor", "field_data": field_data},
+            info={
+                "name": "Favorite editor",
+                "field_data": field_data,
+                "display_in_profile_summary": "true",
+            },
         )
         self.assert_json_success(result)
+
+        field = CustomProfileField.objects.get(name="Birthday", realm=realm)
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": field.name,
+                "hint": field.hint,
+                "display_in_profile_summary": "true",
+            },
+        )
+        self.assert_json_error(
+            result, "Only 2 custom profile fields can be displayed in the profile summary."
+        )
 
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")
