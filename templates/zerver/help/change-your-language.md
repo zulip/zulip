@@ -2,21 +2,14 @@
 
 {!translation-project-info.md!}
 
-If your organization has a primary language other than American
-English, an administrator should also [set the organization
-notifications language][change-org-lang].
+## Change the language of the Zulip app
 
-!!! warn ""
-
-    **Note**: This setting controls the language of your Zulip UI.
-    It does not alter any message text or topic, or stream name
-    and description.
-
-[change-org-lang]: change-the-default-language-for-your-organization
-
-## Change your language
+Note that this will not change stream names, topic names, or the language of
+messages you receive.
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {settings_tab|display-settings}
 
@@ -27,3 +20,9 @@ notifications language][change-org-lang].
 1. Click **Reload**.
 
 {end_tabs}
+
+## Related articles
+
+* [Configure organization notifications language][change-org-lang]
+
+[change-org-lang]: change-the-default-language-for-your-organization
