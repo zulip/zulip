@@ -1,4 +1,3 @@
-# See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
 from typing import Optional, Union
 
 from django.contrib.auth.models import AnonymousUser
