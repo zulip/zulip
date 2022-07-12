@@ -1,4 +1,3 @@
-# See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
 import os
 import sys
 from urllib.parse import urljoin
