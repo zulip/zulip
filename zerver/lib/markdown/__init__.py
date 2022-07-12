@@ -662,8 +662,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             and (not already_thumbnailed)
             and user_uploads_or_external(image_url)
         ):
-            # See docs/thumbnailing.md for some high-level documentation.
-            #
             # We strip leading '/' from relative URLs here to ensure
             # consistency in what gets passed to /thumbnail
             image_url = image_url.lstrip("/")
