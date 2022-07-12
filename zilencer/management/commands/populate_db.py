@@ -56,8 +56,6 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
-    UserGroup,
-    UserGroupMembership,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -499,25 +497,6 @@ class Command(BaseCommand):
             assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
             assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
             assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
-
-            users = UserProfile.objects.filter(realm=zulip_realm)
-            # All users in development environment are full members initially because
-            # waiting period threshold is 0. Groups of Iago, Dedemona, Shiva and
-            # Polonius will be updated according to their role in do_change_user_role.
-            full_members_user_group = UserGroup.objects.get(
-                realm=zulip_realm, name="@role:fullmembers", is_system_group=True
-            )
-            members_user_group = UserGroup.objects.get(
-                realm=zulip_realm, name="@role:members", is_system_group=True
-            )
-            user_group_memberships = []
-            for user_profile in list(users):
-                for group in [full_members_user_group, members_user_group]:
-                    user_group_membership = UserGroupMembership(
-                        user_group=group, user_profile=user_profile
-                    )
-                    user_group_memberships.append(user_group_membership)
-            UserGroupMembership.objects.bulk_create(user_group_memberships)
 
             iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
             do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
