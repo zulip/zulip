@@ -50,6 +50,7 @@ import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
+import * as user_profile from "./user_profile";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
@@ -219,6 +220,12 @@ function render_user_info_popover(
         const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
         date_joined = dateFormat.format(parseISO(user.date_joined));
     }
+    // Filtering out only those profile fields that can be display in the popover and are not empty.
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+    const field_types = page_params.custom_profile_field_types;
+    const display_profile_fields = page_params.custom_profile_fields
+        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const args = {
         can_revoke_away,
@@ -231,6 +238,7 @@ function render_user_info_popover(
             page_params.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
         can_unmute: muting_allowed && is_muted,
+        display_profile_fields,
         has_message_context,
         is_active,
         is_bot: user.is_bot,

@@ -109,7 +109,7 @@ function render_user_group_list(groups, user) {
     });
 }
 
-function get_custom_profile_field_data(user, field, field_types, dateFormat) {
+export function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
     const profile_field = {};
@@ -125,6 +125,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     profile_field.is_link = field_type === field_types.URL.id;
     profile_field.is_external_account = field_type === field_types.EXTERNAL_ACCOUNT.id;
     profile_field.type = field_type;
+    profile_field.display_in_profile_summary = field.display_in_profile_summary;
 
     switch (field_type) {
         case field_types.DATE.id:
@@ -148,6 +149,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
         case field_types.EXTERNAL_ACCOUNT.id:
             profile_field.value = field_value.value;
             profile_field.field_data = JSON.parse(field.field_data);
+            profile_field.subtype = profile_field.field_data.subtype;
             profile_field.link = settings_profile_fields.get_external_account_link(profile_field);
             break;
         default:
