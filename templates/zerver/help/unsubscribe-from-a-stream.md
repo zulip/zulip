@@ -19,3 +19,7 @@ You can always unsubscribe from any stream in Zulip.
 1. Click on the green checkmark the left of the stream name.
 
 {end_tabs}
+
+## Related articles
+
+* [Manage a user's stream subscriptions](/help/manage-user-stream-subscriptions)
