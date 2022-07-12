@@ -309,11 +309,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
         user_group = UserGroup.objects.get(name="support")
         # Test success
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 9)
-        self.assertEqual(UserGroupMembership.objects.count(), 19)
+        self.assertEqual(UserGroupMembership.objects.count(), 47)
         result = self.client_delete(f"/json/user_groups/{user_group.id}")
         self.assert_json_success(result)
         self.assertEqual(UserGroup.objects.filter(realm=hamlet.realm).count(), 8)
-        self.assertEqual(UserGroupMembership.objects.count(), 18)
+        self.assertEqual(UserGroupMembership.objects.count(), 46)
         # Test when invalid user group is supplied
         result = self.client_delete("/json/user_groups/1111")
         self.assert_json_error(result, "Invalid user group")

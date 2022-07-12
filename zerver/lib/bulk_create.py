@@ -12,6 +12,8 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
+    UserGroupMembership,
     UserProfile,
 )
 
@@ -115,6 +117,27 @@ def bulk_create_users(
         subscriptions_to_create.append(subscription)
 
     Subscription.objects.bulk_create(subscriptions_to_create)
+
+    full_members_system_group = UserGroup.objects.get(
+        name="@role:fullmembers", realm=realm, is_system_group=True
+    )
+    members_system_group = UserGroup.objects.get(
+        name="@role:members", realm=realm, is_system_group=True
+    )
+    group_memberships_to_create: List[UserGroupMembership] = []
+    for user_profile in profiles_to_create:
+        # All users are members since this function is only used to create bots
+        # and test and development environment users.
+        assert user_profile.role == UserProfile.ROLE_MEMBER
+        group_memberships_to_create.append(
+            UserGroupMembership(user_profile=user_profile, user_group=members_system_group)
+        )
+        if not user_profile.is_provisional_member:
+            group_memberships_to_create.append(
+                UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
+            )
+
+    UserGroupMembership.objects.bulk_create(group_memberships_to_create)
 
 
 def bulk_set_users_or_streams_recipient_fields(

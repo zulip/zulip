@@ -965,9 +965,9 @@ class RealmTest(ZulipTestCase):
             realm=realm, name="@role:fullmembers", is_system_group=True
         )
 
-        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 6)
+        self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 10)
         self.assert_length(
-            UserGroupMembership.objects.filter(user_group=full_members_system_group), 6
+            UserGroupMembership.objects.filter(user_group=full_members_system_group), 10
         )
         self.assertEqual(realm.waiting_period_threshold, 0)
 
