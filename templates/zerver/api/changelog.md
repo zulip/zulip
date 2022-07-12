@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 146**
+
+* [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+[`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a
+new parameter `display_in_profile_summary`, which clients use to
+decide whether to display the field in a small/summary section of the
+user's profile.
+
 **Feature level 145**
 
 * [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can

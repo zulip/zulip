@@ -29,11 +29,12 @@ RealmUserValidator = Callable[[int, object, bool], List[int]]
 ProfileDataElementValue = Union[str, List[int]]
 
 
-class ProfileDataElementBase(TypedDict):
+class ProfileDataElementBase(TypedDict, total=False):
     id: int
     name: str
     type: int
     hint: str
+    display_in_profile_summary: bool
     field_data: str
     order: int
 

@@ -1666,6 +1666,7 @@ paths:
                                         "hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 5,
@@ -1682,6 +1683,7 @@ paths:
                                         "hint": "Or your personal blog's URL",
                                         "field_data": "",
                                         "order": 6,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 7,
@@ -8250,6 +8252,7 @@ paths:
                               "hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 5,
@@ -8266,6 +8269,7 @@ paths:
                               "hint": "Or your personal blog's URL",
                               "field_data": "",
                               "order": 6,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 7,
@@ -8378,6 +8382,25 @@ paths:
                   "python": {"text": "Python", "order": "1"},
                   "java": {"text": "Java", "order": "2"},
                 }
+        - name: display_in_profile_summary
+          in: query
+          description: |
+            Whether clients should display this profile field in a summary section of a
+            user's profile (or in a more easily accessible "small profile").
+
+            At most 2 profile fields may have this property be true in a given
+            organization. The "Long text" [profile field types][profile-field-types]
+            profile field types cannot be selected to be displayed in profile summaries.
+
+            The "Person picker" profile field is also not supported, but that is likely to
+            be temporary.
+
+            [profile-field-types]: /help/add-custom-profile-fields#profile-field-types
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success.
@@ -15418,6 +15441,15 @@ components:
             dropdown UI for individual users to select an option.
 
             The interface for field type 7 is not yet stabilized.
+        display_in_profile_summary:
+          type: boolean
+          description: |
+            Whether the custom profile field, display or not in the user profile summary.
+
+            Currently it's value not allowed to be `true` of `Long text` and `Person picker`
+            [profile field types](/help/add-custom-profile-fields#profile-field-types).
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
     Hotspot:
       type: object
       additionalProperties: false
