@@ -88,8 +88,8 @@ run_test("adjust_mac_shortcuts non-mac", ({override_rewire}) => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-// Test non-default values of adjust_mac_shortcuts boolean parameters:
-// `kbd_elem = false`, and `require_cmd_style = true`.
+// Test non-default value of adjust_mac_shortcuts boolean parameter:
+// `kbd_elem = false`.
 run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
@@ -118,7 +118,6 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
         const test_item = {};
         const $stub = $.create("hotkey_" + key_no);
         $stub.text(old_key);
-        assert.equal($stub.hasClass("mac-cmd-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
@@ -126,7 +125,6 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
         }
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
-        test_item.is_cmd_key = old_key === "Ctrl";
         test_items.push(test_item);
         key_no += 1;
     }
@@ -135,18 +133,16 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override_rewire}) => {
 
     $.create(".markdown_content", {children});
 
-    const require_cmd = true;
     const kbd_element = false;
-    common.adjust_mac_shortcuts(".markdown_content", kbd_element, require_cmd);
+    common.adjust_mac_shortcuts(".markdown_content", kbd_element);
 
     for (const test_item of test_items) {
-        assert.equal(test_item.$stub.hasClass("mac-cmd-key"), test_item.is_cmd_key);
         assert.equal(test_item.$stub.text(), test_item.mac_key);
     }
 });
 
-// Test default values of adjust_mac_shortcuts boolean parameters:
-// `kbd_elem = true`, and `require_cmd_style = false`.
+// Test default value of adjust_mac_shortcuts boolean parameter:
+// `kbd_elem = true`.
 run_test("adjust_mac_shortcuts mac defaults", ({override_rewire}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
@@ -172,7 +168,6 @@ run_test("adjust_mac_shortcuts mac defaults", ({override_rewire}) => {
         const test_item = {};
         const $stub = $.create("hotkey_" + key_no);
         $stub.text(old_key);
-        assert.equal($stub.hasClass("mac-cmd-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
@@ -191,7 +186,6 @@ run_test("adjust_mac_shortcuts mac defaults", ({override_rewire}) => {
     common.adjust_mac_shortcuts(".hotkeys_table kbd");
 
     for (const test_item of test_items) {
-        assert.equal(test_item.$stub.hasClass("mac-cmd-key"), false);
         assert.equal(test_item.$stub.text(), test_item.mac_key);
     }
 });

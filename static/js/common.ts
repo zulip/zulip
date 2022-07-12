@@ -48,11 +48,7 @@ export function has_mac_keyboard(): boolean {
     return /mac/i.test(navigator.platform);
 }
 
-export function adjust_mac_shortcuts(
-    key_elem_class: string,
-    kbd_elem = true,
-    require_cmd_style = false,
-): void {
+export function adjust_mac_shortcuts(key_elem_class: string, kbd_elem = true): void {
     if (!has_mac_keyboard()) {
         return;
     }
@@ -79,10 +75,6 @@ export function adjust_mac_shortcuts(
         // any matched element's text that contains whitespace.
         if (/\s/.test(key_text)) {
             return;
-        }
-
-        if (key_text === "Ctrl" && require_cmd_style) {
-            $(this).addClass("mac-cmd-key");
         }
 
         if (fn_shortcuts.has(key_text)) {
