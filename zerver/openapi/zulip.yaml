@@ -7647,6 +7647,74 @@ paths:
                               },
                           },
                       }
+  /realm/presence:
+    get:
+      operationId: get-presence
+      summary: Get presence of all the users
+      tags: ["server_and_organizations"]
+      description: |
+        Get the presence information of all the users in an organization.
+
+        See
+        [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
+        for details on the data model for presence in Zulip.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      server_timestamp:
+                        type: number
+                        description: |
+                          The time when the server fetched the `presences` data included
+                          in the response.
+                      presences:
+                        type: object
+                        description: |
+                          An object that contains `presence` objects for all the users,
+                          each identified by user email as the key.
+                        additionalProperties:
+                          type: object
+                          description: |
+                            `{user_email}`: Object containing details of a user's presence
+                            on every client the user is logged into. The keys for these
+                            objects are the emails of the different users whose presence
+                            data is included.
+                          additionalProperties:
+                            $ref: "#/components/schemas/Presence"
+                    example:
+                      {
+                        "msg": "",
+                        "presences":
+                          {
+                            "iago@zulip.com":
+                              {
+                                "ZulipPython":
+                                  {
+                                    "client": "ZulipPython",
+                                    "pushable": false,
+                                    "status": "active",
+                                    "timestamp": 1656958485,
+                                  },
+                                "aggregated":
+                                  {
+                                    "client": "ZulipPython",
+                                    "status": "active",
+                                    "timestamp": 1656958485,
+                                  },
+                              },
+                          },
+                        "result": "success",
+                        "server_timestamp": 1656958539.6287155,
+                      }
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
