@@ -216,6 +216,17 @@ html {
             a {
                 color: inherit;
                 display: block;
+
+                /* Allows adjust_mac_shortcuts to update text in left sidebar,
+                but make no other style or visual changes. */
+                code {
+                    color: inherit;
+                    background-color: inherit;
+                    font-size: inherit;
+                    font-family: inherit;
+                    border: 0;
+                    padding: 0;
+                }
             }
         }
 
