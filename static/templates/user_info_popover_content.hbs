@@ -43,6 +43,29 @@
         {{else}}
             <li>{{ user_type }}</li>
         {{/if}}
+        {{!-- Display selected custom profile fields in this popover. --}}
+        {{#each display_profile_fields}}
+            <li data-type="{{this.type}}" class="field-section custom_user_field tippy-zulip-tooltip" data-tippy-content="{{this.name}}" data-field-id="{{this.id}}">
+                {{#if this.is_link}}
+                    <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                {{else if this.is_external_account}}
+                    <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">
+                        {{#if (eq this.subtype "github") }}
+                        <i class="fa fa-github" aria-hidden="true"></i>
+                        {{else if (eq this.subtype "twitter") }}
+                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                        {{/if}}
+                        {{this.value}}
+                    </a>
+                {{else}}
+                    {{#if this.rendered_value}}
+                    <span class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</span>
+                    {{else}}
+                    <span class="value">{{this.value}}</span>
+                    {{/if}}
+                {{/if}}
+            </li>
+        {{/each}}
 
         {{#if user_time}}
             <li class="hidden-for-spectators">{{ user_time }} {{#tr}}Local time{{/tr}}</li>

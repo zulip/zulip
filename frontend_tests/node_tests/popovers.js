@@ -178,6 +178,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             can_manage_user: false,
             can_send_private_message: true,
             can_unmute: false,
+            display_profile_fields: [],
             user_full_name: "Alice Smith",
             user_email: "alice@example.com",
             user_id: 42,
