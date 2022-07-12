@@ -60,5 +60,6 @@ stream](/help/unsubscribe-from-a-stream).
 * [Stream permissions](/help/stream-permissions)
 * [Roles and permissions](/help/roles-and-permissions)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
+* [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 
 [configure-invites]: /help/configure-who-can-invite-to-streams
