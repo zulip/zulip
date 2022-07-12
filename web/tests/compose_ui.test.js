@@ -691,6 +691,57 @@ run_test("format_text", ({override}) => {
     compose_ui.format_text($textarea, "bulleted");
     assert.equal(set_text, "first_item\nsecond_item");
     assert.equal(wrap_selection_called, false);
+
+    // Test numbered list toggling on
+    reset_state();
+    init_textarea("first_item\nsecond_item", {
+        start: 0,
+        end: 22,
+        text: "first_item\nsecond_item",
+        length: 22,
+    });
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(set_text, "1. first_item\n2. second_item");
+    assert.equal(wrap_selection_called, false);
+
+    // Test numbered list toggling off
+    reset_state();
+    init_textarea("1. first_item\n2. second_item", {
+        start: 0,
+        end: 28,
+        text: "1. first_item\n2. second_item",
+        length: 28,
+    });
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(set_text, "first_item\nsecond_item");
+    assert.equal(wrap_selection_called, false);
+
+    // Test numbered list toggling with newline at end
+    reset_state();
+    init_textarea("first_item\nsecond_item\n", {
+        start: 0,
+        end: 23,
+        text: "first_item\nsecond_item\n",
+        length: 23,
+    });
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(set_text, "1. first_item\n2. second_item\n");
+    assert.equal(wrap_selection_called, false);
+
+    // Test numbered list toggling on with partially selected lines
+    reset_state();
+    init_textarea("before_first\nfirst_item\nsecond_item\nafter_last", {
+        start: 15,
+        end: 33,
+        text: "rst_item\nsecond_it",
+        length: 18,
+    });
+    compose_ui.format_text($textarea, "numbered");
+    // Notice the blank lines inserted right before and after the list to visually demarcate it.
+    // Had the blank line after `second_item` not been inserted, `after_last` would have been
+    // (wrongly) indented as part of the list's last item too.
+    assert.equal(set_text, "before_first\n\n1. first_item\n2. second_item\n\nafter_last");
+    assert.equal(wrap_selection_called, false);
 });
 
 run_test("markdown_shortcuts", ({override_rewire}) => {

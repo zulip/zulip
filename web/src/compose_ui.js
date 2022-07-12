@@ -358,7 +358,7 @@ export function format_text($textarea, type, inserted_content) {
     // where we want to especially preserve any selected new line character
     // before the selected text, as it is conventionally depicted with a highlight
     // at the end of the previous line, which we would like to format.
-    const TRIM_ONLY_END_TYPES = ["bulleted"];
+    const TRIM_ONLY_END_TYPES = ["bulleted", "numbered"];
 
     let start_trim_length;
     if (TRIM_ONLY_END_TYPES.includes(type)) {
@@ -429,6 +429,74 @@ export function format_text($textarea, type, inserted_content) {
             separating_new_line_after,
             after_lines,
         };
+    };
+
+    const format_list = (type) => {
+        let is_marked;
+        let mark;
+        let strip_marking;
+        if (type === "bulleted") {
+            is_marked = bulleted_numbered_list_util.is_bulleted;
+            mark = (line) => "- " + line;
+            strip_marking = bulleted_numbered_list_util.strip_bullet;
+        } else {
+            is_marked = bulleted_numbered_list_util.is_numbered;
+            mark = (line, i) => i + 1 + ". " + line;
+            strip_marking = bulleted_numbered_list_util.strip_numbering;
+        }
+        // We toggle complete lines even when they are partially selected (and just selecting the
+        // newline character after a line counts as partial selection too).
+        const sections = section_off_selected_lines();
+        let {before_lines, selected_lines, after_lines} = sections;
+        const {separating_new_line_before, separating_new_line_after} = sections;
+        // If there is even a single unmarked line selected, we mark all.
+        const should_mark = selected_lines.split("\n").some((line) => !is_marked(line));
+        if (should_mark) {
+            selected_lines = selected_lines
+                .split("\n")
+                .map((line, i) => mark(line, i))
+                .join("\n");
+            // We always ensure a blank line before and after the list, as we want
+            // a clean separation between the list and the rest of the text, especially
+            // when the markdown is rendered.
+
+            // Add blank line between text before and list if not already present.
+            if (before_lines.length && before_lines.at(-1) !== "\n") {
+                before_lines += "\n";
+            }
+            // Add blank line between list and rest of text if not already present.
+            if (after_lines.length && after_lines.at(0) !== "\n") {
+                after_lines = "\n" + after_lines;
+            }
+        } else {
+            // Unmark all marked lines by removing the marking syntax characters.
+            selected_lines = selected_lines
+                .split("\n")
+                .map((line) => strip_marking(line))
+                .join("\n");
+        }
+        // Restore the separating newlines that were removed by section_off_selected_lines.
+        if (separating_new_line_before) {
+            before_lines += "\n";
+        }
+        if (separating_new_line_after) {
+            after_lines = "\n" + after_lines;
+        }
+        text = before_lines + selected_lines + after_lines;
+        set(field, text);
+        // If no text was selected, that is, marking was added to the line with the
+        // cursor, nothing will be selected and the cursor will remain as it was.
+        if (selected_text === "") {
+            field.setSelectionRange(
+                before_lines.length + selected_lines.length,
+                before_lines.length + selected_lines.length,
+            );
+        } else {
+            field.setSelectionRange(
+                before_lines.length,
+                before_lines.length + selected_lines.length,
+            );
+        }
     };
 
     switch (type) {
@@ -551,64 +619,10 @@ export function format_text($textarea, type, inserted_content) {
 
             wrapSelection(field, italic_syntax);
             break;
-        case "bulleted": {
-            // We toggle complete lines even when they are partially selected (and just selecting the
-            // newline character after a line counts as partial selection too).
-            const sections = section_off_selected_lines();
-            let {before_lines, selected_lines, after_lines} = sections;
-            const {separating_new_line_before, separating_new_line_after} = sections;
-            // If there is even a single unbulleted line selected, we bullet all.
-            const should_bullet = selected_lines
-                .split("\n")
-                .some((line) => !bulleted_numbered_list_util.is_bulleted(line));
-            if (should_bullet) {
-                selected_lines = selected_lines
-                    .split("\n")
-                    .map((line) => "- " + line)
-                    .join("\n");
-                // We always ensure a blank line before and after the list, as we want
-                // a clean separation between the list and the rest of the text, especially
-                // when the markdown is rendered.
-
-                // Add blank line between text before and list if not already present.
-                if (before_lines.length && before_lines.at(-1) !== "\n") {
-                    before_lines += "\n";
-                }
-                // Add blank line between list and rest of text if not already present.
-                if (after_lines.length && after_lines.at(0) !== "\n") {
-                    after_lines = "\n" + after_lines;
-                }
-            } else {
-                // Unbullet all bulleted lines by removing the 2 bullet syntax characters.
-                selected_lines = selected_lines
-                    .split("\n")
-                    .map((line) => bulleted_numbered_list_util.strip_bullet(line))
-                    .join("\n");
-            }
-            // Restore the separating newlines that were removed by section_off_selected_lines.
-            if (separating_new_line_before) {
-                before_lines += "\n";
-            }
-            if (separating_new_line_after) {
-                after_lines = "\n" + after_lines;
-            }
-            text = before_lines + selected_lines + after_lines;
-            set(field, text);
-            // If no text was selected, that is, bullet was added to the line with the
-            // cursor, nothing will be selected and the cursor will remain as it was.
-            if (selected_text === "") {
-                field.setSelectionRange(
-                    before_lines.length + selected_lines.length,
-                    before_lines.length + selected_lines.length,
-                );
-            } else {
-                field.setSelectionRange(
-                    before_lines.length,
-                    before_lines.length + selected_lines.length,
-                );
-            }
+        case "bulleted":
+        case "numbered":
+            format_list(type);
             break;
-        }
         case "link": {
             // Ctrl + L: Insert a link to selected text
             wrapSelection(field, "[", "](url)");
