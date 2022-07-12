@@ -144,6 +144,16 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400")
 
 
+@openapi_test_function("/realm/presence:get")
+def get_presence(client: Client) -> None:
+
+    # {code_example|start}
+    # Get presence information of all the users in an organization.
+    result = client.get_realm_presence()
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm/presence", "get", "200")
+
+
 @openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
 
@@ -1489,6 +1499,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     set_typing_status(client)
     update_presence(client)
     get_user_presence(client)
+    get_presence(client)
     create_user_group(client)
     user_group_id = get_user_groups(client)
     update_user_group(client, user_group_id)
