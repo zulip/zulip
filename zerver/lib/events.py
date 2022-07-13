@@ -111,6 +111,7 @@ def fetch_initial_state_data(
     slim_presence: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
+    spectator_requested_language: Optional[str] = None,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -372,6 +373,7 @@ def fetch_initial_state_data(
     if user_profile is not None:
         settings_user = user_profile
     else:
+        assert spectator_requested_language is not None
         # When UserProfile=None, we want to serve the values for various
         # settings as the defaults.  Instead of copying the default values
         # from models.py here, we access these default values from a
@@ -392,6 +394,7 @@ def fetch_initial_state_data(
             avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
             # ID=0 is not used in real Zulip databases, ensuring this is unique.
             id=0,
+            default_language=spectator_requested_language,
         )
     if want("realm_user"):
         state["raw_users"] = get_raw_user_data(
@@ -1332,6 +1335,7 @@ def do_events_register(
     client_capabilities: Dict[str, bool] = {},
     narrow: Collection[Sequence[str]] = [],
     fetch_event_types: Optional[Collection[str]] = None,
+    spectator_requested_language: Optional[str] = None,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -1380,6 +1384,7 @@ def do_events_register(
             include_subscribers=False,
             # Force include_streams=False for security reasons.
             include_streams=False,
+            spectator_requested_language=spectator_requested_language,
         )
 
         post_process_state(user_profile, ret, notification_settings_null=False)
