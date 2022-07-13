@@ -52,6 +52,7 @@ from zerver.lib.exceptions import (
     RateLimited,
     RealmDeactivatedError,
     RemoteServerDeactivatedError,
+    UnauthorizedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
     WebhookError,
@@ -59,7 +60,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_method_not_allowed, json_success, json_unauthorized
+from zerver.lib.response import json_method_not_allowed, json_success
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
@@ -679,9 +680,9 @@ def authenticated_rest_api_view(
                     # So we ask the user to replace them with %40
                     role = role.replace("%40", "@")
             except ValueError:
-                return json_unauthorized(_("Invalid authorization header for basic auth"))
+                raise UnauthorizedError(_("Invalid authorization header for basic auth"))
             except KeyError:
-                return json_unauthorized(_("Missing authorization header for basic auth"))
+                raise UnauthorizedError(_("Missing authorization header for basic auth"))
 
             # Now we try to do authentication or die
             try:
@@ -694,7 +695,7 @@ def authenticated_rest_api_view(
                     client_name=full_webhook_client_name(webhook_client_name),
                 )
             except JsonableError as e:
-                return json_unauthorized(e.msg)
+                raise UnauthorizedError(e.msg)
             try:
                 if not skip_rate_limiting:
                     # Apply rate limiting
@@ -777,7 +778,7 @@ def authenticate_log_and_execute_json(
 
     if not request.user.is_authenticated:
         if not allow_unauthenticated:
-            return json_unauthorized()
+            raise UnauthorizedError()
 
         process_client(
             request,
