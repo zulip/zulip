@@ -26,6 +26,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserProfile,
     active_non_guest_user_ids,
     bulk_get_streams,
@@ -128,6 +129,9 @@ def create_stream_if_needed(
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
     )
+    administrators_user_group = UserGroup.objects.get(
+        name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
+    )
 
     with transaction.atomic():
         (stream, created) = Stream.objects.get_or_create(
@@ -142,6 +146,7 @@ def create_stream_if_needed(
                 history_public_to_subscribers=history_public_to_subscribers,
                 is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 message_retention_days=message_retention_days,
+                can_remove_subscribers_group=administrators_user_group,
             ),
         )
 

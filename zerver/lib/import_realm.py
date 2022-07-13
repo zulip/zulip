@@ -181,6 +181,15 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                         )
 
 
+def fix_streams_can_remove_subscribers_group_column(data: TableData, realm: Realm) -> None:
+    table = get_db_table(Stream)
+    admins_group = UserGroup.objects.get(
+        name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+    )
+    for stream in data[table]:
+        stream["can_remove_subscribers_group_id"] = admins_group.id
+
+
 def create_subscription_events(data: TableData, realm_id: int) -> None:
     """
     When the export data doesn't contain the table `zerver_realmauditlog`,
@@ -976,6 +985,12 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Stream objects are created by Django.
     fix_datetime_fields(data, "zerver_stream")
     re_map_foreign_keys(data, "zerver_stream", "realm", related_table="realm")
+    if role_system_groups_dict is not None:
+        fix_streams_can_remove_subscribers_group_column(data, realm)
+    else:
+        re_map_foreign_keys(
+            data, "zerver_stream", "can_remove_subscribers_group", related_table="usergroup"
+        )
     # Handle rendering of stream descriptions for import from non-Zulip
     for stream in data["zerver_stream"]:
         stream["rendered_description"] = render_stream_description(stream["description"])

@@ -89,6 +89,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserGroupMembership,
     UserMessage,
     UserProfile,
@@ -1188,6 +1189,9 @@ Output:
         history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
             realm, invite_only, history_public_to_subscribers
         )
+        administrators_user_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
+        )
 
         try:
             stream = Stream.objects.create(
@@ -1196,6 +1200,7 @@ Output:
                 invite_only=invite_only,
                 is_web_public=is_web_public,
                 history_public_to_subscribers=history_public_to_subscribers,
+                can_remove_subscribers_group=administrators_user_group,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception(
