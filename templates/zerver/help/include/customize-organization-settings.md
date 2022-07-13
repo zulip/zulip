@@ -1,14 +1,4 @@
-Review the settings for your organization to set everything up how you
-want it to be.
-
-{start_tabs}
-
-{relative|gear|manage-organization}
-
-1. Click on "Organization settings" and "Organization permissions"
-   tabs, and any others that are of interest.
-
-{end_tabs}
+{!review-organization-settings-instructions.md!}
 
 A few settings to highlight:
 

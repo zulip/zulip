@@ -121,17 +121,7 @@ registration and login page for your organization, and in the Zulip app.
 
 ## Customize organization settings
 
-Review the settings for your organization to set everything up how you
-want it to be.
-
-{start_tabs}
-
-{relative|gear|manage-organization}
-
-1. Click on "Organization settings" and "Organization permissions"
-   tabs, and any others that are of interest.
-
-{end_tabs}
+{!review-organization-settings-instructions.md!}
 
 A few settings to highlight:
 
@@ -145,12 +135,8 @@ A few settings to highlight:
 
 * [Add custom emoji](/help/custom-emoji) that your class will enjoy.
 
-
-[topic-editing-permissions]: /help/configure-message-editing-and-deletion
 [default-code-block-language]: /help/code-blocks#default-code-block-language
 [code-playgrounds]: /help/code-blocks#code-playgrounds
-[email-address-visibility]: /help/restrict-visibility-of-email-addresses
-[who-can-invite]: /help/restrict-account-creation#change-who-can-send-invitations
 
 ### Roles and permissions
 
