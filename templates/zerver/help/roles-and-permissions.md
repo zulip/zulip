@@ -10,7 +10,7 @@ There are several possible roles in a Zulip organization.
   owners.
 
 * **Moderator**: Have the permissions of full members; additionally,
-  many "Organization permissions" settings allow moderators to be
+  many **Organization permissions** settings allow moderators to be
   given additional privileges or do so by default.
 
 * **Member**: Has access to all public streams.  Member is the default

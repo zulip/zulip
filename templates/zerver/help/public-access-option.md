@@ -40,8 +40,8 @@ communities such as open-source projects and research communities.
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, toggle the checkbox labeled "Allow
-   creating web-public streams (visible to anyone on the Internet)".
+1. Under **Stream permissions**, toggle the checkbox labeled **Allow
+   creating web-public streams (visible to anyone on the Internet)**.
 
 {end_tabs}
 
@@ -51,17 +51,17 @@ communities such as open-source projects and research communities.
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, make sure the checkbox labeled "Allow
-   creating web-public streams (visible to anyone on the Internet)" is
+1. Under **Stream permissions**, make sure the checkbox labeled **Allow
+   creating web-public streams (visible to anyone on the Internet)** is
    checked.
 
-3. Under **Who can create web-public streams?**, select the option you prefer.
+1. Under **Who can create web-public streams?**, select the option you prefer.
 
 {end_tabs}
 
 !!! tip ""
     See [Managing abuse](#managing-abuse) to learn why only
-    trusted roles like Moderators and Administrators can create web-public streams.
+    trusted roles like moderators and administrators can create web-public streams.
 
 ## Creating a web-public stream
 
