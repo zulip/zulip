@@ -100,6 +100,7 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
         ["PgUp", "↑"],
         ["PgDn", "↓"],
         ["Ctrl", "⌘"],
+        ["Alt", "⌘"],
         ["X + Shift", "X + Shift"],
         ["⌘ + Return", "⌘ + Return"],
         ["Enter or Backspace", "Enter or Backspace"],
@@ -157,6 +158,7 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
         ["PgUp", "↑"],
         ["PgDn", "↓"],
         ["Ctrl", "⌘"],
+        ["Alt", "⌘"],
         ["[", "["],
         ["X", "X"],
     ]);

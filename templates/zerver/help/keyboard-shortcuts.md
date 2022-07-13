@@ -67,6 +67,10 @@ below, and add more to your repertoire as needed.
 
 * **Scroll down**: `PgDn`, `J`, or `Spacebar`
 
+* **Go back through viewing history**: `Alt` + `←`
+
+* **Go forward through viewing history**: `Alt` + `→`
+
 ## Narrowing
 
 * **Narrow to next unread topic**: `n`
