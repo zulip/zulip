@@ -203,4 +203,5 @@
 
 ## Support
 * [View Zulip version](/help/view-zulip-version)
+* [Zulip Cloud billing](/help/zulip-cloud-billing)
 * [Contact support](/help/contact-support)
