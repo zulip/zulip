@@ -93,11 +93,7 @@ export function get_language_list_columns(default_language: string): Language[] 
             name_with_percent = `${language.name} (${language.percent_translated}%)`;
         }
 
-        let selected = false;
-        if (default_language === language.code || default_language === language.locale) {
-            selected = true;
-        }
-
+        const selected = default_language === language.code || default_language === language.locale;
         formatted_list.push({
             code: language.code,
             name: language.name,
