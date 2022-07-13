@@ -1,5 +1,6 @@
 from typing import Dict, Optional, Sequence, Union
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -75,6 +76,7 @@ def events_register_backend(
 ) -> HttpResponse:
     if maybe_user_profile.is_authenticated:
         user_profile = maybe_user_profile
+        spectator_requested_language = None
         assert isinstance(user_profile, UserProfile)
         realm = user_profile.realm
 
@@ -86,6 +88,10 @@ def events_register_backend(
     else:
         user_profile = None
         realm = get_valid_realm_from_request(request)
+        # Language set by spectator to be passed down to clients as user_settings.
+        spectator_requested_language = request.COOKIES.get(
+            settings.LANGUAGE_COOKIE_NAME, realm.default_language
+        )
 
         if not realm.allow_web_public_streams_access():
             raise MissingAuthenticationError()
@@ -112,5 +118,6 @@ def events_register_backend(
         include_subscribers=include_subscribers,
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,
+        spectator_requested_language=spectator_requested_language,
     )
     return json_success(request, data=ret)
