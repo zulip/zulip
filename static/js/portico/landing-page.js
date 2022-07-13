@@ -25,7 +25,7 @@ const hello_events = function () {
 const apps_events = function () {
     const info = {
         windows: {
-            image: "/static/images/landing-page/microsoft.png",
+            image: "/static/images/landing-page/apps/microsoft.png",
             alt: "Windows",
             description:
                 "Zulip for Windows is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
@@ -35,7 +35,7 @@ const apps_events = function () {
             app_type: "desktop",
         },
         mac: {
-            image: "/static/images/landing-page/macbook.png",
+            image: "/static/images/landing-page/apps/macbook.png",
             alt: "macOS",
             description:
                 "Zulip on macOS is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
@@ -63,7 +63,7 @@ const apps_events = function () {
             app_type: "mobile",
         },
         linux: {
-            image: "/static/images/landing-page/ubuntu.png",
+            image: "/static/images/landing-page/apps/ubuntu.png",
             alt: "Linux",
             description:
                 "Zulip on the Linux desktop is even better than Zulip on the web, with a cleaner look, tray integration, native notifications, and support for multiple Zulip accounts.",
