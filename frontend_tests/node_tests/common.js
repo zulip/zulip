@@ -112,6 +112,8 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
 
     override(navigator, "platform", "MacIntel");
 
+    const kbd_element = false;
+
     const test_items = [];
     let key_no = 1;
 
@@ -119,6 +121,7 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
         const test_item = {};
         const $stub = $.create("hotkey_" + key_no);
         $stub.text(old_key);
+        assert.equal($stub.hasClass("arrow-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
@@ -126,6 +129,7 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
         }
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
+        test_item.adds_arrow_key = fn_shortcuts.has(old_key) && kbd_element;
         test_items.push(test_item);
         key_no += 1;
     }
@@ -134,11 +138,11 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
 
     $.create(".markdown_content", {children});
 
-    const kbd_element = false;
     common.adjust_mac_shortcuts(".markdown_content", kbd_element);
 
     for (const test_item of test_items) {
         assert.equal(test_item.$stub.text(), test_item.mac_key);
+        assert.equal(test_item.$stub.hasClass("arrow-key"), test_item.adds_arrow_key);
     }
 });
 
@@ -162,6 +166,8 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
 
     override(navigator, "platform", "MacIntel");
 
+    const kbd_element = true;
+
     const test_items = [];
     let key_no = 1;
 
@@ -169,6 +175,7 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
         const test_item = {};
         const $stub = $.create("hotkey_" + key_no);
         $stub.text(old_key);
+        assert.equal($stub.hasClass("arrow-key"), false);
         if (fn_shortcuts.has(old_key)) {
             $stub.before = ($elem) => {
                 assert.equal($elem, inserted_fn_key);
@@ -176,6 +183,7 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
         }
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
+        test_item.adds_arrow_key = fn_shortcuts.has(old_key) && kbd_element;
         test_items.push(test_item);
         key_no += 1;
     }
@@ -188,6 +196,7 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
 
     for (const test_item of test_items) {
         assert.equal(test_item.$stub.text(), test_item.mac_key);
+        assert.equal(test_item.$stub.hasClass("arrow-key"), test_item.adds_arrow_key);
     }
 });
 
