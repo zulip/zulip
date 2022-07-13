@@ -13,7 +13,7 @@
         "sn": ["Hamlet"],
         "homePhone": ["123456789"],
         "birthDate": ["1900-09-08"],
-        "jpegPhoto": "file:static/images/team/tim.png"
+        "jpegPhoto": "file:static/images/landing-page/team/tim.png"
     },
 
     "uid=cordelia,ou=users,dc=zulip,dc=com": {
@@ -38,7 +38,7 @@
         "uid": ["newuser"],
         "sn": ["shortname"],
         "homePhone": ["a-new-number"],
-        "jpegPhoto": "file:static/images/team/tim.png"
+        "jpegPhoto": "file:static/images/landing-page/team/tim.png"
     },
 
     "uid=newuser_splitname,ou=users,dc=zulip,dc=com": {
