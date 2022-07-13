@@ -61,6 +61,7 @@ export function adjust_mac_shortcuts(key_elem_class: string, kbd_elem = true): v
         ["PgUp", "↑"],
         ["PgDn", "↓"],
         ["Ctrl", "⌘"],
+        ["Alt", "⌘"],
     ]);
 
     const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
