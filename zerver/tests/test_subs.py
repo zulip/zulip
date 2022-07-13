@@ -28,9 +28,11 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
+from zerver.actions.user_groups import add_subgroups_to_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -80,6 +82,7 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -90,6 +93,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
     active_non_guest_user_ids,
@@ -2237,14 +2241,14 @@ class StreamAdminTest(ZulipTestCase):
         If you're not an admin, you can't remove other people from streams.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=5,
+            query_count=6,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
             target_users_subbed=True,
         )
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_realm_admin_remove_others_from_public_stream(self) -> None:
         """
@@ -2252,7 +2256,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2278,7 +2282,7 @@ class StreamAdminTest(ZulipTestCase):
             self.example_user(name) for name in ["cordelia", "prospero", "iago", "hamlet", "ZOE"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=25,
+            query_count=26,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -2296,7 +2300,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2313,7 +2317,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2327,7 +2331,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=5,
+            query_count=6,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -2335,11 +2339,11 @@ class StreamAdminTest(ZulipTestCase):
             target_users_subbed=True,
             using_legacy_emails=True,
         )
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2353,7 +2357,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2371,7 +2375,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=9,
+            query_count=10,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2381,6 +2385,58 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 0)
         self.assert_length(json["not_removed"], 1)
+
+    def test_can_remove_subscribers_group(self) -> None:
+        realm = get_realm("zulip")
+        leadership_group = create_user_group(
+            "leadership", [self.example_user("iago"), self.example_user("shiva")], realm
+        )
+        managers_group = create_user_group("managers", [self.example_user("hamlet")], realm=realm)
+        add_subgroups_to_user_group(managers_group, [leadership_group])
+        cordelia = self.example_user("cordelia")
+
+        stream = self.make_stream("public_stream")
+
+        def check_unsubscribing_user(
+            user: UserProfile, can_remove_subscribers_group: UserGroup, expect_fail: bool = False
+        ) -> None:
+            self.login_user(user)
+            self.subscribe(cordelia, stream.name)
+            do_change_can_remove_subscribers_group(
+                stream, can_remove_subscribers_group, acting_user=None
+            )
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream.name]).decode(),
+                    "principals": orjson.dumps([cordelia.id]).decode(),
+                },
+            )
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            json = self.assert_json_success(result)
+            self.assert_length(json["removed"], 1)
+            self.assert_length(json["not_removed"], 0)
+
+        check_unsubscribing_user(self.example_user("hamlet"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("desdemona"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("iago"), leadership_group)
+
+        check_unsubscribing_user(self.example_user("othello"), managers_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("shiva"), managers_group)
+        check_unsubscribing_user(self.example_user("hamlet"), managers_group)
+
+        stream = self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), stream.name)
+        # Non-admins are not allowed to unsubscribe others from private streams that they
+        # are not subscribed to even if they are member of the allowed group.
+        check_unsubscribing_user(self.example_user("shiva"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("iago"), leadership_group)
+
+        self.subscribe(self.example_user("shiva"), stream.name)
+        check_unsubscribing_user(self.example_user("shiva"), leadership_group)
 
     def test_remove_invalid_user(self) -> None:
         """

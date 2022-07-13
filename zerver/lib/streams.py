@@ -19,6 +19,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.types import APIStreamDict
+from zerver.lib.user_groups import is_user_in_group
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -604,6 +605,17 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
     return can_access_stream_history(user_profile, stream)
 
 
+def can_remove_subscribers_from_stream(
+    stream: Stream, user_profile: UserProfile, sub: Subscription
+) -> bool:
+    if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
+        return False
+
+    group_allowed_to_remove_subscribers = stream.can_remove_subscribers_group
+    assert group_allowed_to_remove_subscribers is not None
+    return is_user_in_group(group_allowed_to_remove_subscribers, user_profile)
+
+
 def filter_stream_authorization(
     user_profile: UserProfile, streams: Collection[Stream]
 ) -> Tuple[List[Stream], List[Stream]]:
@@ -679,7 +691,8 @@ def list_to_streams(
         sub_map = {sub.recipient_id: sub for sub in subs}
         for stream in existing_stream_map.values():
             sub = sub_map.get(stream.recipient_id, None)
-            check_stream_access_for_delete_or_update(user_profile, stream, sub)
+            if not can_remove_subscribers_from_stream(stream, user_profile, sub):
+                raise JsonableError(_("Insufficient permission"))
 
     message_retention_days_not_none = False
     web_public_stream_requested = False
