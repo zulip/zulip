@@ -1578,6 +1578,17 @@ class TestInternalNotifyView(ZulipTestCase):
                 self.internal_notify(False, request)
 
     def test_internal_requests_with_broken_secret(self) -> None:
+        request = HostRequestMock(
+            post_data=dict(data="something"),
+            meta_data=dict(REMOTE_ADDR="127.0.0.1"),
+        )
+
+        with self.settings(SHARED_SECRET="random"):
+            self.assertFalse(authenticate_notify(request))
+            with self.assertRaises(AccessDeniedError) as context:
+                self.internal_notify(True, request)
+            self.assertEqual(context.exception.http_status_code, 403)
+
         secret = "random"
         request = HostRequestMock(
             post_data=dict(secret=secret),
