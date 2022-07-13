@@ -17,7 +17,6 @@ from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
 from confirmation.settings import STATUS_ACTIVE
-from corporate.models import Customer, CustomerPlan
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
@@ -56,7 +55,12 @@ if settings.BILLING_ENABLED:
         update_sponsorship_status,
         void_all_open_invoices,
     )
-    from corporate.models import get_current_plan_by_realm, get_customer_by_realm
+    from corporate.models import (
+        Customer,
+        CustomerPlan,
+        get_current_plan_by_realm,
+        get_customer_by_realm,
+    )
 
 
 def get_plan_name(plan_type: int) -> str:
@@ -133,8 +137,8 @@ VALID_BILLING_METHODS = [
 
 @dataclass
 class PlanData:
-    customer: Optional[Customer] = None
-    current_plan: Optional[CustomerPlan] = None
+    customer: Optional["Customer"] = None
+    current_plan: Optional["CustomerPlan"] = None
     licenses: Optional[int] = None
     licenses_used: Optional[int] = None
 
