@@ -8,7 +8,7 @@ Mattermost, Discord, Spark, and others.
 
 Anyone who wakes up to this frequently can tell you it is not fun.
 
-<img src="/static/images/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads" />
+<img src="/static/images/landing-page/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads" />
 
 The lack of organization and context in Slack channels means that anyone
 using Slack heavily has to manually scan through hundreds of messages a day
@@ -124,13 +124,13 @@ effective threading model: Every channel message has a topic, just
 like every message in email has a subject line. (Channels are called
 streams in Zulip.)
 
-<img src="/static/images/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics" />
+<img src="/static/images/landing-page/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics" />
 
 Topics hold Zulip conversations together, just like subject lines hold email
 conversations together. They allow you to efficiently catch up on messages
 and reply in context, even to conversations that started hours or days ago.
 
-<img src="/static/images/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later" />
+<img src="/static/images/landing-page/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later" />
 
 ## Zulip changes how you can operate.
 
