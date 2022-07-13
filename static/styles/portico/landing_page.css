@@ -1212,28 +1212,6 @@ nav {
 
     z-index: 1;
 
-    &.hero-screen {
-        padding: 95px 170px;
-        height: 385px;
-
-        background-image: url("../../images/landing-page/macbook-empty.png");
-        background-size: 100% auto;
-
-        background-color: transparent;
-        box-shadow: none;
-
-        &::before,
-        &::after {
-            content: "";
-            display: none;
-        }
-
-        .main-page {
-            transform: translateY(-12px) translateX(3px);
-            border: 5px solid hsl(0, 0%, 0%);
-        }
-    }
-
     &::before {
         content: " ";
         position: absolute;
@@ -2945,17 +2923,6 @@ nav {
         margin: 0;
     }
 
-    .portico-landing.hello .screen.hero-screen {
-        width: 420px;
-        height: 282px;
-        padding: 65px 117px;
-
-        .main-page {
-            overflow: hidden;
-            transform: translateY(-12px) translateX(2px);
-        }
-    }
-
     .portico-landing .testimonials .carousel-quotes {
         width: 100%;
     }
@@ -2966,11 +2933,6 @@ nav {
 
     .portico-landing .testimonials .fa-chevron-left {
         left: -40px;
-    }
-
-    .screen.hero-screen .line {
-        height: 4px;
-        margin: 4px 0;
     }
 
     .screen .message-feed .message .content {
@@ -3165,12 +3127,6 @@ nav {
         width: auto;
     }
 
-    .portico-landing.hello .screen.hero-screen {
-        width: 300px;
-        height: 201px;
-        padding: 43px 73px;
-    }
-
     .portico-landing.features-app {
         section {
             padding: 0 20px;
@@ -3269,10 +3225,6 @@ nav {
         header {
             width: auto;
         }
-    }
-
-    .portico-landing.hello .screen.hero-screen {
-        display: none;
     }
 
     nav {

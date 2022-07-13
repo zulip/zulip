@@ -8,17 +8,6 @@ export function path_parts() {
 }
 
 const hello_events = function () {
-    let counter = 0;
-    $(window).on("scroll", function () {
-        if (counter % 2 === 0) {
-            $(".screen.hero-screen .message-feed").css(
-                "transform",
-                "translateY(-" + $(this).scrollTop() / 5 + "px)",
-            );
-        }
-        counter += 1;
-    });
-
     $(".footer").addClass("hello");
 };
 
