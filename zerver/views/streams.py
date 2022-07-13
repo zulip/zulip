@@ -424,7 +424,7 @@ def remove_subscriptions_backend(
         streams_as_dict.append({"name": stream_name.strip()})
 
     streams, __ = list_to_streams(
-        streams_as_dict, user_profile, admin_access_required=removing_someone_else
+        streams_as_dict, user_profile, unsubscribing_others=removing_someone_else
     )
 
     if principals:

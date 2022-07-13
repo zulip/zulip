@@ -625,7 +625,7 @@ def list_to_streams(
     streams_raw: Collection[StreamDict],
     user_profile: UserProfile,
     autocreate: bool = False,
-    admin_access_required: bool = False,
+    unsubscribing_others: bool = False,
 ) -> Tuple[List[Stream], List[Stream]]:
     """Converts list of dicts to a list of Streams, validating input in the process
 
@@ -654,7 +654,7 @@ def list_to_streams(
     missing_stream_dicts: List[StreamDict] = []
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
-    if admin_access_required:
+    if unsubscribing_others:
         existing_recipient_ids = [stream.recipient_id for stream in existing_stream_map.values()]
         subs = Subscription.objects.filter(
             user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
