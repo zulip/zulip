@@ -334,6 +334,34 @@ def access_stream_for_delete_or_update(
     return (stream, sub)
 
 
+def check_basic_stream_access(
+    user_profile: UserProfile,
+    stream: Stream,
+    sub: Optional[Subscription],
+    allow_realm_admin: bool = False,
+) -> bool:
+    # Any realm user, even guests, can access web_public streams.
+    if stream.is_web_public:
+        return True
+
+    # If the stream is in your realm and public, you can access it.
+    if stream.is_public() and not user_profile.is_guest:
+        return True
+
+    # Or if you are subscribed to the stream, you can access it.
+    if sub is not None:
+        return True
+
+    # For some specific callers (e.g. getting list of subscribers,
+    # removing other users from a stream, and updating stream name and
+    # description), we allow realm admins to access stream even if
+    # they are not subscribed to a private stream.
+    if user_profile.is_realm_admin and allow_realm_admin:
+        return True
+
+    return False
+
+
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
 def access_stream_common(
@@ -362,23 +390,7 @@ def access_stream_common(
     except Subscription.DoesNotExist:
         sub = None
 
-    # Any realm user, even guests, can access web_public streams.
-    if stream.is_web_public:
-        return sub
-
-    # If the stream is in your realm and public, you can access it.
-    if stream.is_public() and not user_profile.is_guest:
-        return sub
-
-    # Or if you are subscribed to the stream, you can access it.
-    if sub is not None:
-        return sub
-
-    # For some specific callers (e.g. getting list of subscribers,
-    # removing other users from a stream, and updating stream name and
-    # description), we allow realm admins to access stream even if
-    # they are not subscribed to a private stream.
-    if user_profile.is_realm_admin and allow_realm_admin:
+    if check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=allow_realm_admin):
         return sub
 
     # Otherwise it is a private stream and you're not on it, so throw
