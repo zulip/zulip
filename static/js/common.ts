@@ -80,6 +80,7 @@ export function adjust_mac_shortcuts(key_elem_class: string, kbd_elem = true): v
         if (fn_shortcuts.has(key_text)) {
             if (kbd_elem) {
                 $(this).before("<kbd>Fn</kbd> + ");
+                $(this).addClass("arrow-key");
             } else {
                 $(this).before("<code>Fn</code> + ");
             }
