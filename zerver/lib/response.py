@@ -2,35 +2,16 @@ from typing import Any, List, Mapping, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse, HttpResponseNotAllowed
-from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import JsonableError
-
-
-class HttpResponseUnauthorized(HttpResponse):
-    status_code = 401
-
-    def __init__(self, realm: str, www_authenticate: Optional[str] = None) -> None:
-        HttpResponse.__init__(self)
-        if www_authenticate is None:
-            self["WWW-Authenticate"] = f'Basic realm="{realm}"'
-        elif www_authenticate == "session":
-            self["WWW-Authenticate"] = f'Session realm="{realm}"'
-        else:
-            raise AssertionError("Invalid www_authenticate value!")
+from zerver.lib.exceptions import JsonableError, UnauthorizedError
 
 
 def json_unauthorized(
     message: Optional[str] = None, www_authenticate: Optional[str] = None
 ) -> HttpResponse:
-    if message is None:
-        message = _("Not logged in: API authentication or user session required")
-    resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
-    resp.content = orjson.dumps(
-        {"result": "error", "msg": message},
-        option=orjson.OPT_APPEND_NEWLINE,
+    return json_response_from_error(
+        UnauthorizedError(msg=message, www_authenticate=www_authenticate)
     )
-    return resp
 
 
 def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
