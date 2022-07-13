@@ -24,7 +24,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> Dict[str, Dict[str, 
         ldap_data.append((name, email, phone_number, birthdate))
 
     profile_images = []
-    for path in glob.glob(os.path.join(static_path("images/team"), "*")):
+    for path in glob.glob(os.path.join(static_path("images/landing-page/team"), "*")):
         with open(path, "rb") as f:
             profile_images.append(f.read())
     ldap_dir = {}

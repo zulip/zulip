@@ -6047,7 +6047,9 @@ class TestLDAP(ZulipLDAPTestCase):
             assert url is not None
             response = self.client_get(url)
             self.assertEqual(response.status_code, 200)
-            with open(os.path.join(settings.DEPLOY_ROOT, "static/images/team/tim.png"), "rb") as f:
+            with open(
+                os.path.join(settings.DEPLOY_ROOT, "static/images/landing-page/team/tim.png"), "rb"
+            ) as f:
                 tim = f.read()
             self.assert_streaming_content(response, resize_avatar(tim, DEFAULT_AVATAR_SIZE))
 
