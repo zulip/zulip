@@ -60,7 +60,7 @@ class EditMessageTestCase(ZulipTestCase):
                 search_fields={},
                 apply_markdown=False,
                 client_gravatar=False,
-                allow_edit_history=True,
+                message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_ALL,
             )
 
         self.assert_length(queries, 1)
@@ -520,7 +520,12 @@ class EditMessageTest(EditMessageTestCase):
 
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
+        do_set_realm_property(
+            user_profile.realm,
+            "message_edit_history_visibility",
+            Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
+            acting_user=None,
+        )
         self.login("hamlet")
 
         # Single-line edit

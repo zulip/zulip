@@ -419,8 +419,8 @@ def do_update_message(
 
         update_user_message_flags(rendering_result, ums)
 
-        # One could imagine checking realm.allow_edit_history here and
-        # modifying the events based on that setting, but doing so
+        # One could imagine checking realm.message_edit_history_visiblity
+        # here and modifying the events based on that setting, but doing so
         # doesn't really make sense.  We need to send the edit event
         # to clients regardless, and a client already had access to
         # the original/pre-edit content of the message anyway.  That

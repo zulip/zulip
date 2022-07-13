@@ -1156,7 +1156,7 @@ def get_messages_backend(
         search_fields=search_fields,
         apply_markdown=apply_markdown,
         client_gravatar=client_gravatar,
-        allow_edit_history=realm.allow_edit_history,
+        message_edit_history_visibility=realm.message_edit_history_visibility,
     )
 
     statsd.incr("loaded_old_messages", len(message_list))

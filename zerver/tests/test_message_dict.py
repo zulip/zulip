@@ -418,7 +418,7 @@ class MessageHydrationTest(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
 
         self.assert_length(messages, 2)
@@ -469,7 +469,7 @@ class MessageHydrationTest(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
         message = messages[0]
 
@@ -516,7 +516,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
 
         self._verify_display_recipient(messages[0]["display_recipient"], [hamlet, cordelia])
@@ -537,7 +537,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
 
         self._verify_display_recipient(
@@ -563,7 +563,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
 
         self._verify_display_recipient(
@@ -597,7 +597,7 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             search_fields={},
             apply_markdown=True,
             client_gravatar=True,
-            allow_edit_history=False,
+            message_edit_history_visibility=Realm.MESSAGE_EDIT_HISTORY_VISIBILITY_NONE,
         )
 
         self._verify_display_recipient(

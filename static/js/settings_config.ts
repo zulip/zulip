@@ -830,3 +830,21 @@ export const desktop_icon_count_display_values = {
         description: $t({defaultMessage: "None"}),
     },
 };
+
+export const message_edit_history_visibility_values = {
+    always: {
+        order: 1,
+        code: 1,
+        description: $t({defaultMessage: "Always"}),
+    },
+    moved_only: {
+        order: 2,
+        code: 2,
+        description: $t({defaultMessage: "Moved only"}),
+    },
+    never: {
+        order: 3,
+        code: 3,
+        description: $t({defaultMessage: "Never"}),
+    },
+};

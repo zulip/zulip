@@ -464,7 +464,8 @@ function test_discard_changes_button(discard_changes) {
         target: "#org-discard-msg-editing",
     };
 
-    page_params.realm_allow_edit_history = true;
+    page_params.realm_message_edit_history_visibility =
+        settings_config.message_edit_history_visibility_values.always.code;
     page_params.realm_edit_topic_policy =
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
@@ -473,7 +474,9 @@ function test_discard_changes_button(discard_changes) {
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_message_content_delete_limit_seconds = 120;
 
-    const $allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
+    const $message_edit_history_visibility = $("#id_realm_message_edit_history_visibility").val(
+        settings_config.message_edit_history_visibility_values.never.code,
+    );
     const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
         settings_config.common_message_policy_values.by_admins_only.code,
     );
@@ -486,7 +489,7 @@ function test_discard_changes_button(discard_changes) {
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
-    $allow_edit_history.attr("id", "id_realm_allow_edit_history");
+    $message_edit_history_visibility.attr("id", "id_realm_message_edit_history_visibility");
     $msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
     $msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
     $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
@@ -498,7 +501,7 @@ function test_discard_changes_button(discard_changes) {
 
     const $discard_button_parent = $(".org-subsection-parent");
     $discard_button_parent.find = () => [
-        $allow_edit_history,
+        $message_edit_history_visibility,
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
@@ -511,7 +514,10 @@ function test_discard_changes_button(discard_changes) {
 
     discard_changes(ev);
 
-    assert.equal($allow_edit_history.prop("checked"), true);
+    assert.equal(
+        $message_edit_history_visibility.val(),
+        settings_config.message_edit_history_visibility_values.always.code,
+    );
     assert.equal(
         $edit_topic_policy.val(),
         settings_config.common_message_policy_values.by_everyone.code,

@@ -185,7 +185,7 @@ export function dispatch_normal_event(event) {
         case "realm": {
             const realm_settings = {
                 add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
-                allow_edit_history: noop,
+                message_edit_history_visibility: noop,
                 allow_message_editing: noop,
                 edit_topic_policy: noop,
                 user_group_edit_policy: noop,
