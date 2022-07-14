@@ -1,7 +1,6 @@
 import time
-from typing import Callable, Optional, Sequence, TypeVar
+from typing import Any, Callable, Mapping, Optional, Sequence, TypeVar
 
-import orjson
 from asgiref.sync import async_to_sync
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -13,6 +12,7 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import AsynchronousResponse, json_success
 from zerver.lib.validator import (
     check_bool,
+    check_dict,
     check_int,
     check_list,
     check_string,
@@ -34,8 +34,11 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
 
 
 @internal_notify_view(True)
-def notify(request: HttpRequest) -> HttpResponse:
-    in_tornado_thread(process_notification)(orjson.loads(request.POST["data"]))
+@has_request_variables
+def notify(
+    request: HttpRequest, data: Mapping[str, Any] = REQ(json_validator=check_dict([]))
+) -> HttpResponse:
+    in_tornado_thread(process_notification)(data)
     return json_success(request)
 
 
