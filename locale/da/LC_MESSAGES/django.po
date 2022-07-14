@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-26 17:57+0000\n"
+"POT-Creation-Date: 2022-07-14 23:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2991,11 +2991,11 @@ msgstr ""
 msgid "Draft does not exist"
 msgstr ""
 
-#: zerver/lib/email_notifications.py:125 zerver/lib/email_notifications.py:147
+#: zerver/lib/email_notifications.py:127 zerver/lib/email_notifications.py:149
 msgid "Open Zulip to see the spoiler content"
 msgstr ""
 
-#: zerver/lib/email_notifications.py:533
+#: zerver/lib/email_notifications.py:535
 msgid "Zulip notifications"
 msgstr ""
 
@@ -3713,7 +3713,7 @@ msgstr ""
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:229 zerver/lib/users.py:234 zerver/models.py:4326
+#: zerver/lib/users.py:229 zerver/lib/users.py:234 zerver/models.py:4347
 msgid "Invalid user ID: {}"
 msgstr ""
 
@@ -3993,39 +3993,39 @@ msgstr ""
 msgid "Zulip extra emoji"
 msgstr ""
 
-#: zerver/models.py:4330
+#: zerver/models.py:4351
 msgid "User with ID {} is deactivated"
 msgstr ""
 
-#: zerver/models.py:4333
+#: zerver/models.py:4354
 msgid "User with ID {} is a bot"
 msgstr ""
 
-#: zerver/models.py:4366
+#: zerver/models.py:4387
 msgid "List of options"
 msgstr ""
 
-#: zerver/models.py:4369
+#: zerver/models.py:4390
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:4381
+#: zerver/models.py:4402
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:4382
+#: zerver/models.py:4403
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:4383
+#: zerver/models.py:4404
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:4384
+#: zerver/models.py:4405
 msgid "Link"
 msgstr ""
 
-#: zerver/models.py:4387
+#: zerver/models.py:4408
 msgid "External account"
 msgstr ""
 

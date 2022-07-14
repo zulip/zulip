@@ -9,8 +9,9 @@
 # Cihan Alkan <cihanalk@gmail.com>, 2022
 # Gokdeniz.Kucukali, 2022
 # Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2022
-# Oktay, 2022
 # Onur Temiz <onurmain@gmail.com>, 2022
+# Ahmet, 2022
+# Oktay, 2022
 # 
 #, fuzzy
 msgid ""
@@ -19,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-31 17:37+0000\n"
 "PO-Revision-Date: 2022-03-29 15:39+0000\n"
-"Last-Translator: Onur Temiz <onurmain@gmail.com>, 2022\n"
+"Last-Translator: Oktay, 2022\n"
 "Language-Team: Turkish (https://www.transifex.com/zulip/teams/53893/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -799,7 +800,7 @@ msgstr "Anonim kullanıcı"
 
 #: templates/zerver/development/dev_login.html:29
 msgid "Owners"
-msgstr "Sahipler"
+msgstr "Organizasyon Yöneticileri"
 
 #: templates/zerver/development/dev_login.html:40
 msgid "Administrators"
@@ -1884,7 +1885,7 @@ msgstr "Müşteri hikayeleri"
 
 #: templates/zerver/footer.html:42
 msgid "Company"
-msgstr ""
+msgstr "Şirket"
 
 #: templates/zerver/footer.html:45
 msgid "Technical University of Munich"
@@ -2279,7 +2280,7 @@ msgstr "Hesap olmadan erişim"
 
 #: templates/zerver/login.html:41
 msgid "Beta"
-msgstr ""
+msgstr "Beta"
 
 #: templates/zerver/login.html:82
 msgid "Email or username"
@@ -2536,11 +2537,11 @@ msgstr ""
 
 #: templates/zerver/self-hosting.html:28
 msgid "Features & pricing"
-msgstr ""
+msgstr "Özellikler ve ücretlendirme"
 
 #: templates/zerver/self-hosting.html:32
 msgid "Zulip for business"
-msgstr ""
+msgstr "İş için Zulip"
 
 #: templates/zerver/social_auth_select_email.html:6
 msgid ""
@@ -2716,7 +2717,7 @@ msgstr ""
 
 #: zerver/forms.py:60
 msgid "The password is too weak."
-msgstr ""
+msgstr "Şifre çok zayıf."
 
 #: zerver/forms.py:81
 msgid "Subdomain needs to have length 3 or greater."
@@ -2795,6 +2796,8 @@ msgid ""
 "Your password has been disabled because it is too weak. Reset your password "
 "to create a new one."
 msgstr ""
+"Şifreniz çok zayıf olduğundan dolayı devre dışı bırakılmıştır. Yeni bir tane"
+" oluşturmak için şifrenizi sıfırlayın."
 
 #: zerver/forms.py:451
 #, python-brace-format
@@ -2803,6 +2806,9 @@ msgid ""
 " with this subdomain.  Please contact your organization administrator with "
 "any questions."
 msgstr ""
+"Zulip hesabınız {username}, bu alt alan adıyla ilişkili organizasyonun üyesi"
+" değildir. Herhangi bir soru için lütfen organizasyon yöneticinizle "
+"iletişime geçin."
 
 #: zerver/forms.py:485
 msgid "Token"
@@ -3043,7 +3049,7 @@ msgstr ""
 
 #: zerver/lib/actions.py:5466
 msgid "Old description"
-msgstr ""
+msgstr "Eski açıklama"
 
 #: zerver/lib/actions.py:5470
 msgid "New description"
@@ -4955,7 +4961,7 @@ msgstr "BigBlueButton yapılandırılmamış."
 
 #: zerver/views/video_calls.py:212
 msgid "Invalid signature."
-msgstr ""
+msgstr "Geçersiz imza."
 
 #: zerver/views/video_calls.py:242
 msgid "Error connecting to the BigBlueButton server."
@@ -5004,11 +5010,11 @@ msgstr "İçerik boş olamaz"
 
 #: zerver/webhooks/ifttt/view.py:33
 msgid "Topic must be a string"
-msgstr ""
+msgstr "Konu bir dizge olmalıdır"
 
 #: zerver/webhooks/ifttt/view.py:36
 msgid "Content must be a string"
-msgstr ""
+msgstr "İçerik bir dizge olmalıdır"
 
 #: zerver/webhooks/librato/view.py:174
 msgid "Malformed JSON input"
@@ -5059,7 +5065,7 @@ msgstr "Geçerli Zulip sunucusu API anahtarı ile doğrulama yapmalısınız"
 #. error
 #: zilencer/views.py:65 zilencer/views.py:67
 msgid "Invalid UUID"
-msgstr ""
+msgstr "Geçersiz UUID"
 
 #. error
 #: zilencer/views.py:74

@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# හෙළබස, 2022
+# හෙළබස සමූහය, 2022
 # 
 #, fuzzy
 msgid ""
@@ -13,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-31 17:37+0000\n"
 "PO-Revision-Date: 2022-03-29 15:39+0000\n"
-"Last-Translator: හෙළබස, 2022\n"
+"Last-Translator: හෙළබස සමූහය, 2022\n"
 "Language-Team: Sinhala (https://www.transifex.com/zulip/teams/53893/si/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,11 +31,11 @@ msgstr "සංවිධානය වලංගු නොවේ"
 
 #: analytics/views/stats.py:271
 msgid "Public streams"
-msgstr ""
+msgstr "පොදු ප්‍රචාර"
 
 #: analytics/views/stats.py:272
 msgid "Private streams"
-msgstr ""
+msgstr "පෞද්ගලික ප්‍රචාර"
 
 #: analytics/views/stats.py:273
 msgid "Private messages"
@@ -263,11 +263,11 @@ msgstr ""
 
 #: templates/analytics/stats.html:23 templates/analytics/stats.html:104
 msgid "Daily"
-msgstr ""
+msgstr "දිනපතා"
 
 #: templates/analytics/stats.html:24 templates/analytics/stats.html:105
 msgid "Weekly"
-msgstr ""
+msgstr "සතිපතා"
 
 #: templates/analytics/stats.html:25 templates/analytics/stats.html:106
 msgid "Cumulative"
@@ -301,7 +301,7 @@ msgstr "පසුගිය සතිය"
 
 #: templates/analytics/stats.html:52 templates/analytics/stats.html:93
 msgid "Last month"
-msgstr ""
+msgstr "පසුගිය මාසය"
 
 #: templates/analytics/stats.html:53 templates/analytics/stats.html:94
 msgid "Last year"
@@ -313,7 +313,7 @@ msgstr "සෑම වෙලාවෙම"
 
 #: templates/analytics/stats.html:60
 msgid "Active users"
-msgstr ""
+msgstr "සක්‍රිය පරිශීලකයින්"
 
 #: templates/analytics/stats.html:63
 msgid "Daily actives"
@@ -409,7 +409,7 @@ msgstr "වසන්න"
 
 #: templates/corporate/support_request.html:7 templates/zerver/footer.html:90
 msgid "Contact support"
-msgstr ""
+msgstr "සහාය අමතන්න"
 
 #: templates/corporate/support_request.html:15
 msgid "From"
@@ -442,11 +442,11 @@ msgstr ""
 
 #: templates/corporate/upgrade.html:68
 msgid "Pay monthly"
-msgstr ""
+msgstr "මාසිකව ගෙවන්න"
 
 #: templates/corporate/upgrade.html:75 templates/corporate/upgrade.html:180
 msgid "Pay annually"
-msgstr ""
+msgstr "වාර්ෂිකව ගෙවන්න"
 
 #: templates/corporate/upgrade.html:87
 msgid "License management"
@@ -514,11 +514,11 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:57
 msgid "Accept"
-msgstr ""
+msgstr "පිළිගන්න"
 
 #: templates/zerver/accounts_home.html:14
 msgid "Sign up for Zulip"
-msgstr ""
+msgstr "සුලිප් සඳහා ලියාපදිංචිය"
 
 #: templates/zerver/accounts_home.html:33
 msgid "You need an invitation to join this organization."
@@ -527,7 +527,7 @@ msgstr "මෙම සංවිධානයට එක්වීමට ඔබට �
 #: templates/zerver/accounts_home.html:68 templates/zerver/login.html:150
 #: templates/zerver/portico-header.html:43 templates/zerver/register.html:264
 msgid "Sign up"
-msgstr ""
+msgstr "ලියාපදිංචිය"
 
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:47
 #: templates/zerver/login.html:129 templates/zerver/register.html:79
@@ -537,7 +537,7 @@ msgstr "හෝ"
 #: templates/zerver/accounts_home.html:82
 #, python-format
 msgid "Sign up with %(identity_provider)s"
-msgstr ""
+msgstr "%(identity_provider)s සමඟ ලියාපදිංචිය"
 
 #: templates/zerver/accounts_send_confirm.html:13
 msgid "Thanks for signing up!"
@@ -559,7 +559,7 @@ msgstr "ඔබගේ අයාචිත තැපැල් බහාලුම �
 
 #: templates/zerver/app/index.html:63
 msgid "Loading..."
-msgstr ""
+msgstr "පූරණය වෙමින්..."
 
 #: templates/zerver/app/index.html:66
 msgid ""
@@ -587,7 +587,7 @@ msgstr "උත්සාහ කරන්න."
 
 #: templates/zerver/app/index.html:176 templates/zerver/app/index.html:178
 msgid "Messages"
-msgstr ""
+msgstr "පණිවිඩ"
 
 #: templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:15
@@ -596,7 +596,7 @@ msgstr ""
 #: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
 #: templates/zerver/portico-header.html:9
 msgid "Zulip"
-msgstr ""
+msgstr "සුලිප්"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -752,7 +752,7 @@ msgstr "පරිපාලකයින්"
 
 #: templates/zerver/development/dev_login.html:51
 msgid "Moderators"
-msgstr ""
+msgstr "මැදිහත්කරුවන්"
 
 #: templates/zerver/development/dev_login.html:62
 msgid "Guest users"
@@ -866,7 +866,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.source.html:27
 msgid "New streams"
-msgstr ""
+msgstr "නව ප්‍රචාර"
 
 #: templates/zerver/emails/digest.source.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -1024,7 +1024,7 @@ msgstr ""
 #: templates/zerver/emails/notify_change_in_email.source.html:14
 #: templates/zerver/emails/notify_change_in_email.txt:7
 msgid "Team Zulip"
-msgstr ""
+msgstr "සුලිප් කණ්ඩායම"
 
 #: templates/zerver/emails/followup_day1.source.html:53
 msgid ""
@@ -1148,7 +1148,7 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.source.html:40
 #: templates/zerver/emails/notify_new_login.txt:20
 msgid "Thanks,"
-msgstr ""
+msgstr "ස්තූතියි,"
 
 #: templates/zerver/emails/followup_day2.source.html:34
 msgid "Unsubscribe from welcome emails"
@@ -1351,7 +1351,7 @@ msgstr "%(sender_str)s සමඟ පෞ.ප."
 
 #: templates/zerver/emails/missed_message.subject.txt:7
 msgid "New messages"
-msgstr ""
+msgstr "නව පණිවිඩ"
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -1438,7 +1438,7 @@ msgstr "පහත දැක්වෙන සුලිප් ගිණුම ස�
 #: templates/zerver/emails/notify_new_login.source.html:16
 #, python-format
 msgid "Organization: %(organization_link)s"
-msgstr ""
+msgstr "සංවිධානය: %(organization_link)s"
 
 #: templates/zerver/emails/notify_new_login.source.html:19
 #: templates/zerver/emails/notify_new_login.txt:5
@@ -1480,7 +1480,7 @@ msgstr ""
 #: templates/zerver/emails/notify_new_login.source.html:41
 #: templates/zerver/emails/notify_new_login.txt:21
 msgid "Zulip Security"
-msgstr ""
+msgstr "සුලිප් ආරක්‍ෂාව"
 
 #: templates/zerver/emails/notify_new_login.source.html:46
 msgid "Unsubscribe from login notifications"
@@ -1494,7 +1494,7 @@ msgstr "%(device_os)s හි %(device_browser)s මඟින් නව ඇතු
 #: templates/zerver/emails/notify_new_login.txt:3
 #, python-format
 msgid "Organization: %(organization_url)s"
-msgstr ""
+msgstr "සංවිධානය: %(organization_url)s"
 
 #: templates/zerver/emails/notify_new_login.txt:16
 #, python-format
@@ -1645,7 +1645,7 @@ msgstr "වි-තැපැල් ලිපින"
 
 #: templates/zerver/find_account.html:43 templates/zerver/footer.html:66
 msgid "Find accounts"
-msgstr ""
+msgstr "ගිණුම් සොයාගන්න"
 
 #: templates/zerver/footer.html:3
 msgid "Product"
@@ -1657,11 +1657,11 @@ msgstr "මුල"
 
 #: templates/zerver/footer.html:6
 msgid "Why Zulip"
-msgstr ""
+msgstr "ඇයි සුලිප්"
 
 #: templates/zerver/footer.html:7
 msgid "Features"
-msgstr ""
+msgstr "විශේෂාංග"
 
 #: templates/zerver/footer.html:8
 msgid "Plans &amp; pricing"
@@ -1677,7 +1677,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:11
 msgid "Security"
-msgstr ""
+msgstr "ආරක්‍ෂාව"
 
 #: templates/zerver/footer.html:12
 msgid "Integrations"
@@ -1717,7 +1717,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:42
 msgid "Company"
-msgstr ""
+msgstr "සමාගම"
 
 #: templates/zerver/footer.html:45
 msgid "Technical University of Munich"
@@ -1741,11 +1741,11 @@ msgstr "රස්ට් භාෂා ප්‍රජාව"
 
 #: templates/zerver/footer.html:62
 msgid "Accounts"
-msgstr ""
+msgstr "ගිණුම්"
 
 #: templates/zerver/footer.html:69
 msgid "New organization"
-msgstr ""
+msgstr "නව සංවිධානය"
 
 #: templates/zerver/footer.html:71
 msgid "Terms of Service"
@@ -1777,7 +1777,7 @@ msgstr ""
 
 #: templates/zerver/footer.html:98
 msgid "For administrators"
-msgstr ""
+msgstr "පරිපාලකයින් සඳහා"
 
 #: templates/zerver/footer.html:102
 msgid "Setting up your organization"
@@ -1797,11 +1797,11 @@ msgstr "සුලිප් සංශෝධනය වෙමින්"
 
 #: templates/zerver/footer.html:123
 msgid "For contributors"
-msgstr ""
+msgstr "දායකයින් සඳහා"
 
 #: templates/zerver/footer.html:125
 msgid "GitHub"
-msgstr ""
+msgstr "ගිට්හබ්"
 
 #: templates/zerver/footer.html:128
 msgid "Contributing to Zulip"
@@ -1817,11 +1817,11 @@ msgstr ""
 
 #: templates/zerver/footer.html:141
 msgid "About us"
-msgstr ""
+msgstr "අප ගැන"
 
 #: templates/zerver/footer.html:143
 msgid "Team"
-msgstr ""
+msgstr "කණ්ඩායම"
 
 #: templates/zerver/footer.html:143
 msgid "History"
@@ -1829,7 +1829,7 @@ msgstr "ඉතිහාසය"
 
 #: templates/zerver/footer.html:145
 msgid "Jobs"
-msgstr ""
+msgstr "රැකියා"
 
 #: templates/zerver/footer.html:147
 msgid "Sponsor Zulip"
@@ -1867,12 +1867,12 @@ msgstr "අධ්යාපනික මිලකරණය"
 
 #: templates/zerver/hello.html:56
 msgid "Streams in Zulip"
-msgstr ""
+msgstr "සුලිප් හි ප්‍රචාර"
 
 #: templates/zerver/hello.html:60 templates/zerver/hello.html:75
 #: templates/zerver/hello.html:90
 msgid "Streams in Slack"
-msgstr ""
+msgstr "ස්ලැක් හි ප්‍රචාර"
 
 #: templates/zerver/hello.html:71
 msgid "Topics in Zulip"
@@ -1901,11 +1901,11 @@ msgstr "සැලසුම් සහ මිලකරණය දකින්න"
 
 #: templates/zerver/hello.html:146
 msgid "Previous"
-msgstr ""
+msgstr "කලින්"
 
 #: templates/zerver/hello.html:151 templates/zerver/realm_redirect.html:32
 msgid "Next"
-msgstr ""
+msgstr "ඊළඟ"
 
 #: templates/zerver/hello.html:399
 msgid "Travis logo"
@@ -1913,11 +1913,11 @@ msgstr ""
 
 #: templates/zerver/hello.html:406
 msgid "GitHub logo"
-msgstr ""
+msgstr "ගිට්හබ් ලාංජනය"
 
 #: templates/zerver/hello.html:413
 msgid "Heroku logo"
-msgstr ""
+msgstr "හිරෝකු ලාංජනය"
 
 #: templates/zerver/hello.html:420
 msgid "Zendesk logo"

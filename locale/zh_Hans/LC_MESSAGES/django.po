@@ -3664,7 +3664,7 @@ msgstr "此社群已禁用在移动推送通知中包含消息内容"
 #: zerver/lib/push_notifications.py:833
 #, python-brace-format
 msgid "{full_name} mentioned @{user_group_name}:"
-msgstr "{full_name} 提到 @{user_group_name}："
+msgstr "{full_name} 提到 @{user_group_name} ："
 
 #: zerver/lib/push_notifications.py:837
 #, python-brace-format

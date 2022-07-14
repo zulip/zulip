@@ -3697,7 +3697,7 @@ msgstr ""
 
 #: zerver/lib/streams.py:701 zerver/views/streams.py:320
 msgid "Web-public streams are not enabled."
-msgstr ""
+msgstr "Não estão permitidos canais web-públicos."
 
 #: zerver/lib/streams.py:730
 msgid "Default stream group with id '{}' does not exist."
@@ -4029,7 +4029,7 @@ msgstr "Visitante"
 
 #: zerver/models.py:2350
 msgid "Web-public"
-msgstr "Web-public"
+msgstr "Web-público"
 
 #: zerver/models.py:2356
 msgid "Public"
