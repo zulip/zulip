@@ -123,6 +123,18 @@ class RealmEmojiTest(ZulipTestCase):
             "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
         )
 
+    def test_forward_slash_exception(self) -> None:
+        self.login("iago")
+        with get_test_image_file("img.png") as fp1:
+            emoji_data = {"f1": fp1}
+            result = self.client_post(
+                "/json/realm/emoji/my/emoji/with/forward/slash/", info=emoji_data
+            )
+        self.assert_json_error(
+            result,
+            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+        )
+
     def test_upload_uppercase_exception(self) -> None:
         self.login("iago")
         with get_test_image_file("img.png") as fp1:

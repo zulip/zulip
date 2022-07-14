@@ -258,7 +258,7 @@ v1_api_and_json_patterns = [
     # realm/emoji -> zerver.views.realm_emoji
     rest_path("realm/emoji", GET=list_emoji),
     rest_path(
-        "realm/emoji/<emoji_name>",
+        "realm/emoji/<path:emoji_name>",
         POST=upload_emoji,
         DELETE=(delete_emoji, {"intentionally_undocumented"}),
     ),
