@@ -264,7 +264,6 @@ def validate_api_key(
         if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
             raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
         request.user = remote_server
-        remote_server.rate_limits = ""
         # Skip updating UserActivity, since remote_server isn't actually a UserProfile object.
         process_client(request)
         return remote_server
