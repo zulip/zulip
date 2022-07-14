@@ -160,11 +160,24 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                 elif return_values[return_value]["additionalProperties"].get(
                     "additionalProperties", False
                 ):
+                    data_type = generate_data_type(
+                        return_values[return_value]["additionalProperties"]["additionalProperties"]
+                    )
+                    ans.append(
+                        self.render_desc(
+                            return_values[return_value]["additionalProperties"][
+                                "additionalProperties"
+                            ]["description"],
+                            spacing + 8,
+                            data_type,
+                        )
+                    )
+
                     ans += self.render_table(
                         return_values[return_value]["additionalProperties"]["additionalProperties"][
                             "properties"
                         ],
-                        spacing + 8,
+                        spacing + 12,
                     )
             if (
                 "items" in return_values[return_value]
