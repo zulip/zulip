@@ -13,7 +13,11 @@ set_global("document", "document-stub");
 const noop = () => {};
 
 function MessageListView() {
-    return {};
+    return {
+        maybe_rerender: noop,
+        append: noop,
+        prepend: noop,
+    };
 }
 mock_esm("../../static/js/message_list_view", {
     MessageListView,
@@ -59,12 +63,6 @@ const alice = {
 };
 people.add_active_user(alice);
 
-function stub_message_view(list) {
-    list.view.append = noop;
-    list.view.maybe_rerender = noop;
-    list.view.prepend = noop;
-}
-
 function make_home_msg_list() {
     const table_name = "whatever";
     const filter = new Filter();
@@ -80,7 +78,6 @@ function reset_lists() {
     message_lists.home = make_home_msg_list();
     message_lists.current = message_lists.home;
     all_messages_data.clear();
-    stub_message_view(message_lists.home);
 }
 
 function config_fake_channel(conf) {
