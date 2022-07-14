@@ -166,19 +166,21 @@ class TwoFactorLoader(app_directories.Loader):
 
 
 MIDDLEWARE = (
-    # With the exception of it's dependencies,
-    # our logging middleware should be the top middleware item.
     "zerver.middleware.TagRequests",
     "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "zerver.middleware.RequestContext",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Important: All middleware before LogRequests should be
+    # inexpensive, because any time spent in that middleware will not
+    # be counted in the LogRequests instrumentation of how time was
+    # spent while processing a request.
     "zerver.middleware.LogRequests",
     "zerver.middleware.JsonErrorHandler",
     "zerver.middleware.RateLimitMiddleware",
     "zerver.middleware.FlushDisplayRecipientCache",
     "zerver.middleware.ZulipCommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "zerver.middleware.LocaleMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "zerver.middleware.ZulipSCIMAuthCheckMiddleware",

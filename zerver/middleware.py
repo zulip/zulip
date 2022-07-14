@@ -420,7 +420,7 @@ class LogRequests(MiddlewareMixin):
         if requestor_for_logs is None:
             # Note that request.user is a Union[RemoteZulipServer, UserProfile, AnonymousUser],
             # if it is present.
-            if hasattr(request, "user") and hasattr(request.user, "format_requestor_for_logs"):
+            if hasattr(request.user, "format_requestor_for_logs"):
                 requestor_for_logs = request.user.format_requestor_for_logs()
             else:
                 requestor_for_logs = "unauth@{}".format(get_subdomain(request) or "root")
