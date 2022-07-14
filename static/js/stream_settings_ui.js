@@ -625,8 +625,8 @@ export function setup_page(callback) {
                 settings_data.user_can_create_public_streams() ||
                 settings_data.user_can_create_web_public_streams(),
             hide_all_streams: !should_list_all_streams(),
-            max_name_length: page_params.max_stream_name_length,
-            max_description_length: page_params.max_stream_description_length,
+            max_stream_name_length: page_params.max_stream_name_length,
+            max_stream_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_privacy_policy,
