@@ -102,40 +102,39 @@ export function get_list_info(zoomed) {
 
     const conversations_to_be_shown = [];
     let more_conversations_unread_count = 0;
-    for (const [idx, conversation] of conversations.entries()) {
-        function should_show_conversation(conversation) {
-            // We always show the active conversation; see the similar
-            // comment in topic_list_data.js.
-            if (conversation.is_active) {
-                return true;
-            }
-
-            // We don't need to filter muted users here, because
-            // pm_conversations.js takes care of this for us.
-
-            // We include the most recent max_conversations_to_show
-            // conversations, regardless of whether they have unread
-            // messages.
-            if (idx < max_conversations_to_show) {
-                return true;
-            }
-
-            // We include older conversations with unread messages up
-            // until max_conversations_to_show_with_unreads total
-            // topics have been included.
-            if (
-                conversation.unread > 0 &&
-                conversations_to_be_shown.length < max_conversations_to_show_with_unreads
-            ) {
-                return true;
-            }
-
-            // Otherwise, this conversation should only be visible in
-            // the unzoomed view.
-            return false;
+    function should_show_conversation(idx, conversation) {
+        // We always show the active conversation; see the similar
+        // comment in topic_list_data.js.
+        if (conversation.is_active) {
+            return true;
         }
 
-        if (should_show_conversation(conversation)) {
+        // We don't need to filter muted users here, because
+        // pm_conversations.js takes care of this for us.
+
+        // We include the most recent max_conversations_to_show
+        // conversations, regardless of whether they have unread
+        // messages.
+        if (idx < max_conversations_to_show) {
+            return true;
+        }
+
+        // We include older conversations with unread messages up
+        // until max_conversations_to_show_with_unreads total
+        // topics have been included.
+        if (
+            conversation.unread > 0 &&
+            conversations_to_be_shown.length < max_conversations_to_show_with_unreads
+        ) {
+            return true;
+        }
+
+        // Otherwise, this conversation should only be visible in
+        // the unzoomed view.
+        return false;
+    }
+    for (const [idx, conversation] of conversations.entries()) {
+        if (should_show_conversation(idx, conversation)) {
             conversations_to_be_shown.push(conversation);
         } else {
             more_conversations_unread_count += conversation.unread;
