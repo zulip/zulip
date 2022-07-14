@@ -39,4 +39,22 @@ async function test_mention(page: Page): Promise<void> {
     await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);
 }
 
+async function test_private_mention(page: Page): Promise<void> {
+    await common.log_in(page);
+    await page.click(".top_left_all_messages");
+    await page.waitForSelector("#zhome .message_row", {visible: true});
+
+    console.log("Creating private message draft");
+    await page.keyboard.press("KeyX");
+    await page.waitForSelector("#private_message_recipient", {visible: true});
+    await common.fill_form(page, "form#send_message_form", {content: "Test private message."});
+    await common.pm_recipient.set(page, "cordelia@zulip.com");
+    await common.select_item_via_typeahead(page, "#compose-textarea", "@**Cord", "Cordelia");
+    await common.ensure_enter_does_not_send(page);
+    await page.waitForSelector("#compose_pm_mentions_user_alert", {hidden: false});
+    await common.assert_compose_box_content(page, "@_**Cordelia, Lear's daughter** ");
+    await page.click("#compose_close");
+}
+
 common.run_test(test_mention);
+common.run_test(test_private_mention);

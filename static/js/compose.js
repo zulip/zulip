@@ -82,6 +82,11 @@ export function clear_private_stream_alert() {
     $("#compose_private_stream_alert").empty();
 }
 
+export function clear_pm_mentions_user_alert() {
+    $("#compose_pm_mentions_user_alert").hide();
+    $("#compose_pm_mentions_user_alert").empty();
+}
+
 export function clear_preview_area() {
     $("#compose-textarea").show();
     $("#compose .undo_markdown_preview").hide();
@@ -281,6 +286,7 @@ export function finish() {
     clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
+    clear_pm_mentions_user_alert();
     notifications.clear_compose_notifications();
 
     const message_content = compose_state.message_content();
@@ -542,6 +548,34 @@ export function initialize() {
             if ($stream_alert.children().length === 0) {
                 $stream_alert.hide();
             }
+        },
+    );
+
+    $("#compose_pm_mentions_user_alert").on(
+        "click",
+        ".compose_pm_mentions_user_alert_close",
+        (event) => {
+            const $mention_alert_row = $(event.target).parents(".compose_pm_mentions_user_alert");
+            const $mention_alert = $("#compose_pm_mentions_user_alert");
+
+            $mention_alert_row.remove();
+
+            if ($mention_alert.children().length === 0) {
+                $mention_alert.hide();
+            }
+        },
+    );
+    $("#compose_pm_mentions_user_alert").on(
+        "click",
+        "#compose_pm_mentions_user_alert_undo",
+        (event) => {
+            const $warning_area = $(event.target).closest(".compose_pm_mentions_user_alert");
+            const full_name = $warning_area.data("full-name");
+            const user_id = $warning_area.data("user-id");
+            compose_validate.undo_warn_if_pm_mentions_user(full_name, user_id);
+            event.preventDefault();
+            event.stopPropagation();
+            $("button.compose_pm_mentions_user_alert_close").trigger("click");
         },
     );
 

@@ -5,6 +5,7 @@ import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
+import render_compose_pm_mentions_user_alert from "../templates/compose_pm_mentions_user_alert.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 import render_compose_resolved_topic from "../templates/compose_resolved_topic.hbs";
 
@@ -62,6 +63,38 @@ export function needs_subscribe_warning(user_id, stream_id) {
     }
 
     return true;
+}
+
+export function warn_if_pm_mentions_user(mention_text, full_name, user_id) {
+    if (compose_state.get_message_type() !== "private") {
+        return mention_text;
+    }
+    const recipient = compose_state.private_message_recipient();
+    const emails = util.extract_pm_recipients(recipient);
+    const to_user_ids = people.email_list_to_user_ids_string(emails);
+    if (to_user_ids === user_id.toString()) {
+        const $warning_area = $("#compose_pm_mentions_user_alert");
+        const context = {full_name, user_id};
+        const new_row = render_compose_pm_mentions_user_alert(context);
+        const mention_str = people.get_mention_syntax(full_name, user_id, false);
+        const silent_mention_str = people.get_mention_syntax(full_name, user_id, true);
+        mention_text = mention_text.replace(mention_str, silent_mention_str);
+        // also replace other mentions...
+        compose_ui.replace_syntax(mention_str, silent_mention_str);
+        $warning_area.append(new_row);
+        $warning_area.show();
+    }
+    return mention_text;
+}
+
+export function undo_warn_if_pm_mentions_user(full_name, user_id) {
+    if (compose_state.get_message_type() !== "private") {
+        return;
+    }
+    const mention_str = people.get_mention_syntax(full_name, user_id, false);
+    const silent_mention_str = people.get_mention_syntax(full_name, user_id, true);
+    compose_ui.replace_syntax(silent_mention_str, mention_str);
+    $("#compose_pm_mentions_user_alert").hide();
 }
 
 export function warn_if_private_stream_is_linked(linked_stream) {

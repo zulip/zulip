@@ -111,6 +111,7 @@ function clear_box() {
     compose_validate.clear_all_everyone_warnings();
     compose_validate.clear_announce_warnings();
     compose.clear_private_stream_alert();
+    compose.clear_pm_mentions_user_alert();
     compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
     compose_validate.set_user_acknowledged_announce_flag(undefined);
 
