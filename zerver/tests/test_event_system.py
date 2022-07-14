@@ -15,6 +15,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
+from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     HostRequestMock,
@@ -205,6 +206,14 @@ class EventsEndpointTest(ZulipTestCase):
             ).decode(),
         )
         req = HostRequestMock(post_data)
+        req.META["REMOTE_ADDR"] = "127.0.0.1"
+        with self.assertRaises(RequestVariableMissingError) as context:
+            result = self.client_post_request("/notify_tornado", req)
+        self.assertEqual(str(context.exception), "Missing 'secret' argument")
+        self.assertEqual(context.exception.http_status_code, 400)
+
+        post_data["secret"] = "random"
+        req = HostRequestMock(post_data, user_profile=None)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
         with self.assertRaises(AccessDeniedError) as context:
             result = self.client_post_request("/notify_tornado", req)

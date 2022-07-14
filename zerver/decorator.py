@@ -828,9 +828,7 @@ def is_local_addr(addr: str) -> bool:
 # of events.  We protect them from the outside world by checking a shared
 # secret, and also the originating IP (for now).
 @has_request_variables
-def authenticate_notify(
-    request: HttpRequest, secret: Optional[str] = REQ("secret", default=None)
-) -> bool:
+def authenticate_notify(request: HttpRequest, secret: str = REQ("secret")) -> bool:
     return is_local_addr(request.META["REMOTE_ADDR"]) and secret == settings.SHARED_SECRET
 
 
