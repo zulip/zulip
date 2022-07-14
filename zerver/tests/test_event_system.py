@@ -227,6 +227,14 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post_request("/notify_tornado", req)
         self.assert_json_success(result)
 
+        post_data = dict(secret=settings.SHARED_SECRET)
+        req = HostRequestMock(post_data, tornado_handler=dummy_handler)
+        req.META["REMOTE_ADDR"] = "127.0.0.1"
+        with self.assertRaises(RequestVariableMissingError) as context:
+            result = self.client_post_request("/notify_tornado", req)
+        self.assertEqual(str(context.exception), "Missing 'data' argument")
+        self.assertEqual(context.exception.http_status_code, 400)
+
 
 class GetEventsTest(ZulipTestCase):
     def tornado_call(
