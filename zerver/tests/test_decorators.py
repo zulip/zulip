@@ -1587,10 +1587,14 @@ class TestInternalNotifyView(ZulipTestCase):
         )
 
         with self.settings(SHARED_SECRET="random"):
-            self.assertFalse(authenticate_notify(request))
-            with self.assertRaises(AccessDeniedError) as context:
+            with self.assertRaises(RequestVariableMissingError) as context:
                 self.internal_notify(True, request)
-            self.assertEqual(context.exception.http_status_code, 403)
+            self.assertEqual(context.exception.http_status_code, 400)
+
+        with self.settings(SHARED_SECRET=None):
+            with self.assertRaises(RequestVariableMissingError) as context:
+                self.internal_notify(True, request)
+            self.assertEqual(context.exception.http_status_code, 400)
 
         secret = "random"
         request = HostRequestMock(
