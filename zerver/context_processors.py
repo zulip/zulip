@@ -51,7 +51,7 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
     request_notes = RequestNotes.get_notes(request)
-    if hasattr(request, "user") and hasattr(request.user, "realm"):
+    if request.user.is_authenticated:
         return request.user.realm
     if not request_notes.has_fetched_realm:
         # We cache the realm object from this function on the request data,
@@ -122,10 +122,6 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
 
     apps_page_web = settings.ROOT_DOMAIN_URI + "/accounts/go/"
 
-    user_is_authenticated = False
-    if hasattr(request, "user") and hasattr(request.user, "is_authenticated"):
-        user_is_authenticated = request.user.is_authenticated
-
     if settings.DEVELOPMENT:
         secrets_path = "zproject/dev-secrets.conf"
         settings_path = "zproject/dev_settings.py"
@@ -169,7 +165,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
-        "user_is_authenticated": user_is_authenticated,
+        "user_is_authenticated": request.user.is_authenticated,
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,

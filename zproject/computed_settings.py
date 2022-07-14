@@ -178,9 +178,9 @@ MIDDLEWARE = (
     "zerver.middleware.ZulipCommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "zerver.middleware.LocaleMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "zerver.middleware.HostDomainMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "zerver.middleware.ZulipSCIMAuthCheckMiddleware",
     # Make sure 2FA middlewares come after authentication middleware.
     "django_otp.middleware.OTPMiddleware",  # Required by two factor auth.
