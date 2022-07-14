@@ -3,12 +3,16 @@ from typing import List
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
+from django.http import HttpResponse
 
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.utils import assert_is_not_none
-from zerver.middleware import is_slow_query, write_log_line
+from zerver.middleware import LogRequests, is_slow_query, write_log_line
 from zerver.models import get_realm
+from zilencer.models import RemoteZulipServer
 
 
 class SlowQueryTest(ZulipTestCase):
@@ -231,3 +235,34 @@ class OpenGraphTest(ZulipTestCase):
 
         assert isinstance(open_graph_url, str)
         self.assertTrue(open_graph_url.endswith("/api/"))
+
+
+class LogRequestsTest(ZulipTestCase):
+    meta_data = {"REMOTE_ADDR": "127.0.0.1"}
+
+    def test_requestor_for_logs_as_user(self) -> None:
+        hamlet = self.example_user("hamlet")
+        request = HostRequestMock(user_profile=hamlet, meta_data=self.meta_data)
+        RequestNotes.get_notes(request).log_data = None
+
+        with self.assertLogs("zulip.requests", level="INFO") as m:
+            LogRequests(lambda _: HttpResponse())(request)
+            self.assertIn(hamlet.format_requestor_for_logs(), m.output[0])
+
+    def test_requestor_for_logs_as_remote_server(self) -> None:
+        remote_server = RemoteZulipServer()
+        request = HostRequestMock(user_profile=remote_server, meta_data=self.meta_data)
+        RequestNotes.get_notes(request).log_data = None
+
+        with self.assertLogs("zulip.requests", level="INFO") as m:
+            LogRequests(lambda _: HttpResponse())(request)
+            self.assertIn(remote_server.format_requestor_for_logs(), m.output[0])
+
+    def test_requestor_for_logs_unauthenticated(self) -> None:
+        request = HostRequestMock(meta_data=self.meta_data)
+        RequestNotes.get_notes(request).log_data = None
+
+        expected_requestor = "unauth@root"
+        with self.assertLogs("zulip.requests", level="INFO") as m:
+            LogRequests(lambda _: HttpResponse())(request)
+            self.assertIn(expected_requestor, m.output[0])
