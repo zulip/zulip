@@ -71,7 +71,7 @@ class zulip::common {
     'smokescreen-src' => {
       'version' => '40870920671b64102c45b164152aef83a08d4735',
       # Source code, so arch-invariant sha256
-      'sha256' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      'sha256' => '48ec3c4eac69d2cd837e6a67fadf7215a237b3dd90cdd6cce339ce729e3ef1eb',
     },
 
     # https://github.com/wal-g/wal-g/releases
@@ -89,10 +89,10 @@ class zulip::common {
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '8.5.3',
+      'version' => '9.0.3',
       'sha256' => {
-        'amd64'   => '94c723358742b7da67323eb8ede32fa51519bca4e907e387f071afd8d8a62220',
-        'aarch64' => '4f1fc74bc8be9799f8461f187d322a168b067cc5a2c40117fbf130c38bc57b5e',
+        'amd64'   => '9765d30b43b121e503e2c8cce30f56b13f6ce5a9068d6a459a7667988fef4840',
+        'aarch64' => 'd9dbe7727b2e6a8f0fbac9fbb2bcd8c84dc2f221663e1d819b2e7ed796f28418',
       },
     },
 
@@ -116,19 +116,19 @@ class zulip::common {
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.35.0',
+      'version' => '2.37.0',
       'sha256' => {
-        'amd64'   => 'e4546960688d1c85530ec3a93e109d15b540f3251e1f4736d0d9735e1e857faf',
-        'aarch64' => '3ebe0c533583a9ab03363a80aa629edd8e0cc42da3583e33958eb7abe74d4cd2',
+        'amd64'   => 'ca70f5a261fd545da0b9893c42a73547a94ebd5111ef2b6b9f8742c5dbb73522',
+        'aarch64' => '024cc048131098d408c8c3588237c42de4a13d9030b352f0a0d7f4a734fda102',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.37.0',
+      'version' => '1.43.0',
       'sha256' => {
-        'amd64'   => 'c4d0554a378151eab3372235c40d3a9c8c40fd6f40d91d768830985df8a44744',
-        'aarch64' => '742047d938192894979c8370830891bb0fea3262b762e6c51c849a8e47ddfb7e',
+        'amd64'   => '4d0d49b00ca414f667b0f347f2c231db743a952b6e596fab50fd863201d7c815',
+        'aarch64' => '11c3b545a4f934799c5ed24f98fa486f490aa23ecd9735edf95ebf58ceb56273',
       },
     },
 
