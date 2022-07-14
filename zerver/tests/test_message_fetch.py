@@ -1396,6 +1396,22 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids["public_streams_recipents"] = ", ".join(str(r) for r in recipients)
         return query_ids
 
+    def check_unauthenticated_response(
+        self, result: "TestHttpResponse", www_authenticate: str = 'Session realm="zulip"'
+    ) -> None:
+        """
+        In `JsonErrorHandler`, we convert `MissingAuthenticationError` into responses with `WWW-Authenticate`
+        set depending on which endpoint encounters the error.
+
+        This verifies the status code as well as the value of the set header.
+        `www_authenticate` should be `Basic realm="zulip"` for paths starting with "/api", and
+        `Session realm="zulip"` otherwise.
+        """
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", status_code=401
+        )
+        self.assertEqual(result["WWW-Authenticate"], www_authenticate)
+
     def test_content_types(self) -> None:
         """
         Test old `/json/messages` returns reactions.
@@ -1487,9 +1503,12 @@ class GetOldMessagesTest(ZulipTestCase):
             "num_after": 1,
         }
         result = self.client_get("/json/messages", dict(get_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.check_unauthenticated_response(result)
+
+        # Paths starting with /api/v1 should receive a response that asks
+        # for basic auth.
+        result = self.client_get("/api/v1/messages", dict(get_params))
+        self.check_unauthenticated_response(result, www_authenticate='Basic realm="zulip"')
 
         # Successful access to web-public stream messages.
         web_public_stream_get_params: Dict[str, Union[int, str, bool]] = {
@@ -1511,9 +1530,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": orjson.dumps([dict(operator="is", operand="private")]).decode(),
         }
         result = self.client_get("/json/messages", dict(private_message_get_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.check_unauthenticated_response(result)
 
         # narrow should pass conditions in `is_spectator_compatible`.
         non_spectator_compatible_narrow_get_params: Dict[str, Union[int, str, bool]] = {
@@ -1527,18 +1544,14 @@ class GetOldMessagesTest(ZulipTestCase):
             ).decode(),
         }
         result = self.client_get("/json/messages", dict(non_spectator_compatible_narrow_get_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.check_unauthenticated_response(result)
 
         # Spectator login disabled in Realm.
         do_set_realm_property(
             get_realm("zulip"), "enable_spectator_access", False, acting_user=None
         )
         result = self.client_get("/json/messages", dict(web_public_stream_get_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.check_unauthenticated_response(result)
         do_set_realm_property(get_realm("zulip"), "enable_spectator_access", True, acting_user=None)
         # Verify works after enabling `realm.enable_spectator_access` again.
         result = self.client_get("/json/messages", dict(web_public_stream_get_params))
@@ -1550,9 +1563,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": orjson.dumps([dict(operator="stream", operand="Rome")]).decode(),
         }
         result = self.client_get("/json/messages", dict(non_web_public_stream_get_params))
-        self.assert_json_error(
-            result, "Not logged in: API authentication or user session required", status_code=401
-        )
+        self.check_unauthenticated_response(result)
 
         # Verify that same request would work with `streams:web-public` added.
         rome_web_public_get_params: Dict[str, Union[int, str, bool]] = {
