@@ -2,8 +2,8 @@
     <form class="form-horizontal name-setting">
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
-            <label for="full_name">{{t "Full name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+            <label for="edit_user_full_name">{{t "Full name" }}</label>
+            <input type="text" autocomplete="off" name="full_name" id="edit_user_full_name" value="{{ full_name }}" />
         </div>
         {{#if email}}
         <div class="input-group email_change_container">
