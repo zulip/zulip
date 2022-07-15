@@ -209,6 +209,8 @@ function initialize_compose_box() {
                 : "End",
             narrow_to_compose_recipients_key_html:
                 (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .",
+            max_stream_name_length: page_params.max_stream_name_length,
+            max_topic_length: page_params.max_topic_length,
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
