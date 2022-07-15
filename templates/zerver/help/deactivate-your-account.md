@@ -37,5 +37,7 @@
 
 ## Related articles
 
-You may also be interested in
-[deactivating an organization](/help/deactivate-your-organization).
+* [Logging in](logging-in)
+* [Logging out](logging-out)
+* [Switching between organizations](switching-between-organizations)
+* [Deactivate your organization](/help/deactivate-your-organization)
