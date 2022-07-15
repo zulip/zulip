@@ -12,15 +12,10 @@ just switch tabs.
 
 {tab|desktop}
 
-1. Open the **left sidebar** (`Ctrl` + `Shift` + `s`).
+1. Click on a logo in the **organizations sidebar** on the left, or choose
+an organization from the **Window** menu in the top menu bar.
 
-1. Click on your organization's profile picture.
-
-!!! warn ""
-
-    You can ask your organization administrator to
-    [set an organization profile picture](/help/create-your-organization-profile)
-    if they haven't already.
+{!desktop-toggle-sidebar-tip.md!}
 
 {tab|mobile}
 
@@ -31,3 +26,10 @@ just switch tabs.
 1. Tap on the desired Zulip organization.
 
 {end_tabs}
+
+## Related articles
+
+* [Logging in](logging-in)
+* [Logging out](logging-out)
+* [Deactivate your account](deactivate-your-account)
+* [Create your organization profile](create-your-organization-profile)

@@ -13,28 +13,32 @@ how you signed up. E.g. if you originally signed up using your Google
 account, you can later log in using GitHub, as long as your Google account
 and GitHub account use the same email address.
 
-### Log in to a Zulip organization for the first time
+## Log in to a Zulip organization for the first time
 
 {start_tabs}
 
 {tab|web}
 
-1. Go to your organization's **Zulip URL**.
+1. Go to the Zulip URL of the organization.
 
 1. Follow the on-screen instructions.
 
 {tab|desktop}
 
-1. Open the **left sidebar** (`Ctrl` + `Shift` + `s`).
+!!! warn ""
+    If you are having trouble connecting, you may need to set your
+    [proxy settings](/help/connect-through-a-proxy) or add a
+    [custom certificate](/help/custom-certificates).
 
-1. Set your [proxy settings](/help/connect-through-a-proxy) or add a
-   [custom certificate](/help/custom-certificates) if needed (rare).
+1. Click the **plus** (<i class="fa fa-plus"></i>) icon in the
+**organizations sidebar** on the left. You can also select **Add Organization**
+from the **Zulip** menu in the top menu bar.
 
-1. Click the **plus** (+) icon.
-
-1. Enter your Zulip URL, and click **Connect**.
+1. Enter the Zulip URL of the organization, and click **Connect**.
 
 1. Follow the on-screen instructions.
+
+{!desktop-toggle-sidebar-tip.md!}
 
 {tab|mobile}
 
@@ -44,7 +48,7 @@ and GitHub account use the same email address.
 
 1. Tap **Add new account**.
 
-1. Enter your Zulip URL, and tap **Enter**.
+1. Enter the Zulip URL of the organization, and tap **Enter**.
 
 1. Follow the on-screen instructions.
 
@@ -80,3 +84,9 @@ in via email/password, you can
 You can [reset your password](/help/change-your-password). This requires
 access to the email address you currently have on file. We recommend
 [keeping your email address up to date](change-your-email-address).
+
+## Related articles
+
+* [Logging out](logging-out)
+* [Switching between organizations](switching-between-organizations)
+* [Deactivate your account](deactivate-your-account)
