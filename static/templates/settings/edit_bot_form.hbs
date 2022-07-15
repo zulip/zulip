@@ -1,8 +1,8 @@
 <div id="bot-edit-form" data-user-id="{{user_id}}">
     <form class="new-style edit_bot_form form-horizontal name-setting">
         <div class="input-group name_change_container">
-            <label for="full_name">{{t "Full name" }}</label>
-            <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
+            <label for="edit_bot_full_name">{{t "Full name" }}</label>
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" value="{{ full_name }}" />
         </div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group email_change_container">
