@@ -12,11 +12,8 @@ auth_service:
     second_factor: on
     u2f:
       app_id: https://teleport.zulipchat.net
-      facets:
-        - https://teleport.zulipchat.net:443
-        - https://teleport.zulipchat.net
-        - teleport.zulipchat.net:443
-        - teleport.zulipchat.net
+    webauthn:
+      rp_id: teleport.zulipchat.net
 
 proxy_service:
   enabled: "yes"
