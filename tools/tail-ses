@@ -11,7 +11,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 import argparse
 import secrets
 from contextlib import contextmanager
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Tuple, TypedDict
 
 import boto3
 import orjson
@@ -20,6 +20,11 @@ from mypy_boto3_ses import SESClient
 from mypy_boto3_sns import SNSClient
 from mypy_boto3_sqs import SQSClient
 from mypy_boto3_sqs.type_defs import DeleteMessageBatchRequestEntryTypeDef
+
+
+class IdentityArgsDict(TypedDict, total=False):
+    default: str
+    required: bool
 
 
 def main() -> None:
@@ -35,7 +40,7 @@ def main() -> None:
     for identity_resp in identity_paginator.paginate():
         possible_identities += identity_resp["Identities"]
 
-    identity_args = {}
+    identity_args: IdentityArgsDict = {}
     if from_host in possible_identities:
         identity_args["default"] = from_host
     elif from_address in possible_identities:
