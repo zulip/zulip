@@ -28,9 +28,7 @@ for the details on when topic editing is allowed.
 
 1. Set the destination topic.
 
-1. From the dropdown menu, select which messages to move:
-
-{!move-content-subset-options.md!}
+1. From the dropdown menu, select which messages to move.
 
 1. Click **Save**.
 

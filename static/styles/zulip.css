@@ -1529,7 +1529,7 @@ div.focused_table {
 
 .message_edit_topic_propagate {
     display: inline-block;
-    width: 300px;
+    width: 320px;
     margin-bottom: 15px !important;
     max-width: 100%;
 }
