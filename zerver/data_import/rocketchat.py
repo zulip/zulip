@@ -765,6 +765,13 @@ def map_upload_id_to_upload_data(
         upload_id_to_upload_data_map[upload["_id"]] = {**upload, "chunk": []}
 
     for chunk in upload_data["chunk"]:
+        if chunk["files_id"] not in upload_id_to_upload_data_map:  # nocoverage
+            logging.info("Skipping chunk %s without metadata", chunk["files_id"])
+            # It's unclear why this apparent data corruption in the
+            # Rocket.Chat database is possible, but empirically, some
+            # chunks don't have any associated metadata.
+            continue
+
         upload_id_to_upload_data_map[chunk["files_id"]]["chunk"].append(chunk["data"])
 
     return upload_id_to_upload_data_map
