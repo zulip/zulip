@@ -710,7 +710,11 @@ export function toggle_resolve_topic(message_id, old_topic_name) {
 }
 
 export function start_inline_topic_edit($recipient_row) {
-    const $form = $(render_topic_edit_form());
+    const $form = $(
+        render_topic_edit_form({
+            max_topic_length: page_params.max_topic_length,
+        }),
+    );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
     $form.on("keydown", handle_inline_topic_edit_keydown);
     $(".topic_edit_spinner").hide();
