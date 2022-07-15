@@ -161,11 +161,12 @@ def handle_payment_intent_succeeded_event(
 
 @error_handler
 def handle_payment_intent_payment_failed_event(
-    stripe_payment_intent: stripe.PaymentIntent, payment_intent: Event
+    stripe_payment_intent: stripe.PaymentIntent, payment_intent: PaymentIntent
 ) -> None:
     payment_intent.status = PaymentIntent.get_status_integer_from_status_text(
         stripe_payment_intent.status
     )
+    assert payment_intent.customer.realm is not None
     billing_logger.info(
         "Stripe payment intent failed: %s %s %s %s",
         payment_intent.customer.realm.string_id,
