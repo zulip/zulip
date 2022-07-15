@@ -115,9 +115,14 @@ def update_user_activity(
 
 
 # Based on django.views.decorators.http.require_http_methods
-def require_post(func: ViewFuncT) -> ViewFuncT:
+def require_post(
+    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    # Arguments before ParamT needs to be positional-only as required by Concatenate
     @wraps(func)
-    def wrapper(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def wrapper(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         if request.method != "POST":
             err_method = request.method
             logging.warning(
@@ -134,7 +139,7 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
                 )
         return func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
 def require_realm_owner(func: ViewFuncT) -> ViewFuncT:
@@ -482,13 +487,17 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
         do_two_factor_login(request, user_profile)
 
 
-def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
+def log_view_func(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         RequestNotes.get_notes(request).query = view_func.__name__
         return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def add_logging_data(
@@ -504,15 +513,19 @@ def add_logging_data(
     return _wrapped_view_func
 
 
-def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
+def human_users_only(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         assert request.user.is_authenticated
         if request.user.is_bot:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 @overload
@@ -565,10 +578,10 @@ def zulip_login_required(
 
 
 def web_public_view(
-    view_func: ViewFuncT,
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> ViewFuncT:
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     """
     This wrapper adds client info for unauthenticated users but
     forces authenticated users to go through 2fa.
@@ -580,16 +593,20 @@ def web_public_view(
     return actual_decorator(view_func)
 
 
-def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
+def require_server_admin(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @zulip_login_required
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
         return add_logging_data(view_func)(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def require_server_admin_api(
@@ -750,9 +767,13 @@ def authenticated_rest_api_view(
     return _wrapped_view_func
 
 
-def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
+def process_as_post(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         # Adapted from django/http/__init__.py.
         # So by default Django doesn't populate request.POST for anything besides
         # POST requests. We want this dict populated for PATCH/PUT, so we have to
@@ -789,7 +810,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
 
         return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def authenticate_log_and_execute_json(
@@ -872,19 +893,22 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
 
 def internal_notify_view(
     is_tornado_view: bool,
-) -> Callable[[ViewFuncT], Callable[..., HttpResponse]]:
-    # The typing here could be improved by using the extended Callable types:
-    # https://mypy.readthedocs.io/en/stable/additional_features.html#extended-callable-types
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
 
-    def _wrapped_view_func(view_func: ViewFuncT) -> Callable[..., HttpResponse]:
+    def _wrapped_view_func(
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @csrf_exempt
         @require_post
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, *args: object, **kwargs: object
+            request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
             if not authenticate_notify(request):
                 raise AccessDeniedError()
@@ -1038,14 +1062,18 @@ def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
     return wrapper
 
 
-def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
+def return_success_on_head_request(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         if request.method == "HEAD":
             return json_success(request)
         return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def zulip_otp_required_if_logged_in(
@@ -1108,9 +1136,13 @@ def add_google_analytics_context(context: Dict[str, object]) -> None:
         page_params["google_analytics_id"] = settings.GOOGLE_ANALYTICS_ID
 
 
-def add_google_analytics(view_func: ViewFuncT) -> ViewFuncT:
+def add_google_analytics(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         response = view_func(request, *args, **kwargs)
         if isinstance(response, SimpleTemplateResponse):
             if response.context_data is None:
@@ -1120,4 +1152,4 @@ def add_google_analytics(view_func: ViewFuncT) -> ViewFuncT:
             raise TypeError("add_google_analytics requires a TemplateResponse")
         return response
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
