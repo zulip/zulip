@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.test import Client, override_settings
 from django.urls import reverse
@@ -3331,6 +3332,42 @@ class RealmCreationTest(ZulipTestCase):
             self.check_able_to_create_realm(
                 "newuser_email@zulip.com", self.ldap_password("newuser_with_email")
             )
+
+    @override_settings(OPEN_REALM_CREATION=True)
+    def test_create_realm_race(self) -> None:
+        email = self.nonreg_email("newguy")
+        password = "test"
+
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
+        signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
+
+        string_id = "zulipracetest"
+        # Make sure the realm does not exist
+        with self.assertRaises(Realm.DoesNotExist):
+            get_realm(string_id)
+
+        # Create new realm with the email
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Check confirmation email has the correct subject and body, extract
+        # confirmation link and visit it
+        confirmation_url = self.get_confirmation_url_from_outbox(
+            email,
+            email_subject_contains="Create your Zulip organization",
+            email_body_contains="You have requested a new Zulip organization",
+        )
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with patch("zerver.views.registration.do_create_realm", side_effect=IntegrityError):
+            result = self.submit_reg_form_for_user(email, password, realm_subdomain=string_id)
+            self.assertEqual(result.status_code, 400)
+            self.assert_in_response("Organization already exists", result)
 
     def test_create_realm_as_system_bot(self) -> None:
         result = self.client_post("/new/", {"email": "notification-bot@zulip.com"})
