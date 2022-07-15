@@ -720,3 +720,51 @@ div.overlay {
         white-space: nowrap;
     }
 }
+
+/* We'll want to do a follow-up project to replace this table CSS with
+   inlining it into table-striped (or something), so that we're not longer
+   resetting the CSS for tables.
+*/
+table {
+    max-width: 100%;
+    background-color: transparent;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.table th,
+.table td {
+    padding: 8px;
+    line-height: 20px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid hsl(0, 0%, 87%);
+}
+
+.table th {
+    font-weight: bold;
+}
+
+.table thead th {
+    vertical-align: bottom;
+}
+
+.table thead:first-child tr:first-child th,
+.table thead:first-child tr:first-child td {
+    border-top: 0;
+}
+
+.table-condensed th,
+.table-condensed td {
+    padding: 4px 5px;
+}
+
+.table-striped tbody > tr:nth-child(odd) > td,
+.table-striped tbody > tr:nth-child(odd) > th {
+    background-color: hsl(0, 0%, 98%);
+}

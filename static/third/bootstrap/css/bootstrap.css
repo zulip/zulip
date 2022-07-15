@@ -438,43 +438,11 @@ a.label:focus {
   position: relative;
   top: -1px;
 }
-table {
-  max-width: 100%;
-  background-color: transparent;
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-.table {
-  width: 100%;
-  margin-bottom: 20px;
-}
-.table th,
-.table td {
-  padding: 8px;
-  line-height: 20px;
-  text-align: left;
-  vertical-align: top;
-  border-top: 1px solid #dddddd;
-}
-.table th {
-  font-weight: bold;
-}
-.table thead th {
-  vertical-align: bottom;
-}
-.table thead:first-child tr:first-child th,
-.table thead:first-child tr:first-child td {
-  border-top: 0;
-}
 .table tbody + tbody {
   border-top: 2px solid #dddddd;
 }
 .table .table {
   background-color: #ffffff;
-}
-.table-condensed th,
-.table-condensed td {
-  padding: 4px 5px;
 }
 .table-bordered {
   border: 1px solid #dddddd;
@@ -535,10 +503,6 @@ table {
   -webkit-border-bottom-right-radius: 0;
   -moz-border-radius-bottomright: 0;
   border-bottom-right-radius: 0;
-}
-.table-striped tbody > tr:nth-child(odd) > td,
-.table-striped tbody > tr:nth-child(odd) > th {
-  background-color: #f9f9f9;
 }
 .table tbody tr.success > td {
   background-color: #dff0d8;
