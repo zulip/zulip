@@ -413,9 +413,15 @@ class PlansPageTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm.plan_type = Realm.PLAN_TYPE_STANDARD_FREE
         realm.save(update_fields=["plan_type"])
-        result = self.client_get("/plans/", subdomain="zulip")
-        self.assertEqual(result.status_code, 302)
-        self.assertEqual(result["Location"], "/accounts/login/?next=/plans")
+
+        with self.settings(PRODUCTION=True):
+            result = self.client_get("/plans/", subdomain="zulip")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/accounts/login/?next=/plans")
+
+        with self.settings(DEVELOPMENT=True):
+            result = self.client_get("/plans/", subdomain="zulip")
+            self.assert_in_success_response(["Log in"], result)
 
         guest_user = "polonius"
         self.login(guest_user)
