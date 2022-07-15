@@ -57,9 +57,7 @@ destination streams.
 
 1. Toggle whether automated notification messages should be sent.
 
-1. From the dropdown menu, select which messages to move:
-
-{!move-content-subset-options.md!}
+1. From the dropdown menu, select which messages to move.
 
 1. Click **Save**.
 
