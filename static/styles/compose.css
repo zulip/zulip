@@ -135,23 +135,33 @@
 
     #private-message .to_text {
         vertical-align: middle;
-
         font-weight: 600;
     }
 
-    #compose-lock-icon,
-    #compose-globe-icon {
-        position: relative;
-        left: 6px;
-        top: 0.5px;
-        width: 0;
-    }
+    #stream-message {
+        .compose-lock-icon,
+        .compose-globe-icon,
+        .hashtag {
+            position: relative;
+            left: 6px;
+            top: 0.5px;
+            width: 0;
+        }
 
-    #compose-globe-icon {
-        left: 4.5px;
+        .compose-globe-icon {
+            left: 4.5px;
 
-        .zulip-icon-globe {
-            font-size: 12px;
+            .zulip-icon-globe {
+                font-size: 12px;
+            }
+        }
+
+        .hashtag {
+            &:empty {
+                &::after {
+                    font-size: 17px;
+                }
+            }
         }
     }
 
@@ -378,6 +388,24 @@ div[id^="message-edit-send-status"],
 .compose-notifications-content {
     padding: 4px 22px;
     text-align: center;
+
+    .compose_notification_narrow_by_topic {
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .compose-lock-icon,
+    .compose-globe-icon,
+    .hashtag {
+        vertical-align: baseline;
+        line-height: 17px;
+        margin-left: 2px;
+    }
+
+    .hashtag {
+        vertical-align: middle;
+    }
 }
 
 .composition-area {
