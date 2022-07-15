@@ -20,6 +20,20 @@
 <div class="portico-landing plans">
     <div class="main">
         {% include "zerver/pricing_model.html" %}
+        <div class="plans_top_faq plans_faq_questions">
+            <p>
+                You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
+                    freely</a> between <a href="/plans/">Zulip Cloud</a>
+                hosting and your own servers with our high quality <a
+                    href="/help/export-your-organization">export</a> and
+                <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
+                </a> tools.
+            </p>
+            <p>
+                Questions? See our <a href="/help/zulip-cloud-billing">billing help page</a> for
+                additional details, or contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+            </p>
+        </div>
     </div>
 
     <div class="discounts-section">
@@ -33,26 +47,15 @@
             <a href="/for/events" class="register-now button">Academic conferences<p>Free</p></a>
             <a href="/for/communities" class="register-now button">Non-profits and communities <p>85%+ OFF</p></a>
         </div>
+    </div>
+    <div class="plans_faq_questions">
         <p>
             Zulip sponsors free Zulip Cloud Standard for hundreds of worthy
             organizations. Request sponsorship from your organization's
             <a href="{{ sponsorship_url }}">billing page</a>.
         </p>
-        <p>
-            You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
-                freely</a> between <a href="/plans/">Zulip Cloud</a>
-            hosting and your own servers with our high quality <a
-                href="/help/export-your-organization">export</a> and
-            <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
-            </a> tools.
-        </p>
-        <p>
-            Questions? See our <a href="/help/zulip-cloud-billing">billing help page</a> for
-            additional details, or contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
-        </p>
-        <br />
     </div>
-
+    <br />
     {% include "zerver/compare.html" %}
 </div>
 {% endblock %}

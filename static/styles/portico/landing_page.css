@@ -2689,6 +2689,41 @@ nav {
     top: 6px;
 }
 
+.plans_faq_questions {
+    background: transparent;
+    padding: 20px 0;
+    margin: auto;
+
+    &.plans_top_faq {
+        font-size: 17px;
+        font-weight: 400;
+        color: hsl(0, 0%, 53%);
+        padding-top: 0;
+
+        p {
+            padding: 10px;
+        }
+
+        p:first-child {
+            margin-top: -20px;
+        }
+
+        p:last-child {
+            margin-bottom: 30px;
+        }
+    }
+
+    p {
+        width: 80%;
+        margin: auto;
+        text-align: center;
+
+        @media (width <= 1100px) {
+            text-align: left;
+        }
+    }
+}
+
 .text-content .pricing-details {
     padding: 15px 0;
     height: 25px;
