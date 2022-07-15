@@ -35,7 +35,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_otp import user_has_device
 from two_factor.utils import default_device
-from typing_extensions import ParamSpec
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import (
@@ -568,17 +568,22 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
 
-def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
+def require_server_admin_api(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @zulip_login_required
     @wraps(view_func)
     def _wrapped_view_func(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not user_profile.is_staff:
+        if not request.user.is_staff:
             raise JsonableError(_("Must be an server administrator"))
-        return view_func(request, user_profile, *args, **kwargs)
+        return view_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
