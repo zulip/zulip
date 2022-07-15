@@ -9,7 +9,6 @@ from typing import (
     Collection,
     Dict,
     List,
-    Literal,
     Optional,
     Sequence,
     Set,
@@ -27,7 +26,6 @@ from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from typing_extensions import TypeGuard
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.lib.addressee import Addressee
@@ -171,22 +169,14 @@ class RecipientInfoResult(TypedDict):
     all_bot_user_ids: Set[int]
 
 
-class BaseActiveUserDict(TypedDict):
+class ActiveUserDict(TypedDict):
     id: int
     enable_online_push_notifications: bool
     enable_offline_email_notifications: bool
     enable_offline_push_notifications: bool
     long_term_idle: bool
-
-
-class ActiveUserDict(BaseActiveUserDict):
     is_bot: bool
     bot_type: Optional[int]
-
-
-class ActiveBotUserDict(BaseActiveUserDict):
-    is_bot: Literal[True]
-    bot_type: int
 
 
 def get_recipient_info(
@@ -343,9 +333,6 @@ def get_recipient_info(
         """Only includes users on the explicit message to line"""
         return {row["id"] for row in rows if f(row)} & message_to_user_id_set
 
-    def is_service_bot(row: ActiveUserDict) -> TypeGuard[ActiveBotUserDict]:
-        return row["is_bot"] and (row["bot_type"] in UserProfile.SERVICE_BOT_TYPES)
-
     active_user_ids = get_ids_for(lambda r: True)
     online_push_user_ids = get_ids_for(
         lambda r: r["enable_online_push_notifications"],
@@ -363,7 +350,7 @@ def get_recipient_info(
 
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
-        lambda r: not is_service_bot(r),
+        lambda r: not r["is_bot"] or r["bot_type"] not in UserProfile.SERVICE_BOT_TYPES,
     )
 
     long_term_idle_user_ids = get_ids_for(
@@ -384,7 +371,11 @@ def get_recipient_info(
         row["id"] for row in rows if row["is_bot"] and row["bot_type"] == UserProfile.DEFAULT_BOT
     }
 
-    service_bot_tuples = [(row["id"], row["bot_type"]) for row in rows if is_service_bot(row)]
+    service_bot_tuples = [
+        (row["id"], row["bot_type"])
+        for row in rows
+        if row["is_bot"] and row["bot_type"] in UserProfile.SERVICE_BOT_TYPES
+    ]
 
     # We also need the user IDs of all bots, to avoid trying to send push/email
     # notifications to them. This set will be directly sent to the event queue code
