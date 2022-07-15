@@ -424,21 +424,28 @@ def user_passes_test(
     test_func: Callable[[HttpRequest], bool],
     login_url: Optional[str] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
-) -> Callable[[ViewFuncT], ViewFuncT]:
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
     that takes the user object and returns True if the user passes.
     """
 
-    def decorator(view_func: ViewFuncT) -> ViewFuncT:
+    def decorator(
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+    ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @wraps(view_func)
-        def _wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+        def _wrapped_view(
+            request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+        ) -> HttpResponse:
             if test_func(request):
                 return view_func(request, *args, **kwargs)
             return zulip_redirect_to_login(request, login_url, redirect_field_name)
 
-        return cast(ViewFuncT, _wrapped_view)  # https://github.com/python/mypy/issues/1927
+        return _wrapped_view
 
     return decorator
 
@@ -480,13 +487,17 @@ def log_view_func(view_func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
 
 
-def add_logging_data(view_func: ViewFuncT) -> ViewFuncT:
+def add_logging_data(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         process_client(request, request.user, is_browser_view=True, query=view_func.__name__)
         return rate_limit()(view_func)(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
@@ -502,10 +513,10 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
 
 @overload
 def zulip_login_required(
-    function: ViewFuncT,
+    function: Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> ViewFuncT:
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     ...
 
 
@@ -514,16 +525,25 @@ def zulip_login_required(
     function: None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Callable[[ViewFuncT], ViewFuncT]:
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
     ...
 
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(
-    function: Optional[ViewFuncT] = None,
+    function: Optional[Callable[Concatenate[HttpRequest, ParamT], HttpResponse]] = None,
     redirect_field_name: str = REDIRECT_FIELD_NAME,
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
+) -> Union[
+    Callable[
+        [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
+        Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+    ],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
     actual_decorator = lambda function: user_passes_test(
         logged_in_and_active,
         login_url=login_url,
@@ -1028,7 +1048,10 @@ def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
 def zulip_otp_required_if_logged_in(
     redirect_field_name: str = "next",
     login_url: str = settings.HOME_NOT_LOGGED_IN,
-) -> Callable[[ViewFuncT], ViewFuncT]:
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
     """
     The reason we need to create this function is that the stock
     otp_required decorator doesn't play well with tests. We cannot
