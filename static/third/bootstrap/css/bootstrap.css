@@ -438,34 +438,6 @@ a.label:focus {
   position: relative;
   top: -1px;
 }
-.table tbody + tbody {
-  border-top: 2px solid #dddddd;
-}
-.table .table {
-  background-color: #ffffff;
-}
-.table-bordered tfoot + tbody:last-child tr:last-child td:first-child {
-  -webkit-border-bottom-left-radius: 0;
-  -moz-border-radius-bottomleft: 0;
-  border-bottom-left-radius: 0;
-}
-.table-bordered tfoot + tbody:last-child tr:last-child td:last-child {
-  -webkit-border-bottom-right-radius: 0;
-  -moz-border-radius-bottomright: 0;
-  border-bottom-right-radius: 0;
-}
-.table tbody tr.success > td {
-  background-color: #dff0d8;
-}
-.table tbody tr.error > td {
-  background-color: #f2dede;
-}
-.table tbody tr.warning > td {
-  background-color: #fcf8e3;
-}
-.table tbody tr.info > td {
-  background-color: #d9edf7;
-}
 form {
   margin: 0 0 20px;
 }
