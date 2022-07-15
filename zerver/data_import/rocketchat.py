@@ -666,8 +666,17 @@ def process_messages(
             if mention_id in ["all", "here"]:
                 wildcard_mention = True
                 continue
-            user_id = user_id_mapper.get(mention_id)
-            mention_user_ids.add(user_id)
+            if user_id_mapper.has(mention_id):
+                user_id = user_id_mapper.get(mention_id)
+                mention_user_ids.add(user_id)
+            else:  # nocoverage
+                logging.info(
+                    "Message %s contains mention of unknown user %s: %s",
+                    message["_id"],
+                    mention_id,
+                    mention,
+                )
+
         message_dict["mention_user_ids"] = mention_user_ids
         message_dict["wildcard_mention"] = wildcard_mention
 
