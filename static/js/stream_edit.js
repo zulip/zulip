@@ -498,6 +498,7 @@ export function initialize() {
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
             is_stream_edit: true,
+            max_stream_description_length: page_params.max_stream_description_length,
         };
         const change_privacy_modal = render_stream_types(template_data);
 
