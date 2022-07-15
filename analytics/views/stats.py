@@ -124,7 +124,7 @@ def stats_for_remote_realm(
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_realm(
-    request: HttpRequest, user_profile: UserProfile, realm_str: str, **kwargs: Any
+    request: HttpRequest, /, user_profile: UserProfile, realm_str: str, **kwargs: Any
 ) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
@@ -138,6 +138,7 @@ def get_chart_data_for_realm(
 @has_request_variables
 def get_chart_data_for_remote_realm(
     request: HttpRequest,
+    /,
     user_profile: UserProfile,
     remote_server_id: int,
     remote_realm_id: int,
@@ -176,7 +177,7 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
 @require_server_admin_api
 @has_request_variables
 def get_chart_data_for_installation(
-    request: HttpRequest, user_profile: UserProfile, chart_name: str = REQ(), **kwargs: Any
+    request: HttpRequest, /, user_profile: UserProfile, chart_name: str = REQ(), **kwargs: Any
 ) -> HttpResponse:
     return get_chart_data(
         request=request, user_profile=user_profile, for_installation=True, **kwargs
@@ -187,6 +188,7 @@ def get_chart_data_for_installation(
 @has_request_variables
 def get_chart_data_for_remote_installation(
     request: HttpRequest,
+    /,
     user_profile: UserProfile,
     remote_server_id: int,
     chart_name: str = REQ(),
