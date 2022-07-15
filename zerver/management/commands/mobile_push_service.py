@@ -1,6 +1,7 @@
+import base64
 import subprocess
 from argparse import ArgumentParser
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 from django.conf import settings
@@ -21,6 +22,16 @@ class Command(ZulipBaseCommand):
     help = """Register a remote Zulip server for push notifications."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument(
+            "--register",
+            action="store_true",
+            help="Register your server for the Mobile Push Notification Service.",
+        )
+        parser.add_argument(
+            "--deactivate",
+            action="store_true",
+            help="Deactivate your server's Mobile Push Notification Service registration.",
+        )
         parser.add_argument(
             "--agree_to_terms_of_service",
             action="store_true",
@@ -55,18 +66,51 @@ class Command(ZulipBaseCommand):
                     "in /etc/zulip/settings.py (remove the '#')"
                 )
 
+        if options["register"]:
+            self._handle_register_subcommand(*args, **options)
+        elif options["rotate_key"]:
+            self._handle_rotate_key_subcommand(*args, **options)
+        elif options["deactivate"]:
+            self._handle_deactivate_subcommand(*args, **options)
+
+    def _handle_rotate_key_subcommand(self, *args: Any, **options: Any) -> None:
+        request = {
+            "zulip_org_id": settings.ZULIP_ORG_ID,
+            "zulip_org_key": settings.ZULIP_ORG_KEY,
+            "hostname": settings.EXTERNAL_HOST,
+            "contact_email": settings.ZULIP_ADMINISTRATOR,
+            "new_org_key": get_random_string(64),
+        }
+        self._log_params(request)
+
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/register", request
+        )
+
+        assert response.json()["result"] == "success"
+        print(f"Success! Updating {SECRETS_FILENAME} with the new key...")
+        subprocess.check_call(
+            [
+                "crudini",
+                "--set",
+                SECRETS_FILENAME,
+                "secrets",
+                "zulip_org_key",
+                request["new_org_key"],
+            ]
+        )
+        print("Mobile Push Notification Service registration successfully updated!")
+
+    def _handle_register_subcommand(self, *args: Any, **options: Any) -> None:
         request = {
             "zulip_org_id": settings.ZULIP_ORG_ID,
             "zulip_org_key": settings.ZULIP_ORG_KEY,
             "hostname": settings.EXTERNAL_HOST,
             "contact_email": settings.ZULIP_ADMINISTRATOR,
         }
-        if options["rotate_key"]:
-            request["new_org_key"] = get_random_string(64)
-
         self._log_params(request)
 
-        if not options["agree_to_terms_of_service"] and not options["rotate_key"]:
+        if not options["agree_to_terms_of_service"]:
             print(
                 "To register, you must agree to the Zulipchat Terms of Service: "
                 "https://zulip.com/terms/"
@@ -82,6 +126,7 @@ class Command(ZulipBaseCommand):
             "/api/v1/remotes/server/register", request
         )
 
+        assert response.json()["result"] == "success"
         if response.json()["created"]:
             print(
                 "You've successfully registered for the Mobile Push Notification Service!\n"
@@ -92,25 +137,29 @@ class Command(ZulipBaseCommand):
             )
             print("- Return to the documentation to learn how to test push notifications")
         else:
-            if options["rotate_key"]:
-                print(f"Success! Updating {SECRETS_FILENAME} with the new key...")
-                subprocess.check_call(
-                    [
-                        "crudini",
-                        "--set",
-                        SECRETS_FILENAME,
-                        "secrets",
-                        "zulip_org_key",
-                        request["new_org_key"],
-                    ]
-                )
             print("Mobile Push Notification Service registration successfully updated!")
 
-    def _request_push_notification_bouncer_url(self, url: str, params: Dict[str, Any]) -> Response:
+    def _handle_deactivate_subcommand(self, *args: Any, **options: Any) -> None:
+        credentials = "{}:{}".format(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
+        basic_auth = "Basic " + base64.b64encode(credentials.encode()).decode()
+
+        response = self._request_push_notification_bouncer_url(
+            "/api/v1/remotes/server/deactivate", headers={"authorization": basic_auth}
+        )
+
+        assert response.json()["result"] == "success"
+        print("Mobile Push Notification Service registration successfully deactivated!")
+
+    def _request_push_notification_bouncer_url(
+        self,
+        url: str,
+        params: Optional[Dict[str, Any]] = {},
+        headers: Optional[Dict[str, Any]] = {},
+    ) -> Response:
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + url
         session = PushBouncerSession()
         try:
-            response = session.post(registration_url, params=params)
+            response = session.post(registration_url, params=params, headers=headers)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
