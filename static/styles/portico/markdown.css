@@ -429,9 +429,10 @@
         width: 100%;
         margin-bottom: 20px;
         max-width: 100%;
-        background-color: transparent;
+        background-color: hsl(0, 0%, 100%);
         border-collapse: collapse;
         border-spacing: 0;
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
 
         thead th {
             vertical-align: bottom;
