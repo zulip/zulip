@@ -8136,9 +8136,9 @@ postcss-loader@^7.0.0:
     klona "^2.0.5"
     semver "^7.3.7"
 
-"postcss-media-minmax@https://github.com/andersk/postcss-media-minmax.git#01239f17f4a9872ace1dd133cee526a7de4ac9f5":
+"postcss-media-minmax@https://github.com/andersk/postcss-media-minmax.git#92c4dd33b9add115ec436ef25243484cca0f7355":
   version "5.0.0"
-  resolved "https://github.com/andersk/postcss-media-minmax.git#01239f17f4a9872ace1dd133cee526a7de4ac9f5"
+  resolved "https://github.com/andersk/postcss-media-minmax.git#92c4dd33b9add115ec436ef25243484cca0f7355"
 
 postcss-media-query-parser@^0.2.3:
   version "0.2.3"
