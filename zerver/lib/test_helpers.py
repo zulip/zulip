@@ -570,10 +570,13 @@ def create_s3_buckets(*bucket_names: str) -> List[Bucket]:
     return buckets
 
 
+TestCaseT = TypeVar("TestCaseT", bound="MigrationsTestCase")
+
+
 def use_db_models(
-    method: Callable[["MigrationsTestCase", StateApps], None]
-) -> Callable[["MigrationsTestCase", StateApps], None]:  # nocoverage
-    def method_patched_with_mock(self: "MigrationsTestCase", apps: StateApps) -> None:
+    method: Callable[[TestCaseT, StateApps], None]
+) -> Callable[[TestCaseT, StateApps], None]:  # nocoverage
+    def method_patched_with_mock(self: TestCaseT, apps: StateApps) -> None:
         ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
         ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
         ArchivedUserMessage = apps.get_model("zerver", "ArchivedUserMessage")
