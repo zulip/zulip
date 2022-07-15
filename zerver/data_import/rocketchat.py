@@ -637,6 +637,10 @@ def process_messages(
                 message_dict["recipient_id"] = huddle_id_to_recipient_id[huddle_id]
             else:
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
+
+                if len(rc_member_ids) == 1:  # nocoverage
+                    # PMs to yourself only have one user.
+                    rc_member_ids.append(rc_member_ids[0])
                 if rc_sender_id == rc_member_ids[0]:
                     zulip_member_id = user_id_mapper.get(rc_member_ids[1])
                     message_dict["recipient_id"] = user_id_to_recipient_id[zulip_member_id]
