@@ -903,7 +903,6 @@ td.pointer {
     .message_control_button {
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
         width: 16px;
         text-align: center;
         display: inline-block;
