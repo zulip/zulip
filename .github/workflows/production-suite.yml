@@ -213,16 +213,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Docker images are built from 'tools/ci/Dockerfile'; the comments at
+          # Docker images are built from 'tools/ci/Dockerfile.prod'; the comments at
           # the top explain how to build and upload these images.
-          - docker_image: zulip/ci:focal-3.4
-            name: 3.4 Version Upgrade
+          - docker_image: zulip/ci:focal-3.2
+            name: 3.2 Version Upgrade
             os: focal
-          - docker_image: zulip/ci:bullseye-4.11
-            name: 4.11 Version Upgrade
+          - docker_image: zulip/ci:bullseye-4.2
+            name: 4.2 Version Upgrade
             os: bullseye
-          - docker_image: zulip/ci:bullseye-5.3
-            name: 5.3 Version Upgrade
+          - docker_image: zulip/ci:bullseye-5.0
+            name: 5.0 Version Upgrade
             os: bullseye
 
     name: ${{ matrix.name  }}

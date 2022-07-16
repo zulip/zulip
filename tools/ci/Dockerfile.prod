@@ -1,7 +1,10 @@
-# To build these production upgrade test images, say an Ubuntu 20.04 Focal system
-# preinstalled with Zulip 3.4:
-#   docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:focal --build-arg=VERSION=3.4 --tag=zulip/ci:focal-3.4
-#   docker push zulip/ci:focal-3.4
+# To build these production upgrade test images, say an Debian 11 Bullseye system
+# preinstalled with Zulip 5.0:
+#   docker build . -f Dockerfile.prod \
+#     --build-arg=BASE_IMAGE=zulip/ci:bullseye \
+#     --build-arg=VERSION=5.0 \
+#     --tag=zulip/ci:focal-5.0
+#   docker push zulip/ci:focal-5.0
 
 ARG BASE_IMAGE
 FROM $BASE_IMAGE

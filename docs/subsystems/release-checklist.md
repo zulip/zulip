@@ -78,15 +78,6 @@ preparing a new release.
 - The DigitalOcean one-click image will report in an internal channel
   once it is built, and how to test it. Verify it, then publish it
   publish it to DigitalOcean marketplace.
-- Update the CI targets:
-  - _Major releases only:_ In all of the following steps, _also_
-    bump up the series that are being tested.
-  - Update the version in `tools/ci/build-docker-images`
-  - Run `tools/ci/build-docker-images`
-  - Push at least the latest of those, e.g. using `docker push zulip/ci:bullseye-4.11`; update the others at your discretion.
-  - Update the `docker_image` in the `production_upgrade` step of
-    `.github/workflows/production-suite.yml`.
-  - Commit those two changes in a PR.
 - _Major releases only:_
   - Create a release branch (e.g. `4.x`).
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
@@ -101,6 +92,10 @@ preparing a new release.
   - Update Transifex to add the new `4.x` style release branch
     resources and archive the previous release branch's resources with
     the "Translations can't translate this resource" setting.
+  - Add a new CI production upgrade target:
+    - Build a docker image: `cd tools/ci && docker build . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bullseye --build-arg=VERSION=5.0 --tag=zulip/ci:bullseye-5.0 && docker push zulip/ci:bullseye-5.0`
+    - Add a new line to the `production_upgrade` matrix in
+      `.github/workflows/production-suite.yml`.
 - _Minor releases only (e.g. 3.2):_
   - On the release branch, update `ZULIP_VERSION` to the present
     release with a `+git` suffix, e.g. `3.2+git`.
