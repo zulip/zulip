@@ -2230,7 +2230,7 @@ class PreregistrationUser(models.Model):
     password_required: bool = models.BooleanField(default=True)
 
     # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    #   if confirmed, set to confirmation.settings.STATUS_USED
     status: int = models.IntegerField(default=0)
 
     # The realm should only ever be None for PreregistrationUser
@@ -2268,10 +2268,10 @@ def filter_to_valid_prereg_users(
     If invite_expires_in_days is specified, we return only those PreregistrationUser
     objects that were created at most that many days in the past.
     """
-    active_value = confirmation_settings.STATUS_ACTIVE
+    used_value = confirmation_settings.STATUS_USED
     revoked_value = confirmation_settings.STATUS_REVOKED
 
-    query = query.exclude(status__in=[active_value, revoked_value])
+    query = query.exclude(status__in=[used_value, revoked_value])
     if invite_expires_in_minutes is None:
         # Since invite_expires_in_minutes is None, we're invitation will never
         # expire, we do not need to check anything else and can simply return
@@ -2306,7 +2306,7 @@ class EmailChangeStatus(models.Model):
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
     # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    #   if confirmed, set to confirmation.settings.STATUS_USED
     status: int = models.IntegerField(default=0)
 
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)

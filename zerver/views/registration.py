@@ -141,7 +141,7 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
 
     if prereg_user.status in [
         confirmation_settings.STATUS_REVOKED,
-        confirmation_settings.STATUS_ACTIVE,
+        confirmation_settings.STATUS_USED,
     ]:
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 

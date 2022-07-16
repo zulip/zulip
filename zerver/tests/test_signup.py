@@ -2229,7 +2229,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
 
         accepted_invite = PreregistrationUser.objects.filter(
-            email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_ACTIVE
+            email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_USED
         )
         revoked_invites = PreregistrationUser.objects.filter(
             email__iexact="foo@zulip.com", status=confirmation_settings.STATUS_REVOKED
@@ -2433,7 +2433,7 @@ class InvitationsTestCase(InviteUserBase):
         """
         A GET call to /json/invites returns all unexpired invitations.
         """
-        active_value = getattr(confirmation_settings, "STATUS_ACTIVE", "Wrong")
+        active_value = getattr(confirmation_settings, "STATUS_USED", "Wrong")
         self.assertNotEqual(active_value, "Wrong")
 
         self.login("iago")
@@ -2883,7 +2883,7 @@ class InvitationsTestCase(InviteUserBase):
         result = self.submit_reg_form_for_user(email, password, key=registration_key)
         self.assertEqual(result.status_code, 302)
         prereg_user = PreregistrationUser.objects.get(email=email, referred_by=inviter, realm=realm)
-        self.assertEqual(prereg_user.status, confirmation_settings.STATUS_ACTIVE)
+        self.assertEqual(prereg_user.status, confirmation_settings.STATUS_USED)
         user = get_user_by_delivery_email(email, realm)
         self.assertIsNotNone(user)
         self.assertEqual(user.delivery_email, email)

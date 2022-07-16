@@ -243,7 +243,7 @@ def process_new_human_user(
     # we want to tie the newly created user to the PreregistrationUser
     # it was created from.
     if prereg_user is not None:
-        prereg_user.status = confirmation_settings.STATUS_ACTIVE
+        prereg_user.status = confirmation_settings.STATUS_USED
         prereg_user.created_user = user_profile
         prereg_user.save(update_fields=["status", "created_user"])
 
@@ -251,7 +251,7 @@ def process_new_human_user(
     # for us to want to modify - because other realm_creation PreregistrationUsers should be
     # left usable for creating different realms.
     if not realm_creation:
-        # Mark any other PreregistrationUsers in the realm that are STATUS_ACTIVE as
+        # Mark any other PreregistrationUsers in the realm that are STATUS_USED as
         # inactive so we can keep track of the PreregistrationUser we
         # actually used for analytics.
         if prereg_user is not None:

@@ -16,7 +16,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from confirmation.models import Confirmation, confirmation_url
-from confirmation.settings import STATUS_ACTIVE
+from confirmation.settings import STATUS_USED
 from zerver.actions.create_realm import do_change_realm_subdomain
 from zerver.actions.realm_settings import (
     do_change_realm_org_type,
@@ -90,7 +90,7 @@ def get_confirmations(
 
         assert content_object is not None
         if hasattr(content_object, "status"):
-            if content_object.status == STATUS_ACTIVE:
+            if content_object.status == STATUS_USED:
                 link_status = "Link has been used"
             else:
                 link_status = "Link has not been used"
