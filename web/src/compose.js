@@ -136,9 +136,9 @@ export function empty_topic_placeholder() {
     return $t({defaultMessage: "(no topic)"});
 }
 
-export function create_message_object() {
+export function create_message_object(args = {}) {
     // Topics are optional, and we provide a placeholder if one isn't given.
-    let topic = compose_state.topic();
+    let topic = args.topic || compose_state.topic();
     if (topic === "") {
         topic = empty_topic_placeholder();
     }
@@ -146,7 +146,9 @@ export function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
+        // optional parameter content is used when it is not sourced from the compose
+        // box. Currently it is just used when creating and sending a poll using a modal
+        content: args.message_content || compose_state.message_content(),
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: "",
@@ -155,7 +157,8 @@ export function create_message_object() {
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        const recipient = compose_state.private_message_recipient();
+        const recipient =
+            args.private_message_recipient || compose_state.private_message_recipient();
         const emails = util.extract_pm_recipients(recipient);
         message.to = emails;
         message.reply_to = recipient;
@@ -170,7 +173,7 @@ export function create_message_object() {
             message.to = people.user_ids_string_to_ids_array(message.to_user_ids);
         }
     } else {
-        const stream_name = compose_state.stream_name();
+        const stream_name = args.stream_name || compose_state.stream_name();
         message.stream = stream_name;
         const sub = stream_data.get_sub(stream_name);
         if (sub) {
