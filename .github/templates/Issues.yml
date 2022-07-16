@@ -1,0 +1,31 @@
+name: Issue🏴
+description: Please report your issue here.
+title: "[ISSUE]: Your new suggestion's brief description goes here"
+labels: [Issue, needs discussion]
+assignees:
+  - unassigned
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filling this form, We'll resolve the issue at the quickest .
+  - type: input
+    attributes:
+      label: Issue Template
+      description: Can you please elaborate your Issue here?
+      placeholder: Tell us what you found.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is your issue related to?
+      description: Give us the issue's description.
+      placeholder: Tell us more
+    validations:
+      required: true
+  - type: textarea
+    id: multimedia
+    attributes:
+      label: Further Details
+      description: Please give us the image/video (if applicable)
+      placeholder: Please upload your multimedia(screenshots and video) here
