@@ -1684,6 +1684,21 @@ input.search-query {
 .modal.fade.in {
   top: 10%;
 }
+
+.collapse {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    -webkit-transition: height 0.35s ease;
+    -moz-transition: height 0.35s ease;
+    -o-transition: height 0.35s ease;
+    transition: height 0.35s ease;
+  }
+
+.collapse.in {
+    height: auto;
+  }
+
 .modal-header {
   padding: 9px 15px;
   border-bottom: 1px solid #eee;
