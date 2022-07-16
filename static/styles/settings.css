@@ -644,6 +644,7 @@ input[type="checkbox"] {
 }
 
 .admin_profile_fields_table,
+.edit_profile_field_choices_container,
 .profile_field_choices_table {
     .movable-profile-field-row {
         cursor: move;
