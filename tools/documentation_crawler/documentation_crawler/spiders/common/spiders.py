@@ -32,8 +32,6 @@ EXCLUDED_URLS = [
     "https://www.transifex.com/zulip/zulip/announcements/",
     "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh",
     # Requires authentication
-    "https://circleci.com/gh/zulip/zulip/tree/main",
-    "https://circleci.com/gh/zulip/zulip/16617",
     "https://www.linkedin.com/company/zulip-project",
     # Returns 403 errors to HEAD requests
     "https://giphy.com",

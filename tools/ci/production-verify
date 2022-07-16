@@ -44,7 +44,7 @@ done
 cat >>/etc/zulip/settings.py <<EOF
 # CircleCI override settings above
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
-NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
+NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 ALLOWED_HOSTS = []
 EOF
 
