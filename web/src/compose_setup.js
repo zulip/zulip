@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
@@ -9,10 +11,13 @@ import * as compose_recipient from "./compose_recipient";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as dialog_widget from "./dialog_widget";
 import * as flatpickr from "./flatpickr";
+import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
+import * as poll_modal from "./poll_modal";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as rows from "./rows";
@@ -23,6 +28,7 @@ import * as stream_settings_components from "./stream_settings_components";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import {get_timestamp_for_flatpickr} from "./timerender";
+import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as user_topics from "./user_topics";
 
@@ -69,6 +75,13 @@ export function initialize() {
             );
         } else {
             $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
+        }
+
+        // The poll widget requires an empty compose box.
+        if (compose_text_length > 0) {
+            $(".add-poll").parent().addClass("disabled");
+        } else {
+            $(".add-poll").parent().removeClass("disabled");
         }
     });
 
@@ -319,6 +332,44 @@ export function initialize() {
         } else {
             flatpickr.flatpickr_instance?.close();
         }
+    });
+
+    $("body").on("click", ".compose_control_button_container:not(.disabled) .add-poll", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        function validate_input() {
+            const question = $("#poll-question-input").val().trim();
+
+            if (question === "") {
+                ui_report.error(
+                    $t_html({defaultMessage: "Please enter a question."}),
+                    undefined,
+                    $("#dialog_error"),
+                );
+                return false;
+            }
+            return true;
+        }
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Create a poll"}),
+            html_body: render_add_poll_modal(),
+            html_submit_button: $t_html({defaultMessage: "Add poll"}),
+            close_on_submit: true,
+            on_click(e) {
+                // frame a message using data input in modal, then populate the compose textarea with it
+                e.preventDefault();
+                e.stopPropagation();
+                const poll_message_content = poll_modal.frame_poll_message_content();
+                compose_ui.insert_syntax_and_focus(poll_message_content);
+            },
+            validate_input,
+            form_id: "add-poll-form",
+            id: "add-poll-modal",
+            post_render: poll_modal.poll_options_setup,
+            help_link: "https://zulip.com/help/create-a-poll",
+        });
     });
 
     $("#compose").on("click", ".markdown_preview", (e) => {

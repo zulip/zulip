@@ -202,6 +202,22 @@ export function initialize() {
         },
     });
 
+    delegate("body", {
+        target: "#add-poll-modal .dialog_submit_button_container",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const content = $t({defaultMessage: "Please enter a question."});
+            const $elem = $(instance.reference);
+            // Show tooltip to enter question only if submit button is disabled
+            // (due to question field being empty).
+            if ($elem.find(".dialog_submit_button").is(":disabled")) {
+                instance.setContent(content);
+                return true;
+            }
+            return false;
+        },
+    });
+
     $("body").on(
         "blur",
         ".message_control_button, .delete-selected-drafts-button-container",

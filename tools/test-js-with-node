@@ -164,6 +164,7 @@ EXEMPT_FILES = make_set(
         "web/src/plotly.js.d.ts",
         "web/src/pm_list.js",
         "web/src/pm_list_dom.ts",
+        "web/src/poll_modal.js",
         "web/src/poll_widget.ts",
         "web/src/popover_menus.js",
         "web/src/popover_menus_data.js",

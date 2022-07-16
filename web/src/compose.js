@@ -117,6 +117,7 @@ export function clear_compose_box() {
     compose_banner.clear_uploads();
     compose_ui.hide_compose_spinner();
     scheduled_messages.reset_selected_schedule_timestamp();
+    $(".compose_control_button_container:has(.add-poll)").removeClass("disabled");
 }
 
 export function send_message_success(request, data) {

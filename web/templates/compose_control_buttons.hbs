@@ -19,6 +19,11 @@
     <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-global-time-tooltip" data-tippy-maxWidth="none">
         <a role="button" class="compose_control_button fa fa-clock-o time_pick" aria-label="{{t 'Add global time' }}" tabindex=0></a>
     </div>
+    {{#unless message_id}}
+    <div class="compose_control_button_container preview_mode_disabled" data-tooltip-template-id="add-poll-tooltip" data-tippy-maxWidth="none">
+        <a role="button" class="compose_control_button fa fa-hand-paper-o add-poll" aria-label="{{t 'Add poll' }}" tabindex=0></a>
+    </div>
+    {{/unless}}
     <div class="compose_control_button_container {{#unless giphy_enabled }}hide{{/unless}} preview_mode_disabled" data-tippy-content="{{t 'Add GIF' }}">
         <a role="button" class="compose_control_button compose_gif_icon zulip-icon zulip-icon-gif" aria-label="{{t 'Add GIF' }}" tabindex=0></a>
     </div>

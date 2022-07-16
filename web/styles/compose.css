@@ -895,6 +895,15 @@ textarea.new_message_textarea,
         }
     }
 
+    .compose_control_button_container.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+
+        .compose_control_button {
+            pointer-events: none;
+        }
+    }
+
     .fa-eye {
         position: relative;
         top: -0.7px;
