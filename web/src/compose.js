@@ -2,6 +2,8 @@ import autosize from "autosize";
 import $ from "jquery";
 import _ from "lodash";
 
+import render_add_poll_modal from "../templates/add_poll_modal.hbs";
+
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
@@ -11,6 +13,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as dialog_widget from "./dialog_widget";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as flatpickr from "./flatpickr";
@@ -21,6 +24,7 @@ import * as message_edit from "./message_edit";
 import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as poll_modal from "./poll_modal";
 import * as popover_menus from "./popover_menus";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
@@ -273,24 +277,33 @@ export function send_message(request = create_message_object(), from_modal = fal
 
     function success(data) {
         send_message_success(local_id, data.id, locally_echoed, clear_compose_box_after_sending);
+        if (from_modal) {
+            dialog_widget.close_modal();
+        }
     }
 
     function error(response) {
         // If we're not local echo'ing messages, or if this message was not
-        // locally echoed, show error in compose box
+        // locally echoed, show error at the appropriate location (top of
+        // compose box / modal)
         if (!locally_echoed) {
-            compose_banner.show_error_message(
-                response,
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose-textarea"),
-            );
-            // For messages that were not locally echoed, we're
-            // responsible for hiding the compose spinner to restore
-            // the compose box so one can send a next message.
-            //
-            // (Restoring this state is handled by clear_compose_box
-            // for locally echoed messages.)
-            compose_ui.hide_compose_spinner();
+            if (from_modal) {
+                dialog_widget.hide_dialog_spinner();
+                ui_report.error(_.escape(response), undefined, $("#dialog_error"));
+            } else {
+                compose_banner.show_error_message(
+                    response,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $("#compose-textarea"),
+                );
+                // For messages that were not locally echoed, we're
+                // responsible for hiding the compose spinner to restore
+                // the compose box so one can send a next message.
+                //
+                // (Restoring this state is handled by clear_compose_box
+                // for locally echoed messages.)
+                compose_ui.hide_compose_spinner();
+            }
             return;
         }
 
@@ -733,6 +746,31 @@ export function initialize() {
                 },
             );
         }
+    });
+
+    $("body").on("click", ".add_poll", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dialog_widget.launch({
+            html_heading: $t_html({defaultMessage: "Send a poll"}),
+            html_body: render_add_poll_modal(),
+            html_submit_button: $t_html({defaultMessage: "Send poll"}),
+            loading_spinner: true,
+            on_click(e) {
+                // create a message using data input in modal, then send that directly
+                e.preventDefault();
+                e.stopPropagation();
+                const poll_message_content = poll_modal.frame_poll_message_content();
+                const poll_message_object = create_message_object(poll_message_content);
+                const from_modal = true;
+                send_message(poll_message_object, from_modal);
+            },
+            form_id: "add-poll-form",
+            id: "add-poll-modal",
+            post_render: poll_modal.poll_options_setup,
+            help_link: "https://zulip.com/help/create-a-poll",
+        });
     });
 
     $("#compose").on("click", ".markdown_preview", (e) => {

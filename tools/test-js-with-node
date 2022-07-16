@@ -128,6 +128,7 @@ EXEMPT_FILES = make_set(
         "web/src/page_params.ts",
         "web/src/pm_list.js",
         "web/src/pm_list_dom.js",
+        "web/src/poll_modal.js",
         "web/src/poll_widget.js",
         "web/src/popover_menus.js",
         "web/src/popover_menus_data.js",
