@@ -132,13 +132,15 @@ def maybe_send_resolve_topic_notifications(
     old_topic: str,
     new_topic: str,
     changed_messages: List[Message],
-) -> None:
+) -> bool:
+    """Returns True if resolve topic notifications were in fact sent."""
+
     # Note that topics will have already been stripped in check_update_message.
     #
     # This logic is designed to treat removing a weird "✔ ✔✔ "
     # prefix as unresolving the topic.
     if old_topic.lstrip(RESOLVED_TOPIC_PREFIX) != new_topic.lstrip(RESOLVED_TOPIC_PREFIX):
-        return
+        return False
 
     topic_resolved: bool = new_topic.startswith(RESOLVED_TOPIC_PREFIX) and not old_topic.startswith(
         RESOLVED_TOPIC_PREFIX
@@ -161,7 +163,7 @@ def maybe_send_resolve_topic_notifications(
         # administrator can the messages in between. We consider this
         # to be a fundamental risk of irresponsible message deletion,
         # not a bug with the "resolve topics" feature.
-        return
+        return False
 
     # Compute the users who either sent or reacted to messages that
     # were moved via the "resolve topic' action. Only those users
@@ -188,6 +190,8 @@ def maybe_send_resolve_topic_notifications(
             ),
             limit_unread_user_ids=affected_participant_ids,
         )
+
+    return True
 
 
 def send_message_moved_breadcrumbs(
