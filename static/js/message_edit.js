@@ -844,6 +844,8 @@ export function save_inline_topic_edit($row) {
         message_id: message.id,
         topic: new_topic,
         propagate_mode: "change_later",
+        send_notification_to_old_thread: false,
+        send_notification_to_new_thread: false,
     };
 
     channel.patch({
