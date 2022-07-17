@@ -295,11 +295,11 @@ function set_up_external_account_field_edit_form(field_elem, url_pattern_val) {
     if (field_elem.$form.find("select[name=external_acc_field_type]").val() === "custom") {
         field_elem.$form.find("input[name=url_pattern]").val(url_pattern_val);
         field_elem.$form.find(".custom_external_account_detail").show();
-        field_elem.$form.find("input[name=name]").val("").closest(".control-group").show();
-        field_elem.$form.find("input[name=hint]").val("").closest(".control-group").show();
+        field_elem.$form.find("input[name=name]").val("").closest(".input-group").show();
+        field_elem.$form.find("input[name=hint]").val("").closest(".input-group").show();
     } else {
-        field_elem.$form.find("input[name=name]").closest(".control-group").hide();
-        field_elem.$form.find("input[name=hint]").closest(".control-group").hide();
+        field_elem.$form.find("input[name=name]").closest(".input-group").hide();
+        field_elem.$form.find("input[name=hint]").closest(".input-group").hide();
         field_elem.$form.find(".custom_external_account_detail").hide();
     }
 }
