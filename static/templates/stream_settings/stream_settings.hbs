@@ -3,7 +3,7 @@
     {{#with sub}}
     <div class="button-group">
         <div class="sub_unsub_button_wrapper inline-block">
-            <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}title="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
+            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}tippy-zulip-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}data-tippy-content="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
                 {{#if subscribed }}
                     {{#tr}}Unsubscribe{{/tr}}
                 {{else}}
@@ -11,9 +11,9 @@
                 {{/if}}
             </button>
         </div>
-        <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
+        <a href="{{preview_url}}" class="button small rounded tippy-zulip-tooltip" id="preview-stream-button" role="button" data-tippy-content="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
-        <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
         {{/if}}
     </div>
     {{/with}}
@@ -35,7 +35,7 @@
                 </div>
                 <div class="stream_change_property_info alert-notification"></div>
                 <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
-                    <button id="open_stream_info_modal" class="button rounded small btn-warning" title="{{t 'Change stream info' }}">
+                    <button id="open_stream_info_modal" class="button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream info' }}">
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -51,7 +51,7 @@
                 </h3>
                 <div class="stream_permission_change_info alert-notification"></div>
                 <div class="button-group">
-                    <button class="change-stream-privacy button rounded small btn-warning" title="{{t 'Change stream permissions' }}" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}}>
+                    <button class="change-stream-privacy button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream permissions' }}" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}}>
                         <i class="fa fa-pencil" aria-hidden="true"></i>
                     </button>
                 </div>
