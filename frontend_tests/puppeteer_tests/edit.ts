@@ -37,9 +37,9 @@ async function test_stream_message_edit(page: Page): Promise<void> {
         content: "test editing",
     });
 
-    await edit_stream_message(page, "edited", "test edited");
+    await edit_stream_message(page, "edits", "test edited");
 
-    await common.check_messages_sent(page, "zhome", [["Verona > edited", ["test edited"]]]);
+    await common.check_messages_sent(page, "zhome", [["Verona > edits", ["test edited"]]]);
 }
 
 async function test_edit_message_with_slash_me(page: Page): Promise<void> {
@@ -61,7 +61,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
         )} and normalize-space()="Desdemona"]`,
     );
 
-    await edit_stream_message(page, "edited", "/me test edited a message with me");
+    await edit_stream_message(page, "edits", "/me test edited a message with me");
 
     await page.waitForSelector(
         `xpath/${last_message_xpath}//*[${common.has_class_x(

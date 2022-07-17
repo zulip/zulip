@@ -1305,9 +1305,9 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            # This code path adds 9 (1 + 4/user with muted topics) to
+            # This code path adds 9 (1 + 4/user with muted topics) + 1 to
             # the number of database queries for moving a topic.
-            self.assert_length(queries, 18)
+            self.assert_length(queries, 19)
 
         for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
             for user in users_to_be_notified:
@@ -1755,6 +1755,7 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
             },
             HTTP_ACCEPT_LANGUAGE="de",
         )
@@ -1903,6 +1904,7 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
             },
         )
         self.assert_json_success(result)
@@ -1933,6 +1935,7 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_later",
+                "send_notification_to_old_thread": "true",
             },
         )
         self.assert_json_success(result)
@@ -1962,6 +1965,7 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
             },
         )
         self.assert_json_success(result)
@@ -1992,6 +1996,7 @@ class EditMessageTest(EditMessageTestCase):
             {
                 "stream_id": new_stream.id,
                 "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
             },
         )
         self.assert_json_success(result)
@@ -2036,7 +2041,7 @@ class EditMessageTest(EditMessageTestCase):
             else:
                 self.assert_json_success(result)
                 messages = get_topic_messages(user_profile, old_stream, "test")
-                self.assert_length(messages, 1)
+                self.assert_length(messages, 0)
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
@@ -2125,7 +2130,7 @@ class EditMessageTest(EditMessageTestCase):
             else:
                 self.assert_json_success(result)
                 messages = get_topic_messages(user_profile, old_stream, "test")
-                self.assert_length(messages, 1)
+                self.assert_length(messages, 0)
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
@@ -2222,7 +2227,7 @@ class EditMessageTest(EditMessageTestCase):
         )
         self.assert_json_success(result)
         messages = get_topic_messages(user_profile, old_stream, "test")
-        self.assert_length(messages, 1)
+        self.assert_length(messages, 0)
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 4)
 
@@ -2235,8 +2240,9 @@ class EditMessageTest(EditMessageTestCase):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
-                    "stream_id": new_stream.id,
                     "propagate_mode": "change_all",
+                    "send_notification_to_old_thread": "true",
+                    "stream_id": new_stream.id,
                     "topic": "new topic",
                 },
             )
@@ -2448,6 +2454,290 @@ class EditMessageTest(EditMessageTestCase):
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 3)
 
+    def test_notify_new_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 0)
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_old_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 3)
+
+    def test_notify_both_topics(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 1)
+        self.assertEqual(
+            messages[0].content,
+            f"This topic was moved to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 4)
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_no_topic(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 0)
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 3)
+
+    def test_notify_new_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_old_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].content, "First")
+
+    def test_notify_both_topics_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "true",
+                "send_notification_to_new_thread": "true",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**public stream>edited** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "First")
+        self.assertEqual(
+            messages[1].content,
+            f"A message was moved here from #**public stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+    def test_notify_no_topic_after_message_move(self) -> None:
+        user_profile = self.example_user("iago")
+        self.login("iago")
+        stream = self.make_stream("public stream")
+        self.subscribe(user_profile, stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name="test", content="First"
+        )
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Second")
+        self.send_stream_message(user_profile, stream.name, topic_name="test", content="Third")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "edited",
+                "propagate_mode": "change_one",
+                "send_notification_to_old_thread": "false",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(user_profile, stream, "test")
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].content, "Second")
+        self.assertEqual(messages[1].content, "Third")
+
+        messages = get_topic_messages(user_profile, stream, "edited")
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0].content, "First")
+
     def parameterized_test_move_message_involving_private_stream(
         self,
         from_invite_only: bool,
@@ -2503,11 +2793,7 @@ class EditMessageTest(EditMessageTestCase):
         self.assert_json_success(result)
 
         messages = get_topic_messages(admin_user, old_stream, "test")
-        self.assert_length(messages, 1)
-        self.assertEqual(
-            messages[0].content,
-            f"This topic was moved to #**new stream>test** by @_**Iago|{admin_user.id}**.",
-        )
+        self.assert_length(messages, 0)
 
         messages = get_topic_messages(admin_user, new_stream, "test")
         self.assert_length(messages, 3)
@@ -2649,7 +2935,7 @@ class EditMessageTest(EditMessageTestCase):
             == 0
         )
 
-        # Now move to a weird state and confirm no new messages
+        # Now move to a weird state and confirm we get the normal topic moved message.
         weird_topic = "✔ ✔✔" + original_topic
         result = self.client_patch(
             "/json/messages/" + str(id1),
@@ -2668,10 +2954,14 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, weird_topic)
-        self.assert_length(messages, 3)
+        self.assert_length(messages, 4)
         self.assertEqual(
             messages[2].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as resolved.",
+        )
+        self.assertEqual(
+            messages[3].content,
+            f"This topic was moved here from #**new>✔ topic 1** by @_**Iago|{admin_user.id}**.",
         )
 
         unresolved_topic = original_topic
@@ -2692,16 +2982,19 @@ class EditMessageTest(EditMessageTestCase):
             )
 
         messages = get_topic_messages(admin_user, stream, unresolved_topic)
-        self.assert_length(messages, 4)
+        self.assert_length(messages, 5)
         self.assertEqual(
-            messages[3].content,
+            messages[2].content, f"@_**Iago|{admin_user.id}** has marked this topic as resolved."
+        )
+        self.assertEqual(
+            messages[4].content,
             f"@_**Iago|{admin_user.id}** has marked this topic as unresolved.",
         )
 
         # Check topic unresolved notification message is only unread for participants.
         assert (
             UserMessage.objects.filter(
-                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[3].id
+                user_profile__in=[admin_user, hamlet, aaron], message__id=messages[4].id
             )
             .extra(where=[UserMessage.where_unread()])
             .count()
@@ -2709,10 +3002,40 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         assert (
-            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[3].id)
+            UserMessage.objects.filter(user_profile=cordelia, message__id=messages[4].id)
             .extra(where=[UserMessage.where_unread()])
             .count()
             == 0
+        )
+
+        # Now move to another stream while resolving the topic and
+        # check the notifications.
+        final_stream = self.make_stream("final")
+        self.subscribe(admin_user, final_stream.name)
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "topic": resolved_topic,
+                "stream_id": final_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_success(result)
+        for msg_id in [id1, id2]:
+            msg = Message.objects.get(id=msg_id)
+            self.assertEqual(
+                resolved_topic,
+                msg.topic_name(),
+            )
+
+        messages = get_topic_messages(admin_user, final_stream, resolved_topic)
+        # TODO: This should be 7 -- but currently we never trigger
+        # resolve-topic notifications when moving the stream, even if
+        # the resolve-topic state is changed at that time.
+        self.assert_length(messages, 6)
+        self.assertEqual(
+            messages[5].content,
+            f"This topic was moved here from #**new>topic 1** by @_**Iago|{admin_user.id}**.",
         )
 
 

@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 152**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): The
+  `send_notification_to_old_thread` and
+  `send_notification_to_new_thread` parameters are now respected when
+  moving a topic within a stream.
+
 **Feature level 151**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

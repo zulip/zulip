@@ -6259,21 +6259,30 @@ paths:
         - name: send_notification_to_old_thread
           in: query
           description: |
-            Whether to send an automated message to the old thread to
+            Whether to send an automated message to the old topic to
             notify users where the messages were moved to.
 
-            **Changes**: New in Zulip 3.0 (feature level 9).
+            **Changes**: Before Zulip 6.0 (feature level 152), this parameter
+            had a default of `true` and was ignored unless the stream was changed.
+
+            New in Zulip 3.0 (feature level 9).
           schema:
             type: boolean
-            default: true
+            default: false
           example: true
         - name: send_notification_to_new_thread
           in: query
           description: |
-            Whether to send an automated message to the new thread to
+            Whether to send an automated message to the new topic to
             notify users where the messages came from.
 
-            **Changes**: New in Zulip 3.0 (feature level 9).
+            If the move is just [resolving/unresolving a topic](/help/resolve-a-topic),
+            this parameter will not trigger an additional notification.
+
+            **Changes**: Before Zulip 6.0 (feature level 152), this parameter
+            was ignored unless the stream was changed.
+
+            New in Zulip 3.0 (feature level 9).
           schema:
             type: boolean
             default: true

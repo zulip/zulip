@@ -816,6 +816,7 @@ def do_update_message(
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
+    sent_resolve_topic_notification = False
     if (
         topic_name is not None
         and new_stream is None
@@ -823,7 +824,7 @@ def do_update_message(
         and len(changed_messages) > 0
     ):
         assert stream_being_edited is not None
-        maybe_send_resolve_topic_notifications(
+        sent_resolve_topic_notification = maybe_send_resolve_topic_notifications(
             user_profile=user_profile,
             stream=stream_being_edited,
             old_topic=orig_topic_name,
@@ -831,7 +832,11 @@ def do_update_message(
             changed_messages=changed_messages,
         )
 
-    if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
+    if (
+        len(changed_messages) > 0
+        and (new_stream is not None or topic_name is not None)
+        and stream_being_edited is not None
+    ):
         # Notify users that the topic was moved.
         changed_messages_count = len(changed_messages)
 
@@ -850,8 +855,25 @@ def do_update_message(
                     "{changed_messages_count} messages were moved from this topic to {new_location} by {user}."
                 )
 
+        # The new thread notification code path is a bit subtle. We
+        # don't want every resolve-topic action to also annoyingly
+        # send an extra notification that the topic was moved!
+        #
+        # Since one can resolve/unresolve a topic at the same time
+        # you're moving it, we need to carefully treat the resolve
+        # topic notification as satisfying our obligation to send a
+        # notification to the new topic only if the only thing this
+        # request did is mark the topic as resolved.
         new_thread_notification_string = None
-        if send_notification_to_new_thread:
+        if send_notification_to_new_thread and (
+            new_stream is not None
+            or not sent_resolve_topic_notification
+            or (
+                topic_name is not None
+                and orig_topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+                != topic_name.lstrip(RESOLVED_TOPIC_PREFIX)
+            )
+        ):
             if moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
                     "This topic was moved here from {old_location} by {user}."
@@ -870,7 +892,7 @@ def do_update_message(
             stream_being_edited,
             orig_topic_name,
             old_thread_notification_string,
-            new_stream,
+            new_stream if new_stream is not None else stream_being_edited,
             topic_name,
             new_thread_notification_string,
             changed_messages_count,
