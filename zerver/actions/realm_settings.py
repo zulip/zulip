@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, generate_key
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
-from zerver.actions.message_edit import do_delete_messages_by_sender
+from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image, send_user_email_update_event
 from zerver.lib.cache import flush_user_profile

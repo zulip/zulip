@@ -23,7 +23,7 @@ from requests.models import PreparedRequest
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url

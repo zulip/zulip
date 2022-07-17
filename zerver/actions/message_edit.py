@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Set, TypedDict
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Set
 
 from django.conf import settings
 from django.db import transaction
@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 
+from zerver.actions.message_delete import DeleteMessagesEvent
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -18,7 +19,6 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
-from zerver.lib import retention as retention
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
@@ -32,7 +32,6 @@ from zerver.lib.message import (
     wildcard_mention_allowed,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import access_stream_by_id, check_stream_access_based_on_stream_post_policy
@@ -335,14 +334,6 @@ def do_update_embedded_data(
         }
 
     send_event(user_profile.realm, event, list(map(user_info, ums)))
-
-
-class DeleteMessagesEvent(TypedDict, total=False):
-    type: str
-    message_ids: List[int]
-    message_type: str
-    topic: str
-    stream_id: int
 
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
@@ -1038,53 +1029,3 @@ def check_update_message(
         queue_json_publish("embed_links", event_data)
 
     return number_changed
-
-
-def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
-    # messages in delete_message event belong to the same topic
-    # or is a single private message, as any other behaviour is not possible with
-    # the current callers to this method.
-    messages = list(messages)
-    message_ids = [message.id for message in messages]
-    if not message_ids:
-        return
-
-    event: DeleteMessagesEvent = {
-        "type": "delete_message",
-        "message_ids": message_ids,
-    }
-
-    sample_message = messages[0]
-    message_type = "stream"
-    users_to_notify = []
-    if not sample_message.is_stream_message():
-        assert len(messages) == 1
-        message_type = "private"
-        ums = UserMessage.objects.filter(message_id__in=message_ids)
-        users_to_notify = [um.user_profile_id for um in ums]
-        archiving_chunk_size = retention.MESSAGE_BATCH_SIZE
-
-    if message_type == "stream":
-        stream_id = sample_message.recipient.type_id
-        event["stream_id"] = stream_id
-        event["topic"] = sample_message.topic_name()
-        subscriptions = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=False
-        )
-        # We exclude long-term idle users, since they by definition have no active clients.
-        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
-        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
-        archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
-
-    move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
-
-    event["message_type"] = message_type
-    transaction.on_commit(lambda: send_event(realm, event, users_to_notify))
-
-
-def do_delete_messages_by_sender(user: UserProfile) -> None:
-    message_ids = list(
-        Message.objects.filter(sender=user).values_list("id", flat=True).order_by("id")
-    )
-    if message_ids:
-        move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)

@@ -45,11 +45,8 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.actions.message_edit import (
-    do_delete_messages,
-    do_update_embedded_data,
-    do_update_message,
-)
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status

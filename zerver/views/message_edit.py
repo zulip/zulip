@@ -8,7 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
-from zerver.actions.message_edit import check_update_message, do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
