@@ -52,6 +52,8 @@ below, and add more to your repertoire as needed.
 
 * **Filter streams**: `q`
 
+* **All possible topics of selected stream**: `Q`
+
 * **Search people**: `w`
 
 * **Last message**: `End` or `G` — Also marks all messages in

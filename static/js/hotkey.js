@@ -132,6 +132,7 @@ const keypress_mappings = {
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
     77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
+    81: {name: "zoomed_topic_view", message_view_only: true}, // 'Q'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
@@ -795,6 +796,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "all_messages":
             browser_history.go_to_location("#all_messages");
+            return true;
+        case "zoomed_topic_view":
+            topic_zoom.handle_topic_zoom_hotkey();
             return true;
     }
 

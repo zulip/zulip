@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as popovers from "./popovers";
 import * as stream_list from "./stream_list";
+import * as stream_popover from "./stream_popover";
 import * as topic_list from "./topic_list";
 
 let zoomed_in = false;
@@ -34,6 +35,30 @@ export function zoom_out() {
     }
 
     zoomed_in = false;
+}
+
+export function handle_topic_zoom_hotkey() {
+    if (is_zoomed_in()) {
+        if (stream_list.is_left_column_popover_hidden()) {
+            popovers.hide_all();
+            stream_popover.show_streamlist_sidebar();
+            document.querySelector("#filter-topic-input").focus();
+        } else {
+            zoom_out();
+        }
+    } else {
+        const active_stream = topic_list.get_stream_li();
+        if (active_stream !== undefined && active_stream.find(".show-more-topics").length > 0) {
+            // Proceed only if there is active stream
+            // in left-sidebar and it is zoomable.
+            zoom_in();
+            if (stream_list.is_left_column_popover_hidden()) {
+                popovers.hide_all();
+                stream_popover.show_streamlist_sidebar();
+            }
+            document.querySelector("#filter-topic-input").focus();
+        }
+    }
 }
 
 export function clear_topics() {
