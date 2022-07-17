@@ -820,6 +820,21 @@ def do_update_message(
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
+    if (
+        topic_name is not None
+        and new_stream is None
+        and content is None
+        and len(changed_messages) > 0
+    ):
+        assert stream_being_edited is not None
+        maybe_send_resolve_topic_notifications(
+            user_profile=user_profile,
+            stream=stream_being_edited,
+            old_topic=orig_topic_name,
+            new_topic=topic_name,
+            changed_messages=changed_messages,
+        )
+
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
         changed_messages_count = len(changed_messages)
@@ -863,21 +878,6 @@ def do_update_message(
             topic_name,
             new_thread_notification_string,
             changed_messages_count,
-        )
-
-    if (
-        topic_name is not None
-        and new_stream is None
-        and content is None
-        and len(changed_messages) > 0
-    ):
-        assert stream_being_edited is not None
-        maybe_send_resolve_topic_notifications(
-            user_profile=user_profile,
-            stream=stream_being_edited,
-            old_topic=orig_topic_name,
-            new_topic=topic_name,
-            changed_messages=changed_messages,
         )
 
     return len(changed_messages)
