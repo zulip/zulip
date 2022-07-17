@@ -334,6 +334,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("ansibletower", ["deployment"], display_name="Ansible Tower"),
     WebhookIntegration("appfollow", ["customer-support"], display_name="AppFollow"),
     WebhookIntegration("appveyor", ["continuous-integration"], display_name="AppVeyor"),
+    WebhookIntegration("azuredevops", ["version-control"], display_name="AzureDevOps"),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
@@ -690,6 +691,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "ansibletower": [ScreenshotConfig("job_successful_multiple_hosts.json")],
     "appfollow": [ScreenshotConfig("review.json")],
     "appveyor": [ScreenshotConfig("appveyor_build_success.json")],
+    "azuredevops": [ScreenshotConfig("code_push.json")],
     "basecamp": [ScreenshotConfig("doc_active.json")],
     "beanstalk": [
         ScreenshotConfig("git_multiple.json", use_basic_auth=True, payload_as_query_param=True)
