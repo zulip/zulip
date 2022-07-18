@@ -71,9 +71,9 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     for attachment in old_unclaimed_attachments:
         delete_message_image(attachment.path_id)
         attachment.delete()
-    for attachment in old_unclaimed_archived_attachments:
-        delete_message_image(attachment.path_id)
-        attachment.delete()
+    for archived_attachment in old_unclaimed_archived_attachments:
+        delete_message_image(archived_attachment.path_id)
+        archived_attachment.delete()
 
 
 def check_attachment_reference_change(
