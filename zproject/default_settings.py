@@ -142,7 +142,7 @@ LOCAL_UPLOADS_DIR: Optional[str] = None
 MAX_FILE_UPLOAD_SIZE = 25
 
 # Jitsi Meet video call integration; set to None to disable integration.
-JITSI_SERVER_URL = "https://meet.jit.si"
+JITSI_SERVER_URL: Optional[str] = "https://meet.jit.si"
 
 # GIPHY API key.
 GIPHY_API_KEY = get_secret("giphy_api_key")
