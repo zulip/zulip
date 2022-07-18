@@ -52,6 +52,7 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_recipient = zrequire("compose_recipient");
 const composebox_typeahead = zrequire("composebox_typeahead");
 const settings_config = zrequire("settings_config");
+const text_field_edit = mock_esm("text-field-edit");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
 const ct = composebox_typeahead;
@@ -1157,16 +1158,14 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.target.id = "some_non_existing_id";
     $("form#send_message_form").trigger(event);
 
-    // Set up jquery functions used in compose_textarea Enter
-    // handler.
-    let range_length = 0;
-    $("#compose-textarea").range = () => ({
-        length: range_length,
-        range: noop,
-        start: 0,
-        end: 0 + range_length,
+    $("#compose-textarea")[0] = {
+        selectionStart: 0,
+        selectionEnd: 0,
+    };
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "\n");
     });
-    $("#compose-textarea").caret = noop;
+    $("#compose-textarea").caret = () => $("#compose-textarea")[0].selectionStart;
 
     event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
@@ -1185,10 +1184,58 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.altKey = true;
     $("form#send_message_form").trigger(event);
 
-    // Cover case where there's a least one character there.
-    range_length = 2;
+    // Cover cases where there's at least one character there.
+
+    // Test automatic bulleting.
+    $("#compose-textarea").val("- List item 1\n- List item 2");
+    $("#compose-textarea")[0].selectionStart = 27;
+    $("#compose-textarea")[0].selectionEnd = 27;
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "\n- ");
+    });
     $("form#send_message_form").trigger(event);
 
+    // Test removal of bullet.
+    $("#compose-textarea").val("- List item 1\n- List item 2\n- ");
+    $("#compose-textarea")[0].selectionStart = 30;
+    $("#compose-textarea")[0].selectionEnd = 30;
+    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 28);
+        assert.equal(end, 30);
+    };
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test automatic numbering.
+    $("#compose-textarea").val("1. List item 1\n2. List item 2");
+    $("#compose-textarea")[0].selectionStart = 29;
+    $("#compose-textarea")[0].selectionEnd = 29;
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "\n3. ");
+    });
+    $("form#send_message_form").trigger(event);
+
+    // Test removal of numbering.
+    $("#compose-textarea").val("1. List item 1\n2. List item 2\n3. ");
+    $("#compose-textarea")[0].selectionStart = 33;
+    $("#compose-textarea")[0].selectionEnd = 33;
+    $("#compose-textarea")[0].setSelectionRange = (start, end) => {
+        assert.equal(start, 30);
+        assert.equal(end, 33);
+    };
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "");
+    });
+    $("form#send_message_form").trigger(event);
+
+    $("#compose-textarea").val("A");
+    $("#compose-textarea")[0].selectionStart = 4;
+    $("#compose-textarea")[0].selectionEnd = 4;
+    override(text_field_edit, "insert", (_textarea, syntax) => {
+        assert.equal(syntax, "\n");
+    });
     event.altKey = false;
     event.metaKey = true;
     $("form#send_message_form").trigger(event);

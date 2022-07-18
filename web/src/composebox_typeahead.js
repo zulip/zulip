@@ -1,9 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
+import {insert} from "text-field-edit";
 
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -151,38 +153,80 @@ export function should_enter_send(e) {
     return this_enter_sends;
 }
 
-export function handle_enter($textarea, e) {
-    // Used only if Enter doesn't send.
-
-    // Since this Enter doesn't send, we just want to do
-    // the browser's default behavior for the "Enter" key.
-    // Letting the browser handle it works great if the
-    // key actually pressed was Enter or Shift-Enter.
-
-    // But the default browser behavior for Ctrl/Alt/Meta
-    // + Enter is to do nothing, so we need to emulate
-    // the browser behavior for "Enter" in those cases.
-    //
-    // We do this using caret and range from jquery-caret.
-    const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (!has_non_shift_modifier_key) {
-        // Use the native browser behavior.
-        return;
+function handle_bulleting_or_numbering($textarea, e) {
+    // handles automatic insertion or removal of bulleting or numbering
+    const before_text = split_at_cursor($textarea.val(), $textarea)[0];
+    const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
+    let to_append = "";
+    // if previous line was bulleted, automatically add a bullet to the new line
+    if (bulleted_numbered_list_util.is_bulleted(previous_line)) {
+        // if previous line had only bullet, remove it and stay on the same line
+        if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
+            // below we select and replace the last 2 characters in the textarea before
+            // the cursor - the bullet syntax - with an empty string
+            $textarea[0].setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            insert($textarea[0], "");
+            compose_ui.autosize_textarea($textarea);
+            e.preventDefault();
+            return;
+        }
+        // use same bullet syntax as the previous line
+        to_append = previous_line.slice(0, 2);
+    } else if (bulleted_numbered_list_util.is_numbered(previous_line)) {
+        // if previous line was numbered, continue numbering with the new line
+        const previous_number_string = previous_line.slice(0, previous_line.indexOf("."));
+        // if previous line had only numbering, remove it and stay on the same line
+        if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
+            // below we select then replaces the last few characters in the textarea before
+            // the cursor - the numbering syntax - with an empty string
+            $textarea[0].setSelectionRange(
+                $textarea.caret() - previous_number_string.length - 2,
+                $textarea.caret(),
+            );
+            insert($textarea[0], "");
+            compose_ui.autosize_textarea($textarea);
+            e.preventDefault();
+            return;
+        }
+        const previous_number = Number.parseInt(previous_number_string, 10);
+        to_append = previous_number + 1 + ". ";
     }
-
-    // To properly emulate browser "Enter", if the
-    // user had selected something in the textarea,
-    // we need those characters to be cleared.
-    const range = $textarea.range();
-    if (range.length > 0) {
-        $textarea.range(range.start, range.end).range("");
-    }
-
-    // Now add the newline, remembering to resize the
-    // textarea if needed.
-    $textarea.caret("\n");
+    // if previous line was neither numbered nor bulleted, only add
+    // a new line to emulate default behaviour (to_append is blank)
+    // else we add the bulleting / numbering syntax to the new line
+    insert($textarea[0], "\n" + to_append);
     compose_ui.autosize_textarea($textarea);
     e.preventDefault();
+}
+
+export function handle_enter($textarea, e) {
+    // Used only if Enter doesn't send. We need to emulate the
+    // browser's native "Enter" behavior because this code path
+    // includes `Ctrl+Enter` and other modifier key variants that
+    // should add a newline in the compose box in the enter-sends
+    // configuration.
+    //
+    // And while we're at it, we implement some fancy behavior for
+    // bulleted lists.
+
+    // To properly emulate browser "Enter", if the user had selected
+    // something in the textarea, we clear those characters
+
+    // If the selectionStart and selectionEnd are not the same, that
+    // means that some text was selected.
+    if ($textarea[0].selectionStart !== $textarea[0].selectionEnd) {
+        // Replace it with the newline, remembering to resize the
+        // textarea if needed.
+        insert($textarea[0], "\n");
+        compose_ui.autosize_textarea($textarea);
+        e.preventDefault();
+    } else {
+        // if nothing had been selected in the texarea we
+        // don't just want to emulate the browser's default
+        // behavior for the "Enter" key, but also handle automatic
+        // insertion or removal of bulleting / numbering.
+        handle_bulleting_or_numbering($textarea, e);
+    }
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
