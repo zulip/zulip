@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
@@ -160,9 +161,16 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 
 
 class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self) -> List[Union[bytes, str]]:
+    def get_dirs(self) -> List[Union[str, Path]]:
         dirs = super().get_dirs()
-        return [d for d in dirs if d.match("two_factor/*")]
+        # app_directories.Loader returns only a list of
+        # Path objects by calling get_app_template_dirs
+        two_factor_dirs: List[Union[str, Path]] = []
+        for d in dirs:
+            assert isinstance(d, Path)
+            if d.match("two_factor/*"):
+                two_factor_dirs.append(d)
+        return two_factor_dirs
 
 
 MIDDLEWARE = (
