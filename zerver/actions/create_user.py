@@ -235,9 +235,9 @@ def process_new_human_user(
                 ),
             )
 
-    # Revoke all preregistration users except prereg_user, and link prereg_user to
-    # the created user
-
+    # For the sake of tracking the history of UserProfiles,
+    # we want to tie the newly created user to the PreregistrationUser
+    # it was created from.
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_ACTIVE
         prereg_user.created_user = user_profile
