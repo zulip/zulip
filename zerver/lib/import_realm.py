@@ -6,6 +6,7 @@ import shutil
 from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+import bmemcached
 import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -876,7 +877,9 @@ def import_uploads(
                 process_avatars(record)
         else:
             connection.close()
-            cache._cache.disconnect_all()
+            _cache = getattr(cache, "_cache")
+            assert isinstance(_cache, bmemcached.Client)
+            _cache.disconnect_all()
             with multiprocessing.Pool(processes) as p:
                 for out in p.imap_unordered(process_avatars, records):
                     pass

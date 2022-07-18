@@ -3,6 +3,7 @@ import multiprocessing
 import os
 from mimetypes import guess_type
 
+import bmemcached
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
@@ -40,7 +41,9 @@ def transfer_avatars_to_s3(processes: int) -> None:
             _transfer_avatar_to_s3(user)
     else:  # nocoverage
         connection.close()
-        cache._cache.disconnect_all()
+        _cache = getattr(cache, "_cache")
+        assert isinstance(_cache, bmemcached.Client)
+        _cache.disconnect_all()
         with multiprocessing.Pool(processes) as p:
             for out in p.imap_unordered(_transfer_avatar_to_s3, users):
                 pass
@@ -71,7 +74,9 @@ def transfer_message_files_to_s3(processes: int) -> None:
             _transfer_message_files_to_s3(attachment)
     else:  # nocoverage
         connection.close()
-        cache._cache.disconnect_all()
+        _cache = getattr(cache, "_cache")
+        assert isinstance(_cache, bmemcached.Client)
+        _cache.disconnect_all()
         with multiprocessing.Pool(processes) as p:
             for out in p.imap_unordered(_transfer_message_files_to_s3, attachments):
                 pass
@@ -101,7 +106,9 @@ def transfer_emoji_to_s3(processes: int) -> None:
             _transfer_emoji_to_s3(realm_emoji)
     else:  # nocoverage
         connection.close()
-        cache._cache.disconnect_all()
+        _cache = getattr(cache, "_cache")
+        assert isinstance(_cache, bmemcached.Client)
+        _cache.disconnect_all()
         with multiprocessing.Pool(processes) as p:
             for out in p.imap_unordered(_transfer_emoji_to_s3, realm_emojis):
                 pass
