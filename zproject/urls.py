@@ -737,8 +737,7 @@ urls += [
 # We don't create URLs for particular Git integrations here
 # because of generic one below
 for incoming_webhook in WEBHOOK_INTEGRATIONS:
-    if incoming_webhook.url_object:
-        urls.append(incoming_webhook.url_object)
+    urls.append(incoming_webhook.url_object)
 
 # Desktop-specific authentication URLs
 urls += [
