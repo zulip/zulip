@@ -45,6 +45,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
 from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
     Attachment,
@@ -948,7 +949,7 @@ class RealmImportExportTest(ExportFile):
             return recipient
 
         def get_recipient_user(r: Realm) -> Recipient:
-            return UserProfile.objects.get(full_name="Iago", realm=r).recipient
+            return assert_is_not_none(UserProfile.objects.get(full_name="Iago", realm=r).recipient)
 
         @getter
         def get_stream_recipient_type(r: Realm) -> int:
@@ -982,7 +983,7 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_custom_profile_with_field_type_user(
             r: Realm,
-        ) -> Tuple[Set[object], Set[object], Set[FrozenSet[str]]]:
+        ) -> Tuple[Set[str], Set[str], Set[FrozenSet[str]]]:
             fields = CustomProfileField.objects.filter(field_type=CustomProfileField.USER, realm=r)
 
             def get_email(user_id: int) -> str:
@@ -1011,7 +1012,7 @@ class RealmImportExportTest(ExportFile):
 
         # test realmauditlog
         @getter
-        def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
+        def get_realm_audit_log_event_type(r: Realm) -> Set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
                 event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
             )
@@ -1128,7 +1129,7 @@ class RealmImportExportTest(ExportFile):
 
         # test usermessages
         @getter
-        def get_usermessages_user(r: Realm) -> Set[object]:
+        def get_usermessages_user(r: Realm) -> Set[str]:
             messages = get_stream_messages(r).order_by("content")
             usermessage = UserMessage.objects.filter(message=messages[0])
             usermessage_user = {um.user_profile.email for um in usermessage}
