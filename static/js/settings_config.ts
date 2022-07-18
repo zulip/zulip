@@ -796,3 +796,18 @@ export const desktop_icon_count_display_values = {
         description: $t({defaultMessage: "None"}),
     },
 };
+
+export const deactivate_message_delete_action = {
+    none: {
+        code: 0,
+        description: $t({defaultMessage: "No action"}),
+    },
+    public_stream_messages: {
+        code: 1,
+        description: $t({defaultMessage: "Delete all public and stream messages"}),
+    },
+    all_messages: {
+        code: 2,
+        description: $t({defaultMessage: "Delete all messages"}),
+    },
+};

@@ -37,6 +37,7 @@ import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as rows from "./rows";
 import * as server_events from "./server_events";
+import * as settings_config from "./settings_config";
 import * as settings_display from "./settings_display";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_toggle from "./settings_toggle";
@@ -666,6 +667,21 @@ export function initialize() {
 
     $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
+    });
+
+    $(".organization-box").on("show.bs.modal", () => {
+        popovers.hide_all();
+    });
+
+    $("body").on("click", "#mark_as_spammer", () => {
+        if ($("#mark_as_spammer").prop("checked")) {
+            $("#delete_action_info_group").show();
+        } else {
+            $("#delete_action_info_group").hide();
+        }
+
+        const default_option = settings_config.deactivate_message_delete_action.none.code;
+        $("message_delete_action").val(default_option);
     });
 
     $("body").on("click", ".reload_link", () => {

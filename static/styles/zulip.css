@@ -2779,6 +2779,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 }
 
+.deactivate-modal-info-group {
+    margin-top: 5px;
+
+    select {
+        width: max-content;
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,

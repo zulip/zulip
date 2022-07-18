@@ -2896,6 +2896,16 @@ class Message(AbstractMessage):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     search_tsvector: Optional[str] = SearchVectorField(null=True)
 
+    NO_DELETE_ACTION = 0
+    DELETE_PUBLIC_STREAM_MESSAGE = 1
+    DELETE_ALL_MESSAGE = 2
+
+    DEACTIVATED_USER_MESSAGE_DELETE_ACTION = [
+        NO_DELETE_ACTION,
+        DELETE_PUBLIC_STREAM_MESSAGE,
+        DELETE_ALL_MESSAGE,
+    ]
+
     def topic_name(self) -> str:
         """
         Please start using this helper to facilitate an
@@ -2915,6 +2925,17 @@ class Message(AbstractMessage):
         or implicitly (message.stream_id is not None).
         """
         return self.recipient.type == Recipient.STREAM
+
+    def is_public_stream_message(self) -> bool:
+        """
+        Find out whether a message is send in public stream
+        or not by checking if the stream to which the message
+        belong
+        """
+        if self.is_stream_message():
+            stream = Stream.objects.get(recipient=self.recipient)
+            return stream.is_public()
+        return False
 
     def get_realm(self) -> Realm:
         return self.sender.realm

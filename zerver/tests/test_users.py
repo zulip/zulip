@@ -41,6 +41,7 @@ from zerver.lib.test_helpers import (
     cache_tries_captured,
     get_subscription,
     get_test_image_file,
+    get_user_sent_messages,
     queries_captured,
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
@@ -1435,6 +1436,68 @@ class ActivateTest(ZulipTestCase):
         self.assert_length(msg.reply_to, 1)
         self.assertEqual(msg.reply_to[0], "noreply@testserver")
         self.assertIn("Dear Hamlet,", msg.body)
+
+    def test_api_with_spammer(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("hamlet")
+        self.assertFalse(user.full_name.endswith(" (spammer)"))
+
+        result = self.client_delete(
+            f"/json/users/{user.id}", {"spammer": orjson.dumps(True).decode()}
+        )
+        self.assert_json_success(result)
+        user = self.example_user("hamlet")
+        self.assertTrue(user.full_name.endswith(" (spammer)"))
+
+        result = self.client_post(f"/json/users/{user.id}/reactivate")
+        self.assert_json_success(result)
+        user = self.example_user("hamlet")
+        self.assertFalse(user.full_name.endswith(" (spammer)"))
+
+    def test_api_with_delete_action(self) -> None:
+        admin = self.example_user("othello")
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.login("othello")
+
+        user = self.example_user("cordelia")
+
+        # Send a bunch of messages to test all cases
+        self.send_personal_message(user, admin, content="private message 1")
+        self.send_personal_message(user, admin, content="private message 2")
+        self.send_personal_message(user, self.example_user("iago"))
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="test message 1")
+        self.send_stream_message(user, "Verona", topic_name="topic1", content="test message 2")
+        self.send_stream_message(user, "Verona", topic_name="topic2")
+        self.send_stream_message(user, "Verona")
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 8)
+
+        result = self.client_delete(
+            f"/json/users/{user.id}", {"message_delete_action": orjson.dumps(1).decode()}
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 3)
+
+        do_reactivate_user(user, acting_user=None)
+
+        self.send_stream_message(user, "Verona")
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 4)
+
+        result = self.client_delete(
+            f"/json/users/{user.id}", {"message_delete_action": orjson.dumps(2).decode()}
+        )
+        self.assert_json_success(result)
+
+        user_messages = list(get_user_sent_messages(user))
+        self.assert_length(user_messages, 0)
 
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")

@@ -9,10 +9,12 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.invites import revoke_invites_generated_by_user
+from zerver.actions.message_delete import delete_deactivated_user_messages
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
+from zerver.actions.user_settings import check_change_full_name
 from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
@@ -111,7 +113,12 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile,
+    _cascade: bool = True,
+    spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     if not user_profile.is_active:
         return
@@ -138,6 +145,13 @@ def do_deactivate_user(
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails(user_profile.id)
+
+        if spammer and not user_profile.full_name.endswith(" (spammer)"):
+            check_change_full_name(user_profile, user_profile.full_name + " (spammer)", acting_user)
+
+        if message_delete_action is not None:
+            delete_deactivated_user_messages(user_profile, message_delete_action)
+
         revoke_invites_generated_by_user(user_profile)
 
         event_time = timezone_now()

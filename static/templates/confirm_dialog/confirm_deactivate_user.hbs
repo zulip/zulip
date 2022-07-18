@@ -45,3 +45,16 @@
         <textarea class="email_field_textarea" rows="8" maxlength="2000"></textarea>
     </div>
 </div>
+<div class="deactivate-modal-info-group">
+    <label class="checkbox">
+        <input type="checkbox" name="mark_user_as_spammer" id="mark_as_spammer" />
+        <span></span>
+        {{t "Mark as spammer"}}
+    </label>
+</div>
+<div class="deactivate-modal-info-group" id="delete_action_info_group" style="display: none;">
+    <label for="message_delete_action" class="dropdown-title">{{t "What should be done with the user's messages?" }}</label>
+    <select name="message_delete_action" id="message_delete_action" class="prop-element" data-setting-widget-type="number">
+        {{> ../settings/dropdown_options_widget option_values=message_delete_action}}
+    </select>
+</div>

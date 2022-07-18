@@ -114,6 +114,10 @@ def deactivate_user_backend(
     deactivation_notification_comment: Optional[str] = REQ(
         str_validator=check_capped_string(max_length=2000), default=None
     ),
+    spammer: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    message_delete_action: Optional[int] = REQ(
+        default=None, json_validator=check_int_in(Message.DEACTIVATED_USER_MESSAGE_DELETE_ACTION)
+    ),
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
@@ -126,6 +130,8 @@ def deactivate_user_backend(
         request,
         user_profile,
         target,
+        spammer,
+        message_delete_action,
         deactivation_notification_comment=deactivation_notification_comment,
     )
 
@@ -153,11 +159,17 @@ def _deactivate_user_profile_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     target: UserProfile,
+    spammer: Optional[bool] = None,
+    message_delete_action: Optional[int] = None,
     *,
     deactivation_notification_comment: Optional[str],
 ) -> HttpResponse:
-    do_deactivate_user(target, acting_user=user_profile)
-
+    do_deactivate_user(
+        target,
+        acting_user=user_profile,
+        spammer=spammer,
+        message_delete_action=message_delete_action,
+    )
     # It's important that we check for None explicitly here, since ""
     # encodes sending an email without a custom administrator comment.
     if deactivation_notification_comment is not None:

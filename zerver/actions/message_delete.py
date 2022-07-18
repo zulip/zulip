@@ -1,11 +1,11 @@
-from typing import Iterable, List, TypedDict
+from typing import Any, Dict, Iterable, List, TypedDict
 
 from django.db import transaction
 
 from zerver.lib import retention as retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
-from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models import Message, Realm, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
 
@@ -65,3 +65,65 @@ def do_delete_messages_by_sender(user: UserProfile) -> None:
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)
+
+
+def classify_message(messages: Iterable[Message]) -> Dict[str, Dict[int, Any]]:
+    # This function sorts the messages into a format that can be
+    # used by delete_deactivated_user_messages function to delete
+    # messages from a topic together in bulk and messages from a
+    # a private message individually.
+
+    message_dict: Dict[str, Dict[int, Any]] = {"stream": {}, "private": {}}
+    messages = list(messages)
+    stream_messages = [
+        message for message in messages if message.recipient.type == Recipient.STREAM
+    ]
+    private_messages = [
+        message for message in messages if message.recipient.type != Recipient.STREAM
+    ]
+
+    for message in stream_messages:
+        recipient_id = message.recipient.id
+        topic_name = message.topic_name()
+
+        if recipient_id in message_dict["stream"]:
+            if topic_name in message_dict["stream"][recipient_id]:
+                message_dict["stream"][recipient_id][topic_name].append(message)
+            else:
+                message_dict["stream"][recipient_id][topic_name] = [message]
+        else:
+            message_dict["stream"][recipient_id] = {}
+            message_dict["stream"][recipient_id][topic_name] = [message]
+
+    for message in private_messages:
+        recipient_id = message.recipient.id
+        if recipient_id in message_dict["private"]:
+            message_dict["private"][recipient_id].append(message)
+        else:
+            message_dict["private"][recipient_id] = [message]
+
+    return message_dict
+
+
+def delete_deactivated_user_messages(user_profile: UserProfile, delete_policy: int) -> None:
+
+    user_messages = Message.objects.filter(sender=user_profile)
+
+    if delete_policy == Message.DELETE_PUBLIC_STREAM_MESSAGE:
+        public_stream_messages = [
+            message for message in user_messages if message.is_public_stream_message()
+        ]
+        public_message_dict = classify_message(public_stream_messages)
+        for stream, topic in public_message_dict["stream"].items():
+            for topic, messages in topic.items():
+                do_delete_messages(user_profile.realm, messages)
+
+    elif delete_policy == Message.DELETE_ALL_MESSAGE:
+        user_message_dict = classify_message(user_messages)
+        for stream, topic in user_message_dict["stream"].items():
+            for topic, messages in topic.items():
+                do_delete_messages(user_profile.realm, messages)
+
+        for privates, messages in user_message_dict["private"].items():
+            for message in messages:
+                do_delete_messages(user_profile.realm, [message])

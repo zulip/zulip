@@ -446,6 +446,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             const opts = {
                 username: user.full_name,
                 email: settings_data.email_for_user_settings(user),
+                message_delete_action: settings_config.deactivate_message_delete_action,
                 bots_owned_by_user,
                 number_of_invites_by_user,
                 admin_email: people.my_current_email(),
@@ -481,8 +482,14 @@ function handle_deactivation($tbody) {
         const user_id = $row.data("user-id");
 
         function handle_confirm() {
+            const is_spammer = JSON.stringify($("#mark_as_spammer").prop("checked"));
+            const delete_action = $("#message_delete_action")[0].value;
             const url = "/json/users/" + encodeURIComponent(user_id);
-            let data = {};
+
+            let data = {
+                spammer: is_spammer,
+                message_delete_action: delete_action,
+            };
             if ($(".send_email").is(":checked")) {
                 data = {
                     deactivation_notification_comment: $(".email_field_textarea").val(),
