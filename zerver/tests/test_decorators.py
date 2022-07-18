@@ -9,7 +9,6 @@ from unittest import mock, skipUnless
 
 import orjson
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -1919,8 +1918,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             return HttpResponse("Success")
 
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
-            user = AnonymousUser()
-            request = HostRequestMock(user_profile=user)
+            request = HostRequestMock()
             response = test_view(request)
             self.assertEqual(response.content.decode(), "Success")
 
