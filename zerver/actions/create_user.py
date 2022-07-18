@@ -237,8 +237,6 @@ def process_new_human_user(
 
     # Revoke all preregistration users except prereg_user, and link prereg_user to
     # the created user
-    if prereg_user is None:
-        assert not realm_creation, "realm_creation should only happen with a PreregistrationUser"
 
     if prereg_user is not None:
         prereg_user.status = confirmation_settings.STATUS_ACTIVE
