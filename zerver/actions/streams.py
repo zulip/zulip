@@ -162,6 +162,8 @@ def merge_streams(
 ) -> Tuple[int, int, int]:
     recipient_to_destroy = stream_to_destroy.recipient
     recipient_to_keep = stream_to_keep.recipient
+    assert recipient_to_keep is not None
+    assert recipient_to_destroy is not None
     if recipient_to_destroy.id == recipient_to_keep.id:
         return (0, 0, 0)
 
