@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import lxml.html
 from bs4 import BeautifulSoup
@@ -573,7 +573,7 @@ def handle_missedmessage_emails(
     # We bucket messages by tuples that identify similar messages.
     # For streams it's recipient_id and topic.
     # For PMs it's recipient id and sender.
-    messages_by_bucket: Dict[Tuple[int, str], List[Message]] = defaultdict(list)
+    messages_by_bucket: Dict[Tuple[int, Union[int, str]], List[Message]] = defaultdict(list)
     for msg in messages:
         if msg.recipient.type == Recipient.PERSONAL:
             # For PM's group using (recipient, sender).
@@ -593,7 +593,7 @@ def handle_missedmessage_emails(
             msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
-    bucket_tups: List[Tuple[Tuple[int, str], int]] = []
+    bucket_tups: List[Tuple[Tuple[int, Union[int, str]], int]] = []
     for bucket_tup, msg_list in messages_by_bucket.items():
         max_message_id = max(msg_list, key=lambda msg: msg.id).id
         bucket_tups.append((bucket_tup, max_message_id))
