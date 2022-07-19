@@ -240,6 +240,7 @@ function get_events({dont_block = false} = {}) {
                         save_narrow: true,
                         save_compose: true,
                     });
+                    return;
                 }
 
                 if (error_type === "abort") {
