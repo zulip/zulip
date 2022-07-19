@@ -232,7 +232,7 @@ class MarkdownDirectoryView(ApiURLView):
 
         documentation_article = self.get_path(article)
         http_status = documentation_article.article_http_status
-        result = super().get(self, article=article)
+        result = super().get(request, article=article)
         if http_status != 200:
             result.status_code = http_status
         return result
