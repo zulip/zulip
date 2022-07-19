@@ -36,7 +36,7 @@ from typing import (
 import orjson
 import sentry_sdk
 from django.conf import settings
-from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail.backends.base import BaseEmailBackend
 from django.db import connection, transaction
 from django.db.models import F
 from django.db.utils import IntegrityError
@@ -737,7 +737,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 class EmailSendingWorker(LoopQueueProcessingWorker):
     def __init__(self) -> None:
         super().__init__()
-        self.connection: EmailBackend = initialize_connection(None)
+        self.connection: BaseEmailBackend = initialize_connection(None)
 
     @retry_send_email_failures
     def send_email(self, event: Dict[str, Any]) -> None:
