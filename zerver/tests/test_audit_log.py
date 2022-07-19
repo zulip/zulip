@@ -180,7 +180,8 @@ class TestRealmAuditLog(ZulipTestCase):
             ).count(),
             1,
         )
-        self.assertIsNone(validate_password(password, user))
+        # No error should be raised here
+        validate_password(password, user)
 
     def test_change_email(self) -> None:
         now = timezone_now()
