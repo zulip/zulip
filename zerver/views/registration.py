@@ -136,7 +136,7 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
         Confirmation.REALM_CREATION,
     ]
 
-    prereg_user = get_object_from_key(confirmation_key, confirmation_types, activate_object=False)
+    prereg_user = get_object_from_key(confirmation_key, confirmation_types, mark_object_used=False)
     assert isinstance(prereg_user, PreregistrationUser)
 
     if prereg_user.status in [

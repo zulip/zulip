@@ -50,7 +50,7 @@ ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus,
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_types: List[int], activate_object: bool = True
+    confirmation_key: str, confirmation_types: List[int], mark_object_used: bool = True
 ) -> ConfirmationObjT:
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
@@ -67,7 +67,7 @@ def get_object_from_key(
 
     obj = confirmation.content_object
     assert obj is not None
-    if activate_object and hasattr(obj, "status"):
+    if mark_object_used and hasattr(obj, "status"):
         obj.status = getattr(settings, "STATUS_USED", 1)
         obj.save(update_fields=["status"])
     return obj
