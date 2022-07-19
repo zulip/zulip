@@ -91,7 +91,7 @@ approach shown above.
                 options["url"], json, content_type="application/json", HTTP_HOST=realm.host
             )
         if result.status_code != 200:
-            raise CommandError(f"Error status {result.status_code}: {result.content}")
+            raise CommandError(f"Error status {result.status_code}: {result.content!r}")
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)
