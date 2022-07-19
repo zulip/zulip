@@ -19,7 +19,7 @@ streams.
 {start_tabs}
 
 1. [Open the compose box](/help/open-the-compose-box) by typing `x` or clicking
-   **New private message** at the bottom of the screen.
+   **New private message** at the bottom of the app.
 
 2. Start typing a user's name, and select the user from the list of
    suggestions. Repeat as necessary.
@@ -43,4 +43,3 @@ There are several ways to access an existing PM or group PM.
 ## Related articles
 
 * [Typing notifications](/help/typing-notifications)
-

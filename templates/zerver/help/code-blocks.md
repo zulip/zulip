@@ -27,7 +27,7 @@ Sending the above message in Zulip will render like this:
 You can also use `~~~` to start code blocks, or just indent the code 4 or more
 spaces.
 
-A widget in the upper-right corner of code blocks allows you to easily
+A widget in the top right corner of code blocks allows you to easily
 copy the code to your clipboard.
 
 ## Language tagging

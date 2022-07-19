@@ -8,7 +8,7 @@ space for the message feed. There are a number of ways to open the compose box.
 * Click on any message.
 
 * Click on **Message...**, **New topic**, or **New private message** at the
-  bottom of the screen.
+  bottom of the app.
 
 ## Using the keyboard
 

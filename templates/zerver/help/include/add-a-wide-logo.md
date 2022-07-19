@@ -1,6 +1,6 @@
 {!cloud-standard-only.md!}
 
-You can customize the logo users see in the upper left corner
+You can customize the logo users see in the top left corner
 of the Zulip app. For best results make sure your logo has a
 transparent background, and trim any bordering whitespace. To upload a logo:
 
