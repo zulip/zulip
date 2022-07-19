@@ -1,4 +1,4 @@
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the top
    right corner of the web or desktop app.
 
 1. Select **Manage streams**.

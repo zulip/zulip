@@ -1,7 +1,7 @@
 # Searching for messages
 
 Zulip has a powerful search engine under its hood. Search for messages using
-the search bar at the top of the screen.
+the search bar at the top of the app.
 
 ## Example
 

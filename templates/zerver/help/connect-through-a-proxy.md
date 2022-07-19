@@ -15,7 +15,7 @@ a single website.
 
 {tab|system-proxy-settings}
 
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
+{!desktop-sidebar-settings-menu.md!}
 
 2. Select the **Network** tab.
 
@@ -25,7 +25,7 @@ a single website.
 
 {tab|custom-proxy-settings}
 
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the lower left corner.
+{!desktop-sidebar-settings-menu.md!}
 
 2. Select the **Network** tab.
 

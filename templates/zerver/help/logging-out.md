@@ -3,8 +3,8 @@
 {start_tabs}
 {tab|desktop-web}
 
-1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the upper
-right corner.
+1. Click on the **gear** (<i class="fa fa-cog"></i>) icon in the top
+right corner of the app.
 
 2. Click **Log out**.
 

@@ -15,7 +15,7 @@ so that you never lose your work. Drafts are saved for 30 days.
 {tab|desktop-web}
 
 Simply close the compose box. You can hit `Esc`, click
-the <i class="fa fa-remove"></i> in the upper right corner of the
+the <i class="fa fa-remove"></i> in the top right corner of the
 compose box, or click on an empty part of the app.
 
 {end_tabs}
