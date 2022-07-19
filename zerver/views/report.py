@@ -119,7 +119,7 @@ def report_unnarrow_times(
 @has_request_variables
 def report_error(
     request: HttpRequest,
-    user_profile: UserProfile,
+    maybe_user_profile: Union[AnonymousUser, UserProfile],
     message: str = REQ(),
     stacktrace: str = REQ(),
     ui_message: bool = REQ(json_validator=check_bool),
@@ -155,9 +155,9 @@ def report_error(
     if more_info.get("draft_content"):
         more_info["draft_content"] = privacy_clean_markdown(more_info["draft_content"])
 
-    if user_profile.is_authenticated:
-        email = user_profile.delivery_email
-        full_name = user_profile.full_name
+    if maybe_user_profile.is_authenticated:
+        email = maybe_user_profile.delivery_email
+        full_name = maybe_user_profile.full_name
     else:
         email = "unauthenticated@example.com"
         full_name = "Anonymous User"
