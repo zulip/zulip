@@ -8,6 +8,7 @@ from django.core import mail
 from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
+from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
@@ -1190,8 +1191,25 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
 
-        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", req)
+        result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_error(result, "Must be an organization owner")
+
+        result = self.client_patch(f"/json/bots/{user_profile.id}", req)
+        self.assert_json_error(result, "Must be an organization owner")
+
+        # Test for not allowing a non-administrator user to assign a bot an administrator role
+        shiva = self.example_user("shiva")
+        self.assertEqual(shiva.role, UserProfile.ROLE_MODERATOR)
+        self.login_user(shiva)
+        do_change_bot_owner(user_profile, shiva, acting_user=None)
+
+        req = dict(role=UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        result = self.client_patch(f"/json/users/{user_profile.id}", req)
+        self.assert_json_error(result, "Must be an organization administrator")
+
+        result = self.client_patch(f"/json/bots/{user_profile.id}", req)
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_patch_bot_to_stream_private_allowed(self) -> None:
         self.login("hamlet")
