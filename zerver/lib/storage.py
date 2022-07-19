@@ -6,6 +6,7 @@ from typing import Optional
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
+from django.core.files.base import File
 from django.core.files.storage import FileSystemStorage
 
 if settings.DEBUG:
@@ -22,7 +23,7 @@ else:
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(
-        self, name: str, content: Optional[str] = None, filename: Optional[str] = None
+        self, name: str, content: Optional["File[bytes]"] = None, filename: Optional[str] = None
     ) -> str:
         ext = os.path.splitext(name)[1]
         if name.startswith("webpack-bundles"):
