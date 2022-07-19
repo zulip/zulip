@@ -881,9 +881,6 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             if message.content != event["message_content"]:
                 return
 
-            if message.content is None:
-                return
-
             # Fetch the realm whose settings we're using for rendering
             realm = Realm.objects.get(id=event["message_realm_id"])
 
