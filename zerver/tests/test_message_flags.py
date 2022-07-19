@@ -1917,7 +1917,7 @@ class MarkUnreadTest(ZulipTestCase):
         unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
-            self.assertNotIn("mentioned", event["message_details"][message_id]),
+            self.assertNotIn("mentioned", event["message_details"][message_id])
 
         for message_id in messages_to_unread:
             um = UserMessage.objects.get(
@@ -1983,7 +1983,7 @@ class MarkUnreadTest(ZulipTestCase):
         unread_message_ids = {str(message_id) for message_id in messages_to_unread}
         self.assertSetEqual(set(event["message_details"].keys()), unread_message_ids)
         for message_id in event["message_details"]:
-            self.assertEqual(event["message_details"][message_id]["mentioned"], True),
+            self.assertEqual(event["message_details"][message_id]["mentioned"], True)
 
         for message_id in messages_to_unread:
             um = UserMessage.objects.get(
