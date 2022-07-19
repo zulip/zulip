@@ -21,7 +21,7 @@ from zerver.lib.streams import (
 from zerver.lib.user_mutes import get_mute_object
 from zerver.lib.user_topics import topic_is_muted
 from zerver.lib.users import access_user_by_id
-from zerver.lib.validator import check_int
+from zerver.lib.validator import check_int, check_string_in
 from zerver.models import UserProfile
 
 
@@ -71,7 +71,7 @@ def update_muted_topic(
     stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     stream: Optional[str] = REQ(default=None),
     topic: str = REQ(),
-    op: str = REQ(),
+    op: str = REQ(str_validator=check_string_in(["add", "remove"])),
 ) -> HttpResponse:
 
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
@@ -84,7 +84,6 @@ def update_muted_topic(
             topic_name=topic,
             date_muted=timezone_now(),
         )
-        return json_success(request)
     elif op == "remove":
         unmute_topic(
             user_profile=user_profile,
@@ -92,7 +91,7 @@ def update_muted_topic(
             stream_name=stream,
             topic_name=topic,
         )
-        return json_success(request)
+    return json_success(request)
 
 
 def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: int) -> HttpResponse:
