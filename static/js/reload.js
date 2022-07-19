@@ -211,7 +211,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // broken state and cause lots of confusing tracebacks.  So, we
     // set ourselves to try reloading a bit later, both periodically
     // and when the user focuses the window.
-    $(window).on("focus", () => {
+    $(window).one("focus", () => {
         blueslip.log("Retrying on-focus page reload");
         window.location.reload(true);
     });
