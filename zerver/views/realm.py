@@ -327,11 +327,15 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
 
 def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        realm = get_object_from_key(confirmation_key, [Confirmation.REALM_REACTIVATION])
+        realm = get_object_from_key(
+            confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=False
+        )
     except ConfirmationKeyException:
         return render(request, "zerver/realm_reactivation_link_error.html")
     assert isinstance(realm, Realm)
     do_reactivate_realm(realm)
+    # TODO: After reactivating the realm, the confirmation link needs to be revoked in some way.
+
     context = {"realm": realm}
     return render(request, "zerver/realm_reactivation.html", context)
 

@@ -52,6 +52,15 @@ ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus,
 def get_object_from_key(
     confirmation_key: str, confirmation_types: List[int], mark_object_used: bool = True
 ) -> ConfirmationObjT:
+    """Access a confirmation object from one of the provided confirmation
+    types with the provided key.
+
+    The mark_object_used parameter determines whether to mark the
+    confirmation object as used (which generally prevents it from
+    being used again). It should always be False for MultiuseInvite
+    objects, since they are intended to be used multiple times.
+    """
+
     # Confirmation keys used to be 40 characters
     if len(confirmation_key) not in (24, 40):
         raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
@@ -67,7 +76,12 @@ def get_object_from_key(
 
     obj = confirmation.content_object
     assert obj is not None
-    if mark_object_used and hasattr(obj, "status"):
+
+    if mark_object_used:
+        # MultiuseInvite objects have no status field, since they are
+        # intended to be used more than once.
+        assert confirmation.type != Confirmation.MULTIUSE_INVITE
+        assert hasattr(obj, "status")
         obj.status = getattr(settings, "STATUS_USED", 1)
         obj.save(update_fields=["status"])
     return obj

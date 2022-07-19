@@ -751,7 +751,9 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     realm = get_realm_from_request(request)
     multiuse_object: Optional[MultiuseInvite] = None
     try:
-        confirmation_obj = get_object_from_key(confirmation_key, [Confirmation.MULTIUSE_INVITE])
+        confirmation_obj = get_object_from_key(
+            confirmation_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
+        )
         assert isinstance(confirmation_obj, MultiuseInvite)
         multiuse_object = confirmation_obj
         if realm != multiuse_object.realm:

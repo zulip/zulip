@@ -18,7 +18,9 @@ def process_unsubscribe(
     unsubscribe_function: Callable[[UserProfile], None],
 ) -> HttpResponse:
     try:
-        user_profile = get_object_from_key(confirmation_key, [Confirmation.UNSUBSCRIBE])
+        user_profile = get_object_from_key(
+            confirmation_key, [Confirmation.UNSUBSCRIBE], mark_object_used=False
+        )
     except ConfirmationKeyException:
         return render(request, "zerver/unsubscribe_link_error.html")
 

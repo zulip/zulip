@@ -191,7 +191,7 @@ def maybe_send_to_registration(
         from_multiuse_invite = True
         try:
             confirmation_obj = get_object_from_key(
-                multiuse_object_key, [Confirmation.MULTIUSE_INVITE]
+                multiuse_object_key, [Confirmation.MULTIUSE_INVITE], mark_object_used=False
             )
         except ConfirmationKeyException as exception:
             return render_confirmation_key_error(request, exception)
