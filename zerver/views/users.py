@@ -39,6 +39,7 @@ from zerver.lib.exceptions import (
     CannotDeactivateLastUserError,
     JsonableError,
     MissingAuthenticationError,
+    OrganizationAdministratorRequired,
     OrganizationOwnerRequired,
 )
 from zerver.lib.integrations import EMBEDDED_BOTS
@@ -188,11 +189,11 @@ def update_user_backend(
 
     if role is not None and target.role != role:
         # Require that the current user has permissions to
-        # grant/remove the role in question.  access_user_by_id has
-        # already verified we're an administrator; here we enforce
-        # that only owners can toggle the is_realm_owner flag.
+        # grant/remove the role in question.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
+        elif not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequired()
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(user_profile):
             raise JsonableError(
