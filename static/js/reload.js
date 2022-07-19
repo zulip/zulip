@@ -241,7 +241,7 @@ export function initiate({
         do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html);
     }
 
-    if (reload_state.is_pending()) {
+    if (reload_state.is_pending() || reload_state.is_in_progress()) {
         return;
     }
     reload_state.set_state_to_pending();
