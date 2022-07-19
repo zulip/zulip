@@ -73,6 +73,7 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     attr_username: str
     attr_email: str
     attr_org_membership: str
+    auto_signup: bool
     display_name: str
     display_icon: str
     limit_to_subdomains: List[str]
