@@ -223,7 +223,9 @@ class MarkdownDirectoryView(ApiURLView):
         add_google_analytics_context(context)
         return context
 
-    def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
+    def get(
+        self, request: HttpRequest, *args: object, article: str = "", **kwargs: object
+    ) -> HttpResponse:
         # Hack: It's hard to reinitialize urls.py from tests, and so
         # we want to defer the use of settings.POLICIES_DIRECTORY to
         # runtime.
