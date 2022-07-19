@@ -15,6 +15,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Iterable,
     Iterator,
     List,
     Mapping,
@@ -4716,7 +4717,7 @@ class DevGetEmailsTest(ZulipTestCase):
 
 
 class ExternalMethodDictsTests(ZulipTestCase):
-    def get_configured_saml_backend_idp_names(self) -> List[str]:
+    def get_configured_saml_backend_idp_names(self) -> Iterable[str]:
         return settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys()
 
     def test_get_external_method_dicts_correctly_sorted(self) -> None:
