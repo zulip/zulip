@@ -39,7 +39,6 @@ from .configured_settings import (
     EXTERNAL_URI_SCHEME,
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
-    INVITATION_LINK_VALIDITY_DAYS,
     IS_DEV_DROPLET,
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
@@ -1196,9 +1195,6 @@ AUTH_LDAP_BIND_PASSWORD = get_secret("auth_ldap_bind_password", "")
 ########################################################################
 # MISC SETTINGS
 ########################################################################
-
-# Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
-INVITATION_LINK_VALIDITY_MINUTES = 24 * 60 * INVITATION_LINK_VALIDITY_DAYS
 
 if PRODUCTION:
     # Filter out user data

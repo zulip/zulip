@@ -17,6 +17,7 @@ from zerver.lib.email_notifications import enqueue_welcome_emails
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
+from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES
 from zproject.email_backends import get_forward_address, set_forward_address
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
@@ -71,7 +72,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     registered_email = "hamlet@zulip.com"
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
-    invite_expires_in_minutes = settings.INVITATION_LINK_VALIDITY_MINUTES
+    invite_expires_in_minutes = INVITATION_LINK_VALIDITY_MINUTES
     realm = get_realm("zulip")
     other_realm = Realm.objects.exclude(string_id="zulip").first()
     user = get_user_by_delivery_email(registered_email, realm)

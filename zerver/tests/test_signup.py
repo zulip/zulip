@@ -111,7 +111,7 @@ from zerver.models import (
 )
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key
-from zerver.views.invite import get_invitee_emails_set
+from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
 from zerver.views.registration import accounts_home
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
@@ -1110,7 +1110,7 @@ class InviteUserBase(ZulipTestCase):
         self,
         invitee_emails: str,
         stream_names: Sequence[str],
-        invite_expires_in_minutes: Optional[int] = settings.INVITATION_LINK_VALIDITY_MINUTES,
+        invite_expires_in_minutes: Optional[int] = INVITATION_LINK_VALIDITY_MINUTES,
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
     ) -> "TestHttpResponse":

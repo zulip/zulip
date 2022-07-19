@@ -21,6 +21,12 @@ from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import check_int, check_list, check_none_or
 from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
+# Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
+# Because mypy fails to correctly infer the type of the validator, we want this constant
+# to be Optional[int] to avoid a mypy error when using it as the default value.
+# https://github.com/python/mypy/issues/13234
+INVITATION_LINK_VALIDITY_MINUTES: Optional[int] = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
+
 
 def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
     if (
@@ -37,7 +43,7 @@ def invite_users_backend(
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
     invite_expires_in_minutes: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_MINUTES
+        json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
@@ -175,7 +181,7 @@ def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invite_expires_in_minutes: Optional[int] = REQ(
-        json_validator=check_none_or(check_int), default=settings.INVITATION_LINK_VALIDITY_MINUTES
+        json_validator=check_none_or(check_int), default=INVITATION_LINK_VALIDITY_MINUTES
     ),
     invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
     stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
