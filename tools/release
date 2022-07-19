@@ -104,9 +104,9 @@ git tag "$version"
 remote="$(git config zulip.zulipRemote)" || remote=upstream
 git push "$remote" "$branch:$branch"
 
-OUTDIR=$(mktemp -d)
-trap 'rm -r "$OUTDIR"' EXIT
-export OUTDIR
+OUTPUT_DIR=$(mktemp -d)
+trap 'rm -r "$OUTPUT_DIR"' EXIT
+export OUTPUT_DIR
 
 ./tools/build-release-tarball "$version"
 
