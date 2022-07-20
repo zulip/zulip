@@ -74,6 +74,9 @@ First
 skipping "Step 3: Create a Zulip organization, and log in" (you'll
 create your Zulip organization via the data import tool instead).
 
+Copy the `slack_data.zip` file you obtained above onto the Zulip
+server, and put it in `/tmp/`.
+
 Log in to a shell on your Zulip server as the `zulip` user. To import with
 the most common configuration, run the following commands, replacing
 `<token>` with the value generated above.
@@ -81,8 +84,8 @@ the most common configuration, run the following commands, replacing
 ```
 cd /home/zulip/deployments/current
 ./scripts/stop-server
-./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
-./manage.py import '' converted_slack_data
+./manage.py convert_slack_data /tmp/slack_data.zip --token <token> --output /tmp/converted_slack_data
+./manage.py import '' /tmp/converted_slack_data
 ./scripts/start-server
 ```
 
