@@ -526,11 +526,9 @@ class ResponseDescriptionPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP_RESPONSE_DESC, md, config)
 
     def render(self, function: str) -> List[str]:
-        description: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_description = get_responses_description(path, method)
-        description.extend(raw_description.splitlines())
-        return description
+        return raw_description.splitlines()
 
 
 class ParameterDescriptionPreprocessor(BasePreprocessor):
@@ -538,11 +536,9 @@ class ParameterDescriptionPreprocessor(BasePreprocessor):
         super().__init__(MACRO_REGEXP_PARAMETER_DESC, md, config)
 
     def render(self, function: str) -> List[str]:
-        description: List[str] = []
         path, method = function.rsplit(":", 1)
         raw_description = get_parameters_description(path, method)
-        description.extend(raw_description.splitlines())
-        return description
+        return raw_description.splitlines()
 
 
 def makeExtension(*args: Any, **kwargs: str) -> APIMarkdownExtension:
