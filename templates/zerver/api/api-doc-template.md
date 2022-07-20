@@ -1,6 +1,4 @@
-{generate_api_title(API_ENDPOINT_NAME)}
-
-{generate_api_description(API_ENDPOINT_NAME)}
+{generate_api_header(API_ENDPOINT_NAME)}
 
 ## Usage examples
 
