@@ -76,12 +76,12 @@ def check_django() -> bool:
 def provision_version() -> bool:
     fn = os.path.join(UUID_VAR_PATH, "provision_version")
     with open(fn) as f:
-        version = f.read().strip()
+        version = tuple(map(int, f.read().strip().split(".")))
     print("latest version provisioned:", version)
     from version import PROVISION_VERSION
 
     print("desired version:", PROVISION_VERSION)
-    if version != PROVISION_VERSION:
+    if not (PROVISION_VERSION <= version < (PROVISION_VERSION[0] + 1,)):
         print("You need to provision!")
         return False
     return True
