@@ -2486,7 +2486,7 @@ nav {
 .gradients .gradient.white-fade {
     background: linear-gradient(
         0deg,
-        hsl(0, 0%, 98%) 0%,
+        hsl(0, 0%, 100%) 0%,
         hsla(0, 0%, 98%, 0) 40%
     );
 }
