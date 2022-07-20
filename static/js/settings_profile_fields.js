@@ -233,6 +233,7 @@ function open_custom_profile_field_form_modal() {
     }
 
     dialog_widget.launch({
+        form_id: "add-new-custom-profile-field-form",
         help_link: "/help/add-custom-profile-fields",
         html_heading: $t_html({defaultMessage: "Add a new custom profile field"}),
         html_body,
