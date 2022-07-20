@@ -138,7 +138,7 @@ MessageResponse:
 ```
 
 You can find more examples, including GET requests and nested objects, in
-`/static/yaml/zulip.yaml`.
+`zerver/openapi/zulip.yaml`.
 
 ## Zulip Swagger YAML style:
 
