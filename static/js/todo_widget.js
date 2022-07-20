@@ -7,7 +7,6 @@ import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as util from "./util";
 
 // Any single user should send add a finite number of tasks
 // to a todo list. We arbitrarily pick this value.
@@ -23,22 +22,9 @@ export class TaskData {
 
     get_widget_data() {
         const all_tasks = Array.from(this.task_map.values());
-        all_tasks.sort((a, b) => util.strcmp(a.task, b.task));
-
-        const pending_tasks = [];
-        const completed_tasks = [];
-
-        for (const item of all_tasks) {
-            if (item.completed) {
-                completed_tasks.push(item);
-            } else {
-                pending_tasks.push(item);
-            }
-        }
 
         const widget_data = {
-            pending_tasks,
-            completed_tasks,
+            all_tasks,
         };
 
         return widget_data;
