@@ -898,6 +898,7 @@ def import_uploads(
 #
 # * Client [no deps]
 # * Realm [-notifications_stream]
+# * UserGroup
 # * Stream [only depends on realm]
 # * Realm's notifications_stream
 # * Now can do all realm_tables
@@ -959,6 +960,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         signup_notifications_stream_id = None
     realm.signup_notifications_stream_id = None
     realm.save()
+
+    if "zerver_usergroup" in data:
+        update_model_ids(UserGroup, data, "usergroup")
+        re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
+        bulk_import_model(data, UserGroup)
+
+    # We expect Zulip server exports to contain these system groups,
+    # this logic here is needed to handle the imports from other services.
+    role_system_groups_dict: Optional[Dict[int, UserGroup]] = None
+    if "zerver_usergroup" not in data:
+        role_system_groups_dict = create_system_user_groups_for_realm(realm)
 
     # Email tokens will automatically be randomly generated when the
     # Stream objects are created by Django.
@@ -1170,10 +1182,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         bulk_import_model(data, Service)
 
     if "zerver_usergroup" in data:
-        re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-        update_model_ids(UserGroup, data, "usergroup")
-        bulk_import_model(data, UserGroup)
-
         re_map_foreign_keys(
             data, "zerver_usergroupmembership", "user_group", related_table="usergroup"
         )
@@ -1192,10 +1200,10 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         update_model_ids(GroupGroupMembership, data, "groupgroupmembership")
         bulk_import_model(data, GroupGroupMembership)
 
-    # We expect Zulip server exports to contain these system groups,
-    # this logic here is needed to handle the imports from other services.
-    if not UserGroup.objects.filter(realm=realm, is_system_group=True).exists():
-        role_system_groups_dict = create_system_user_groups_for_realm(realm)
+    # We expect Zulip server exports to contain UserGroupMembership objects
+    # for system groups, this logic here is needed to handle the imports from
+    # other services.
+    if role_system_groups_dict is not None:
         add_users_to_system_user_groups(realm, user_profiles, role_system_groups_dict)
 
     if "zerver_botstoragedata" in data:
