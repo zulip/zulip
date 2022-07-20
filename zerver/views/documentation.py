@@ -195,7 +195,9 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
-            elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
+            elif (
+                self.path_template == "/zerver/api/%s.md" and "{generate_api_header(" in first_line
+            ):
                 api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)

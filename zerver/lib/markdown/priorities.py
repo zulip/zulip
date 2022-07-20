@@ -5,8 +5,7 @@
 PREPROCESSOR_PRIORITES = {
     "generate_parameter_description": 535,
     "generate_response_description": 531,
-    "generate_api_title": 531,
-    "generate_api_description": 530,
+    "generate_api_header": 530,
     "generate_code_example": 525,
     "generate_return_values": 510,
     "generate_api_arguments": 505,
