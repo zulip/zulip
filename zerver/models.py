@@ -2248,6 +2248,10 @@ class PreregistrationUser(models.Model):
     )
     invited_as: int = models.PositiveSmallIntegerField(default=INVITE_AS["MEMBER"])
 
+    multiuse_invite: Optional["MultiuseInvite"] = models.ForeignKey(
+        "MultiuseInvite", null=True, on_delete=models.SET_NULL
+    )
+
     # The UserProfile created upon completion of the registration
     # for this PregistrationUser
     created_user: Optional[UserProfile] = models.ForeignKey(

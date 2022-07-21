@@ -555,12 +555,15 @@ def prepare_activation_url(
     realm_creation: bool = False,
     streams: Optional[Iterable[Stream]] = None,
     invited_as: Optional[int] = None,
+    multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> str:
     """
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    prereg_user = create_preregistration_user(email, realm, realm_creation)
+    prereg_user = create_preregistration_user(
+        email, realm, realm_creation, multiuse_invite=multiuse_invite
+    )
 
     if streams is not None:
         prereg_user.streams.set(streams)
@@ -726,6 +729,7 @@ def accounts_home(
                 realm=realm,
                 streams=streams_to_subscribe,
                 invited_as=invited_as,
+                multiuse_invite=multiuse_object,
             )
             try:
                 send_confirm_registration_email(email, activation_url, request=request, realm=realm)

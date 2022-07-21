@@ -1606,6 +1606,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
         )
 
+        # Verify the PreregistrationUser object was set up as expected.
+        prereg_user = PreregistrationUser.objects.last()
+        self.assertEqual(prereg_user.email, email)
+        self.assertEqual(prereg_user.multiuse_invite, multiuse_obj)
+
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_using_multiuse_invite_realm_validation(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""

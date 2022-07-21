@@ -2959,6 +2959,13 @@ class MultiuseInviteTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(email, password)
         self.assertEqual(result.status_code, 302)
 
+        # Verify the PreregistrationUser object was set up as expected.
+        prereg_user = PreregistrationUser.objects.last()
+        multiuse_invite = MultiuseInvite.objects.last()
+
+        self.assertEqual(prereg_user.email, email)
+        self.assertEqual(prereg_user.multiuse_invite, multiuse_invite)
+
         from django.core.mail import outbox
 
         outbox.pop()

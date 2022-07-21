@@ -119,6 +119,7 @@ def create_preregistration_user(
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
+    multiuse_invite: Optional[MultiuseInvite] = None,
 ) -> PreregistrationUser:
     assert not (realm_creation and realm is not None)
     assert not (realm is None and not realm_creation)
@@ -130,6 +131,7 @@ def create_preregistration_user(
         realm=realm,
         full_name=full_name,
         full_name_validated=full_name_validated,
+        multiuse_invite=multiuse_invite,
     )
 
 
@@ -234,6 +236,7 @@ def maybe_send_to_registration(
                 password_required=password_required,
                 full_name=full_name,
                 full_name_validated=full_name_validated,
+                multiuse_invite=multiuse_obj,
             )
 
         if multiuse_obj is not None:
@@ -241,6 +244,7 @@ def maybe_send_to_registration(
             streams_to_subscribe = list(multiuse_obj.streams.all())
             prereg_user.streams.set(streams_to_subscribe)
             prereg_user.invited_as = invited_as
+            prereg_user.multiuse_invite = multiuse_obj
             prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
