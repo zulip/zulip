@@ -9,7 +9,7 @@ from .config import DEVELOPMENT, PRODUCTION, get_secret
 if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
 
-    from zerver.lib.types import SAMLIdPConfigDict
+    from zerver.lib.types import OIDCIdPConfigDict, SAMLIdPConfigDict
 
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
@@ -102,7 +102,7 @@ SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
 # Generic OpenID Connect:
-SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Dict[str, Optional[str]]] = {}
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, "OIDCIdPConfigDict"] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
 SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
