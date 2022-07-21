@@ -19,8 +19,9 @@ setup_path()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
+from typing import Protocol
+
 from django.conf import settings
-from typing_extensions import Protocol
 
 from scripts.lib.zulip_tools import BOLD, CYAN, ENDC, FAIL, GRAY, OKBLUE
 
@@ -96,7 +97,7 @@ def parser() -> argparse.ArgumentParser:
 def maybe_gzip(logfile_name: str) -> TextIO:
     if logfile_name.endswith(".gz"):
         return gzip.open(logfile_name, "rt")
-    return open(logfile_name, "r")
+    return open(logfile_name)
 
 
 NGINX_LOG_LINE_RE = re.compile(

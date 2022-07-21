@@ -220,16 +220,14 @@ class TestMiscStuff(ZulipTestCase):
         expected_fields -= {"id"}
 
         stream_dict_fields = set(APIStreamDict.__annotations__.keys())
-        computed_fields = set(["is_announcement_only", "is_default"])
+        computed_fields = {"is_announcement_only", "is_default"}
 
         self.assertEqual(stream_dict_fields - computed_fields, expected_fields)
 
         expected_fields = set(Subscription.API_FIELDS)
 
         subscription_dict_fields = set(APISubscriptionDict.__annotations__.keys())
-        computed_fields = set(
-            ["in_home_view", "email_address", "stream_weekly_traffic", "subscribers"]
-        )
+        computed_fields = {"in_home_view", "email_address", "stream_weekly_traffic", "subscribers"}
         # `APISubscriptionDict` is a subclass of `APIStreamDict`, therefore having all the
         # fields in addition to the computed fields and `Subscription.API_FIELDS` that
         # need to be excluded here.
