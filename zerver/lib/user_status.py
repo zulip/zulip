@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Dict, Optional, TypedDict
 
 from django.db.models import Q
 from django.utils.timezone import now as timezone_now
@@ -6,14 +6,32 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import UserStatus
 
 
-def format_user_status(row: Dict[str, Any]) -> Dict[str, Any]:
+class UserInfoDict(TypedDict, total=False):
+    status: int
+    status_text: str
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+    away: bool
+
+
+class RawUserInfoDict(TypedDict):
+    user_profile_id: int
+    status: int
+    status_text: str
+    emoji_name: str
+    emoji_code: str
+    reaction_type: str
+
+
+def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     away = row["status"] == UserStatus.AWAY
     status_text = row["status_text"]
     emoji_name = row["emoji_name"]
     emoji_code = row["emoji_code"]
     reaction_type = row["reaction_type"]
 
-    dct = {}
+    dct: UserInfoDict = {}
     if away:
         dct["away"] = away
     if status_text:
@@ -26,7 +44,7 @@ def format_user_status(row: Dict[str, Any]) -> Dict[str, Any]:
     return dct
 
 
-def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
+def get_user_info_dict(realm_id: int) -> Dict[str, UserInfoDict]:
     rows = (
         UserStatus.objects.filter(
             user_profile__realm_id=realm_id,
@@ -49,7 +67,7 @@ def get_user_info_dict(realm_id: int) -> Dict[str, Dict[str, Any]]:
         )
     )
 
-    user_dict: Dict[str, Dict[str, Any]] = {}
+    user_dict: Dict[str, UserInfoDict] = {}
     for row in rows:
         user_id = row["user_profile_id"]
         user_dict[str(user_id)] = format_user_status(row)
