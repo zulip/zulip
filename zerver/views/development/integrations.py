@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -13,6 +13,9 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool
 from zerver.lib.webhooks.common import get_fixture_http_headers, standardize_headers
 from zerver.models import UserProfile, get_realm
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
 
@@ -42,7 +45,7 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
 
 def send_webhook_fixture_message(
     url: str, body: str, is_json: bool, custom_headers: Dict[str, Any]
-) -> HttpResponse:
+) -> "TestHttpResponse":
     client = Client()
     realm = get_realm("zulip")
     standardized_headers = standardize_headers(custom_headers)
@@ -52,7 +55,13 @@ def send_webhook_fixture_message(
     else:
         content_type = standardized_headers.pop("HTTP_CONTENT_TYPE", "text/plain")
     return client.post(
-        url, body, content_type=content_type, HTTP_HOST=http_host, **standardized_headers
+        url,
+        body,
+        content_type=content_type,
+        follow=False,
+        secure=False,
+        HTTP_HOST=http_host,
+        **standardized_headers,
     )
 
 
