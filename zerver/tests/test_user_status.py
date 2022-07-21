@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Mapping, Set
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_status import get_user_info_dict, update_user_status
+from zerver.lib.user_status import UserInfoDict, get_user_info_dict, update_user_status
 from zerver.models import UserProfile, UserStatus, get_client
 
 
@@ -13,7 +13,7 @@ def get_away_user_ids(realm_id: int) -> Set[int]:
     return {int(user_id) for user_id in user_dict if user_dict[user_id].get("away")}
 
 
-def user_info(user: UserProfile) -> Dict[str, Any]:
+def user_info(user: UserProfile) -> UserInfoDict:
     user_dict = get_user_info_dict(user.realm_id)
     return user_dict.get(str(user.id), {})
 
