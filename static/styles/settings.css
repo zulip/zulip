@@ -600,13 +600,11 @@ input[type="checkbox"] {
 }
 
 .add-new-emoji-box,
-.add-new-alert-word-box,
 .add-new-export-box {
     margin-bottom: 20px;
 }
 
 .add-new-emoji-box .new-emoji-form,
-.add-new-alert-word-box .new-alert-word-form,
 .add-new-export-box {
     margin: 10px 0;
 }
@@ -830,6 +828,12 @@ input[type="checkbox"] {
 
     #bot-role-select:disabled {
         opacity: 1;
+    }
+}
+
+#add-alert-word {
+    form {
+        margin-bottom: 4px;
     }
 }
 
