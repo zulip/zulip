@@ -816,6 +816,7 @@ def login_page(
         # added in SimpleTemplateResponse class, which is a derived class of
         # HttpResponse. See django.template.response.SimpleTemplateResponse,
         # https://github.com/django/django/blob/2.0/django/template/response.py#L19
+        assert template_response.context_data is not None
         update_login_page_context(request, template_response.context_data)
 
     assert isinstance(template_response, HttpResponse)
