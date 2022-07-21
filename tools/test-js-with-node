@@ -50,6 +50,7 @@ EXEMPT_FILES = make_set(
         "static/js/add_subscribers_pill.js",
         "static/js/admin.js",
         "static/js/alert_popup.ts",
+        "static/js/alert_words_ui.js",
         "static/js/archive.js",
         "static/js/attachments_ui.js",
         "static/js/avatar.js",
