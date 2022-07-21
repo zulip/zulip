@@ -351,6 +351,20 @@ input.text-error {
 
 .portico-container {
     position: relative;
+    /* To adjust for flexible footer height we do 2 things:
+      - Make the `portico-container` expand to full page height.
+      - Fill the empty space with `portico-wrap`. */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .portico-wrap {
+        flex: 1 0 auto;
+    }
+
+    .footer {
+        flex-shrink: 0;
+    }
 
     .if-zulip-electron {
         display: none;
@@ -400,6 +414,42 @@ input.text-error {
             margin-left: 0;
             font-weight: 400;
         }
+
+        .coloured-text {
+            color: hsl(0, 0%, 20%);
+            font-weight: bold;
+        }
+    }
+}
+
+.self-hosted-footer {
+    padding: 20px 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+
+    .break {
+        flex-basis: 100%;
+        height: 0;
+    }
+
+    .powered-by-zulip {
+        padding: 0;
+        padding-top: 10px;
+        opacity: 0.9;
+        font-size: 15px;
+    }
+
+    .footer-section {
+        padding-bottom: 5px;
+        margin: 0 15px;
+    }
+
+    .footer-section ul {
+        margin: 0;
+    }
+
+    @media (width <= 500px) {
+        flex-direction: column;
     }
 }
 
