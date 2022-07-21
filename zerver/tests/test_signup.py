@@ -2123,7 +2123,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # Mainly a test of get_object_from_key, rather than of the invitation pathway
         with self.assertRaises(ConfirmationKeyException) as cm:
-            get_object_from_key(registration_key, [Confirmation.INVITATION])
+            get_object_from_key(registration_key, [Confirmation.INVITATION], mark_object_used=True)
         self.assertEqual(cm.exception.error_type, ConfirmationKeyException.DOES_NOT_EXIST)
 
         # Verify that using the wrong type doesn't work in the main confirm code path

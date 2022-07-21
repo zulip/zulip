@@ -50,7 +50,7 @@ ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus,
 
 
 def get_object_from_key(
-    confirmation_key: str, confirmation_types: List[int], mark_object_used: bool = True
+    confirmation_key: str, confirmation_types: List[int], *, mark_object_used: bool
 ) -> ConfirmationObjT:
     """Access a confirmation object from one of the provided confirmation
     types with the provided key.

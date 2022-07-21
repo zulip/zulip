@@ -62,7 +62,9 @@ AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in thi
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        email_change_object = get_object_from_key(confirmation_key, [Confirmation.EMAIL_CHANGE])
+        email_change_object = get_object_from_key(
+            confirmation_key, [Confirmation.EMAIL_CHANGE], mark_object_used=True
+        )
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
