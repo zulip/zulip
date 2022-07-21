@@ -5,7 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
-from zerver.lib.types import SAMLIdPConfigDict, SCIMConfigDict
+from zerver.lib.types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
@@ -194,7 +194,7 @@ APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
     "zerver/tests/fixtures/apple/token_gen_private_key"
 )
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {
     "testoidc": {
         "display_name": "Test OIDC",
         "oidc_url": "https://example.com/api/openid",

@@ -87,7 +87,7 @@ from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_di
 from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import ProfileDataElementUpdateDict
+from zerver.lib.types import OIDCIdPConfigDict, ProfileDataElementUpdateDict
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -2675,14 +2675,12 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     # Hack: We don't yet support multiple IdPs, but we want this
     # module to import if nothing has been configured yet.
-    settings_dict: Dict[str, Union[Optional[str], bool]] = list(
-        settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [{}]
+    settings_dict: OIDCIdPConfigDict = list(
+        settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
     )[0]
 
-    display_icon: Optional[str] = cast(Optional[str], settings_dict.get("display_icon", None))
-    assert isinstance(display_icon, (str, type(None)))
-    display_name: str = cast(str, settings_dict.get("display_name", "OIDC"))
-    assert isinstance(display_name, str)
+    display_icon: Optional[str] = settings_dict.get("display_icon", None)
+    display_name: str = settings_dict.get("display_name", "OIDC")
 
     full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
 

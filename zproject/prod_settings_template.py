@@ -352,7 +352,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#openid-connect
 ##
 
-SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Any] = {
     ## This field (example: "idp_name") may appear in URLs during
     ## authentication, but is otherwise not user-visible.
     "idp_name": {

@@ -82,6 +82,15 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     x509cert_path: str
 
 
+class OIDCIdPConfigDict(TypedDict, total=False):
+    oidc_url: str
+    display_name: str
+    display_icon: Optional[str]
+    client_id: str
+    secret: Optional[str]
+    auto_signup: bool
+
+
 class UnspecifiedValue:
     """In most API endpoints, we use a default value of `None"` to encode
     parameters that the client did not pass, which is nicely Pythonic.
