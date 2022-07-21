@@ -64,6 +64,7 @@ def mark_stream_as_read(
     request: HttpRequest, user_profile: UserProfile, stream_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     stream, sub = access_stream_by_id(user_profile, stream_id)
+    assert stream.recipient_id is not None
     count = do_mark_stream_messages_as_read(user_profile, stream.recipient_id)
 
     log_data_str = f"[{count} updated]"
