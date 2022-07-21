@@ -274,7 +274,9 @@ test_ui("get_invalid_recipient_emails", ({override_rewire}) => {
     assert.deepEqual(compose_validate.get_invalid_recipient_emails(), []);
 });
 
-test_ui("test_wildcard_mention_allowed", () => {
+test_ui("test_wildcard_mention_allowed", ({override}) => {
+    override(settings_data, "user_in_waiting_period", () => true);
+
     page_params.user_id = me.user_id;
 
     page_params.realm_wildcard_mention_policy =
@@ -449,7 +451,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", ({override}) => {
     page_params.is_admin = false;
     page_params.is_guest = true;
     const sub = {
@@ -466,6 +468,22 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
+    );
+
+    override(settings_data, "user_in_waiting_period", () => true);
+    override(settings_data, "days_remaining_in_waiting_period", () => 3);
+    page_params.is_guest = false;
+
+    compose_state.topic("subject103");
+    compose_state.stream_name("stream103");
+    stream_data.add_sub(sub);
+    assert.ok(!compose_validate.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({
+            defaultMessage:
+                "New members are not allowed to post to this stream.<br />Permission will be granted in 3 days.",
+        }),
     );
 });
 

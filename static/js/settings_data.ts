@@ -112,6 +112,23 @@ export function user_can_change_logo(): boolean {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
 }
 
+function days_since_user_joined(): number {
+    const current_datetime = new Date();
+    const person_date_joined = new Date(user_join_date);
+    return Math.floor((current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400);
+}
+
+export function user_in_waiting_period(): boolean {
+    return days_since_user_joined() < page_params.realm_waiting_period_threshold;
+}
+
+export function days_remaining_in_waiting_period(): number {
+    if (user_in_waiting_period()) {
+        return page_params.realm_waiting_period_threshold - days_since_user_joined();
+    }
+    return 0;
+}
+
 function user_has_permission(policy_value: number): boolean {
     /* At present, nobody and by_owners_only is not present in
      * common_policy_values, but we include a check for it here,
@@ -166,11 +183,7 @@ function user_has_permission(policy_value: number): boolean {
         return true;
     }
 
-    const current_datetime = new Date();
-    const person_date_joined = new Date(user_join_date);
-    const user_join_days =
-        (current_datetime.getTime() - person_date_joined.getTime()) / 1000 / 86400;
-    return user_join_days >= page_params.realm_waiting_period_threshold;
+    return !user_in_waiting_period();
 }
 
 export function user_can_invite_others_to_realm(): boolean {

@@ -116,6 +116,33 @@ run_test("user_can_change_logo", () => {
     assert.equal(can_change_logo(), false);
 });
 
+run_test("days_remaining_in_waiting_period", () => {
+    const user_in_waiting_period = settings_data.user_in_waiting_period;
+    const days_remaining_in_waiting_period = settings_data.days_remaining_in_waiting_period;
+
+    page_params.user_id = 30;
+    isaac.date_joined = new Date(Date.now());
+    settings_data.initialize(isaac.date_joined);
+    page_params.realm_waiting_period_threshold = 10;
+    assert.equal(user_in_waiting_period(), true);
+    assert.equal(days_remaining_in_waiting_period(), 10);
+
+    isaac.date_joined = new Date(Date.now() - 9 * 86400000);
+    settings_data.initialize(isaac.date_joined);
+    assert.equal(user_in_waiting_period(), true);
+    assert.equal(days_remaining_in_waiting_period(), 1);
+
+    isaac.date_joined = new Date(Date.now() - 10 * 86400000);
+    settings_data.initialize(isaac.date_joined);
+    assert.equal(user_in_waiting_period(), false);
+    assert.equal(days_remaining_in_waiting_period(), 0);
+
+    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+    settings_data.initialize(isaac.date_joined);
+    assert.equal(user_in_waiting_period(), false);
+    assert.equal(days_remaining_in_waiting_period(), 0);
+});
+
 run_test("user_can_unsubscribe_other_users", () => {
     page_params.is_admin = true;
     assert.equal(settings_data.user_can_unsubscribe_other_users(), true);

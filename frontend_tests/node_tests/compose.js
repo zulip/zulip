@@ -387,7 +387,6 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("stream");
         compose_state.stream_name("social");
-        override_rewire(people, "get_by_user_id", () => []);
         compose_finished_event_checked = false;
         let schedule_message = false;
         override(reminder, "schedule_message", () => {

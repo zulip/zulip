@@ -353,12 +353,8 @@ export function wildcard_mention_allowed() {
         if (page_params.is_admin) {
             return true;
         }
-        const person = people.get_by_user_id(page_params.user_id);
-        const current_datetime = new Date(Date.now());
-        const person_date_joined = new Date(person.date_joined);
-        const days = (current_datetime - person_date_joined) / 1000 / 86400;
 
-        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
+        return !settings_data.user_in_waiting_period() && !page_params.is_guest;
     }
     return !page_params.is_guest;
 }
@@ -463,23 +459,20 @@ function validate_stream_message_post_policy(sub) {
         return false;
     }
 
-    const person = people.get_by_user_id(page_params.user_id);
-    const current_datetime = new Date(Date.now());
-    const person_date_joined = new Date(person.date_joined);
-    const days = (current_datetime - person_date_joined) / 1000 / 86400;
-    let error_html;
     if (
         stream_post_policy === stream_post_permission_type.non_new_members.code &&
-        days < page_params.realm_waiting_period_threshold
+        settings_data.user_in_waiting_period()
     ) {
-        error_html = $t_html(
-            {
-                defaultMessage:
-                    "New members are not allowed to post to this stream.<br />Permission will be granted in {days} days.",
-            },
-            {days},
+        const days = settings_data.days_remaining_in_waiting_period();
+        compose_error.show(
+            $t_html(
+                {
+                    defaultMessage:
+                        "New members are not allowed to post to this stream.<br />Permission will be granted in {days} days.",
+                },
+                {days},
+            ),
         );
-        compose_error.show(error_html);
         return false;
     }
     return true;
