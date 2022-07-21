@@ -511,7 +511,7 @@ class AuthenticationTokenForm(TwoFactorAuthenticationTokenForm):
 
 
 class MultiEmailField(forms.Field):
-    def to_python(self, emails: str) -> List[str]:
+    def to_python(self, emails: Optional[str]) -> List[str]:
         """Normalize data to a list of strings."""
         if not emails:
             return []
