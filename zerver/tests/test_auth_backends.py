@@ -86,6 +86,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.types import Validator
 from zerver.lib.upload import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE, resize_avatar
 from zerver.lib.users import get_all_api_keys
+from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
     check_dict_only,
@@ -119,6 +120,7 @@ from zproject.backends import (
     DevAuthBackend,
     EmailAuthBackend,
     ExternalAuthDataDict,
+    ExternalAuthMethod,
     ExternalAuthResult,
     GenericOpenIdConnectBackend,
     GitHubAuthBackend,
@@ -1625,7 +1627,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         # Generate an invitation for a different realm than the one we'll attempt to join:
         lear_realm = get_realm("lear")
         multiuse_obj = MultiuseInvite.objects.create(
-            realm=lear_realm, referred_by=UserProfile.objects.filter(realm=lear_realm).first()
+            realm=lear_realm,
+            referred_by=assert_is_not_none(UserProfile.objects.filter(realm=lear_realm).first()),
         )
         multiuse_obj.streams.set(streams)
         validity_in_minutes = 2 * 24 * 60
@@ -2949,6 +2952,7 @@ class AppleAuthMixin:
 
         # This setup is important because python-social-auth decodes `id_token`
         # with `SOCIAL_AUTH_APPLE_CLIENT` as the `audience`
+        assert settings.SOCIAL_AUTH_APPLE_CLIENT is not None
         payload["aud"] = settings.SOCIAL_AUTH_APPLE_CLIENT
 
         if audience is not None:
