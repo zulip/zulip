@@ -4730,6 +4730,12 @@ class ExternalMethodDictsTests(ZulipTestCase):
             ),
         ):
             external_auth_methods = get_external_method_dicts()
+            external_auth_backends: List[Type[ExternalAuthMethod]] = [
+                ZulipRemoteUserBackend,
+                GitHubAuthBackend,
+                AzureADAuthBackend,
+                GoogleAuthBackend,
+            ]
             # First backends in the list should be SAML:
             self.assertIn("saml:", external_auth_methods[0]["name"])
             self.assertEqual(
@@ -4737,12 +4743,7 @@ class ExternalMethodDictsTests(ZulipTestCase):
                 [
                     social_backend.name
                     for social_backend in sorted(
-                        [
-                            ZulipRemoteUserBackend,
-                            GitHubAuthBackend,
-                            AzureADAuthBackend,
-                            GoogleAuthBackend,
-                        ],
+                        external_auth_backends,
                         key=lambda x: x.sort_order,
                         reverse=True,
                     )
