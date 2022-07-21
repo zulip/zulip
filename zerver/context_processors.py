@@ -131,6 +131,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         settings_path = "/etc/zulip/settings.py"
         settings_comments_path = "/etc/zulip/settings.py"
 
+    # Used to remove links to Zulip docs and landing page from footer of self-hosted pages.
+    corporate_enabled = settings.CORPORATE_ENABLED
+
     support_email = FromAddress.SUPPORT
     support_email_html_tag = SafeString(
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
@@ -174,6 +177,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "is_isolated_page": is_isolated_page(request),
         "default_page_params": default_page_params,
+        "corporate_enabled": corporate_enabled,
     }
 
     context["OPEN_GRAPH_URL"] = f"{realm_uri}{request.path}"

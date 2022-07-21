@@ -1,3 +1,31 @@
+{% if corporate_enabled %}
+<div class="footer self-hosted-footer">
+    <div class="footer-section">
+        <ul>
+            <li>
+                <a href="/help">{{ _("Help center") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="footer-section">
+        <ul>
+            <li>
+                <a href="/policies">{{ _("Policies") }}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="break"></div>
+    <div class="footer-section powered-by-zulip">
+        <ul>
+            <li>
+                {% trans %}
+                Powered by <a href="https://zulip.com" class="coloured-text">Zulip</a>
+                {% endtrans %}
+            </li>
+        </ul>
+    </div>
+</div>
+{% else %}
 <div class="footer">
     <div class="footer-section">
         <h3>{{ _("Product") }}</h3>
@@ -151,3 +179,4 @@
         </ul>
     </div>
 </div>
+{% endif %}
