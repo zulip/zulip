@@ -38,13 +38,13 @@ def update_message_flags(
     request_notes = RequestNotes.get_notes(request)
     assert request_notes.log_data is not None
 
-    count, updated_message_ids = do_update_message_flags(user_profile, operation, flag, messages)
+    count = do_update_message_flags(user_profile, operation, flag, messages)
 
     target_count_str = str(len(messages))
     log_data_str = f"[{operation} {flag}/{target_count_str}] actually {count}"
     request_notes.log_data["extra"] = log_data_str
 
-    return json_success(request, data={"messages": updated_message_ids})
+    return json_success(request, data={"messages": messages})
 
 
 @has_request_variables

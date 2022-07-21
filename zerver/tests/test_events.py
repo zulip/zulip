@@ -652,27 +652,12 @@ class NormalActionsTest(BaseAction):
             state_change_expected=True,
         )
         check_update_message_flags_add("events[0]", events[0])
-        self.assert_length(events[0]["messages"], 1)
-        # No message_id is returned from the server if the flag is already preset.
-        events = self.verify_action(
-            lambda: do_update_message_flags(user_profile, "add", "starred", [message]),
-            state_change_expected=False,
-        )
-        self.assert_length(events[0]["messages"], 0)
 
         events = self.verify_action(
             lambda: do_update_message_flags(user_profile, "remove", "starred", [message]),
             state_change_expected=True,
         )
         check_update_message_flags_remove("events[0]", events[0])
-        self.assert_length(events[0]["messages"], 1)
-
-        # No message_id is returned from the server if the flag is already absent.
-        events = self.verify_action(
-            lambda: do_update_message_flags(user_profile, "remove", "starred", [message]),
-            state_change_expected=False,
-        )
-        self.assert_length(events[0]["messages"], 0)
 
     def test_update_read_flag_removes_unread_msg_ids(self) -> None:
 
