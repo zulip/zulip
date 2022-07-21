@@ -880,7 +880,6 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         self.name = self.user_profile.full_name
         self.backend = self.BACKEND_CLASS
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
-        self.user_profile.backend = self.backend
         self.logger_string = f"zulip.auth.{self.backend.name}"
 
         # This is a workaround for the fact that Python social auth
