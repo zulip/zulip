@@ -1,5 +1,5 @@
 import time
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Optional
 
 import markdown
 import markdown.extensions.admonition
@@ -82,13 +82,15 @@ docs_without_macros = [
 @items_tuple_to_dict
 @register.filter(name="render_markdown_path", is_safe=True)
 def render_markdown_path(
-    markdown_file_path: str, context: Mapping[str, Any] = {}, pure_markdown: bool = False
+    markdown_file_path: str, context: Optional[Dict[str, Any]] = None, pure_markdown: bool = False
 ) -> str:
     """Given a path to a Markdown file, return the rendered HTML.
 
     Note that this assumes that any HTML in the Markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
+    if context is None:
+        context = {}
 
     # We set this global hackishly
     from zerver.lib.markdown.help_settings_links import set_relative_settings_links
