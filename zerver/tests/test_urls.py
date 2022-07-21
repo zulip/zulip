@@ -1,6 +1,6 @@
 import importlib
 import os
-from typing import List, Optional
+from typing import List
 
 import django.urls.resolvers
 from django.test import Client
@@ -128,10 +128,6 @@ class PublicURLTest(ZulipTestCase):
 
 
 class URLResolutionTest(ZulipTestCase):
-    def get_callback_string(self, pattern: django.urls.resolvers.URLPattern) -> Optional[str]:
-        callback_str = "lookup_str" if hasattr(pattern, "lookup_str") else "_callback_str"
-        return getattr(pattern, callback_str, None)
-
     def check_function_exists(self, module_name: str, view: str) -> None:
         module = importlib.import_module(module_name)
         self.assertTrue(hasattr(module, view), f"View {module_name}.{view} does not exist")
@@ -141,9 +137,8 @@ class URLResolutionTest(ZulipTestCase):
     # class-based views.
     def test_non_api_url_resolution(self) -> None:
         for pattern in urls.urlpatterns:
-            callback_str = self.get_callback_string(pattern)
-            if callback_str:
-                (module_name, base_view) = callback_str.rsplit(".", 1)
+            if isinstance(pattern, django.urls.resolvers.URLPattern):
+                (module_name, base_view) = pattern.lookup_str.rsplit(".", 1)
                 self.check_function_exists(module_name, base_view)
 
 
