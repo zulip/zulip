@@ -20,8 +20,7 @@ export function is_active() {
 }
 
 export function is_modal_open() {
-    // Check for both Bootstrap and Micromodal modals.
-    return $(".modal").hasClass("in") || $(".micromodal").hasClass("modal--open");
+    return $(".micromodal").hasClass("modal--open");
 }
 
 export function is_overlay_or_modal_open() {
@@ -48,36 +47,14 @@ export function drafts_open() {
     return open_overlay_name === "drafts";
 }
 
-// To address bugs where mouse might apply to the streams/settings
-// overlays underneath an open modal within those settings UI, we add
-// this inline style to 'div.overlay.show', overriding the
-// "pointer-events: all" style in app_components.css.
-//
-// This is kinda hacky; it only works for modals within overlays, and
-// we need to make sure it gets re-enabled when the modal closes.
-export function disable_background_mouse_events() {
-    $("div.overlay.show").attr("style", "pointer-events: none");
-}
-
-// This removes only the inline-style of the element that
-// was added in disable_background_mouse_events and
-// enables the background mouse events.
-export function enable_background_mouse_events() {
-    $("div.overlay.show").attr("style", null);
-}
-
 export function active_modal() {
     if (!is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
     }
 
-    // Check for Micromodal modals.
     const $micromodal = $(".micromodal.modal--open");
-    if ($micromodal.length) {
-        return `#${CSS.escape($micromodal.attr("id"))}`;
-    }
-    return `#${CSS.escape($(".modal.in").attr("id"))}`;
+    return `#${CSS.escape($micromodal.attr("id"))}`;
 }
 
 export function open_overlay(opts) {
@@ -125,27 +102,21 @@ export function open_overlay(opts) {
 
 // If conf.autoremove is true, the modal element will be removed from the DOM
 // once the modal is hidden.
-// If conf.micromodal is true, open a micromodal modal else open a bootstrap modal
 // conf also accepts the following optional properties:
 // on_show: Callback to run when the modal is triggered to show.
 // on_shown: Callback to run when the modal is shown.
 // on_hide: Callback to run when the modal is triggered to hide.
 // on_hidden: Callback to run when the modal is hidden.
-export function open_modal(selector, conf) {
+export function open_modal(selector, conf = {}) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into open_modal");
         return;
     }
 
-    if ((!conf || (conf && !conf.micromodal)) && selector[0] !== "#") {
-        blueslip.error("Non-id-based selector passed in to open_modal: " + selector);
-        return;
-    }
-
     // Don't accept hash-based selector to enforce modals to have unique ids and
     // since micromodal doesn't accept hash based selectors.
-    if (conf && conf.micromodal && selector[0] === "#") {
-        blueslip.error("hash-based selector passed in to micromodal-based open_modal: " + selector);
+    if (selector[0] === "#") {
+        blueslip.error("hash-based selector passed in to open_modal: " + selector);
         return;
     }
 
@@ -156,69 +127,43 @@ export function open_modal(selector, conf) {
 
     blueslip.debug("open modal: " + selector);
 
-    // Show a modal using micromodal.
-    if (conf && conf.micromodal) {
-        // Micromodal gets elements using the getElementById DOM function
-        // which doesn't require the hash. We add it manually here.
-        const id_selector = `#${selector}`;
-        const $micromodal = $(id_selector);
+    // Micromodal gets elements using the getElementById DOM function
+    // which doesn't require the hash. We add it manually here.
+    const id_selector = `#${selector}`;
+    const $micromodal = $(id_selector);
 
-        $micromodal.find(".modal__container").on("animationend", (event) => {
-            // Micromodal doesn't support Bootstrap-style `shown.bs.modal` and
-            // `hidden.bs.modal` events. We workaround this by using the animationName
-            // from the native event and running the required functions after the
-            // animation ends.
-            const animation_name = event.originalEvent.animationName;
-            if (animation_name === "mmfadeIn") {
-                // Equivalent to bootstrap's "shown.bs.modal" event
+    $micromodal.find(".modal__container").on("animationend", (event) => {
+        const animation_name = event.originalEvent.animationName;
+        if (animation_name === "mmfadeIn") {
+            // Micromodal adds the is-open class before the modal animation
+            // is complete, which isn't really helpful since a modal is open after the
+            // animation is complete. So, we manually add a class after the
+            // animation is complete.
+            $micromodal.addClass("modal--open");
+            $micromodal.removeClass("modal--opening");
 
-                // Micromodal adds the is-open class before the modal animation
-                // is complete, which isn't really helpful since a modal is open after the
-                // animation is complete. So, we manually add a class after the
-                // animation is complete.
-                $micromodal.addClass("modal--open");
-                $micromodal.removeClass("modal--opening");
-
-                if (conf.on_shown) {
-                    conf.on_shown();
-                }
-            } else if (animation_name === "mmfadeOut") {
-                // Equivalent to bootstrap's "hidden.bs.modal" event.
-                //
-                // Call the on_hidden callback after the modal finishes hiding.
-
-                $micromodal.removeClass("modal--open");
-                if (conf.autoremove) {
-                    $micromodal.remove();
-                }
-                if (conf.on_hidden) {
-                    conf.on_hidden();
-                }
+            if (conf.on_shown) {
+                conf.on_shown();
             }
-        });
+        } else if (animation_name === "mmfadeOut") {
+            // Call the on_hidden callback after the modal finishes hiding.
 
-        Micromodal.show(selector, {
-            disableFocus: true,
-            openClass: "modal--opening",
-            onShow: conf?.on_show,
-            onClose: conf?.on_hide,
-        });
-        return;
-    }
+            $micromodal.removeClass("modal--open");
+            if (conf.autoremove) {
+                $micromodal.remove();
+            }
+            if (conf.on_hidden) {
+                conf.on_hidden();
+            }
+        }
+    });
 
-    const $elem = $(selector).expectOne();
-    $elem.modal("show").attr("aria-hidden", false);
-    // Disable background mouse events when modal is active
-    disable_background_mouse_events();
-    // Remove previous alert messages from modal, if exists.
-    $elem.find(".alert").hide();
-    $elem.find(".alert-notification").html("");
-
-    if (conf && conf.autoremove) {
-        $elem.on("hidden.bs.modal", () => {
-            $elem.remove();
-        });
-    }
+    Micromodal.show(selector, {
+        disableFocus: true,
+        openClass: "modal--opening",
+        onShow: conf?.on_show,
+        onClose: conf?.on_hide,
+    });
 }
 
 export function close_overlay(name) {
@@ -261,9 +206,8 @@ export function close_active() {
 }
 
 // `conf` is an object with the following optional properties:
-// * micromodal: true if the modal to close is expected to be micromodal.
 // * on_hidden: Callback to run when the modal finishes hiding.
-export function close_modal(selector, conf) {
+export function close_modal(selector, conf = {}) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into close_modal");
         return;
@@ -274,10 +218,7 @@ export function close_modal(selector, conf) {
         return;
     }
 
-    if (
-        (!conf && active_modal() !== selector) ||
-        (conf && conf.micromodal && active_modal() !== `#${selector}`)
-    ) {
+    if (active_modal() !== `#${selector}`) {
         blueslip.error(
             "Trying to close " + selector + " modal when " + active_modal() + " is open.",
         );
@@ -286,27 +227,21 @@ export function close_modal(selector, conf) {
 
     blueslip.debug("close modal: " + selector);
 
-    if (conf && conf.micromodal) {
-        const id_selector = `#${selector}`;
-        const $micromodal = $(id_selector);
+    const id_selector = `#${selector}`;
+    const $micromodal = $(id_selector);
 
-        // On-hidden hooks should typically be registered in
-        // overlays.open_modal.  However, we offer this alternative
-        // mechanism as a convenience for hooks only known when
-        // closing the modal.
-        $micromodal.find(".modal__container").on("animationend", (event) => {
-            const animation_name = event.originalEvent.animationName;
-            if (animation_name === "mmfadeOut" && conf.on_hidden) {
-                conf.on_hidden();
-            }
-        });
+    // On-hidden hooks should typically be registered in
+    // overlays.open_modal.  However, we offer this alternative
+    // mechanism as a convenience for hooks only known when
+    // closing the modal.
+    $micromodal.find(".modal__container").on("animationend", (event) => {
+        const animation_name = event.originalEvent.animationName;
+        if (animation_name === "mmfadeOut" && conf.on_hidden) {
+            conf.on_hidden();
+        }
+    });
 
-        Micromodal.close(selector);
-        return;
-    }
-
-    const $elem = $(selector).expectOne();
-    $elem.modal("hide").attr("aria-hidden", true);
+    Micromodal.close(selector);
 }
 
 export function close_active_modal() {
@@ -315,14 +250,8 @@ export function close_active_modal() {
         return;
     }
 
-    // Check for Micromodal modals.
     const $micromodal = $(".micromodal.modal--open");
-    if ($micromodal.length) {
-        Micromodal.close(`${CSS.escape($micromodal.attr("id"))}`);
-        return;
-    }
-
-    $(".modal.in").modal("hide").attr("aria-hidden", true);
+    Micromodal.close(`${CSS.escape($micromodal.attr("id"))}`);
 }
 
 export function close_for_hash_change() {

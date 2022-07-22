@@ -31,7 +31,6 @@ export function login_to_access(empty_narrow) {
 
     overlays.open_modal("login_to_access_modal", {
         autoremove: true,
-        micromodal: true,
         on_hide: () => {
             browser_history.return_to_web_public_hash();
         },
