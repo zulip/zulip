@@ -694,6 +694,19 @@ export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
                 .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
                 .hide();
         }
+
+        $("#bot-edit-form").on("click", ".deactivate_bot_button", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const bot_id = $("#bot-edit-form").data("user-id");
+            function handle_confirm() {
+                const url = "/json/bots/" + encodeURIComponent(bot_id);
+                dialog_widget.submit_api_request(channel.del, url);
+            }
+            const open_deactivate_modal_callback = () =>
+                confirm_bot_deactivation(bot_id, handle_confirm, true);
+            dialog_widget.close_modal(open_deactivate_modal_callback);
+        });
     }
 
     dialog_widget.launch({
