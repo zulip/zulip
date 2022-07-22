@@ -320,6 +320,7 @@ class HelpTest(ZulipTestCase):
 class IntegrationTest(ZulipTestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():
+            assert integration.logo_url is not None
             path = urlsplit(integration.logo_url).path
             self.assertTrue(os.path.isfile(settings.DEPLOY_ROOT + path), integration.name)
 
