@@ -707,6 +707,12 @@ function is_focus_at_last_table_row() {
     return row_focus === $topic_rows.length - 1;
 }
 
+function has_unread(row) {
+    const last_msg_id = topics_widget.get_current_list()[row].last_msg_id;
+    const last_msg = message_store.get(last_msg_id);
+    return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
+}
+
 export function focus_clicked_element(topic_row_index, col, topic_key) {
     $current_focus_elem = "table";
     col_focus = col;
@@ -720,7 +726,10 @@ export function focus_clicked_element(topic_row_index, col, topic_key) {
     set_table_focus(row_focus, col_focus);
 }
 
-function left_arrow_navigation() {
+function left_arrow_navigation(row, col) {
+    if (col === MAX_SELECTABLE_COLS - 1 && !has_unread(row)) {
+        col_focus -= 1;
+    }
     col_focus -= 1;
 
     if (col_focus < 0) {
@@ -728,7 +737,10 @@ function left_arrow_navigation() {
     }
 }
 
-function right_arrow_navigation() {
+function right_arrow_navigation(row, col) {
+    if (col === 1 && !has_unread(row)) {
+        col_focus += 1;
+    }
     col_focus += 1;
 
     if (col_focus >= MAX_SELECTABLE_COLS) {
@@ -736,11 +748,17 @@ function right_arrow_navigation() {
     }
 }
 
-function up_arrow_navigation() {
+function up_arrow_navigation(row, col) {
+    if (col === 2 && row - 1 >= 0 && !has_unread(row - 1)) {
+        col_focus = 1;
+    }
     row_focus -= 1;
 }
 
-function down_arrow_navigation() {
+function down_arrow_navigation(row, col) {
+    if (col === 2 && !has_unread(row + 1)) {
+        col_focus = 1;
+    }
     row_focus += 1;
 }
 
@@ -857,12 +875,12 @@ export function change_focused_element($elt, input_key) {
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
-                left_arrow_navigation();
+                left_arrow_navigation(row_focus, col_focus);
                 break;
             case "tab":
             case "vim_right":
             case "right_arrow":
-                right_arrow_navigation();
+                right_arrow_navigation(row_focus, col_focus);
                 break;
             case "vim_down":
                 // We stop user at last table row
@@ -875,10 +893,10 @@ export function change_focused_element($elt, input_key) {
                 if (is_focus_at_last_table_row()) {
                     return true;
                 }
-                down_arrow_navigation();
+                down_arrow_navigation(row_focus, col_focus);
                 break;
             case "down_arrow":
-                down_arrow_navigation();
+                down_arrow_navigation(row_focus, col_focus);
                 break;
             case "vim_up":
                 // See comment on vim_down.
@@ -888,10 +906,10 @@ export function change_focused_element($elt, input_key) {
                 if (row_focus === 0) {
                     return true;
                 }
-                up_arrow_navigation();
+                up_arrow_navigation(row_focus, col_focus);
                 break;
             case "up_arrow":
-                up_arrow_navigation();
+                up_arrow_navigation(row_focus, col_focus);
         }
         set_table_focus(row_focus, col_focus, true);
         return true;
