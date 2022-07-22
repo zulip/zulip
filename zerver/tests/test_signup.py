@@ -198,7 +198,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
+        self.assertEqual(getattr(result, "redirect_chain")[-1], ("/accounts/deactivated/", 302))
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
@@ -1083,7 +1083,7 @@ class LoginTest(ZulipTestCase):
         response = self.client_get("/login/")
         expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
-        self.assertEqual(response.context_data["realm_description"], expected_response)
+        self.assertEqual(getattr(response, "context_data")["realm_description"], expected_response)
         self.assertEqual(response.status_code, 200)
 
 
