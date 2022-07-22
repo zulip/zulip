@@ -5,22 +5,23 @@ from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
+def emoji_to_lowercase(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
+    RealmEmoji = apps.get_model("zerver", "RealmEmoji")
+    emoji = RealmEmoji.objects.all()
+    for e in emoji:
+        # Technically, this could create a conflict, but it's
+        # exceedingly unlikely.  If that happens, the sysadmin can
+        # manually rename the conflicts with the manage.py shell
+        # and then rerun the migration/upgrade.
+        e.name = e.name.lower()
+        e.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
         ("zerver", "0080_realm_description_length"),
     ]
-
-    def emoji_to_lowercase(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
-        RealmEmoji = apps.get_model("zerver", "RealmEmoji")
-        emoji = RealmEmoji.objects.all()
-        for e in emoji:
-            # Technically, this could create a conflict, but it's
-            # exceedingly unlikely.  If that happens, the sysadmin can
-            # manually rename the conflicts with the manage.py shell
-            # and then rerun the migration/upgrade.
-            e.name = e.name.lower()
-            e.save()
 
     operations = [
         migrations.RunPython(emoji_to_lowercase, elidable=True),
