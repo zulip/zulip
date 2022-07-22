@@ -12,14 +12,18 @@ $(git remote -v)
 " =~ '
 '([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)"$repository"(\.git|/)?\ \(fetch\)'
 ' ]]; then
-    range="${BASH_REMATCH[1]}/main..HEAD"
+    remote=${BASH_REMATCH[1]}
 else
-    range="upstream/main..HEAD"
+    remote=upstream
 fi
 
-commits=$(git log "$range" | wc -l)
+upstream_commits=$(git rev-parse "refs/remotes/$remote/main" --glob="refs/remotes/$remote/*.x")
+mapfile -t upstream_commits <<<"$upstream_commits"
+base=$(git merge-base HEAD "${upstream_commits[@]}")
+
+commits=$(git rev-list --count "$base..HEAD")
 if [ "$commits" -gt 0 ]; then
     # Only run gitlint with non-empty commit lists, to avoid a printed
     # warning.
-    gitlint --commits "$range"
+    gitlint --commits "$base..HEAD"
 fi
