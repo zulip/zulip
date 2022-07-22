@@ -404,7 +404,6 @@ export function set_up() {
         $("#api_key_status").hide();
         overlays.open_modal("api_key_modal", {
             autoremove: true,
-            micromodal: true,
             on_show: () => {
                 $("#get_api_key_password").trigger("focus");
             },
@@ -717,20 +716,6 @@ export function set_up() {
         setTimeout(() => {
             user_profile.show_user_profile(user);
         }, 100);
-
-        // If user opened the "preview profile" modal from user
-        // settings, then closing preview profile modal should
-        // send them back to the settings modal.
-        $("body").one("hidden.bs.modal", "#user-profile-modal", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            setTimeout(() => {
-                if (!overlays.settings_open()) {
-                    overlays.open_settings();
-                }
-            }, 100);
-        });
     });
 
     function upload_avatar($file_input) {

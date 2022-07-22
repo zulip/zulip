@@ -1,35 +1,5 @@
-.modal {
-    box-shadow: 0 0 75px hsla(0, 0%, 0%, 0.5);
-    border: none;
-    border-radius: 0;
-    overflow: hidden;
-    margin-top: 0;
-    top: 5%;
-    outline: 10000px solid hsla(0, 0%, 0%, 0.3);
-
-    &.fade {
-        /* Ensure the modal is entirely off-screen while we fade the background */
-        top: -50%;
-        transition: opacity 0.3s linear;
-        transform: translateY(-50%);
-
-        &.in {
-            top: 50%;
-            pointer-events: all;
-        }
-    }
-
-    form {
-        margin-bottom: 0;
-    }
-}
-
 .modal-body {
     max-height: 60vh;
-}
-
-.modal-backdrop {
-    z-index: 102;
 }
 
 .modal-bg {

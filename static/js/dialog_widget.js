@@ -61,7 +61,7 @@ export function show_dialog_spinner() {
 
 // Supports a callback to be called once the modal finishes closing.
 export function close_modal(on_hidden_callback) {
-    overlays.close_modal("dialog_widget_modal", {micromodal: true, on_hidden: on_hidden_callback});
+    overlays.close_modal("dialog_widget_modal", {on_hidden: on_hidden_callback});
 }
 
 export function launch(conf) {
@@ -142,7 +142,6 @@ export function launch(conf) {
 
     overlays.open_modal("dialog_widget_modal", {
         autoremove: true,
-        micromodal: true,
         on_show: () => {
             if (conf.focus_submit_on_open) {
                 $submit_button.trigger("focus");

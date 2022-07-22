@@ -134,9 +134,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
 }
 
 export function hide_user_profile() {
-    overlays.close_modal("user-profile-modal", {
-        micromodal: true,
-    });
+    overlays.close_modal("user-profile-modal");
 }
 
 export function show_user_profile(user) {
@@ -165,7 +163,7 @@ export function show_user_profile(user) {
     };
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("user-profile-modal", {autoremove: true, micromodal: true});
+    overlays.open_modal("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
     $("#profile-tab").show(); // Show general profile details by default.
     const opts = {

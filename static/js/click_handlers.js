@@ -668,10 +668,6 @@ export function initialize() {
         settings_toggle.toggle_org_setting_collapse();
     });
 
-    $(".organization-box").on("show.bs.modal", () => {
-        popovers.hide_all();
-    });
-
     $("body").on("click", ".reload_link", () => {
         window.location.reload();
     });
@@ -857,15 +853,6 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("body").on("hidden.bs.modal", () => {
-        // Enable mouse events for the background as the modal closes.
-        overlays.enable_background_mouse_events();
-
-        // TODO: Remove this once Bootstrap is upgraded.
-        // See: https://github.com/zulip/zulip/pull/18720
-        $(".modal.in").removeClass("in");
-    });
-
     // GEAR MENU
 
     $("body").on("click", ".change-language-spectator, .language_selection_widget button", (e) => {
@@ -940,10 +927,8 @@ export function initialize() {
                 // state.
                 !$(e.target).closest(".overlay").length &&
                 !$(e.target).closest(".popover").length &&
-                !$(e.target).closest(".modal").length &&
                 !$(e.target).closest(".micromodal").length &&
                 !$(e.target).closest("[data-tippy-root]").length &&
-                !$(e.target).closest(".modal-backdrop").length &&
                 !$(e.target).closest(".enter_sends").length &&
                 $(e.target).closest("body").length
             ) {
