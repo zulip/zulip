@@ -2511,8 +2511,8 @@ class Stream(models.Model):
     # deleting a user group in case it is referenced by this settig.
     # We are not using PROTECT since we want to allow deletion of user groups
     # when realm itself is deleted.
-    can_remove_subscribers_group: Optional[UserGroup] = models.ForeignKey(
-        UserGroup, null=True, on_delete=models.RESTRICT
+    can_remove_subscribers_group: UserGroup = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT
     )
 
     # The very first message ID in the stream.  Used to help clients
