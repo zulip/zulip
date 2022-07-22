@@ -471,4 +471,4 @@ class ValidationFailureError(JsonableError):
 
     def __init__(self, error: ValidationError) -> None:
         super().__init__(error.messages[0])
-        self.errors = dict(error)
+        self.errors = error.message_dict
