@@ -8,8 +8,13 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from typing import Iterator, List
+from typing import TYPE_CHECKING, Iterator, List, Type, cast
 from unittest import mock
+
+if TYPE_CHECKING:
+    # This script does not have access to the zerver module during runtime.
+    # We can only import this when type checking.
+    from zerver.lib.test_runner import Runner
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
@@ -406,7 +411,9 @@ def main() -> None:
 
     subprocess.check_call(["tools/webpack", "--test"])
 
-    TestRunner = get_runner(settings)
+    # isinstance check cannot be used with types. This can potentially improved by supporting
+    # dynamic resolution of the test runner type with the django-stubs mypy plugin.
+    TestRunner = cast("Type[Runner]", get_runner(settings))
 
     parallel = default_parallel if options.processes is None else options.processes
     if parallel > 1:
