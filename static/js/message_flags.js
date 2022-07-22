@@ -53,14 +53,17 @@ export const send_read = (function () {
             return;
         }
 
-        queue = queue.filter((message) => !data.messages.includes(message.id));
-
+        // Remove messages which were marked read by server and those which are already read in local data.
+        queue = queue.filter((message) => !data.messages.includes(message.id) || !message.unread);
         if (queue.length > 0) {
             start();
         }
     };
 
     function add(messages) {
+        // Filter out messages which are already read unless they are locally_echoed.
+        // Locally echoed message will be removed on next on_success event.
+        messages = messages.filter((message) => message.locally_echoed || message.unread);
         queue = queue.concat(messages);
         start();
     }
