@@ -1046,13 +1046,13 @@ def zulip_otp_required_if_logged_in(
         if not if_configured:
             return True
 
-        # User has completed 2FA verification
-        if is_2fa_verified(user):
-            return True
-
         # This request is unauthenticated (logged-out) access; 2FA is
         # not required or possible.
         if not user.is_authenticated:
+            return True
+
+        # User has completed 2FA verification
+        if is_2fa_verified(user):
             return True
 
         # If the user doesn't have 2FA set up, we can't enforce 2FA.

@@ -764,7 +764,7 @@ def login_page(
     # logged-in app.
     is_preview = "preview" in request.GET
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-        if request.user and is_2fa_verified(request.user):
+        if request.user.is_authenticated and is_2fa_verified(request.user):
             return HttpResponseRedirect(request.user.realm.uri)
     elif request.user.is_authenticated and not is_preview:
         return HttpResponseRedirect(request.user.realm.uri)
