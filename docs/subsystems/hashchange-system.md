@@ -14,7 +14,7 @@ Some examples are:
   "announce") selected.
 - `/#narrow/stream/42-android/topic/fun`: Message feed showing stream
   "android" and topic "fun". (The `42` represents the id of the
-  stream.
+  stream.)
 
 The main module in the frontend that manages this all is
 `static/js/hashchange.js` (plus `hash_util.js` for all the parsing
