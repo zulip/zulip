@@ -25,9 +25,24 @@
         margin-left: 2px;
     }
 
-    /* Arrange that a multi-line description line wraps properly. */
-    label.checkbox {
+    li {
         display: flex;
+
+        .drag-icon {
+            visibility: hidden;
+            padding-right: 8px;
+            cursor: move;
+            color: hsl(0, 0%, 75%);
+        }
+
+        &:hover .drag-icon {
+            visibility: visible;
+        }
+
+        /* Arrange that a multi-line description line wraps properly. */
+        label.checkbox {
+            display: flex;
+        }
     }
 }
 
