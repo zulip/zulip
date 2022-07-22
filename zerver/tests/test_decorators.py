@@ -155,7 +155,7 @@ class DecoratorTestCase(ZulipTestCase):
         with mock.patch(
             "zerver.middleware.parse_client", side_effect=JsonableError("message")
         ) as m, self.assertLogs(level="ERROR"):
-            LogRequests.process_request(self, request)
+            LogRequests(lambda request: HttpResponse()).process_request(request)
         request_notes = RequestNotes.get_notes(request)
         self.assertEqual(request_notes.client_name, "Unparsable")
         m.assert_called_once()
