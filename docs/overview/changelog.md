@@ -17,6 +17,17 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
+### 5.5 -- 2022-07-21
+
+- CVE-2022-31168: Fix authorization check for changing bot roles. Due
+  to an incorrect authorization check in Zulip Server 5.4 and all prior
+  releases, a member of an organization could craft an API call that
+  would grant organization administrator privileges to one of their bots.
+- Added new options to the `restore-backup` tool to simplify restoring
+  backups on a system with a different configuration.
+- Updated translations, including major updates to the Mongolian and
+  Serbian translations.
+
 ### 5.4 -- 2022-07-11
 
 - CVE-2022-31134: Exclude private file uploads from [exports of public
