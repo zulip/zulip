@@ -1294,7 +1294,12 @@ export function register_click_handlers() {
     $("body").on("click", ".sidebar-popover-manage-user", (e) => {
         hide_all();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
-        settings_users.show_edit_user_info_modal(user_id, true);
+        const user = people.get_by_user_id(user_id);
+        if (user.is_bot) {
+            settings_users.show_edit_bot_info_modal(user_id, true);
+        } else {
+            settings_users.show_edit_user_info_modal(user_id, true);
+        }
     });
 }
 

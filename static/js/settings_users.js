@@ -630,87 +630,88 @@ function handle_human_form($tbody) {
     });
 }
 
+export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
+    const bot = people.get_by_user_id(user_id);
+
+    if (!bot) {
+        return;
+    }
+
+    const html_body = render_edit_bot_form({
+        user_id,
+        email: bot.email,
+        full_name: bot.full_name,
+        user_role_values: settings_config.user_role_values,
+        disable_role_dropdown: bot.is_owner && !page_params.is_owner,
+    });
+
+    let owner_widget;
+
+    function submit_bot_details() {
+        const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
+        const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
+
+        const url = "/json/bots/" + encodeURIComponent(user_id);
+        const data = {
+            full_name: $full_name.val(),
+            role: JSON.stringify(role),
+        };
+
+        if (owner_widget === undefined) {
+            blueslip.error("get_bot_owner_widget not called");
+        }
+        const human_user_id = owner_widget.value();
+        if (human_user_id) {
+            data.bot_owner_id = human_user_id;
+        }
+
+        dialog_widget.submit_api_request(channel.patch, url, data);
+    }
+
+    function edit_bot_post_render() {
+        const owner_id = bot_data.get(user_id).owner_id;
+
+        const user_ids = people.get_active_human_ids();
+        const users_list = user_ids.map((user_id) => ({
+            name: people.get_full_name(user_id),
+            value: user_id.toString(),
+        }));
+
+        const opts = {
+            widget_name: "edit_bot_owner",
+            data: users_list,
+            default_text: $t({defaultMessage: "No owner"}),
+            value: owner_id,
+        };
+        // Note: Rendering this is quite expensive in
+        // organizations with 10Ks of users.
+        owner_widget = new DropdownListWidget(opts);
+        owner_widget.setup();
+
+        $("#bot-role-select").val(bot.role);
+        if (!page_params.is_owner) {
+            $("#bot-role-select")
+                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+                .hide();
+        }
+    }
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Manage bot"}),
+        html_body,
+        id: "edit_bot_modal",
+        on_click: submit_bot_details,
+        post_render: edit_bot_post_render,
+        loading_spinner: from_user_info_popover,
+    });
+}
+
 function handle_bot_form($tbody) {
     $tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        const bot = people.get_by_user_id(user_id);
-
-        if (!bot) {
-            return;
-        }
-
-        const html_body = render_edit_bot_form({
-            user_id,
-            email: bot.email,
-            full_name: bot.full_name,
-            user_role_values: settings_config.user_role_values,
-            disable_role_dropdown: bot.is_owner && !page_params.is_owner,
-        });
-
-        let owner_widget;
-
-        function submit_bot_details() {
-            const role = Number.parseInt($("#bot-role-select").val().trim(), 10);
-            const $full_name = $("#dialog_widget_modal").find("input[name='full_name']");
-
-            const url = "/json/bots/" + encodeURIComponent(user_id);
-            const data = {
-                full_name: $full_name.val(),
-                role: JSON.stringify(role),
-            };
-
-            if (owner_widget === undefined) {
-                blueslip.error("get_bot_owner_widget not called");
-            }
-            const human_user_id = owner_widget.value();
-            if (human_user_id) {
-                data.bot_owner_id = human_user_id;
-            }
-
-            dialog_widget.submit_api_request(channel.patch, url, data);
-        }
-
-        function edit_bot_post_render() {
-            const owner_id = bot_data.get(user_id).owner_id;
-
-            const user_ids = people.get_active_human_ids();
-            const users_list = user_ids.map((user_id) => ({
-                name: people.get_full_name(user_id),
-                value: user_id.toString(),
-            }));
-
-            const opts = {
-                widget_name: "edit_bot_owner",
-                data: users_list,
-                default_text: $t({defaultMessage: "No owner"}),
-                value: owner_id,
-            };
-            // Note: Rendering this is quite expensive in
-            // organizations with 10Ks of users.
-            owner_widget = new DropdownListWidget(opts);
-            owner_widget.setup();
-
-            $("#bot-role-select").val(bot.role);
-            if (!page_params.is_owner) {
-                $("#bot-role-select")
-                    .find(
-                        `option[value="${CSS.escape(
-                            settings_config.user_role_values.owner.code,
-                        )}"]`,
-                    )
-                    .hide();
-            }
-        }
-
-        dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Manage bot"}),
-            html_body,
-            id: "edit_bot_modal",
-            on_click: submit_bot_details,
-            post_render: edit_bot_post_render,
-        });
+        show_edit_bot_info_modal(user_id, false);
     });
 }
 
