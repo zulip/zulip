@@ -7,7 +7,32 @@
             {{!-- It is quite ingrained in our frontend code that your Home
             view is a Bootstrap nav tab, even though we don't show the tab
             anymore --}}
+            {{#if is_guest }}
+            {{else}}
             <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
+            <ul class="org-head hidden-for-spectators">
+                <li class="org-name hidden-for-spectators">{{realm_name}}</li>
+                <li class="org-uri hidden-for-spectators">{{realm_uri}}</li>
+                <li class="org-plan hidden-for-spectators">
+                    {{#if zulip_plan }}
+                        <span class="org-plan-s">Zulip Cloud Standard</span>
+                    {{else}}
+                        {{#if is_owner }}
+                            <span class="org-plan-s" role="menuitem"><a href="https://zulip.com/upgrade">Upgrade to<br/>
+                            Zulip Cloud Standard</a></span>
+                        {{else}}
+                            {{#if is_admin}}
+                            <span class="org-plan-s" role="menuitem"><a href="https://zulip.com/upgrade">Upgrade to<br/>
+                            Zulip Cloud Standard</a></span>
+                            {{else}}
+                            <span class="org-plan-s" role="menuitem"><a href="https://zulip.com/plans/">Zulip Cloud Free</a></span>
+                            {{/if}}
+                        {{/if}}
+                    {{/if}}
+                </li>
+            </ul>
+            <li class="divider" role="presentation"></li>
+            {{/if}}
             <li class="hidden-for-spectators" role="presentation">
                 <a href="#streams/subscribed" role="menuitem">
                     <i class="fa fa-exchange" aria-hidden="true"></i> {{t 'Manage streams' }}
