@@ -10,6 +10,7 @@ import orjson
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
+from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
 
@@ -156,6 +157,7 @@ def render_markdown_path(
         # By default, we do both Jinja2 templating and Markdown
         # processing on the file, to make it easy to use both Jinja2
         # context variables and markdown includes in the file.
+        assert isinstance(jinja, Jinja2)
         markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
     except TemplateNotFound as e:
         if pure_markdown:
