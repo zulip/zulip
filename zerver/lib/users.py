@@ -126,9 +126,9 @@ def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[s
 def add_service(
     name: str,
     user_profile: UserProfile,
-    base_url: Optional[str] = None,
-    interface: Optional[int] = None,
-    token: Optional[str] = None,
+    base_url: str,
+    interface: int,
+    token: str,
 ) -> None:
     Service.objects.create(
         name=name, user_profile=user_profile, base_url=base_url, interface=interface, token=token
