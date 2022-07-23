@@ -163,7 +163,7 @@ exports.start = () => {
 // "module" field of package.json, while Node.js will not; we need to mock the
 // format preferred by Webpack.
 
-exports.mock_cjs = (module_path, obj) => {
+exports.mock_cjs = (module_path, obj, {callsite = callsites()[1]} = {}) => {
     assert.notEqual(
         module_path,
         "jquery",
@@ -172,7 +172,7 @@ exports.mock_cjs = (module_path, obj) => {
 
     const filename = Module._resolveFilename(
         module_path,
-        require.cache[callsites()[1].getFileName()],
+        require.cache[callsite.getFileName()],
         false,
     );
 
@@ -208,27 +208,27 @@ exports._finish_template_mocking = () => {
     used_templates.clear();
 };
 
-exports._mock_template = (fn, exercise_template, f) => {
+exports._mock_template = (fn, exercise_template, f, {callsite = callsites()[1]} = {}) => {
     const path = "../.." + template_path + fn;
 
     const resolved_path = Module._resolveFilename(
         path,
-        require.cache[callsites()[1].getFileName()],
+        require.cache[callsite.getFileName()],
         false,
     );
 
     template_mocks.set(resolved_path, {exercise_template, f});
 };
 
-exports.mock_esm = (module_path, obj = {}) => {
+exports.mock_esm = (module_path, obj = {}, {callsite = callsites()[1]} = {}) => {
     assert.equal(typeof obj, "object", "An ES module must be mocked with an object");
-    return exports.mock_cjs(module_path, {...obj, __esModule: true});
+    return exports.mock_cjs(module_path, {...obj, __esModule: true}, {callsite});
 };
 
-exports.unmock_module = (module_path) => {
+exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
     const filename = Module._resolveFilename(
         module_path,
-        require.cache[callsites()[1].getFileName()],
+        require.cache[callsite.getFileName()],
         false,
     );
 
