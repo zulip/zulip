@@ -78,6 +78,7 @@
 .modal__title {
     margin: 0;
     font-size: 1.375rem;
+    font-weight: 600;
     line-height: 1.25;
 
     /* help_link_widget margin for the fa-circle-o. */
