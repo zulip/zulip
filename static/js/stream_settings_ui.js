@@ -299,11 +299,8 @@ export function remove_stream(stream_id) {
 export function update_settings_for_subscribed(slim_sub) {
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
     stream_ui_updates.update_add_subscriptions_elements(sub);
-    $(
-        `.subscription_settings[data-stream-id='${CSS.escape(
-            sub.stream_id,
-        )}'] #preview-stream-button`,
-    ).show();
+    $(`.subscription_settings[data-stream-id='${CSS.escape(sub.stream_id)}']`).show();
+    $(`#preview-stream-button`).show();
 
     if (is_sub_already_present(sub)) {
         update_left_panel_row(sub);
