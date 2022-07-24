@@ -1,6 +1,7 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
 
+import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/settings/edit_bot.hbs";
 import render_edit_bot_form from "../templates/settings/edit_bot_form.hbs";
@@ -221,6 +222,20 @@ export function update_bot_permissions_ui() {
         $("#create_bot_form").show();
         $(".add-a-new-bot-tab").show();
     }
+}
+
+export function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
+    const bot = people.get_by_user_id(bot_id);
+    const html_body = render_settings_deactivation_bot_modal();
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
+        help_link: "/help/deactivate-or-reactivate-a-bot",
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
+        on_click: handle_confirm,
+        loading_spinner,
+    });
 }
 
 export function show_edit_bot_info_modal(user_id, from_user_info_popover) {
@@ -458,18 +473,19 @@ export function set_up() {
     $("#active_bots_list").on("click", "button.deactivate_bot", (e) => {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
 
-        channel.del({
-            url: "/json/bots/" + encodeURIComponent(bot_id),
-            success() {
-                const $row = $(e.currentTarget).closest("li");
-                $row.hide("slow", () => {
-                    $row.remove();
-                });
-            },
-            error(xhr) {
-                bot_error(bot_id, xhr);
-            },
-        });
+        function handle_confirm() {
+            const url = "/json/bots/" + encodeURIComponent(bot_id);
+            const opts = {
+                success_continuation() {
+                    const $row = $(e.currentTarget).closest("li");
+                    $row.hide("slow", () => {
+                        $row.remove();
+                    });
+                },
+            };
+            dialog_widget.submit_api_request(channel.del, url, {}, opts);
+        }
+        confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", (e) => {

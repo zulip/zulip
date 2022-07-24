@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import render_settings_deactivation_bot_modal from "../templates/confirm_dialog/confirm_deactivate_bot.hbs";
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
@@ -486,20 +485,6 @@ function handle_deactivation($tbody) {
     });
 }
 
-function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
-    const bot = people.get_by_user_id(bot_id);
-    const html_body = render_settings_deactivation_bot_modal();
-
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
-        help_link: "/help/deactivate-or-reactivate-a-bot",
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
-        on_click: handle_confirm,
-        loading_spinner,
-    });
-}
-
 function handle_bot_deactivation($tbody) {
     $tbody.on("click", ".deactivate", (e) => {
         e.preventDefault();
@@ -514,7 +499,7 @@ function handle_bot_deactivation($tbody) {
             dialog_widget.submit_api_request(channel.del, url);
         }
 
-        confirm_bot_deactivation(bot_id, handle_confirm, true);
+        settings_bots.confirm_bot_deactivation(bot_id, handle_confirm, true);
     });
 }
 
