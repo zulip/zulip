@@ -2,7 +2,8 @@ import $ from "jquery";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
-import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
+import render_change_general_stream_settings from "../templates/stream_settings/change_general_stream_settings.hbs";
+import render_general_stream_settings from "../templates/stream_settings/general_stream_settings.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
 import render_stream_types from "../templates/stream_settings/stream_types.hbs";
@@ -366,6 +367,32 @@ function get_message_retention_days_from_sub(sub) {
     return sub.message_retention_days;
 }
 
+function change_stream_settings(e, sub) {
+    e.stopPropagation();
+
+    const data = {};
+    const stream_id = $(".subscription_settings").attr("data-stream-id");
+
+    const url = "/json/streams/" + stream_id;
+    const $status_element = $(".stream_permission_change_info");
+
+    const new_name = $("#change_stream_name").val().trim();
+    const new_description = $("#change_stream_description").val().trim();
+
+    if (new_name !== sub.name) {
+        data.new_name = new_name;
+    }
+    if (new_description !== sub.description) {
+        data.description = new_description;
+    }
+
+    if (Object.keys(data).length === 0) {
+        return;
+    }
+
+    settings_ui.do_settings_change(channel.patch, url, data, $status_element);
+}
+
 function change_stream_privacy(e) {
     e.stopPropagation();
 
@@ -476,6 +503,84 @@ export function initialize() {
         stream_settings_ui.sub_or_unsub(sub);
     });
 
+    $("#manage_streams_container").on("click", "#change_settings", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+
+        stream_data.clean_up_description(stream);
+        const sub = stream_settings_data.get_sub_for_settings(stream);
+
+        let value = "retain_for_period";
+        if (stream.message_retention_days === null) {
+            value = "realm_default";
+        } else if (stream.message_retention_days === settings_config.retain_message_forever) {
+            value = "unlimited";
+        }
+
+        const change_general_settings = render_change_general_stream_settings({
+            sub,
+            message_retention_text: get_retention_policy_text_for_subscription_type(sub),
+            stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
+            stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
+            stream_post_policy_values: stream_data.stream_post_policy_values,
+            is_owner: page_params.is_owner,
+            disable_message_retention_setting:
+                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
+            stream_message_retention_days: value,
+            retention_days: stream.message_retention_days,
+            org_level_message_retention_setting:
+                get_display_text_for_realm_message_retention_setting(),
+            zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
+            upgrade_text_for_wide_organization_logo:
+                page_params.upgrade_text_for_wide_organization_logo,
+            is_stream_edit: true,
+            max_stream_name_length: page_params.max_stream_name_length,
+            max_stream_description_length: page_params.max_stream_description_length,
+        });
+
+        $(".changeable-settings").replaceWith(change_general_settings);
+        change_stream_message_retention_days_block_display_property(value);
+    });
+
+    $("#manage_streams_container").on("click", "#save-settings", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+        stream_data.clean_up_description(stream);
+        const sub = stream_settings_data.get_sub_for_settings(stream);
+        change_stream_settings(e, sub);
+
+        const general_settings = render_general_stream_settings({
+            sub,
+            stream_post_policy_values: stream_data.stream_post_policy_values,
+            message_retention_text: get_retention_policy_text_for_subscription_type(sub),
+        });
+
+        $(".changeable-settings").replaceWith(general_settings);
+    });
+
+    $("#manage_streams_container").on("click", "#cancel-settings-change", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = get_stream_id(e.target);
+        const stream = sub_store.get(stream_id);
+        stream_data.clean_up_description(stream);
+        const sub = stream_settings_data.get_sub_for_settings(stream);
+
+        const general_settings = render_general_stream_settings({
+            sub,
+            stream_post_policy_values: stream_data.stream_post_policy_values,
+            message_retention_text: get_retention_policy_text_for_subscription_type(sub),
+        });
+
+        $(".changeable-settings").replaceWith(general_settings);
+    });
+
     $("#manage_streams_container").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
         const stream = sub_store.get(stream_id);
@@ -531,32 +636,6 @@ export function initialize() {
         e.stopPropagation();
     });
 
-    $("#manage_streams_container").on("click", "#open_stream_info_modal", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const stream_id = get_stream_id(e.target);
-        const stream = sub_store.get(stream_id);
-        const template_data = {
-            stream_name: stream.name,
-            stream_description: stream.description,
-        };
-        const change_stream_info_modal = render_change_stream_info_modal(template_data);
-        dialog_widget.launch({
-            html_heading: $t_html(
-                {defaultMessage: "Edit #{stream_name}"},
-                {stream_name: stream.name},
-            ),
-            html_body: change_stream_info_modal,
-            id: "change_stream_info_modal",
-            on_click: save_stream_info,
-            post_render: () => {
-                $("#change_stream_info_modal .dialog_submit_button")
-                    .addClass("save-button")
-                    .attr("data-stream-id", stream_id);
-            },
-        });
-    });
-
     $("#manage_streams_container").on("keypress", "#change_stream_description", (e) => {
         // Stream descriptions can not be multiline, so disable enter key
         // to prevent new line
@@ -565,31 +644,6 @@ export function initialize() {
         }
         return true;
     });
-
-    function save_stream_info(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const sub = get_sub_for_target(e.currentTarget);
-
-        const url = `/json/streams/${sub.stream_id}`;
-        const data = {};
-        const new_name = $("#change_stream_name").val().trim();
-        const new_description = $("#change_stream_description").val().trim();
-
-        if (new_name === sub.name && new_description === sub.description) {
-            return;
-        }
-        if (new_name !== sub.name) {
-            data.new_name = new_name;
-        }
-        if (new_description !== sub.description) {
-            data.description = new_description;
-        }
-
-        const $status_element = $(".stream_change_property_info");
-        dialog_widget.close_modal();
-        settings_ui.do_settings_change(channel.patch, url, data, $status_element);
-    }
 
     $("#manage_streams_container").on(
         "click",

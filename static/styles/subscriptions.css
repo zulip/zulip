@@ -839,6 +839,24 @@ h4.user_group_setting_subsection_title {
             vertical-align: top;
             margin: -5px 0 0;
         }
+
+        .change_name_and_description {
+            margin-top: -35px;
+
+            label {
+                font-size: 15px;
+                font-weight: 600;
+            }
+        }
+
+        #change_stream_name {
+            margin-bottom: 10px;
+            width: 70%;
+        }
+
+        #change_stream_description {
+            resize: vertical;
+        }
     }
 
     .group-description-wrapper,
@@ -928,6 +946,11 @@ h4.user_group_setting_subsection_title {
     .loading_indicator_text {
         font-weight: 400;
         line-height: 20px;
+    }
+
+    #save-settings {
+        color: hsl(156, 39%, 54%);
+        border: 1px solid hsl(156, 39%, 54%);
     }
 
     .subsection-parent .input-group {
