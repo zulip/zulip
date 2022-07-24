@@ -60,7 +60,7 @@ export function get_retention_policy_text_for_subscription_type(sub) {
         (sub.message_retention_days === null ||
             sub.message_retention_days === settings_config.retain_message_forever)
     ) {
-        return undefined;
+        return $t({defaultMessage: "Messages in this stream will be retained forever."});
     }
 
     // Forever for this stream, overriding the organization default

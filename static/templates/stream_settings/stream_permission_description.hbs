@@ -1,3 +1,7 @@
+
+<h4>{{t 'Who can access the stream?'}}
+    {{> ../help_link_widget link="/help/stream-permissions" }}
+</h4>
 <ul>
     {{#if invite_only}}
     <li>
@@ -24,6 +28,11 @@
         {{/tr}}
     </li>
     {{/if}}
+</ul>
+<h4>{{t 'Who can post to the stream?'}}
+    {{> ../help_link_widget link="/help/stream-sending-policy" }}
+</h4>
+<ul>
     <li>
         {{#if (eq stream_post_policy stream_post_policy_values.admins.code)}}
         {{t 'Only organization administrators can post.'}}
@@ -35,9 +44,14 @@
         {{t 'All stream subscribers can post.'}}
         {{/if}}
     </li>
-    {{#if message_retention_text}}
+</ul>
+{{#if message_retention_text}}
+<h4>{{t "Message retention for stream" }}
+    {{> ../help_link_widget link="/help/message-retention-policy" }}
+</h4>
+<ul>
     <li>
         {{message_retention_text}}
     </li>
-    {{/if}}
 </ul>
+{{/if}}
