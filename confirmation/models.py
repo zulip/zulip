@@ -17,6 +17,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
+from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
 
@@ -76,6 +77,13 @@ def get_object_from_key(
 
     obj = confirmation.content_object
     assert obj is not None
+
+    used_value = confirmation_settings.STATUS_USED
+    revoked_value = confirmation_settings.STATUS_REVOKED
+    if hasattr(obj, "status") and obj.status in [used_value, revoked_value]:
+        # Confirmations where the object has the status attribute are one-time use
+        # and are marked after being used (or revoked).
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     if mark_object_used:
         # MultiuseInvite objects have no status field, since they are
