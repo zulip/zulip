@@ -20,7 +20,7 @@ def do_change_icon_source(
     RealmAuditLog.objects.create(
         realm=realm,
         event_type=RealmAuditLog.REALM_ICON_SOURCE_CHANGED,
-        extra_data={"icon_source": icon_source, "icon_version": realm.icon_version},
+        extra_data=str({"icon_source": icon_source, "icon_version": realm.icon_version}),
         event_time=event_time,
         acting_user=acting_user,
     )

@@ -633,7 +633,7 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
         event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
         server=remote_server,
         event_time=timezone_now(),
-        extra_data={"old_value": old_value, "new_value": plan_type},
+        extra_data=str({"old_value": old_value, "new_value": plan_type}),
     )
 
 
@@ -951,7 +951,7 @@ def attach_discount_to_realm(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
-        extra_data={"old_discount": old_discount, "new_discount": discount},
+        extra_data=str({"old_discount": old_discount, "new_discount": discount}),
     )
 
 
@@ -966,9 +966,7 @@ def update_sponsorship_status(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
         event_time=timezone_now(),
-        extra_data={
-            "sponsorship_pending": sponsorship_pending,
-        },
+        extra_data=str({"sponsorship_pending": sponsorship_pending}),
     )
 
 
@@ -1213,7 +1211,5 @@ def update_billing_method_of_current_plan(
             acting_user=acting_user,
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
             event_time=timezone_now(),
-            extra_data={
-                "charge_automatically": charge_automatically,
-            },
+            extra_data=str({"charge_automatically": charge_automatically}),
         )
