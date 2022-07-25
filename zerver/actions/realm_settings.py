@@ -400,7 +400,7 @@ def do_change_realm_org_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": org_type},
+        extra_data=str({"old_value": old_value, "new_value": org_type}),
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
@@ -419,7 +419,7 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": plan_type},
+        extra_data=str({"old_value": old_value, "new_value": plan_type}),
     )
 
     if plan_type == Realm.PLAN_TYPE_PLUS:

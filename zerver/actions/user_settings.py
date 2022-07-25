@@ -300,7 +300,7 @@ def do_change_avatar_fields(
         realm=user_profile.realm,
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
-        extra_data={"avatar_source": avatar_source},
+        extra_data=str({"avatar_source": avatar_source}),
         event_time=event_time,
         acting_user=acting_user,
     )

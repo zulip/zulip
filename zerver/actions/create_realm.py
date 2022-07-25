@@ -57,7 +57,7 @@ def do_change_realm_subdomain(
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
+            extra_data=str({"old_subdomain": old_subdomain, "new_subdomain": new_subdomain}),
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
