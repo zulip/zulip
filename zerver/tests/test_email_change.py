@@ -27,6 +27,26 @@ from zerver.models import (
 
 
 class EmailChangeTestCase(ZulipTestCase):
+    def generate_email_change_link(self, new_email: str) -> str:
+        data = {"email": new_email}
+        url = "/json/settings"
+        self.assert_length(mail.outbox, 0)
+        result = self.client_patch(url, data)
+        self.assert_length(mail.outbox, 1)
+        self.assert_json_success(result)
+        email_message = mail.outbox[0]
+        self.assertEqual(
+            email_message.subject,
+            "Verify your new email address",
+        )
+        body = email_message.body
+        self.assertIn("We received a request to change the email", body)
+
+        mail.outbox.pop()
+
+        activation_url = [s for s in body.split("\n") if s][2]
+        return activation_url
+
     def test_confirm_email_change_with_non_existent_key(self) -> None:
         self.login("hamlet")
         key = generate_key()
@@ -96,23 +116,11 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(obj.status, 1)
 
     def test_change_email_deactivated_user_realm(self) -> None:
-        data = {"email": "hamlet-new@zulip.com"}
+        new_email = "hamlet-new@zulip.com"
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        url = "/json/settings"
-        self.assert_length(mail.outbox, 0)
-        result = self.client_patch(url, data)
-        self.assert_length(mail.outbox, 1)
-        self.assert_json_success(result)
-        email_message = mail.outbox[0]
-        self.assertEqual(
-            email_message.subject,
-            "Verify your new email address",
-        )
-        body = email_message.body
-        self.assertIn("We received a request to change the email", body)
 
-        activation_url = [s for s in body.split("\n") if s][2]
+        activation_url = self.generate_email_change_link(new_email)
 
         do_deactivate_user(user_profile, acting_user=None)
         response = self.client_get(activation_url)
@@ -195,21 +203,11 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assert_in_response("Already has an account", result)
 
     def test_unauthorized_email_change_from_email_confirmation_link(self) -> None:
-        data = {"email": "hamlet-new@zulip.com"}
+        new_email = "hamlet-new@zulip.com"
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        url = "/json/settings"
-        self.assert_length(mail.outbox, 0)
-        result = self.client_patch(url, data)
-        self.assert_length(mail.outbox, 1)
-        self.assert_json_success(result)
-        email_message = mail.outbox[0]
-        self.assertEqual(
-            email_message.subject,
-            "Verify your new email address",
-        )
-        body = email_message.body
-        self.assertIn("We received a request to change the email", body)
+
+        activation_url = self.generate_email_change_link(new_email)
 
         do_set_realm_property(
             user_profile.realm,
@@ -218,7 +216,6 @@ class EmailChangeTestCase(ZulipTestCase):
             acting_user=None,
         )
 
-        activation_url = [s for s in body.split("\n") if s][2]
         response = self.client_get(activation_url)
 
         self.assertEqual(response.status_code, 400)
