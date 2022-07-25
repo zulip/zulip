@@ -16,7 +16,6 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
-from confirmation import settings as confirmation_settings
 from confirmation.models import (
     Confirmation,
     ConfirmationKeyException,
@@ -138,12 +137,6 @@ def check_prereg_key(request: HttpRequest, confirmation_key: str) -> Preregistra
 
     prereg_user = get_object_from_key(confirmation_key, confirmation_types, mark_object_used=False)
     assert isinstance(prereg_user, PreregistrationUser)
-
-    if prereg_user.status in [
-        confirmation_settings.STATUS_REVOKED,
-        confirmation_settings.STATUS_USED,
-    ]:
-        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     # Defensive assert to make sure no mix-up in how .status is set leading to re-use
     # of a PreregistrationUser object.
