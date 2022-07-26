@@ -818,14 +818,6 @@ input[type="checkbox"] {
     }
 }
 
-.edit-bot-name {
-    margin-bottom: 20px;
-}
-
-.avatar-section {
-    margin-bottom: 20px;
-}
-
 .edit_bot_form {
     font-size: 100%;
     margin: 0;
@@ -834,17 +826,25 @@ input[type="checkbox"] {
     .buttons {
         margin: 10px 0 5px;
     }
-}
 
-.edit_bot_email {
-    font-weight: 400;
-    text-align: left;
-    margin-top: 0;
-    margin-bottom: 20px;
+    .edit-bot-name {
+        margin-bottom: 20px;
+    }
 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: pre;
+    .avatar-section {
+        margin-bottom: 20px;
+    }
+
+    .edit_bot_email {
+        font-weight: 400;
+        text-align: left;
+        margin-top: 0;
+        margin-bottom: 20px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+    }
 }
 
 #create_bot_form,
