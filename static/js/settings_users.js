@@ -489,14 +489,10 @@ function handle_deactivation($tbody) {
 
 function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
     const bot = people.get_by_user_id(bot_id);
-    const opts = {
-        username: bot.full_name,
-        email: settings_data.email_for_user_settings(bot),
-    };
-    const html_body = render_settings_deactivation_bot_modal(opts);
+    const html_body = render_settings_deactivation_bot_modal();
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Deactivate {name}"}, {name: bot.full_name}),
+        html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
         html_body,
         on_click: handle_confirm,

@@ -103,7 +103,7 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Deactivate Zulip Default Bot",
+        "Deactivate Zulip Default Bot?",
         "Unexpected title for deactivate bot modal",
     );
     assert.strictEqual(
