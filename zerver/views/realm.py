@@ -38,7 +38,7 @@ from zerver.lib.validator import (
     check_string_or_int,
     to_non_negative_int,
 )
-from zerver.models import Realm, RealmUserDefault, UserProfile
+from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
 
 ORG_TYPE_IDS: List[int] = [t["id"] for t in Realm.ORG_TYPES.values()]
@@ -327,14 +327,16 @@ def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpRespo
 
 def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpResponse:
     try:
-        realm = get_object_from_key(
-            confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=False
+        obj = get_object_from_key(
+            confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=True
         )
     except ConfirmationKeyException:
         return render(request, "zerver/realm_reactivation_link_error.html", status=404)
-    assert isinstance(realm, Realm)
+
+    assert isinstance(obj, RealmReactivationStatus)
+    realm = obj.realm
+
     do_reactivate_realm(realm)
-    # TODO: After reactivating the realm, the confirmation link needs to be revoked in some way.
 
     context = {"realm": realm}
     return render(request, "zerver/realm_reactivation.html", context)

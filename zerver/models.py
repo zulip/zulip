@@ -2316,6 +2316,15 @@ class EmailChangeStatus(models.Model):
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
 
+class RealmReactivationStatus(models.Model):
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status: int = models.IntegerField(default=0)
+
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+
 class AbstractPushDeviceToken(models.Model):
     APNS = 1
     GCM = 2

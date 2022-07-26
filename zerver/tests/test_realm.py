@@ -31,6 +31,7 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    RealmReactivationStatus,
     RealmUserDefault,
     ScheduledEmail,
     Stream,
@@ -354,13 +355,20 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_deactivate_realm(realm, acting_user=None)
         self.assertTrue(realm.deactivated)
-        confirmation_url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
+
+        obj = RealmReactivationStatus.objects.create(realm=realm)
+        confirmation_url = create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
         response = self.client_get(confirmation_url)
         self.assert_in_success_response(
             ["Your organization has been successfully reactivated"], response
         )
         realm = get_realm("zulip")
         self.assertFalse(realm.deactivated)
+
+        # Make sure the link can't be reused.
+        do_deactivate_realm(realm, acting_user=None)
+        response = self.client_get(confirmation_url)
+        self.assertEqual(response.status_code, 404)
 
     def test_realm_reactivation_confirmation_object(self) -> None:
         realm = get_realm("zulip")

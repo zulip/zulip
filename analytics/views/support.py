@@ -36,6 +36,7 @@ from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
     Realm,
+    RealmReactivationStatus,
     UserProfile,
     get_org_type_display_name,
     get_realm,
@@ -313,8 +314,9 @@ def support(
         ]
         confirmations += get_confirmations([Confirmation.MULTIUSE_INVITE], multiuse_invite_ids)
 
+        realm_reactivation_status_objects = RealmReactivationStatus.objects.filter(realm__in=realms)
         confirmations += get_confirmations(
-            [Confirmation.REALM_REACTIVATION], [realm.id for realm in realms]
+            [Confirmation.REALM_REACTIVATION], [obj.id for obj in realm_reactivation_status_objects]
         )
 
         context["confirmations"] = confirmations
