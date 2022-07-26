@@ -44,7 +44,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
 
     assert.strictEqual(
         await common.get_text_from_selector(page, ".dialog_heading"),
-        "Deactivate " + common.fullname.cordelia,
+        "Deactivate " + common.fullname.cordelia + "?",
         "Unexpected title for deactivate user modal",
     );
     assert.strictEqual(

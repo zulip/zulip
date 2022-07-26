@@ -455,7 +455,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
 
             confirm_dialog.launch({
                 html_heading: $t_html(
-                    {defaultMessage: "Deactivate {name}"},
+                    {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
                 help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
