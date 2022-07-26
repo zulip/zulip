@@ -72,38 +72,58 @@ landing_page_urls = [
     path("self-hosting/", landing_view, {"template_name": "zerver/self-hosting.html"}),
     path("security/", landing_view, {"template_name": "zerver/security.html"}),
     # /for pages
-    path("use-cases/", landing_view, {"template_name": "zerver/use-cases.html"}),
-    path("for/education/", landing_view, {"template_name": "zerver/for-education.html"}),
-    path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
-    path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
-    path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
-    path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
-    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
+    path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),
     path(
         "for/communities/",
         landing_view,
-        {"template_name": "zerver/for-communities.html"},
+        {"template_name": "corporate/for/communities.html"},
     ),
     # We merged this into /for/communities.
     path(
         "for/working-groups-and-communities/",
         RedirectView.as_view(url="/for/communities/", permanent=True),
     ),
+    path("for/education/", landing_view, {"template_name": "corporate/for/education.html"}),
+    path("for/events/", landing_view, {"template_name": "corporate/for/events.html"}),
+    path("for/open-source/", landing_view, {"template_name": "corporate/for/open-source.html"}),
+    path("for/research/", landing_view, {"template_name": "corporate/for/research.html"}),
+    path("for/business/", landing_view, {"template_name": "corporate/for/business.html"}),
+    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
     # case-studies
-    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
-    path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
-    path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
-    path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
-    path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
+    path(
+        "case-studies/idrift/",
+        landing_view,
+        {"template_name": "corporate/case-studies/idrift-case-study.html"},
+    ),
+    path(
+        "case-studies/tum/",
+        landing_view,
+        {"template_name": "corporate/case-studies/tum-case-study.html"},
+    ),
+    path(
+        "case-studies/ucsd/",
+        landing_view,
+        {"template_name": "corporate/case-studies/ucsd-case-study.html"},
+    ),
+    path(
+        "case-studies/rust/",
+        landing_view,
+        {"template_name": "corporate/case-studies/rust-case-study.html"},
+    ),
+    path(
+        "case-studies/lean/",
+        landing_view,
+        {"template_name": "corporate/case-studies/lean-case-study.html"},
+    ),
     path(
         "case-studies/asciidoctor/",
         landing_view,
-        {"template_name": "zerver/asciidoctor-case-study.html"},
+        {"template_name": "corporate/case-studies/asciidoctor-case-study.html"},
     ),
     path(
         "case-studies/recurse-center/",
         landing_view,
-        {"template_name": "zerver/recurse-center-case-study.html"},
+        {"template_name": "corporate/case-studies/recurse-center-case-study.html"},
     ),
 ]
 i18n_urlpatterns += landing_page_urls
