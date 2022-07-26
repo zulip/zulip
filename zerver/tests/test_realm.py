@@ -404,8 +404,9 @@ class RealmTest(ZulipTestCase):
     def test_realm_reactivation_with_random_link(self) -> None:
         random_link = "/reactivate/5e89081eb13984e0f3b130bf7a4121d153f1614b"
         response = self.client_get(random_link)
-        self.assert_in_success_response(
-            ["The organization reactivation link has expired or is not valid."], response
+        self.assertEqual(response.status_code, 404)
+        self.assert_in_response(
+            "The organization reactivation link has expired or is not valid.", response
         )
 
     def test_change_notifications_stream(self) -> None:

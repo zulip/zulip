@@ -331,7 +331,7 @@ def realm_reactivation(request: HttpRequest, confirmation_key: str) -> HttpRespo
             confirmation_key, [Confirmation.REALM_REACTIVATION], mark_object_used=False
         )
     except ConfirmationKeyException:
-        return render(request, "zerver/realm_reactivation_link_error.html")
+        return render(request, "zerver/realm_reactivation_link_error.html", status=404)
     assert isinstance(realm, Realm)
     do_reactivate_realm(realm)
     # TODO: After reactivating the realm, the confirmation link needs to be revoked in some way.
