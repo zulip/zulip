@@ -453,13 +453,14 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
-            confirm_dialog.launch({
+            dialog_widget.launch({
                 html_heading: $t_html(
                     {defaultMessage: "Deactivate {name}?"},
                     {name: user.full_name},
                 ),
                 help_link: "/help/deactivate-or-reactivate-a-user#deactivate-ban-a-user",
                 html_body,
+                html_submit_button: $t_html({defaultMessage: "Deactivate"}),
                 id: "deactivate-user-modal",
                 on_click: handle_confirm,
                 loading_spinner,
@@ -491,10 +492,11 @@ function confirm_bot_deactivation(bot_id, handle_confirm, loading_spinner) {
     const bot = people.get_by_user_id(bot_id);
     const html_body = render_settings_deactivation_bot_modal();
 
-    confirm_dialog.launch({
+    dialog_widget.launch({
         html_heading: $t_html({defaultMessage: "Deactivate {name}?"}, {name: bot.full_name}),
         help_link: "/help/deactivate-or-reactivate-a-bot",
         html_body,
+        html_submit_button: $t_html({defaultMessage: "Deactivate"}),
         on_click: handle_confirm,
         loading_spinner,
     });
