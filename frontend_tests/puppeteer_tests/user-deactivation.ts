@@ -49,7 +49,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
-        "Confirm",
+        "Deactivate",
         "Deactivate button has incorrect text.",
     );
     await page.click("#dialog_widget_modal .dialog_submit_button");
@@ -108,7 +108,7 @@ async function test_bot_deactivation_and_reactivation(page: Page): Promise<void>
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
-        "Confirm",
+        "Deactivate",
         "Deactivate button has incorrect text.",
     );
     await page.click("#dialog_widget_modal .dialog_submit_button");
