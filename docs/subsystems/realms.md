@@ -63,6 +63,17 @@ user-facing documentation on this.
 
 ### Working with subdomains in development environment
 
+Zulip's development environment is designed to make it convenient to
+test the various Zulip configurations for different subdomains:
+
+- Realms are subdomains on `*.zulipdev.com`, just like `*.zulipchat.com`.
+- The root domain (like `zulip.com` itself) is `zulipdev.com` itself.
+- The default realm is hosted on `localhost:9991` rather than
+  `zulip.zulipdev.com`, using the [`REALM_HOSTS`
+  feature](../production/multiple-organizations.md) feature.
+
+Details are below.
+
 By default, Linux does not provide a convenient way to use subdomains
 in your local development environment. To solve this problem, we use
 the **zulipdev.com** domain, which has a wildcard A record pointing to
