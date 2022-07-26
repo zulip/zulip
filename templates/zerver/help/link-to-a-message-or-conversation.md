@@ -119,4 +119,4 @@ message](/help/quote-and-reply).
 
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Format your messages using Markdown](/help/format-your-message-using-markdown)
-* [Linking to Zulip](/help/linking-to-zulip)
+* [Linking to your organization](/help/linking-to-zulip)
