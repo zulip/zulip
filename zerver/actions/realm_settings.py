@@ -21,6 +21,7 @@ from zerver.models import (
     Attachment,
     Realm,
     RealmAuditLog,
+    RealmReactivationStatus,
     RealmUserDefault,
     ScheduledEmail,
     Stream,
@@ -460,7 +461,9 @@ def do_change_realm_plan_type(
 
 
 def do_send_realm_reactivation_email(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
-    url = create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
+    obj = RealmReactivationStatus.objects.create(realm=realm)
+
+    url = create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
