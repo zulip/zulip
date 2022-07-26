@@ -2,7 +2,7 @@
 {% set entrypoint = "landing-page" %}
 
 {% block title %}
-<title>Case study: Zulip at University of California San Diego</title>
+<title>Case study: iDrift AS, distributed tech company</title>
 {% endblock %}
 
 {% block customhead %}
@@ -17,16 +17,17 @@
     <div class="hero bg-education">
         <div class="bg-dimmer"></div>
         <div class="content">
-            <h1 class="center">Case study: University of California San Diego</h1>
+            <h1 class="center">Case study: iDrift AS</h1>
+            <p>Distributed tech company</p>
         </div>
         <div class="hero-text">
-            Learn more about <a href="/for/education">Zulip for Education</a>.
+            Learn more about using Zulip for <a href="/for/business">business</a>.
         </div>
     </div>
     <div class="main">
         <div class="padded-content">
             <div class="inner-content markdown">
-                {{ render_markdown_path('zerver/for/ucsd-case-study.md') }}
+                {{ render_markdown_path('corporate/case-studies/idrift-case-study.md') }}
             </div>
         </div>
     </div>
