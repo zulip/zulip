@@ -374,10 +374,11 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_deactivate_realm(realm, acting_user=None)
         self.assertTrue(realm.deactivated)
-        create_confirmation_link(realm, Confirmation.REALM_REACTIVATION)
+        obj = RealmReactivationStatus.objects.create(realm=realm)
+        create_confirmation_link(obj, Confirmation.REALM_REACTIVATION)
         confirmation = Confirmation.objects.last()
         assert confirmation is not None
-        self.assertEqual(confirmation.content_object, realm)
+        self.assertEqual(confirmation.content_object, obj)
         self.assertEqual(confirmation.realm, realm)
 
     def test_do_send_realm_reactivation_email(self) -> None:
