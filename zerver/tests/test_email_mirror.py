@@ -234,6 +234,24 @@ class TestFilterFooter(ZulipTestCase):
 
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
+    def create_incoming_valid_message(
+        self, msgtext: str, stream: Stream, include_quotes: bool
+    ) -> EmailMessage:
+        stream_to_address = encode_email_address(stream)
+        parts = stream_to_address.split("@")
+        parts[0] += "+show-sender"
+        if include_quotes:
+            parts[0] += "+include-quotes"
+        stream_to_address = "@".join(parts)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content(msgtext)
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
+        incoming_valid_message["From"] = self.example_email("hamlet")
+        incoming_valid_message["To"] = stream_to_address
+        incoming_valid_message["Reply-to"] = self.example_email("othello")
+        return incoming_valid_message
+
     def test_receive_stream_email_messages_success(self) -> None:
 
         # build dummy messages for stream
@@ -378,27 +396,62 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
-        stream_to_address = encode_email_address(stream)
-        parts = stream_to_address.split("@")
-        parts[0] += "+show-sender"
-        stream_to_address = "@".join(parts)
-
-        incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages body")
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
-        incoming_valid_message["From"] = self.example_email("hamlet")
-        incoming_valid_message["To"] = stream_to_address
-        incoming_valid_message["Reply-to"] = self.example_email("othello")
-
+        msgtext = "TestStreamEmailMessages Body"
+        incoming_valid_message = self.create_incoming_valid_message(
+            msgtext, stream, include_quotes=False
+        )
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(self.example_email("hamlet"), "TestStreamEmailMessages body"),
+            "From: {}\n{}".format(self.example_email("hamlet"), msgtext),
         )
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+
+    def test_receive_stream_email_forwarded_success(self) -> None:
+        msgtext = """
+Hello! Here is a message I am forwarding to this list.
+I hope you enjoy reading it!
+-Glen
+
+From: John Doe johndoe@wherever
+To: A Zulip-subscribed mailing list somelist@elsewhere
+Subject: Some subject
+
+Here is the original email. It is full of text
+and other things
+-John
+"""
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        self.subscribe(user_profile, "Denmark")
+        stream = get_stream("Denmark", user_profile.realm)
+
+        def send_and_check_contents(
+            msgtext: str, stream: Stream, include_quotes: bool, expected_body: str
+        ) -> None:
+            incoming_valid_message = self.create_incoming_valid_message(
+                msgtext, stream, include_quotes
+            )
+            process_message(incoming_valid_message)
+            message = most_recent_message(user_profile)
+            expected = "From: {}\n{}".format(self.example_email("hamlet"), expected_body)
+            self.assertEqual(message.content, expected.strip())
+            self.assertEqual(get_display_recipient(message.recipient), stream.name)
+            self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
+
+        # include_quotes=True: expect the From:... to be preserved
+        send_and_check_contents(msgtext, stream, include_quotes=True, expected_body=msgtext)
+
+        # include_quotes=False: expect the From:... to be stripped
+        send_and_check_contents(
+            msgtext,
+            stream,
+            include_quotes=False,
+            expected_body="Hello! Here is a message I am forwarding to this list.\nI hope you enjoy reading it!\n-Glen",
+        )
 
     def test_receive_stream_email_show_sender_utf8_encoded_sender(self) -> None:
         user_profile = self.example_user("hamlet")
