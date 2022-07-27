@@ -19,7 +19,14 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue
-from zerver.models import EmailChangeStatus, MultiuseInvite, PreregistrationUser, Realm, UserProfile
+from zerver.models import (
+    EmailChangeStatus,
+    MultiuseInvite,
+    PreregistrationUser,
+    Realm,
+    RealmReactivationStatus,
+    UserProfile,
+)
 
 
 class ConfirmationKeyException(Exception):
@@ -47,7 +54,14 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-ConfirmationObjT = Union[MultiuseInvite, PreregistrationUser, EmailChangeStatus, UserProfile, Realm]
+ConfirmationObjT = Union[
+    MultiuseInvite,
+    PreregistrationUser,
+    EmailChangeStatus,
+    UserProfile,
+    Realm,
+    RealmReactivationStatus,
+]
 
 
 def get_object_from_key(
