@@ -10,7 +10,6 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import ProgrammingError, connections
-from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
@@ -56,10 +55,10 @@ class TextTestResult(runner.TextTestResult):
         super().__init__(*args, **kwargs)
         self.failed_tests: List[str] = []
 
-    def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
+    def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
         append_instrumentation_data(data)
 
-    def startTest(self, test: TestCase) -> None:
+    def startTest(self, test: unittest.TestCase) -> None:
         TestResult.startTest(self, test)
         self.stream.write(f"Running {test.id()}\n")
         self.stream.flush()
@@ -77,7 +76,7 @@ class TextTestResult(runner.TextTestResult):
         test_name = args[0].id()
         self.failed_tests.append(test_name)
 
-    def addSkip(self, test: TestCase, reason: str) -> None:
+    def addSkip(self, test: unittest.TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
         self.stream.write(f"** Skipping {test.id()}: {reason}\n")
         self.stream.flush()
@@ -89,7 +88,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     base class.
     """
 
-    def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
+    def addInstrumentation(self, test: unittest.TestCase, data: Dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
         if "info" in data:
             del data["info"]
@@ -377,7 +376,7 @@ class Runner(DiscoverRunner):
     def run_tests(
         self,
         test_labels: List[str],
-        extra_tests: Optional[List[TestCase]] = None,
+        extra_tests: Optional[List[unittest.TestCase]] = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
         **kwargs: Any,
