@@ -1609,6 +1609,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
 
         # Verify the PreregistrationUser object was set up as expected.
         prereg_user = PreregistrationUser.objects.last()
+        assert prereg_user is not None
         self.assertEqual(prereg_user.email, email)
         self.assertEqual(prereg_user.multiuse_invite, multiuse_obj)
 
