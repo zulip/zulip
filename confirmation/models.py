@@ -59,7 +59,6 @@ ConfirmationObjT = Union[
     PreregistrationUser,
     EmailChangeStatus,
     UserProfile,
-    Realm,
     RealmReactivationStatus,
 ]
 
@@ -120,11 +119,7 @@ def create_confirmation_link(
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    realm: Optional[Realm]
-    if isinstance(obj, Realm):
-        realm = obj
-    else:
-        realm = obj.realm
+    realm = obj.realm
 
     current_time = timezone_now()
     expiry_date = None
