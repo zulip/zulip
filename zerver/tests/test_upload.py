@@ -17,6 +17,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from django_sendfile.utils import _get_sendfile
 from PIL import Image
+from urllib3 import encode_multipart_formdata
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
@@ -142,20 +143,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         self.assert_streaming_content(response, b"zulip!")
 
-    def test_upload_file_with_supplied_mimetype(self) -> None:
-        """
-        When files are copied into the system clipboard and pasted for upload
-        the filename may not be supplied so the extension is determined from a
-        query string parameter.
-        """
-        fp = StringIO("zulip!")
-        fp.name = "pasted_file"
-        result = self.api_post(
-            self.example_user("hamlet"), "/api/v1/user_uploads?mimetype=image/png", {"file": fp}
-        )
-        uri = self.assert_json_success(result)["uri"]
-        self.assertTrue(uri.endswith("pasted_file.png"))
-
     def test_file_too_big_failure(self) -> None:
         """
         Attempting to upload big files should fail.
@@ -191,6 +178,23 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
+
+    def test_guess_content_type_from_filename(self) -> None:
+        """
+        Test coverage for files without content-type in the metadata;
+        in which case we try to guess the content-type from the filename.
+        """
+        data, content_type = encode_multipart_formdata({"file": ("somefile", b"zulip!", None)})
+        result = self.api_post(
+            self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
+        )
+        self.assert_json_success(result)
+
+        data, content_type = encode_multipart_formdata({"file": ("somefile.txt", b"zulip!", None)})
+        result = self.api_post(
+            self.example_user("hamlet"), "/api/v1/user_uploads", data, content_type=content_type
+        )
+        self.assert_json_success(result)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when Zulip is in DEVELOPMENT mode.

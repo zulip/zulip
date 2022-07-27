@@ -149,5 +149,5 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         )
     check_upload_within_quota(user_profile.realm, file_size)
 
-    uri = upload_message_image_from_request(request, user_file, user_profile, file_size)
+    uri = upload_message_image_from_request(user_file, user_profile, file_size)
     return json_success(request, data={"uri": uri})

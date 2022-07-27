@@ -10,7 +10,7 @@ import shutil
 import unicodedata
 import urllib
 from datetime import timedelta
-from mimetypes import guess_extension, guess_type
+from mimetypes import guess_type
 from typing import IO, Any, Callable, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -21,7 +21,6 @@ from botocore.client import Config
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from django.core.signing import BadSignature, TimestampSigner
-from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from markupsafe import Markup as mark_safe
@@ -374,19 +373,22 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
-def get_file_info(request: HttpRequest, user_file: UploadedFile) -> Tuple[str, Optional[str]]:
+def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
 
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
-    content_type = request.GET.get("mimetype")
-    if content_type is None:
+
+    content_type = user_file.content_type
+    # It appears Django's UploadedFile.content_type defaults to an empty string,
+    # even though the value is documented as `str | None`. So we check for both.
+    if content_type is None or content_type == "":
         guessed_type = guess_type(uploaded_file_name)[0]
         if guessed_type is not None:
             content_type = guessed_type
-    else:
-        extension = guess_extension(content_type)
-        if extension is not None:
-            uploaded_file_name = uploaded_file_name + extension
+        else:
+            # Fallback to application/octet-stream if unable to determine a
+            # different content-type from the filename.
+            content_type = "application/octet-stream"
 
     uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
 
@@ -1150,9 +1152,9 @@ def create_attachment(
 
 
 def upload_message_image_from_request(
-    request: HttpRequest, user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
+    user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
 ) -> str:
-    uploaded_file_name, content_type = get_file_info(request, user_file)
+    uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_file(
         uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
