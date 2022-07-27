@@ -754,6 +754,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
 @has_request_variables
 def login_page(
     request: HttpRequest,
+    /,
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:

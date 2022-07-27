@@ -25,11 +25,12 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from typing_extensions import Concatenate, ParamSpec
 
 import zerver.lib.rate_limiter as rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
-from zerver.lib.types import Validator, ViewFuncT
+from zerver.lib.types import Validator
 from zerver.lib.validator import check_anything
 from zerver.models import Client, Realm
 
@@ -314,6 +315,9 @@ def REQ(
 
 
 arguments_map: Dict[str, List[str]] = defaultdict(list)
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
+
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -331,17 +335,19 @@ arguments_map: Dict[str, List[str]] = defaultdict(list)
 # Note that this can't be used in helper functions which are not
 # expected to call json_success or raise JsonableError, as it uses JsonableError
 # internally when it encounters an error
-def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
-    num_params = view_func.__code__.co_argcount
-    default_param_values = cast(FunctionType, view_func).__defaults__
+def has_request_variables(
+    req_func: Callable[Concatenate[HttpRequest, ParamT], ReturnT]
+) -> Callable[Concatenate[HttpRequest, ParamT], ReturnT]:
+    num_params = req_func.__code__.co_argcount
+    default_param_values = cast(FunctionType, req_func).__defaults__
     if default_param_values is None:
         default_param_values = ()
     num_default_params = len(default_param_values)
-    default_param_names = view_func.__code__.co_varnames[num_params - num_default_params :]
+    default_param_names = req_func.__code__.co_varnames[num_params - num_default_params :]
 
     post_params = []
 
-    view_func_full_name = ".".join([view_func.__module__, view_func.__name__])
+    view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
 
     for (name, value) in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
@@ -359,8 +365,10 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
             ):
                 arguments_map[view_func_full_name].append(value.post_var_name)
 
-    @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    @wraps(req_func)
+    def _wrapped_req_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> ReturnT:
         request_notes = RequestNotes.get_notes(request)
         for param in post_params:
             func_var_name = param.func_var_name
@@ -447,9 +455,9 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
 
             kwargs[func_var_name] = val
 
-        return view_func(request, *args, **kwargs)
+        return req_func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_req_func
 
 
 local = threading.local()
