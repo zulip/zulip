@@ -1,6 +1,7 @@
 import datetime
 import logging
 from collections import defaultdict
+from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
     AbstractSet,
@@ -92,11 +93,11 @@ if TYPE_CHECKING:
 
 
 def compute_irc_user_fullname(email: str) -> str:
-    return email.split("@")[0] + " (IRC)"
+    return Address(addr_spec=email).username + " (IRC)"
 
 
 def compute_jabber_user_fullname(email: str) -> str:
-    return email.split("@")[0] + " (XMPP)"
+    return Address(addr_spec=email).username + " (XMPP)"
 
 
 def get_user_profile_delivery_email_cache_key(

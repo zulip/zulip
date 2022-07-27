@@ -1,4 +1,5 @@
 from datetime import datetime
+from email.headerregistry import Address
 from typing import Optional, Union
 
 import orjson
@@ -62,7 +63,9 @@ def copy_default_settings(
 
 def get_display_email_address(user_profile: UserProfile) -> str:
     if not user_profile.email_address_is_realm_public():
-        return f"user{user_profile.id}@{get_fake_email_domain(user_profile.realm)}"
+        return Address(
+            username=f"user{user_profile.id}", domain=get_fake_email_domain(user_profile.realm)
+        ).addr_spec
     return user_profile.delivery_email
 
 

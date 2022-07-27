@@ -1,9 +1,9 @@
 import logging
 import re
 import secrets
-from email.headerregistry import AddressHeader
+from email.headerregistry import Address, AddressHeader
 from email.message import EmailMessage
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -49,35 +49,27 @@ logger = logging.getLogger(__name__)
 
 def redact_email_address(error_message: str) -> str:
     if not settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
-        domain = settings.EMAIL_GATEWAY_PATTERN.rsplit("@")[-1]
+        domain = Address(addr_spec=settings.EMAIL_GATEWAY_PATTERN).domain
     else:
         # EMAIL_GATEWAY_EXTRA_PATTERN_HACK is of the form '@example.com'
         domain = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK[1:]
 
-    address_match = re.search("\\b(\\S*?)@" + domain, error_message)
-    if address_match:
-        email_address = address_match.group(0)
+    def redact(address_match: Match[str]) -> str:
+        email_address = address_match[0]
         # Annotate basic info about the address before scrubbing:
         if is_missed_message_address(email_address):
-            redacted_message = error_message.replace(
-                email_address, f"{email_address} <Missed message address>"
-            )
+            annotation = " <Missed message address>"
         else:
             try:
                 target_stream_id = decode_stream_email_address(email_address)[0].id
-                annotated_address = f"{email_address} <Address to stream id: {target_stream_id}>"
-                redacted_message = error_message.replace(email_address, annotated_address)
+                annotation = f" <Address to stream id: {target_stream_id}>"
             except ZulipEmailForwardError:
-                redacted_message = error_message.replace(
-                    email_address, f"{email_address} <Invalid address>"
-                )
+                annotation = " <Invalid address>"
 
         # Scrub the address from the message, to the form XXXXX@example.com:
-        string_to_scrub = address_match.groups()[0]
-        redacted_message = redacted_message.replace(string_to_scrub, "X" * len(string_to_scrub))
-        return redacted_message
+        return "X" * len(address_match[1]) + address_match[2] + annotation
 
-    return error_message
+    return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
 def report_to_zulip(error_message: str) -> None:

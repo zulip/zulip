@@ -1,4 +1,5 @@
 import os
+from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, TypedDict
 
 from scripts.lib.zulip_tools import deport
@@ -27,9 +28,11 @@ EXTERNAL_HOST_WITHOUT_PORT = deport(EXTERNAL_HOST)
 ALLOWED_HOSTS: List[str] = []
 
 # Basic email settings
-NOREPLY_EMAIL_ADDRESS = "noreply@" + EXTERNAL_HOST_WITHOUT_PORT
+NOREPLY_EMAIL_ADDRESS = Address(username="noreply", domain=EXTERNAL_HOST_WITHOUT_PORT).addr_spec
 ADD_TOKENS_TO_NOREPLY_ADDRESS = True
-TOKENIZED_NOREPLY_EMAIL_ADDRESS = "noreply-{token}@" + EXTERNAL_HOST_WITHOUT_PORT
+TOKENIZED_NOREPLY_EMAIL_ADDRESS = Address(
+    username="noreply-{token}", domain=EXTERNAL_HOST_WITHOUT_PORT
+).addr_spec
 PHYSICAL_ADDRESS = ""
 FAKE_EMAIL_DOMAIN = EXTERNAL_HOST_WITHOUT_PORT
 

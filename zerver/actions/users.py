@@ -1,4 +1,5 @@
 from collections import defaultdict
+from email.headerregistry import Address
 from typing import Any, Dict, List, Optional
 
 import orjson
@@ -67,7 +68,9 @@ def do_delete_user(user_profile: UserProfile, *, acting_user: Optional[UserProfi
         personal_recipient.delete()
         replacement_user = create_user(
             force_id=user_id,
-            email=f"deleteduser{user_id}@{get_fake_email_domain(realm)}",
+            email=Address(
+                username=f"deleteduser{user_id}", domain=get_fake_email_domain(realm)
+            ).addr_spec,
             password=None,
             realm=realm,
             full_name=f"Deleted User {user_id}",

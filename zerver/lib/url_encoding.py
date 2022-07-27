@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any, Dict, List
 from urllib.parse import quote, urlsplit
 
@@ -20,7 +21,7 @@ def encode_stream(stream_id: int, stream_name: str) -> str:
 
 def personal_narrow_url(realm: Realm, sender: UserProfile) -> str:
     base_url = f"{realm.uri}/#narrow/pm-with/"
-    email_user = sender.email.split("@")[0].lower()
+    email_user = Address(addr_spec=sender.email).username.lower()
     pm_slug = str(sender.id) + "-" + hash_util_encode(email_user)
     return base_url + pm_slug
 

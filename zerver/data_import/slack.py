@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import zipfile
 from collections import defaultdict
+from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
 
 import orjson
@@ -78,13 +79,16 @@ class SlackBotEmail:
         else:
             raise AssertionError("Could not identify bot type")
 
-        email = slack_bot_name.replace("Bot", "").replace(" ", "").lower() + f"-bot@{domain_name}"
+        email = Address(
+            username=slack_bot_name.replace("Bot", "").replace(" ", "").lower() + "-bot",
+            domain=domain_name,
+        ).addr_spec
 
         if email in cls.duplicate_email_count:
             cls.duplicate_email_count[email] += 1
-            email_prefix, email_suffix = email.split("@")
-            email_prefix += "-" + str(cls.duplicate_email_count[email])
-            email = "@".join([email_prefix, email_suffix])
+            address = Address(addr_spec=email)
+            email_username = address.username + "-" + str(cls.duplicate_email_count[email])
+            email = Address(username=email_username, domain=address.domain).addr_spec
         else:
             cls.duplicate_email_count[email] = 1
 
@@ -400,11 +404,11 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if "email" in user["profile"]:
         return user["profile"]["email"]
     if user["is_mirror_dummy"]:
-        return "{}@{}.slack.com".format(user["name"], user["team_domain"])
+        return Address(username=user["name"], domain=f'{user["team_domain"]}.slack.com').addr_spec
     if "bot_id" in user["profile"]:
         return SlackBotEmail.get_email(user["profile"], domain_name)
     if get_user_full_name(user).lower() == "slackbot":
-        return f"imported-slackbot-bot@{domain_name}"
+        return Address(username="imported-slackbot-bot", domain=domain_name).addr_spec
     raise AssertionError(f"Could not find email address for Slack user {user}")
 
 

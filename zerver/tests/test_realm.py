@@ -1414,12 +1414,16 @@ class ScrubRealmTest(ZulipTestCase):
 
         zulip_users = UserProfile.objects.filter(realm=zulip)
         for user in zulip_users:
-            self.assertTrue(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
-            self.assertTrue(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))
-            self.assertTrue(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.delivery_email))
+            self.assertRegex(user.full_name, r"^Scrubbed [a-z0-9]{15}$")
+            self.assertRegex(user.email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$")
+            self.assertRegex(
+                user.delivery_email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$"
+            )
 
         lear_users = UserProfile.objects.filter(realm=lear)
         for user in lear_users:
-            self.assertIsNone(re.search("Scrubbed [a-z0-9]{15}", user.full_name))
-            self.assertIsNone(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.email))
-            self.assertIsNone(re.search("scrubbed-[a-z0-9]{15}@" + zulip.host, user.delivery_email))
+            self.assertNotRegex(user.full_name, r"^Scrubbed [a-z0-9]{15}$")
+            self.assertNotRegex(user.email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$")
+            self.assertNotRegex(
+                user.delivery_email, rf"^scrubbed-[a-z0-9]{{15}}@{re.escape(zulip.host)}$"
+            )

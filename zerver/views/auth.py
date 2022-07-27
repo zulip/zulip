@@ -1,6 +1,7 @@
 import logging
 import secrets
 import urllib
+from email.headerregistry import Address
 from functools import wraps
 from typing import Any, Dict, List, Mapping, Optional, cast
 from urllib.parse import urlencode
@@ -482,7 +483,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
     if email_domain is None:
         raise JsonableError(_("No organization specified in JSON web token claims"))
 
-    email = f"{remote_user}@{email_domain}"
+    email = Address(username=remote_user, domain=email_domain).addr_spec
 
     try:
         realm = get_realm(subdomain)

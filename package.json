@@ -33,6 +33,7 @@
     "css.escape": "^1.5.1",
     "date-fns": "^2.16.1",
     "date-fns-tz": "^1.1.1",
+    "email-addresses": "^5.0.0",
     "emoji-datasource-google": "^14.0.0",
     "emoji-datasource-google-blob": "npm:emoji-datasource-google@^3.0.0",
     "emoji-datasource-twitter": "^14.0.0",

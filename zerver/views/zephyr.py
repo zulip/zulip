@@ -3,6 +3,7 @@ import logging
 import re
 import shlex
 import subprocess
+from email.headerregistry import Address
 from typing import Optional
 
 import orjson
@@ -42,7 +43,7 @@ def webathena_kerberos_login(
         user = parsed_cred["cname"]["nameString"][0]
         if user in kerberos_alter_egos:
             user = kerberos_alter_egos[user]
-        assert user == user_profile.email.split("@")[0]
+        assert user == Address(addr_spec=user_profile.email).username
         # Limit characters in usernames to valid MIT usernames
         # This is important for security since DNS is not secure.
         assert re.match(r"^[a-z0-9_.-]+$", user) is not None

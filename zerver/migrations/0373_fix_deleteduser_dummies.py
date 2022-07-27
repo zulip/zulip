@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any
 
 from django.conf import settings
@@ -23,14 +24,14 @@ def get_fake_email_domain(realm: Any) -> str:
     try:
         # Check that realm.host can be used to form valid email addresses.
         realm_host = host_for_subdomain(realm.string_id)
-        validate_email(f"bot@{realm_host}")
+        validate_email(Address(username="bot", domain=realm_host).addr_spec)
         return realm_host
     except ValidationError:
         pass
 
     try:
         # Check that the fake email domain can be used to form valid email addresses.
-        validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)
+        validate_email(Address(username="bot", domain=settings.FAKE_EMAIL_DOMAIN).addr_spec)
     except ValidationError:
         raise Exception(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "
@@ -61,9 +62,10 @@ def fix_dummy_users(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) ->
         try:
             validate_email(user_profile.delivery_email)
         except ValidationError:
-            user_profile.delivery_email = (
-                f"deleteduser{user_profile.id}@{get_fake_email_domain(user_profile.realm)}"
-            )
+            user_profile.delivery_email = Address(
+                username=f"deleteduser{user_profile.id}",
+                domain=get_fake_email_domain(user_profile.realm),
+            ).addr_spec
 
             update_fields.append("delivery_email")
 

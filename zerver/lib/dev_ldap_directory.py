@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+from email.headerregistry import Address
 from typing import Any, Dict, List, Optional
 
 from django.conf import settings
@@ -30,7 +31,7 @@ def generate_dev_ldap_dir(mode: str, num_users: int = 8) -> Dict[str, Dict[str, 
     ldap_dir = {}
     for i, user_data in enumerate(ldap_data):
         email = user_data[1].lower()
-        email_username = email.split("@")[0]
+        email_username = Address(addr_spec=email).username
         common_data = {
             "cn": [user_data[0]],
             "userPassword": [email_username],

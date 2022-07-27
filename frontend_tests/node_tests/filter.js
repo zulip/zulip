@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {parseOneAddress} = require("email-addresses");
+
 const {mock_esm, with_overrides, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -1575,7 +1577,7 @@ test("navbar_helpers", () => {
             icon: "envelope",
             title: properly_separated_names([joe.full_name]),
             redirect_url_with_search:
-                "/#narrow/pm-with/" + joe.user_id + "-" + joe.email.split("@")[0],
+                "/#narrow/pm-with/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
         },
         {
             operator: group_pm,
@@ -1610,13 +1612,13 @@ test("navbar_helpers", () => {
         {
             operator: sender_me,
             redirect_url_with_search:
-                "/#narrow/sender/" + me.user_id + "-" + me.email.split("@")[0],
+                "/#narrow/sender/" + me.user_id + "-" + parseOneAddress(me.email).local,
             is_common_narrow: false,
         },
         {
             operator: sender_joe,
             redirect_url_with_search:
-                "/#narrow/sender/" + joe.user_id + "-" + joe.email.split("@")[0],
+                "/#narrow/sender/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
             is_common_narrow: false,
         },
     ];

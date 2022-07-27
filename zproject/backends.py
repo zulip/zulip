@@ -16,6 +16,7 @@ import binascii
 import json
 import logging
 from abc import ABC, abstractmethod
+from email.headerregistry import Address
 from typing import (
     Any,
     Callable,
@@ -99,7 +100,6 @@ from zerver.models import (
     Realm,
     UserProfile,
     custom_profile_fields_for_realm,
-    email_to_username,
     get_realm,
     get_user_by_delivery_email,
     get_user_profile_by_id,
@@ -533,7 +533,7 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     check_ldap_config()
     if settings.LDAP_APPEND_DOMAIN:
         # Check if the email ends with LDAP_APPEND_DOMAIN
-        return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
+        return Address(addr_spec=email).domain.lower() == settings.LDAP_APPEND_DOMAIN
 
     # If we don't have an LDAP domain, we have to do a lookup for the email.
     if find_ldap_users_by_email(email):
@@ -652,11 +652,12 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         result = username
         if settings.LDAP_APPEND_DOMAIN:
             if is_valid_email(username):
-                if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
+                address = Address(addr_spec=username)
+                if address.domain != settings.LDAP_APPEND_DOMAIN:
                     raise ZulipLDAPExceptionOutsideDomain(
                         f"Email {username} does not match LDAP domain {settings.LDAP_APPEND_DOMAIN}."
                     )
-                result = email_to_username(username)
+                result = address.username
         else:
             # We can use find_ldap_users_by_email
             if is_valid_email(username):
@@ -691,7 +692,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
             username = ldap_user._username
 
         if settings.LDAP_APPEND_DOMAIN:
-            return "@".join((username, settings.LDAP_APPEND_DOMAIN))
+            return Address(username=username, domain=settings.LDAP_APPEND_DOMAIN).addr_spec
 
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from LDAP attributes.

@@ -1,5 +1,6 @@
 import datetime
 import sys
+from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set
 from unittest import mock
 
@@ -2308,7 +2309,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         return realm
 
     def create_user(self, email: str) -> UserProfile:
-        subdomain = email.split("@")[1]
+        subdomain = Address(addr_spec=email).domain
         self.register(email, "test", subdomain=subdomain)
         # self.register has the side-effect of ending up with a logged in session
         # for the new user. We don't want that in these tests.

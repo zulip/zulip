@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any, Dict, List, Optional, Union
 
 from django.conf import settings
@@ -441,7 +442,7 @@ def add_bot_backend(
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
     try:
-        email = f"{short_name}@{user_profile.realm.get_bot_domain()}"
+        email = Address(username=short_name, domain=user_profile.realm.get_bot_domain()).addr_spec
     except InvalidFakeEmailDomain:
         raise JsonableError(
             _(
@@ -449,6 +450,8 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
+    except ValueError:
+        raise JsonableError(_("Bad name or username"))
     form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
@@ -457,8 +460,10 @@ def add_bot_backend(
         if service_name not in [bot.name for bot in EMBEDDED_BOTS]:
             raise JsonableError(_("Invalid embedded bot name."))
 
-    if not form.is_valid():
-        # We validate client-side as well
+    if not form.is_valid():  # nocoverage
+        # coverage note: The similar block above covers the most
+        # common situation where this might fail, but this case may be
+        # still possible with an overly long username.
         raise JsonableError(_("Bad name or username"))
     try:
         get_user_by_delivery_email(email, user_profile.realm)

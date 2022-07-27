@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
@@ -93,7 +94,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     if message["data"]["incident"].get("assigned_to_user", None):
         assigned_to_user = message["data"]["incident"]["assigned_to_user"]
         format_dict["assignee_info"] = AGENT_TEMPLATE.format(
-            username=assigned_to_user["email"].split("@")[0],
+            username=Address(addr_spec=assigned_to_user["email"]).username,
             url=assigned_to_user["html_url"],
         )
     else:
@@ -102,7 +103,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     if message["data"]["incident"].get("resolved_by_user", None):
         resolved_by_user = message["data"]["incident"]["resolved_by_user"]
         format_dict["agent_info"] = AGENT_TEMPLATE.format(
-            username=resolved_by_user["email"].split("@")[0],
+            username=Address(addr_spec=resolved_by_user["email"]).username,
             url=resolved_by_user["html_url"],
         )
 

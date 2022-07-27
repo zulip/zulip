@@ -90,7 +90,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Invalid username
         bot_info = dict(
             full_name="My bot name",
-            short_name="@",
+            short_name="my\nbot",
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Bad name or username")

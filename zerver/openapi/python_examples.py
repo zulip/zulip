@@ -15,6 +15,7 @@
 import json
 import os
 import sys
+from email.headerregistry import Address
 from functools import wraps
 from typing import Any, Callable, Dict, List, Set, TypeVar, cast
 
@@ -58,7 +59,10 @@ def ensure_users(ids_list: List[int], user_names: List[str]) -> None:
     # Ensure that the list of user ids (ids_list)
     # matches the users we want to refer to (user_names).
     realm = get_realm("zulip")
-    user_ids = [get_user(name + "@zulip.com", realm).id for name in user_names]
+    user_ids = [
+        get_user(Address(username=name, domain="zulip.com").addr_spec, realm).id
+        for name in user_names
+    ]
 
     assert ids_list == user_ids
 

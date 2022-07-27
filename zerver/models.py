@@ -3,6 +3,7 @@ import re
 import secrets
 import time
 from datetime import timedelta
+from email.headerregistry import Address
 from typing import (
     TYPE_CHECKING,
     AbstractSet,
@@ -1041,21 +1042,6 @@ class RealmDomain(models.Model):
 
     class Meta:
         unique_together = ("realm", "domain")
-
-
-# These functions should only be used on email addresses that have
-# been validated via django.core.validators.validate_email
-#
-# Note that we need to use some care, since can you have multiple @-signs; e.g.
-# "tabbott@test"@zulip.com
-# is valid email address
-def email_to_username(email: str) -> str:
-    return "@".join(email.split("@")[:-1]).lower()
-
-
-# Returns the raw domain portion of the desired email address
-def email_to_domain(email: str) -> str:
-    return email.split("@")[-1].lower()
 
 
 class DomainNotAllowedForRealmError(Exception):
@@ -2190,7 +2176,7 @@ class GroupGroupMembership(models.Model):
 
 def remote_user_to_email(remote_user: str) -> str:
     if settings.SSO_APPEND_DOMAIN is not None:
-        remote_user += "@" + settings.SSO_APPEND_DOMAIN
+        return Address(username=remote_user, domain=settings.SSO_APPEND_DOMAIN).addr_spec
     return remote_user
 
 
@@ -4610,14 +4596,14 @@ class InvalidFakeEmailDomain(Exception):
 def get_fake_email_domain(realm: Realm) -> str:
     try:
         # Check that realm.host can be used to form valid email addresses.
-        validate_email(f"bot@{realm.host}")
+        validate_email(Address(username="bot", domain=realm.host).addr_spec)
         return realm.host
     except ValidationError:
         pass
 
     try:
         # Check that the fake email domain can be used to form valid email addresses.
-        validate_email("bot@" + settings.FAKE_EMAIL_DOMAIN)
+        validate_email(Address(username="bot", domain=settings.FAKE_EMAIL_DOMAIN).addr_spec)
     except ValidationError:
         raise InvalidFakeEmailDomain(
             settings.FAKE_EMAIL_DOMAIN + " is not a valid domain. "

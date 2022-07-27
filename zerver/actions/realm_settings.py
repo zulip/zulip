@@ -1,3 +1,4 @@
+from email.headerregistry import Address
 from typing import Any, Dict, Literal, Optional
 
 import orjson
@@ -370,7 +371,9 @@ def do_scrub_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
         do_delete_messages_by_sender(user)
         do_delete_avatar_image(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
-        scrubbed_email = f"scrubbed-{generate_key()[:15]}@{realm.host}"
+        scrubbed_email = Address(
+            username=f"scrubbed-{generate_key()[:15]}", domain=realm.host
+        ).addr_spec
         user.email = scrubbed_email
         user.delivery_email = scrubbed_email
         user.save(update_fields=["full_name", "email", "delivery_email"])

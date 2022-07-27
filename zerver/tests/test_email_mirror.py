@@ -3,6 +3,7 @@ import email.policy
 import os
 import subprocess
 from email import message_from_string
+from email.headerregistry import Address
 from email.message import EmailMessage, MIMEPart
 from typing import TYPE_CHECKING, Any, Callable, Dict, Mapping, Optional
 from unittest import mock
@@ -237,12 +238,11 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def create_incoming_valid_message(
         self, msgtext: str, stream: Stream, include_quotes: bool
     ) -> EmailMessage:
-        stream_to_address = encode_email_address(stream)
-        parts = stream_to_address.split("@")
-        parts[0] += "+show-sender"
+        address = Address(addr_spec=encode_email_address(stream))
+        email_username = address.username + "+show-sender"
         if include_quotes:
-            parts[0] += "+include-quotes"
-        stream_to_address = "@".join(parts)
+            email_username += "+include-quotes"
+        stream_to_address = Address(username=email_username, domain=address.domain).addr_spec
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content(msgtext)
@@ -459,10 +459,9 @@ and other things
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
-        stream_to_address = encode_email_address(stream)
-        parts = stream_to_address.split("@")
-        parts[0] += "+show-sender"
-        stream_to_address = "@".join(parts)
+        address = Address(addr_spec=encode_email_address(stream))
+        email_username = address.username + "+show-sender"
+        stream_to_address = Address(username=email_username, domain=address.domain).addr_spec
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestStreamEmailMessages body")
@@ -491,10 +490,9 @@ and other things
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
-        stream_to_address = encode_email_address(stream)
-        parts = stream_to_address.split("@")
-        parts[0] += "+include-footer"
-        stream_to_address = "@".join(parts)
+        address = Address(addr_spec=encode_email_address(stream))
+        email_username = address.username + "+include-footer"
+        stream_to_address = Address(username=email_username, domain=address.domain).addr_spec
 
         text = """Test message
         --
@@ -520,10 +518,9 @@ and other things
         self.subscribe(user_profile, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
-        stream_to_address = encode_email_address(stream)
-        parts = stream_to_address.split("@")
-        parts[0] += "+include-quotes"
-        stream_to_address = "@".join(parts)
+        address = Address(addr_spec=encode_email_address(stream))
+        email_username = address.username + "+include-quotes"
+        stream_to_address = Address(username=email_username, domain=address.domain).addr_spec
 
         text = """Reply
 
@@ -1603,8 +1600,10 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
 
-        address_parts = stream_to_address.split("@")
-        scrubbed_address = "X" * len(address_parts[0]) + "@" + address_parts[1]
+        address = Address(addr_spec=stream_to_address)
+        scrubbed_address = Address(
+            username="X" * len(address.username), domain=address.domain
+        ).addr_spec
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("Test body")
@@ -1666,8 +1665,10 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
         # Test for a stream address:
         stream_to_address = encode_email_address(stream)
-        stream_address_parts = stream_to_address.split("@")
-        scrubbed_stream_address = "X" * len(stream_address_parts[0]) + "@" + stream_address_parts[1]
+        address = Address(addr_spec=stream_to_address)
+        scrubbed_stream_address = Address(
+            username="X" * len(address.username), domain=address.domain
+        ).addr_spec
 
         error_message = "test message {}"
         error_message = error_message.format(stream_to_address)
