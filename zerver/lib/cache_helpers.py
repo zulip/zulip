@@ -20,6 +20,7 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
     user_profile_cache_key,
 )
+from zerver.lib.safe_session_cached_db import SessionStore
 from zerver.lib.sessions import session_engine
 from zerver.lib.users import get_all_api_keys
 from zerver.models import (
@@ -59,13 +60,16 @@ def huddle_cache_items(items_for_remote_cache: Dict[str, Tuple[Huddle]], huddle:
     items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
 
-def session_cache_items(items_for_remote_cache: Dict[str, str], session: Session) -> None:
+def session_cache_items(
+    items_for_remote_cache: Dict[str, Dict[str, object]], session: Session
+) -> None:
     if settings.SESSION_ENGINE != "zerver.lib.safe_session_cached_db":
         # If we're not using the cached_db session engine, we there
         # will be no store.cache_key attribute, and in any case we
         # don't need to fill the cache, since it won't exist.
         return
     store = session_engine.SessionStore(session_key=session.session_key)
+    assert isinstance(store, SessionStore)
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 
