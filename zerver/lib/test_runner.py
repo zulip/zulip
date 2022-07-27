@@ -2,8 +2,9 @@ import multiprocessing
 import os
 import random
 import shutil
+import unittest
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union, cast
 from unittest import TestLoader, TestSuite, mock, runner
 from unittest.result import TestResult
 
@@ -451,7 +452,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
         return [t.id() for t in get_tests_from_suite(suite)]
 
 
-def get_tests_from_suite(suite: TestSuite) -> TestCase:
+def get_tests_from_suite(suite: TestSuite) -> Iterable[unittest.TestCase]:
     for test in suite:
         if isinstance(test, TestSuite):
             yield from get_tests_from_suite(test)
