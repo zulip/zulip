@@ -364,7 +364,7 @@ def webhook_view(
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(
                 request,
@@ -677,7 +677,7 @@ def authenticated_uploads_api_view(
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:
