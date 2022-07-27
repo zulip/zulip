@@ -72,6 +72,9 @@
 * [Get subgroups of user group](/api/get-user-group-subgroups)
 * [Mute a user](/api/mute-user)
 * [Unmute a user](/api/unmute-user)
+* [Get all alert words](/api/get-alert-words)
+* [Add alert words](/api/add-alert-words)
+* [Remove alert words](/api/remove-alert-words)
 
 #### Server & organizations
 

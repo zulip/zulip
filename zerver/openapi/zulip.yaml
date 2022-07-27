@@ -6934,6 +6934,159 @@ paths:
                     description: |
                       An example JSON error response when attempting to deactivate the only
                       organization owner in an organization:
+  /users/me/alert_words:
+    get:
+      operationId: get-alert-words
+      summary: Get all alert words
+      tags: ["users"]
+      description: |
+        Get all of the user's configured [alert words][alert-words].
+
+        [alert-words]: /help/pm-mention-alert-notifications#alert-words
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      alert_words:
+                        type: array
+                        description: |
+                          An array of strings, where each string is an alert word (or phrase)
+                          configured by the user.
+                        items:
+                          type: string
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "alert_words": ["natural", "illustrious"],
+                      }
+    post:
+      operationId: add-alert-words
+      summary: Add alert words
+      tags: ["users"]
+      description: |
+        Add words (or phrases) to the user's set of configured [alert words][alert-words].
+
+        [alert-words]: /help/pm-mention-alert-notifications#alert-words
+      parameters:
+        - name: alert_words
+          in: query
+          description: |
+            An array of strings to be added to the user's set of configured
+            alert words. Strings already present in the user's set of alert words
+            already are ignored.
+
+            Alert words are case insensitive.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ["foo", "bar"]
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      alert_words:
+                        type: array
+                        description: |
+                          An array of strings, where each string is an alert word (or phrase)
+                          configured by the user.
+                        items:
+                          type: string
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "alert_words": ["foo", "bar", "natural", "illustrious"],
+                      }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "alert_words[0] is too long (limit: 100 characters)",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when a supplied alert word (or phrase)
+                      exceeds the character limit:
+    delete:
+      operationId: remove-alert-words
+      summary: Remove alert words
+      tags: ["users"]
+      description: |
+        Remove words (or phrases) from the user's set of configured [alert words][alert-words].
+
+        Alert words are case insensitive.
+
+        [alert-words]: /help/pm-mention-alert-notifications#alert-words
+      parameters:
+        - name: alert_words
+          in: query
+          description: |
+            An array of strings to be removed from the user's set of configured
+            alert words. Strings that are not in the user's set of alert words
+            are ignored.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example: ["foo"]
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      alert_words:
+                        type: array
+                        description: |
+                          An array of strings, where each string is an alert word (or phrase)
+                          configured by the user.
+                        items:
+                          type: string
+                    example:
+                      {
+                        "result": "success",
+                        "msg": "",
+                        "alert_words": ["bar", "natural", "illustrious"],
+                      }
   /users/me/status:
     post:
       operationId: update-status

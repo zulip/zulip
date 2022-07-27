@@ -1379,25 +1379,40 @@ def upload_custom_emoji(client: Client) -> None:
 
 @openapi_test_function("/users/me/alert_words:get")
 def get_alert_words(client: Client) -> None:
+
+    # {code_example|start}
+    # Get all of the user's configured alert words.
     result = client.get_alert_words()
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/alert_words", "get", "200")
 
     assert result["result"] == "success"
 
 
 @openapi_test_function("/users/me/alert_words:post")
 def add_alert_words(client: Client) -> None:
+
+    # {code_example|start}
+    # Add words (or phrases) to the user's set of configured alert words.
     word = ["foo", "bar"]
 
     result = client.add_alert_words(word)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/alert_words", "post", "200")
 
     assert result["result"] == "success"
 
 
 @openapi_test_function("/users/me/alert_words:delete")
 def remove_alert_words(client: Client) -> None:
+
+    # {code_example|start}
+    # Remove words (or phrases) from the user's set of configured alert words.
     word = ["foo"]
 
     result = client.remove_alert_words(word)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/users/me/alert_words", "delete", "200")
 
     assert result["result"] == "success"
 
@@ -1551,6 +1566,9 @@ def test_users(client: Client, owner_client: Client) -> None:
     deactivate_own_user(client, owner_client)
     add_user_mute(client)
     remove_user_mute(client)
+    get_alert_words(client)
+    add_alert_words(client)
+    remove_alert_words(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
