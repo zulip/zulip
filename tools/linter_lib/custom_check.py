@@ -847,7 +847,7 @@ markdown_rules = RuleList(
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
-                "docs/overview/contributing.md",
+                "docs/contributing/contributing.md",
                 "docs/overview/readme.md",
                 "docs/README.md",
                 "docs/subsystems/email.md",

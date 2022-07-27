@@ -1,4 +1,4 @@
-# Contributing to Zulip
+# Contributing guide
 
 Welcome to the Zulip community!
 
@@ -184,7 +184,7 @@ stream](https://chat.zulip.org/#narrow/stream/101-design) in the [Zulip
 development community](https://zulip.com/development-community/)
 
 For more advice, see [What makes a great Zulip
-contributor?](https://zulip.readthedocs.io/en/latest/overview/contributing.html#what-makes-a-great-zulip-contributor)
+contributor?](#what-makes-a-great-zulip-contributor)
 below.
 
 ### Submitting a pull request
@@ -267,7 +267,7 @@ The key to keeping your review moving through the review process is to:
 - Make it as easy as possible to review the changes you made.
 
 In order to do this, when you believe you have addressed the previous round of
-feedback on your PR as best you can, post an comment asking reviewers to take
+feedback on your PR as best you can, post a comment asking reviewers to take
 another look. Your comment should make it easy to understand what has been done
 and what remains by:
 
@@ -314,7 +314,7 @@ labels.
      on [Git commit
      discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
   2. If all the feedback has been addressed, did you [leave a
-     comment](https://zulip.readthedocs.io/en/latest/overview/contributing.html#how-to-help-move-the-review-process-forward)
+     comment](#how-to-help-move-the-review-process-forward)
      explaining that you have done so and **requesting another review**? If not,
      it may not be clear to project maintainers or reviewers that your PR is
      ready for another look.

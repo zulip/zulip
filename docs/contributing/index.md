@@ -1,18 +1,18 @@
-# Code contribution guide
+# Contributing to Zulip
 
 ```{toctree}
 ---
 maxdepth: 3
 ---
 
+contributing
+../code-of-conduct
 version-control
 code-style
 code-reviewing
 zulipbot-usage
-accessibility
-licensing
 bug-reports
-../code-of-conduct
 gsoc
 summer-with-zulip
+licensing
 ```
