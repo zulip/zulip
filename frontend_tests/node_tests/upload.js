@@ -180,7 +180,10 @@ test("show_error_message", () => {
     assert.equal($("#compose-error-msg").text(), "Error message");
 
     upload.show_error_message({mode: "compose"});
-    assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
+    assert.equal(
+        $("#compose-error-msg").text(),
+        "translated: Error: Invalid file type upload not allowed.",
+    );
 });
 
 test("upload_files", ({override, override_rewire}) => {
@@ -643,14 +646,20 @@ test("uppy_events", ({override, override_rewire}) => {
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);
     assert.ok(uppy_cancel_all_called);
-    assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
+    assert.equal(
+        $("#compose-error-msg").text(),
+        "translated: Error: Invalid file type upload not allowed.",
+    );
     assert.ok(compose_ui_replace_syntax_called);
     $("#compose-error-msg").text("");
     $("#compose-textarea").val("user modified text");
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null);
     assert.ok(uppy_cancel_all_called);
-    assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
+    assert.equal(
+        $("#compose-error-msg").text(),
+        "translated: Error: Invalid file type upload not allowed.",
+    );
     assert.ok(compose_ui_replace_syntax_called);
     assert.equal($("#compose-textarea").val(), "user modified text");
 });
