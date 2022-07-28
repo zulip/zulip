@@ -2,7 +2,7 @@ import logging
 import sys
 from functools import wraps
 from types import TracebackType
-from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
+from typing import Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
@@ -22,22 +22,19 @@ captured_exc_info: Optional[
 ] = None
 
 
-def capture_and_throw(domain: Optional[str] = None) -> Callable[[ViewFuncT], ViewFuncT]:
-    def wrapper(view_func: ViewFuncT) -> ViewFuncT:
-        @wraps(view_func)
-        def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
-            global captured_request
-            captured_request = request
-            try:
-                raise Exception("Request error")
-            except Exception as e:
-                global captured_exc_info
-                captured_exc_info = sys.exc_info()
-                raise e
+def capture_and_throw(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
+        global captured_request
+        captured_request = request
+        try:
+            raise Exception("Request error")
+        except Exception as e:
+            global captured_exc_info
+            captured_exc_info = sys.exc_info()
+            raise e
 
-        return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
-
-    return wrapper
+    return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
 
 
 class AdminNotifyHandlerTest(ZulipTestCase):
@@ -78,17 +75,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
 
     def simulate_error(self) -> logging.LogRecord:
         self.login("hamlet")
-        with patch("zerver.decorator.rate_limit") as rate_limit_patch, self.assertLogs(
+        with patch(
+            "zerver.lib.rest.authenticated_json_view", side_effect=capture_and_throw
+        ) as view_decorator_patch, self.assertLogs(
             "django.request", level="ERROR"
         ) as request_error_log, self.assertLogs(
             "zerver.middleware.json_error_handler", level="ERROR"
         ) as json_error_handler_log, self.settings(
             TEST_SUITE=False
         ):
-            rate_limit_patch.side_effect = capture_and_throw
             result = self.client_get("/json/users")
             self.assert_json_error(result, "Internal server error", status_code=500)
-            rate_limit_patch.assert_called_once()
+            view_decorator_patch.assert_called_once()
         self.assertEqual(
             request_error_log.output, ["ERROR:django.request:Internal Server Error: /json/users"]
         )
