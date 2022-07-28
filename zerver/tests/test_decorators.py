@@ -630,9 +630,8 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 class RateLimitTestCase(ZulipTestCase):
     def get_ratelimited_view(self) -> Callable[..., HttpResponse]:
         def f(req: Any) -> HttpResponse:
+            rate_limit(req)
             return json_response(msg="some value")
-
-        f = rate_limit()(f)
 
         return f
 
