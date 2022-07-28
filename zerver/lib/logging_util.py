@@ -275,6 +275,7 @@ class ZulipWebhookFormatter(ZulipFormatter):
         client = RequestNotes.get_notes(request).client
         assert client is not None
 
+        assert request.user.is_authenticated
         setattr(record, "user", f"{request.user.delivery_email} ({request.user.realm.string_id})")
         setattr(record, "client", client.name)
         setattr(record, "url", request.META.get("PATH_INFO", None))
