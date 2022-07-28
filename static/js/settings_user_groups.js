@@ -396,8 +396,10 @@ export function set_up() {
             group_name: user_group.name,
         });
 
+        const user_group_name = user_group.name;
+
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete user group"}),
+            html_heading: $t_html({defaultMessage: "Delete {user_group_name}?"}, {user_group_name}),
             html_body,
             on_click: delete_user_group,
         });
