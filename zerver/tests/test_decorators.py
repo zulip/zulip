@@ -519,7 +519,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request.method = "POST"
         request.user = self.example_user("hamlet")
         with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
-            result = my_unlimited_view(request)
+            result = my_unlimited_view(request, request.user)
 
         self.assert_json_success(result)
         self.assertFalse(rate_limit_mock.called)
@@ -528,7 +528,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request.method = "POST"
         request.user = self.example_user("hamlet")
         with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
-            result = my_rate_limited_view(request)
+            result = my_rate_limited_view(request, request.user)
 
         # Don't assert json_success, since it'll be the rate_limit mock object
         self.assertTrue(rate_limit_mock.called)
@@ -630,9 +630,8 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 class RateLimitTestCase(ZulipTestCase):
     def get_ratelimited_view(self) -> Callable[..., HttpResponse]:
         def f(req: Any) -> HttpResponse:
+            rate_limit(req)
             return json_response(msg="some value")
-
-        f = rate_limit(f)
 
         return f
 
