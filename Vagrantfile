@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "bento/ubuntu-20.04"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder ".", "/srv/zulip"
+  config.vm.synced_folder ".", "/srv/zulip", docker_consistency: "z"
 
   vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)

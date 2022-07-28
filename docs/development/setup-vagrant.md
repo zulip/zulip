@@ -51,13 +51,13 @@ a proxy to access the internet.)
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 22.04
 - **Debian**: 11
+- **Fedora**: tested for 36
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
 documentation for installing Vagrant and Docker on those systems, so
-you'll need to find a separate guide and crib from the Debian/Ubuntu
-docs.
+you'll need to find a separate guide and crib from these docs.
 
 ### Step 0: Set up Git & GitHub
 
@@ -77,6 +77,7 @@ Jump to:
 - [macOS](#macos)
 - [Ubuntu](#ubuntu)
 - [Debian](#debian)
+- [Fedora](#fedora)
 - [Windows](#windows-10)
 
 #### macOS
@@ -144,6 +145,16 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 #### Debian
 
 The setup for Debian is the same as that [for Ubuntu above](#ubuntu).
+
+#### Fedora
+
+The setup for Fedora is mostly equivalent to the [setup for Ubuntu](#ubuntu).
+The only difference is the installation of Docker. Fedora does not include the
+official `docker-ce` package (named `docker.io` in the
+[setup for Ubuntu](#ubuntu)) in their repositories. They provide the package
+`moby-engine` which you can choose instead. In case you prefer the official
+docker distribution, you can follow
+[their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
 
 #### Windows 10
 
