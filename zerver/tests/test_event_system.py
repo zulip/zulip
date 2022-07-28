@@ -215,10 +215,10 @@ class EventsEndpointTest(ZulipTestCase):
         post_data["secret"] = "random"
         req = HostRequestMock(post_data, user_profile=None)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
-        with self.assertRaises(AccessDeniedError) as context:
+        with self.assertRaises(AccessDeniedError) as access_denied_error:
             result = self.client_post_request("/notify_tornado", req)
-        self.assertEqual(str(context.exception), "Access denied")
-        self.assertEqual(context.exception.http_status_code, 403)
+        self.assertEqual(str(access_denied_error.exception), "Access denied")
+        self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
         assert settings.SHARED_SECRET is not None
         post_data["secret"] = settings.SHARED_SECRET
