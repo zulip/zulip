@@ -374,7 +374,7 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
-def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Optional[str]]:
+def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, Optional[str]]:
 
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
@@ -389,9 +389,8 @@ def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, int, Opti
             uploaded_file_name = uploaded_file_name + extension
 
     uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
-    uploaded_file_size = user_file.size
 
-    return uploaded_file_name, uploaded_file_size, content_type
+    return uploaded_file_name, content_type
 
 
 def get_signed_upload_url(path: str, download: bool = False) -> str:
@@ -1151,11 +1150,11 @@ def create_attachment(
 
 
 def upload_message_image_from_request(
-    request: HttpRequest, user_file: File, user_profile: UserProfile
+    request: HttpRequest, user_file: File, user_profile: UserProfile, user_file_size: int
 ) -> str:
-    uploaded_file_name, uploaded_file_size, content_type = get_file_info(request, user_file)
+    uploaded_file_name, content_type = get_file_info(request, user_file)
     return upload_message_file(
-        uploaded_file_name, uploaded_file_size, content_type, user_file.read(), user_profile
+        uploaded_file_name, user_file_size, content_type, user_file.read(), user_profile
     )
 
 
