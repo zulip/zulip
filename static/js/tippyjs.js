@@ -29,6 +29,38 @@ function get_tooltip_content(reference) {
     return "";
 }
 
+// Defining observer outside ensures that at max only one observer is active at all times.
+let observer;
+function hide_tooltip_if_reference_removed(
+    target_node,
+    config,
+    instance,
+    nodes_to_check_for_removal,
+) {
+    // Use MutationObserver to check for removal of nodes on which tooltips
+    // are still active.
+    if (!target_node) {
+        // The tooltip reference was removed from DOM before we reached here.
+        // In that case, we simply hide the tooltip.
+        // We have to be smart about hiding the instance, so we hide it as soon
+        // as it is displayed.
+        setTimeout(instance.hide, 0);
+        return;
+    }
+    const callback = function (mutationsList) {
+        for (const mutation of mutationsList) {
+            for (const node of nodes_to_check_for_removal) {
+                // Hide instance if reference is in the removed node list.
+                if (Array.prototype.includes.call(mutation.removedNodes, node)) {
+                    instance.hide();
+                }
+            }
+        }
+    };
+    observer = new MutationObserver(callback);
+    observer.observe(target_node, config);
+}
+
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
 // documentation for default properties.
@@ -90,39 +122,14 @@ export function initialize() {
                 instance.setContent(title);
             }
 
-            // Use MutationObserver to check for removal of nodes on which tooltips
-            // are still active.
-            // We target the message table and check for removal of it, it's children
-            // and the reactions individually down in the subtree.
-            const target_node = $elem.parents(".message_table.focused_table").get(0);
-            if (!target_node) {
-                // The `reaction` was removed from DOM before we reached here.
-                // In that case, we simply hide the tooltip.
-                // We have to be smart about hiding the instance, so we hide it as soon
-                // as it is displayed.
-                setTimeout(instance.hide, 0);
-                return;
-            }
-
+            const config = {attributes: false, childList: true, subtree: true};
+            const target = $elem.parents(".message_table.focused_table").get(0);
             const nodes_to_check_for_removal = [
                 $elem.parents(".recipient_row").get(0),
                 $elem.parents(".message_reactions").get(0),
                 $elem.get(0),
             ];
-            const config = {attributes: false, childList: true, subtree: true};
-
-            const callback = function (mutationsList) {
-                for (const mutation of mutationsList) {
-                    for (const node of nodes_to_check_for_removal) {
-                        // Hide instance if reference is in the removed node list.
-                        if (Array.prototype.includes.call(mutation.removedNodes, node)) {
-                            instance.hide();
-                        }
-                    }
-                }
-            };
-            observer = new MutationObserver(callback);
-            observer.observe(target_node, config);
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
         },
         onHidden(instance) {
             instance.destroy();
