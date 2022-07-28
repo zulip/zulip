@@ -10,6 +10,7 @@ import * as popover_menus from "./popover_menus";
 import * as rtl from "./rtl";
 import * as user_status from "./user_status";
 
+export let compose_spinner_visible = false;
 let full_size_status = false; // true or false
 
 // Some functions to handle the full size status explicitly
@@ -404,12 +405,14 @@ export function format_text($textarea, type) {
 }
 
 export function hide_compose_spinner() {
+    compose_spinner_visible = false;
     $("#compose-send-button .loader").hide();
     $("#compose-send-button span").show();
     $("#compose-send-button").removeClass("disable-btn");
 }
 
 export function show_compose_spinner() {
+    compose_spinner_visible = true;
     // Always use white spinner.
     loading.show_button_spinner($("#compose-send-button .loader"), true);
     $("#compose-send-button span").hide();

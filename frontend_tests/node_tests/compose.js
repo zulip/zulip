@@ -43,6 +43,7 @@ const server_events = mock_esm("../../static/js/server_events");
 const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
+const compose_ui = zrequire("compose_ui");
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
@@ -361,6 +362,7 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
         $("#compose-send-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
+        compose_ui.compose_spinner_visible = false;
         const res = compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
@@ -374,6 +376,7 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
+        compose_ui.compose_spinner_visible = false;
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
         override(compose_pm_pill, "get_user_ids", () => []);
@@ -399,6 +402,7 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
+        compose_ui.compose_spinner_visible = false;
         compose_state.set_message_type("stream");
         compose_state.set_stream_name("social");
         override_rewire(people, "get_by_user_id", () => []);
