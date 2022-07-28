@@ -26,8 +26,8 @@ def fix_old_realm_reactivation_confirmations(
     Confirmation = apps.get_model("confirmation", "Confirmation")
     ContentType = apps.get_model("contenttypes", "ContentType")
 
-    if not Confirmation.objects.exists():
-        # No Confirmations so nothing to do, and the database may actually
+    if not Confirmation.objects.filter(type=REALM_REACTIVATION).exists():
+        # No relevant Confirmations so nothing to do, and the database may actually
         # no be provisioned yet, which would make the code below break.
         return
 
