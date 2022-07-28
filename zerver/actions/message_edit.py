@@ -105,14 +105,9 @@ def validate_message_edit_payload(
 
 
 def can_edit_topic(
-    message: Message,
     user_profile: UserProfile,
     is_no_topic_msg: bool,
 ) -> bool:
-    # You have permission to edit the message topic if you sent it.
-    if message.sender_id == user_profile.id:
-        return True
-
     # We allow anyone to edit (no topic) messages to help tend them.
     if is_no_topic_msg:
         return True
@@ -939,7 +934,7 @@ def check_update_message(
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    if topic_name is not None and not can_edit_topic(message, user_profile, is_no_topic_msg):
+    if topic_name is not None and not can_edit_topic(user_profile, is_no_topic_msg):
         raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
@@ -954,12 +949,10 @@ def check_update_message(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     # If there is a change to the topic, check that the user is allowed to
-    # edit it and that it has not been too long. If this is not the user who
-    # sent the message, they are not the admin, and the time limit for editing
-    # topics is passed, raise an error.
+    # edit it and that it has not been too long. If user is not admin or moderator,
+    # and the time limit for editing topics is passed, raise an error.
     if (
         topic_name is not None
-        and message.sender != user_profile
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and not is_no_topic_msg
