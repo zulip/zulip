@@ -30,6 +30,8 @@ format used by the Zulip server that they are interacting with.
   `move_messages_between_streams_policy`.
 * [`PATCH /messages/{message_id}`](/api/update-message): Permission to edit stream
   and topic of messages do not depend on `allow_message_editing` setting now.
+* [`PATCH /messages/{message_id}`](/api/update-message): Message senders are not
+  allowed to edit topics indefinitely now.
 
 Feature levels 157-158 are reserved for future use in 6.x maintenance
 releases.

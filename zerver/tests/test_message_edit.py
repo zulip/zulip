@@ -1126,22 +1126,37 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, "unlimited", Realm.POLICY_FULL_MEMBERS_ONLY)
 
         cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=9)
+        hamlet.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
+        )
+        # User who sent the message but is not a full member cannot edit
+        # the topic
+        do_edit_message_assert_error(
+            id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
         cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
         cordelia.save()
+        hamlet.date_joined = timezone_now() - datetime.timedelta(days=11)
+        hamlet.save()
         do_edit_message_assert_success(id_, "C", "cordelia")
+        do_edit_message_assert_success(id_, "CD", "hamlet")
 
         # only moderators can edit topic of a message
         set_message_editing_params(True, "unlimited", Realm.POLICY_MODERATORS_ONLY)
         do_edit_message_assert_error(
             id_, "D", "You don't have permission to edit this message", "cordelia"
+        )
+        # even user who sent the message but is not a moderator cannot edit the topic.
+        do_edit_message_assert_error(
+            id_, "D", "You don't have permission to edit this message", "hamlet"
         )
         do_edit_message_assert_success(id_, "D", "shiva")
 
@@ -1165,7 +1180,8 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "D", "cordelia")
 
-        # non-admin users cannot edit topics sent > 72 hrs ago
+        # non-admin users cannot edit topics sent > 72 hrs ago including
+        # sender of the message.
         message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
         message.save()
         set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
@@ -1173,6 +1189,9 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
             id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
+        )
+        do_edit_message_assert_error(
+            id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
         )
 
         # anyone should be able to edit "no topic" indefinitely

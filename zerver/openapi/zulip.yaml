@@ -6464,6 +6464,8 @@ paths:
         streams and topics of messages was forbidden if
         `allow_message_editing` was `false`, regardless of the
         `edit_topic_policy` or `move_messages_between_streams_policy`.
+        Before Zulip 7.0 (feature level 159), message senders were allowed
+        to edit the topic indefinitely.
 
         [config-message-editing]: /help/configure-message-editing-and-deletion
       x-curl-examples-parameters:
