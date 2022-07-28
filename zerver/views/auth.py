@@ -3,7 +3,7 @@ import secrets
 import urllib
 from email.headerregistry import Address
 from functools import wraps
-from typing import Any, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, cast
 from urllib.parse import urlencode
 
 import jwt
@@ -98,6 +98,9 @@ from zproject.backends import (
     saml_auth_enabled,
     validate_otp_params,
 )
+
+if TYPE_CHECKING:
+    from django.http.request import _ImmutableQueryDict
 
 ExtraContext = Optional[Dict[str, Any]]
 
@@ -850,8 +853,10 @@ def start_two_factor_auth(
         #
         # If we don't do this, we will have to modify a lot of auth tests to
         # insert this variable in the request.
-        request.POST = request.POST.copy()
-        request.POST.update({two_fa_form_field: "auth"})
+        new_query_dict = request.POST.copy()
+        new_query_dict[two_fa_form_field] = "auth"
+        new_query_dict._mutable = False
+        request.POST = cast("_ImmutableQueryDict", new_query_dict)
 
     """
     This is how Django implements as_view(), so extra_context will be passed
