@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Ty
 from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
+import orjson
 from django.conf import settings
 from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
@@ -377,10 +378,11 @@ class Runner(DiscoverRunner):
         self,
         test_labels: List[str],
         extra_tests: Optional[List[unittest.TestCase]] = None,
+        failed_tests_path: Optional[str] = None,
         full_suite: bool = False,
         include_webhooks: bool = False,
         **kwargs: Any,
-    ) -> Tuple[bool, List[str]]:
+    ) -> int:
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -417,11 +419,15 @@ class Runner(DiscoverRunner):
         # a Django connection to be rolled back mid-test.
         with get_sqlalchemy_connection():
             result = self.run_suite(suite)
+            assert isinstance(result, TextTestResult)
         self.teardown_test_environment()
         failed = self.suite_result(suite, result)
         if not failed:
             write_instrumentation_reports(full_suite=full_suite, include_webhooks=include_webhooks)
-        return failed, result.failed_tests
+        if failed_tests_path and result.failed_tests:
+            with open(failed_tests_path, "wb") as f:
+                f.write(orjson.dumps(result.failed_tests))
+        return failed
 
 
 def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:

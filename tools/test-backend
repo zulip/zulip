@@ -162,12 +162,6 @@ def get_failed_tests() -> List[str]:
         return []
 
 
-def write_failed_tests(failed_tests: List[str]) -> None:
-    if failed_tests:
-        with open(FAILED_TEST_PATH, "wb") as f:
-            f.write(orjson.dumps(failed_tests))
-
-
 @contextlib.contextmanager
 def block_internet() -> Iterator[None]:
     # Monkey-patching - responses library raises requests.ConnectionError when access to an unregistered URL
@@ -429,10 +423,12 @@ def main() -> None:
             reverse=options.reverse,
             keepdb=True,
         )
-        failures, failed_tests = test_runner.run_tests(
-            suites, full_suite=full_suite, include_webhooks=include_webhooks
+        failures = test_runner.run_tests(
+            suites,
+            failed_tests_path=FAILED_TEST_PATH,
+            full_suite=full_suite,
+            include_webhooks=include_webhooks,
         )
-    write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     # We only check the templates if all the tests ran and passed
