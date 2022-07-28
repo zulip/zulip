@@ -36,7 +36,8 @@ interested in.
 
 {settings_tab|notifications}
 
-1. Make sure both of the checkboxes under **Email** are checked.
+1.  In the **Notification triggers** table, make sure both of the checkboxes
+    under **Email** are checked.
 
 1. Close the Zulip window. Zulip does not send email notifications
    while you are actively engaging with the web application.
