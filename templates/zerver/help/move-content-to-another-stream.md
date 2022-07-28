@@ -1,13 +1,13 @@
 # Move content to another stream
 
-Zulip makes it possible to move messages or an entire topic to another stream.
-Organizations can [configure][move-permission-setting] which
-[roles](/help/roles-and-permissions) have permission to move messages between
-streams.
+Zulip makes it possible to move messages, or an entire topic, to another
+stream. Organizations can [configure][move-permission-setting] which
+[roles](/help/roles-and-permissions) have permission to move messages
+between streams.
 
-To help others find moved content, you can have Zulip send automated
-notification messages to the source topic, the destination topic, or
-both. These notifications include:
+To help others find moved content, you can have the [notification
+bot][notification-bot] send automated notices to the source topic, the
+destination topic, or both. These notices include:
 
 * A link to the source or destination topic.
 * How many messages were moved, or whether the whole topic was moved.
@@ -28,7 +28,7 @@ destination streams.
 
 1. (optional) Change the topic.
 
-1. Toggle whether automated notification messages should be sent.
+1. Toggle whether automated notices should be sent.
 
 1. Click **Confirm**.
 
@@ -55,7 +55,7 @@ destination streams.
 
 1. (optional) Change the topic.
 
-1. Toggle whether automated notification messages should be sent.
+1. Toggle whether automated notices should be sent.
 
 1. From the dropdown menu, select which messages to move.
 
@@ -85,10 +85,10 @@ will only be accessible to users who both:
 In [private streams with protected history](/help/stream-permissions),
 Zulip determines whether to treat the entire topic as moved using the
 access permissions of the user requesting the topic move. This means
-that the automated notifications will report that the entire topic was
-moved if the requesting user moved every message in the topic that
-they can access, regardless of whether older messages exist that
-they cannot access.
+that the automated notices sent by the notification bot will report
+that the entire topic was moved if the requesting user moved every
+message in the topic that they can access, regardless of whether older
+messages exist that they cannot access.
 
 Similarly, [muted topics](/help/mute-a-topic) will be migrated to the
 new stream and topic if the requesting user moved every message in the
@@ -105,3 +105,4 @@ that one does not have permission to access.
 * [Configure message editing and deletion](/help/configure-message-editing-and-deletion)
 
 [move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
+[notification-bot]: /help/configure-notification-bot

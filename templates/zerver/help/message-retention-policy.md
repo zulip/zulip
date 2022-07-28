@@ -56,7 +56,7 @@ Standard hosting.
 
 {end_tabs}
 
-{!update-stream-auto-notification.md!}
+{!automated-notice-stream-event.md!}
 
 ## Important details
 
