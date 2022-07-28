@@ -532,7 +532,7 @@ def add_logging_data(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         process_client(request, request.user, is_browser_view=True, query=view_func.__name__)
-        return rate_limit()(view_func)(request, *args, **kwargs)
+        return rate_limit(view_func)(request, *args, **kwargs)
 
     return _wrapped_view_func
 
@@ -723,7 +723,7 @@ def authenticated_uploads_api_view(
         ) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:
-                limited_func = rate_limit()(view_func)
+                limited_func = rate_limit(view_func)
             else:
                 limited_func = view_func
             return limited_func(request, user_profile, *args, **kwargs)
@@ -787,7 +787,7 @@ def authenticated_rest_api_view(
             try:
                 if not skip_rate_limiting:
                     # Apply rate limiting
-                    target_view_func = rate_limit()(view_func)
+                    target_view_func = rate_limit(view_func)
                 else:
                     target_view_func = view_func
                 return target_view_func(request, profile, *args, **kwargs)
@@ -864,7 +864,7 @@ def authenticate_log_and_execute_json(
     **kwargs: object,
 ) -> HttpResponse:
     if not skip_rate_limiting:
-        limited_view_func = rate_limit()(view_func)
+        limited_view_func = rate_limit(view_func)
     else:
         limited_view_func = view_func
 
@@ -1069,39 +1069,36 @@ def rate_limit_remote_server(
         raise e
 
 
-def rate_limit() -> Callable[[ViewFuncT], ViewFuncT]:
-    """Rate-limits a view. Returns a decorator"""
+def rate_limit(func: ViewFuncT) -> ViewFuncT:
+    """Rate-limits a view."""
 
-    def wrapper(func: ViewFuncT) -> ViewFuncT:
-        @wraps(func)
-        def wrapped_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    @wraps(func)
+    def wrapped_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
 
-            # It is really tempting to not even wrap our original function
-            # when settings.RATE_LIMITING is False, but it would make
-            # for awkward unit testing in some situations.
-            if not settings.RATE_LIMITING:
-                return func(request, *args, **kwargs)
-
-            if client_is_exempt_from_rate_limiting(request):
-                return func(request, *args, **kwargs)
-
-            user = request.user
-            remote_server = RequestNotes.get_notes(request).remote_server
-
-            if settings.ZILENCER_ENABLED and remote_server is not None:
-                rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
-            elif not user.is_authenticated:
-                rate_limit_request_by_ip(request, domain="api_by_ip")
-                return func(request, *args, **kwargs)
-            else:
-                assert isinstance(user, UserProfile)
-                rate_limit_user(request, user, domain="api_by_user")
-
+        # It is really tempting to not even wrap our original function
+        # when settings.RATE_LIMITING is False, but it would make
+        # for awkward unit testing in some situations.
+        if not settings.RATE_LIMITING:
             return func(request, *args, **kwargs)
 
-        return cast(ViewFuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
+        if client_is_exempt_from_rate_limiting(request):
+            return func(request, *args, **kwargs)
 
-    return wrapper
+        user = request.user
+        remote_server = RequestNotes.get_notes(request).remote_server
+
+        if settings.ZILENCER_ENABLED and remote_server is not None:
+            rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
+        elif not user.is_authenticated:
+            rate_limit_request_by_ip(request, domain="api_by_ip")
+            return func(request, *args, **kwargs)
+        else:
+            assert isinstance(user, UserProfile)
+            rate_limit_user(request, user, domain="api_by_user")
+
+        return func(request, *args, **kwargs)
+
+    return cast(ViewFuncT, wrapped_func)  # https://github.com/python/mypy/issues/1927
 
 
 def return_success_on_head_request(

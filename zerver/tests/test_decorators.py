@@ -632,7 +632,7 @@ class RateLimitTestCase(ZulipTestCase):
         def f(req: Any) -> HttpResponse:
             return json_response(msg="some value")
 
-        f = rate_limit()(f)
+        f = rate_limit(f)
 
         return f
 
