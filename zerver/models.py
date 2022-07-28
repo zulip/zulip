@@ -133,7 +133,7 @@ class EmojiInfo(TypedDict):
 
 
 @models.Field.register_lookup
-class AndZero(models.Lookup):
+class AndZero(models.Lookup[int]):
     lookup_name = "andz"
 
     def as_sql(
@@ -145,7 +145,7 @@ class AndZero(models.Lookup):
 
 
 @models.Field.register_lookup
-class AndNonZero(models.Lookup):
+class AndNonZero(models.Lookup[int]):
     lookup_name = "andnz"
 
     def as_sql(
