@@ -3,6 +3,7 @@ import sys
 from functools import wraps
 from types import TracebackType
 from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
+from unittest import mock
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
@@ -174,20 +175,18 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         record.request.user = self.example_user("hamlet")
 
         # Now simulate a DisallowedHost exception
-        def get_host_error() -> str:
-            raise Exception("Get host failure!")
-
-        orig_get_host = record.request.get_host
-        record.request.get_host = get_host_error
-        report = self.run_handler(record)
-        record.request.get_host = orig_get_host
-        self.assertIn("host", report)
-        self.assertIn("user", report)
-        assert isinstance(report["user"], dict)
-        self.assertIn("user_email", report["user"])
-        self.assertIn("user_role", report["user"])
-        self.assertIn("message", report)
-        self.assertIn("stack_trace", report)
+        with mock.patch.object(
+            record.request, "get_host", side_effect=Exception("Get host failure!")
+        ) as m:
+            report = self.run_handler(record)
+            self.assertIn("host", report)
+            self.assertIn("user", report)
+            assert isinstance(report["user"], dict)
+            self.assertIn("user_email", report["user"])
+            self.assertIn("user_role", report["user"])
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+            m.assert_called_once()
 
         # Test an exception_filter exception
         with patch("zerver.logging_handlers.get_exception_reporter_filter", return_value=15):
