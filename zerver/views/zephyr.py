@@ -59,6 +59,10 @@ def webathena_kerberos_login(
     except Exception:
         raise JsonableError(_("Invalid Kerberos cache"))
 
+    if settings.PERSONAL_ZMIRROR_SERVER is None:
+        logging.error("PERSONAL_ZMIRROR_SERVER is not properly configured", stack_info=True)
+        raise JsonableError(_("We were unable to set up mirroring for you"))
+
     # TODO: Send these data via (say) RabbitMQ
     try:
         api_key = get_api_key(user_profile)
