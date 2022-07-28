@@ -69,16 +69,18 @@ class EmailLogBackEnd(EmailBackend):
         czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
-            html_alternative = list(email_message.alternatives[0])
-            assert isinstance(html_alternative[0], str)
+            assert isinstance(email_message.alternatives[0][0], str)
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative[0] = html_alternative[0].replace(
-                localhost_email_images_base_uri, czo_email_images_base_uri
+            html_alternative = (
+                email_message.alternatives[0][0].replace(
+                    localhost_email_images_base_uri, czo_email_images_base_uri
+                ),
+                email_message.alternatives[0][1],
             )
             assert isinstance(email_message.alternatives, MutableSequence)
-            email_message.alternatives[0] = tuple(html_alternative)
+            email_message.alternatives[0] = html_alternative
 
             email_message.to = [get_forward_address()]
 
