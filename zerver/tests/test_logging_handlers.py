@@ -233,7 +233,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report["stack_trace"], "No stack trace available")
 
         # Test arbitrary exceptions from request.user
-        record.request.user = None
+        delattr(record.request, "user")
         with patch("zerver.logging_handlers.traceback.print_exc"):
             report = self.run_handler(record)
         self.assertIn("host", report)
@@ -243,6 +243,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertIn("user_role", report["user"])
         self.assertIn("message", report)
         self.assertIn("stack_trace", report)
+        self.assertEqual(report["user"]["user_email"], None)
 
 
 class LoggingConfigTest(ZulipTestCase):
