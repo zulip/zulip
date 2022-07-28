@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import orjson
 from django.db import transaction
@@ -11,7 +11,7 @@ from zerver.tornado.django_api import send_event
 
 @transaction.atomic(durable=True)
 def do_change_bot_owner(
-    user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile
+    user_profile: UserProfile, bot_owner: UserProfile, acting_user: Union[UserProfile, None]
 ) -> None:
     previous_owner = user_profile.bot_owner
     user_profile.bot_owner = bot_owner
