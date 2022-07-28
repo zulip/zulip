@@ -16,6 +16,10 @@ The notification bot also generates automated private messages to
 individual users for some user specific events, such as [being
 subscribed to a stream][add-users-to-stream] by another user.
 
+Additionally, when [moving messages to a another stream][move-messages],
+users can have the notification bot send automated notices to help
+others find the moved content.
+
 Organization administrators can configure where (and whether)
 [new stream](#new-stream-announcements) and
 [new user](#new-user-announcements) announcement messages are sent.
@@ -74,3 +78,4 @@ these messages is "signups".
 [api-create-user]: https://zulip.com/api/create-user
 [new-stream-options]: /help/create-a-stream#stream-options
 [org-lang]: /help/change-the-default-language-for-your-organization
+[move-messages]: /help/move-content-to-another-stream

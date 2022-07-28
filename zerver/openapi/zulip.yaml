@@ -6200,7 +6200,7 @@ paths:
         - name: send_notification_to_old_thread
           in: query
           description: |
-            Whether to send breadcrumb message to the old thread to
+            Whether to send an automated message to the old thread to
             notify users where the messages were moved to.
 
             **Changes**: New in Zulip 3.0 (feature level 9).
@@ -6211,7 +6211,7 @@ paths:
         - name: send_notification_to_new_thread
           in: query
           description: |
-            Whether to send a notification message to the new thread to
+            Whether to send an automated message to the new thread to
             notify users where the messages came from.
 
             **Changes**: New in Zulip 3.0 (feature level 9).
