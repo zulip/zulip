@@ -2963,6 +2963,7 @@ class MultiuseInviteTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.last()
         multiuse_invite = MultiuseInvite.objects.last()
 
+        assert prereg_user is not None
         self.assertEqual(prereg_user.email, email)
         self.assertEqual(prereg_user.multiuse_invite, multiuse_invite)
 
