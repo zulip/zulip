@@ -3955,11 +3955,15 @@ paths:
                                     notifications_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the stream to which notifications announcing the
-                                        creation of new streams are sent. -1 if such notifications are disabled.
+                                        The ID of the stream to which automated messages announcing the
+                                        [creation of new streams][new-stream-announce] are sent.
 
-                                        Since these notifications are sent by the server, this field is
+                                        Will be `-1` if such automated messages are disabled.
+
+                                        Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
+
+                                        [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
                                     org_type:
                                       type: integer
                                       description: |
@@ -4014,12 +4018,15 @@ paths:
                                     signup_notifications_stream_id:
                                       type: integer
                                       description: |
-                                        The ID of the stream to which notifications announcing
-                                        that new users have joined the organization are sent.
-                                        -1 if such notifications are disabled.
+                                        The ID of the stream to which automated messages announcing
+                                        that [new users have joined the organization][new-user-announce] are sent.
 
-                                        Since these notifications are sent by the server, this field is
+                                        Will be `-1` if such automated messages are disabled.
+
+                                        Since these automated messages are sent by the server, this field is
                                         primarily relevant to clients containing UI for changing it.
+
+                                        [new-user-announce]: /help/configure-notification-bot#new-user-announcements
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
