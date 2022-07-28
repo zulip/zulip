@@ -1600,9 +1600,9 @@ class TestInternalNotifyView(ZulipTestCase):
 
         with self.settings(SHARED_SECRET="broken"):
             self.assertFalse(authenticate_notify(request))
-            with self.assertRaises(AccessDeniedError) as context:
+            with self.assertRaises(AccessDeniedError) as access_denied_error:
                 self.internal_notify(True, request)
-            self.assertEqual(context.exception.http_status_code, 403)
+            self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
     def test_external_requests(self) -> None:
         secret = "random"
