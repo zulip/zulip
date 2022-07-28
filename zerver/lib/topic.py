@@ -184,6 +184,7 @@ def update_messages_for_topic_edit(
     if new_stream is not None:
         update_fields.append("recipient")
         for m in messages_list:
+            assert new_stream.recipient is not None
             m.recipient = new_stream.recipient
     if topic_name is not None:
         update_fields.append("subject")
