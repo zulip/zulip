@@ -1049,7 +1049,7 @@ def saml_sp_metadata(request: HttpRequest) -> HttpResponse:  # nocoverage
 
 
 def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse:
-    contexts = {
+    contexts: Dict[str, Dict[str, object]] = {
         "apple": {"social_backend_name": "apple", "has_markdown_file": True},
         "google": {"social_backend_name": "google", "has_markdown_file": True},
         "github": {"social_backend_name": "github", "has_markdown_file": True},
