@@ -31,6 +31,8 @@ to a stream][configure-invites].
       To add users in bulk, you can copy members from an
       existing stream or [user group](/help/user-groups).
 
+{!automated-pm-stream-subscription.md!}
+
 ### Mentioning a user in the compose box (alternate method)
 
 When you [mention a user](/help/mention-a-user-or-group) while composing

@@ -4,7 +4,7 @@
 
 !!! warn ""
 
-      Note that the list of a user's **Subscribed streams** will be limited to
+      **Note**: The list of a user's **Subscribed streams** will be limited to
       streams for which [you can see all subscribers](/help/stream-permissions).
 
 {start_tabs}
@@ -34,6 +34,8 @@ other users to a stream][configure-invites].
 1. Click **Add**.
 
 {end_tabs}
+
+{!automated-pm-stream-subscription.md!}
 
 ## Unsubscribe a user from stream(s)
 
