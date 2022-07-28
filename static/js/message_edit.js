@@ -1102,7 +1102,7 @@ export function delete_message(msg_id) {
     }
 
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete message"}),
+        html_heading: $t_html({defaultMessage: "Delete message?"}),
         html_body,
         help_link: "/help/edit-or-delete-a-message#delete-a-message",
         on_click: do_delete_message,
