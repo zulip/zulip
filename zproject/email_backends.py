@@ -2,7 +2,7 @@
 import configparser
 import logging
 from email.message import Message
-from typing import List, MutableSequence, Union
+from typing import MutableSequence, Sequence, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -34,9 +34,10 @@ def set_forward_address(forward_address: str) -> None:
 
 class EmailLogBackEnd(EmailBackend):
     @staticmethod
-    def log_email(email: EmailMultiAlternatives) -> None:
+    def log_email(email: EmailMessage) -> None:
         """Used in development to record sent emails in a nice HTML log"""
         html_message: Union[bytes, EmailMessage, Message, str] = "Missing HTML message"
+        assert isinstance(email, EmailMultiAlternatives)
         if len(email.alternatives) > 0:
             html_message = email.alternatives[0][0]
 
@@ -64,11 +65,12 @@ class EmailLogBackEnd(EmailBackend):
             f.write(new_email + previous_emails)
 
     @staticmethod
-    def prepare_email_messages_for_forwarding(email_messages: List[EmailMultiAlternatives]) -> None:
+    def prepare_email_messages_for_forwarding(email_messages: Sequence[EmailMessage]) -> None:
         localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + "/static/images/emails"
         czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
+            assert isinstance(email_message, EmailMultiAlternatives)
             assert isinstance(email_message.alternatives[0][0], str)
             # Here, we replace the email addresses used in development
             # with chat.zulip.org, so that web email providers like Gmail
@@ -89,10 +91,10 @@ class EmailLogBackEnd(EmailBackend):
     # Django's connection.send_messages(), which caused unexplained
     # test failures when running test-backend at very high
     # concurrency.
-    def _do_send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
+    def _do_send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
         return super().send_messages(email_messages)  # nocoverage
 
-    def send_messages(self, email_messages: List[EmailMultiAlternatives]) -> int:
+    def send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
         num_sent = len(email_messages)
         if get_forward_address():
             self.prepare_email_messages_for_forwarding(email_messages)
