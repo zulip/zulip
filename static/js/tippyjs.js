@@ -312,6 +312,20 @@ export function initialize() {
                 $(instance.reference).parent().attr("aria-label") ||
                 $(instance.reference).parent().attr("href");
             instance.setContent(parse_html(render_message_inline_image_tooltip({title})));
+
+            const target_node = $(instance.reference)
+                .parents(".message_table.focused_table")
+                .get(0);
+            const config = {attributes: false, childList: true, subtree: false};
+            const nodes_to_check_for_removal = [
+                $(instance.reference).parents(".message_inline_image").get(0),
+            ];
+            hide_tooltip_if_reference_removed(
+                target_node,
+                config,
+                instance,
+                nodes_to_check_for_removal,
+            );
         },
         onHidden(instance) {
             instance.destroy();
