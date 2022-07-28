@@ -19,7 +19,7 @@ import botocore
 from boto3.session import Session
 from botocore.client import Config
 from django.conf import settings
-from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
 from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
@@ -374,7 +374,7 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 
-def get_file_info(request: HttpRequest, user_file: File) -> Tuple[str, Optional[str]]:
+def get_file_info(request: HttpRequest, user_file: UploadedFile) -> Tuple[str, Optional[str]]:
 
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
@@ -1150,7 +1150,7 @@ def create_attachment(
 
 
 def upload_message_image_from_request(
-    request: HttpRequest, user_file: File, user_profile: UserProfile, user_file_size: int
+    request: HttpRequest, user_file: UploadedFile, user_profile: UserProfile, user_file_size: int
 ) -> str:
     uploaded_file_name, content_type = get_file_info(request, user_file)
     return upload_message_file(
