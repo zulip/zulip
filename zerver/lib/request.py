@@ -72,6 +72,7 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     processed_parameters: Set[str] = field(default_factory=set)
     ignored_parameters: Set[str] = field(default_factory=set)
     remote_server: Optional["RemoteZulipServer"] = None
+    is_webhook_view: bool = False
 
     @classmethod
     def init_notes(cls) -> "RequestNotes":

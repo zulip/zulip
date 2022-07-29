@@ -347,6 +347,9 @@ def webhook_view(
                 client_name=full_webhook_client_name(webhook_client_name),
             )
 
+            request_notes = RequestNotes.get_notes(request)
+            request_notes.is_webhook_view = True
+
             rate_limit_user(request, user_profile, domain="api_by_user")
             try:
                 return view_func(request, user_profile, *args, **kwargs)
@@ -751,6 +754,11 @@ def authenticated_rest_api_view(
                     allow_webhook_access=allow_webhook_access,
                     client_name=full_webhook_client_name(webhook_client_name),
                 )
+
+                if webhook_client_name is not None:
+                    request_notes = RequestNotes.get_notes(request)
+                    request_notes.is_webhook_view = True
+
             except JsonableError as e:
                 raise UnauthorizedError(e.msg)
             try:
