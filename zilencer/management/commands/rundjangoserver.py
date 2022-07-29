@@ -1,46 +1,32 @@
 from datetime import datetime
-from typing import Protocol
+from functools import wraps
+from typing import Callable
 
 from django.core.management.commands.runserver import Command as DjangoCommand
 
 
-class Writable(Protocol):
-    def write(self, s: str) -> None:
-        ...
+def output_styler(style_func: Callable[[str], str]) -> Callable[[str], str]:
+    # Might fail to suppress the date line around midnight, but, whatever.
+    date_prefix = datetime.now().strftime("%B %d, %Y - ")
 
-
-class FakeStdout:
-    """
-    Filter stdout from Django's runserver, to declutter run-dev.py
-    startup output.
-    """
-
-    def __init__(self, stdout: Writable) -> None:
-        self.stdout = stdout
-        # Might fail to suppress the date line around midnight, but, whatever.
-        self.date_prefix = datetime.now().strftime("%B %d, %Y - ")
-
-    def write(self, s: str) -> None:
+    @wraps(style_func)
+    def _wrapped_style_func(message: str) -> str:
         if (
-            s == "Performing system checks...\n\n"
-            or s.startswith("System check identified no issues")
-            or s.startswith(self.date_prefix)
+            message == "Performing system checks...\n\n"
+            or message.startswith("System check identified no issues")
+            or message.startswith(date_prefix)
         ):
-            pass
-        elif "Quit the server with " in s:
-            self.stdout.write(
-                "Django process (re)started. " + s[s.index("Quit the server with ") :]
+            message = ""
+        elif "Quit the server with " in message:
+            message = (
+                "Django process (re)started. " + message[message.index("Quit the server with ") :]
             )
-        else:
-            self.stdout.write(s)
+        return style_func(message)
+
+    return _wrapped_style_func
 
 
 class Command(DjangoCommand):
-    stdout: Writable
-
     def inner_run(self, *args: object, **options: object) -> None:
-        self.stdout = FakeStdout(self.stdout)
-        try:
-            super().inner_run(*args, **options)
-        finally:
-            self.stdout = self.stdout.stdout
+        self.stdout.style_func = output_styler(self.stdout.style_func)
+        super().inner_run(*args, **options)
