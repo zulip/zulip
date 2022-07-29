@@ -1,4 +1,6 @@
-from django.urls import path
+from typing import List, Union
+
+from django.urls import URLPattern, URLResolver, path
 
 import zerver.views
 import zerver.views.auth
@@ -8,7 +10,7 @@ import zerver.views.tutorial
 
 # Future endpoints should add to urls.py, which includes these legacy URLs
 
-legacy_urls = [
+legacy_urls: List[Union[URLPattern, URLResolver]] = [
     # These are json format views used by the web client.  They require a logged in browser.
     # We should remove this endpoint and all code related to it.
     # It returns a 404 if the stream doesn't exist, which is confusing
