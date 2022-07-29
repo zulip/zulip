@@ -817,7 +817,7 @@ def do_send_messages(
 
             ums.extend(user_messages)
 
-            send_request.message.service_queue_events = get_service_bot_events(
+            send_request.service_queue_events = get_service_bot_events(
                 sender=send_request.message.sender,
                 service_bot_tuples=send_request.service_bot_tuples,
                 mentioned_user_ids=mentioned_user_ids,
@@ -982,7 +982,8 @@ def do_send_messages(
 
                 send_welcome_bot_response(send_request)
 
-        for queue_name, events in send_request.message.service_queue_events.items():
+        assert send_request.service_queue_events is not None
+        for queue_name, events in send_request.service_queue_events.items():
             for event in events:
                 queue_json_publish(
                     queue_name,

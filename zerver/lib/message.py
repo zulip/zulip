@@ -171,6 +171,7 @@ class SendMessageRequest:
     deliver_at: Optional[datetime.datetime] = None
     delivery_type: Optional[str] = None
     limit_unread_user_ids: Optional[Set[int]] = None
+    service_queue_events: Optional[Dict[str, List[Dict[str, Any]]]] = None
 
 
 # We won't try to fetch more unread message IDs from the database than
