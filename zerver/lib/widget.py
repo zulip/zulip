@@ -41,7 +41,15 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
             "options": options,
         }
         return extra_data
-    return None
+    else:
+        # This is used to extract the task list title from the todo command.
+        # The command '/todo Title' will pre-set the task list title
+        lines = content.splitlines()
+        task_list_title = ""
+        if lines and lines[0]:
+            task_list_title = lines.pop(0).strip()
+        extra_data = {"task_list_title": task_list_title}
+        return extra_data
 
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
