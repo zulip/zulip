@@ -1,8 +1,8 @@
 import logging
-import multiprocessing
 import os
 import random
 import shutil
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 from typing import (
     AbstractSet,
@@ -625,9 +625,12 @@ def run_parallel_wrapper(
 ) -> None:
     logging.info("Distributing %s items across %s threads", len(full_items), threads)
 
-    with multiprocessing.Pool(threads) as p:
+    with ProcessPoolExecutor(max_workers=threads) as executor:
         count = 0
-        for out in p.imap_unordered(partial(wrapping_function, f), full_items):
+        for future in as_completed(
+            executor.submit(wrapping_function, f, item) for item in full_items
+        ):
+            future.result()
             count += 1
             if count % 1000 == 0:
                 logging.info("Finished %s items", count)
