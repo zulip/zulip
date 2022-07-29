@@ -98,7 +98,7 @@ class WidgetContentTestCase(ZulipTestCase):
             self.assertEqual(get_widget_data(content=message), (None, None))
 
         # Add a positive check for context
-        self.assertEqual(get_widget_data(content="/todo"), ("todo", None))
+        self.assertEqual(get_widget_data(content="/todo"), ("todo", {"task_list_title": ""}))
 
     def test_explicit_widget_content(self) -> None:
         # Users can send widget_content directly on messages
@@ -164,7 +164,24 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
-            extra_data=None,
+            extra_data={"task_list_title": ""},
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
+        content = "/todo Example Task List Title"
+        payload["content"] = content
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
+            extra_data={"task_list_title": "Example Task List Title"},
         )
 
         submessage = SubMessage.objects.get(message_id=message.id)
@@ -223,6 +240,55 @@ class WidgetContentTestCase(ZulipTestCase):
         self.assertEqual(submessage.msg_type, "widget")
         self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
 
+    def test_todo_command_extra_data(self) -> None:
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        # We test for leading spaces.
+        content = "/todo   School Work"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
+            extra_data=dict(
+                task_list_title="School Work",
+            ),
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
+        # Now don't supply a task list title.
+
+        content = "/todo"
+        payload["content"] = content
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
+            extra_data=dict(
+                task_list_title="",
+            ),
+        )
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
     def test_poll_permissions(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -251,6 +317,37 @@ class WidgetContentTestCase(ZulipTestCase):
 
         result = post(hamlet, dict(type="question", question="Tabs or spaces?"))
         self.assert_json_error(result, "You can't edit a question unless you are the author.")
+
+    def test_todo_permissions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Verona"
+        content = "/todo School Work"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(cordelia, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+
+        def post(sender: UserProfile, data: Dict[str, object]) -> "TestHttpResponse":
+            payload = dict(
+                message_id=message.id, msg_type="widget", content=orjson.dumps(data).decode()
+            )
+            return self.api_post(sender, "/api/v1/submessage", payload)
+
+        result = post(cordelia, dict(type="new_task_list_title", title="School Work"))
+        self.assert_json_success(result)
+
+        result = post(hamlet, dict(type="new_task_list_title", title="School Work"))
+        self.assert_json_error(
+            result, "You can't edit the task list title unless you are the author."
+        )
 
     def test_poll_type_validation(self) -> None:
         sender = self.example_user("cordelia")
@@ -366,6 +463,15 @@ class WidgetContentTestCase(ZulipTestCase):
             'data["old_idx"] is not an int',
         )
 
+        assert_error(
+            '{"type": "new_task_list_title"}',
+            "title key is missing from todo data",
+        )
+        assert_error(
+            '{"type": "new_task_list_title", "title": 7}',
+            'data["title"] is not a string',
+        )
+
         def assert_success(data: Dict[str, object]) -> None:
             content = orjson.dumps(data).decode()
             result = post_submessage(content)
@@ -374,6 +480,7 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
         assert_success(dict(type="change_order", old_idx=4, new_idx=8))
+        assert_success(dict(type="new_task_list_title", title="School Work"))
 
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")

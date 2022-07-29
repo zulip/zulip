@@ -141,7 +141,8 @@ button {
     &.add-task,
     &.add-desc,
     &.poll-option,
-    &.poll-question {
+    &.poll-question,
+    &.todo-task-list-title {
         padding: 4px 6px;
         margin: 2px 0;
     }
@@ -153,7 +154,9 @@ button {
 }
 
 .poll-question-check,
-.poll-question-remove {
+.poll-question-remove,
+.todo-task-list-title-check,
+.todo-task-list-title-remove {
     width: 28px !important;
     height: 28px;
     border-radius: 3px;
@@ -165,7 +168,8 @@ button {
     }
 }
 
-.poll-edit-question {
+.poll-edit-question,
+.todo-edit-task-list-title {
     opacity: 0.4;
     display: inline-block;
     margin-left: 5px;
@@ -175,7 +179,8 @@ button {
     }
 }
 
-.poll-question-header {
+.poll-question-header,
+.todo-task-list-title-header {
     display: inline;
 }
 

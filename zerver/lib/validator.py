@@ -530,7 +530,7 @@ def validate_poll_data(poll_data: object, is_widget_author: bool) -> None:
     raise ValidationError(f"Unknown type for poll data: {poll_data['type']}")
 
 
-def validate_todo_data(todo_data: object) -> None:
+def validate_todo_data(todo_data: object, is_widget_author: bool) -> None:
     check_dict([("type", check_string)])("todo data", todo_data)
 
     assert isinstance(todo_data, dict)
@@ -564,6 +564,19 @@ def validate_todo_data(todo_data: object) -> None:
                 ("type", check_string),
                 ("old_idx", check_int),
                 ("new_idx", check_int),
+            ]
+        )
+        checker("todo data", todo_data)
+        return
+
+    if todo_data["type"] == "new_task_list_title":
+        if not is_widget_author:
+            raise ValidationError("You can't edit the task list title unless you are the author.")
+
+        checker = check_dict_only(
+            [
+                ("type", check_string),
+                ("title", check_string),
             ]
         )
         checker("todo data", todo_data)

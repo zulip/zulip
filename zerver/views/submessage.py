@@ -49,7 +49,7 @@ def process_submessage(
 
     if widget_type == "todo":
         try:
-            validate_todo_data(todo_data=widget_data)
+            validate_todo_data(todo_data=widget_data, is_widget_author=is_widget_author)
         except ValidationError as error:
             raise JsonableError(error.message)
 

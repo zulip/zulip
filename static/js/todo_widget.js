@@ -17,8 +17,46 @@ export class TaskData {
     task_map = new Map();
     my_idx = 1;
 
-    constructor({current_user_id}) {
+    constructor({
+        message_sender_id,
+        current_user_id,
+        is_my_task_list,
+        task_list_title,
+        report_error_function,
+    }) {
+        this.message_sender_id = message_sender_id;
         this.me = current_user_id;
+        this.is_my_task_list = is_my_task_list;
+        // input_mode indicates if the task list title is being input currently
+        this.input_mode = is_my_task_list; // for now
+        this.report_error_function = report_error_function;
+
+        if (task_list_title) {
+            this.set_task_list_title(task_list_title);
+        } else {
+            this.set_task_list_title($t({defaultMessage: "Task list"}));
+        }
+    }
+
+    set_task_list_title(new_title) {
+        this.input_mode = false;
+        this.task_list_title = new_title;
+    }
+
+    get_task_list_title() {
+        return this.task_list_title;
+    }
+
+    set_input_mode() {
+        this.input_mode = true;
+    }
+
+    clear_input_mode() {
+        this.input_mode = false;
+    }
+
+    get_input_mode() {
+        return this.input_mode;
     }
 
     get_widget_data() {
@@ -44,6 +82,36 @@ export class TaskData {
     }
 
     handle = {
+        new_task_list_title: {
+            outbound: (title) => {
+                const event = {
+                    type: "new_task_list_title",
+                    title,
+                };
+                if (this.is_my_task_list) {
+                    return event;
+                }
+                return undefined;
+            },
+
+            inbound: (sender_id, data) => {
+                // Only the message author can edit questions.
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(
+                        `user ${sender_id} is not allowed to edit the task list title`,
+                    );
+                    return;
+                }
+
+                if (typeof data.title !== "string") {
+                    this.report_error_function("todo widget: bad type for inbound task list title");
+                    return;
+                }
+
+                this.set_task_list_title(data.title);
+            },
+        },
+
         new_task: {
             outbound: (task, desc) => {
                 this.my_idx += 1;
@@ -136,7 +204,7 @@ export class TaskData {
         },
 
         change_order: {
-            outbound: (old_idx, new_idx) => {
+            outbound(old_idx, new_idx) {
                 const event = {
                     type: "change_order",
                     old_idx,
@@ -188,17 +256,110 @@ export class TaskData {
     }
 }
 
-export function activate(opts) {
-    const $elem = opts.$elem;
-    const callback = opts.callback;
-
+export function activate({$elem, callback, extra_data: {task_list_title = ""} = {}, message}) {
+    const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
+        message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
+        is_my_task_list,
+        task_list_title,
+        report_error_function: blueslip.warn,
     });
 
-    function render() {
+    function update_edit_controls() {
+        const has_title = $elem.find("input.todo-task-list-title").val().trim() !== "";
+        $elem.find("button.todo-task-list-title-check").toggle(has_title);
+    }
+
+    function render_task_list_title() {
+        const task_list_title = task_data.get_task_list_title();
+        const input_mode = task_data.get_input_mode();
+        const can_edit = is_my_task_list && !input_mode;
+
+        $elem.find(".todo-task-list-title-header").toggle(!input_mode);
+        $elem.find(".todo-task-list-title-header").text(task_list_title);
+        $elem.find(".todo-edit-task-list-title").toggle(can_edit);
+        update_edit_controls();
+
+        $elem.find(".todo-task-list-title-bar").toggle(input_mode);
+    }
+
+    function start_editing() {
+        task_data.set_input_mode();
+
+        const task_list_title = task_data.get_task_list_title();
+        $elem.find("input.todo-task-list-title").val(task_list_title);
+        render_task_list_title();
+        $elem.find("input.todo-task-list-title").trigger("focus");
+    }
+
+    function abort_edit() {
+        task_data.clear_input_mode();
+        render_task_list_title();
+    }
+
+    function submit_task_list_title() {
+        const $task_list_title_input = $elem.find("input.todo-task-list-title");
+        let new_task_list_title = $task_list_title_input.val().trim();
+        const old_task_list_title = task_data.get_task_list_title();
+
+        // We should disable the button for blank task list title,
+        // so this is just defensive code.
+        if (new_task_list_title.trim() === "") {
+            new_task_list_title = old_task_list_title;
+        }
+
+        // Optimistically set the task list title locally.
+        task_data.set_task_list_title(new_task_list_title);
+        render_task_list_title();
+
+        // If there were no actual edits, we can exit now.
+        if (new_task_list_title === old_task_list_title) {
+            return;
+        }
+
+        // Broadcast the new task list title to our peers.
+        const data = task_data.handle.new_task_list_title.outbound(new_task_list_title);
+        callback(data);
+    }
+
+    function build_widget() {
         const html = render_widgets_todo_widget();
         $elem.html(html);
+
+        $elem.find("input.todo-task-list-title").on("keyup", (e) => {
+            e.stopPropagation();
+            update_edit_controls();
+        });
+
+        $elem.find("input.todo-task-list-title").on("keydown", (e) => {
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+                submit_task_list_title();
+                return;
+            }
+
+            if (e.key === "Escape") {
+                abort_edit();
+                return;
+            }
+        });
+
+        $elem.find(".todo-edit-task-list-title").on("click", (e) => {
+            e.stopPropagation();
+            start_editing();
+        });
+
+        $elem.find("button.todo-task-list-title-check").on("click", (e) => {
+            e.stopPropagation();
+            submit_task_list_title();
+        });
+
+        $elem.find("button.todo-task-list-title-remove").on("click", (e) => {
+            e.stopPropagation();
+            abort_edit();
+        });
 
         $elem.find("button.add-task").on("click", (e) => {
             e.stopPropagation();
@@ -271,9 +432,11 @@ export function activate(opts) {
             task_data.handle_event(event.sender_id, event.data);
         }
 
+        render_task_list_title();
         render_results();
     };
 
-    render();
+    build_widget();
+    render_task_list_title();
     render_results();
 }
