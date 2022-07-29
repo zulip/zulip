@@ -578,6 +578,8 @@ export function check_overflow_text() {
             $("#compose-send-status").stop(true).fadeOut();
         }
     }
+
+    return text.length;
 }
 
 export function warn_for_text_overflow_when_tries_to_send() {
