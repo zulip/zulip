@@ -1,6 +1,6 @@
 import logging
-import multiprocessing
 import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from mimetypes import guess_type
 
 import bmemcached
@@ -44,9 +44,11 @@ def transfer_avatars_to_s3(processes: int) -> None:
         _cache = getattr(cache, "_cache")
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_avatar_to_s3, users):
-                pass
+        with ProcessPoolExecutor(max_workers=processes) as executor:
+            for future in as_completed(
+                executor.submit(_transfer_avatar_to_s3, user) for user in users
+            ):
+                future.result()
 
 
 def _transfer_message_files_to_s3(attachment: Attachment) -> None:
@@ -77,9 +79,12 @@ def transfer_message_files_to_s3(processes: int) -> None:
         _cache = getattr(cache, "_cache")
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_message_files_to_s3, attachments):
-                pass
+        with ProcessPoolExecutor(max_workers=processes) as executor:
+            for future in as_completed(
+                executor.submit(_transfer_message_files_to_s3, attachment)
+                for attachment in attachments
+            ):
+                future.result()
 
 
 def _transfer_emoji_to_s3(realm_emoji: RealmEmoji) -> None:
@@ -109,6 +114,8 @@ def transfer_emoji_to_s3(processes: int) -> None:
         _cache = getattr(cache, "_cache")
         assert isinstance(_cache, bmemcached.Client)
         _cache.disconnect_all()
-        with multiprocessing.Pool(processes) as p:
-            for out in p.imap_unordered(_transfer_emoji_to_s3, realm_emojis):
-                pass
+        with ProcessPoolExecutor(max_workers=processes) as executor:
+            for future in as_completed(
+                executor.submit(_transfer_emoji_to_s3, realm_emoji) for realm_emoji in realm_emojis
+            ):
+                future.result()
