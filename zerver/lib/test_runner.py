@@ -5,11 +5,11 @@ import shutil
 import unittest
 from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union, cast
-from unittest import TestLoader, TestSuite, mock, runner
+from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
 from django.conf import settings
-from django.db import connections
+from django.db import ProgrammingError, connections
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -138,24 +138,7 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
     for alias in connections:
         connection = connections[alias]
 
-        def monkey_patched_destroy_test_db(test_database_name: str, verbosity: Any) -> None:
-            """
-            We need to monkey-patch connection.creation._destroy_test_db to
-            use the IF EXISTS parameter - we don't have a guarantee that the
-            database we're cleaning up actually exists and since Django 3.1 the original implementation
-            throws an ugly `RuntimeError: generator didn't stop after throw()` exception and triggers
-            a confusing warnings.warn inside the postgresql backend implementation in _nodb_cursor()
-            if the database doesn't exist.
-            https://code.djangoproject.com/ticket/32376
-            """
-            with connection.creation._nodb_cursor() as cursor:
-                quoted_name = connection.creation.connection.ops.quote_name(test_database_name)
-                query = f"DROP DATABASE IF EXISTS {quoted_name}"
-                cursor.execute(query)
-
-        with mock.patch.object(
-            connection.creation, "_destroy_test_db", monkey_patched_destroy_test_db
-        ):
+        try:
             # In the parallel mode, the test databases are created
             # through the N=self.parallel child processes, and in the
             # parent process (which calls `destroy_test_databases`),
@@ -177,6 +160,9 @@ def destroy_test_databases(worker_id: Optional[int] = None) -> None:
                 connection.creation.destroy_test_db(suffix=database_id)
             else:
                 connection.creation.destroy_test_db()
+        except ProgrammingError:
+            # DB doesn't exist. No need to do anything.
+            pass
 
 
 def create_test_databases(worker_id: int) -> None:
