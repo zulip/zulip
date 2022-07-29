@@ -442,6 +442,8 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
 
 export function get_pm_people(query) {
     const opts = {
+        stream: compose_state.stream_name(),
+        topic: compose_state.topic(),
         want_broadcast: false,
         filter_pills: true,
     };
