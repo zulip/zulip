@@ -1,8 +1,8 @@
 import datetime
 import logging
-import multiprocessing
 import os
 import shutil
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from mimetypes import guess_type
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -880,9 +880,11 @@ def import_uploads(
             _cache = getattr(cache, "_cache")
             assert isinstance(_cache, bmemcached.Client)
             _cache.disconnect_all()
-            with multiprocessing.Pool(processes) as p:
-                for out in p.imap_unordered(process_avatars, records):
-                    pass
+            with ProcessPoolExecutor(max_workers=processes) as executor:
+                for future in as_completed(
+                    executor.submit(process_avatars, record) for record in records
+                ):
+                    future.result()
 
 
 # Importing data suffers from a difficult ordering problem because of
