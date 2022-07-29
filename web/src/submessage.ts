@@ -29,12 +29,21 @@ const poll_widget_extra_data_schema = z
     })
     .nullable();
 
+export const todo_widget_extra_data_schema = z
+    .object({
+        task_list_title: z.string().optional(),
+    })
+    .nullable();
+
 const widget_data_event_schema = z.object({
     sender_id: z.number(),
     data: z.discriminatedUnion("widget_type", [
         z.object({widget_type: z.literal("poll"), extra_data: poll_widget_extra_data_schema}),
         z.object({widget_type: z.literal("zform"), extra_data: zform_widget_extra_data_schema}),
-        z.object({widget_type: z.literal("todo"), extra_data: z.null()}),
+        z.object({
+            widget_type: z.literal("todo"),
+            extra_data: todo_widget_extra_data_schema,
+        }),
     ]),
 });
 

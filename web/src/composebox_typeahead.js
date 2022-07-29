@@ -489,6 +489,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/todo (Create a collaborative to-do list)"}),
         name: "todo",
         aliases: "",
+        placeholder: $t({defaultMessage: "Task list"}),
     },
 ];
 

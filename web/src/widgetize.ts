@@ -12,7 +12,12 @@ type ZFormExtraData = {
     choices: {type: string; reply: string; long_name: string; short_name: string}[];
 };
 
-type WidgetExtraData = PollWidgetExtraData | ZFormExtraData | null;
+// TODO: This TodoWidgetExtraData type should be moved to web/src/todo_widget.js when it will be migrated
+type TodoWidgetExtraData = {
+    task_list_title?: string;
+};
+
+type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
 
 type WidgetOptions = {
     widget_type: string;
