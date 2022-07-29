@@ -4,7 +4,7 @@ import random
 import shutil
 import unittest
 from functools import partial
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
@@ -121,17 +121,6 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # addInstrumentation does not need it.
     process_instrumented_calls(partial(result.addInstrumentation, None))
     return subsuite_index, result.events
-
-
-# Monkey-patch django.test.runner to allow using multiprocessing
-# inside tests without a “daemonic processes are not allowed to have
-# children” error.
-class NoDaemonContext(multiprocessing.context.ForkContext):
-    class Process(multiprocessing.context.ForkProcess):
-        daemon = cast(bool, property(lambda self: False, lambda self, value: None))
-
-
-django_runner.multiprocessing = NoDaemonContext()
 
 
 def destroy_test_databases(worker_id: Optional[int] = None) -> None:
