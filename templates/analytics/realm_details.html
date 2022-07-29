@@ -53,11 +53,9 @@
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="org_type" id="org_type">
         {% for realm_type in sorted_realm_types %}
-            {% if not realm_type.hidden %}
             <option value="{{ realm_type.id }}" {% if realm.org_type == realm_type.id %}selected{% endif %}>
                 {{ _(realm_type.name) }}
             </option>
-            {% endif %}
         {% endfor %}
     </select>
     <button type="submit" class="btn btn-default support-submit-button">Update</button>

@@ -8,7 +8,11 @@ from django.utils.timezone import now as timezone_now
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
 from zerver.actions.invites import do_create_multiuse_invite_link
-from zerver.actions.realm_settings import do_send_realm_reactivation_email, do_set_realm_property
+from zerver.actions.realm_settings import (
+    do_change_realm_org_type,
+    do_send_realm_reactivation_email,
+    do_set_realm_property,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.models import (
@@ -336,6 +340,28 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_get_org_type_display_name(self) -> None:
         self.assertEqual(get_org_type_display_name(Realm.ORG_TYPES["business"]["id"]), "Business")
         self.assertEqual(get_org_type_display_name(883), "")
+
+    def test_unspecified_org_type_correctly_displayed(self) -> None:
+        """
+        Unspecified org type is special in that it is marked to not be shown
+        on the registration page (because organitions are not meant to be able to choose it),
+        but should be correctly shown at the /support endpoint.
+        """
+        realm = get_realm("zulip")
+
+        do_change_realm_org_type(realm, 0, acting_user=None)
+        self.assertEqual(realm.org_type, 0)
+
+        self.login("iago")
+
+        result = self.client_get("/activity/support", {"q": "zulip"}, subdomain="zulip")
+        self.assert_in_success_response(
+            [
+                f'<input type="hidden" name="realm_id" value="{realm.id}"',
+                '<option value="0" selected>',
+            ],
+            result,
+        )
 
     @mock.patch("analytics.views.support.update_billing_method_of_current_plan")
     def test_change_billing_method(self, m: mock.Mock) -> None:
