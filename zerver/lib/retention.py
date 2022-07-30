@@ -109,14 +109,11 @@ def move_rows(
     fields = [field for field in base_model._meta.fields if field not in EXCLUDE_FIELDS]
     src_fields = [Identifier(src_db_table, field.column) for field in fields]
     dst_fields = [Identifier(field.column) for field in fields]
-    sql_args = {
-        "src_fields": SQL(",").join(src_fields),
-        "dst_fields": SQL(",").join(dst_fields),
-    }
-    sql_args.update(kwargs)
     with connection.cursor() as cursor:
         cursor.execute(
-            raw_query.format(**sql_args),
+            raw_query.format(
+                src_fields=SQL(",").join(src_fields), dst_fields=SQL(",").join(dst_fields), **kwargs
+            )
         )
         if returning_id:
             return [id for (id,) in cursor.fetchall()]  # return list of row ids
