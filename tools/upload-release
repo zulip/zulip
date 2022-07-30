@@ -12,7 +12,7 @@ from scripts.lib.setup_path import setup_path
 
 setup_path()
 
-import boto3
+import boto3.session
 from mypy_boto3_s3 import S3Client
 from natsort import natsorted
 
@@ -37,7 +37,7 @@ new_basename = os.path.basename(args.filename)
 if not new_basename.startswith("zulip-server-") or not new_basename.endswith(".tar.gz"):
     parser.error("File does not match zulip-server-*.tar.gz")
 
-session = boto3.Session()
+session = boto3.session.Session()
 client: S3Client = session.client("s3")
 bucket = session.resource("s3", region_name="us-east-1").Bucket("zulip-download")
 
