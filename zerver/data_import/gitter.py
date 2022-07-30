@@ -230,7 +230,7 @@ def convert_gitter_workspace_messages(
         get_user_from_message,
         get_timestamp_from_message,
         lambda id: user_map[id],
-        list(user_map.keys()),
+        iter(user_map.keys()),
         zerver_userprofile,
     )
 

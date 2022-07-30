@@ -755,7 +755,7 @@ def long_term_idle_helper(
     user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
     timestamp_from_message: Callable[[ZerverFieldsT], float],
     zulip_user_id_from_user: Callable[[ExternalId], int],
-    all_user_ids: List[ExternalId],
+    all_user_ids_iterator: Iterator[ExternalId],
     zerver_userprofile: List[ZerverFieldsT],
 ) -> Set[int]:
     """Algorithmically, we treat users who have sent at least 10 messages
@@ -786,7 +786,7 @@ def long_term_idle_helper(
 
     long_term_idle = set()
 
-    for user_id in all_user_ids:
+    for user_id in all_user_ids_iterator:
         if user_id in recent_senders:
             continue
         zulip_user_id = zulip_user_id_from_user(user_id)
