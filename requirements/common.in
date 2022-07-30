@@ -53,7 +53,7 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-https://github.com/zulip/talon/archive/1711705c952806d4a704c7dbf58f21db8e11756a.zip#egg=talon-core==1.4.8.zulip1&subdirectory=talon-core
+https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 premailer
@@ -89,7 +89,7 @@ sourcemap
 tornado
 
 # Fast JSON parser
-orjson
+orjson<3.7.9  # https://github.com/ijl/orjson/issues/285
 
 # Needed for iOS push notifications
 aioapns
@@ -162,7 +162,8 @@ requests-oauthlib
 
 # For OpenAPI schema validation.
 openapi-core
-openapi-schema-validator<0.3.0  # 0.3.0 requires jsonschema 4, which conflicts with semgrep: https://github.com/returntocorp/semgrep/issues/4739
+openapi-schema-validator
+importlib-resources ; python_version < "3.9"  # for jsonschema
 
 # For reporting errors to sentry.io
 sentry-sdk
