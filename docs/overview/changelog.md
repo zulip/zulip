@@ -11,6 +11,89 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally. See the [commit
 log][commit-log] for an up-to-date list of raw changes.
 
+#### Highlights
+
+- Added support for Ubuntu 22.04.
+- Removed support for Debian 10 due to its approaching end-of-life
+  upstream.
+- Added new display setting to display users' names next to emoji
+  reactions when at most 3 users have reacted to a message. This saves
+  effort hovering over the reaction when the identity of the user who
+  reacted is important to the meaning.
+- Added new compose box button to navigate to the topic being composed
+  to, when that is different from the current view.
+- Added a scroll-to-bottom buttom, analogous to the `End` shortcut,
+  that appears only when scrolling using the mouse.
+- The [public access option][public-access-option] was enhanced to
+  skip the login page by default, support switching themes and
+  languages, and add many other UI improvements.
+- Added beta support for user groups to have subgroups, and for some
+  permissions settings to be managed using user groups. Over the
+  coming releases, we plan to migrate all Zulip permissions settings
+  to be based on this more flexible groups-based system. We expect the
+  migration to be fully backwards-compatible.
+
+[public-access-option]: https://blog.zulip.com/2022/05/05/public-access-option/
+
+#### Full feature changelog
+
+- Improved Recent Topics. The timestamp links now go to the latest
+  message in the topic, and many subtle changes.
+- Added support for changing the role of bots in the UI; previously,
+  this was only possible via the API.
+- Added API endpoint to get a single stream by ID.
+- Added new RhodeCode webhook integration.
+- Zulip's automated emails use the `X-Auto-Response-Suppress` header
+  to reduce auto-responder replies.
+- Redesigned full user profiles to have a cleaner look and also
+  display user IDs, which can be important when using the API.
+- Redesigned several organization settings pages to have more
+  consistent design.
+- Redesigned the footer for self-hosted Zulip servers to no longer
+  contain all of the zulip.com marketing pages.
+- Reworked how a new user's language is set to prefer the browser's
+  configured language over the organization default language, which
+  has been renamed to reflect its remaining role as the language used
+  for automated notifications visible to many users.
+- Improved UI for moving topics with better labels, typeahead,
+  default notices, and cleaner interaction.
+- Improved typeahead matching algorithm for stream/user/emoji names
+  containing multiple spaces and other corner cases.
+- Improved Help Center documentation, including mobile documentation
+  for common workflows and many polish improvements.
+- Improved API documentation, including new page on roles and
+  permissions, an audit to correct missing **Changes**, entries, etc.
+- Improved Python static type-checking to make use of Django stubs for
+  `mypy`, fixing many minor bugs.
+- Improved RealmAuditLog to cover several previously unauditable changes.
+- Improved the soft reactivation user experience; users who receive an
+  email notification or push notification because of a personal
+  mention or a private message are automatically soft reactivated at
+  that time, so that they are usually already soft-reactivated by the
+  time they visit Zulip after seeing the notification.
+- Improved user deactivation modal to provide details about bots and
+  invitations that will be disabled.
+- Improved several integrations, including Harbor, NewRelic, and the
+  Slack compatible incoming webhook.
+- Fixed the app's main loading page to not suggest reloading until
+  several seconds have passed.
+- Fixed a bug where public streams imported from other chat systems
+  could incorrectly be configured as without shared history, a
+  configuration not otherwise possible in Zulip.
+- Fixed several subtle bugs involving editing custom profile field
+  configuration.
+- Fixed dozens of settings UI interaction design bugs.
+- Fixed subtle caching bugs in the URL preview system.
+- Fixed many CSS corner cases issues involving content overflowing containers.
+- Fixed entering an emoji in the mobile web app using an emoji
+  keyboard.
+- Fixed several subtle bugs with confirmation links.
+- Fixed a subtle performance issue for full-text search for uncommon words.
+- Extracted several JavaScript modules to share code with the mobile
+  app.
+- Upgraded many third-party dependencies including Django 4.0, and
+  substantially modernized the Python codebase.
+
 #### Upgrade notes for 6.0
 
 - None yet.
