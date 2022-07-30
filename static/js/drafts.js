@@ -7,6 +7,7 @@ import tippy from "tippy.js";
 import render_confirm_delete_all_drafts from "../templates/confirm_dialog/confirm_delete_all_drafts.hbs";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 import render_draft from "../templates/draft.hbs"
+import render_scheduled_message from "../templates/scheduled_message.hbs"
 
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
@@ -434,56 +435,58 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
 
 function show_scheduled_messages() {
     console.log('show scheduled messages')
-    const scheduled_messages = page_params.scheduled_messages;
-    console.log('scheduled messages: ', JSON.stringify(scheduled_messages, null, 2))
 
-    let html = '';
-
-    $(".drafts-list").html('')
-
-    const request = []
-
-    for(const message of scheduled_messages) {
-        const stream_color = stream_data.get_color(message.stream);
-
-        const message_template = render_draft({
-            is_stream: message.type === 'stream',
-            stream_name: message.stream,
-            topic: message.topic,
-            time_stamp: message.deliver_at,
-            content: `<p>${message.content}</p>`,
-            stream_color: stream_color,
-            dark_background: color_class.get_css_class(stream_color)
-        })
-        console.log('template: ', message_template)
-
-        html += message_template
-
-        const request_part = {
-            type: message.type,
-            deliver_at: new Date(message.deliver_at).getTime() / 1000,
-            content: message.content,
-            to: message.to,
-            topic: message.topic,
-            sending_client: 1,
-            stream: message.stream,
-            realm_name: page_params.realm_name
-        }
-
-        request.push(request_part)
-    }
-
-    channel.post({
+    channel.get({
         url: "/json/scheduled_messages",
-        data: {
-            scheduled_messages: JSON.stringify(request)
-        },
         success(data) {
-            console.log("Data: ", JSON.stringify(data))
+            console.log("Scheduled Messages: ", JSON.stringify(data, null, 2))
+            let html = '';
+
+            $(".drafts-list").html('')
+        
+            const request = []
+        
+            for(const message of data.scheduled_messages) {
+                const stream_color = stream_data.get_color(message.stream);
+
+                const time = new Date(message.scheduled_timestamp);
+
+                console.log('time: ' + JSON.stringify(time))
+                let time_stamp = timerender.render_now(time).time_str;
+                if (time_stamp === $t({defaultMessage: "Today"})) {
+                    time_stamp = timerender.stringify_time(time);
+                }
+        
+                const message_template = render_scheduled_message({
+                    is_stream: message.type === 'stream',
+                    stream_name: message.stream,
+                    topic: message.topic,
+                    time_stamp: time_stamp,
+                    content: `<p>${message.content}</p>`,
+                    stream_color: stream_color,
+                    dark_background: color_class.get_css_class(stream_color)
+                })
+                // console.log('template: ', message_template)
+        
+                html += message_template
+        
+                const request_part = {
+                    type: message.type,
+                    deliver_at: new Date(message.deliver_at).getTime() / 1000,
+                    content: message.content,
+                    to: message.to,
+                    topic: message.topic,
+                    sending_client: 1,
+                    stream: message.stream,
+                    realm_name: page_params.realm_name
+                }
+        
+                request.push(request_part)
+            }
+
+            $(".drafts-list").html(html)
         }
     })
-
-    $(".drafts-list").html(html)
 }
 
 export function launch() {

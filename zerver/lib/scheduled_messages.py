@@ -95,6 +95,9 @@ def do_create_scheduled_messages(scheduled_message_dicts: List[Dict[str, Any]], 
         )
 
     created_scheduled_message_objects = ScheduledMessage.objects.bulk_create(scheduled_message_objects)
+    
+    print('created_scheduled_message_objects')
+    print(created_scheduled_message_objects)
 
     event = {
         "type": "scheduled_messages",

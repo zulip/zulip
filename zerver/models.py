@@ -4320,14 +4320,15 @@ class ScheduledMessage(models.Model):
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self.id,
-            "sender": self.sender,
+            "sender": self.sender.id,
             "recipient": self.recipient.__str__(),
+            "type": self.recipient.type_name(),
             "subject": self.subject,
             "content": self.content,
             "sending_client": self.sending_client.__str__(),
-            "stream": self.stream.__str__(),
+            "stream": self.stream.name,
             "realm": self.realm.__str__(),
-            "scheduled_timestamp": self.scheduled_timestamp.timestamp(),
+            "scheduled_timestamp": self.scheduled_timestamp.__str__(),
             "delivered": self.delivered
         }
 
