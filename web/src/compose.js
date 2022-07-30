@@ -213,19 +213,30 @@ export function clear_compose_box() {
     reset_compose_scheduling_state();
 }
 
-export function send_message_success(local_id, message_id, locally_echoed) {
+export function send_message_success(
+    local_id,
+    message_id,
+    locally_echoed,
+    clear_compose_box_after_sending = true,
+) {
     if (!locally_echoed) {
         if ($("#compose-textarea").data("draft-id")) {
             drafts.draft_model.deleteDraft($("#compose-textarea").data("draft-id"));
         }
-        clear_compose_box();
+        if (clear_compose_box_after_sending) {
+            clear_compose_box();
+        }
     }
 
     echo.reify_message_id(local_id, message_id);
 }
 
-export function send_message(request = create_message_object()) {
+export function send_message(request = create_message_object(), from_modal = false) {
     compose_state.set_recipient_edited_manually(false);
+
+    // a message not from a modal is from the compose box which
+    // should be cleared on its successful sending
+    const clear_compose_box_after_sending = !from_modal;
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {
@@ -261,7 +272,7 @@ export function send_message(request = create_message_object()) {
     request.locally_echoed = locally_echoed;
 
     function success(data) {
-        send_message_success(local_id, data.id, locally_echoed);
+        send_message_success(local_id, data.id, locally_echoed, clear_compose_box_after_sending);
     }
 
     function error(response) {
@@ -296,7 +307,7 @@ export function send_message(request = create_message_object()) {
         "Restarting get_events because it was not running during send",
     );
 
-    if (locally_echoed) {
+    if (locally_echoed && clear_compose_box_after_sending) {
         clear_compose_box();
         // Schedule a timer to display a spinner when the message is
         // taking a longtime to send.
