@@ -1078,16 +1078,12 @@ export function update_stream_privacy_choices(policy) {
     if (!overlays.streams_open()) {
         return;
     }
-    const change_privacy_modal_opened = $("#stream_privacy_modal").is(":visible");
     const stream_creation_form_opened = $("#stream-creation").is(":visible");
 
-    if (!change_privacy_modal_opened && !stream_creation_form_opened) {
+    if (!stream_creation_form_opened) {
         return;
     }
-    let $container = $("#stream-creation");
-    if (change_privacy_modal_opened) {
-        $container = $("#stream_privacy_modal");
-    }
+    const $container = $("#stream-creation");
 
     if (policy === "create_private_stream_policy") {
         update_private_stream_privacy_option_state($container);
