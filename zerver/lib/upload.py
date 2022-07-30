@@ -331,7 +331,7 @@ class ZulipUploadBackend:
 
 def get_bucket(bucket_name: str, session: Optional[Session] = None) -> Bucket:
     if session is None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        session = Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = session.resource(
         "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
     ).Bucket(bucket_name)
@@ -418,7 +418,7 @@ def get_signed_upload_url(path: str, download: bool = False) -> str:
 
 class S3UploadBackend(ZulipUploadBackend):
     def __init__(self) -> None:
-        self.session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        self.session = Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.avatar_bucket = get_bucket(settings.S3_AVATAR_BUCKET, self.session)
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 

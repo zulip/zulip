@@ -1,7 +1,7 @@
 import os
 import shutil
 
-import boto3
+import boto3.session
 from django.conf import settings
 from django.db import migrations, models
 from django.db.backends.postgresql.schema import DatabaseSchemaEditor
@@ -60,7 +60,7 @@ class LocalUploader(Uploader):
 class S3Uploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
         self.bucket_name = settings.S3_AVATAR_BUCKET
         self.bucket = session.resource(
             "s3", region_name=settings.S3_REGION, endpoint_url=settings.S3_ENDPOINT_URL
