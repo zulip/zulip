@@ -1,25 +1,27 @@
-<p>{{#tr}}Move messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
 <form class="new-style" id="move_topic_form">
-    <div class="topic_stream_edit_header">
-        <div class="stream_header_colorblock"></div>
-        <div class="move-topic-dropdown">
-            {{> settings/dropdown_list_widget
-              widget_name="select_stream"
-              list_placeholder=(t 'Filter streams')}}
+    <div "input-group">
+        <label for="new_destination">{{t "Destination:" }}</label>
+        <div class="topic_stream_edit_header" id="new_destination">
+            <div class="stream_header_colorblock"></div>
+            <div class="move-topic-dropdown">
+                {{> settings/dropdown_list_widget
+                  widget_name="select_stream"
+                  list_placeholder=(t 'Filter streams')}}
+            </div>
+            <i class="fa fa-angle-right" aria-hidden="true"></i>
+            <input name="new_topic_name" type="text" class="inline_topic_edit" autocomplete="off" value="{{topic_name}}" />
+            <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
+            <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
         </div>
-        <i class="fa fa-angle-right" aria-hidden="true"></i>
-        <input name="new_topic_name" type="text" class="inline_topic_edit" autocomplete="off" value="{{topic_name}}" />
-        <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
-        <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
     </div>
     <div class="input-group">
-        <label for="messages_to_move">Move messages since</label>
+        <label for="messages_to_move">{{t "Move messages since" }}</label>
         <select name="messages_to_move" id="messages_to_move">
-            <option value="all">Start of topic (all)</option>
-            <option value="today">Midnight</option>
-            <option value="1">24 hours ago</option>
-            <option value="3">3 days ago</option>
-            <option value="10">10 days ago</option>
+            <option value="all">{{t "Start of topic (all)" }}</option>
+            <option value="today">{{t "Midnight" }}</option>
+            <option value="1">{{t "24 hours ago" }}</option>
+            <option value="3">{{t "3 days ago" }}</option>
+            <option value="10">{{t "10 days ago" }}</option>
         </select>
         <p id="moved_from_help"></p>
     </div>

@@ -547,7 +547,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Move topic"}),
+        html_heading: $t_html({defaultMessage: "Move messages from {topic}"}, {topic: topic_name}),
         html_body: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",

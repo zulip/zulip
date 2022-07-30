@@ -665,6 +665,13 @@ ul {
         margin: 0;
     }
 
+    /* Show ellipsis when topic name is long */
+    .modal__title {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
     /* Ensure that the dropdown can overflow the modal. */
     .modal__content {
         overflow: visible;
@@ -702,7 +709,7 @@ ul {
     }
 
     #messages_to_move {
-        margin: 5px 0;
+        margin-bottom: 2px;
     }
 
     #moved_from_help {
