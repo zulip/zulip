@@ -22,7 +22,7 @@ log][commit-log] for an up-to-date list of raw changes.
   reacted is important to the meaning.
 - Added new compose box button to navigate to the topic being composed
   to, when that is different from the current view.
-- Added a scroll-to-bottom buttom, analogous to the `End` shortcut,
+- Added a scroll-to-bottom button, analogous to the `End` shortcut,
   that appears only when scrolling using the mouse.
 - The [public access option][public-access-option] was enhanced to
   skip the login page by default, support switching themes and
