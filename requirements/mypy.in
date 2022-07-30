@@ -4,7 +4,6 @@
 # See requirements/README.md for more detail.
 mypy
 
-backoff-stubs
 boto3-stubs[s3,ses,sns,sqs]
 lxml-stubs
 SQLAlchemy[mypy]
