@@ -410,7 +410,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
     for mobile_type in ["Android", "ZulipiOS"]:
         title = f"{mobile_type} usage"
 
-        query = SQL(
+        query: Composable = SQL(
             """
             select
                 realm.string_id,
