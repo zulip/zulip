@@ -23,7 +23,7 @@ from typing import (
 )
 from unittest import mock
 
-import boto3
+import boto3.session
 import fakeldap
 import ldap
 import orjson
@@ -564,7 +564,7 @@ def use_s3_backend(method: FuncT) -> FuncT:
 
 
 def create_s3_buckets(*bucket_names: str) -> List[Bucket]:
-    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    session = boto3.session.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
     s3 = session.resource("s3")
     buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
     return buckets

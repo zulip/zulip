@@ -14,7 +14,7 @@ import secrets
 from contextlib import contextmanager
 from typing import Iterator, List, Tuple, TypedDict
 
-import boto3
+import boto3.session
 import orjson
 from django.conf import settings
 from mypy_boto3_ses import SESClient
@@ -30,7 +30,7 @@ class IdentityArgsDict(TypedDict, total=False):
 
 def main() -> None:
 
-    session = boto3.Session()
+    session = boto3.session.Session()
 
     from_address = settings.NOREPLY_EMAIL_ADDRESS
     from_host = Address(addr_spec=from_address).domain
@@ -69,7 +69,7 @@ def main() -> None:
             print_messages(session, queue_url)
 
 
-def get_ses_arn(session: boto3.Session, args: argparse.Namespace) -> str:
+def get_ses_arn(session: boto3.session.Session, args: argparse.Namespace) -> str:
     ses: SESClient = session.client("ses")
 
     notification_settings = ses.get_identity_notification_attributes(Identities=[args.identity])
@@ -85,7 +85,7 @@ def get_ses_arn(session: boto3.Session, args: argparse.Namespace) -> str:
 
 
 @contextmanager
-def our_sqs_queue(session: boto3.Session, ses_topic_arn: str) -> Iterator[Tuple[str, str]]:
+def our_sqs_queue(session: boto3.session.Session, ses_topic_arn: str) -> Iterator[Tuple[str, str]]:
     (_, _, _, region, account_id, topic_name) = ses_topic_arn.split(":")
 
     sqs: SQSClient = session.client("sqs")
@@ -122,7 +122,7 @@ def our_sqs_queue(session: boto3.Session, ses_topic_arn: str) -> Iterator[Tuple[
 
 @contextmanager
 def our_sns_subscription(
-    session: boto3.Session, ses_topic_arn: str, queue_arn: str
+    session: boto3.session.Session, ses_topic_arn: str, queue_arn: str
 ) -> Iterator[str]:
     sns: SNSClient = session.client("sns")
     try:
@@ -141,7 +141,7 @@ def our_sns_subscription(
             sns.unsubscribe(SubscriptionArn=subscription_arn)
 
 
-def print_messages(session: boto3.Session, queue_url: str) -> None:
+def print_messages(session: boto3.session.Session, queue_url: str) -> None:
     sqs: SQSClient = session.client("sqs")
     try:
         while True:
