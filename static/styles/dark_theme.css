@@ -504,6 +504,10 @@ body.dark-theme {
         .light-theme {
             display: block;
         }
+
+        .dropdown-menu a:hover {
+            color: hsl(0, 0%, 100%);
+        }
     }
 
     .nav .dropdown-menu::after,

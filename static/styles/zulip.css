@@ -361,6 +361,59 @@ p.n-margin {
     }
 }
 
+#gear-menu .dropdown-menu {
+    .org-name,
+    .org-url {
+        padding: 0 20px;
+    }
+
+    .org-info {
+        text-align: center;
+
+        a {
+            white-space: normal;
+        }
+    }
+
+    .org-name {
+        font-size: large;
+        font-weight: bold;
+    }
+
+    .org-url {
+        line-height: 100%;
+        color: hsl(0, 0%, 52%);
+    }
+
+    .org-version {
+        padding-top: 3px;
+        white-space: normal;
+    }
+
+    .org-upgrade {
+        color: hsl(226, 82%, 60%);
+
+        a {
+            padding: 0;
+        }
+    }
+
+    .org-plan,
+    .org-upgrade {
+        a {
+            line-height: 16px;
+        }
+    }
+
+    .plan-separator {
+        line-height: 8px;
+    }
+
+    .small-font-size {
+        font-size: 12px;
+    }
+}
+
 .app {
     width: 100%;
     height: 100%;
