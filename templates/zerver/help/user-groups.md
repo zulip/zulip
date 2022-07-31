@@ -33,6 +33,24 @@ trying to send a message to a group of people, you'll want to either
 
 {end_tabs}
 
+### Delete a user group
+
+{start_tabs}
+
+{settings_tab|user-groups-admin}
+
+1. Find the group.
+
+1. Click on the trash (<i class="fa fa-trash-o"></i>) icon in the top
+   right corner of the user group.
+
+1. Approve by clicking **Confirm**.
+
+!!! warn ""
+    **Note**: Deleting a user group cannot be undone by anyone.
+
+{end_tabs}
+
 ### Configure who can create and manage user groups
 
 {!admin-only.md!}
