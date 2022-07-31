@@ -42,6 +42,7 @@ IGNORED_PHRASES = [
     r"Zephyr",
     r"Zoom",
     r"Zulip",
+    r"Zulip Server",
     r"Zulip Account Security",
     r"Zulip Security",
     r"Zulip Cloud Standard",
