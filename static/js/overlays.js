@@ -121,7 +121,31 @@ export function open_modal(selector, conf = {}) {
     }
 
     if (is_modal_open()) {
-        blueslip.error("open_modal() was called while " + active_modal() + " modal was open.");
+        /*
+          Our modal system doesn't directly support opening a modal
+          when one is already open, because the `is_modal_open` CSS
+          class doesn't update until Micromodal has finished its
+          animations, which can take 100ms or more.
+
+          We can likely fix that, but in the meantime, we should
+          handle this situation correctly, by closing the current
+          modal, waiting for it to finish closing, and then attempting
+          to open the current modal again.
+        */
+        if (!conf.recursive_call_count) {
+            conf.recursive_call_count = 1;
+        } else {
+            conf.recursive_call_count += 1;
+        }
+        if (conf.recursive_call_count > 50) {
+            blueslip.error("Modal incorrectly is still open: " + selector);
+            return;
+        }
+
+        close_active_modal();
+        setTimeout(() => {
+            open_modal(selector, conf);
+        }, 10);
         return;
     }
 
