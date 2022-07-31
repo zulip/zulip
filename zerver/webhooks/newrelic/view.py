@@ -1,6 +1,4 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
@@ -8,6 +6,15 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_int,
+    check_list,
+    check_none_or,
+    check_string,
+    check_union,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message, unix_milliseconds_to_timestamp
 from zerver.models import UserProfile
 
@@ -48,29 +55,33 @@ ALL_EVENT_TYPES = list(set(OLD_EVENT_TYPES).union(set(NEW_EVENT_TYPES)))
 def api_newrelic_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
     # Handle old format
     # Once old is EOLed, delete if block and keep else block
-    if not payload.get("id"):
+    if not payload.get("id").tame(check_none_or(check_int)):
         info = {
-            "condition_name": payload.get("condition_name", "Unknown condition"),
-            "details": payload.get("details", "No details."),
-            "incident_url": payload.get("incident_url", "https://alerts.newrelic.com"),
+            "condition_name": payload.get("condition_name", "Unknown condition").tame(check_string),
+            "details": payload.get("details", "No details.").tame(check_string),
+            "incident_url": payload.get("incident_url", "https://alerts.newrelic.com").tame(
+                check_string
+            ),
             "incident_acknowledge_url": payload.get(
                 "incident_acknowledge_url", "https://alerts.newrelic.com"
-            ),
-            "status": payload.get("current_state", "None"),
+            ).tame(check_string),
+            "status": payload.get("current_state", "None").tame(check_string),
             "iso_timestamp": "",
-            "owner": payload.get("owner", ""),
+            "owner": payload.get("owner", "").tame(check_string),
         }
 
-        unix_time = payload.get("timestamp", None)
+        unix_time = payload.get("timestamp").tame(
+            check_none_or(check_union([check_string, check_int]))
+        )
         if unix_time is None:
             raise JsonableError(_("The newrelic webhook requires timestamp in milliseconds"))
 
-        info["iso_timestamp"] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
+        info["iso_timestamp"] = str(unix_milliseconds_to_timestamp(unix_time, "newrelic"))
 
         # Add formatting to the owner field if owner is present
         if info["owner"] != "":
@@ -89,8 +100,10 @@ def api_newrelic_webhook(
             )
 
         topic_info = {
-            "policy_name": payload.get("policy_name", "Unknown Policy"),
-            "incident_id": payload.get("incident_id", "Unknown ID"),
+            "policy_name": payload.get("policy_name", "Unknown Policy").tame(check_string),
+            "incident_id": payload.get("incident_id", "Unknown ID").tame(
+                check_union([check_string, check_int])
+            ),
         }
         topic = TOPIC_TEMPLATE.format(**topic_info)
 
@@ -100,22 +113,26 @@ def api_newrelic_webhook(
     # Handle new format
     else:
         info = {
-            "condition_name": payload.get("condition_name", "Unknown condition"),
-            "details": payload.get("details", "No details."),
-            "incident_url": payload.get("issueUrl", "https://alerts.newrelic.com"),
+            "condition_name": payload.get("condition_name", "Unknown condition").tame(check_string),
+            "details": payload.get("details", "No details.").tame(check_string),
+            "incident_url": payload.get("issueUrl", "https://alerts.newrelic.com").tame(
+                check_string
+            ),
             "incident_acknowledge_url": payload.get(
                 "incident_acknowledge_url", "https://alerts.newrelic.com"
-            ),
-            "status": payload.get("state", "None"),
+            ).tame(check_string),
+            "status": payload.get("state", "None").tame(check_string),
             "iso_timestamp": "",
-            "owner": payload.get("owner", ""),
+            "owner": payload.get("owner", "").tame(check_string),
         }
 
-        unix_time = payload.get("createdAt", None)
+        unix_time = payload.get("createdAt").tame(
+            check_none_or(check_union([check_string, check_int]))
+        )
         if unix_time is None:
             raise JsonableError(_("The newrelic webhook requires timestamp in milliseconds"))
 
-        info["iso_timestamp"] = unix_milliseconds_to_timestamp(unix_time, "newrelic")
+        info["iso_timestamp"] = str(unix_milliseconds_to_timestamp(unix_time, "newrelic"))
 
         # Add formatting to the owner field if owner is present
         if info["owner"] != "":
@@ -137,14 +154,16 @@ def api_newrelic_webhook(
                 )
             )
 
-        policy_names_list = payload.get("alertPolicyNames", [])
+        policy_names_list = payload.get("alertPolicyNames", []).tame(check_list(check_string))
         if policy_names_list:
             policy_names_str = ",".join(policy_names_list)
         else:
             policy_names_str = "Unknown Policy"
         topic_info = {
             "policy_name": policy_names_str,
-            "incident_id": payload.get("id", "Unknown ID"),
+            "incident_id": payload.get("id", "Unknown ID").tame(
+                check_union([check_string, check_int])
+            ),
         }
         topic = TOPIC_TEMPLATE.format(**topic_info)
 
