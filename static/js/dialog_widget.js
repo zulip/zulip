@@ -95,12 +95,6 @@ export function launch(conf) {
         }
     }
 
-    // Close any existing modals--on settings screens you can
-    // have multiple buttons that need confirmation.
-    if (overlays.is_modal_open()) {
-        close_modal();
-    }
-
     const html_submit_button = conf.html_submit_button || $t_html({defaultMessage: "Save changes"});
     const html = render_dialog_widget({
         heading_text: conf.html_heading,
