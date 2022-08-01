@@ -212,7 +212,7 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
 
 def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
     """Any changes to this function likely require a migration to adjust
-    existing realms.  See e.g. migration 0375_create_role_based_system_groups.py,
+    existing realms.  See e.g. migration 0382_create_role_based_system_groups.py,
     which is a copy of this function from when we introduced system groups.
     """
     role_system_groups_dict: Dict[int, UserGroup] = {}
