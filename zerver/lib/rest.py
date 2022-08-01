@@ -12,6 +12,7 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     process_as_post,
+    public_json_view,
 )
 from zerver.lib.exceptions import MissingAuthenticationError
 from zerver.lib.request import RequestNotes
@@ -150,8 +151,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         ):
             # For endpoints that support anonymous web access, we do that.
             # TODO: Allow /api calls when this is stable enough.
-            auth_kwargs = dict(allow_unauthenticated=True)
-            target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
+            target_function = csrf_protect(public_json_view(target_function))
         else:
             # Otherwise, throw an authentication error; our middleware
             # will generate the appropriate HTTP response.
