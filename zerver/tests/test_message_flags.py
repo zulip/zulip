@@ -1277,14 +1277,22 @@ class MessageAccessTests(ZulipTestCase):
         # Guest user can access messages of subscribed private streams if
         # history is public to subscribers
         do_change_stream_permission(
-            stream, invite_only=True, history_public_to_subscribers=True, acting_user=guest_user
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=guest_user,
         )
         result = self.change_star(message_id)
         self.assert_json_success(result)
 
         # With history not public to subscribers, they can still see new messages
         do_change_stream_permission(
-            stream, invite_only=True, history_public_to_subscribers=False, acting_user=guest_user
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=guest_user,
         )
         self.login_user(normal_user)
         message_id = [
@@ -1332,6 +1340,7 @@ class MessageAccessTests(ZulipTestCase):
             stream,
             invite_only=True,
             history_public_to_subscribers=True,
+            is_web_public=False,
             acting_user=self.example_user("cordelia"),
         )
 

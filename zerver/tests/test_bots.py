@@ -419,7 +419,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         user_profile = self.example_user("hamlet")
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe(user_profile, stream.name)
-        do_change_stream_permission(stream, invite_only=True, acting_user=user_profile)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
@@ -464,7 +470,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
         do_change_stream_permission(
-            stream, invite_only=True, acting_user=self.example_user("hamlet")
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
         )
 
         bot_info = {
@@ -493,7 +503,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_permission(stream, invite_only=True, acting_user=user_profile)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
@@ -538,7 +554,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
         do_change_stream_permission(
-            stream, invite_only=True, acting_user=self.example_user("hamlet")
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
         )
 
         self.assert_num_bots_equal(0)
@@ -1215,7 +1235,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_permission(stream, invite_only=True, acting_user=user_profile)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -1242,7 +1268,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
         do_change_stream_permission(
-            stream, invite_only=True, acting_user=self.example_user("hamlet")
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
         )
 
         bot_info = {
@@ -1324,7 +1354,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         user_profile = self.example_user("hamlet")
         stream = self.subscribe(user_profile, "Denmark")
-        do_change_stream_permission(stream, invite_only=True, acting_user=user_profile)
+        do_change_stream_permission(
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
+        )
 
         bot_info = {
             "full_name": "The Bot of Hamlet",
@@ -1350,7 +1386,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         stream = get_stream("Denmark", realm)
         self.unsubscribe(self.example_user("hamlet"), "Denmark")
         do_change_stream_permission(
-            stream, invite_only=True, acting_user=self.example_user("hamlet")
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("hamlet"),
         )
 
         bot_info = {
