@@ -4,11 +4,12 @@ import re
 import uuid
 from collections import defaultdict
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 from unittest import mock, skipUnless
 
 import orjson
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -27,6 +28,7 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     internal_notify_view,
+    public_json_view,
     return_success_on_head_request,
     validate_api_key,
     webhook_view,
@@ -1835,6 +1837,21 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def _do_test(self, user_email: str) -> "TestHttpResponse":
         data = {"password": initial_password(user_email)}
         return self.client_post(r"/accounts/webathena_kerberos_login/", data)
+
+
+class TestPublicJsonViewDecorator(ZulipTestCase):
+    def test_access_public_json_view_when_logged_in(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        @public_json_view
+        def public_view(
+            request: HttpRequest, maybe_user_profile: Union[UserProfile, AnonymousUser]
+        ) -> HttpResponse:
+            self.assertEqual(maybe_user_profile, hamlet)
+            return json_success(request)
+
+        result = public_view(HostRequestMock(host="zulip.testserver", user_profile=hamlet))
+        self.assert_json_success(result)
 
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):

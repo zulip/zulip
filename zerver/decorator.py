@@ -836,13 +836,11 @@ def process_as_post(
     return _wrapped_view_func
 
 
-# Checks if the user is logged in.  If not, return an error (the
-# @login_required behavior of redirecting to a login page doesn't make
-# sense for json views)
-def authenticated_json_view(
-    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+def public_json_view(
+    view_func: Callable[
+        Concatenate[HttpRequest, Union[UserProfile, AnonymousUser], ParamT], HttpResponse
+    ],
     skip_rate_limiting: bool = False,
-    allow_unauthenticated: bool = False,
 ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
@@ -855,15 +853,39 @@ def authenticated_json_view(
             rate_limit(request)
 
         if not request.user.is_authenticated:
-            if not allow_unauthenticated:
-                raise UnauthorizedError()
-
             process_client(
                 request,
                 is_browser_view=True,
                 query=view_func.__name__,
             )
             return view_func(request, request.user, *args, **kwargs)
+
+        # Fall back to authenticated_json_view if the user is authenticated.
+        # Since we have done rate limiting earlier is no need to do it again.
+        return authenticated_json_view(view_func, skip_rate_limiting=True)(request, *args, **kwargs)
+
+    return _wrapped_view_func
+
+
+# Checks if the user is logged in.  If not, return an error (the
+# @login_required behavior of redirecting to a login page doesn't make
+# sense for json views)
+def authenticated_json_view(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse],
+    skip_rate_limiting: bool = False,
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> HttpResponse:
+        if not skip_rate_limiting:
+            rate_limit(request)
+
+        if not request.user.is_authenticated:
+            raise UnauthorizedError()
 
         user_profile = request.user
         validate_account_and_subdomain(request, user_profile)
