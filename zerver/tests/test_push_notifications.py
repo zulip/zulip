@@ -2184,7 +2184,7 @@ class TestSendToPushBouncer(ZulipTestCase):
 
     @responses.activate
     def test_400_error_invalid_server_key(self) -> None:
-        from zerver.decorator import InvalidZulipServerError
+        from zilencer.auth import InvalidZulipServerError
 
         # This is the exception our decorator uses for an invalid Zulip server
         error_response = json_response_from_error(InvalidZulipServerError("testRole"))

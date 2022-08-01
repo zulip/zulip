@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS
 from corporate.lib.stripe import do_deactivate_remote_server
-from zerver.decorator import InvalidZulipServerKeyError, require_post
+from zerver.decorator import require_post
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
     UserPushIndentityCompat,
@@ -38,6 +38,7 @@ from zerver.lib.validator import (
 )
 from zerver.models import UserProfile
 from zerver.views.push_notifications import validate_token
+from zilencer.auth import InvalidZulipServerKeyError
 from zilencer.models import (
     RemoteInstallationCount,
     RemotePushDeviceToken,

@@ -39,7 +39,6 @@ from typing_extensions import Concatenate, ParamSpec
 from zerver.lib.exceptions import (
     AccessDeniedError,
     AnomalousWebhookPayload,
-    ErrorCode,
     InvalidAPIKeyError,
     InvalidAPIKeyFormatError,
     InvalidJSONError,
@@ -48,7 +47,6 @@ from zerver.lib.exceptions import (
     OrganizationMemberRequired,
     OrganizationOwnerRequired,
     RealmDeactivatedError,
-    RemoteServerDeactivatedError,
     UnauthorizedError,
     UnsupportedWebhookEventType,
     UserDeactivatedError,
@@ -62,10 +60,10 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format, statsd
-from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
+from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+    from zilencer.models import RemoteZulipServer
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -238,24 +236,6 @@ def process_client(
         update_user_activity(request, user, query)
 
 
-class InvalidZulipServerError(JsonableError):
-    code = ErrorCode.INVALID_ZULIP_SERVER
-    data_fields = ["role"]
-
-    def __init__(self, role: str) -> None:
-        self.role: str = role
-
-    @staticmethod
-    def msg_format() -> str:
-        return "Zulip server auth failure: {role} is not registered -- did you run `manage.py register_server`?"
-
-
-class InvalidZulipServerKeyError(InvalidZulipServerError):
-    @staticmethod
-    def msg_format() -> str:
-        return "Zulip server auth failure: key does not match role {role}"
-
-
 def validate_api_key(
     request: HttpRequest,
     role: Optional[str],
@@ -270,21 +250,9 @@ def validate_api_key(
 
     # If `role` doesn't look like an email, it might be a uuid.
     if settings.ZILENCER_ENABLED and role is not None and "@" not in role:
-        try:
-            remote_server = get_remote_server_by_uuid(role)
-        except RemoteZulipServer.DoesNotExist:
-            raise InvalidZulipServerError(role)
-        if not constant_time_compare(api_key, remote_server.api_key):
-            raise InvalidZulipServerKeyError(role)
+        from zilencer.auth import validate_remote_server
 
-        if remote_server.deactivated:
-            raise RemoteServerDeactivatedError()
-
-        if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-            raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
-        RequestNotes.get_notes(request).remote_server = remote_server
-        process_client(request)
-        return remote_server
+        return validate_remote_server(request, role, api_key)
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
     if user_profile.is_incoming_webhook and not allow_webhook_access:
