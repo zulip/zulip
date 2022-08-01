@@ -256,6 +256,29 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
         return "Zulip server auth failure: key does not match role {role}"
 
 
+def validate_remote_server(
+    request: HttpRequest,
+    role: str,
+    api_key: str,
+) -> "RemoteZulipServer":
+    assert settings.ZILENCER_ENABLED
+    try:
+        remote_server = get_remote_server_by_uuid(role)
+    except RemoteZulipServer.DoesNotExist:
+        raise InvalidZulipServerError(role)
+    if not constant_time_compare(api_key, remote_server.api_key):
+        raise InvalidZulipServerKeyError(role)
+
+    if remote_server.deactivated:
+        raise RemoteServerDeactivatedError()
+
+    if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+        raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
+    RequestNotes.get_notes(request).remote_server = remote_server
+    process_client(request)
+    return remote_server
+
+
 def validate_api_key(
     request: HttpRequest,
     role: Optional[str],
@@ -270,21 +293,7 @@ def validate_api_key(
 
     # If `role` doesn't look like an email, it might be a uuid.
     if settings.ZILENCER_ENABLED and role is not None and "@" not in role:
-        try:
-            remote_server = get_remote_server_by_uuid(role)
-        except RemoteZulipServer.DoesNotExist:
-            raise InvalidZulipServerError(role)
-        if not constant_time_compare(api_key, remote_server.api_key):
-            raise InvalidZulipServerKeyError(role)
-
-        if remote_server.deactivated:
-            raise RemoteServerDeactivatedError()
-
-        if get_subdomain(request) != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
-            raise JsonableError(_("Invalid subdomain for push notifications bouncer"))
-        RequestNotes.get_notes(request).remote_server = remote_server
-        process_client(request)
-        return remote_server
+        return validate_remote_server(request, role, api_key)
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
     if user_profile.is_incoming_webhook and not allow_webhook_access:
