@@ -3280,10 +3280,6 @@ class AbstractUserMessage(models.Model):
             mask <<= 1
         return flags
 
-    def __str__(self) -> str:
-        display_recipient = get_display_recipient(self.message.recipient)
-        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
-
 
 class UserMessage(AbstractUserMessage):
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
@@ -3337,6 +3333,10 @@ class UserMessage(AbstractUserMessage):
             ),
         ]
 
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self.message.recipient)
+        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
@@ -3356,6 +3356,10 @@ class ArchivedUserMessage(AbstractUserMessage):
     """
 
     message: Message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
+
+    def __str__(self) -> str:
+        display_recipient = get_display_recipient(self.message.recipient)
+        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
 
 
 class AbstractAttachment(models.Model):
