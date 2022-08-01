@@ -10,7 +10,7 @@ remove the message content from view.
 
 {!message-actions-menu.md!}
 
-3. Click **Collapse**.
+3. Click **Collapse message**.
 
 {end_tabs}
 
