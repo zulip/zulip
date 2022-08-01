@@ -471,7 +471,7 @@ export function toggle_actions_popover(element, id) {
         let editability_menu_item;
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
-            editability_menu_item = $t({defaultMessage: "Edit"});
+            editability_menu_item = $t({defaultMessage: "Edit message"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
             editability_menu_item = $t({defaultMessage: "View source / Move message"});
