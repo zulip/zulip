@@ -75,13 +75,13 @@ def build_zerver_realm(
 ) -> List[ZerverFieldsT]:
     realm = Realm(
         id=realm_id,
-        date_created=time,
         name=realm_subdomain,
         string_id=realm_subdomain,
         description=f"Organization imported from {other_product}!",
     )
     auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
     realm_dict = model_to_dict(realm, exclude=["authentication_methods"])
+    realm_dict["date_created"] = time
     realm_dict["authentication_methods"] = auth_methods
     return [realm_dict]
 
@@ -496,7 +496,6 @@ def build_message(
 ) -> ZerverFieldsT:
     zulip_message = Message(
         rendered_content_version=1,  # this is Zulip specific
-        date_sent=date_sent,
         id=message_id,
         content=content,
         rendered_content=rendered_content,
@@ -511,6 +510,7 @@ def build_message(
     zulip_message_dict["sender"] = user_id
     zulip_message_dict["sending_client"] = 1
     zulip_message_dict["recipient"] = recipient_id
+    zulip_message_dict["date_sent"] = date_sent
 
     return zulip_message_dict
 
