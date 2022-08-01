@@ -54,7 +54,7 @@
 * [Deactivate own user](/api/deactivate-own-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
-* [Get presence of all the users](/api/get-presence)
+* [Get presence of all users](/api/get-presence)
 * [Get attachments](/api/get-attachments)
 * [Delete an attachment](/api/remove-attachment)
 * [Update settings](/api/update-settings)

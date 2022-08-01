@@ -1005,10 +1005,12 @@ paths:
                             - type: object
                               description: |
                                 Event sent to all users in an organization when a user comes
-                                back online after being long offline. While most presence updates happen
-                                done via polling the main presence endpoint, this event is important
-                                to avoid confusing users when someone comes online and then immediately sends
-                                a message (one wouldn't want them to still appear offline at that point!).
+                                back online after being offline for a while. While most presence
+                                updates are done via polling the [main presence
+                                endpoint](/api/get-presence), this event is important to avoid
+                                confusing users when someone comes online and immediately sends
+                                a message (one wouldn't want them to still appear offline at
+                                that point!).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1020,7 +1022,7 @@ paths:
                                 user_id:
                                   type: integer
                                   description: |
-                                    The ID of modified user.
+                                    The ID of the modified user.
                                 email:
                                   type: string
                                   description: |
@@ -1037,10 +1039,37 @@ paths:
                                 presence:
                                   type: object
                                   description: |
-                                    An object contatining a set of objects which describe the
-                                    the user's presence on various platforms.
+                                    Object containing the details of the user's most recent presence.
                                   additionalProperties:
-                                    $ref: "#/components/schemas/Presence"
+                                    type: object
+                                    description: |
+                                      `{client_name}`: Object containing the details of the user's
+                                      presence on a particular platform. The object key is the client's
+                                      platform name, for example `website` or `ZulipDesktop`.
+                                    additionalProperties: false
+                                    properties:
+                                      client:
+                                        type: string
+                                        description: |
+                                          The client's platform name.
+                                      status:
+                                        type: string
+                                        enum:
+                                          - idle
+                                          - active
+                                        description: |
+                                          The status of the user on this client. Will be either `idle`
+                                          or `active`.
+                                      timestamp:
+                                        type: integer
+                                        description: |
+                                          The UNIX timestamp of when this client sent the user's presence
+                                          to the server with the precision of a second.
+                                      pushable:
+                                        type: boolean
+                                        description: |
+                                          Whether the client is capable of showing mobile/push notifications
+                                          to the user.
                               additionalProperties: false
                               example:
                                 {
@@ -6386,19 +6415,20 @@ paths:
         Get the presence status for a specific user.
 
         This endpoint is most useful for embedding data about a user's
-        presence status in other sites (E.g. an employee directory). Full
-        Zulip clients like mobile/desktop apps will want to use the main
-        presence endpoint, which returns data for all active users in the
-        organization, instead.
+        presence status in other sites (e.g. an employee directory). Full
+        Zulip clients like mobile/desktop apps will want to use the [main
+        presence endpoint](/api/get-presence), which returns data for all
+        active users in the organization, instead.
 
-        See
-        [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
+        See [Zulip's developer documentation][subsystems-presence]
         for details on the data model for presence in Zulip.
+
+        [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
       parameters:
         - name: user_id_or_email
           in: path
           description: |
-            The user_id or Zulip display email address of the user whose presence you want to fetch.
+            The ID or Zulip display email address of the user whose presence you want to fetch.
 
             **Changes**: New in Zulip 4.0 (feature level 43). Previous versions only supported
             identifying the user by Zulip display email.
@@ -6431,24 +6461,26 @@ paths:
                             timestamp:
                               type: integer
                               description: |
-                                when this update was received; if the timestamp
+                                When this update was received. If the timestamp
                                 is more than a few minutes in the past, the user is offline.
                             status:
                               type: string
                               description: |
-                                either `active` or `idle`: whether the user had
-                                recently interacted with Zulip at the time in the timestamp
-                                (this distinguishes orange vs. green dots in the Zulip web
-                                UI; orange/idle means we don't know whether the user is
-                                actually at their computer or just left the Zulip app open
-                                on their desktop).
+                                Whether the user had recently interacted with Zulip at the time
+                                of the timestamp.
+
+                                Will be either `active` or `idle`
                           description: |
-                            `{client_name}` or `aggregated`: the keys for these objects are
-                            the names of the different clients where this user is logged in,
-                            like `website`, `ZulipDesktop`, `ZulipTerminal`, or
-                            `ZulipMobile`. There is also an `aggregated` key, which matches
-                            the contents of the object that has been updated most
-                            recently. For most applications, you'll just want to look at the
+                            `{client_name}` or `aggregated`: Object containing the details of the user's
+                            presence on a particular platform.
+
+                            Generally, the keys for these objects are the names of the different clients
+                            where this user is logged in, for example `website` or `ZulipDesktop`.
+
+                            There is also an `aggregated` key, which matches the contents of the object
+                            that has been updated most recently.
+
+                            For most applications, you'll just want to look at the
                             `aggregated` key.
                     example:
                       {
@@ -7650,14 +7682,15 @@ paths:
   /realm/presence:
     get:
       operationId: get-presence
-      summary: Get presence of all the users
+      summary: Get presence of all users
       tags: ["server_and_organizations"]
       description: |
         Get the presence information of all the users in an organization.
 
-        See
-        [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
+        See [Zulip's developer documentation][subsystems-presence]
         for details on the data model for presence in Zulip.
+
+        [subsystems-presence]: https://zulip.readthedocs.io/en/latest/subsystems/presence.html
       responses:
         "200":
           description: Success.
@@ -7679,15 +7712,14 @@ paths:
                       presences:
                         type: object
                         description: |
-                          An object that contains `presence` objects for all the users,
-                          each identified by user email as the key.
+                          A dictionary where each entry describes the presence details
+                          of a user in the Zulip organization.
                         additionalProperties:
                           type: object
                           description: |
-                            `{user_email}`: Object containing details of a user's presence
-                            on every client the user is logged into. The keys for these
-                            objects are the emails of the different users whose presence
-                            data is included.
+                            `{user_email}`: Object containing the details of a user's presence
+                            on every client the user is logged into. The object's key is the
+                            user's email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                     example:
@@ -9346,16 +9378,16 @@ paths:
                         description: |
                           Present if `presence` is present in `fetch_event_types`.
 
-                          A dictionary where each entry describes the presence details for another
+                          A dictionary where each entry describes the presence details of a
                           user in the Zulip organization.
 
                           Users who have been offline for multiple weeks may not appear in this object.
                         additionalProperties:
                           type: object
                           description: |
-                            `{user_id} or {user_email}`: Depending on the value of `slim_presence`.
-                            Each entry contains the details of the presence of the user with the specific
-                            id or email.
+                            `{user_id}` or `{user_email}`: Object containing the details of a user's
+                            presence on every client the user is logged into. Depending on the value
+                            of `slim_presence`, the object's key is either the user's ID or email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
                       server_timestamp:
@@ -15566,9 +15598,15 @@ components:
     Presence:
       type: object
       description: |
-        `{client_name}`: Object containing the details of the user's
-        presence on a particular platform with the client's platform
-        name being the object key.
+        `{client_name}` or `aggregated`: Object containing the details of the user's
+        presence on a particular platform.
+
+        Generally, the keys for these objects are the names of the different clients
+        where this user is logged in, for example `website` or `ZulipDesktop`.
+
+        There is also an `aggregated` key, which matches the contents of the object
+        that has been updated most recently (except for the `pushable` value which is
+        not present).
       additionalProperties: false
       properties:
         client:
@@ -15581,7 +15619,7 @@ components:
             - idle
             - active
           description: |
-            The status of the user on this client. It is either `idle`
+            The status of the user on this client. Will be either `idle`
             or `active`.
         timestamp:
           type: integer
@@ -15593,6 +15631,8 @@ components:
           description: |
             Whether the client is capable of showing mobile/push notifications
             to the user.
+
+            Not present in objects with the `aggregated` key.
     Draft:
       type: object
       description: |
