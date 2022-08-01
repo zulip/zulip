@@ -434,6 +434,7 @@ def floatify_datetime_fields(data: TableData, table: TableName) -> None:
             orig_dt = item[field]
             if orig_dt is None:
                 continue
+            assert isinstance(orig_dt, datetime.datetime)
             if timezone_is_naive(orig_dt):
                 logging.warning("Naive datetime:", item)
                 dt = timezone_make_aware(orig_dt)
