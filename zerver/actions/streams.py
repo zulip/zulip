@@ -50,7 +50,6 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_average_weekly_stream_traffic, get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_user_ids,
-    get_default_value_for_history_public_to_subscribers,
     get_occupied_streams,
     get_stream_permission_policy_name,
     render_stream_description,
@@ -833,42 +832,18 @@ def send_change_stream_permission_notification(
 def do_change_stream_permission(
     stream: Stream,
     *,
-    invite_only: Optional[bool] = None,
-    history_public_to_subscribers: Optional[bool] = None,
-    is_web_public: Optional[bool] = None,
+    invite_only: bool,
+    history_public_to_subscribers: bool,
+    is_web_public: bool,
     acting_user: UserProfile,
 ) -> None:
     old_invite_only_value = stream.invite_only
     old_history_public_to_subscribers_value = stream.history_public_to_subscribers
     old_is_web_public_value = stream.is_web_public
 
-    # A note on these assertions: It's possible we'd be better off
-    # making all callers of this function pass the full set of
-    # parameters, rather than having default values.  Doing so would
-    # allow us to remove the messy logic below, where we sometimes
-    # ignore the passed parameters.
-    #
-    # But absent such a refactoring, it's important to assert that
-    # we're not requesting an unsupported configurations.
-    if is_web_public:
-        stream.is_web_public = True
-        stream.invite_only = False
-        stream.history_public_to_subscribers = True
-    else:
-        # is_web_public is falsey
-        if invite_only is None:
-            # This is necessary to get correct default value for
-            # history_public_to_subscribers when invite_only is
-            # None.
-            invite_only = stream.invite_only
-        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
-            stream.realm,
-            invite_only,
-            history_public_to_subscribers,
-        )
-        stream.invite_only = invite_only
-        stream.history_public_to_subscribers = history_public_to_subscribers
-        stream.is_web_public = False
+    stream.is_web_public = is_web_public
+    stream.invite_only = invite_only
+    stream.history_public_to_subscribers = history_public_to_subscribers
 
     with transaction.atomic():
         stream.save(update_fields=["invite_only", "history_public_to_subscribers", "is_web_public"])

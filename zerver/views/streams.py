@@ -274,6 +274,79 @@ def update_stream_backend(
     # description even for private streams.
     (stream, sub) = access_stream_for_delete_or_update(user_profile, stream_id)
 
+    # Validate that the proposed state for permissions settings is permitted.
+    if is_private is not None:
+        proposed_is_private = is_private
+    else:
+        proposed_is_private = stream.invite_only
+
+    if is_web_public is not None:
+        proposed_is_web_public = is_web_public
+    else:
+        proposed_is_web_public = stream.is_web_public
+
+    if stream.realm.is_zephyr_mirror_realm:
+        # In the Zephyr mirroring model, history is unconditionally
+        # not public to subscribers, even for public streams.
+        proposed_history_public_to_subscribers = False
+    elif history_public_to_subscribers is not None:
+        proposed_history_public_to_subscribers = history_public_to_subscribers
+    elif is_private is not None:
+        # By default, private streams have protected history while for
+        # public streams history is public by default.
+        proposed_history_public_to_subscribers = not is_private
+    else:
+        proposed_history_public_to_subscribers = stream.history_public_to_subscribers
+
+    # Web-public streams must have subscriber-public history.
+    if proposed_is_web_public and not proposed_history_public_to_subscribers:
+        raise JsonableError(_("Invalid parameters"))
+
+    # Web-public streams must not be private.
+    if proposed_is_web_public and proposed_is_private:
+        raise JsonableError(_("Invalid parameters"))
+
+    # Public streams must be public to subscribers.
+    if not proposed_is_private and not proposed_history_public_to_subscribers:
+        if stream.realm.is_zephyr_mirror_realm:
+            # All Zephyr realm streams violate this rule.
+            pass
+        else:
+            raise JsonableError(_("Invalid parameters"))
+
+    if is_private is not None:
+        # Default streams cannot be made private.
+        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
+        if is_private and stream.id in default_stream_ids:
+            raise JsonableError(_("Default streams cannot be made private."))
+
+        # We require even realm administrators to be actually
+        # subscribed to make a private stream public, via this
+        # stricted access_stream check.
+        access_stream_by_id(user_profile, stream_id)
+
+    # Enforce restrictions on creating web-public streams. Since these
+    # checks are only required when changing a stream to be
+    # web-public, we don't use an "is not None" check.
+    if is_web_public:
+        if not user_profile.realm.web_public_streams_enabled():
+            raise JsonableError(_("Web-public streams are not enabled."))
+        if not user_profile.can_create_web_public_streams():
+            raise JsonableError(_("Insufficient permission"))
+
+    if (
+        is_private is not None
+        or is_web_public is not None
+        or history_public_to_subscribers is not None
+    ):
+        do_change_stream_permission(
+            stream,
+            invite_only=proposed_is_private,
+            history_public_to_subscribers=proposed_history_public_to_subscribers,
+            is_web_public=proposed_is_web_public,
+            acting_user=user_profile,
+        )
+
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
@@ -310,47 +383,6 @@ def update_stream_backend(
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
 
-    # But we require even realm administrators to be actually
-    # subscribed to make a private stream public.
-    if is_private is not None:
-        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
-        (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        if is_private and stream.id in default_stream_ids:
-            raise JsonableError(_("Default streams cannot be made private."))
-
-        if (
-            not is_private
-            and history_public_to_subscribers is False
-            and not stream.realm.is_zephyr_mirror_realm
-        ):
-            raise JsonableError(_("Invalid parameters"))
-
-    if is_web_public:
-        # Enforce restrictions on creating web-public streams.
-        if not user_profile.realm.web_public_streams_enabled():
-            raise JsonableError(_("Web-public streams are not enabled."))
-        if not user_profile.can_create_web_public_streams():
-            raise JsonableError(_("Insufficient permission"))
-        # Forbid parameter combinations that are inconsistent
-        if is_private or history_public_to_subscribers is False:
-            raise JsonableError(_("Invalid parameters"))
-
-    if history_public_to_subscribers is False and not stream.realm.is_zephyr_mirror_realm:
-        if is_private is None and not stream.invite_only:
-            raise JsonableError(_("Invalid parameters"))
-
-    if (
-        is_private is not None
-        or is_web_public is not None
-        or history_public_to_subscribers is not None
-    ):
-        do_change_stream_permission(
-            stream,
-            invite_only=is_private,
-            history_public_to_subscribers=history_public_to_subscribers,
-            is_web_public=is_web_public,
-            acting_user=user_profile,
-        )
     return json_success(request)
 
 
