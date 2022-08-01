@@ -4,7 +4,18 @@ import logging
 import urllib
 from functools import wraps
 from io import BytesIO
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Sequence, TypeVar, Union, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 import django_otp
 from django.conf import settings
@@ -711,6 +722,33 @@ def authenticated_uploads_api_view(
     return _wrapped_view_func
 
 
+def get_basic_credentials(
+    request: HttpRequest, beanstalk_email_decode: bool = False
+) -> Tuple[str, str]:
+    """
+    Extracts the role and api key as a tuplpe from the authorization header
+    for HTTP basic authentication.
+    """
+    try:
+        # Grab the base64-encoded authentication string, decode it, and split it into
+        # the email and API key
+        auth_type, credentials = request.headers["Authorization"].split()
+        # case insensitive per RFC 1945
+        if auth_type.lower() != "basic":
+            raise JsonableError(_("This endpoint requires HTTP basic authentication."))
+        role, api_key = base64.b64decode(credentials).decode().split(":")
+        if beanstalk_email_decode:
+            # Beanstalk's web hook UI rejects URL with a @ in the username section
+            # So we ask the user to replace them with %40
+            role = role.replace("%40", "@")
+    except ValueError:
+        raise UnauthorizedError(_("Invalid authorization header for basic auth"))
+    except KeyError:
+        raise UnauthorizedError(_("Missing authorization header for basic auth"))
+
+    return role, api_key
+
+
 # A more REST-y authentication decorator, using, in particular, HTTP basic
 # authentication.
 #
@@ -737,23 +775,9 @@ def authenticated_rest_api_view(
         def _wrapped_func_arguments(
             request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
         ) -> HttpResponse:
-            # First try block attempts to get the credentials we need to do authentication
-            try:
-                # Grab the base64-encoded authentication string, decode it, and split it into
-                # the email and API key
-                auth_type, credentials = request.headers["Authorization"].split()
-                # case insensitive per RFC 1945
-                if auth_type.lower() != "basic":
-                    raise JsonableError(_("This endpoint requires HTTP basic authentication."))
-                role, api_key = base64.b64decode(credentials).decode().split(":")
-                if beanstalk_email_decode:
-                    # Beanstalk's web hook UI rejects URL with a @ in the username section
-                    # So we ask the user to replace them with %40
-                    role = role.replace("%40", "@")
-            except ValueError:
-                raise UnauthorizedError(_("Invalid authorization header for basic auth"))
-            except KeyError:
-                raise UnauthorizedError(_("Missing authorization header for basic auth"))
+            role, api_key = get_basic_credentials(
+                request, beanstalk_email_decode=beanstalk_email_decode
+            )
 
             # Now we try to do authentication or die
             try:
