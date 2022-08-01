@@ -1071,6 +1071,19 @@ td.pointer {
             visibility: visible !important;
         }
     }
+
+    @media (width < $sm_min) {
+        .star_container,
+        .edit_content,
+        .reaction_button {
+            display: none;
+        }
+
+        .actions_hover {
+            float: right;
+            right: 5px;
+        }
+    }
 }
 
 .star {

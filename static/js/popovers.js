@@ -20,6 +20,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
+import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
@@ -28,7 +29,9 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
+import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
@@ -512,6 +515,12 @@ export function toggle_actions_popover(element, id) {
             message_edit.get_deletability(message) && not_spectator;
         const should_display_read_receipts_option =
             page_params.realm_enable_read_receipts && not_spectator;
+        const should_display_star_message =
+            !message.locally_echoed &&
+            not_spectator &&
+            window.innerWidth < media_breakpoints_num.sm;
+        const should_display_add_reaction_option =
+            not_spectator && (message.sent_by_me || window.innerWidth < media_breakpoints_num.sm);
 
         const args = {
             message_id: message.id,
@@ -521,7 +530,7 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item,
             should_display_collapse,
             should_display_uncollapse,
-            should_display_add_reaction_option: message.sent_by_me,
+            should_display_add_reaction_option,
             should_display_edit_history_option,
             should_display_hide_option,
             conversation_time_uri,
@@ -531,7 +540,16 @@ export function toggle_actions_popover(element, id) {
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
             should_display_edit_and_view_source,
             should_display_quote_and_reply,
+            should_display_star_message,
         };
+
+        if (should_display_star_message) {
+            args.message_starred = message.starred;
+            args.starred_status = $t({defaultMessage: "Star"});
+            if (message.starred) {
+                args.starred_status = $t({defaultMessage: "Unstar"});
+            }
+        }
 
         const ypos = $elt.offset().top;
         $elt.popover({
@@ -1210,6 +1228,14 @@ export function register_click_handlers() {
         const $row = message_lists.current.get_row(message_id);
         hide_actions_popover();
         message_edit.start($row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("body").on("click", ".popover_star_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const message = message_store.get(message_id);
+        message_flags.toggle_starred_and_update_server(message);
+        hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
     });

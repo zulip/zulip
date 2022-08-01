@@ -18,6 +18,15 @@
     </li>
     {{/if}}
 
+    {{#if should_display_star_message}}
+    <li>
+        <a class="popover_star_message {{#if message_starred}}{{else}}empty-star{{/if}}" data-message-id="{{message_id}}" tabindex="0">
+            <i role="button" tabindex="0" class="star fa {{#if message_starred}}fa-star{{else}}fa-star-o{{/if}}" aria-hidden="true"></i> {{starred_status}}
+            <span class="hotkey-hint">(Ctrl + s)</span>
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_quote_and_reply}}
     <li>
         <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
