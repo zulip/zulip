@@ -10,13 +10,17 @@
     .tippy-box:not([data-theme]) {
         background: hsla(0, 0%, 20%, 1);
         border-radius: 5px;
+        min-height: 25px;
+        box-sizing: border-box;
 
-        > .tippy-content {
-            display: inline-block;
+        .tippy-content {
+            box-sizing: inherit;
+            display: flex;
+            align-items: center;
             padding: 5px 10px;
             font-size: 14px;
             line-height: 15px;
-            color: #FFFFFF;
+            color: hsla(0, 0%, 100%, 1);
         }
 
         &[data-placement^="top"] > .tippy-arrow::before {
@@ -55,4 +59,23 @@
      * by default.
      */
     text-align: left;
+
+    .hotkey-hints {
+        box-sizing: inherit;
+        display: flex;
+        align-self: flex-start;
+        margin: -2px -7px -2px 10px;
+        gap: 4px;
+    }
+
+    .hotkey-hint {
+        box-sizing: inherit;
+        border: 1px solid hsla(225, 100%, 84%, 1);
+        border-radius: 3px;
+        color: hsla(225, 100%, 84%, 1);
+        padding: 2px 5px;
+        min-width: 20px;
+        text-align: center;
+        line-height: 14px;
+    }
 }
