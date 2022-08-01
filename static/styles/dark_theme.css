@@ -137,6 +137,26 @@
         }
     }
 
+    .tippy-box:not([data-theme]) {
+        background: hsla(0, 0%, 0%, 1);
+
+        &[data-placement^="top"] > .tippy-arrow::before {
+            border-top-color: hsla(0, 0%, 0%, 1);
+        }
+
+        &[data-placement^="bottom"] > .tippy-arrow::before {
+            border-bottom-color: hsla(0, 0%, 0%, 1);
+        }
+
+        &[data-placement^="left"] > .tippy-arrow::before {
+            border-left-color: hsla(0, 0%, 0%, 1);
+        }
+
+        &[data-placement^="right"] > .tippy-arrow::before {
+            border-right-color: hsla(0, 0%, 0%, 1);
+        }
+    }
+
     body,
     .app-main,
     .header-main,
