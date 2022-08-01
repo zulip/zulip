@@ -154,6 +154,36 @@ def get_presence(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/presence", "get", "200")
 
 
+@openapi_test_function("/default_streams:post")
+def add_default_stream(client: Client) -> None:
+
+    # {code_example|start}
+    # Add a stream to the set of default streams for new users.
+    stream_id = 7
+
+    result = client.add_default_stream(stream_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/default_streams", "post", "200")
+
+
+@openapi_test_function("/default_streams:delete")
+def remove_default_stream(client: Client) -> None:
+
+    # {code_example|start}
+    # Remove a stream from the set of default streams for new users.
+    request = {"stream_id": 7}
+
+    result = client.call_endpoint(
+        url="/default_streams",
+        method="DELETE",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/default_streams", "delete", "200")
+
+
 @openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
 
@@ -1528,6 +1558,8 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")
     archive_stream(client, stream_id)
+    add_default_stream(client)
+    remove_default_stream(client)
 
     test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)

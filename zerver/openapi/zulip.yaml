@@ -4863,6 +4863,93 @@ paths:
                   - description: |
                       JSON response for when no draft exists with the provided ID.
                     example: {"result": "error", "msg": "Draft does not exist"}
+  /default_streams:
+    post:
+      operationId: add-default-stream
+      tags: ["streams"]
+      summary: Add a default stream
+      x-requires-administrator: true
+      description: |
+        Add a stream to the set of [default streams][default-streams]
+        for new users joining the organization.
+
+        [default-streams]: /help/set-default-streams-for-new-users
+      parameters:
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the target stream.
+          schema:
+            type: integer
+          example: 7
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid stream ID",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when an invalid stream ID is passed:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Private streams cannot be made default.",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical failed JSON response for when a user tries to add a private stream
+                          to the default streams set:
+    delete:
+      operationId: remove-default-stream
+      summary: Remove a default stream
+      tags: ["streams"]
+      description: |
+        Remove a stream from the set of [default streams][default-streams]
+        for new users joining the organization.
+
+        [default-streams]: /help/set-default-streams-for-new-users
+      x-requires-administrator: true
+      parameters:
+        - name: stream_id
+          in: query
+          description: |
+            The ID of the target stream.
+          schema:
+            type: integer
+          example: 7
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for when an invalid stream ID is passed:
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream ID",
+                        "result": "error",
+                      }
   /messages:
     get:
       operationId: get-messages

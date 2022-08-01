@@ -39,6 +39,8 @@
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
 * [Delete a topic](/api/delete-topic)
+* [Add a default stream](/api/add-default-stream)
+* [Remove a default stream](/api/remove-default-stream)
 
 #### Users
 

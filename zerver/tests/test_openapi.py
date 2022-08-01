@@ -221,7 +221,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Delete a data export.
         "/export/realm/{export_id}",
         # Manage default streams and default stream groups
-        "/default_streams",
         "/default_stream_groups/create",
         "/default_stream_groups/{group_id}",
         "/default_stream_groups/{group_id}/streams",
