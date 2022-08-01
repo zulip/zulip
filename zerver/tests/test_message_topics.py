@@ -130,7 +130,11 @@ class TopicHistoryTest(ZulipTestCase):
 
         # Now make stream private, but subscribe cordelia
         do_change_stream_permission(
-            stream, invite_only=True, acting_user=self.example_user("cordelia")
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=self.example_user("cordelia"),
         )
         self.subscribe(self.example_user("cordelia"), stream.name)
 
@@ -232,7 +236,11 @@ class TopicDeleteTest(ZulipTestCase):
 
         # Make stream private with limited history
         do_change_stream_permission(
-            stream, invite_only=True, history_public_to_subscribers=False, acting_user=user_profile
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=False,
+            is_web_public=False,
+            acting_user=user_profile,
         )
 
         # ADMIN USER subscribed now
@@ -266,7 +274,11 @@ class TopicDeleteTest(ZulipTestCase):
 
         # Make the stream's history public to subscribers
         do_change_stream_permission(
-            stream, invite_only=True, history_public_to_subscribers=True, acting_user=user_profile
+            stream,
+            invite_only=True,
+            history_public_to_subscribers=True,
+            is_web_public=False,
+            acting_user=user_profile,
         )
         # Delete the topic should now remove all messages
         result = self.client_post(
