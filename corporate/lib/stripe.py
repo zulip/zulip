@@ -66,6 +66,10 @@ def get_latest_seat_count(realm: Realm) -> int:
     guests = UserProfile.objects.filter(
         realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
     ).count()
+
+    # This formula achieves the pricing of the first 5*N guests
+    # being free of charge (where N is the number of non-guests in the organization)
+    # and each consecutive one being worth 1/5 the non-guest price.
     return max(non_guests, math.ceil(guests / 5))
 
 
