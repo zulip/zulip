@@ -104,3 +104,13 @@ Handlebars.registerHelper(
 );
 
 Handlebars.registerHelper("numberFormat", (number) => number.toLocaleString());
+
+Handlebars.registerHelper("hotkey_hints", (...hotkeys) => {
+    hotkeys.pop(); // Handlebars options
+    let hotkey_hints = "";
+    for (const hotkey of hotkeys) {
+        hotkey_hints += `<span class="hotkey-hint">${hotkey}</span>`;
+    }
+    const result = `<span class="hotkey-hints">${hotkey_hints}</span>`;
+    return new Handlebars.SafeString(result);
+});

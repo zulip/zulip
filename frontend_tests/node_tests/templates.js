@@ -42,3 +42,14 @@ run_test("numberFormat", () => {
     const html = require("./templates/numberFormat.hbs")(args);
     assert.equal(html, "1,000,000\n");
 });
+
+run_test("hotkey_hints", () => {
+    const args = {
+        hotkey_one: "Ctrl",
+        hotkey_two: "C",
+    };
+
+    const html = require("./templates/hotkey_hints.hbs")(args);
+    const expected_html = `<span class="hotkey-hints"><span class="hotkey-hint">${args.hotkey_one}</span><span class="hotkey-hint">${args.hotkey_two}</span></span>\n`;
+    assert.equal(html, expected_html);
+});
