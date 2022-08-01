@@ -2721,10 +2721,6 @@ select.invite-as {
     display: none !important;
 }
 
-.hotkey-hint {
-    opacity: 0.75;
-}
-
 .flatpickr-calendar {
     /* Hide the up and down arrows in the Flatpickr datepicker year */
     .flatpickr-months .numInputWrapper span {
