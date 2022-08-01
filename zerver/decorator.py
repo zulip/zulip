@@ -62,9 +62,6 @@ from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import UserProfile, get_client, get_user_profile_by_api_key
 
-if settings.ZILENCER_ENABLED:
-    from zilencer.models import RemoteZulipServer
-
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
@@ -242,17 +239,11 @@ def validate_api_key(
     api_key: str,
     allow_webhook_access: bool = False,
     client_name: Optional[str] = None,
-) -> Union[UserProfile, "RemoteZulipServer"]:
+) -> UserProfile:
     # Remove whitespace to protect users from trivial errors.
     api_key = api_key.strip()
     if role is not None:
         role = role.strip()
-
-    # If `role` doesn't look like an email, it might be a uuid.
-    if settings.ZILENCER_ENABLED and role is not None and "@" not in role:
-        from zilencer.auth import validate_remote_server
-
-        return validate_remote_server(request, role, api_key)
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
     if user_profile.is_incoming_webhook and not allow_webhook_access:
@@ -749,7 +740,6 @@ def authenticated_rest_api_view(
 
             # Now we try to do authentication or die
             try:
-                # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(
                     request,
                     role,
