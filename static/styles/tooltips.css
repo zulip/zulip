@@ -8,43 +8,32 @@
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
-        background-color: hsl(0, 0%, 12%);
+        background: hsla(0, 0%, 20%, 1);
+        border-radius: 5px;
 
-        &[data-placement^="top"] {
-            > .tippy-arrow {
-                &::before {
-                    border-top-color: hsl(0, 0%, 12%);
-                }
-            }
+        > .tippy-content {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 14px;
+            line-height: 15px;
+            color: #FFFFFF;
         }
 
-        &[data-placement^="bottom"] {
-            > .tippy-arrow {
-                &::before {
-                    border-bottom-color: hsl(0, 0%, 12%);
-                }
-            }
+        &[data-placement^="top"] > .tippy-arrow::before {
+            border-top-color: hsla(0, 0%, 20%, 1);
         }
 
-        &[data-placement^="left"] {
-            > .tippy-arrow {
-                &::before {
-                    border-left-color: hsl(0, 0%, 12%);
-                }
-            }
+        &[data-placement^="bottom"] > .tippy-arrow::before {
+            border-bottom-color: hsla(0, 0%, 20%, 1);
         }
 
-        &[data-placement^="right"] {
-            > .tippy-arrow {
-                &::before {
-                    border-right-color: hsl(0, 0%, 12%);
-                }
-            }
+        &[data-placement^="left"] > .tippy-arrow::before {
+            border-left-color: hsla(0, 0%, 20%, 1);
         }
-    }
 
-    .tippy-content {
-        font-size: 13px;
+        &[data-placement^="right"] > .tippy-arrow::before {
+            border-right-color: hsla(0, 0%, 20%, 1);
+        }
     }
 
     .tippy-arrow::before {
