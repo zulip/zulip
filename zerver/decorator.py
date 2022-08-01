@@ -285,15 +285,11 @@ def validate_api_key(
     api_key: str,
     allow_webhook_access: bool = False,
     client_name: Optional[str] = None,
-) -> Union[UserProfile, "RemoteZulipServer"]:
+) -> UserProfile:
     # Remove whitespace to protect users from trivial errors.
     api_key = api_key.strip()
     if role is not None:
         role = role.strip()
-
-    # If `role` doesn't look like an email, it might be a uuid.
-    if settings.ZILENCER_ENABLED and role is not None and "@" not in role:
-        return validate_remote_server(request, role, api_key)
 
     user_profile = access_user_by_api_key(request, api_key, email=role)
     if user_profile.is_incoming_webhook and not allow_webhook_access:
@@ -790,7 +786,6 @@ def authenticated_rest_api_view(
 
             # Now we try to do authentication or die
             try:
-                # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(
                     request,
                     role,
@@ -819,6 +814,27 @@ def authenticated_rest_api_view(
                 raise err
 
         return _wrapped_func_arguments
+
+    return _wrapped_view_func
+
+
+def authenticated_remote_server_view(
+    view_func: Callable[Concatenate[HttpRequest, "RemoteZulipServer", ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        role, api_key = get_basic_credentials(request)
+        if "@" in role:
+            raise JsonableError(_("Must validate with valid Zulip server API key"))
+        try:
+            remote_server = validate_remote_server(request, role, api_key)
+        except JsonableError as e:
+            raise UnauthorizedError(e.msg)
+
+        rate_limit(request)
+        return view_func(request, remote_server, *args, **kwargs)
 
     return _wrapped_view_func
 

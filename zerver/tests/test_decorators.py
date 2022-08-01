@@ -2015,6 +2015,11 @@ class RestAPITest(ZulipTestCase):
         self.assertEqual(result.status_code, 405)
         self.assert_in_response("Method Not Allowed", result)
 
+        with self.settings(ZILENCER_ENABLED=True):
+            result = self.client_patch("/json/remotes/push/register")
+            self.assertEqual(result.status_code, 405)
+            self.assert_in_response("Method Not Allowed", result)
+
     def test_options_method(self) -> None:
         self.login("hamlet")
         result = self.client_options("/json/users")

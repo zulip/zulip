@@ -205,22 +205,6 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         hamlet = self.example_user("hamlet")
 
-        with self.assertLogs(level="WARNING") as warn_log:
-            result = self.api_post(
-                hamlet,
-                endpoint,
-                dict(user_id=user_id, token_kin=token_kind, token=token),
-            )
-        self.assertEqual(
-            warn_log.output,
-            [
-                "WARNING:root:User hamlet@zulip.com (zulip) attempted to access API on wrong subdomain ()"
-            ],
-        )
-        self.assert_json_error(
-            result, "Account is not associated with this subdomain", status_code=401
-        )
-
         # We need the root ('') subdomain to be in use for this next
         # test, since the push bouncer API is only available there:
         realm = get_realm("zulip")

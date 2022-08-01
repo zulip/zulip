@@ -1,14 +1,17 @@
 from functools import wraps
 from typing import Any, Callable, Dict, Mapping, Set, Tuple, Union, cast
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.decorator import (
     authenticated_json_view,
+    authenticated_remote_server_view,
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     process_as_post,
@@ -19,6 +22,10 @@ from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
 from zerver.lib.types import ViewFuncT
 
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemoteZulipServer
+
+ParamT = ParamSpec("ParamT")
 METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
 
 
@@ -199,3 +206,19 @@ def rest_path(
     **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
 ) -> URLPattern:
     return path(route, rest_dispatch, {**kwargs, **handlers})
+
+
+def remote_server_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+    result = get_target_view_function_or_response(request, kwargs)
+    if isinstance(result, HttpResponse):
+        return result
+    else:
+        target_function, _ = result
+    return authenticated_remote_server_view(target_function)(request, **kwargs)
+
+
+def remote_server_path(
+    route: str,
+    **handlers: Callable[Concatenate[HttpRequest, "RemoteZulipServer", ParamT], HttpResponse],
+) -> URLPattern:
+    return path(route, remote_server_dispatch, handlers)
