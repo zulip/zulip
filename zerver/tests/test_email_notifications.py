@@ -1526,3 +1526,22 @@ class TestFollowupEmailDelay(ZulipTestCase):
         # Test date_joined == Friday
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
         self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))
+
+
+class TestCustomEmailSender(ZulipTestCase):
+    def test_custom_email_sender(self) -> None:
+        name = "Nonreg Email"
+        email = self.nonreg_email("test")
+        with override_settings(
+            WELCOME_EMAIL_SENDER={
+                "name": name,
+                "email": email,
+            }
+        ):
+            hamlet = self.example_user("hamlet")
+            enqueue_welcome_emails(hamlet)
+            scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
+            self.assertEqual(email_data["from_name"], name)
+            self.assertEqual(email_data["from_address"], email)
