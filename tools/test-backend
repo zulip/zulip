@@ -79,7 +79,6 @@ not_yet_fully_covered = [
     "zerver/lib/cache.py",
     "zerver/lib/cache_helpers.py",
     "zerver/lib/i18n.py",
-    "zerver/lib/email_notifications.py",
     "zerver/lib/send_email.py",
     "zerver/lib/url_preview/preview.py",
     "zerver/worker/queue_processors.py",
