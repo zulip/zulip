@@ -43,7 +43,7 @@ run_test("get_editability", ({override}) => {
     assert.equal(
         get_editability({
             sent_by_me: true,
-            local_id: "25",
+            locally_echoed: true,
         }),
         editability_types.NO,
     );
