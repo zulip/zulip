@@ -40,6 +40,16 @@ let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
 
+export function get_focused_edit_message_id() {
+    if (currently_editing_messages.size !== 0) {
+        const $current_focus = $(":focus");
+        if ($current_focus && $current_focus.hasClass("message_edit_content")) {
+            return $current_focus.parents(".message_row").attr("zid");
+        }
+    }
+    return undefined;
+}
+
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.

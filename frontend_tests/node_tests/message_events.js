@@ -16,6 +16,7 @@ const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ui = mock_esm("../../static/js/unread_ui");
 message_lists.current = {};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
+message_edit.get_focused_edit_message_id = () => {};
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");

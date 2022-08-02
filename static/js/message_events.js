@@ -150,6 +150,7 @@ export function update_messages(events) {
     let changed_compose = false;
     let any_message_content_edited = false;
     let any_stream_changed = false;
+    const focused_edit_message_id = message_edit.get_focused_edit_message_id();
 
     for (const event of events) {
         const msg = message_store.get(event.message_id);
@@ -497,6 +498,10 @@ export function update_messages(events) {
         // large organizations.
         if (!changed_narrow && message_lists.current === message_list.narrowed) {
             message_list.narrowed.update_muting_and_rerender();
+        }
+        if (focused_edit_message_id) {
+            const $focused_box = $(`#edit_form_${focused_edit_message_id} textarea`);
+            $focused_box.trigger("focus");
         }
     } else {
         // If the content of the message was edited, we do a special animation.
