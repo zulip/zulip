@@ -121,6 +121,21 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     );
 });
 
+test_ui("validate_stream send_anyway", ({override_rewire, mock_template}) => {
+    const sub = {
+        stream_id: 101,
+        name: "social",
+        subscribed: false,
+    };
+    stream_data.add_sub(sub);
+    override_rewire(compose_state, "stream_name", () => "social");
+    override_rewire(people, "get_by_user_id", () => [31]);
+    assert.ok(compose_validate.validate_stream_message(true));
+    mock_template("compose_not_subscribed.hbs", false, () => "compose_not_subscribed_stub");
+    assert.ok(!compose_validate.validate_stream_message(false));
+    assert.ok(!compose_validate.validate_stream_message());
+});
+
 test_ui("validate", ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});
 

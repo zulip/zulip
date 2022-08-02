@@ -1,7 +1,7 @@
 import datetime
 import sys
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Sequence, Set
 from unittest import mock
 
 import orjson
@@ -34,7 +34,12 @@ from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.message import (
+    MessageDict,
+    SendMessageRequest,
+    get_raw_unread_data,
+    get_recent_private_conversations,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_user_messages,
@@ -1228,6 +1233,35 @@ class MessagePOSTTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=True)
 
         self.unsubscribe(cordelia, stream_name)
+
+        # make sure unsubscribed-send doesn't accidentally work
+        def break_unsubscribed_send(
+            send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
+            email_gateway: bool = False,
+            mark_as_read: Sequence[int] = [],
+        ) -> List[int]:
+            send_request = send_message_requests_maybe_none[0]
+            # for mypy
+            assert send_request is not None
+            if Subscription.objects.filter(
+                user_profile_id=send_request.message.sender.id,
+                active=True,
+                recipient__type=Recipient.STREAM,
+                recipient__type_id=send_request.message.recipient.type_id,
+            ).exists():
+                raise Exception("is subscribed")
+            raise Exception("is unsubscribed")
+
+        with mock.patch(
+            "zerver.actions.message_send.do_send_messages", side_effect=break_unsubscribed_send
+        ):
+            stream = self.make_stream("unsubd", invite_only=False)
+            with self.assertRaisesRegex(Exception, "is unsubscribed"):
+                self.unsubscribe(cordelia, "unsubd")
+                internal_send_stream_message(cordelia, stream, "mytopic", "somecontent")
+            with self.assertRaisesRegex(Exception, "is subscribed"):
+                self.subscribe(cordelia, "unsubd")
+                internal_send_stream_message(cordelia, stream, "mytopic", "somecontent")
 
         # As long as Cordelia cam_forge_sender, she can send messages
         # to ANY stream, even one she is not unsubscribed to, and

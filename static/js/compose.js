@@ -243,10 +243,14 @@ export function send_message(request = create_message_object()) {
     request.locally_echoed = locally_echoed;
 
     function success(data) {
+        restore_send_anyway_button();
+        $("#compose-send-status").hide();
         send_message_success(local_id, data.id, locally_echoed);
     }
 
     function error(response) {
+        restore_send_anyway_button();
+
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
@@ -277,7 +281,16 @@ export function enter_with_preview_open() {
     }
 }
 
-export function finish() {
+function change_send_anyway_button() {
+    $("#error-message-send-button").text($t({defaultMessage: "Sending..."}));
+}
+
+function restore_send_anyway_button() {
+    $("#error-message-send-button").text($t({defaultMessage: "Send without subscribing"}));
+}
+
+export function finish(opts) {
+    const send_anyway = opts && opts.send_anyway;
     clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
@@ -296,12 +309,15 @@ export function finish() {
 
     compose_ui.show_compose_spinner();
 
-    if (!compose_validate.validate()) {
+    if (!compose_validate.validate(send_anyway)) {
         // If the message failed validation, hide compose spinner.
         compose_ui.hide_compose_spinner();
         return false;
     }
 
+    if (send_anyway) {
+        change_send_anyway_button();
+    }
     if (reminder.is_deferred_delivery(message_content)) {
         reminder.schedule_message();
     } else {
@@ -440,6 +456,11 @@ export function initialize() {
         finish();
     });
 
+    $("#compose-send-status").on("click", ".send_anyway_button", (e) => {
+        e.preventDefault();
+        finish({send_anyway: true});
+    });
+
     $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
         event.preventDefault();
 
@@ -449,7 +470,7 @@ export function initialize() {
         }
         const sub = stream_data.get_sub(stream_name);
         stream_settings_ui.sub_or_unsub(sub);
-        $("#compose-send-status").hide();
+        finish({send_anyway: true});
     });
 
     $("#compose-send-status").on("click", "#compose_not_subscribed_close", (event) => {

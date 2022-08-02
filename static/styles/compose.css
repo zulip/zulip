@@ -318,8 +318,13 @@
     max-width: calc(100% - 100px);
 }
 
-#error-message-sub-button {
-    margin-right: 30px;
+#error-message-sub-button,
+#error-message-send-button {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    float: right;
+    margin-right: 25px;
+    width: 180px;
 }
 
 /* Like .nav-tabs > li > a */

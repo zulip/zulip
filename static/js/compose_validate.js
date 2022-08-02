@@ -253,9 +253,12 @@ export function get_invalid_recipient_emails() {
     return invalid_recipients;
 }
 
-function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
+function check_unsubscribed_stream_for_send(stream_name, autosubscribe, send_anyway) {
     let result;
     if (!autosubscribe) {
+        if (send_anyway) {
+            return result;
+        }
         return "not-subscribed";
     }
 
@@ -270,7 +273,7 @@ function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
         success(data) {
             if (data.subscribed) {
                 result = "subscribed";
-            } else {
+            } else if (!send_anyway) {
                 result = "not-subscribed";
             }
         },
@@ -412,16 +415,16 @@ export function validation_error(error_type, stream_name) {
     return true;
 }
 
-export function validate_stream_message_address_info(stream_name) {
+export function validate_stream_message_address_info(stream_name, send_anyway) {
     if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
     const autosubscribe = page_params.narrow_stream !== undefined;
-    const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+    const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe, send_anyway);
     return validation_error(error_type, stream_name);
 }
 
-function validate_stream_message() {
+export function validate_stream_message(send_anyway) {
     const stream_name = compose_state.stream_name();
     if (stream_name === "") {
         compose_error.show(
@@ -464,7 +467,7 @@ function validate_stream_message() {
     wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     if (
-        !validate_stream_message_address_info(stream_name) ||
+        !validate_stream_message_address_info(stream_name, send_anyway) ||
         !validate_stream_message_mentions(sub.stream_id)
     ) {
         return false;
@@ -589,7 +592,7 @@ export function warn_for_text_overflow_when_tries_to_send() {
     return true;
 }
 
-export function validate() {
+export function validate(send_anyway) {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
         // Avoid showing an error message when "enter sends" is enabled,
@@ -619,5 +622,5 @@ export function validate() {
     if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
-    return validate_stream_message();
+    return validate_stream_message(send_anyway);
 }

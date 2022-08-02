@@ -6,7 +6,9 @@
     </p>
     <div>
         {{#if should_display_sub_button}}
-        <button id="error-message-sub-button" class="btn btn-warning subscribe-button sub_unsub_button">{{t "Subscribe" }}</button><button type="button" id="compose_not_subscribed_close" class="close">&times;</button>
+        <button id="error-message-send-button" class="btn btn-warning send_anyway_button">{{t "Send without subscribing" }}</button>
+        <button id="error-message-sub-button" class="btn btn-warning subscribe-button sub_unsub_button">{{t "Subscribe and send" }}</button>
+        <button type="button" id="compose_not_subscribed_close" class="close">&times;</button>
         {{/if}}
     </div>
 </div>

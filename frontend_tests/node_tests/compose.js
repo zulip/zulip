@@ -697,6 +697,8 @@ test_ui("on_events", ({override, override_rewire}) => {
         let compose_not_subscribed_called = false;
         stream_settings_ui.sub_or_unsub = () => {
             compose_not_subscribed_called = true;
+            // the real callback does this, so we have to.
+            $("#compose-send-status").hide();
         };
 
         const helper = setup_parents_and_mock_remove(
