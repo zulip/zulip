@@ -199,7 +199,7 @@ export function initialize() {
         $(window).trigger("resize");
     });
 
-    $(".hide-demo-org-notice").on("click", function () {
+    $(".hide-demo-organization-notice").on("click", function () {
         $(this).closest(".alert").hide();
         $(window).trigger("resize");
     });
