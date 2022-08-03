@@ -15,6 +15,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_change_realm_plan_type,
     do_deactivate_realm,
+    do_reactivate_realm,
     do_scrub_realm,
     do_send_realm_reactivation_email,
     do_set_realm_property,
@@ -366,6 +367,36 @@ class RealmTest(ZulipTestCase):
         do_add_deactivated_redirect(realm, new_redirect_url)
         self.assertEqual(realm.deactivated_redirect, new_redirect_url)
         self.assertNotEqual(realm.deactivated_redirect, redirect_url)
+
+    def test_do_reactivate_realm(self) -> None:
+        realm = get_realm("zulip")
+        do_deactivate_realm(realm, acting_user=None)
+        self.assertTrue(realm.deactivated)
+
+        do_reactivate_realm(realm)
+        self.assertFalse(realm.deactivated)
+
+        log_entry = RealmAuditLog.objects.last()
+        assert log_entry is not None
+
+        self.assertEqual(log_entry.realm, realm)
+        self.assertEqual(log_entry.event_type, RealmAuditLog.REALM_REACTIVATED)
+        log_entry_id = log_entry.id
+
+        with self.assertLogs(level="WARNING") as m:
+            # do_reactivate_realm on a realm that's not deactivated should be a noop.
+            do_reactivate_realm(realm)
+
+        self.assertEqual(
+            m.output,
+            [f"WARNING:root:Realm {realm.id} cannot be reactivated because it is already active."],
+        )
+
+        self.assertFalse(realm.deactivated)
+
+        latest_log_entry = RealmAuditLog.objects.last()
+        assert latest_log_entry is not None
+        self.assertEqual(latest_log_entry.id, log_entry_id)
 
     def test_realm_reactivation_link(self) -> None:
         realm = get_realm("zulip")
