@@ -61,7 +61,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 
     return TemplateResponse(
         request,
-        "zerver/plans.html",
+        "corporate/plans.html",
         context={
             "realm": realm,
             "free_trial_days": free_trial_days,
