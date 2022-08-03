@@ -782,7 +782,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
-        is_demo_org=user.realm.demo_organization_scheduled_deletion_date is not None,
+        is_demo_organization=user.realm.demo_organization_scheduled_deletion_date is not None,
     )
 
     account_registered_context["getting_organization_started_link"] = (
