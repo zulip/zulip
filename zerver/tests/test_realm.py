@@ -1373,6 +1373,16 @@ class RealmAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.invite_to_realm_policy, Realm.POLICY_ADMINS_ONLY)
 
+    def test_enable_spectator_access_for_limited_plan_realms(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertFalse(realm.enable_spectator_access)
+
+        req = {"enable_spectator_access": orjson.dumps(True).decode()}
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Available on Zulip Cloud Standard. Upgrade to access.")
+
 
 class ScrubRealmTest(ZulipTestCase):
     def test_scrub_realm(self) -> None:

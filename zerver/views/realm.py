@@ -179,6 +179,9 @@ def update_realm(
     if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
 
+    if enable_spectator_access:
+        realm.ensure_not_on_limited_plan()
+
     data: Dict[str, Any] = {}
 
     message_content_delete_limit_seconds: Optional[int] = None
