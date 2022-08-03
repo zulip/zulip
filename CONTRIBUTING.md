@@ -148,15 +148,21 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 ### Claiming an issue
 
-#### In the main server and web app repository
+#### In the main server/web app repository and Zulip Terminal repository
 
-After making sure the issue is tagged with a [help
+The Zulip server/web app repository
+([`zulip/zulip`](https://github.com/zulip/zulip/)) and the Zulip Terminal
+repository ([`zulip/zulip-terminal`](https://github.com/zulip/zulip-terminal/))
+are set up with a GitHub workflow bot called
+[Zulipbot](https://github.com/zulip/zulipbot), which manages issues and pull
+requests in order to create a better workflow for Zulip contributors.
+
+To claim an issue in these repositories, simply post a comment that says
+`@zulipbot claim` to the issue thread. If the issue is tagged with a [help
 wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-label, post a comment with `@zulipbot claim` to the issue thread.
-[Zulipbot](https://github.com/zulip/zulipbot) is a GitHub workflow bot; it will
-assign you to the issue and label the issue as "in progress".
+label, Zulipbot will immediately assign the issue to you.
 
-New contributors can only claim one issue until their first pull request is
+Note that new contributors can only claim one issue until their first pull request is
 merged. This is to encourage folks to finish ongoing work before starting
 something new. If you would like to pick up a new issue while waiting for review
 on an almost-ready pull request, you can post a comment to this effect on the
@@ -164,8 +170,11 @@ issue you're interested in.
 
 #### In other Zulip repositories
 
-There is no bot for other repositories, so you can simply post a comment saying
-that you'd like to work on the issue.
+There is no bot for other Zulip repositories
+([`zulip/zulip-mobile`](https://github.com/zulip/zulip-mobile/), etc.). If
+you are interested in claiming an issue in one of these repositories, simply
+post a comment on the issue thread saying that you'd like to work on it. There
+is no need to @-mention the issue creator in your comment.
 
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
