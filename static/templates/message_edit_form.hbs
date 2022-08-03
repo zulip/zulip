@@ -65,12 +65,12 @@
             {{else}}
                 <button type="button" class="button small rounded message_edit_close">{{t "Close" }}</button>
             {{/if}}
-            {{#if has_been_editable}}
+            {{#if is_content_editable}}
             <div class="message-edit-timer">
                 <span class="message_edit_countdown_timer"></span>
                 <span>
                     <i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true"
-                      {{#if is_widget_message}} data-tippy-content="{{#tr}}Widgets cannot be edited.{{/tr}}" {{else}} data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}" {{/if}}>
+                      data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}">
                     </i>
                 </span>
             </div>

@@ -22,9 +22,8 @@ for the details on when topic editing is allowed.
 
 {!message-actions-menu.md!}
 
-1. Select the first option. It may be called **View source / Move message**,
-   or simply **Edit message**. If it's called **View source**, then you are not
-   allowed to edit the topic of that message.
+1. Select **Move message** or **Edit message** (only one of these options will be shown). If you do
+   not see either option, you do not have permission to move this message.
 
 1. Set the destination topic.
 
