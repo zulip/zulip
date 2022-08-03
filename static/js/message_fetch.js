@@ -27,6 +27,7 @@ const consts = {
     num_before_home_anchor: 200,
     num_after_home_anchor: 200,
     recent_topics_initial_fetch_size: 400,
+    sent_by_user_fetch_size: 1000,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -517,5 +518,15 @@ export function initialize(home_view_loaded) {
         num_after: 0,
         msg_list: recent_topics_message_list,
         cont: recent_topics_ui.hide_loading_indicator,
+    });
+    const sent_by_user_message_list = new message_list.MessageList({
+        filter: new Filter([{operator: "sender", operand: "me"}]),
+        excludes_muted_topics: false,
+    });
+    load_messages({
+        anchor: "newest",
+        num_before: consts.sent_by_user_fetch_size,
+        num_after: 0,
+        msg_list: sent_by_user_message_list,
     });
 }
