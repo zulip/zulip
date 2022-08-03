@@ -99,7 +99,7 @@ test("server_upgrade_alert hide_duration_expired", ({override}) => {
     assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 });
 
-test("demo_org_days_remaining", ({override}) => {
+test("demo_organization_days_remaining", ({override}) => {
     const start_time = new Date(1620327447050); // Thursday 06/5/2021 07:02:27 AM (UTC+0)
 
     const high_priority_deadline = addDays(start_time, 5);
