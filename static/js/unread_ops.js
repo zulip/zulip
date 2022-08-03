@@ -157,7 +157,7 @@ export function notify_server_message_read(message, options) {
 
 export function process_scrolled_to_bottom() {
     if (message_lists.current.can_mark_messages_read()) {
-        mark_current_list_as_read();
+        mark_rendered_messages_as_read();
         return;
     }
 
@@ -177,8 +177,11 @@ export function process_visible() {
     }
 }
 
-export function mark_current_list_as_read(options) {
-    notify_server_messages_read(message_lists.current.all_messages(), options);
+export function mark_rendered_messages_as_read(options) {
+    // Only marking rendered messages as read avoids the race between new messages being fetched in the data and
+    // user reaching the bottom of the rendered message list. If we mark mark all messages in the list as read
+    // here, we may have marked messages as read without even rendering them to the user.
+    notify_server_messages_read(message_lists.current.view.get_rendered_message_ids(), options);
 }
 
 export function mark_stream_as_read(stream_id, cont) {

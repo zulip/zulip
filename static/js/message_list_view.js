@@ -1343,6 +1343,10 @@ export class MessageListView {
         return $row;
     }
 
+    get_rendered_message_ids() {
+        return [...this._rows.keys()].map((id) => message_store.get(id));
+    }
+
     clear_trailing_bookend() {
         const $trailing_bookend = rows.get_table(this.table_name).find(".trailing_bookend");
         $trailing_bookend.remove();
