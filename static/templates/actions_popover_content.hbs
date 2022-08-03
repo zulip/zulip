@@ -9,10 +9,10 @@
     </li>
     {{/if}}
 
-    {{#if should_display_edit_and_view_source}}
+    {{#if should_display_edit_and_move_message}}
     <li>
         <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-arrows{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
     </li>
@@ -35,6 +35,14 @@
                 <span class="hotkey-hint">(U)</span>
             </a>
         </li>
+    {{/if}}
+
+    {{#if should_display_view_source}}
+    <li>
+        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
+        </a>
+    </li>
     {{/if}}
 
     {{#if should_display_reminder_option}}

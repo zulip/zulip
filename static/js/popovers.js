@@ -409,15 +409,18 @@ export function toggle_actions_popover(element, id) {
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
+        let view_source_menu_item;
+
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
             editability_menu_item = $t({defaultMessage: "Edit message"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source / Move message"});
+            editability_menu_item = $t({defaultMessage: "Move message"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
             use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         }
 
         // Theoretically, it could be useful to offer this even for a
@@ -453,10 +456,18 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-        const should_display_edit_and_view_source =
-            message.content !== "<p>(deleted)</p>" ||
-            editability === message_edit.editability_types.FULL ||
+        const should_display_edit_and_move_message =
+            (message.content !== "<p>(deleted)</p>" ||
+                editability === message_edit.editability_types.FULL ||
+                editability === message_edit.editability_types.TOPIC_ONLY) &&
+            editability !== message_edit.editability_types.NO &&
+            editability !== message_edit.editability_types.NO_LONGER;
+        const should_display_view_source =
+            (message.content !== "<p>(deleted)</p>" &&
+                editability === message_edit.editability_types.NO) ||
+            editability === message_edit.editability_types.NO_LONGER ||
             editability === message_edit.editability_types.TOPIC_ONLY;
+
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
@@ -473,6 +484,7 @@ export function toggle_actions_popover(element, id) {
             stream_id: message.stream_id,
             use_edit_icon,
             editability_menu_item,
+            view_source_menu_item,
             should_display_mark_as_unread,
             should_display_collapse,
             should_display_uncollapse,
@@ -484,7 +496,8 @@ export function toggle_actions_popover(element, id) {
             should_display_delete_option,
             should_display_read_receipts_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_edit_and_view_source,
+            should_display_edit_and_move_message,
+            should_display_view_source,
             should_display_quote_and_reply,
         };
 
@@ -1170,7 +1183,7 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".popover_edit_message", (e) => {
+    $("body").on("click", ".popover_edit_message, .popover_view_source", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         const $row = message_lists.current.get_row(message_id);
         hide_actions_popover();

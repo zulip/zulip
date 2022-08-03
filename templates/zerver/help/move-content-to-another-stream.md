@@ -47,8 +47,8 @@ destination streams.
 
 {!message-actions-menu.md!}
 
-1. Select the first option. It may be called **View source / Move message**,
-   or simply **Edit message**. If it's called **View source**, then you are not
+1. Select the first option. It may be called **Move message**,
+   or simply **Edit message**. If it's called **View message source**, then you are not
    allowed to edit the stream of that message.
 
 1. Select the destination stream for the message from the streams dropdown list.
