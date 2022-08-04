@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_settings_deactivation_stream_modal from "../templates/confirm_dialog/confirm_deactivate_stream.hbs";
+import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_change_stream_info_modal from "../templates/stream_settings/change_stream_info_modal.hbs";
 import render_stream_description from "../templates/stream_settings/stream_description.hbs";
 import render_stream_settings from "../templates/stream_settings/stream_settings.hbs";
@@ -662,16 +663,23 @@ export function initialize() {
             archive_stream(stream_id, $(".stream_change_property_info"), $row);
         }
 
+        const stream = sub_store.get(stream_id);
+        const stream_privacy_symbol_html = render_stream_privacy({
+            invite_only: stream.invite_only,
+            is_web_public: stream.is_web_public,
+        });
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
         const html_body = render_settings_deactivation_stream_modal({
             stream_name,
+            stream_privacy_symbol_html,
         });
 
         confirm_dialog.launch({
             html_heading: $t_html(
-                {defaultMessage: "Archive stream {stream}"},
-                {stream: stream_name},
+                {defaultMessage: "Archive <z-link></z-link>{stream}?"},
+                {stream: stream_name, "z-link": () => stream_privacy_symbol_html},
             ),
+            id: "archive-stream-modal",
             help_link: "/help/archive-a-stream",
             html_body,
             on_click: do_archive_stream,
