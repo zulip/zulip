@@ -1006,7 +1006,7 @@ td.pointer {
     overflow-x: clip;
 }
 
-.message_time {
+.messagebox-content .message_time {
     display: block;
     font-size: 12px;
     opacity: 0.4;
@@ -1016,9 +1016,12 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    /* Disable blue link styling for the message timestamp link. */
     color: var(--color-message-time);
-    transition: background-color 1.5s ease-in, color 1.5s ease-in;
+    /* Disable blue link styling for the message timestamp link. */
+    &:hover {
+        text-decoration: none;
+        color: var(--color-message-time);
+    }
 
     a& {
         z-index: 1;
