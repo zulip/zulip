@@ -24,10 +24,8 @@ $category-text: hsl(219, 23%, 33%);
         width: calc(100% - 100px);
         max-width: 1170px;
         margin: 0 auto;
-
+        border-radius: 10px;
         background-color: hsl(0, 0%, 100%);
-        box-shadow: 0 0 80px hsla(0, 0%, 0%, 0.12);
-
         visibility: hidden;
 
         img {
