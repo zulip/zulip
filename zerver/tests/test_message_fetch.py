@@ -2799,6 +2799,129 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(data["found_newest"], True)
         self.assertEqual(data["history_limited"], False)
 
+    def test_first_after_date_anchor_target_date(self) -> None:
+        """
+        Test getting first message after certain datetime
+        """
+        me = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        self.subscribe(me, "Scotland")
+        self.subscribe(aaron, "Scotland")
+        self.login("hamlet")
+
+        target_date = timezone_now()
+
+        topic = "test first message after time"
+        message_ids = []
+        message_ids.append(self.send_stream_message(me, "Scotland", topic_name=topic))
+        for i in range(3):
+            message_ids.append(self.send_stream_message(aaron, "Scotland", topic_name=topic))
+
+        # Edit timestamps to ensure they aren't same second
+        time_delta = 10
+        for msg_id in message_ids:
+            message = Message.objects.get(id=msg_id)
+            message.date_sent = message.date_sent + datetime.timedelta(seconds=time_delta)
+            message.save()
+            time_delta += 10
+
+        narrow = [
+            dict(operator="stream", operand="Scotland"),
+            dict(operator="topic", operand=topic),
+        ]
+        params = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="first_after_date",
+            target_date=target_date.isoformat(),
+            num_before=0,
+            num_after=0,
+        )
+        result = self.client_get("/json/messages", params)
+        self.assert_json_success(result)
+        result = result.json()
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], message_ids[0])
+        self.assertEqual(result["anchor"], message_ids[0])
+
+    def test_first_after_date_anchor_different_narrow_first_msg(self) -> None:
+        """
+        Test first message in the given narrow is sent and
+        not other narrow message sent earlier.
+        """
+        me = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        self.subscribe(me, "Scotland")
+        self.subscribe(aaron, "Scotland")
+        self.subscribe(aaron, "Denmark")
+        self.login("hamlet")
+
+        target_date = timezone_now()
+
+        topic = "test first message after time"
+        message_ids = []
+        message_ids.append(self.send_stream_message(aaron, "Denmark", topic_name=topic))
+        message_ids.append(self.send_stream_message(me, "Scotland", topic_name=topic))
+        for i in range(3):
+            message_ids.append(self.send_stream_message(aaron, "Scotland", topic_name=topic))
+
+        # Edit timestamps to ensure they aren't same second
+        time_delta = 10
+        for msg_id in message_ids:
+            message = Message.objects.get(id=msg_id)
+            message.date_sent = message.date_sent + datetime.timedelta(seconds=time_delta)
+            message.save()
+            time_delta += 10
+
+        narrow = [
+            dict(operator="stream", operand="Scotland"),
+            dict(operator="topic", operand=topic),
+        ]
+        params = dict(
+            narrow=orjson.dumps(narrow).decode(),
+            anchor="first_after_date",
+            target_date=target_date.isoformat(),
+            num_before=0,
+            num_after=0,
+        )
+        result = self.client_get("/json/messages", params)
+        self.assert_json_success(result)
+        result = result.json()
+        self.assert_length(result["messages"], 1)
+        self.assertEqual(result["messages"][0]["id"], message_ids[1])
+        self.assertEqual(result["anchor"], message_ids[1])
+
+    def test_first_after_date_invalid_target_date(self) -> None:
+        """
+        Test getting messages after a date with an invalid `target_date` format.
+        """
+        self.login("hamlet")
+        params = dict(
+            anchor="first_after_date",
+            num_before=0,
+            num_after=0,
+            narrow='[["stream", "Scotland"]]',
+            target_date="invalid_date",
+        )
+        result = self.client_get("/json/messages", params)
+        self.assert_json_error(result, "Bad value for 'target_date': invalid_date")
+
+    def test_no_message_after_first_after_date_anchor(self) -> None:
+        me = self.example_user("hamlet")
+        self.subscribe(me, "Scotland")
+
+        self.login("hamlet")
+        target_date = timezone_now()
+        params = dict(
+            narrow='[["stream", "Scotland"]]',
+            anchor="first_after_date",
+            target_date=target_date.isoformat(),
+            num_before=0,
+            num_after=0,
+        )
+        result = self.client_get("/json/messages", params)
+        self.assert_json_error(result, f"No message found after date: {str(target_date)}")
+        self.assertEqual(result.json()["code"], "NO_MESSAGE_FOUND_AFTER_DATE")
+
     def test_missing_params(self) -> None:
         """
         anchor, num_before, and num_after are all required

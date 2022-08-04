@@ -1,6 +1,7 @@
 import inspect
 import os
 from collections import abc
+from datetime import datetime
 from typing import (
     Any,
     Callable,
@@ -61,6 +62,8 @@ def schema_type(schema: Dict[str, Any]) -> Union[type, Tuple[type, object]]:
         return schema_type(schema["oneOf"][0])
     elif schema["type"] == "array":
         return (list, schema_type(schema["items"]))
+    elif schema["type"] == "string" and schema.get("format", "") == "date-time":
+        return datetime
     else:
         return VARMAP[schema["type"]]
 
@@ -826,6 +829,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
             '    --data-urlencode \'narrow=[{"operand": "Denmark", "operator": "stream"}]\' \\',
             "    --data-urlencode client_gravatar=false \\",
             "    --data-urlencode apply_markdown=false \\",
+            "    --data-urlencode target_date=2022-03-17T18:37:30.806Z \\",
             "    --data-urlencode use_first_unread_anchor=true",
             "```",
         ]
@@ -888,7 +892,7 @@ class TestCurlExampleGeneration(ZulipTestCase):
 
     def test_generate_and_render_curl_example_with_excludes(self) -> None:
         generated_curl_example = self.curl_example(
-            "/messages", "GET", exclude=["client_gravatar", "apply_markdown"]
+            "/messages", "GET", exclude=["client_gravatar", "apply_markdown", "target_date"]
         )
         expected_curl_example = [
             "```curl",

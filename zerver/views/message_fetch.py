@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import orjson
@@ -28,7 +29,7 @@ from sqlalchemy.sql import (
     union_all,
 )
 from sqlalchemy.sql.selectable import SelectBase
-from sqlalchemy.types import ARRAY, Boolean, Integer, Text
+from sqlalchemy.types import ARRAY, Boolean, DateTime, Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
@@ -65,6 +66,7 @@ from zerver.lib.validator import (
     check_string,
     check_string_or_int,
     check_string_or_int_list,
+    to_datetime,
     to_non_negative_int,
 )
 from zerver.models import (
@@ -93,6 +95,18 @@ class BadNarrowOperator(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
+
+
+class NoMessageFoundAfterDate(JsonableError):
+    code: ErrorCode = ErrorCode.NO_MESSAGE_FOUND_AFTER_DATE
+    data_fields = ["date"]
+
+    def __init__(self, date: datetime) -> None:
+        self.date = str(date)
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("No message found after date: {date}")
 
 
 ConditionTransform = Callable[[ClauseElement], ClauseElement]
@@ -898,6 +912,41 @@ def find_first_unread_anchor(
     return anchor
 
 
+def find_first_after_date_anchor(
+    sa_conn: Connection,
+    user_profile: Optional[UserProfile],
+    realm: Realm,
+    narrow: OptionalNarrowListT,
+    target_date: datetime,
+) -> int:
+    need_message = True
+    need_user_message = False
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+        is_web_public_query=False,
+        realm=realm,
+    )
+
+    query = query.where(column("date_sent", DateTime) >= target_date).order_by(
+        column("date_sent", DateTime).asc()
+    )
+
+    first_after_date = sa_conn.execute(query).first()
+    if first_after_date is not None:
+        return first_after_date[0]
+
+    return -1
+
+
 def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool) -> Optional[int]:
     """Given the anchor and use_first_unread_anchor parameters passed by
     the client, computes what anchor value the client requested,
@@ -918,7 +967,7 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
         return 0
     if anchor_val == "newest":
         return LARGER_THAN_MAX_MESSAGE_ID
-    if anchor_val == "first_unread":
+    if anchor_val == "first_unread" or anchor_val == "first_after_date":
         return None
     try:
         # We don't use `.isnumeric()` to support negative numbers for
@@ -949,6 +998,7 @@ def get_messages_backend(
     ),
     client_gravatar: bool = REQ(json_validator=check_bool, default=True),
     apply_markdown: bool = REQ(json_validator=check_bool, default=True),
+    target_date: Optional[datetime] = REQ(converter=to_datetime, default=None),
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
@@ -1050,6 +1100,13 @@ def get_messages_backend(
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
     with get_sqlalchemy_connection() as sa_conn:
+        if anchor_val == "first_after_date":
+            assert target_date is not None
+            anchor = find_first_after_date_anchor(sa_conn, user_profile, realm, narrow, target_date)
+
+            if anchor == -1:
+                raise NoMessageFoundAfterDate(target_date)
+
         if anchor is None:
             # `anchor=None` corresponds to the anchor="first_unread" parameter.
             anchor = find_first_unread_anchor(

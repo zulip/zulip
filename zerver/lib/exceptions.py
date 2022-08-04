@@ -37,6 +37,7 @@ class ErrorCode(Enum):
     PASSWORD_RESET_REQUIRED = auto()
     AUTHENTICATION_FAILED = auto()
     UNAUTHORIZED = auto()
+    NO_MESSAGE_FOUND_AFTER_DATE = auto()
 
 
 class JsonableError(Exception):

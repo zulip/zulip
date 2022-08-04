@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import {startOfToday, subDays} from "date-fns";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
@@ -422,7 +423,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     function move_topic() {
         const params = get_params_from_form();
 
-        const {old_topic_name} = params;
+        const {old_topic_name, messages_to_move} = params;
         const select_stream_id = stream_widget.value();
 
         let {
@@ -450,10 +451,13 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
                 if (old_topic_name && select_stream_id) {
                     message_edit.move_topic_containing_message_to_stream(
                         message_id,
+                        current_stream_id,
+                        old_topic_name,
                         select_stream_id,
                         new_topic_name,
                         send_notification_to_new_thread,
                         send_notification_to_old_thread,
+                        messages_to_move,
                     );
                 }
             },
@@ -479,6 +483,30 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     function move_topic_on_update() {
         update_submit_button_disabled_state();
         set_stream_topic_typeahead();
+    }
+
+    function will_be_moved_from() {
+        function moved_from_string(date) {
+            return $t(
+                {
+                    defaultMessage: "All messages from {date} will be moved.",
+                },
+                {date: date.toLocaleString([], {dateStyle: "medium", timeStyle: "short"})},
+            );
+        }
+
+        const to_move = $("#move_topic_modal #messages_to_move").val();
+        if (to_move === "all") {
+            return $t_html({
+                defaultMessage: "All messages in this topic will be moved.",
+            });
+        }
+        if (to_move === "today") {
+            return moved_from_string(startOfToday());
+        }
+
+        const days_back = Number.parseInt(to_move, 10);
+        return moved_from_string(subDays(new Date(), days_back));
     }
 
     function move_topic_post_render() {
@@ -511,10 +539,15 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
             update_submit_button_disabled_state(stream_widget.value());
         });
+
+        $("#move_topic_form #moved_from_help").text(will_be_moved_from());
+        $("#messages_to_move").on("change", () => {
+            $("#move_topic_form #moved_from_help").text(will_be_moved_from());
+        });
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Move topic"}),
+        html_heading: $t_html({defaultMessage: "Move messages from {topic}"}, {topic: topic_name}),
         html_body: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",

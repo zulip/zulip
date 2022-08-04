@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import {startOfToday, subDays} from "date-fns";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
@@ -1128,12 +1129,23 @@ export function handle_narrow_deactivated() {
     }
 }
 
+function get_target_datetime(messages_to_move) {
+    if (messages_to_move === "today") {
+        return startOfToday().toISOString();
+    }
+    const messages_to_move_days = Number.parseInt(messages_to_move, 10);
+    return subDays(new Date(), messages_to_move_days).toISOString();
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
+    current_stream_id,
+    old_topic_name,
     new_stream_id,
     new_topic_name,
     send_notification_to_new_thread,
     send_notification_to_old_thread,
+    messages_to_move,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -1141,6 +1153,26 @@ export function move_topic_containing_message_to_stream(
         );
         dialog_widget.hide_dialog_spinner();
         dialog_widget.close_modal();
+    }
+    function send_move_request(request, message_id) {
+        channel.patch({
+            url: "/json/messages/" + message_id,
+            data: request,
+            success() {
+                // The main UI will update via receiving the event
+                // from server_events.js.
+                reset_modal_ui();
+            },
+            error(xhr) {
+                reset_modal_ui();
+                ui_report.error(
+                    $t_html({defaultMessage: "Error moving the topic"}),
+                    xhr,
+                    $("#home-error"),
+                    4000,
+                );
+            },
+        });
     }
     if (currently_topic_editing_messages.includes(message_id)) {
         ui_report.client_error(
@@ -1153,29 +1185,58 @@ export function move_topic_containing_message_to_stream(
 
     const request = {
         stream_id: new_stream_id,
-        propagate_mode: "change_all",
         topic: new_topic_name,
         send_notification_to_old_thread,
         send_notification_to_new_thread,
     };
     notify_old_thread_default = send_notification_to_old_thread;
     notify_new_thread_default = send_notification_to_new_thread;
-    channel.patch({
-        url: "/json/messages/" + message_id,
-        data: request,
-        success() {
-            // The main UI will update via receiving the event
-            // from server_events.js.
-            reset_modal_ui();
+
+    if (messages_to_move === "all") {
+        request.propagate_mode = "change_all";
+        send_move_request(request, message_id);
+        return;
+    }
+
+    const target_datetime = get_target_datetime(messages_to_move);
+    const data = {
+        anchor: "first_after_date",
+        num_before: 0,
+        num_after: 0,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: current_stream_id},
+            {operator: "topic", operand: old_topic_name},
+        ]),
+        target_date: target_datetime,
+    };
+    channel.get({
+        url: "/json/messages",
+        data,
+        idempotent: true,
+        success(data) {
+            message_id = data.messages[0].id;
+            request.propagate_mode = "change_later";
+            send_move_request(request, message_id);
         },
         error(xhr) {
-            reset_modal_ui();
-            ui_report.error(
-                $t_html({defaultMessage: "Error moving the topic"}),
-                xhr,
-                $("#home-error"),
-                4000,
+            currently_topic_editing_messages = currently_topic_editing_messages.filter(
+                (id) => id !== message_id,
             );
+            if (xhr.responseJSON.code === "NO_MESSAGE_FOUND_AFTER_DATE") {
+                ui_report.client_error(
+                    $t_html({defaultMessage: "Error: No messages to move."}),
+                    $("#move_topic_modal #dialog_error"),
+                    4000,
+                );
+            } else {
+                ui_report.error(
+                    $t_html({defaultMessage: "Error"}),
+                    xhr,
+                    $("#move_topic_modal #dialog_error"),
+                    4000,
+                );
+            }
+            dialog_widget.hide_dialog_spinner();
         },
     });
 }
