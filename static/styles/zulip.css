@@ -52,6 +52,20 @@ body,
 
 :root {
     color-scheme: light;
+
+    --color-message-time: hsl(0, 0%, 20%);
+    --color-recipient-row-date: hsl(0, 0%, 53%);
+}
+
+:root.dark-theme {
+    --color-message-time: hsl(236, 33%, 90%);
+    --color-recipient-row-date: hsl(236, 33%, 90%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend :root.dark-theme;
+    }
 }
 
 input,
@@ -901,7 +915,7 @@ td.pointer {
     opacity: 0.4;
     font-weight: 400;
     /* Disable blue link styling for the message timestamp link. */
-    color: hsl(0, 0%, 20%);
+    color: var(--color-message-time);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 
     a& {
@@ -1161,7 +1175,7 @@ td.pointer {
 }
 
 .recipient_row_date {
-    color: hsl(0, 0%, 53%);
+    color: var(--color-recipient-row-date);
     font-size: 12px;
     font-weight: 600;
     padding: 3px 11px 2px 10px;
