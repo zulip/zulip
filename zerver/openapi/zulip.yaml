@@ -4178,6 +4178,16 @@ paths:
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
+                                    enable_read_receipts:
+                                      type: boolean
+                                      description: |
+                                        Whether read receipts is enabled in the organization or not.
+
+                                        If disabled, read receipt data will be unavailable to clients, regardless
+                                        of individual users' personal read receipt settings. See also the
+                                        `send_read_receipts` setting within `realm_user_settings_defaults`.
+
+                                        **Changes**: New in Zulip 6.0 (feature level 137).
                                   additionalProperties: false
                               example:
                                 {
@@ -11498,6 +11508,18 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 11). Previously this
                           value was hardcoded to 86400 seconds (1 day).
+                      realm_enable_read_receipts:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether read receipts is enabled in the organization or not.
+
+                          If disabled, read receipt data will be unavailable to clients, regardless
+                          of individual users' personal read receipt settings. See also the
+                          `send_read_receipts` setting within `realm_user_settings_defaults`.
+
+                          **Changes**: New in Zulip 6.0 (feature level 137).
                       realm_icon_url:
                         type: string
                         description: |

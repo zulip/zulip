@@ -707,6 +707,7 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
+        enable_read_receipts=bool,
         enable_spectator_access=bool,
         giphy_rating=int,
         inline_image_preview=bool,

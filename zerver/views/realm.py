@@ -146,6 +146,7 @@ def update_realm(
     want_advertise_in_communities_directory: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
+    enable_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 

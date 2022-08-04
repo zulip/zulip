@@ -139,6 +139,7 @@ class HomeTest(ZulipTestCase):
         "realm_emails_restricted_to_domains",
         "realm_embedded_bots",
         "realm_emoji",
+        "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",
         "realm_giphy_rating",
