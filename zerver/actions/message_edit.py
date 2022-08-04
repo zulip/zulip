@@ -50,7 +50,7 @@ from zerver.lib.topic import (
 )
 from zerver.lib.types import EditHistoryEvent
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
-from zerver.lib.user_topics import get_users_muting_topic, remove_topic_mute
+from zerver.lib.user_topics import get_users_muting_topic
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -61,7 +61,6 @@ from zerver.models import (
     Stream,
     UserMessage,
     UserProfile,
-    UserTopic,
     get_stream_by_id_in_realm,
     get_system_bot,
 )
@@ -799,22 +798,18 @@ def do_update_message(
                 # access.  Unmute the topic for such users.
                 do_unmute_topic(muting_user, stream_being_edited, orig_topic_name)
             else:
-                # Otherwise, we move the muted topic record for the user.
-                # We call remove_topic_mute rather than do_unmute_topic to
-                # avoid sending two events with new muted topics in
-                # immediate succession; this is correct only because
-                # muted_topics events always send the full set of topics.
-                remove_topic_mute(muting_user, stream_being_edited.id, orig_topic_name)
-
-                date_unmuted = timezone_now()
-                user_topic_event: Dict[str, Any] = {
-                    "type": "user_topic",
-                    "stream_id": stream_being_edited.id,
-                    "topic_name": orig_topic_name,
-                    "last_updated": datetime_to_timestamp(date_unmuted),
-                    "visibility_policy": UserTopic.VISIBILITY_POLICY_INHERIT,
-                }
-                send_event(user_profile.realm, user_topic_event, [user_profile.id])
+                # Otherwise, we move the muted topic record for the
+                # user, but removing the old topic mute and then
+                # creating a new one.
+                do_unmute_topic(
+                    muting_user,
+                    stream_being_edited,
+                    orig_topic_name,
+                    # do_mute_topic will send an updated muted topic
+                    # event, which contains the full set of muted
+                    # topics, just after this.
+                    skip_muted_topics_event=True,
+                )
 
                 do_mute_topic(
                     muting_user,

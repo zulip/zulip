@@ -47,7 +47,9 @@ def do_mute_topic(
     send_event(user_profile.realm, user_topic_event, [user_profile.id])
 
 
-def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
+def do_unmute_topic(
+    user_profile: UserProfile, stream: Stream, topic: str, *, skip_muted_topics_event: bool = False
+) -> None:
     # Note: If you add any new code to this function, the
     # remove_topic_mute call in do_update_message will need to be
     # updated for correctness.
@@ -59,8 +61,9 @@ def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> No
     # This first muted_topics event is deprecated and will be removed
     # once clients are migrated to handle the user_topic event type
     # instead.
-    muted_topics_event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
-    send_event(user_profile.realm, muted_topics_event, [user_profile.id])
+    if not skip_muted_topics_event:
+        muted_topics_event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
+        send_event(user_profile.realm, muted_topics_event, [user_profile.id])
 
     date_unmuted = timezone_now()
 
