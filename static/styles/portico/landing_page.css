@@ -51,7 +51,8 @@ a {
         color: hsl(170, 47%, 33%);
     }
 
-    &:hover {
+    &:hover,
+    &:focus {
         text-decoration: none;
     }
 
