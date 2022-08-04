@@ -21,6 +21,7 @@ export class TaskData {
         current_user_id,
         is_my_task_list,
         task_list_title,
+        tasks,
         report_error_function,
     }) {
         this.message_sender_id = message_sender_id;
@@ -34,6 +35,14 @@ export class TaskData {
             this.set_task_list_title(task_list_title);
         } else {
             this.set_task_list_title($t({defaultMessage: "Task list"}));
+        }
+
+        for (const [i, data] of tasks.entries()) {
+            this.handle.new_task.inbound("canned", {
+                key: i,
+                task: data.task,
+                desc: data.desc,
+            });
         }
     }
 
@@ -212,13 +221,14 @@ export class TaskData {
 }
 
 export function activate({$elem, callback, extra_data, message}) {
-    const {task_list_title = ""} = extra_data || {};
+    const {task_list_title = "", tasks = []} = extra_data || {};
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_task_list,
         task_list_title,
+        tasks,
         report_error_function: blueslip.warn,
     });
 
