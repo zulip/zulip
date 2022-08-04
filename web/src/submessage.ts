@@ -32,6 +32,7 @@ const poll_widget_extra_data_schema = z
 export const todo_widget_extra_data_schema = z
     .object({
         task_list_title: z.string().optional(),
+        tasks: z.array(z.object({task: z.string(), desc: z.string()})).optional(),
     })
     .nullable();
 

@@ -98,13 +98,17 @@ class WidgetContentTestCase(ZulipTestCase):
             self.assertEqual(get_widget_data(content=message), (None, None))
 
         # Add positive checks for context
-        self.assertEqual(get_widget_data(content="/todo"), ("todo", {"task_list_title": ""}))
         self.assertEqual(
-            get_widget_data(content="/todo Title"), ("todo", {"task_list_title": "Title"})
+            get_widget_data(content="/todo"), ("todo", {"task_list_title": "", "tasks": []})
+        )
+        self.assertEqual(
+            get_widget_data(content="/todo Title"),
+            ("todo", {"task_list_title": "Title", "tasks": []}),
         )
         # Test tokenization on newline character
         self.assertEqual(
-            get_widget_data(content="/todo\nignore"), ("todo", {"task_list_title": ""})
+            get_widget_data(content="/todo\nTask"),
+            ("todo", {"task_list_title": "", "tasks": [{"task": "Task", "desc": ""}]}),
         )
 
     def test_explicit_widget_content(self) -> None:
@@ -171,7 +175,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
-            extra_data={"task_list_title": ""},
+            extra_data={"task_list_title": "", "tasks": []},
         )
 
         submessage = SubMessage.objects.get(message_id=message.id)
@@ -188,7 +192,42 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
-            extra_data={"task_list_title": "Example Task List Title"},
+            extra_data={"task_list_title": "Example Task List Title", "tasks": []},
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+
+        # We test for both trailing and leading spaces, along with blank lines
+        # for the tasks.
+        content = "/todo Example Task List Title\n\n    task without description\ntask: with description    \n\n - task as list : also with description"
+        payload["content"] = content
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
+            extra_data=dict(
+                task_list_title="Example Task List Title",
+                tasks=[
+                    dict(
+                        task="task without description",
+                        desc="",
+                    ),
+                    dict(
+                        task="task",
+                        desc="with description",
+                    ),
+                    dict(
+                        task="task as list",
+                        desc="also with description",
+                    ),
+                ],
+            ),
         )
 
         submessage = SubMessage.objects.get(message_id=message.id)
@@ -267,9 +306,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
-            extra_data=dict(
-                task_list_title="School Work",
-            ),
+            extra_data=dict(task_list_title="School Work", tasks=[]),
         )
 
         submessage = SubMessage.objects.get(message_id=message.id)
@@ -285,8 +322,35 @@ class WidgetContentTestCase(ZulipTestCase):
 
         expected_submessage_content = dict(
             widget_type="todo",
+            extra_data=dict(task_list_title="", tasks=[]),
+        )
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, "widget")
+        self.assertEqual(orjson.loads(submessage.content), expected_submessage_content)
+        # Now supply both task list title and tasks.
+
+        content = "/todo School Work\nchemistry homework: assignment 2\nstudy for english test: pages 56-67"
+        payload["content"] = content
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        expected_submessage_content = dict(
+            widget_type="todo",
             extra_data=dict(
-                task_list_title="",
+                task_list_title="School Work",
+                tasks=[
+                    dict(
+                        task="chemistry homework",
+                        desc="assignment 2",
+                    ),
+                    dict(
+                        task="study for english test",
+                        desc="pages 56-67",
+                    ),
+                ],
             ),
         )
 

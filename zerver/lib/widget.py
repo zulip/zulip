@@ -6,7 +6,7 @@ from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, SubMessage
 
 
-def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
+def get_widget_data(content: str) -> Tuple[Optional[str], Any]:
     valid_widget_types = ["poll", "todo"]
     tokens = re.split(r"\s+|\n+", content)
 
@@ -73,33 +73,9 @@ def parse_todo_extra_data(content: str) -> Any:
 
 def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) -> Any:
     if widget_type == "poll":
-        # This is used to extract the question from the poll command.
-        # The command '/poll question' will pre-set the question in the poll
-        lines = content.splitlines()
-        question = ""
-        options = []
-        if lines and lines[0]:
-            question = lines.pop(0).strip()
-        for line in lines:
-            # If someone is using the list syntax, we remove it
-            # before adding an option.
-            option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), count=1)
-            if len(option) > 0:
-                options.append(option)
-        extra_data = {
-            "question": question,
-            "options": options,
-        }
-        return extra_data
+        return parse_poll_extra_data(content)
     else:
-        # This is used to extract the task list title from the todo command.
-        # The command '/todo Title' will pre-set the task list title
-        lines = content.splitlines()
-        task_list_title = ""
-        if lines and lines[0]:
-            task_list_title = lines.pop(0).strip()
-        extra_data = {"task_list_title": task_list_title}
-        return extra_data
+        return parse_todo_extra_data(content)
 
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
