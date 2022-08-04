@@ -684,6 +684,10 @@ class Realm(models.Model):
 
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
+    # Whether read receipts are enabled in the organization. If disabled,
+    # they will not be available regardless of users' personal settings.
+    enable_read_receipts: bool = models.BooleanField(default=False)
+
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
