@@ -53,13 +53,13 @@ body,
 :root {
     color-scheme: light;
 
-    --color-message-time: hsl(0, 0%, 20%);
-    --color-recipient-row-date: hsl(0, 0%, 53%);
+    --color-default-text: hsl(0, 0%, 15%);
+    --color-date: hsl(0, 0%, 15%, 0.75);
 }
 
 :root.dark-theme {
-    --color-message-time: hsl(236, 33%, 90%);
-    --color-recipient-row-date: hsl(236, 33%, 90%);
+    --color-default-text: hsl(0, 0%, 100%);
+    --color-date: hsl(0, 0%, 100%, 0.75);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -912,13 +912,16 @@ td.pointer {
 .messagebox-content .message_time {
     display: block;
     font-size: 12px;
-    opacity: 0.4;
-    font-weight: 400;
-    color: var(--color-message-time);
+    font-weight: normal;
+    text-align: right;
+    opacity: 0.6;
+    color: var(--color-default-text);
+    font-feature-settings: "pnum" on, "lnum" on;
+    letter-spacing: 0.02em;
     /* Disable blue link styling for the message timestamp link. */
     &:hover {
         text-decoration: none;
-        color: var(--color-message-time);
+        color: var(--color-default-text);
     }
 
     a& {
@@ -1178,12 +1181,17 @@ td.pointer {
 }
 
 .recipient_row_date {
-    color: var(--color-recipient-row-date);
-    font-size: 12px;
+    color: var(--color-date);
+    font-size: calc(12em / 14);
+    padding: 0 10px;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    font-style: normal;
     font-weight: 600;
-    padding: 3px 11px 2px 10px;
-    height: 17px;
-    line-height: 17px;
+    line-height: 17px; /* identical to box height, or 131% */
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 
     &.hide-date {
         display: none;
@@ -1490,6 +1498,16 @@ div.message_table {
     .date_row {
         /* We only want padding for the date rows between recipient blocks */
         padding-bottom: 0;
+
+        span {
+            font-size: calc(12em / 14);
+            font-style: normal;
+            font-weight: 600;
+            line-height: 17px; /* identical to box height, or 131% */
+            text-align: right;
+            letter-spacing: 0.04em;
+            color: var(--color-date);
+        }
     }
 }
 
@@ -2554,11 +2572,9 @@ select.invite-as {
     padding: 4px;
     overflow: hidden;
     text-transform: uppercase;
-    font-size: 0.8em;
 }
 
-.sub-unsub-message .stream-status,
-.date_row span {
+.sub-unsub-message .stream-status {
     opacity: 0.6;
 }
 
@@ -2580,7 +2596,7 @@ select.invite-as {
     content: " ";
     vertical-align: middle;
     height: 0;
-    opacity: 0.2;
+    opacity: 0.35;
     border-bottom: 1px solid hsl(0, 0%, 0%);
 }
 
