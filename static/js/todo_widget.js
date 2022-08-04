@@ -22,6 +22,7 @@ export class TaskData {
         current_user_id,
         is_my_task_list,
         task_list_title,
+        tasks,
         report_error_function,
     }) {
         this.message_sender_id = message_sender_id;
@@ -36,6 +37,18 @@ export class TaskData {
         } else {
             this.set_task_list_title($t({defaultMessage: "Task list"}));
         }
+
+        for (const [i, data] of tasks.entries()) {
+            this.handle.new_task.inbound("canned", {
+                // due to legacy reasons, key / idx for a task list
+                // starts at 2 and increments by 2 for each task
+                key: (i + 1) * 2,
+                task: data.task,
+                desc: data.desc,
+            });
+        }
+
+        this.my_idx = 2 * tasks.length + 1;
     }
 
     set_task_list_title(new_title) {
@@ -256,13 +269,19 @@ export class TaskData {
     }
 }
 
-export function activate({$elem, callback, extra_data: {task_list_title = ""} = {}, message}) {
+export function activate({
+    $elem,
+    callback,
+    extra_data: {task_list_title = "", tasks = []} = {},
+    message,
+}) {
     const is_my_task_list = people.is_my_user_id(message.sender_id);
     const task_data = new TaskData({
         message_sender_id: message.sender_id,
         current_user_id: people.my_current_user_id(),
         is_my_task_list,
         task_list_title,
+        tasks,
         report_error_function: blueslip.warn,
     });
 
