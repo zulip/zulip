@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {Page} from "puppeteer";
+import type {ElementHandle, Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
@@ -63,7 +63,7 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
     await page.waitForXPath(stream_message_xpath, {visible: true});
     const stream_message = get_last_element(await page.$x(stream_message_xpath));
     // we chose only the last element make sure we don't click on any duplicates.
-    await stream_message.click();
+    await (stream_message as ElementHandle<Element>).click();
     await common.check_form_contents(page, "#send_message_form", {
         stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "Reply test",
@@ -78,7 +78,7 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     const private_message = get_last_element(
         await page.$x(get_message_xpath("Compose private message reply test")),
     );
-    await private_message.click();
+    await (private_message as ElementHandle<Element>).click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
     await common.pm_recipient.expect(
         page,

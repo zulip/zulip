@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {Page} from "puppeteer";
+import type {ElementHandle, Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
@@ -40,7 +40,8 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         '//*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
         {visible: true},
     );
-    await verona_in_dropdown!.click();
+    assert.ok(verona_in_dropdown);
+    await (verona_in_dropdown as ElementHandle<Element>).click();
 
     await submit_notifications_stream_settings(page);
 
@@ -183,7 +184,10 @@ async function test_add_emoji(page: Page): Promise<void> {
     await common.fill_form(page, "form.admin-emoji-form", {name: "zulip logo"});
 
     const emoji_upload_handle = await page.$("#emoji_file_input");
-    await emoji_upload_handle!.uploadFile("static/images/logo/zulip-icon-128x128.png");
+    assert.ok(emoji_upload_handle);
+    await (emoji_upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
+        "static/images/logo/zulip-icon-128x128.png",
+    );
     await page.click("#admin_emoji_submit");
 
     const emoji_status = "div#admin-emoji-status";
@@ -276,7 +280,10 @@ async function test_default_streams(page: Page): Promise<void> {
 
 async function test_upload_realm_icon_image(page: Page): Promise<void> {
     const upload_handle = await page.$("#realm-icon-upload-widget .image_file_input");
-    await upload_handle!.uploadFile("static/images/logo/zulip-icon-128x128.png");
+    assert.ok(upload_handle);
+    await (upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
+        "static/images/logo/zulip-icon-128x128.png",
+    );
 
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
         visible: true,

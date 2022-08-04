@@ -502,7 +502,7 @@ class CommonUtils {
             {visible: true},
         );
         assert.ok(entry);
-        await entry.hover();
+        await (entry as ElementHandle<Element>).hover();
         await page.evaluate((entry) => {
             if (!(entry instanceof HTMLElement)) {
                 throw new TypeError("expected HTMLElement");
