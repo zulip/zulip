@@ -249,8 +249,7 @@
     /* these are converting grey things to "new grey" */
     :disabled,
     input:not([type="radio"]):read-only,
-    textarea:read-only,
-    .recipient_row_date {
+    textarea:read-only {
         color: inherit;
         opacity: 0.5;
     }
@@ -380,11 +379,6 @@
         &:hover {
             border-color: hsl(236, 33%, 90%);
         }
-    }
-
-    /* Disable blue link styling for the message timestamp link. */
-    .message_time {
-        color: hsl(236, 33%, 90%);
     }
 
     .emoji-popover .reaction:focus {
