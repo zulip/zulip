@@ -559,6 +559,8 @@
         color: hsl(236, 33%, 80%);
     }
 
+    .messagebox-content .message_time,
+    .recipient_row_date,
     #message_edit_tooltip:hover,
     .clear_search_button:hover {
         color: hsl(0, 0%, 100%);
