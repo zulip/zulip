@@ -40,6 +40,14 @@ body {
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
+
+    --color-message-time: hsl(0, 0%, 20%);
+    --color-recipient-row-date: hsl(0, 0%, 53%);
+}
+
+body.dark-theme {
+    --color-message-time: hsl(236, 33%, 90%);
+    --color-recipient-row-date: hsl(236, 33%, 90%);
 }
 
 /* Common background color */
@@ -1009,7 +1017,7 @@ td.pointer {
     line-height: 20px;
     text-align: right;
     /* Disable blue link styling for the message timestamp link. */
-    color: hsl(0, 0%, 20%);
+    color: var(--color-message-time);
     transition: background-color 1.5s ease-in, color 1.5s ease-in;
 
     a& {
@@ -1265,7 +1273,7 @@ td.pointer {
 }
 
 .recipient_row_date {
-    color: hsl(0, 0%, 53%);
+    color: var(--color-recipient-row-date);
     font-size: 12px;
     font-weight: 600;
     padding: 3px 11px 2px 10px;
