@@ -15,6 +15,7 @@ type ZFormExtraData = {
 // TODO: This TodoWidgetExtraData type should be moved to web/src/todo_widget.js when it will be migrated
 type TodoWidgetExtraData = {
     task_list_title?: string;
+    tasks?: {task: string; desc: string}[];
 };
 
 type WidgetExtraData = PollWidgetExtraData | TodoWidgetExtraData | ZFormExtraData | null;
