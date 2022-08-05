@@ -3957,6 +3957,11 @@ class UserSignUpTest(ZulipTestCase):
         scheduled_email = ScheduledEmail.objects.filter(users=user_profile).last()
         assert scheduled_email is None
 
+        self.assertIn(realm.string_id, user_profile.email)
+        self.assertEqual(
+            user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+
         expected_deletion_date = realm.date_created + datetime.timedelta(
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
