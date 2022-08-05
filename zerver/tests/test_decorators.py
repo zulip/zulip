@@ -27,8 +27,6 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     internal_notify_view,
-    is_local_addr,
-    rate_limit,
     return_success_on_head_request,
     validate_api_key,
     webhook_view,
@@ -46,6 +44,7 @@ from zerver.lib.exceptions import (
     UnsupportedWebhookEventType,
 )
 from zerver.lib.initial_password import initial_password
+from zerver.lib.rate_limiter import is_local_addr, rate_limit
 from zerver.lib.request import (
     REQ,
     RequestConfusingParmsError,
@@ -654,8 +653,10 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
-                "zerver.decorator.rate_limit_ip"
+            with mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_user"
+            ) as rate_limit_user_mock, mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     self.assertEqual(orjson.loads(f(request).content).get("msg"), "some value")
@@ -671,8 +672,10 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
-                "zerver.decorator.rate_limit_ip"
+            with mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_user"
+            ) as rate_limit_user_mock, mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     with self.settings(DEBUG_RATE_LIMITING=True):
@@ -690,8 +693,10 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=False):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_user_mock, mock.patch(
-                "zerver.decorator.rate_limit_ip"
+            with mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_user"
+            ) as rate_limit_user_mock, mock.patch(
+                "zerver.lib.rate_limiter.rate_limit_ip"
             ) as rate_limit_ip_mock:
                 with self.errors_disallowed():
                     self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
@@ -708,7 +713,7 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
+            with mock.patch("zerver.lib.rate_limiter.rate_limit_user") as rate_limit_mock:
                 with self.errors_disallowed():
                     self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
@@ -730,7 +735,7 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_remote_server") as rate_limit_mock:
+            with mock.patch("zerver.lib.rate_limiter.rate_limit_remote_server") as rate_limit_mock:
                 with self.errors_disallowed():
                     self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
@@ -744,7 +749,7 @@ class RateLimitTestCase(ZulipTestCase):
         f = self.get_ratelimited_view()
 
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.decorator.rate_limit_ip") as rate_limit_mock:
+            with mock.patch("zerver.lib.rate_limiter.rate_limit_ip") as rate_limit_mock:
                 with self.errors_disallowed():
                     self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
