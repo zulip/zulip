@@ -29,7 +29,7 @@ class ProfileDataElementBase(TypedDict):
 
 
 class ProfileDataElement(ProfileDataElementBase):
-    value: ProfileDataElementValue
+    value: Optional[ProfileDataElementValue]
     rendered_value: Optional[str]
 
 
