@@ -1092,7 +1092,7 @@ class RealmEmoji(models.Model):
             # ending with one of the punctuation characters.
             RegexValidator(
                 regex=r"^[0-9a-z.\-_]+(?<![.\-_])$",
-                message=gettext_lazy("Invalid characters in emoji name"),
+                message=_("Invalid characters in emoji name"),
             ),
         ]
     )
