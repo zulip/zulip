@@ -582,6 +582,51 @@ test("mention updates", () => {
     test_counted(true);
 });
 
+test("stream_has_any_unread_mentions", () => {
+    const muted_stream_id = 401;
+    user_topics.add_muted_topic(401, "lunch");
+
+    const mention_me_message = {
+        id: 15,
+        type: "stream",
+        stream_id: 400,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    const mention_all_message = {
+        id: 16,
+        type: "stream",
+        stream_id: 400,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    // This message's stream_id should not be present in `streams_with_mentions`.
+    const muted_mention_all_message = {
+        id: 17,
+        type: "stream",
+        stream_id: muted_stream_id,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([
+        mention_me_message,
+        mention_all_message,
+        muted_mention_all_message,
+    ]);
+
+    assert.equal(unread.stream_has_any_unread_mentions(400), true);
+    assert.equal(unread.stream_has_any_unread_mentions(muted_stream_id), false);
+});
+
 test("starring", () => {
     // We don't need any setup here, because we just hard code
     // this to [] in the code.
