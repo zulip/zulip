@@ -75,14 +75,13 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import do_deactivate_user
-from zerver.decorator import client_is_exempt_from_rate_limiting
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.mobile_auth_otp import is_valid_otp
-from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject, client_is_exempt_from_rate_limiting
 from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_dict_in_redis
 from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions

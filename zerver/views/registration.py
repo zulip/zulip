@@ -34,7 +34,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
 )
 from zerver.context_processors import get_realm_from_request, login_context
-from zerver.decorator import do_login, rate_limit_request_by_ip, require_post
+from zerver.decorator import do_login, require_post
 from zerver.forms import (
     FindMyTeamForm,
     HomepageForm,
@@ -46,6 +46,7 @@ from zerver.lib.email_validation import email_allowed_for_realm, validate_email_
 from zerver.lib.exceptions import RateLimited
 from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.pysa import mark_sanitized
+from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var

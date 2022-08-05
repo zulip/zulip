@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
-from zerver import decorator
 from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.cache import cache_delete
 from zerver.lib.rate_limiter import (
@@ -20,6 +19,7 @@ from zerver.lib.rate_limiter import (
     RateLimitedUser,
     RateLimiterLockingException,
     add_ratelimit_rule,
+    get_tor_ips,
     remove_ratelimit_rule,
 )
 from zerver.lib.test_classes import ZulipTestCase
@@ -308,7 +308,7 @@ class RateLimitTests(ZulipTestCase):
                 "circuitbreaker.CircuitBreaker.opened", new_callable=mock.PropertyMock
             ) as mock_opened:
                 mock_opened.return_value = False
-                decorator.get_tor_ips()
+                get_tor_ips()
 
         # Having closed it, it's now cached.  Clear the cache.
         assert CircuitBreakerMonitor.get("get_tor_ips").closed
