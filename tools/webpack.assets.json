@@ -17,6 +17,7 @@
     ],
     "upgrade": [
         "./static/js/bundles/portico",
+        "./static/js/portico/tippyjs",
         "./static/js/portico/landing-page",
         "./static/styles/portico/landing_page.css",
         "./static/js/billing/helpers",
