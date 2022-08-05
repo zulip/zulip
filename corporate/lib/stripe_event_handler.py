@@ -87,8 +87,7 @@ def handle_checkout_session_completed_event(
         session.payment_intent.last_payment_error = ()
         session.payment_intent.save(update_fields=["status", "last_payment_error"])
         try:
-            stripe.PaymentIntent.confirm(
-                session.payment_intent.stripe_payment_intent_id,
+            stripe.PaymentIntent(session.payment_intent.stripe_payment_intent_id).confirm(
                 payment_method=payment_method,
                 off_session=True,
             )
