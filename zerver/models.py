@@ -1121,6 +1121,7 @@ def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dic
         author_id = None
         if realm_emoji.author:
             author_id = realm_emoji.author_id
+        assert realm_emoji.file_name is not None
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
 
         emoji_dict: EmojiInfo = dict(
@@ -1159,6 +1160,16 @@ def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, EmojiInfo]:
 
 
 def flush_realm_emoji(*, instance: RealmEmoji, **kwargs: object) -> None:
+    if instance.file_name is None:
+        # Because we construct RealmEmoji.file_name using the ID for
+        # the RealmEmoji object, it will always have file_name=None,
+        # and then it'll be updated with the actual filename as soon
+        # as the upload completes successfully.
+        #
+        # Doing nothing when file_name=None is the best option, since
+        # such an object shouldn't have been cached yet, and this
+        # function will be called again when file_name is set.
+        return
     realm = instance.realm
     cache_set(
         get_realm_emoji_cache_key(realm), get_realm_emoji_uncached(realm), timeout=3600 * 24 * 7
