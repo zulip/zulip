@@ -927,6 +927,7 @@ def do_change_stream_permission(
         # stream now but were not able to do so previously. So, we can exclude
         # subscribers, users who were previously subscribed to the stream and
         # realm admins from the non-guest user list.
+        assert stream.recipient_id is not None
         previously_subscribed_user_ids = Subscription.objects.filter(
             recipient_id=stream.recipient_id, active=False, is_user_active=True
         ).values_list("user_profile_id", flat=True)
