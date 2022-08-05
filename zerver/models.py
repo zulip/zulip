@@ -47,7 +47,6 @@ from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
-from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -121,6 +120,7 @@ if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
     from django.contrib.auth.backends import ModelBackend
     from django.db.models.query import _QuerySet as ValuesQuerySet
+    from django.utils.functional import _StrPromise as StrPromise
 
 
 class EmojiInfo(TypedDict):
@@ -2436,7 +2436,7 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: Dict[int, str] = {
+    POST_POLICIES: Dict[int, "StrPromise"] = {
         # These strings should match the strings in the
         # stream_post_policy_values object in stream_data.js.
         STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),

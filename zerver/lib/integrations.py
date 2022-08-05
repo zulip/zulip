@@ -1,14 +1,16 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
-from django.utils.functional import Promise
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 
 from zerver.lib.storage import static_path
+
+if TYPE_CHECKING:
+    from django.utils.functional import _StrPromise as StrPromise
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -31,7 +33,7 @@ features for writing and configuring integrations efficiently.
 
 OptionValidator = Callable[[str, str], Optional[str]]
 
-CATEGORIES: Dict[str, Promise] = {
+CATEGORIES: Dict[str, "StrPromise"] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
