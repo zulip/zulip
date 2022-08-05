@@ -31,6 +31,11 @@ h3,
             opacity: 1;
         }
     }
+
+    .fa-info-circle {
+        top: 1px;
+        position: relative;
+    }
 }
 
 /* TODO: This should ideally be added to help_link_widget.hbs,

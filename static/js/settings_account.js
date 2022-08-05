@@ -78,6 +78,14 @@ export function update_avatar_change_display() {
     }
 }
 
+export function update_send_read_receipts_tooltip() {
+    if (page_params.realm_enable_read_receipts) {
+        $("#send_read_receipts_label .settings-info-icon").hide();
+    } else {
+        $("#send_read_receipts_label .settings-info-icon").show();
+    }
+}
+
 function display_avatar_upload_complete() {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();

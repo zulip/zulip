@@ -10,6 +10,9 @@
         {{#if help_link}}
         {{> ../help_link_widget link=help_link }}
         {{/if}}
+        {{#if tooltip_text}}
+        <i class="tippy-zulip-tooltip fa fa-info-circle settings-info-icon" {{#if hide_tooltip}}style="display: none;"{{/if}} data-tippy-content="{{tooltip_text}}"></i>
+        {{/if}}
     </label>
 </div>
 {{/unless}}

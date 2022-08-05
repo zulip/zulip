@@ -227,6 +227,7 @@ export function dispatch_normal_event(event) {
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 wildcard_mention_policy: noop,
+                enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
             };
             switch (event.op) {
                 case "update":

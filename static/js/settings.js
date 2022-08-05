@@ -100,6 +100,9 @@ export function build_page() {
         default_language_name: settings_display.user_default_language_name,
         realm_push_notifications_enabled: page_params.realm_push_notifications_enabled,
         settings_object: user_settings,
+        send_read_receipts_tooltip: $t({
+            defaultMessage: "Read receipts are currently disabled in this organization.",
+        }),
     });
 
     $(".settings-box").html(rendered_settings_tab);
