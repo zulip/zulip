@@ -94,6 +94,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     realm_name = generate_demo_realm_name()
     realm_type = Realm.ORG_TYPES["business"]["id"]
     realm_subdomain = realm_name
+    email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
     prereg_realm = create_preregistration_realm(email, realm_name, realm_subdomain, realm_type)
     activation_url = create_confirmation_link(
         prereg_realm, Confirmation.REALM_CREATION, realm_creation=True
@@ -105,6 +106,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         key=key,
         realm_name=realm_name,
         realm_type=realm_type,
+        email_address_visibility=email_address_visibility,
         full_name=name,
         password="test",
         realm_subdomain=realm_subdomain,
