@@ -14,7 +14,7 @@ page_params.realm_users = [];
 
 // We use this with override.
 let num_unread_for_stream;
-
+let stream_has_any_unread_mentions;
 const noop = () => {};
 
 mock_esm("../../static/js/narrow_state", {
@@ -30,6 +30,7 @@ const scroll_util = mock_esm("../../static/js/scroll_util", {
 mock_esm("../../static/js/ui", {get_scroll_element: ($element) => $element});
 mock_esm("../../static/js/unread", {
     num_unread_for_stream: () => num_unread_for_stream,
+    stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
 });
 
 const {Filter} = zrequire("../js/filter");
@@ -60,11 +61,13 @@ let inactive_subheader_flag = false;
 function create_devel_sidebar_row({mock_template}) {
     const $devel_count = $.create("devel-count");
     const $subscription_block = $.create("devel-block");
+    const $devel_unread_mention_info = $.create("devel-unread-mention-info");
 
     const $sidebar_row = $("<devel-sidebar-row-stub>");
 
     $sidebar_row.set_find_results(".subscription_block", $subscription_block);
     $subscription_block.set_find_results(".unread_count", $devel_count);
+    $subscription_block.set_find_results(".unread_mention_info", $devel_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
         assert.equal(data.uri, "#narrow/stream/100-devel");
@@ -72,18 +75,22 @@ function create_devel_sidebar_row({mock_template}) {
     });
 
     num_unread_for_stream = 42;
+    stream_has_any_unread_mentions = false;
     stream_list.create_sidebar_row(devel);
     assert.equal($devel_count.text(), "42");
+    assert.equal($devel_unread_mention_info.text(), "");
 }
 
 function create_social_sidebar_row({mock_template}) {
     const $social_count = $.create("social-count");
     const $subscription_block = $.create("social-block");
+    const $social_unread_mention_info = $.create("social-unread-mention-info");
 
     const $sidebar_row = $("<social-sidebar-row-stub>");
 
     $sidebar_row.set_find_results(".subscription_block", $subscription_block);
     $subscription_block.set_find_results(".unread_count", $social_count);
+    $subscription_block.set_find_results(".unread_mention_info", $social_unread_mention_info);
 
     mock_template("stream_sidebar_row.hbs", false, (data) => {
         assert.equal(data.uri, "#narrow/stream/200-social");
@@ -91,8 +98,10 @@ function create_social_sidebar_row({mock_template}) {
     });
 
     num_unread_for_stream = 99;
+    stream_has_any_unread_mentions = true;
     stream_list.create_sidebar_row(social);
     assert.equal($social_count.text(), "99");
+    assert.equal($social_unread_mention_info.text(), "@");
 }
 
 function create_stream_subheader({mock_template}) {
@@ -658,8 +667,10 @@ test_ui("rename_stream", ({mock_template}) => {
 
     const $subscription_block = $.create("development-block");
     const $unread_count = $.create("development-count");
+    const $unread_mention_info = $.create("development-unread-mention-info");
     $li_stub.set_find_results(".subscription_block", $subscription_block);
     $subscription_block.set_find_results(".unread_count", $unread_count);
+    $subscription_block.set_find_results(".unread_mention_info", $unread_mention_info);
 
     stream_list.rename_stream(sub);
     assert.equal($unread_count.text(), "99");

@@ -375,6 +375,21 @@ class UnreadTopicCounter {
         return util.sorted_ids(ids);
     }
 
+    get_streams_with_unread_mentions() {
+        const streams_with_mentions = new Set();
+        // Collect the set of streams containing at least one mention.
+        // We can do this efficiently, since unread_mentions_counter
+        // contains all unread message IDs, and we use stream_ids as
+        // bucket keys in our outer bucketer.
+
+        for (const message_id of unread_mentions_counter) {
+            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            streams_with_mentions.add(stream_id);
+        }
+
+        return streams_with_mentions;
+    }
+
     topic_has_any_unread(stream_id, topic) {
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
@@ -528,8 +543,10 @@ export function get_counts() {
 
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = unread_topic_counter.get_counts();
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
+    res.streams_with_mentions = Array.from(streams_with_mentions);
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -573,6 +590,11 @@ export function num_unread_for_stream(stream_id) {
 
 export function num_unread_for_topic(stream_id, topic_name) {
     return unread_topic_counter.get(stream_id, topic_name);
+}
+
+export function stream_has_any_unread_mentions(stream_id) {
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    return streams_with_mentions.has(stream_id);
 }
 
 export function topic_has_any_unread(stream_id, topic) {
