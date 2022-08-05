@@ -22,14 +22,13 @@ from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationT
 from two_factor.utils import totp_digits
 
 from zerver.actions.user_settings import do_change_password
-from zerver.decorator import rate_limit_request_by_ip
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
 )
 from zerver.lib.exceptions import JsonableError, RateLimited
 from zerver.lib.name_restrictions import is_disposable_domain, is_reserved_subdomain
-from zerver.lib.rate_limiter import RateLimitedObject
+from zerver.lib.rate_limiter import RateLimitedObject, rate_limit_request_by_ip
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.soft_deactivation import queue_soft_reactivation
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
