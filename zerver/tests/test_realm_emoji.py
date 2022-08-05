@@ -23,7 +23,7 @@ class RealmEmojiTest(ZulipTestCase):
         return realm_emoji
 
     def create_test_emoji_with_no_author(self, name: str, realm: Realm) -> RealmEmoji:
-        realm_emoji = RealmEmoji.objects.create(realm=realm, name=name)
+        realm_emoji = RealmEmoji.objects.create(realm=realm, name=name, file_name=name)
         return realm_emoji
 
     def test_list(self) -> None:
