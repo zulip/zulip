@@ -260,7 +260,7 @@ def clear_supported_auth_backends_cache() -> None:
     supported_backends = None
 
 
-class Realm(models.Model):
+class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -1660,7 +1660,7 @@ class RealmUserDefault(UserBaseSettings):
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
+class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -2131,7 +2131,7 @@ class PasswordTooWeakError(Exception):
     pass
 
 
-class UserGroup(models.Model):
+class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     objects = CTEManager()
     id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=100)
