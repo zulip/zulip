@@ -30,6 +30,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDi
 from django.http.multipartparser import MultiPartParser
 from django.shortcuts import resolve_url
 from django.template.response import SimpleTemplateResponse, TemplateResponse
+from django.utils.crypto import constant_time_compare
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -284,7 +285,7 @@ def validate_api_key(
             remote_server = get_remote_server_by_uuid(role)
         except RemoteZulipServer.DoesNotExist:
             raise InvalidZulipServerError(role)
-        if api_key != remote_server.api_key:
+        if not constant_time_compare(api_key, remote_server.api_key):
             raise InvalidZulipServerKeyError(role)
 
         if remote_server.deactivated:
