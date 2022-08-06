@@ -8,6 +8,7 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
+from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
@@ -138,7 +139,7 @@ def register_remote_server(
                 event_time=remote_server.last_updated,
             )
         else:
-            if remote_server.api_key != zulip_org_key:
+            if not constant_time_compare(remote_server.api_key, zulip_org_key):
                 raise InvalidZulipServerKeyError(zulip_org_id)
             else:
                 remote_server.hostname = hostname
