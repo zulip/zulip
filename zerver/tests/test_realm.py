@@ -952,7 +952,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.FULL_MEMBERS_GROUP_NAME,
             "@role:members",
             "@role:everyone",
-            "@role:internet",
+            UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
         ]
         self.assertEqual(user_group_names.sort(), expected_system_group_names.sort())
 

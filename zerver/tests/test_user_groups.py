@@ -135,7 +135,9 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name="@role:everyone", is_system_group=True
         )
         everyone_on_internet_group = UserGroup.objects.get(
-            realm=realm, name="@role:internet", is_system_group=True
+            realm=realm,
+            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
+            is_system_group=True,
         )
 
         self.assertCountEqual(list(get_recursive_subgroups(owners_group)), [owners_group])
