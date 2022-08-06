@@ -188,7 +188,7 @@ STREAM_TOPIC_LINK_REGEX = r"""
                      \#\*\*                        # and after hash sign followed by double asterisks
                          (?P<stream_name>[^\*>]+)  # stream name can contain anything except >
                          >                         # > acts as separator
-                         (?P<topic_name>[^\*]+)     # topic name can contain anything
+                         (?P<topic_name>.+?)       # topic name can contain anything
                      \*\*                          # ends by double asterisks
                    """
 

@@ -2521,6 +2521,28 @@ class MarkdownTest(ZulipTestCase):
             render_markdown(msg, content).rendered_content, "<p>#<strong>casesens</strong></p>"
         )
 
+    def test_topic_with_asterisk(self) -> None:
+        denmark = get_stream('Denmark', get_realm('zulip'))
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark>some *topic**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20.2Atopic">#{d.name} &gt; some *topic</a></p>'.format(
+                d=denmark,
+            ))
+
+    def test_topic_with_asterisk_twice(self) -> None:
+        denmark = get_stream('Denmark', get_realm('zulip'))
+        sender_user_profile = self.example_user('othello')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark>some *topic** HI #**Denmark>some *topic**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20.2Atopic">#{d.name} &gt; some *topic</a> HI <a class="stream-topic" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark/topic/some.20.2Atopic">#{d.name} &gt; some *topic</a></p>'.format(
+                d=denmark,
+            ))
+
     def test_topic_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
