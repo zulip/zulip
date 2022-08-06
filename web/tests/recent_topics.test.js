@@ -517,7 +517,7 @@ test("test_filter_pm", ({mock_template}) => {
         assert.deepEqual(data, expected);
     });
 
-    mock_template("user_with_status_icon", false, (data) => {
+    mock_template("user_with_status_icon.hbs", false, (data) => {
         assert.deepEqual(data, expected_user_with_icon[i]);
         i += 1;
     });

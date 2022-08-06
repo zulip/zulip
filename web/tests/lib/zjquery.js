@@ -65,7 +65,17 @@ function make_zjquery() {
                 const val = target[key];
 
                 /* istanbul ignore if */
-                if (val === undefined && typeof key !== "symbol" && key !== "inspect") {
+                if (
+                    val === undefined &&
+                    typeof key !== "symbol" &&
+                    key !== "$$typeof" &&
+                    key !== "@@__IMMUTABLE_ITERABLE__@@" &&
+                    key !== "@@__IMMUTABLE_RECORD__@@" &&
+                    key !== "asymmetricMatch" &&
+                    key !== "inspect" &&
+                    key !== "nodeType" &&
+                    key !== "tagName"
+                ) {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
                     // are used for simply printing out the object.
