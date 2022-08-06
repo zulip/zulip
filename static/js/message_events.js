@@ -181,11 +181,14 @@ export function update_messages(events) {
             message_edit.end_message_row_edit($row);
         }
 
+        // new_topic will be undefined if the topic is unchanged.
         const new_topic = util.get_edit_event_topic(event);
+        // new_stream_id will be undefined if the stream is unchanged.
         const new_stream_id = event.new_stream_id;
+        // old_stream_id will be present and valid for all stream messages.
         const old_stream_id = event.stream_id;
-        // Note: old_stream will be undefined if the message was moved
-        // from a stream that the current user doesn't have access to.
+        // old_stream will be undefined if the message was moved from
+        // a stream that the current user doesn't have access to.
         const old_stream = sub_store.get(event.stream_id);
 
         // Save the content edit to the front end msg.edit_history
@@ -274,7 +277,7 @@ export function update_messages(events) {
                         timestamp: event.edit_timestamp,
                     };
                     if (stream_changed) {
-                        edit_history_entry.stream = event.new_stream_id;
+                        edit_history_entry.stream = new_stream_id;
                         edit_history_entry.prev_stream = old_stream_id;
                     }
                     if (topic_edited) {
@@ -316,7 +319,7 @@ export function update_messages(events) {
                 }
                 if (stream_changed) {
                     const new_stream_name = sub_store.get(new_stream_id).name;
-                    msg.stream_id = event.new_stream_id;
+                    msg.stream_id = new_stream_id;
                     msg.stream = new_stream_name;
                     msg.display_recipient = new_stream_name;
                 }
