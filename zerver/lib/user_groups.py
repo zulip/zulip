@@ -233,7 +233,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         is_system_group=True,
     )
     everyone_on_internet_system_group = UserGroup(
-        name="@role:internet",
+        name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
         description="Everyone on the Internet",
         realm=realm,
         is_system_group=True,

@@ -2146,6 +2146,7 @@ class UserGroup(models.Model):
 
     # Names for system groups.
     FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
+    EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
