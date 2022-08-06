@@ -71,7 +71,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assert_length(user_groups, 3)
         # othello is a direct member of two role-based system groups also.
         user_group_names = [group.name for group in user_groups]
-        self.assertEqual(set(user_group_names), {"support", "@role:members", "@role:fullmembers"})
+        self.assertEqual(
+            set(user_group_names), {"support", "@role:members", UserGroup.FULL_MEMBERS_GROUP_NAME}
+        )
 
     def test_recursive_queries_for_user_groups(self) -> None:
         realm = get_realm("zulip")
@@ -124,7 +126,7 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name="@role:moderators", is_system_group=True
         )
         full_members_group = UserGroup.objects.get(
-            realm=realm, name="@role:fullmembers", is_system_group=True
+            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
         members_group = UserGroup.objects.get(
             realm=realm, name="@role:members", is_system_group=True
@@ -747,7 +749,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         aaron = self.example_user("aaron")
 
         user_group = UserGroup.objects.get(
-            realm=iago.realm, name="@role:fullmembers", is_system_group=True
+            realm=iago.realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
 
         def check_support_group_permission(acting_user: UserProfile) -> None:
@@ -784,7 +786,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         full_members_group = UserGroup.objects.get(
-            realm=realm, name="@role:fullmembers", is_system_group=True
+            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
 
         self.assertTrue(

@@ -119,7 +119,7 @@ def bulk_create_users(
     Subscription.objects.bulk_create(subscriptions_to_create)
 
     full_members_system_group = UserGroup.objects.get(
-        name="@role:fullmembers", realm=realm, is_system_group=True
+        name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
     )
     members_system_group = UserGroup.objects.get(
         name="@role:members", realm=realm, is_system_group=True

@@ -1598,7 +1598,7 @@ def add_users_to_system_user_groups(
     realm: Realm, user_profiles: List[UserProfile], role_system_groups_dict: Dict[int, UserGroup]
 ) -> None:
     full_members_system_group = UserGroup.objects.get(
-        name="@role:fullmembers",
+        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
         realm=realm,
         is_system_group=True,
     )
