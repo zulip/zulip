@@ -145,12 +145,11 @@ export function insert_new_messages(messages, sent_by_this_client) {
 
 export function update_messages(events) {
     const msgs_to_rerender = [];
-    let topic_edited = false;
+    let any_topic_edited = false;
     let changed_narrow = false;
     let changed_compose = false;
-    let message_content_edited = false;
-    let stream_changed = false;
-    let stream_archived = false;
+    let any_message_content_edited = false;
+    let any_stream_changed = false;
 
     for (const event of events) {
         const msg = message_store.get(event.message_id);
@@ -205,7 +204,7 @@ export function update_messages(events) {
                 }
                 msg.edit_history = [edit_history_entry].concat(msg.edit_history);
             }
-            message_content_edited = true;
+            any_message_content_edited = true;
 
             // Update raw_content, so that editing a few times in a row is fast.
             msg.raw_content = event.content;
@@ -224,9 +223,16 @@ export function update_messages(events) {
         // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
-        topic_edited = new_topic !== undefined;
-        stream_changed = new_stream_id !== undefined;
-        stream_archived = old_stream === undefined;
+        const topic_edited = new_topic !== undefined;
+        const stream_changed = new_stream_id !== undefined;
+        const stream_archived = old_stream === undefined;
+        if (stream_changed) {
+            any_stream_changed = true;
+        }
+        if (topic_edited) {
+            any_topic_edited = true;
+        }
+
         if (topic_edited || stream_changed) {
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
@@ -480,7 +486,7 @@ export function update_messages(events) {
     // If a topic was edited, we re-render the whole view to get any
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
-    if (topic_edited || stream_changed) {
+    if (any_topic_edited || any_stream_changed) {
         message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
@@ -496,7 +502,13 @@ export function update_messages(events) {
         }
     } else {
         // If the content of the message was edited, we do a special animation.
-        message_lists.current.view.rerender_messages(msgs_to_rerender, message_content_edited);
+        //
+        // BUG: This triggers the "message edited" animation for every
+        // message that was edited if any one of them had its content
+        // edited. We should replace any_message_content_edited with
+        // passing two sets to rerender_messages; the set of all that
+        // are changed, and the set with content changes.
+        message_lists.current.view.rerender_messages(msgs_to_rerender, any_message_content_edited);
         if (message_lists.current === message_list.narrowed) {
             message_lists.home.view.rerender_messages(msgs_to_rerender);
         }
