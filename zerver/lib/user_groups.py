@@ -227,7 +227,7 @@ def create_system_user_groups_for_realm(realm: Realm) -> Dict[int, UserGroup]:
         role_system_groups_dict[role] = user_group
 
     full_members_system_group = UserGroup(
-        name="@role:fullmembers",
+        name=UserGroup.FULL_MEMBERS_GROUP_NAME,
         description="Members of this organization, not including new accounts and guests",
         realm=realm,
         is_system_group=True,

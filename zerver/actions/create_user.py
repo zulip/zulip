@@ -443,7 +443,9 @@ def do_create_user(
 
         if user_profile.role == UserProfile.ROLE_MEMBER and not user_profile.is_provisional_member:
             full_members_system_group = UserGroup.objects.get(
-                name="@role:fullmembers", realm=user_profile.realm, is_system_group=True
+                name=UserGroup.FULL_MEMBERS_GROUP_NAME,
+                realm=user_profile.realm,
+                is_system_group=True,
             )
             UserGroupMembership.objects.create(
                 user_profile=user_profile, user_group=full_members_system_group

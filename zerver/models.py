@@ -2144,8 +2144,12 @@ class UserGroup(models.Model):
     description: str = models.TextField(default="")
     is_system_group: bool = models.BooleanField(default=False)
 
-    # We do not have "Full members" and "Everyone on the internet" group here since there isn't a
-    # separate role value for full members and spectators.
+    # Names for system groups.
+    FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
+
+    # We do not have "Full members" and "Everyone on the internet"
+    # group here since there isn't a separate role value for full
+    # members and spectators.
     SYSTEM_USER_GROUP_ROLE_MAP = {
         UserProfile.ROLE_REALM_OWNER: {
             "name": "@role:owners",

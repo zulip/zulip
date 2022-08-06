@@ -949,7 +949,7 @@ class RealmTest(ZulipTestCase):
             "@role:owners",
             "@role:administrators",
             "@role:moderators",
-            "@role:fullmembers",
+            UserGroup.FULL_MEMBERS_GROUP_NAME,
             "@role:members",
             "@role:everyone",
             "@role:internet",
@@ -962,7 +962,7 @@ class RealmTest(ZulipTestCase):
             realm=realm, name="@role:members", is_system_group=True
         )
         full_members_system_group = UserGroup.objects.get(
-            realm=realm, name="@role:fullmembers", is_system_group=True
+            realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
 
         self.assert_length(UserGroupMembership.objects.filter(user_group=members_system_group), 10)
