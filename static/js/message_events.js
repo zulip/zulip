@@ -182,9 +182,10 @@ export function update_messages(events) {
         }
 
         const new_topic = util.get_edit_event_topic(event);
-
         const new_stream_id = event.new_stream_id;
-
+        const old_stream_id = event.stream_id;
+        // Note: old_stream will be undefined if the message was moved
+        // from a stream that the current user doesn't have access to.
         const old_stream = sub_store.get(event.stream_id);
 
         // Save the content edit to the front end msg.edit_history
@@ -260,7 +261,7 @@ export function update_messages(events) {
                 compose_fade.set_focused_recipient("stream");
             }
 
-            drafts.rename_topic(event.stream_id, orig_topic, new_topic);
+            drafts.rename_topic(old_stream_id, orig_topic, new_topic);
 
             for (const msg of event_messages) {
                 if (page_params.realm_allow_edit_history) {
@@ -274,7 +275,7 @@ export function update_messages(events) {
                     };
                     if (stream_changed) {
                         edit_history_entry.stream = event.new_stream_id;
-                        edit_history_entry.prev_stream = event.stream_id;
+                        edit_history_entry.prev_stream = old_stream_id;
                     }
                     if (topic_edited) {
                         edit_history_entry.topic = new_topic;
@@ -451,12 +452,12 @@ export function update_messages(events) {
             }
 
             // new_stream_id is undefined if this is only a topic edit.
-            const post_edit_stream_id = new_stream_id || event.stream_id;
+            const post_edit_stream_id = new_stream_id || old_stream_id;
 
-            const args = [event.stream_id, pre_edit_topic, post_edit_topic, post_edit_stream_id];
+            const args = [old_stream_id, pre_edit_topic, post_edit_topic, post_edit_stream_id];
             recent_senders.process_topic_edit({
                 message_ids: event.message_ids,
-                old_stream_id: event.stream_id,
+                old_stream_id,
                 old_topic: pre_edit_topic,
                 new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
