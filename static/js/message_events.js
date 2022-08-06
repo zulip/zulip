@@ -181,16 +181,6 @@ export function update_messages(events) {
             message_edit.end_message_row_edit($row);
         }
 
-        // new_topic will be undefined if the topic is unchanged.
-        const new_topic = util.get_edit_event_topic(event);
-        // new_stream_id will be undefined if the stream is unchanged.
-        const new_stream_id = event.new_stream_id;
-        // old_stream_id will be present and valid for all stream messages.
-        const old_stream_id = event.stream_id;
-        // old_stream will be undefined if the message was moved from
-        // a stream that the current user doesn't have access to.
-        const old_stream = sub_store.get(event.stream_id);
-
         // Save the content edit to the front end msg.edit_history
         // before topic edits to ensure that combined topic / content
         // edits have edit_history logged for both before any
@@ -220,6 +210,16 @@ export function update_messages(events) {
             // Update raw_content, so that editing a few times in a row is fast.
             msg.raw_content = event.content;
         }
+
+        // new_topic will be undefined if the topic is unchanged.
+        const new_topic = util.get_edit_event_topic(event);
+        // new_stream_id will be undefined if the stream is unchanged.
+        const new_stream_id = event.new_stream_id;
+        // old_stream_id will be present and valid for all stream messages.
+        const old_stream_id = event.stream_id;
+        // old_stream will be undefined if the message was moved from
+        // a stream that the current user doesn't have access to.
+        const old_stream = sub_store.get(event.stream_id);
 
         // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
