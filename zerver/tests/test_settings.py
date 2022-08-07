@@ -121,9 +121,11 @@ class ChangeSettingsTest(ZulipTestCase):
         json_result = self.client_patch("/json/settings", dict(full_name="x" * 1000))
         self.assert_json_error(json_result, "Name too long!")
 
-        # Now try a too-short name
-        json_result = self.client_patch("/json/settings", dict(full_name="x"))
-        self.assert_json_error(json_result, "Name too short!")
+        # Now try too-short names
+        short_names = ["", "x"]
+        for name in short_names:
+            json_result = self.client_patch("/json/settings", dict(full_name=name))
+            self.assert_json_error(json_result, "Name too short!")
 
     def test_illegal_characters_in_name_changes(self) -> None:
         self.login("hamlet")
