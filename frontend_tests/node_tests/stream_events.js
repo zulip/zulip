@@ -124,6 +124,7 @@ test("update_property", ({override}) => {
     {
         const stub = make_stub();
         override(stream_muting, "update_is_muted", stub.f);
+        override(stream_list, "refresh_muted_or_unmuted_stream", noop);
         stream_events.update_property(stream_id, "in_home_view", false);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");

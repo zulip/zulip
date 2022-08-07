@@ -22,7 +22,7 @@ below, and add more to your repertoire as needed.
 
 * **New private message**: `x`
 
-* **Cancel compose**: `Esc` or `Ctrl` + `[` — Close the compose box and save
+* **Cancel compose and save draft**: `Esc` or `Ctrl` + `[` — Close the compose box and save
   the unsent message as a draft.
 
 * **View drafts**: `d` — Use the arrow keys and `Enter` to restore a draft.
@@ -114,7 +114,7 @@ below, and add more to your repertoire as needed.
 * **Insert bold text**: `**bold**` or `Ctrl` + `B`
 * **Insert link**: `[Zulip website](https://zulip.org)` or `Ctrl` + `Shift` + `L`
 
-* **Cancel compose**: `Esc` or `Ctrl` + `[` — Close the compose box and save
+* **Cancel compose and save draft**: `Esc` or `Ctrl` + `[` — Close the compose box and save
   the unsent message as a draft.
 
 ## Message actions

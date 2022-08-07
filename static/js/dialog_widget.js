@@ -118,6 +118,10 @@ export function launch(conf) {
     }
 
     const $submit_button = $dialog.find(".dialog_submit_button");
+    const $send_email_checkbox = $dialog.find(".send_email");
+    const $email_field = $dialog.find(".email_field");
+
+    $email_field.hide();
 
     // This is used to link the submit button with the form, if present, in the modal.
     // This makes it so that submitting this form by pressing Enter on an input element
@@ -138,6 +142,14 @@ export function launch(conf) {
         }
         $("#dialog_error").hide();
         conf.on_click(e);
+    });
+
+    $($send_email_checkbox).on("change", () => {
+        if ($($send_email_checkbox).is(":checked")) {
+            $email_field.show();
+        } else {
+            $email_field.hide();
+        }
     });
 
     overlays.open_modal("dialog_widget_modal", {

@@ -21,6 +21,7 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as user_pill from "./user_pill";
@@ -442,11 +443,16 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
 
             const bots_owned_by_user = bot_data.get_all_bots_owned_by_user(user_id);
             const user = people.get_by_user_id(user_id);
+            const realm_uri = page_params.realm_uri;
+            const realm_name = page_params.realm_name;
             const opts = {
                 username: user.full_name,
                 email: settings_data.email_for_user_settings(user),
                 bots_owned_by_user,
                 number_of_invites_by_user,
+                admin_email: people.my_current_email(),
+                realm_uri,
+                realm_name,
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
@@ -479,6 +485,17 @@ function handle_deactivation($tbody) {
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
             dialog_widget.submit_api_request(channel.del, url);
+
+            let data = {};
+            if ($(".send_email").is(":checked")) {
+                data = {
+                    deactivation_notification_comment: $(".email_field_textarea").val(),
+                };
+            }
+
+            const $status_field = $("#admin-user-list .alert-notification");
+
+            settings_ui.do_settings_change(channel.del, url, data, $status_field);
         }
 
         confirm_deactivation(user_id, handle_confirm, true);

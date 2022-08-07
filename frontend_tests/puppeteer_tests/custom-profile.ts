@@ -4,25 +4,30 @@ import type {Page} from "puppeteer";
 
 import common from "../puppeteer_lib/common";
 
-// These will be the row and edit form of the the custom profile we add.
-const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(2)";
-const profile_field_form = "#admin_profile_fields_table tr:nth-last-child(1)";
+// This will be the row of the the custom profile field we add.
+const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";
 
 async function test_add_new_profile_field(page: Page): Promise<void> {
+    await page.click("#add-custom-profile-field-btn");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new custom profile field",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+    );
     await page.waitForSelector(".admin-profile-field-form", {visible: true});
     await common.fill_form(page, "form.admin-profile-field-form", {
         name: "Teams",
         field_type: "1",
     });
-    await page.click("form.admin-profile-field-form button[type='submit']");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForSelector("#admin-add-profile-field-status img", {visible: true});
-    assert.strictEqual(
-        await common.get_text_from_selector(page, "div#admin-add-profile-field-status"),
-        "Saved",
-    );
     await page.waitForXPath(
-        '//*[@id="admin_profile_fields_table"]//tr[last()-1]/td[normalize-space()="Teams"]',
+        '//*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="Teams"]',
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
@@ -31,16 +36,24 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
 }
 
 async function test_edit_profile_field(page: Page): Promise<void> {
-    await page.click(`${profile_field_row} button.open-edit-form`);
-    await page.waitForSelector(`${profile_field_form} form.name-setting`, {visible: true});
-    await common.fill_form(page, `${profile_field_form} form.name-setting`, {
+    await page.click(`${profile_field_row} button.open-edit-form-modal`);
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Edit custom profile field",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Save changes",
+    );
+    await common.fill_form(page, "form.name-setting", {
         name: "team",
     });
-    await page.click(`${profile_field_form} button.submit`);
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForSelector("#admin-profile-field-status img", {visible: true});
     await page.waitForXPath(
-        '//*[@id="admin_profile_fields_table"]//tr[last()-1]/td[normalize-space()="team"]',
+        '//*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="team"]',
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),

@@ -170,6 +170,9 @@ export function clear_topic_resolved_warning() {
 }
 
 export function warn_if_topic_resolved(topic_changed) {
+    if (compose_state.recipient_has_topics()) {
+        return;
+    }
     // This function is called with topic_changed=false on every
     // keypress when typing a message, so it should not do anything
     // expensive in that case.
@@ -578,6 +581,8 @@ export function check_overflow_text() {
             $("#compose-send-status").stop(true).fadeOut();
         }
     }
+
+    return text.length;
 }
 
 export function warn_for_text_overflow_when_tries_to_send() {

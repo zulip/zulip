@@ -1399,6 +1399,42 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.assertTrue(user.is_active)
 
+    def test_email_sent(self) -> None:
+        self.login("iago")
+        user = self.example_user("hamlet")
+
+        # Verify no email sent by default.
+        result = self.client_delete(f"/json/users/{user.id}", dict())
+        self.assert_json_success(result)
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 0)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        # Reactivate user
+        do_reactivate_user(user, acting_user=None)
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
+        # Verify no email sent by default.
+        result = self.client_delete(
+            f"/json/users/{user.id}",
+            dict(
+                deactivation_notification_comment="Dear Hamlet,\nyou just got deactivated.",
+            ),
+        )
+        self.assert_json_success(result)
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+        self.assert_length(outbox, 1)
+        msg = outbox[0]
+        self.assertEqual(msg.subject, "Notification of account deactivation on Zulip Dev")
+        self.assert_length(msg.reply_to, 1)
+        self.assertEqual(msg.reply_to[0], "noreply@testserver")
+        self.assertIn("Dear Hamlet,", msg.body)
+
     def test_api_with_nonexistent_user(self) -> None:
         self.login("iago")
 

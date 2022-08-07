@@ -131,7 +131,7 @@ def get_chart_data_for_realm(
     except Realm.DoesNotExist:
         raise JsonableError(_("Invalid organization"))
 
-    return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
+    return get_chart_data(request, user_profile, realm=realm, **kwargs)
 
 
 @require_server_admin_api
@@ -147,8 +147,8 @@ def get_chart_data_for_remote_realm(
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(
-        request=request,
-        user_profile=user_profile,
+        request,
+        user_profile,
         server=server,
         remote=True,
         remote_realm_id=int(remote_realm_id),
@@ -179,9 +179,7 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
 def get_chart_data_for_installation(
     request: HttpRequest, /, user_profile: UserProfile, chart_name: str = REQ(), **kwargs: Any
 ) -> HttpResponse:
-    return get_chart_data(
-        request=request, user_profile=user_profile, for_installation=True, **kwargs
-    )
+    return get_chart_data(request, user_profile, for_installation=True, **kwargs)
 
 
 @require_server_admin_api
@@ -197,8 +195,8 @@ def get_chart_data_for_remote_installation(
     assert settings.ZILENCER_ENABLED
     server = RemoteZulipServer.objects.get(id=remote_server_id)
     return get_chart_data(
-        request=request,
-        user_profile=user_profile,
+        request,
+        user_profile,
         for_installation=True,
         remote=True,
         server=server,

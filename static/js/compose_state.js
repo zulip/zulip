@@ -12,6 +12,10 @@ export function get_message_type() {
     return message_type;
 }
 
+export function recipient_has_topics() {
+    return message_type !== "stream";
+}
+
 export function composing() {
     // This is very similar to get_message_type(), but it returns
     // a boolean.

@@ -46,6 +46,7 @@ export function update_property(stream_id, property, value, other_values) {
             break;
         case "in_home_view":
             stream_muting.update_is_muted(sub, !value);
+            stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_topics_ui.complete_rerender();
             break;
         case "desktop_notifications":

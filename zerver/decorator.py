@@ -142,52 +142,76 @@ def require_post(
     return wrapper
 
 
-def require_realm_owner(func: ViewFuncT) -> ViewFuncT:
+def require_realm_owner(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
         return func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
-def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
+def require_realm_admin(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequired()
         return func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
-def require_organization_member(func: ViewFuncT) -> ViewFuncT:
+def require_organization_member(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.role > UserProfile.ROLE_MEMBER:
             raise OrganizationMemberRequired()
         return func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
-def require_billing_access(func: ViewFuncT) -> ViewFuncT:
+def require_billing_access(
+    func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(func)
     def wrapper(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.has_billing_access:
             raise JsonableError(_("Must be a billing administrator or an organization owner"))
         return func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
 def process_client(
@@ -364,7 +388,7 @@ def webhook_view(
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(
                 request,
@@ -627,22 +651,34 @@ def require_server_admin_api(
     return _wrapped_view_func
 
 
-def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
+def require_non_guest_user(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
         return view_func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
-def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
+def require_member_or_admin(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def _wrapped_view_func(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.is_guest:
             raise JsonableError(_("Not allowed for guest users"))
@@ -650,20 +686,26 @@ def require_member_or_admin(view_func: ViewFuncT) -> ViewFuncT:
             raise JsonableError(_("This endpoint does not accept bot requests."))
         return view_func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
-def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
+def require_user_group_edit_permission(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @require_member_or_admin
     @wraps(view_func)
     def _wrapped_view_func(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.can_edit_user_groups():
             raise JsonableError(_("Insufficient permission"))
         return view_func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 # This API endpoint is used only for the mobile apps.  It is part of a
@@ -677,7 +719,7 @@ def authenticated_uploads_api_view(
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
         ) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:

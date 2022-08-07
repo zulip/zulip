@@ -204,6 +204,10 @@ export function is_active(sub) {
     return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 }
 
+export function is_muted_active(sub) {
+    return sub.is_muted && is_active(sub);
+}
+
 export function rename_sub(sub, new_name) {
     const old_name = sub.name;
 

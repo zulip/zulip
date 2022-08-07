@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import orjson
 from django.http import HttpRequest, HttpResponse
+from django.http.response import HttpResponseBase
 from django.shortcuts import render
 from django.test import Client
 
@@ -110,7 +111,7 @@ def check_send_webhook_fixture_message(
     body: str = REQ(),
     is_json: bool = REQ(json_validator=check_bool),
     custom_headers: str = REQ(),
-) -> HttpResponse:
+) -> HttpResponseBase:
     try:
         custom_headers_dict = orjson.loads(custom_headers)
     except orjson.JSONDecodeError as ve:

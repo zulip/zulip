@@ -412,7 +412,14 @@ export function initialize() {
 
     $("#compose-textarea").on("input propertychange", () => {
         compose_validate.warn_if_topic_resolved(false);
-        compose_validate.check_overflow_text();
+        const compose_text_length = compose_validate.check_overflow_text();
+        // Change compose close button tooltip as per condition.
+        // We save compose text in draft only if its length is > 2.
+        if (compose_text_length > 2) {
+            $("#compose_close").attr("data-tooltip-template-id", "compose_close_and_save_tooltip");
+        } else {
+            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip");
+        }
     });
 
     $("#compose form").on("submit", (e) => {

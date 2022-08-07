@@ -54,7 +54,12 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import FullNameInfo, MentionBackend, MentionData
+from zerver.lib.mention import (
+    BEFORE_MENTION_ALLOWED_REGEX,
+    FullNameInfo,
+    MentionBackend,
+    MentionData,
+)
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
@@ -162,11 +167,11 @@ def verbose_compile(pattern: str) -> Pattern[str]:
     )
 
 
-STREAM_LINK_REGEX = r"""
-                     (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
-                     \#\*\*                       # and after hash sign followed by double asterisks
-                         (?P<stream_name>[^\*]+)  # stream name can contain anything
-                     \*\*                         # ends by double asterisks
+STREAM_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX} # Start after whitespace or specified chars
+                     \#\*\*                         # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*]+)    # stream name can contain anything
+                     \*\*                           # ends by double asterisks
                     """
 
 
@@ -183,13 +188,13 @@ def get_compiled_stream_link_regex() -> Pattern[str]:
     )
 
 
-STREAM_TOPIC_LINK_REGEX = r"""
-                     (?<![^\s'"\(,:<])             # Start after whitespace or specified chars
-                     \#\*\*                        # and after hash sign followed by double asterisks
-                         (?P<stream_name>[^\*>]+)  # stream name can contain anything except >
-                         >                         # > acts as separator
-                         (?P<topic_name>[^\*]+)     # topic name can contain anything
-                     \*\*                          # ends by double asterisks
+STREAM_TOPIC_LINK_REGEX = rf"""
+                     {BEFORE_MENTION_ALLOWED_REGEX}  # Start after whitespace or specified chars
+                     \#\*\*                          # and after hash sign followed by double asterisks
+                         (?P<stream_name>[^\*>]+)    # stream name can contain anything except >
+                         >                           # > acts as separator
+                         (?P<topic_name>[^\*]+)      # topic name can contain anything
+                     \*\*                            # ends by double asterisks
                    """
 
 

@@ -1089,7 +1089,9 @@ body.dark-theme {
     .sub-unsub-message span::before,
     .sub-unsub-message span::after,
     .date_row span::before,
-    .date_row span::after {
+    .date_row span::after,
+    .streams_subheader span::before,
+    .streams_subheader span::after {
         opacity: 0.2;
     }
 
