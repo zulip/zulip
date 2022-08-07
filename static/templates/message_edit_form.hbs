@@ -17,7 +17,9 @@
                 </div>
                 <i class="fa fa-angle-right" aria-hidden="true"></i>
             {{/if}}
-            <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
+            {{#if should_topic_be_visible}}
+                <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
+            {{/if}}
         </div>
         <select class='message_edit_topic_propagate' style='display:none;'>
             <option value="change_one"> {{t "Move only this message" }}</option>

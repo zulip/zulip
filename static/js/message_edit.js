@@ -428,6 +428,9 @@ function edit_message($row, raw_content) {
 
     const is_stream_editable =
         message.is_stream && settings_data.user_can_move_messages_between_streams();
+
+    // we do not show topic when stream and topic are not editable.
+    const should_topic_be_visible = is_topic_editable(message) || is_stream_editable;
     const is_editable =
         editability === editability_types.TOPIC_ONLY ||
         editability === editability_types.FULL ||
@@ -461,6 +464,7 @@ function edit_message($row, raw_content) {
             file_upload_enabled,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
             is_stream_editable,
+            should_topic_be_visible,
             select_move_stream_widget_name,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
