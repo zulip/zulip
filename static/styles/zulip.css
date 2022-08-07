@@ -1563,8 +1563,7 @@ div.focused_table {
     }
 }
 
-.message_length_controller {    
-.message_edit_breadcrumb_messages {
+.message_length_controller, .message_edit_breadcrumb_messages {
     margin-bottom: 10px;
 }
 
