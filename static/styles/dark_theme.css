@@ -134,16 +134,22 @@ body.dark-theme {
         }
     }
 
-    .app-main,
-    .header-main,
-    #message_view_header_underpadding,
-    .floating_recipient .message-header-wrapper,
-    .column-middle,
-    #compose,
     #groups_overlay .right,
     #subscription_overlay .right,
     #settings_page .right {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    .app-main,
+    #message_view_header_underpadding,
+    .floating_recipient .message-header-wrapper,
+    .column-middle,
+    #compose {
+        background-color: hsla(0, 0%, 14%, 1);
+    }
+
+    .header-main {
+        background-color: hsla(0, 0%, 13%, 1);
     }
 
     .column-left .left-sidebar,

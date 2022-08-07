@@ -380,7 +380,10 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0, 0%, 100%);
+}
+
+.header-main {
+    background-color: hsla(0, 0%, 96%, 1);
 }
 
 .fixed-app {
@@ -407,6 +410,7 @@ p.n-margin {
 }
 
 .app-main {
+    background-color: hsla(0, 0%, 100%, 1);
     height: 100%;
     min-height: 100%;
 
