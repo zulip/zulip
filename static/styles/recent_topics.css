@@ -141,8 +141,9 @@
         }
 
         .unread_count {
-            margin-right: 10px;
-            margin-left: 10px;
+            /* Focus underline can only occupy the total length of the unread count */
+            margin-right: 1px;
+            margin-left: 1px;
             align-self: center;
             background-color: hsl(105, 2%, 50%);
         }
@@ -166,6 +167,8 @@
         }
 
         .recent_topic_actions {
+            /* To add spacing between unread count and mute icon */
+            margin-left: 10px;
             display: flex;
             flex-flow: row nowrap;
         }
