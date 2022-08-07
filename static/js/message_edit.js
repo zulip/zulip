@@ -550,7 +550,7 @@ function edit_message($row, raw_content) {
         editability !== editability_types.NO &&
         page_params.realm_message_content_edit_limit_seconds > 0
     ) {
-        $row.find(".message-edit-timer-control-group").show();
+        $row.find(".message-edit-timer").show();
     }
 
     // add timer
