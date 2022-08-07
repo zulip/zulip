@@ -412,8 +412,10 @@ p.n-margin {
 
     .column-left .left-sidebar,
     .column-right .right-sidebar {
+        background-color: hsla(0, 0%, 94%, 1);
+        height: 100%;
         position: fixed;
-        margin-top: $sidebar_top;
+        padding-top: $sidebar_top;
         z-index: 100;
     }
 
