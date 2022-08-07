@@ -28,7 +28,6 @@ html {
     height: 100%;
     overflow-x: hidden;
     overflow-y: hidden;
-
     touch-action: manipulation;
 }
 
@@ -1565,24 +1564,30 @@ div.focused_table {
     }
 }
 
-.message_length_controller {
+.message_length_controller {    
     display: none;
     text-align: center;
-    color: hsl(200, 100%, 40%);
-
+    box-shadow: 0px 0px 1px #000;
+    border-radius: 1px;
+    width: 100%;
+    padding-top: .5%;
+    color: #333;
     /* to match .message_content */
-    margin-left: 5px;
+    margin-left: 45.5px;
     margin-right: 35px;
     /* to make message-uncollapse easier */
     margin-top: 10px;
+    margin-bottom: 1.5%;
+    transition: .2s;
+}
 
-    &:hover {
-        text-decoration: underline;
-    }
+.message_length_controller:hover {
+    background-color: #e0e0e0;
 }
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
+    border: none;
 }
 
 .bookend {
