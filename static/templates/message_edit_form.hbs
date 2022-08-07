@@ -8,13 +8,15 @@
     {{#if is_stream}}
     <div class="edit-controls">
         <div class="message_edit_header">
-            <div class="stream_header_colorblock" {{#unless is_stream_editable}}style="display:none"{{/unless}}></div>
-            <div class="select_stream_setting" {{#unless is_stream_editable}}style="display:none"{{/unless}}>
-                {{> settings/dropdown_list_widget
-                  widget_name=select_move_stream_widget_name
-                  list_placeholder=(t 'Filter streams')}}
-            </div>
-            <i class="fa fa-angle-right" aria-hidden="true" {{#unless is_stream_editable}}style="display:none"{{/unless}}></i>
+            {{#if is_stream_editable}}
+                <div class="stream_header_colorblock"></div>
+                <div class="select_stream_setting">
+                    {{> settings/dropdown_list_widget
+                      widget_name=select_move_stream_widget_name
+                      list_placeholder=(t 'Filter streams')}}
+                </div>
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+            {{/if}}
             <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" autocomplete="off" />
         </div>
         <select class='message_edit_topic_propagate' style='display:none;'>
