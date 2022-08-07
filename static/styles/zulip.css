@@ -1326,7 +1326,7 @@ td.pointer {
     align-items: center;
     justify-content: space-between;
     border-right: 1px solid hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+    background-color: hsla(0, 0%, 94%, 1);
 }
 
 .mention .messagebox {

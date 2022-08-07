@@ -384,7 +384,7 @@ body.dark-theme {
 
     .message-header-contents,
     .message_header_private_message .message-header-contents {
-        background-color: hsla(0, 0%, 0%, 0.2);
+        background-color: hsla(0, 0%, 11%, 1);
         border-color: transparent;
     }
 
