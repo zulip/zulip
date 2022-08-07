@@ -831,7 +831,9 @@ def is_local_addr(addr: str) -> bool:
 # secret, and also the originating IP (for now).
 @has_request_variables
 def authenticate_notify(request: HttpRequest, secret: str = REQ("secret")) -> bool:
-    return is_local_addr(request.META["REMOTE_ADDR"]) and secret == settings.SHARED_SECRET
+    return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
+        secret, settings.SHARED_SECRET
+    )
 
 
 def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
