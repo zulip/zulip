@@ -244,11 +244,13 @@ class EmailChangeTestCase(ZulipTestCase):
         )
 
     def test_post_invalid_email(self) -> None:
-        data = {"email": "hamlet-new"}
-        self.login("hamlet")
-        url = "/json/settings"
-        result = self.client_patch(url, data)
-        self.assert_in_response("Invalid address", result)
+        invalid_emails = ["", "hamlet-new"]
+        for email in invalid_emails:
+            data = {"email": email}
+            self.login("hamlet")
+            url = "/json/settings"
+            result = self.client_patch(url, data)
+            self.assert_in_response("Invalid address", result)
 
     def test_post_same_email(self) -> None:
         data = {"email": self.example_email("hamlet")}

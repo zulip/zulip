@@ -147,10 +147,10 @@ def check_settings_values(
 def json_change_settings(
     request: HttpRequest,
     user_profile: UserProfile,
-    full_name: str = REQ(default=""),
-    email: str = REQ(default=""),
-    old_password: str = REQ(default=""),
-    new_password: str = REQ(default=""),
+    full_name: Optional[str] = REQ(default=None),
+    email: Optional[str] = REQ(default=None),
+    old_password: Optional[str] = REQ(default=None),
+    new_password: Optional[str] = REQ(default=None),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -227,7 +227,7 @@ def json_change_settings(
             notification_sound, email_notifications_batching_period_seconds, default_language
         )
 
-    if new_password != "":
+    if new_password is not None:
         return_data: Dict[str, Any] = {}
         if email_belongs_to_ldap(user_profile.realm, user_profile.delivery_email):
             raise JsonableError(_("Your Zulip password is managed in LDAP"))
@@ -270,36 +270,38 @@ def json_change_settings(
         request.session.save()
 
     result: Dict[str, Any] = {}
-    new_email = email.strip()
-    if user_profile.delivery_email != new_email and new_email != "":
-        if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
-            raise JsonableError(_("Email address changes are disabled in this organization."))
 
-        error = validate_email_is_valid(
-            new_email,
-            get_realm_email_validator(user_profile.realm),
-        )
-        if error:
-            raise JsonableError(error)
+    if email is not None:
+        new_email = email.strip()
+        if user_profile.delivery_email != new_email:
+            if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
+                raise JsonableError(_("Email address changes are disabled in this organization."))
 
-        try:
-            validate_email_not_already_in_realm(
-                user_profile.realm,
+            error = validate_email_is_valid(
                 new_email,
-                verbose=False,
+                get_realm_email_validator(user_profile.realm),
             )
-        except ValidationError as e:
-            raise JsonableError(e.message)
+            if error:
+                raise JsonableError(error)
 
-        ratelimited, time_until_free = RateLimitedUser(
-            user_profile, domain="email_change_by_user"
-        ).rate_limit()
-        if ratelimited:
-            raise RateLimited(time_until_free)
+            try:
+                validate_email_not_already_in_realm(
+                    user_profile.realm,
+                    new_email,
+                    verbose=False,
+                )
+            except ValidationError as e:
+                raise JsonableError(e.message)
 
-        do_start_email_change_process(user_profile, new_email)
+            ratelimited, time_until_free = RateLimitedUser(
+                user_profile, domain="email_change_by_user"
+            ).rate_limit()
+            if ratelimited:
+                raise RateLimited(time_until_free)
 
-    if user_profile.full_name != full_name and full_name.strip() != "":
+            do_start_email_change_process(user_profile, new_email)
+
+    if full_name is not None and user_profile.full_name != full_name:
         if name_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
             # Failingly silently is fine -- they can't do it through the UI, so
             # they'd have to be trying to break the rules.
