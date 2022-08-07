@@ -1458,7 +1458,7 @@ div.focused_table {
     color: hsl(0, 0%, 63%);
 }
 
-.message-edit-timer-control-group {
+.message-edit-timer {
     float: right;
     display: none;
     margin-top: 5px;
@@ -2548,10 +2548,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
         /* Setting resize as none hides the bottom right diagonal box
            (which even has a background color of its own!). */
         resize: none !important;
-    }
-
-    .control-group.no-margin {
-        margin-bottom: 0;
     }
 }
 
