@@ -9744,8 +9744,6 @@ paths:
                           to.
                       unread_msgs:
                         type: object
-                        items:
-                          $ref: "#/components/schemas/BasicStream"
                         description: |
                           Present if `message` and `update_message_flags` are both present in
                           `event_types`.
