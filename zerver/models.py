@@ -907,7 +907,7 @@ class Realm(models.Model):
 
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
-            raise JsonableError(self.UPGRADE_TEXT_STANDARD)
+            raise JsonableError(str(self.UPGRADE_TEXT_STANDARD))
 
     @property
     def subdomain(self) -> str:
@@ -1872,7 +1872,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     }
 
     def get_role_name(self) -> str:
-        return self.ROLE_ID_TO_NAME_MAP[self.role]
+        return str(self.ROLE_ID_TO_NAME_MAP[self.role])
 
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
@@ -4505,7 +4505,9 @@ class CustomProfileField(models.Model):
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {
         item[0]: item[3] for item in ALL_FIELD_TYPES
     }
-    FIELD_TYPE_CHOICES: List[Tuple[int, Promise]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
+    FIELD_TYPE_CHOICES: List[Tuple[int, "StrPromise"]] = [
+        (item[0], item[1]) for item in ALL_FIELD_TYPES
+    ]
 
     field_type: int = models.PositiveSmallIntegerField(
         choices=FIELD_TYPE_CHOICES,
