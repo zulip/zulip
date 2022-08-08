@@ -106,8 +106,7 @@ Alternatively, you can [self-host](/self-hosting/) your Zulip organization. See
 
 #### Import into a Zulip Cloud organization
 
-If you plan to use Zulip Cloud, we'll take it from here! Please e-mail
-[support@zulip.com](mailto:support@zulip.com) with the following information:
+{!send-us-info.md!}
 
 1. The subdomain you would like to use for your organization. Your Zulip chat will
    be hosted at `<subdomain>.zulipchat.com`.
