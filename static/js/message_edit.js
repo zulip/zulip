@@ -869,7 +869,11 @@ export function save_message_row_edit($row) {
     let changed = false;
     let edit_locally_echoed = false;
 
-    const new_content = $row.find(".message_edit_content").val();
+    const $edit_content_input = $row.find(".message_edit_content");
+    let content_changed = false;
+    let new_content;
+    const old_content = message.raw_content;
+
     let topic_changed = false;
     let new_topic;
     const old_topic = message.topic;
@@ -879,6 +883,12 @@ export function save_message_row_edit($row) {
     const old_stream_id = message.stream_id;
 
     show_message_edit_spinner($row);
+
+    if ($edit_content_input.attr("readonly") !== "readonly") {
+        new_content = $edit_content_input.val();
+        content_changed = old_content !== new_content;
+        changed = content_changed;
+    }
 
     if (message.type === "stream") {
         new_topic = $row.find(".message_edit_topic").val();
@@ -931,9 +941,8 @@ export function save_message_row_edit($row) {
     if (stream_changed) {
         request.stream_id = new_stream_id;
     }
-    if (new_content !== message.raw_content) {
+    if (content_changed) {
         request.content = new_content;
-        changed = true;
     }
 
     if (!changed) {
