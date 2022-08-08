@@ -39,3 +39,9 @@ Completed manual review and testing of the following:
 - [ ] Strings and tooltips.
 - [ ] End-to-end functionality of buttons, interactions and flows.
 - [ ] Corner cases, error conditions, and easily imagined bugs.
+
+**Technical details:**
+
+- Browser version, screen recording, console logs, network requests: You can make a recording with [Bird Eats Bug](https://birdeatsbug.com/).
+- Node.js version
+- Anything else that you think could be an issue.
