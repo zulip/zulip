@@ -81,6 +81,10 @@ TAB_SECTION_LABELS = {
     "custom-subdomain": "Custom subdomain",
     "zulip-cloud": "Zulip Cloud",
     "self-hosting": "Self hosting",
+    "okta": "Okta",
+    "onelogin": "OneLogin",
+    "azuread": "AzureAD",
+    "keycloak": "Keycloak",
 }
 
 
