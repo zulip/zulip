@@ -740,7 +740,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+                        topic=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC),
                         content=_(
                             "**{policy}** stream created by {user_name}. **Description:**"
                         ).format(
