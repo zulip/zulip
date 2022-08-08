@@ -713,7 +713,7 @@ def create_user_backend(
         pass
 
     if not check_password_strength(password):
-        raise JsonableError(PASSWORD_TOO_WEAK_ERROR)
+        raise JsonableError(str(PASSWORD_TOO_WEAK_ERROR))
 
     target_user = do_create_user(
         email,

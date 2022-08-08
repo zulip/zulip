@@ -141,7 +141,7 @@ class RegistrationForm(forms.Form):
         if self.fields["password"].required and not check_password_strength(password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
-            raise ValidationError(PASSWORD_TOO_WEAK_ERROR)
+            raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return password
 
@@ -269,7 +269,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
         if not check_password_strength(new_password):
             # The frontend code tries to stop the user from submitting the form with a weak password,
             # but if the user bypasses that protection, this error code path will run.
-            raise ValidationError(PASSWORD_TOO_WEAK_ERROR)
+            raise ValidationError(str(PASSWORD_TOO_WEAK_ERROR))
 
         return new_password
 

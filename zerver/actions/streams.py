@@ -825,7 +825,7 @@ def send_change_stream_permission_notification(
             new_policy=new_policy_name,
         )
         internal_send_stream_message(
-            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC), notification_string
         )
 
 
@@ -1010,7 +1010,7 @@ def send_change_stream_post_policy_notification(
             new_policy=Stream.POST_POLICIES[new_post_policy],
         )
         internal_send_stream_message(
-            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC), notification_string
         )
 
 
@@ -1133,7 +1133,7 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         internal_send_stream_message(
             sender,
             stream,
-            Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+            str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC),
             _("{user_name} renamed stream {old_stream_name} to {new_stream_name}.").format(
                 user_name=silent_mention_syntax_for_user(user_profile),
                 old_stream_name=f"**{old_name}**",
@@ -1170,7 +1170,7 @@ def send_change_stream_description_notification(
         )
 
         internal_send_stream_message(
-            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC), notification_string
         )
 
 
@@ -1256,7 +1256,7 @@ def send_change_stream_message_retention_days_notification(
             summary_line=summary_line,
         )
         internal_send_stream_message(
-            sender, stream, Realm.STREAM_EVENTS_NOTIFICATION_TOPIC, notification_string
+            sender, stream, str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC), notification_string
         )
 
 
