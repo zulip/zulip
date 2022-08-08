@@ -875,12 +875,9 @@ export function save_message_row_edit($row) {
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
     const message = message_lists.current.get(message_id);
-    const can_edit_stream =
-        message.is_stream && settings_data.user_can_move_messages_between_streams();
     let changed = false;
     let edit_locally_echoed = false;
 
-    const $edit_content_input = $row.find(".message_edit_content");
     let content_changed = false;
     let new_content;
     const old_content = message.raw_content;
@@ -895,22 +892,29 @@ export function save_message_row_edit($row) {
 
     show_message_edit_spinner($row);
 
-    if ($edit_content_input.attr("readonly") !== "readonly") {
+    const $edit_content_input = $row.find(".message_edit_content");
+    const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
+    if (can_edit_content) {
         new_content = $edit_content_input.val();
         content_changed = old_content !== new_content;
         changed = content_changed;
     }
 
-    if (message.type === "stream") {
-        new_topic = $row.find(".message_edit_topic").val();
+    const $edit_topic_input = $row.find(".message_edit_topic");
+    const can_edit_topic = message.is_stream && $edit_topic_input.attr("readonly") !== "readonly";
+    if (can_edit_topic) {
+        new_topic = $edit_topic_input.val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
-
-        if (can_edit_stream) {
-            const $dropdown_list_widget_value_elem = $(`#id_select_move_stream_${message_id}`);
-            new_stream_id = Number.parseInt($dropdown_list_widget_value_elem.data("value"), 10);
-            stream_changed = new_stream_id !== old_stream_id;
-        }
     }
+
+    const can_edit_stream =
+        message.is_stream && settings_data.user_can_move_messages_between_streams();
+    if (can_edit_stream) {
+        const $edit_stream_input = $(`#id_select_move_stream_${message_id}`);
+        new_stream_id = Number.parseInt($edit_stream_input.data("value"), 10);
+        stream_changed = new_stream_id !== old_stream_id;
+    }
+
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.locally_echoed) {
