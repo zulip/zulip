@@ -1,5 +1,13 @@
 # SAML authentication
 
+!!! warn ""
+
+    If your organization is hosted on Zulip Cloud, please note that
+    due to requiring manual configuration on our side,
+    we currently cannot offer SAML for customers on the Free or Standard plan and
+    purchasing the Plus plan is required.
+    Contact [support@zulip.com](mailto:support@zulip.com) for more details.
+
 Zulip supports using SAML authentication for single sign-on, both when
 self-hosting or on the Zulip Cloud Plus plan.
 
