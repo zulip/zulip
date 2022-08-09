@@ -1111,7 +1111,17 @@ class RealmEmoji(models.Model):
 
 
 def get_realm_emoji_dicts(realm: Realm, only_active_emojis: bool = False) -> Dict[str, EmojiInfo]:
-    query = RealmEmoji.objects.filter(realm=realm).select_related("author")
+    # RealmEmoji objects with file_name=None are still in the process
+    # of being uploaded, and we expect to be cleaned up by a
+    # try/finally block if the upload fails, so it's correct to
+    # exclude them.
+    query = (
+        RealmEmoji.objects.filter(realm=realm)
+        .exclude(
+            file_name=None,
+        )
+        .select_related("author")
+    )
     if only_active_emojis:
         query = query.filter(deactivated=False)
     d = {}
