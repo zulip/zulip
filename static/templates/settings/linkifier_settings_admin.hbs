@@ -47,13 +47,13 @@
                 <div class="new-linkifier-form wrapper">
                     <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}</div>
                     <div class="alert" id="admin-linkifier-status"></div>
-                    <div class="control-group">
-                        <label for="linkifier_pattern" class="control-label">{{t "Pattern" }}</label>
+                    <div class="input-group">
+                        <label for="linkifier_pattern">{{t "Pattern" }}</label>
                         <input type="text" id="linkifier_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
                         <div class="alert" id="admin-linkifier-pattern-status"></div>
                     </div>
-                    <div class="control-group">
-                        <label for="linkifier_format_string" class="control-label">{{t "URL format string" }}</label>
+                    <div class="input-group">
+                        <label for="linkifier_format_string">{{t "URL format string" }}</label>
                         <input type="text" id="linkifier_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
                         <div class="alert" id="admin-linkifier-format-status"></div>
                     </div>

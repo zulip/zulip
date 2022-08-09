@@ -830,7 +830,9 @@ input[type="checkbox"] {
 
 .admin-linkifier-form,
 .admin-playground-form {
-    .control-label {
+    label {
+        float: left;
+        padding-top: 5px;
         width: 10em;
         text-align: right;
         margin-right: 20px;
