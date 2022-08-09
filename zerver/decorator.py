@@ -849,20 +849,22 @@ def public_json_view(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
+        if request.user.is_authenticated:
+            # For authenticated users, process the request with their permissions.
+            return authenticated_json_view(view_func, skip_rate_limiting=skip_rate_limiting)(
+                request, *args, **kwargs
+            )
+
+        # Otherwise, process the request for a logged-out visitor.
         if not skip_rate_limiting:
             rate_limit(request)
 
-        if not request.user.is_authenticated:
-            process_client(
-                request,
-                is_browser_view=True,
-                query=view_func.__name__,
-            )
-            return view_func(request, request.user, *args, **kwargs)
-
-        # Fall back to authenticated_json_view if the user is authenticated.
-        # Since we have done rate limiting earlier is no need to do it again.
-        return authenticated_json_view(view_func, skip_rate_limiting=True)(request, *args, **kwargs)
+        process_client(
+            request,
+            is_browser_view=True,
+            query=view_func.__name__,
+        )
+        return view_func(request, request.user, *args, **kwargs)
 
     return _wrapped_view_func
 
