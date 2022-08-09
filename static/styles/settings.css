@@ -828,13 +828,8 @@ input[type="checkbox"] {
     }
 }
 
-#create_bot_form,
-#create_alert_word_form,
-.admin-emoji-form,
 .admin-linkifier-form,
-.admin-playground-form,
-.admin-profile-field-form,
-.edit_bot_form {
+.admin-playground-form {
     .control-label {
         width: 10em;
         text-align: right;
