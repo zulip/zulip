@@ -11,8 +11,6 @@ set_global("document", "document-stub");
 
 const noop = () => {};
 
-mock_esm("../../static/js/message_lists", {home: "stub"});
-
 // timerender calls setInterval when imported
 mock_esm("../../static/js/timerender", {
     render_date(time1, time2) {
@@ -421,13 +419,19 @@ test("merge_message_groups", () => {
     }
 
     function build_list(message_groups) {
-        const list = new MessageListView(undefined, undefined, true);
-        list._message_groups = message_groups;
-        list.list = {
-            unsubscribed_bookend_content() {},
-            subscribed_bookend_content() {},
-        };
-        return list;
+        const table_name = "zfilt";
+        const filter = new Filter([{operator: "stream", operand: "foo"}]);
+
+        const list = new message_list.MessageList({
+            table_name,
+            filter,
+        });
+
+        const view = new MessageListView(list, table_name, true);
+        view._message_groups = message_groups;
+        view.list.unsubscribed_bookend_content = () => {};
+        view.list.subscribed_bookend_content = () => {};
+        return view;
     }
 
     function extract_message_ids(lst) {

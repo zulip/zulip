@@ -351,7 +351,18 @@ export class MessageListView {
         this._add_msg_edited_vars(message_container);
     }
 
-    add_subscription_marker(group, last_msg_container, first_msg_container) {
+    maybe_add_subscription_marker(group, last_msg_container, first_msg_container) {
+        // The `historical` flag is present on messages which were
+        // sent a time when the current user was not subscribed to the
+        // stream receiving the message.
+        //
+        // When a narrow contains only messages within a given stream,
+        // we can infer that whenever the historical flag flips
+        // between adjacent messages, the current user must have
+        // (un)subscribed in between those messages.
+        if (!this.list.data.filter.has_operator("stream")) {
+            return;
+        }
         if (last_msg_container === undefined) {
             return;
         }
@@ -431,13 +442,7 @@ export class MessageListView {
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
 
-                // This message_lists.home condition can be removed
-                // once we filter historical messages from the
-                // home view on the server side (which requires
-                // having an index on UserMessage.flags)
-                if (this.list !== message_lists.home) {
-                    this.add_subscription_marker(current_group, prev, message_container);
-                }
+                this.maybe_add_subscription_marker(current_group, prev, message_container);
 
                 if (message_container.msg.stream) {
                     message_container.stream_url = hash_util.by_stream_url(
@@ -505,13 +510,11 @@ export class MessageListView {
                 second_group.message_containers,
             );
             return true;
-            // Add a subscription marker
-        } else if (
-            this.list !== message_lists.home &&
-            last_msg_container.msg.historical !== first_msg_container.msg.historical
-        ) {
-            this.add_subscription_marker(second_group, last_msg_container, first_msg_container);
         }
+
+        // We may need to add a subscripton marker after merging the groups.
+        this.maybe_add_subscription_marker(second_group, last_msg_container, first_msg_container);
+
         return false;
     }
 

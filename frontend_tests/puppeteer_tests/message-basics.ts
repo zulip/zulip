@@ -458,6 +458,17 @@ async function test_users_search(page: Page): Promise<void> {
     await expect_cordelia_private_narrow(page);
 }
 
+async function test_narrow_public_streams(page: Page): Promise<void> {
+    await page.click(await get_stream_li(page, "Denmark"));
+    await page.waitForFunction(() => $(".recipient_row:visible").length >= 3);
+    assert.equal(await page.evaluate(() => $(".stream-status:visible").length), 1);
+
+    await page.goto("http://zulip.zulipdev.com:9981/#narrow/streams/public");
+    await page.waitForFunction(() => $(".recipient_row:visible").length >= 3);
+
+    assert.equal(await page.evaluate(() => $(".stream-status:visible").length), 0);
+}
+
 async function message_basic_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_all_messages");
@@ -484,6 +495,7 @@ async function message_basic_tests(page: Page): Promise<void> {
     await test_narrow_by_clicking_the_left_sidebar(page);
     await test_stream_search_filters_stream_list(page);
     await test_users_search(page);
+    await test_narrow_public_streams(page);
 }
 
 common.run_test(message_basic_tests);
