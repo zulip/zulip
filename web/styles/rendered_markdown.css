@@ -525,6 +525,37 @@
         float: none;
     }
 
+    .message_inline_video {
+        &:hover {
+            &::after {
+                transform: scale(1);
+                transition: transform 0.2s;
+            }
+        }
+
+        &::after {
+            content: "";
+            background-image: url("../images/play_button.svg");
+            display: block;
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            /* video width (100px) / 2 - icon width (32px) / 2 */
+            top: 34px;
+            /* video height (150px) / 2 - icon height (32px) / 2 */
+            left: 59px;
+            border-radius: 100%;
+            transform: scale(0.8);
+        }
+
+        & video {
+            display: block;
+            object-fit: contain;
+            height: 100%;
+            width: 100%;
+        }
+    }
+
     .youtube-video .fa-play::before,
     .embed-video .fa-play::before {
         position: absolute;

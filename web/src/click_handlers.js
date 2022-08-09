@@ -118,8 +118,13 @@ export function initialize() {
             return true;
         }
 
-        // Inline image and twitter previews.
-        if ($target.is("img.message_inline_image") || $target.is("img.twitter-avatar")) {
+        // Inline image, video and twitter previews.
+        if (
+            $target.is("img.message_inline_image") ||
+            $target.is("video") ||
+            $target.is(".message_inline_video") ||
+            $target.is("img.twitter-avatar")
+        ) {
             return true;
         }
 
