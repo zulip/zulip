@@ -29,8 +29,6 @@ function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
     $("#multiuse_invite_status").hide().text("").removeClass(common.status_classes);
 
-    $("#invitee_emails").closest(".control-group").removeClass("warning error");
-
     if (page_params.development_environment) {
         $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
     }
@@ -78,7 +76,6 @@ function beforeSend() {
 function submit_invitation_form() {
     const $invite_status = $("#invite_status");
     const $invitee_emails = $("#invitee_emails");
-    const $invitee_emails_group = $invitee_emails.closest(".control-group");
     const data = get_common_invitation_data();
     data.invitee_emails = $("#invitee_emails").val();
 
@@ -91,7 +88,6 @@ function submit_invitation_form() {
                 $t_html({defaultMessage: "User(s) invited successfully."}),
                 $invite_status,
             );
-            $invitee_emails_group.removeClass("warning");
             $invitee_emails.val("");
 
             if (page_params.development_environment) {
@@ -141,7 +137,6 @@ function submit_invitation_form() {
                     daily_limit_reached: arr.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-warning");
-                $invitee_emails_group.addClass("warning");
 
                 if (arr.sent_invitations) {
                     $invitee_emails.val(invitee_emails_errored.join("\n"));
