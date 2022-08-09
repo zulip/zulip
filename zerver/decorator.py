@@ -883,13 +883,13 @@ def authenticated_json_view(
         *args: ParamT.args,
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
-        if not skip_rate_limiting:
-            rate_limit(request)
-
         if not request.user.is_authenticated:
             raise UnauthorizedError()
 
         user_profile = request.user
+        if not skip_rate_limiting:
+            rate_limit(request)
+
         validate_account_and_subdomain(request, user_profile)
 
         if user_profile.is_incoming_webhook:
