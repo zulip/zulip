@@ -73,7 +73,8 @@ export function colorize_message_view_header() {
     if (filter === undefined || !filter._sub) {
         return;
     }
-    $("#message_view_header .stream > .fa").css("color", filter._sub.color);
+    // selecting i instead of .fa because web public streams have custom icon.
+    $("#message_view_header a.stream i").css("color", filter._sub.color);
 }
 
 function append_and_display_title_area(message_view_header_data) {
