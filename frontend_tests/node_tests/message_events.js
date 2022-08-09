@@ -88,10 +88,6 @@ run_test("update_messages", () => {
         },
     ];
 
-    message_lists.current.get_row = (message_id) => {
-        assert.equal(message_id, 111);
-        return ["row-stub"];
-    };
     message_lists.current.view = {};
 
     let rendered_mgs;
@@ -103,7 +99,7 @@ run_test("update_messages", () => {
 
     const side_effects = [
         [condense, "un_cache_message_content_height"],
-        [message_edit, "end_message_row_edit"],
+        [message_edit, "end_message_edit"],
         [notifications, "received_messages"],
         [unread_ui, "update_unread_counts"],
         [stream_list, "update_streams_sidebar"],

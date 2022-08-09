@@ -175,10 +175,8 @@ export function update_messages(events) {
             msg.is_me_message = event.is_me_message;
         }
 
-        const $row = message_lists.current.get_row(event.message_id);
-        if ($row.length > 0) {
-            message_edit.end_message_row_edit($row);
-        }
+        // mark the current message edit attempt as complete.
+        message_edit.end_message_edit(event.message_id);
 
         const new_topic = util.get_edit_event_topic(event);
 

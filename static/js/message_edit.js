@@ -805,6 +805,17 @@ export function end_message_row_edit($row) {
     $row.find("input.message_edit_topic").trigger("blur");
 }
 
+export function end_message_edit(message_id) {
+    const $row = message_lists.current.get_row(message_id);
+    if ($row.length > 0) {
+        end_message_row_edit($row);
+    } else if (currently_editing_messages.has(message_id)) {
+        // We should delete the message_id from currently_editing_messages
+        // if it exists there but we cannot find the row.
+        currently_editing_messages.delete(message_id);
+    }
+}
+
 export function save_inline_topic_edit($row) {
     const msg_list = message_lists.current;
     let message_id = rows.id_for_recipient_row($row);
