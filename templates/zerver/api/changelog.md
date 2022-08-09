@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 139**
+
+* [`GET /get-events`](/api/get-events): When a user mutes or unmutes
+  their subscription to a stream, a `subscription` update event
+  is now sent for the `is_muted` property and for the deprecated
+  `in_home_view` property to support clients fully migrating to use the
+  `is_muted` property. Prior to this feature level, only one event was
+  sent to clients with the deprecated `in_home_view` property.
+
 **Feature level 138**
 
 * [`POST /register`](/api/register-queue), [`GET
@@ -228,7 +237,7 @@ No changes; feature level used for Zulip 5.0 release.
 
 **Feature level 111**
 
-* [`POST /subscriptions/properties`](/api/update-subscription-settings):
+* [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings):
   Removed `subscription_data` from response object, replacing it with
   `ignored_parameters_unsupported`.
 
@@ -1137,7 +1146,8 @@ No changes; feature level used for Zulip 3.0 release.
   `demote_inactive_streams` display settings.
 * `enable_stream_sounds` was renamed to
   `enable_stream_audible_notifications`.
-* Deprecated `in_home_view`, replacing it with the more readable
+* [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings):
+  Deprecated `in_home_view`, replacing it with the more readable
   `is_muted` (with the opposite meaning).
 * Custom profile fields: Added `EXTERNAL_ACCOUNT` field type.
 

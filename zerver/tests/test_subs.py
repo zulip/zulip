@@ -3016,7 +3016,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         property_name = "is_muted"
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",
@@ -3035,6 +3035,8 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"]["property"], "in_home_view")
         self.assertEqual(events[0]["event"]["value"], False)
+        self.assertEqual(events[1]["event"]["property"], "is_muted")
+        self.assertEqual(events[1]["event"]["value"], True)
         sub = Subscription.objects.get(
             recipient__type=Recipient.STREAM,
             recipient__type_id=subs[0]["stream_id"],
@@ -3043,7 +3045,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertEqual(sub.is_muted, True)
 
         legacy_property_name = "in_home_view"
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",
@@ -3062,6 +3064,8 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"]["property"], "in_home_view")
         self.assertEqual(events[0]["event"]["value"], True)
+        self.assertEqual(events[1]["event"]["property"], "is_muted")
+        self.assertEqual(events[1]["event"]["value"], False)
         self.assert_json_success(result)
         sub = Subscription.objects.get(
             recipient__type=Recipient.STREAM,
@@ -3070,7 +3074,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         )
         self.assertEqual(sub.is_muted, False)
 
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=2):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",
@@ -3089,6 +3093,8 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"]["property"], "in_home_view")
         self.assertEqual(events[0]["event"]["value"], False)
+        self.assertEqual(events[1]["event"]["property"], "is_muted")
+        self.assertEqual(events[1]["event"]["value"], True)
 
         sub = Subscription.objects.get(
             recipient__type=Recipient.STREAM,

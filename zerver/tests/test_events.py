@@ -1481,6 +1481,55 @@ class NormalActionsTest(BaseAction):
                 value=pinned,
             )
 
+    def test_mute_and_unmute_stream(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+
+        # While migrating events API from in_home_view to is_muted:
+        # First, test in_home_view sends 2 events: in_home_view and is_muted.
+        do_change_subscription_property(
+            self.user_profile, sub, stream, "in_home_view", False, acting_user=None
+        )
+
+        events = self.verify_action(
+            lambda: do_change_subscription_property(
+                self.user_profile, sub, stream, "in_home_view", True, acting_user=None
+            ),
+            num_events=2,
+        )
+        check_subscription_update(
+            "events[0]",
+            events[0],
+            property="in_home_view",
+            value=True,
+        )
+        check_subscription_update(
+            "events[1]",
+            events[1],
+            property="is_muted",
+            value=False,
+        )
+
+        # Then, test is_muted also sends both events, in the same order.
+        events = self.verify_action(
+            lambda: do_change_subscription_property(
+                self.user_profile, sub, stream, "is_muted", True, acting_user=None
+            ),
+            num_events=2,
+        )
+        check_subscription_update(
+            "events[0]",
+            events[0],
+            property="in_home_view",
+            value=False,
+        )
+        check_subscription_update(
+            "events[1]",
+            events[1],
+            property="is_muted",
+            value=True,
+        )
+
     def test_change_stream_notification_settings(self) -> None:
         for setting_name in ["email_notifications"]:
             stream = get_stream("Denmark", self.user_profile.realm)

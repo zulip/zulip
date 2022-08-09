@@ -769,19 +769,14 @@ def do_change_subscription_property(
     acting_user: Optional[UserProfile],
 ) -> None:
     database_property_name = property_name
-    event_property_name = property_name
     database_value = value
-    event_value = value
 
     # For this property, is_muted is used in the database, but
-    # in_home_view in the API, since we haven't migrated the events
-    # API to the new name yet.
+    # in_home_view is still in the API, since we haven't fully
+    # migrated to the new name yet.
     if property_name == "in_home_view":
         database_property_name = "is_muted"
         database_value = not value
-    if property_name == "is_muted":
-        event_property_name = "in_home_view"
-        event_value = not value
 
     old_value = getattr(sub, database_property_name)
     setattr(sub, database_property_name, database_value)
@@ -803,11 +798,26 @@ def do_change_subscription_property(
         ).decode(),
     )
 
+    # This first in_home_view event is deprecated and will be removed
+    # once clients are migrated to handle the subscription update event
+    # with is_muted as the property name.
+    if database_property_name == "is_muted":
+        event_value = not database_value
+        in_home_view_event = dict(
+            type="subscription",
+            op="update",
+            property="in_home_view",
+            value=event_value,
+            stream_id=stream.id,
+        )
+
+        send_event(user_profile.realm, in_home_view_event, [user_profile.id])
+
     event = dict(
         type="subscription",
         op="update",
-        property=event_property_name,
-        value=event_value,
+        property=database_property_name,
+        value=database_value,
         stream_id=stream.id,
     )
     send_event(user_profile.realm, event, [user_profile.id])

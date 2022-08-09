@@ -697,8 +697,9 @@ paths:
                               description: |
                                 Event sent to a user's clients when a property of the user's
                                 subscription to a stream has been updated. This event is used
-                                only for personal properties like `is_muted`; see the `stream` event
-                                for global properties of a stream.
+                                only for personal properties like `is_muted` or `pin_to_top`.
+                                See the [stream update event](/api/get-events#stream-update)
+                                for updates to global properties of a stream.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -718,13 +719,19 @@ paths:
                                 property:
                                   type: string
                                   description: |
-                                    The property of the subscription which has changed. See
-                                    [/users/me/subscriptions/properties GET](/api/update-subscription-settings)
-                                    for details on the various properties of a stream.
+                                    The property of the subscription which has changed. For details on the
+                                    various subscription properties that a user can change, see
+                                    [POST /users/me/subscriptions/properties](/api/update-subscription-settings).
 
                                     Clients should generally handle an unknown property received here without
                                     crashing, since that will naturally happen when connecting to a Zulip
                                     server running a new version that adds a new subscription property.
+
+                                    **Changes**: As of Zulip 6.0 (feature level 139), updates to the `is_muted`
+                                    property or the deprecated `in_home_view` property will send two `subscription`
+                                    update events, one for each property, to support clients fully migrating to
+                                    use the `is_muted` property. Prior to this feature level, updates to either
+                                    property only sent one event with the deprecated `in_home_view` property.
                                 value:
                                   description: |
                                     The new value of the changed property.
@@ -8773,8 +8780,14 @@ paths:
                         - `"color"`: The hex value of the user's display color for the stream.
 
                         - `"is_muted"`: Whether the stream is [muted](/help/mute-a-stream).<br>
+                          **Changes**: As of Zulip 6.0 (feature level 139), updating either
+                          `"is_muted"` or `"in_home_view"` generates two [subscription update
+                          events](/api/get-events#subscription-update), one for each property,
+                          that are sent to clients. Prior to this feature level, updating either
+                          property only generated a subscription update event for
+                          `"in_home_view"`. <br>
                           **Changes**: Prior to Zulip 2.1.0, this feature was represented
-                          by the more confusingly named `in_home_view` (with the
+                          by the more confusingly named `"in_home_view"` (with the
                           opposite value: `in_home_view=!is_muted`); for
                           backwards-compatibility, modern Zulip still accepts that property.
 
