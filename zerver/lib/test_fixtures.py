@@ -26,6 +26,7 @@ from scripts.lib.zulip_tools import (
     write_new_digest,
 )
 
+BACKEND_DATABASE_TEMPLATE = "zulip_test_template"
 UUID_VAR_DIR = get_dev_uuid_var_path()
 
 IMPORTANT_FILES = [
@@ -413,7 +414,7 @@ def reset_zulip_test_database() -> None:
 
     destroy_test_databases()
     # Pointing default database to test database template, so we can instantly clone it.
-    settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
+    settings.DATABASES["default"]["NAME"] = BACKEND_DATABASE_TEMPLATE
     connection = connections["default"]
     clone_database_suffix = "clone"
     connection.creation.clone_test_db(

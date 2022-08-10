@@ -26,9 +26,6 @@ FAKE_EMAIL_DOMAIN = "zulip.testserver"
 # Clear out the REALM_HOSTS set in dev_settings.py
 REALM_HOSTS: Dict[str, str] = {}
 
-# Used to clone DBs in backend tests.
-BACKEND_DATABASE_TEMPLATE = "zulip_test_template"
-
 DATABASES["default"] = {
     "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
     "USER": "zulip_test",
