@@ -289,7 +289,7 @@ class Runner(DiscoverRunner):
         return self.shallow_tested_templates
 
     def setup_test_environment(self, *args: Any, **kwargs: Any) -> Any:
-        settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
+        settings.DATABASES["default"]["NAME"] = "zulip_test_template"
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
 

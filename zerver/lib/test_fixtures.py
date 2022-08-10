@@ -413,7 +413,7 @@ def reset_zulip_test_database() -> None:
 
     destroy_test_databases()
     # Pointing default database to test database template, so we can instantly clone it.
-    settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
+    settings.DATABASES["default"]["NAME"] = "zulip_test_template"
     connection = connections["default"]
     clone_database_suffix = "clone"
     connection.creation.clone_test_db(
