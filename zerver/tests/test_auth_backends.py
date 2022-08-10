@@ -156,9 +156,15 @@ from zproject.backends import (
     saml_auth_enabled,
     sync_user_from_ldap,
 )
+from zproject.config import get_from_file_if_exists
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
+    "zerver/tests/fixtures/apple/token_gen_private_key"
+)
+EXAMPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/example_jwk")
 
 
 class AuthBackendTest(ZulipTestCase):
@@ -2957,7 +2963,7 @@ class AppleAuthMixin:
             payload["aud"] = audience
 
         headers = {"kid": "SOMEKID"}
-        private_key = settings.APPLE_ID_TOKEN_GENERATION_KEY
+        private_key = APPLE_ID_TOKEN_GENERATION_KEY
 
         id_token = jwt.encode(payload, private_key, algorithm="RS256", headers=headers)
 
@@ -3011,7 +3017,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             requests_mock.GET,
             self.BACKEND_CLASS.JWK_URL,
             status=200,
-            json=json.loads(settings.EXAMPLE_JWK),
+            json=json.loads(EXAMPLE_JWK),
         )
 
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
@@ -3209,7 +3215,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
                 requests_mock.GET,
                 self.BACKEND_CLASS.JWK_URL,
                 status=200,
-                json=json.loads(settings.EXAMPLE_JWK),
+                json=json.loads(EXAMPLE_JWK),
             )
             yield
 
@@ -3386,7 +3392,7 @@ class GenericOpenIdConnectTest(SocialAuthBase):
             requests_mock.GET,
             self.JWKS_URL,
             status=200,
-            json=json.loads(settings.EXAMPLE_JWK),
+            json=json.loads(EXAMPLE_JWK),
         )
 
     def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
