@@ -948,7 +948,7 @@ class RealmTest(ZulipTestCase):
         expected_system_group_names = [
             UserGroup.OWNERS_GROUP_NAME,
             UserGroup.ADMINISTRATORS_GROUP_NAME,
-            "@role:moderators",
+            UserGroup.MODERATORS_GROUP_NAME,
             UserGroup.FULL_MEMBERS_GROUP_NAME,
             "@role:members",
             "@role:everyone",

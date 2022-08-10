@@ -127,7 +127,7 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
-            realm=realm, name="@role:moderators", is_system_group=True
+            realm=realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
         )
         full_members_group = UserGroup.objects.get(
             realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
@@ -191,7 +191,7 @@ class UserGroupTestCase(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
         administrators_group = UserGroup.objects.get(
             name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
@@ -980,7 +980,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         desdemona = self.example_user("desdemona")
         shiva = self.example_user("shiva")
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
         self.login("iago")
 
@@ -1026,7 +1026,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
-            name="@role:moderators", realm=realm, is_system_group=True
+            name=UserGroup.MODERATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
         self.login("iago")
 
