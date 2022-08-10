@@ -14,7 +14,7 @@ def get_widget_data(content: str) -> Tuple[Optional[str], Any]:
     if tokens[0].startswith("/"):
         widget_type = tokens[0][1:]
         if widget_type in valid_widget_types:
-            remaining_content = content.replace(tokens[0], "", 1).strip()
+            remaining_content = content.replace(tokens[0], "", 1)
             extra_data = get_extra_data_from_widget_type(remaining_content, widget_type)
             return widget_type, extra_data
 
