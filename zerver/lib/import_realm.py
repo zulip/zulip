@@ -1120,7 +1120,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     if "zerver_huddle" in data:
         process_huddle_hash(data, "zerver_huddle")
         bulk_import_model(data, Huddle)
-        for huddle in Huddle.objects.filter(recipient_id=None):
+        for huddle in Huddle.objects.filter(recipient=None):
             recipient = Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle.id)
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
