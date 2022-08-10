@@ -111,6 +111,8 @@ RUNNING_OPENAPI_CURL_TEST = False
 GENERATE_STRIPE_FIXTURES = False
 # This is overridden in test_settings.py for the test suites
 BAN_CONSOLE_OUTPUT = False
+# This is overridden in test_settings.py for the test suites
+TEST_WORKER_DIR = ""
 
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
