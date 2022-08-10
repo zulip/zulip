@@ -137,7 +137,7 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
         )
         everyone_group = UserGroup.objects.get(
-            realm=realm, name="@role:everyone", is_system_group=True
+            realm=realm, name=UserGroup.EVERYONE_GROUP_NAME, is_system_group=True
         )
         everyone_on_internet_group = UserGroup.objects.get(
             realm=realm,
