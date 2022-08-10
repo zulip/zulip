@@ -185,10 +185,6 @@ SOCIAL_AUTH_APPLE_KEY = "KEYISKEY"
 SOCIAL_AUTH_APPLE_TEAM = "TEAMSTRING"
 SOCIAL_AUTH_APPLE_SECRET = get_from_file_if_exists("zerver/tests/fixtures/apple/private_key.pem")
 
-EXAMPLE_JWK = get_from_file_if_exists("zerver/tests/fixtures/example_jwk")
-APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
-    "zerver/tests/fixtures/apple/token_gen_private_key"
-)
 
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, OIDCIdPConfigDict] = {
     "testoidc": {
