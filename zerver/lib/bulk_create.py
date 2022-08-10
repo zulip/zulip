@@ -122,7 +122,7 @@ def bulk_create_users(
         name=UserGroup.FULL_MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
     )
     members_system_group = UserGroup.objects.get(
-        name="@role:members", realm=realm, is_system_group=True
+        name=UserGroup.MEMBERS_GROUP_NAME, realm=realm, is_system_group=True
     )
     group_memberships_to_create: List[UserGroupMembership] = []
     for user_profile in profiles_to_create:

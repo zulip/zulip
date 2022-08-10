@@ -950,7 +950,7 @@ class RealmTest(ZulipTestCase):
             UserGroup.ADMINISTRATORS_GROUP_NAME,
             UserGroup.MODERATORS_GROUP_NAME,
             UserGroup.FULL_MEMBERS_GROUP_NAME,
-            "@role:members",
+            UserGroup.MEMBERS_GROUP_NAME,
             "@role:everyone",
             UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME,
         ]
@@ -959,7 +959,7 @@ class RealmTest(ZulipTestCase):
     def test_changing_waiting_period_updates_system_groups(self) -> None:
         realm = get_realm("zulip")
         members_system_group = UserGroup.objects.get(
-            realm=realm, name="@role:members", is_system_group=True
+            realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
         )
         full_members_system_group = UserGroup.objects.get(
             realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
