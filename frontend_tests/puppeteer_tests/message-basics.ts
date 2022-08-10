@@ -459,7 +459,14 @@ async function test_users_search(page: Page): Promise<void> {
 }
 
 async function test_narrow_public_streams(page: Page): Promise<void> {
-    await page.click(await get_stream_li(page, "Denmark"));
+    const stream_id = await common.get_stream_id(page, "Denmark");
+    await page.goto(`http://zulip.zulipdev.com:9981/#streams/${stream_id}/Denmark`);
+    await page.waitForSelector("button.sub_unsub_button", {visible: true});
+    await page.click("button.sub_unsub_button");
+    await page.waitForFunction(() => $("button.sub_unsub_button").text().trim() === "Subscribe");
+    await page.click(".subscriptions-header .exit-sign");
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
+    await page.goto(`http://zulip.zulipdev.com:9981/#narrow/stream/${stream_id}-Denmark`);
     await page.waitForFunction(() => $(".recipient_row:visible").length >= 3);
     assert.equal(await page.evaluate(() => $(".stream-status:visible").length), 1);
 
