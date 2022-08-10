@@ -955,6 +955,9 @@ def authenticated_json_view(
 # secret, and also the originating IP (for now).
 @has_request_variables
 def authenticate_notify(request: HttpRequest, secret: str = REQ("secret")) -> bool:
+    if settings.SHARED_SECRET is None:
+        logging.error("SHARED_SECRET is not configured.")
+        return False
     return is_local_addr(request.META["REMOTE_ADDR"]) and constant_time_compare(
         secret, settings.SHARED_SECRET
     )

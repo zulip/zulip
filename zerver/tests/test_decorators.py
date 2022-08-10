@@ -1610,6 +1610,14 @@ class TestInternalNotifyView(ZulipTestCase):
                 self.internal_notify(True, request)
             self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
+        with self.settings(SHARED_SECRET=None):
+            with self.assertRaises(AccessDeniedError), self.assertLogs(level="ERROR") as m:
+                self.assertFalse(authenticate_notify(request))
+                self.internal_notify(True, request)
+            expected_output = "SHARED_SECRET is not configured"
+            self.assertIn(expected_output, m.output[0])
+            self.assertIn(expected_output, m.output[1])
+
     def test_external_requests(self) -> None:
         secret = "random"
         request = HostRequestMock(
