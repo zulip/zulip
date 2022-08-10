@@ -301,9 +301,9 @@ types-six==1.16.19 \
     # via
     #   -r requirements/mypy.in
     #   types-boto
-types-stripe==3.5.0 \
-    --hash=sha256:1eaf4d147f5d572158cc01217490dd2d13607c5bbb028cc34498ee0952c1604b \
-    --hash=sha256:2220b675422daf1fc49a2be1ca634dbe74803c23067f968043c2f90697da3566
+types-stripe==3.5.1 \
+    --hash=sha256:2fb2d9eab532e3b382253596cc7a1027a907a1c9f7a91bc27296e41e655ba888 \
+    --hash=sha256:9bad37c88c9eb9bf70bb096d92aa71f366f2f642d42510ab657b63d82a0dcd1b
     # via -r requirements/mypy.in
 types-urllib3==1.26.23 \
     --hash=sha256:333e675b188a1c1fd980b4b352f9e40572413a4c1ac689c23cd546e96310070a \
