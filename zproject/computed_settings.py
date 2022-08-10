@@ -570,9 +570,8 @@ if STATSD_HOST != "":
 # CAMO HTTPS CACHE CONFIGURATION
 ########################################################################
 
-if CAMO_URI != "":
-    # This needs to be synced with the Camo installation
-    CAMO_KEY = get_secret("camo_key")
+# This needs to be synced with the Camo installation
+CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
 
 ########################################################################
 # STATIC CONTENT AND MINIFICATION SETTINGS
