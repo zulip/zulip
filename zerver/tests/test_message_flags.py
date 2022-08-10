@@ -38,13 +38,15 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
-def check_flags(flags: List[str], expected: Set[str]) -> None:
+def check_flags(flags: List[str], expected: Set[str], ignore_historical: bool = False) -> None:
     """
     The has_alert_word flag can be ignored for most tests.
     """
     assert "has_alert_word" not in expected
     flag_set = set(flags)
     flag_set.discard("has_alert_word")
+    if ignore_historical:
+        flag_set.discard("historical")
     if flag_set != expected:
         raise AssertionError(f"expected flags (ignoring has_alert_word) to be {expected}")
 
@@ -1054,7 +1056,7 @@ class MessageAccessTests(ZulipTestCase):
             if msg["id"] in message_ids:
                 check_flags(msg["flags"], {"starred"})
             else:
-                check_flags(msg["flags"], {"read"})
+                check_flags(msg["flags"], {"read"}, ignore_historical=True)
 
         # Remove the stars.
         result = self.change_star(message_ids, False)

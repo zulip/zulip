@@ -200,8 +200,15 @@ class Command(BaseCommand):
             "-o",
             "--oldest-message-days",
             type=int,
-            default=5,
+            default=10,
             help="The start of the time range where messages could have been sent.",
+        )
+
+        parser.add_argument(
+            "--historical-message-days",
+            type=int,
+            default=5,
+            help="Older messages are marked as historical for all users (disable with -1).",
         )
 
         parser.add_argument(
@@ -978,6 +985,9 @@ class Command(BaseCommand):
                 )
 
             mark_all_messages_as_read()
+            if options["historical_message_days"] >= 0:
+                mark_messages_as_historical(options["historical_message_days"])
+
             self.stdout.write("Successfully populated test database.\n")
 
         push_notifications_logger.disabled = False
@@ -997,6 +1007,16 @@ def mark_all_messages_as_read() -> None:
     UserMessage.objects.filter(user_profile__is_bot=False).update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
+
+
+def mark_messages_as_historical(cutoff_days: int) -> None:
+    cutoff = timezone_now() - timezone_timedelta(days=cutoff_days)
+    count = UserMessage.objects.filter(
+        user_profile__is_bot=False, message__date_sent__lte=cutoff
+    ).update(
+        flags=F("flags").bitor(UserMessage.flags.historical),
+    )
+    print(f"marked {count} messages as historical (before {cutoff})")
 
 
 recipient_hash: Dict[int, Recipient] = {}
