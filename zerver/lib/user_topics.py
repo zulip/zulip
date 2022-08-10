@@ -43,11 +43,16 @@ def get_user_topics(
 
     result = []
     for row in rows:
-        if not include_stream_name:
-            del row["stream__name"]
+        user_topic_dict: UserTopicDict = {
+            "stream_id": row["stream_id"],
+            "topic_name": row["topic_name"],
+            "visibility_policy": row["visibility_policy"],
+        }
+        if include_stream_name:
+            user_topic_dict["stream__name"] = row["stream__name"]
 
-        row["last_updated"] = datetime_to_timestamp(row["last_updated"])
-        result.append(row)
+        user_topic_dict["last_updated"] = datetime_to_timestamp(row["last_updated"])
+        result.append(user_topic_dict)
 
     return result
 
