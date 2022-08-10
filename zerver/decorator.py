@@ -24,7 +24,7 @@ from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth import login as django_login
 from django.contrib.auth.decorators import user_passes_test as django_user_passes_test
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, QueryDict
 from django.http.multipartparser import MultiPartParser
@@ -1139,7 +1139,7 @@ def zulip_otp_required_if_logged_in(
     to :setting:`OTP_LOGIN_URL`. Returns True if the user is not authenticated.
     """
 
-    def test(user: Union[UserProfile, AnonymousUser]) -> bool:
+    def test(user: Union[AbstractBaseUser, AnonymousUser]) -> bool:
         """
         :if_configured: If ``True``, an authenticated user with no confirmed
         OTP devices will be allowed. Also, non-authenticated users will be
@@ -1155,6 +1155,7 @@ def zulip_otp_required_if_logged_in(
         if not user.is_authenticated:
             return True
 
+        assert isinstance(user, UserProfile)
         # User has completed 2FA verification
         if is_2fa_verified(user):
             return True
