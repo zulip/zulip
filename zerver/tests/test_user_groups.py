@@ -54,7 +54,9 @@ class UserGroupTestCase(ZulipTestCase):
         self.assertEqual(set(user_groups[0]["members"]), set(membership))
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
 
-        admins_system_group = UserGroup.objects.get(name="@role:administrators", realm=realm)
+        admins_system_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm
+        )
         self.assertEqual(user_groups[1]["id"], admins_system_group.id)
         # Check that owners system group is present in "direct_subgroup_ids"
         self.assertEqual(user_groups[1]["direct_subgroup_ids"], [user_group.id])
@@ -122,7 +124,7 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name=UserGroup.OWNERS_GROUP_NAME, is_system_group=True
         )
         admins_group = UserGroup.objects.get(
-            realm=realm, name="@role:administrators", is_system_group=True
+            realm=realm, name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
             realm=realm, name="@role:moderators", is_system_group=True
@@ -192,7 +194,7 @@ class UserGroupTestCase(ZulipTestCase):
             name="@role:moderators", realm=realm, is_system_group=True
         )
         administrators_group = UserGroup.objects.get(
-            name="@role:administrators", realm=realm, is_system_group=True
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
 
         self.assertTrue(is_user_in_group(moderators_group, shiva))
@@ -914,7 +916,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
         iago = self.example_user("iago")
         othello = self.example_user("othello")
         admins_group = UserGroup.objects.get(
-            realm=realm, name="@role:administrators", is_system_group=True
+            realm=realm, name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True
         )
 
         # Invalid user ID.
@@ -1021,7 +1023,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
             name=UserGroup.OWNERS_GROUP_NAME, realm=realm, is_system_group=True
         )
         admins_group = UserGroup.objects.get(
-            name="@role:administrators", realm=realm, is_system_group=True
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
         moderators_group = UserGroup.objects.get(
             name="@role:moderators", realm=realm, is_system_group=True
