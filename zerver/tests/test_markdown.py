@@ -2469,7 +2469,7 @@ class MarkdownTest(ZulipTestCase):
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         moderators_group = UserGroup.objects.get(
-            realm=iago.realm, name="@role:moderators", is_system_group=True
+            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
         )
         content = "@*role:moderators* @**King Hamlet** test message"
 

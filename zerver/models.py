@@ -2149,6 +2149,7 @@ class UserGroup(models.Model):
     EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
     OWNERS_GROUP_NAME = "@role:owners"
     ADMINISTRATORS_GROUP_NAME = "@role:administrators"
+    MODERATORS_GROUP_NAME = "@role:moderators"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
@@ -2163,7 +2164,7 @@ class UserGroup(models.Model):
             "description": "Administrators of this organization, including owners",
         },
         UserProfile.ROLE_MODERATOR: {
-            "name": "@role:moderators",
+            "name": MODERATORS_GROUP_NAME,
             "description": "Moderators of this organization, including administrators",
         },
         UserProfile.ROLE_MEMBER: {
