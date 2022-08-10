@@ -229,17 +229,24 @@ class RateLimitedObjectsTest(ZulipTestCase):
 
     def test_add_remove_rule(self) -> None:
         user_profile = self.example_user("hamlet")
-        add_ratelimit_rule(1, 2)
-        add_ratelimit_rule(4, 5, domain="some_new_domain")
-        add_ratelimit_rule(10, 100, domain="some_new_domain")
-        obj = RateLimitedUser(user_profile)
+        try:
+            add_ratelimit_rule(1, 2)
+            add_ratelimit_rule(4, 5, domain="some_new_domain")
+            add_ratelimit_rule(10, 100, domain="some_new_domain")
+            obj = RateLimitedUser(user_profile)
 
-        self.assertEqual(obj.get_rules(), [(1, 2)])
-        obj.domain = "some_new_domain"
-        self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
+            self.assertEqual(obj.get_rules(), [(1, 2)])
+            obj.domain = "some_new_domain"
+            self.assertEqual(obj.get_rules(), [(4, 5), (10, 100)])
 
-        remove_ratelimit_rule(10, 100, domain="some_new_domain")
-        self.assertEqual(obj.get_rules(), [(4, 5)])
+            remove_ratelimit_rule(10, 100, domain="some_new_domain")
+            self.assertEqual(obj.get_rules(), [(4, 5)])
+
+        finally:
+            # Ensure all the rules get cleaned up.
+            remove_ratelimit_rule(1, 2)
+            remove_ratelimit_rule(4, 5, domain="some_new_domain")
+            remove_ratelimit_rule(10, 100, domain="some_new_domain")
 
     def test_empty_rules_edge_case(self) -> None:
         obj = RateLimitedTestObject("test", rules=[], backend=RedisRateLimiterBackend)
