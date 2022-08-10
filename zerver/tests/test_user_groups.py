@@ -74,7 +74,8 @@ class UserGroupTestCase(ZulipTestCase):
         # othello is a direct member of two role-based system groups also.
         user_group_names = [group.name for group in user_groups]
         self.assertEqual(
-            set(user_group_names), {"support", "@role:members", UserGroup.FULL_MEMBERS_GROUP_NAME}
+            set(user_group_names),
+            {"support", UserGroup.MEMBERS_GROUP_NAME, UserGroup.FULL_MEMBERS_GROUP_NAME},
         )
 
     def test_recursive_queries_for_user_groups(self) -> None:
@@ -133,7 +134,7 @@ class UserGroupTestCase(ZulipTestCase):
             realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
         )
         members_group = UserGroup.objects.get(
-            realm=realm, name="@role:members", is_system_group=True
+            realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
         )
         everyone_group = UserGroup.objects.get(
             realm=realm, name="@role:everyone", is_system_group=True

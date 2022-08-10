@@ -33,7 +33,7 @@ def update_users_in_full_members_system_group(
         realm=realm, name=UserGroup.FULL_MEMBERS_GROUP_NAME, is_system_group=True
     )
     members_system_group = UserGroup.objects.get(
-        realm=realm, name="@role:members", is_system_group=True
+        realm=realm, name=UserGroup.MEMBERS_GROUP_NAME, is_system_group=True
     )
 
     full_member_group_users: List[MemberGroupUserDict] = list()
