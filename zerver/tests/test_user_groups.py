@@ -49,7 +49,7 @@ class UserGroupTestCase(ZulipTestCase):
         user_groups = user_groups_in_realm_serialized(realm)
         self.assert_length(user_groups, 9)
         self.assertEqual(user_groups[0]["id"], user_group.id)
-        self.assertEqual(user_groups[0]["name"], "@role:owners")
+        self.assertEqual(user_groups[0]["name"], UserGroup.OWNERS_GROUP_NAME)
         self.assertEqual(user_groups[0]["description"], "Owners of this organization")
         self.assertEqual(set(user_groups[0]["members"]), set(membership))
         self.assertEqual(user_groups[0]["direct_subgroup_ids"], [])
@@ -118,7 +118,9 @@ class UserGroupTestCase(ZulipTestCase):
 
     def test_subgroups_of_role_based_system_groups(self) -> None:
         realm = get_realm("zulip")
-        owners_group = UserGroup.objects.get(realm=realm, name="@role:owners", is_system_group=True)
+        owners_group = UserGroup.objects.get(
+            realm=realm, name=UserGroup.OWNERS_GROUP_NAME, is_system_group=True
+        )
         admins_group = UserGroup.objects.get(
             realm=realm, name="@role:administrators", is_system_group=True
         )
@@ -1015,7 +1017,9 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
     def test_get_subgroups_of_user_group(self) -> None:
         realm = get_realm("zulip")
-        owners_group = UserGroup.objects.get(name="@role:owners", realm=realm, is_system_group=True)
+        owners_group = UserGroup.objects.get(
+            name=UserGroup.OWNERS_GROUP_NAME, realm=realm, is_system_group=True
+        )
         admins_group = UserGroup.objects.get(
             name="@role:administrators", realm=realm, is_system_group=True
         )

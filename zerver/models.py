@@ -2147,13 +2147,14 @@ class UserGroup(models.Model):
     # Names for system groups.
     FULL_MEMBERS_GROUP_NAME = "@role:fullmembers"
     EVERYONE_ON_INTERNET_GROUP_NAME = "@role:internet"
+    OWNERS_GROUP_NAME = "@role:owners"
 
     # We do not have "Full members" and "Everyone on the internet"
     # group here since there isn't a separate role value for full
     # members and spectators.
     SYSTEM_USER_GROUP_ROLE_MAP = {
         UserProfile.ROLE_REALM_OWNER: {
-            "name": "@role:owners",
+            "name": OWNERS_GROUP_NAME,
             "description": "Owners of this organization",
         },
         UserProfile.ROLE_REALM_ADMINISTRATOR: {

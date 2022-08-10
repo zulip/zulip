@@ -946,7 +946,7 @@ class RealmTest(ZulipTestCase):
         self.assert_length(system_user_groups, 7)
         user_group_names = [group.name for group in system_user_groups]
         expected_system_group_names = [
-            "@role:owners",
+            UserGroup.OWNERS_GROUP_NAME,
             "@role:administrators",
             "@role:moderators",
             UserGroup.FULL_MEMBERS_GROUP_NAME,
