@@ -34,7 +34,7 @@ from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.upload import sanitize_name
-from zerver.lib.utils import process_list_in_batches
+from zerver.lib.utils import make_safe_digest, process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
@@ -885,6 +885,21 @@ def map_receiver_id_to_recipient_id(
             user_id_to_recipient_id[recipient["type_id"]] = recipient["id"]
 
 
+# This is inspired by get_huddle_hash from zerver/models.py. It
+# expects strings identifying Rocket.Chat users, like
+# `LdBZ7kPxtKESyHPEe`, not integer IDs.
+#
+# Its purpose is to be a stable map usable for deduplication/merging
+# of Rocket.Chat threads involving the same set of people. Thus, its
+# only important property is that if two sets of users S and T are
+# equal and thus will have the same actual huddle hash once imported,
+# that get_string_huddle_hash(S) = get_string_huddle_hash(T).
+def get_string_huddle_hash(id_list: List[str]) -> str:
+    id_list = sorted(set(id_list))
+    hash_key = ",".join(str(x) for x in id_list)
+    return make_safe_digest(hash_key)
+
+
 def categorize_channels_and_map_with_id(
     channel_data: List[Dict[str, Any]],
     room_id_to_room_map: Dict[str, Dict[str, Any]],
@@ -894,12 +909,50 @@ def categorize_channels_and_map_with_id(
     huddle_id_to_huddle_map: Dict[str, Dict[str, Any]],
     livechat_id_to_livechat_map: Dict[str, Dict[str, Any]],
 ) -> None:
+    huddle_hashed_channels: Dict[str, Any] = {}
     for channel in channel_data:
         if channel.get("prid"):
             dsc_id_to_dsc_map[channel["_id"]] = channel
         elif channel["t"] == "d":
             if len(channel["uids"]) > 2:
-                huddle_id_to_huddle_map[channel["_id"]] = channel
+                huddle_hash = get_string_huddle_hash(channel["uids"])
+                logging.info(
+                    "Huddle channel found. UIDs: %s -> hash %s", channel["uids"], huddle_hash
+                )
+
+                if channel["msgs"] == 0:  # nocoverage
+                    # Rocket.Chat exports in the wild sometimes
+                    # contain duplicates of real huddles, with no
+                    # messages in the duplicate.  We ignore these
+                    # minor database corruptions in the Rocket.Chat
+                    # export. Doing so is safe, because a huddle with no
+                    # message history has no value in Zulip's data
+                    # model.
+                    logging.debug("Skipping huddle with 0 messages: %s", channel)
+                elif huddle_hash in huddle_hashed_channels:  # nocoverage
+                    logging.info(
+                        "Mapping huddle hash %s to existing channel: %s",
+                        huddle_hash,
+                        huddle_hashed_channels[huddle_hash],
+                    )
+                    huddle_id_to_huddle_map[channel["_id"]] = huddle_hashed_channels[huddle_hash]
+
+                    # Ideally, we'd merge the duplicate huddles. Doing
+                    # so correctly requires special handling in
+                    # convert_huddle_data() and on the message import
+                    # side as well, since those appear to be mapped
+                    # via rocketchat channel IDs and not all of that
+                    # information is resolved via the
+                    # huddle_id_to_huddle_map.
+                    #
+                    # For now, just throw an exception here rather
+                    # than during the import process.
+                    raise NotImplementedError(
+                        "Mapping multiple huddles with messages to one is not fully implemented yet"
+                    )
+                else:
+                    huddle_id_to_huddle_map[channel["_id"]] = channel
+                    huddle_hashed_channels[huddle_hash] = channel
             else:
                 direct_id_to_direct_map[channel["_id"]] = channel
         elif channel["t"] == "l":
