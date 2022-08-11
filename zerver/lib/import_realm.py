@@ -4,7 +4,7 @@ import os
 import shutil
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from mimetypes import guess_type
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import bmemcached
 import orjson
@@ -20,7 +20,7 @@ from analytics.models import RealmCount, StreamCount, UserCount
 from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.bulk_create import bulk_create_users, bulk_set_users_or_streams_recipient_fields
+from zerver.lib.bulk_create import bulk_set_users_or_streams_recipient_fields
 from zerver.lib.export import DATE_FIELDS, Field, Path, Record, TableData, TableName
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.markdown import version as markdown_version
@@ -1337,28 +1337,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     else:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=None)
     return realm
-
-
-# create_users and do_import_system_bots differ from their equivalent
-# in zerver/lib/server_initialization.py because here we check if the
-# bots don't already exist and only then create a user for these bots.
-def do_import_system_bots(realm: Any) -> None:
-    internal_bots = [
-        (bot["name"], bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,))
-        for bot in settings.INTERNAL_BOTS
-    ]
-    create_users(realm, internal_bots, bot_type=UserProfile.DEFAULT_BOT)
-    print("Finished importing system bots.")
-
-
-def create_users(
-    realm: Realm, name_list: Iterable[Tuple[str, str]], bot_type: Optional[int] = None
-) -> None:
-    user_set = set()
-    for full_name, email in name_list:
-        if not UserProfile.objects.filter(email=email):
-            user_set.add((email, full_name, True))
-    bulk_create_users(realm, user_set, bot_type)
 
 
 def update_message_foreign_keys(import_dir: Path, sort_by_date: bool) -> None:
