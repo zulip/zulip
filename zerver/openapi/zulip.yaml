@@ -8516,6 +8516,23 @@ paths:
               - 2
               - 3
           example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: enable_stream_desktop_notifications
           in: query
           description: |
@@ -10431,6 +10448,16 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           timezone:
                             type: string
                             description: |
@@ -12344,6 +12371,16 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -13343,6 +13380,23 @@ paths:
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
           schema:
             type: integer
             enum:

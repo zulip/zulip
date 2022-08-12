@@ -885,6 +885,17 @@ run_test("user_settings", ({override}) => {
         assert_same(user_settings.demote_inactive_streams, 2);
     }
 
+    {
+        const stub = make_stub();
+        event = event_fixtures.user_settings__user_list_style;
+        override(settings_display, "report_user_list_style_change", stub.f);
+        user_settings.user_list_style = 1;
+        override(activity, "build_user_sidebar", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 2);
+        assert_same(user_settings.user_list_style, 2);
+    }
+
     event = event_fixtures.user_settings__enter_sends;
     user_settings.enter_sends = false;
     dispatch(event);

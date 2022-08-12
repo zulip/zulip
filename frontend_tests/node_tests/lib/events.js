@@ -915,6 +915,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__user_list_style: {
+        type: "user_settings",
+        op: "update",
+        property: "user_list_style",
+        value: 2,
+    },
+
     user_status__revoke_away: {
         type: "user_status",
         user_id: 63,

@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 141**
+
+* [`POST /register`](/api/register-queue), [`PATCH
+  /settings`](/api/update-settings), [`PATCH
+  /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
+  Added new `user_list_style` display setting, which controls the
+  layout of the right sidebar.
+
 **Feature level 140**
 
 * [`POST /register`](/api/register-queue): Added string field `server_emoji_data_url`

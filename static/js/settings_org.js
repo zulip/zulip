@@ -244,8 +244,14 @@ function get_subsection_property_elements(element) {
         // structure, it needs custom code.
         const $color_scheme_elem = $subsection.find(".setting_color_scheme");
         const $emojiset_elem = $subsection.find("input[name='emojiset']:checked");
+        const $user_list_style_elem = $subsection.find("input[name='user_list_style']:checked");
         const $translate_emoticons_elem = $subsection.find(".translate_emoticons");
-        return [$color_scheme_elem, $emojiset_elem, $translate_emoticons_elem];
+        return [
+            $color_scheme_elem,
+            $emojiset_elem,
+            $user_list_style_elem,
+            $translate_emoticons_elem,
+        ];
     }
     return Array.from($subsection.find(".prop-element"));
 }
@@ -533,11 +539,19 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             );
             break;
         case "emojiset":
-            // Because the emojiset widget has a unique radio button
-            // structure, it needs custom reset code.
+            // Because this widget has a radio button structure, it
+            // needs custom reset code.
             $elem
                 .closest(".org-subsection-parent")
                 .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
+                .prop("checked", true);
+            break;
+        case "user_list_style":
+            // Because this widget has a radio button structure, it
+            // needs custom reset code.
+            $elem
+                .closest(".org-subsection-parent")
+                .find(`.setting_user_list_style_choice[value='${CSS.escape(property_value)}'`)
                 .prop("checked", true);
             break;
         case "email_notifications_batching_period_seconds":

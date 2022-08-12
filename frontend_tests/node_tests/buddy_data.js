@@ -509,6 +509,7 @@ test("get_items_for_users", () => {
     people.add_active_user(fred);
     user_status.set_away(alice.user_id);
     user_settings.emojiset = "google";
+    user_settings.user_list_style = 2;
     const status_emoji_info = {
         emoji_alt_code: false,
         emoji_name: "car",
@@ -521,6 +522,12 @@ test("get_items_for_users", () => {
         user_status.set_status_emoji({user_id, ...status_emoji_info});
     }
 
+    const user_list_style = {
+        COMPACT: false,
+        WITH_STATUS: true,
+        WITH_AVATAR: false,
+    };
+
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
             faded: false,
@@ -530,9 +537,11 @@ test("get_items_for_users", () => {
             name: "Human Myself",
             num_unread: 0,
             status_emoji_info,
+            status_text: undefined,
             user_circle_class: "user_circle_green",
             user_circle_status: "translated: Active",
             user_id: 1001,
+            user_list_style,
         },
         {
             faded: false,
@@ -542,9 +551,11 @@ test("get_items_for_users", () => {
             name: "Alice Smith",
             num_unread: 0,
             status_emoji_info,
+            status_text: undefined,
             user_circle_class: "user_circle_empty_line",
             user_circle_status: "translated: Unavailable",
             user_id: 1002,
+            user_list_style,
         },
         {
             faded: false,
@@ -554,9 +565,11 @@ test("get_items_for_users", () => {
             name: "Fred Flintstone",
             num_unread: 0,
             status_emoji_info,
+            status_text: undefined,
             user_circle_class: "user_circle_empty",
             user_circle_status: "translated: Offline",
             user_id: 1003,
+            user_list_style,
         },
     ]);
 });

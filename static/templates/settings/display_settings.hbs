@@ -77,6 +77,33 @@
           label=settings_label.display_emoji_reaction_users
           prefix=prefix}}
         {{/if}}
+
+        <div class="input-group">
+            <label class="title">{{t "User list style" }}</label>
+            <div class="user_list_style_values grey-box">
+                {{#each user_list_style_values}}
+                    <label>
+                        <input type="radio" class="setting_user_list_style_choice prop-element" name="user_list_style" value="{{this.code}}" data-setting-widget-type="radio-group"/>
+                        <span>{{this.description}}</span>
+                        <span class="right preview">
+                            {{#if (eq this.code 1)}}
+                            <span class="user-name">{{../full_name}}</span>
+                            <div class="emoji status_emoji emoji-1f3e0"></div>
+                            {{/if}}
+                            {{#if (eq this.code 2)}}
+                            <div class="user-name-and-status-text">
+                                <div class="user-name-and-status-emoji">
+                                    <span class="user-name">{{../full_name}}</span>
+                                    {{> ../status_emoji emoji_code="1f3e0"}}
+                                </div>
+                                <span class="status-text">{{t "Working remotely" }}</span>
+                            </div>
+                            {{/if}}
+                        </span>
+                    </label>
+                {{/each}}
+            </div>
+        </div>
     </div>
 
     <div class="advanced-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
