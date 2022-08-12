@@ -1392,7 +1392,6 @@ class TestScriptMTA(ZulipTestCase):
 
         mail_template = self.fixture_data("simple.txt", type="email")
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
-        assert settings.SHARED_SECRET is not None
         subprocess.run(
             [script, "-r", stream_to_address, "-s", settings.SHARED_SECRET, "-t"],
             input=mail,
@@ -1408,7 +1407,6 @@ class TestScriptMTA(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
         mail_template = self.fixture_data("simple.txt", type="email")
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
-        assert settings.SHARED_SECRET is not None
         p = subprocess.run(
             [script, "-s", settings.SHARED_SECRET, "-t"],
             input=mail,
