@@ -723,6 +723,12 @@ export function get_candidates(query) {
             if (tokens[1]) {
                 const stream_name = tokens[1];
                 this.token = tokens[2] || "";
+
+                // Don't autocomplete if there is a space following '>'
+                if (this.token[0] === " ") {
+                    return false;
+                }
+
                 const topic_list = topics_seen_for(stream_name);
                 if (should_show_custom_query(this.token, topic_list)) {
                     topic_list.push(this.token);
