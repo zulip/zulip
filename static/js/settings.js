@@ -83,6 +83,7 @@ export function build_page() {
         can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
+        user_list_style_values: settings_config.user_list_style_values,
         color_scheme_values: settings_config.color_scheme_values,
         default_view_values: settings_config.default_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,

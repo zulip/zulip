@@ -376,6 +376,7 @@ test("handlers", ({override, mock_template}) => {
 test("first/prev/next", ({override, mock_template}) => {
     let rendered_alice;
     let rendered_fred;
+    user_settings.user_list_style = 2;
 
     mock_template("presence_row.hbs", false, (data) => {
         switch (data.user_id) {
@@ -392,6 +393,12 @@ test("first/prev/next", ({override, mock_template}) => {
                     user_circle_status: "translated: Active",
                     user_id: alice.user_id,
                     status_emoji_info: undefined,
+                    status_text: undefined,
+                    user_list_style: {
+                        COMPACT: false,
+                        WITH_STATUS: true,
+                        WITH_AVATAR: false,
+                    },
                 });
                 break;
             case fred.user_id:
@@ -407,6 +414,12 @@ test("first/prev/next", ({override, mock_template}) => {
                     user_circle_status: "translated: Active",
                     faded: false,
                     status_emoji_info: undefined,
+                    status_text: undefined,
+                    user_list_style: {
+                        COMPACT: false,
+                        WITH_STATUS: true,
+                        WITH_AVATAR: false,
+                    },
                 });
                 break;
             /* istanbul ignore next */
@@ -438,6 +451,7 @@ test("first/prev/next", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
+    user_settings.user_list_style = 2;
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
             href: "#narrow/pm-with/1-alice",
@@ -450,6 +464,12 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
             user_circle_status: "translated: Active",
             faded: true,
             status_emoji_info: undefined,
+            status_text: undefined,
+            user_list_style: {
+                COMPACT: false,
+                WITH_STATUS: true,
+                WITH_AVATAR: false,
+            },
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;

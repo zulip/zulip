@@ -39,6 +39,22 @@ export const demote_inactive_streams_values = {
     },
 };
 
+export const user_list_style_values = {
+    compact: {
+        code: 1,
+        description: $t({defaultMessage: "Compact"}),
+    },
+    with_status: {
+        code: 2,
+        description: $t({defaultMessage: "Show status text"}),
+    },
+    // The `with_avatar` design in still in discussion.
+    // with_avatar: {
+    //     code: 3,
+    //     description: $t({defaultMessage: "Show status text and avatar"}),
+    // },
+};
+
 export const default_view_values = {
     recent_topics: {
         code: "recent_topics",

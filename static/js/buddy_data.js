@@ -8,6 +8,7 @@ import * as people from "./people";
 import * as presence from "./presence";
 import * as timerender from "./timerender";
 import * as unread from "./unread";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as util from "./util";
 
@@ -179,6 +180,13 @@ export function info_for(user_id) {
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const user_circle_status = status_description(user_id);
+    const status_text = user_status.get_status_text(user_id);
+    const user_list_style_value = user_settings.user_list_style;
+    const user_list_style = {
+        COMPACT: user_list_style_value === 1,
+        WITH_STATUS: user_list_style_value === 2,
+        WITH_AVATAR: user_list_style_value === 3,
+    };
 
     return {
         href: hash_util.pm_with_url(person.email),
@@ -190,6 +198,8 @@ export function info_for(user_id) {
         num_unread: get_num_unread(user_id),
         user_circle_class,
         user_circle_status,
+        status_text,
+        user_list_style,
     };
 }
 

@@ -34,6 +34,7 @@ export type RealmDefaultSettings = {
     starred_message_counts: boolean;
     translate_emoticons: boolean;
     twenty_four_hour_time: boolean;
+    user_list_style: boolean;
     wildcard_mentions_notify: boolean;
 };
 

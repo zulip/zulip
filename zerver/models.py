@@ -1523,6 +1523,17 @@ class UserBaseSettings(models.Model):
         default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
     )
 
+    # User list style
+    USER_LIST_STYLE_COMPACT = 1
+    USER_LIST_STYLE_WITH_STATUS = 2
+    USER_LIST_STYLE_WITH_AVATAR = 3
+    USER_LIST_STYLE_CHOICES = [
+        USER_LIST_STYLE_COMPACT,
+        USER_LIST_STYLE_WITH_STATUS,
+        USER_LIST_STYLE_WITH_AVATAR,
+    ]
+    user_list_style: int = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_STATUS)
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds: int = models.IntegerField(default=120)
@@ -1621,6 +1632,7 @@ class UserBaseSettings(models.Model):
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
+        user_list_style=int,
     )
 
     modern_notification_settings: Dict[str, Any] = dict(

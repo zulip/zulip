@@ -6,7 +6,7 @@
             {{#*inline "z-link"}}<a href="/help/configure-default-new-user-settings" target="_blank" rel="noopener noreferrer">{{> @partial-block }}</a>{{/inline}}
         {{/tr}}
     </div>
-    {{> display_settings prefix="realm_" for_realm_settings=true}}
+    {{> display_settings prefix="realm_" for_realm_settings=true full_name=full_name}}
 
     {{> notification_settings prefix="realm_" for_realm_settings=true}}
 

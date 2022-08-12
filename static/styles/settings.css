@@ -918,14 +918,9 @@ input[type="checkbox"] {
     }
 }
 
-.emojiset_choices {
-    width: 250px;
+.emojiset_choices,
+.user_list_style_values {
     padding: 0 10px;
-
-    .emoji {
-        height: 22px;
-        width: 22px;
-    }
 
     label {
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
@@ -944,10 +939,56 @@ input[type="checkbox"] {
                 font-weight: 600;
             }
         }
-    }
 
-    .right {
-        float: right;
+        .right {
+            float: right;
+        }
+    }
+}
+
+.emojiset_choices {
+    width: 250px;
+
+    .emoji {
+        height: 22px;
+        width: 22px;
+    }
+}
+
+$right_sidebar_width: 170px;
+$option_title_width: 180px;
+
+.user_list_style_values {
+    max-width: calc($right_sidebar_width + $option_title_width);
+
+    .preview {
+        background-color: inherit !important;
+        /* Match the 170px width of the right sidebar region for the name/status,
+           doing something reasonable if the window shrinks. */
+        width: calc(100% - $option_title_width);
+        text-align: left;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow-x: hidden;
+        overflow-y: visible;
+        position: relative;
+        height: 36px;
+
+        .user-name-and-status-text {
+            margin-top: -4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-text {
+            display: inline-block;
+            opacity: 0.75;
+            font-size: 90%;
+
+            &:not(:empty) {
+                margin-top: -3px;
+            }
+        }
     }
 }
 

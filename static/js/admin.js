@@ -89,6 +89,7 @@ function get_realm_level_notification_settings(options) {
 export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
+        full_name: page_params.full_name,
         realm_name: page_params.realm_name,
         realm_org_type: page_params.realm_org_type,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
@@ -158,6 +159,7 @@ export function build_page() {
             settings_config.common_message_policy_values.by_admins_only.code,
         ...settings_org.get_organization_settings_options(),
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
+        user_list_style_values: settings_config.user_list_style_values,
         color_scheme_values: settings_config.color_scheme_values,
         default_view_values: settings_config.default_view_values,
         settings_object: realm_user_settings_defaults,
