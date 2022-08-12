@@ -268,9 +268,12 @@ export function send_message(request = create_message_object()) {
     }
 }
 
-export function enter_with_preview_open() {
-    if (user_settings.enter_sends) {
-        // If enter_sends is enabled, we attempt to send the message
+export function enter_with_preview_open(ctrl_pressed = false) {
+    if (
+        (user_settings.enter_sends && !ctrl_pressed) ||
+        (!user_settings.enter_sends && ctrl_pressed)
+    ) {
+        // If this enter should send, we attempt to send the message.
         finish();
     } else {
         // Otherwise, we return to the normal compose state.

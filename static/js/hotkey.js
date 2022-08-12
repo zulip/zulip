@@ -89,6 +89,7 @@ const keydown_unshift_mappings = {
 
 const keydown_ctrl_mappings = {
     219: {name: "escape", message_view_only: false}, // '['
+    13: {name: "ctrl_enter", message_view_only: true}, // enter
 };
 
 const keydown_cmd_or_ctrl_mappings = {
@@ -471,6 +472,16 @@ export function process_enter_key(e) {
     return true;
 }
 
+export function process_ctrl_enter_key() {
+    if ($("#preview_message_area").is(":visible")) {
+        const ctrl_pressed = true;
+        compose.enter_with_preview_open(ctrl_pressed);
+        return true;
+    }
+
+    return false;
+}
+
 export function process_tab_key() {
     // Returns true if we handled it, false if the browser should.
     // TODO: See if browsers like Safari can now handle tabbing correctly
@@ -566,6 +577,8 @@ export function process_hotkey(e, hotkey) {
             return process_escape_key(e);
         case "enter":
             return process_enter_key(e);
+        case "ctrl_enter":
+            return process_ctrl_enter_key(e);
         case "tab":
             return process_tab_key();
         case "shift_tab":
