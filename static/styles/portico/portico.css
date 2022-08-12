@@ -854,11 +854,7 @@ input.new-organization-button {
 
 .login-form,
 .register-form {
-    .control-label {
-        margin-bottom: 2px;
-    }
-
-    .control-group {
+    .controls {
         margin-right: 10px;
     }
 }
@@ -922,10 +918,6 @@ input.new-organization-button {
     #pw_strength {
         width: 328px;
         margin-top: 20px;
-    }
-
-    .control-group .control-label {
-        display: block;
     }
 
     .pitch {
@@ -1018,6 +1010,17 @@ input.new-organization-button {
     text-align: center;
 }
 
+#registration-email {
+    label {
+        float: left;
+        padding-top: 5px;
+        width: 100%;
+        display: block;
+        margin: 0;
+        text-align: left;
+    }
+}
+
 .center-block {
     text-align: left;
     display: inline-block;
@@ -1027,20 +1030,9 @@ input.new-organization-button {
         margin-bottom: 20px;
     }
 
-    .control-group {
-        margin-bottom: 10px;
-
-        label {
-            width: 100%;
-            display: block;
-            margin: 0;
-            text-align: left;
-        }
-
-        .controls {
-            margin: 0;
-            text-align: left;
-        }
+    .controls {
+        margin: 0;
+        text-align: left;
     }
 
     #send_confirm input[type="text"] {

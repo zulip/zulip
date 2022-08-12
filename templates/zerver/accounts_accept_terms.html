@@ -16,8 +16,8 @@ the registration flow has its own (nearly identical) copy of the fields below in
         <div class="form-horizontal white-box">
             <form method="post" class="form-horizontal" id="registration" action="{{ url('accept_terms') }}">
                 {{ csrf_input }}
-                <div class="control-group">
-                    <label for="id_email" class="control-label">{{ _("Email") }}</label>
+                <div id="registration-email">
+                    <label for="id_email">{{ _("Email") }}</label>
                     <div class="controls fakecontrol">
                         <p>{{ email }}</p>
                     </div>
@@ -52,11 +52,9 @@ the registration flow has its own (nearly identical) copy of the fields below in
                         {% endfor %}
                     {% endif %}
                 </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button id="accept_tos_button" type="submit">{{ _('Accept') }}</button>
-                        <input type="hidden" name="next" value="{{ next }}" />
-                    </div>
+                <div class="controls">
+                    <button id="accept_tos_button" type="submit">{{ _('Accept') }}</button>
+                    <input type="hidden" name="next" value="{{ next }}" />
                 </div>
             </form>
         </div>

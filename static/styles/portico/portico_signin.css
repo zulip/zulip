@@ -303,7 +303,7 @@ html {
     .center-block {
         max-width: 800px;
 
-        .control-group {
+        .controls {
             margin-bottom: 5px;
         }
     }

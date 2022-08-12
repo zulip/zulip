@@ -16,75 +16,73 @@ page can be easily identified in it's respective JavaScript file -->
         <p class="devlogin_subheader">(Or visit the <a href="/login/">normal login page</a>.)</p>
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form">
             <input type="hidden" name="next" value="{{ next }}" />
-            <div class="control-group">
-                <div class="controls">
-                    <div class="group">
-                        {% if realm_web_public_access_enabled %}
-                        <h2>{{_('Anonymous user') }}</h2>
+            <div class="controls">
+                <div class="group">
+                    {% if realm_web_public_access_enabled %}
+                    <h2>{{_('Anonymous user') }}</h2>
+                    <p>
+                        <input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
+                          name="prefers_web_public_view" class="btn-direct btn-admin" value="Anonymous login" />
+                    </p>
+                    {% endif %}
+                    <h2>{{_('Owners') }}</h2>
+                    {% if direct_owners %}
+                        {% for direct_owner in direct_owners %}
                         <p>
-                            <input type="submit" formaction="{{ current_realm.uri }}{{ url('login-local') }}"
-                              name="prefers_web_public_view" class="btn-direct btn-admin" value="Anonymous login" />
+                            <input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" />
                         </p>
-                        {% endif %}
-                        <h2>{{_('Owners') }}</h2>
-                        {% if direct_owners %}
-                            {% for direct_owner in direct_owners %}
-                            <p>
-                                <input type="submit" formaction="{{ direct_owner.realm.uri }}{{ url('login-local') }}"
-                                  name="direct_email" class="btn-direct btn-admin" value="{{ direct_owner.delivery_email }}" />
-                            </p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No owners found in this realm</p>
-                        {% endif %}
-                        <h2>{{ _('Administrators') }}</h2>
-                        {% if direct_admins %}
-                            {% for direct_admin in direct_admins %}
-                            <p>
-                                <input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('login-local') }}"
-                                  name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" />
-                            </p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No administrators found in this realm</p>
-                        {% endif %}
-                        <h2>{{ _('Moderators') }}</h2>
-                        {% if direct_moderators %}
-                            {% for direct_moderator in direct_moderators %}
-                            <p>
-                                <input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
-                                  name="direct_email" class="btn-direct btn-admin" value="{{ direct_moderator.delivery_email }}" />
-                            </p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No moderators found in this realm</p>
-                        {% endif %}
-                        <h2>{{ _('Guest users') }}</h2>
-                        {% if guest_users %}
-                            {% for guest_user in guest_users %}
-                            <p>
-                                <input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('login-local') }}"
-                                  name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" />
-                            </p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No guest users found in this realm</p>
-                        {% endif %}
-                    </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No owners found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Administrators') }}</h2>
+                    {% if direct_admins %}
+                        {% for direct_admin in direct_admins %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No administrators found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Moderators') }}</h2>
+                    {% if direct_moderators %}
+                        {% for direct_moderator in direct_moderators %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_moderator.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No moderators found in this realm</p>
+                    {% endif %}
+                    <h2>{{ _('Guest users') }}</h2>
+                    {% if guest_users %}
+                        {% for guest_user in guest_users %}
+                        <p>
+                            <input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No guest users found in this realm</p>
+                    {% endif %}
+                </div>
 
-                    <div class="group">
-                        <h2>{{ _('Normal users') }}</h2>
-                        {% if direct_users %}
-                            {% for direct_user in direct_users %}
-                            <p>
-                                <input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('login-local') }}"
-                                  name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" />
-                            </p>
-                            {% endfor %}
-                        {% else %}
-                            <p>No normal users found in this realm</p>
-                        {% endif %}
-                    </div>
+                <div class="group">
+                    <h2>{{ _('Normal users') }}</h2>
+                    {% if direct_users %}
+                        {% for direct_user in direct_users %}
+                        <p>
+                            <input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('login-local') }}"
+                              name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.delivery_email }}" />
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>No normal users found in this realm</p>
+                    {% endif %}
                 </div>
             </div>
         </form>
