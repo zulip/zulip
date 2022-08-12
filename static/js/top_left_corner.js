@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as ui_util from "./ui_util";
@@ -35,6 +36,27 @@ function deselect_top_left_corner_items() {
     remove($(".top_left_recent_topics"));
 }
 
+function should_expand_pm_list(filter) {
+    const op_is = filter.operands("is");
+
+    if (op_is.length >= 1 && op_is.includes("private")) {
+        return true;
+    }
+
+    const op_pm = filter.operands("pm-with");
+
+    if (op_pm.length !== 1) {
+        return false;
+    }
+
+    const emails_strings = op_pm[0];
+    const emails = emails_strings.split(",");
+
+    const has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
+
+    return has_valid_emails;
+}
+
 export function handle_narrow_activated(filter) {
     deselect_top_left_corner_items();
 
@@ -62,10 +84,17 @@ export function handle_narrow_activated(filter) {
             $filter_li.addClass("active-filter");
         }
     }
+
+    if (should_expand_pm_list(filter)) {
+        pm_list.expand();
+    } else {
+        pm_list.close();
+    }
 }
 
 export function handle_narrow_deactivated() {
     deselect_top_left_corner_items();
+    pm_list.close();
 
     const $filter_li = $(".top_left_all_messages");
     $filter_li.addClass("active-filter");

@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as narrow_state from "./narrow_state";
-import * as people from "./people";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
 import * as stream_popover from "./stream_popover";
@@ -74,37 +73,4 @@ export function expand() {
 export function update_dom_with_unread_counts(counts) {
     update_private_messages();
     set_count(counts.private_message_count);
-}
-
-function should_expand_pm_list(filter) {
-    const op_is = filter.operands("is");
-
-    if (op_is.length >= 1 && op_is.includes("private")) {
-        return true;
-    }
-
-    const op_pm = filter.operands("pm-with");
-
-    if (op_pm.length !== 1) {
-        return false;
-    }
-
-    const emails_strings = op_pm[0];
-    const emails = emails_strings.split(",");
-
-    const has_valid_emails = people.is_valid_bulk_emails_for_compose(emails);
-
-    return has_valid_emails;
-}
-
-export function handle_narrow_activated(filter) {
-    if (should_expand_pm_list(filter)) {
-        expand();
-    } else {
-        close();
-    }
-}
-
-export function handle_narrow_deactivated() {
-    close();
 }
