@@ -6,69 +6,18 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const pm_list = mock_esm("../../static/js/pm_list");
 mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
 const {Filter} = zrequire("../js/filter");
-const people = zrequire("people");
 const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", ({override}) => {
+run_test("narrowing", () => {
+    let filter = new Filter([{operator: "is", operand: "mentioned"}]);
+
     // activating narrow
 
-    let pm_expanded;
-    let pm_closed;
-
-    override(pm_list, "close", () => {
-        pm_closed = true;
-    });
-    override(pm_list, "expand", () => {
-        pm_expanded = true;
-    });
-
-    assert.ok(!pm_expanded);
-    let filter = new Filter([{operator: "is", operand: "private"}]);
-    top_left_corner.handle_narrow_activated(filter);
-    assert.ok(pm_expanded);
-
-    const alice = {
-        email: "alice@example.com",
-        user_id: 1,
-        full_name: "Alice Smith",
-    };
-    const bob = {
-        email: "bob@example.com",
-        user_id: 2,
-        full_name: "Bob Patel",
-    };
-
-    people.add_active_user(alice);
-    people.add_active_user(bob);
-
-    pm_expanded = false;
-    filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
-    assert.ok(pm_expanded);
-
-    pm_expanded = false;
-    filter = new Filter([{operator: "pm-with", operand: "bob@example.com,alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
-    assert.ok(pm_expanded);
-
-    pm_expanded = false;
-    filter = new Filter([{operator: "pm-with", operand: "not@valid.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
-    assert.ok(!pm_expanded);
-
-    pm_expanded = false;
-    people.deactivate(alice);
-    filter = new Filter([{operator: "pm-with", operand: "alice@example.com"}]);
-    top_left_corner.handle_narrow_activated(filter);
-    assert.ok(pm_expanded);
-
-    filter = new Filter([{operator: "is", operand: "mentioned"}]);
     top_left_corner.handle_narrow_activated(filter);
     assert.ok($(".top_left_mentions").hasClass("active-filter"));
 
@@ -82,15 +31,12 @@ run_test("narrowing", ({override}) => {
 
     // deactivating narrow
 
-    pm_closed = false;
     top_left_corner.handle_narrow_deactivated();
 
     assert.ok($(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_recent_topics").hasClass("active-filter"));
-    assert.ok(pm_closed);
 
     set_global("setTimeout", (f) => {
         f();
@@ -98,7 +44,6 @@ run_test("narrowing", ({override}) => {
     top_left_corner.narrow_to_recent_topics();
     assert.ok(!$(".top_left_all_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_mentions").hasClass("active-filter"));
-    assert.ok(!$(".top_left_private_messages").hasClass("active-filter"));
     assert.ok(!$(".top_left_starred_messages").hasClass("active-filter"));
     assert.ok($(".top_left_recent_topics").hasClass("active-filter"));
 });
