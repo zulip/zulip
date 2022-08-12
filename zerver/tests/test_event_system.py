@@ -220,7 +220,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(str(access_denied_error.exception), "Access denied")
         self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
-        assert settings.SHARED_SECRET is not None
         post_data["secret"] = settings.SHARED_SECRET
         req = HostRequestMock(post_data, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"

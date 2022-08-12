@@ -19,6 +19,7 @@ from .config import (
     config_file,
     get_config,
     get_from_file_if_exists,
+    get_mandatory_secret,
     get_secret,
 )
 from .configured_settings import (
@@ -75,7 +76,7 @@ from .configured_settings import (
 SECRET_KEY = get_secret("secret_key")
 
 # A shared secret, used to authenticate different parts of the app to each other.
-SHARED_SECRET = get_secret("shared_secret")
+SHARED_SECRET = get_mandatory_secret("shared_secret")
 
 # We use this salt to hash a user's email into a filename for their user-uploaded
 # avatar.  If this salt is discovered, attackers will only be able to determine
