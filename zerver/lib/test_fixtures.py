@@ -31,6 +31,7 @@ UUID_VAR_DIR = get_dev_uuid_var_path()
 
 IMPORTANT_FILES = [
     "zilencer/management/commands/populate_db.py",
+    "zerver/actions/create_realm.py",
     "zerver/lib/bulk_create.py",
     "zerver/lib/generate_test_data.py",
     "zerver/lib/server_initialization.py",
