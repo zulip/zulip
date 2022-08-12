@@ -42,16 +42,6 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    function highlight(class_to_add) {
-        // Set a class on the enclosing control group.
-        return function (element) {
-            $(element)
-                .closest(".control-group")
-                .removeClass("success error")
-                .addClass(class_to_add);
-        };
-    }
-
     $("#registration, #password_reset").validate({
         rules: {
             password: "password_strength",
@@ -71,8 +61,6 @@ $(() => {
                 $error.insertAfter($element).addClass("help-inline alert alert-error");
             }
         },
-        highlight: highlight("error"),
-        unhighlight: highlight("success"),
     });
 
     if ($("#registration").length > 0) {
