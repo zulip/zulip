@@ -1530,14 +1530,8 @@ div.focused_table {
   outline: none;
 }
 
-input#inline_topic_edit {
-  width: 70%;
-  height: 100%;
-}
 
-element.style {}
 
-form#topic_edit_form {}
 
 .message_edit_topic_propagate {
   display: inline-block;
@@ -2570,7 +2564,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 #topic_edit_form {
   display: inline-block;
   margin: 0;
-  height: 48px;
+  height: 22px;
   width: 100%;
   padding-left: 20px;
   padding-right: 3px;
