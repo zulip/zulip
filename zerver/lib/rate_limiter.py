@@ -632,11 +632,18 @@ def rate_limit_remote_server(
         raise e
 
 
-def rate_limit(request: HttpRequest) -> None:
+def should_rate_limit(request: HttpRequest) -> bool:
     if not settings.RATE_LIMITING:
-        return
+        return False
 
     if client_is_exempt_from_rate_limiting(request):
+        return False
+
+    return True
+
+
+def rate_limit(request: HttpRequest) -> None:
+    if not should_rate_limit(request):
         return
 
     from zerver.lib.request import RequestNotes
