@@ -8,11 +8,17 @@ class Migration(migrations.Migration):
     dependencies = [
         ("zerver", "0405_alter_archivedmessage"),
     ]
+    drop_trigger_sql = """DROP TRIGGER zerver_message_update_search_tsvector_async ON zerver_message;"""
+    create_trigger_sql = """ CREATE TRIGGER zerver_message_update_search_tsvector_async
+  BEFORE INSERT OR UPDATE OF subject, rendered_content ON zerver_message
+  FOR EACH ROW EXECUTE PROCEDURE append_to_fts_update_log(); """
 
     operations = [
+        migrations.RunSQL(sql=drop_trigger_sql),
         migrations.AlterField(
             model_name="message",
             name="subject",
             field=models.CharField(db_index=True, max_length=200),
         ),
+        migrations.RunSQL(sql=create_trigger_sql),
     ]
