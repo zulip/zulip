@@ -232,16 +232,7 @@ export function analyze_selection(selection) {
         }
 
         $endc = $(range.endContainer);
-        // If the selection ends in the bottom whitespace, we should
-        // act as though the selection ends on the final message.
-        // This handles the issue that Chrome seems to like selecting
-        // the compose_close button when you go off the end of the
-        // last message
-        if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
-            $initial_end_tr = $(".message_row").last();
-        } else {
-            $initial_end_tr = $($endc.parents(".selectable_row")[0]);
-        }
+        $initial_end_tr = get_end_tr_from_endc($endc);
         end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
 
         if (end_data === undefined) {
@@ -265,6 +256,19 @@ export function analyze_selection(selection) {
         end_id,
         skip_same_td_check,
     };
+}
+
+function get_end_tr_from_endc($endc) {
+    if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
+        // If the selection ends in the bottom whitespace, we should
+        // act as though the selection ends on the final message.
+        // This handles the issue that Chrome seems to like selecting
+        // the compose_close button when you go off the end of the
+        // last message
+        return $(".message_row").last();
+    }
+
+    return $($endc.parents(".selectable_row")[0]);
 }
 
 export function paste_handler_converter(paste_html) {
