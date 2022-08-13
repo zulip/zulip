@@ -227,6 +227,7 @@ export function process_fenced_code(content) {
     return output.join("\n");
 }
 
+// must be kept in sync with zerver/views/message_send.py
 const fence_length_re = /^ {0,3}(`{3,})/gm;
 export function get_unused_fence(content) {
     // we only return ``` fences, not ~~~.

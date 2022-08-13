@@ -613,6 +613,14 @@ export function get_stream_privacy_policy(stream_id) {
     return stream_privacy_policy_values.private_with_public_history.code;
 }
 
+export function is_private(stream_id) {
+    const policy = get_stream_privacy_policy(stream_id);
+    return (
+        policy === stream_privacy_policy_values.private.code ||
+        policy === stream_privacy_policy_values.private_with_public_history.code
+    );
+}
+
 export function is_web_public(stream_id) {
     const sub = sub_store.get(stream_id);
     return sub !== undefined && sub.is_web_public;
@@ -805,6 +813,10 @@ export function get_notifications_stream() {
         // stream the current user is not subscribed to.
     }
     return "";
+}
+
+export function realm_has_report_message_stream() {
+    return page_params.realm_report_message_stream_id !== -1;
 }
 
 export function initialize(params) {

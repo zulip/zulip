@@ -90,9 +90,20 @@ test("basics", () => {
         history_public_to_subscribers: true,
         is_web_public: true,
     };
+    const private_stream = {
+        subscribed: false,
+        color: "yellow",
+        name: "private_stream",
+        stream_id: 5,
+        is_muted: false,
+        invite_only: true,
+        history_public_to_subscribers: false,
+        is_web_public: false,
+    };
     stream_data.add_sub(denmark);
     stream_data.add_sub(social);
     stream_data.add_sub(web_public_stream);
+    stream_data.add_sub(private_stream);
     assert.ok(stream_data.all_subscribed_streams_are_in_home_view());
     stream_data.add_sub(test);
     assert.ok(!stream_data.all_subscribed_streams_are_in_home_view());
@@ -101,6 +112,10 @@ test("basics", () => {
     assert.equal(stream_data.get_sub("Social"), social);
     assert.equal(stream_data.get_sub("web_public_stream"), web_public_stream);
     assert.ok(stream_data.is_web_public(web_public_stream.stream_id));
+    assert.ok(!stream_data.is_private(web_public_stream.stream_id));
+    assert.equal(stream_data.get_sub("private_stream"), private_stream);
+    assert.ok(!stream_data.is_web_public(private_stream.stream_id));
+    assert.ok(stream_data.is_private(private_stream.stream_id));
 
     assert.deepEqual(stream_data.home_view_stream_names(), ["social"]);
     assert.deepEqual(stream_data.subscribed_streams(), ["social", "test"]);
@@ -750,6 +765,13 @@ test("realm_has_notifications_stream", () => {
     assert.ok(stream_data.realm_has_notifications_stream());
     page_params.realm_notifications_stream_id = -1;
     assert.ok(!stream_data.realm_has_notifications_stream());
+});
+
+test("realm_has_report_message_stream", () => {
+    page_params.realm_report_message_stream_id = 10;
+    assert.ok(stream_data.realm_has_report_message_stream());
+    page_params.realm_report_message_stream_id = -1;
+    assert.ok(!stream_data.realm_has_report_message_stream());
 });
 
 test("remove_default_stream", () => {

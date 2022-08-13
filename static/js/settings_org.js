@@ -21,6 +21,7 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
@@ -507,6 +508,7 @@ function update_dependent_subsettings(property_name) {
 
 export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
+export let report_message_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
 function discard_property_element_changes(elem, for_realm_default_settings) {
@@ -520,6 +522,9 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             break;
         case "realm_notifications_stream_id":
             notifications_stream_widget.render(property_value);
+            break;
+        case "realm_report_message_stream_id":
+            report_message_stream_widget.render(property_value);
             break;
         case "realm_signup_notifications_stream_id":
             signup_notifications_stream_widget.render(property_value);
@@ -587,6 +592,9 @@ export function sync_realm_settings(property) {
     switch (property) {
         case "notifications_stream_id":
             notifications_stream_widget.render(value);
+            break;
+        case "report_message_stream_id":
+            report_message_stream_widget.render(value);
             break;
         case "signup_notifications_stream_id":
             signup_notifications_stream_widget.render(value);
@@ -787,6 +795,9 @@ function check_property_changed(elem, for_realm_default_settings) {
         case "realm_notifications_stream_id":
             changed_val = Number.parseInt(notifications_stream_widget.value(), 10);
             break;
+        case "realm_report_message_stream_id":
+            changed_val = Number.parseInt(report_message_stream_widget.value(), 10);
+            break;
         case "realm_signup_notifications_stream_id":
             changed_val = Number.parseInt(signup_notifications_stream_widget.value(), 10);
             break;
@@ -828,11 +839,7 @@ export function save_discard_widget_status_handler($subsection, for_realm_defaul
 
 export function init_dropdown_widgets() {
     const streams = stream_settings_data.get_streams_for_settings_page();
-    const notification_stream_options = {
-        data: streams.map((x) => ({
-            name: x.name,
-            value: x.stream_id.toString(),
-        })),
+    const base_stream_options = {
         on_update: () => {
             save_discard_widget_status_handler($("#org-notifications"));
         },
@@ -840,12 +847,33 @@ export function init_dropdown_widgets() {
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
+    const notification_stream_options = {
+        data: streams.map((x) => ({
+            name: x.name,
+            value: x.stream_id.toString(),
+        })),
+        ...base_stream_options,
+    };
     notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_notifications_stream_id",
         value: page_params.realm_notifications_stream_id,
         ...notification_stream_options,
     });
     notifications_stream_widget.setup();
+
+    report_message_stream_widget = new DropdownListWidget({
+        widget_name: "realm_report_message_stream_id",
+        value: page_params.realm_report_message_stream_id,
+        data: streams
+            .filter((x) => stream_data.is_private(x.stream_id))
+            .map((x) => ({
+                name: x.name,
+                value: x.stream_id.toString(),
+            })),
+        ...base_stream_options,
+    });
+    report_message_stream_widget.setup();
+
     signup_notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_signup_notifications_stream_id",
         value: page_params.realm_signup_notifications_stream_id,
@@ -971,6 +999,10 @@ export function register_save_discard_widget_handlers(
             case "notifications":
                 data.notifications_stream_id = Number.parseInt(
                     notifications_stream_widget.value(),
+                    10,
+                );
+                data.report_message_stream_id = Number.parseInt(
+                    report_message_stream_widget.value(),
                     10,
                 );
                 data.signup_notifications_stream_id = Number.parseInt(

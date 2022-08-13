@@ -3105,6 +3105,107 @@ div.topic_edit_spinner .loading_indicator_spinner {
     font-weight: 600;
 }
 
+.report_message-box {
+    padding: 10px 15px 10px 10px;
+    display: flex;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    background-color: hsl(202, 56%, 91%);
+    border: 1px solid hsla(192, 19%, 75%, 0.2);
+
+    .radio-input-parent {
+        float: left;
+        padding-right: 20px;
+        padding-bottom: 10px;
+
+        label.radio {
+            padding-left: 25px;
+        }
+    }
+
+    /*
+     * TODO: refactor CSS for reporting abuse, to reduce duplicate code. see discussion:
+     * https://github.com/zulip/zulip/pull/21821#discussion_r887402749
+     */
+    .report_message-details {
+        float: left;
+        flex-grow: 1;
+        margin-right: 10px;
+
+        .report_message-explain {
+            width: 100%;
+            height: 100px;
+        }
+    }
+
+    .report_message-buttons {
+        float: right;
+        margin-right: -14px;
+
+        .btn-wrapper {
+            .button {
+                padding: 6px 10px;
+                margin: 0;
+
+                font-size: 0.8rem;
+                font-weight: 400;
+                line-height: normal;
+                text-align: center;
+
+                background-color: hsl(0, 0%, 100%);
+                color: inherit;
+                outline: none;
+                border: 1px solid hsl(0, 0%, 80%);
+                border-radius: 2px;
+
+                box-shadow: none;
+
+                cursor: pointer;
+                transition: all 0.2s ease;
+
+                &.rounded {
+                    border-radius: 4px;
+                }
+
+                &.green {
+                    background-color: hsl(150, 31%, 53%);
+                }
+
+                &.grey {
+                    background-color: hsl(0, 0%, 67%);
+                }
+
+                &:hover,
+                &:focus {
+                    border-color: hsl(0, 0%, 60%);
+                }
+
+                &:active {
+                    border-color: hsl(0, 0%, 60%);
+                    color: inherit;
+                    background-color: hsl(0, 0%, 95%);
+                }
+
+                &.sea-green {
+                    color: hsl(156, 41%, 40%);
+                    border-color: hsl(156, 28%, 70%);
+
+                    &:hover,
+                    &:focus {
+                        border-color: hsl(156, 30%, 50%);
+                    }
+
+                    &:active {
+                        border-color: hsl(156, 30%, 40%);
+                        color: hsl(156, 44%, 43%);
+                        background-color: hsl(154, 33%, 96%);
+                    }
+                }
+            }
+        }
+    }
+}
+
 .spectator_login_for_image_button {
     max-width: 250px;
     height: 50px;

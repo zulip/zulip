@@ -11,6 +11,7 @@ various organization level events, including:
 * A topic being [resolved/unresolved](/help/resolve-a-topic)
 * New public stream announcements (private streams are not announced)
 * New user announcements
+* Reported messages for moderators to review.
 
 The notification bot also generates messages to individual users
 for some user specific events, such as [being subscribed to a
@@ -60,6 +61,25 @@ these messages is "signups".
 
 1. Under **Automated messages and emails**, configure **New user
    announcements**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
+### Reported message announcements
+
+You can configure where the Zulip notification bot announces messages
+for moderators to review, or disable reporting messages entirely.
+The topic for these messages is "sent by (sender of the original message)"
+to make it easy for moderators to identify users who repeatedly send
+messages that require review.
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Automated messages and emails**, configure **Reported/flagged
+   messages**.
 
 {!save-changes.md!}
 

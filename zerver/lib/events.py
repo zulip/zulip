@@ -328,6 +328,12 @@ def fetch_initial_state_data(
         else:
             state["realm_notifications_stream_id"] = -1
 
+        if realm.report_message_stream and not realm.report_message_stream.deactivated:
+            report_message_stream = realm.report_message_stream
+            state["realm_report_message_stream_id"] = report_message_stream.id
+        else:
+            state["realm_report_message_stream_id"] = -1
+
         signup_notifications_stream = realm.get_signup_notifications_stream()
         if signup_notifications_stream:
             state["realm_signup_notifications_stream_id"] = signup_notifications_stream.id

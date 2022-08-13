@@ -174,6 +174,7 @@ class HomeTest(ZulipTestCase):
         "realm_presence_disabled",
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
+        "realm_report_message_stream_id",
         "realm_send_welcome_emails",
         "realm_signup_notifications_stream_id",
         "realm_upload_quota_mib",
@@ -252,7 +253,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 47)
+        self.assert_length(queries, 48)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode()
@@ -396,7 +397,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 44)
+            self.assert_length(queries, 45)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -427,7 +428,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 42)
+        self.assert_length(queries2, 43)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()
@@ -538,6 +539,18 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(
             page_params["realm_notifications_stream_id"], get_stream("Denmark", realm).id
+        )
+
+    def test_report_message_stream(self) -> None:
+        realm = get_realm("zulip")
+        realm.report_message_stream_id = get_stream(Realm.INITIAL_PRIVATE_STREAM_NAME, realm).id
+        realm.save()
+        self.login("iago")
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(
+            page_params["realm_report_message_stream_id"],
+            get_stream(Realm.INITIAL_PRIVATE_STREAM_NAME, realm).id,
         )
 
     def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:

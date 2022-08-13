@@ -36,6 +36,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
+    do_set_realm_report_message_stream,
     do_set_realm_signup_notifications_stream,
 )
 from zerver.actions.streams import (
@@ -486,6 +487,32 @@ class TestRealmAuditLog(ZulipTestCase):
                         RealmAuditLog.OLD_VALUE: old_value,
                         RealmAuditLog.NEW_VALUE: stream.id,
                         "property": "notifications_stream",
+                    }
+                ).decode(),
+            ).count(),
+            1,
+        )
+
+    def test_set_realm_report_message_stream(self) -> None:
+        now = timezone_now()
+        realm = get_realm("zulip")
+        user = self.example_user("hamlet")
+        old_value = realm.report_message_stream_id
+        stream_name = "test"
+        stream = self.make_stream(stream_name, realm)
+
+        do_set_realm_report_message_stream(realm, stream, stream.id, acting_user=user)
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(
+                    {
+                        RealmAuditLog.OLD_VALUE: old_value,
+                        RealmAuditLog.NEW_VALUE: stream.id,
+                        "property": "report_message_stream",
                     }
                 ).decode(),
             ).count(),

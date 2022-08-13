@@ -16,6 +16,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
+    do_set_realm_report_message_stream,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
 )
@@ -92,6 +93,7 @@ def update_realm(
         json_validator=check_dict([]), default=None
     ),
     notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    report_message_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     message_retention_days_raw: Optional[Union[int, str]] = REQ(
         "message_retention_days", json_validator=check_string_or_int, default=None
@@ -265,8 +267,9 @@ def update_realm(
         data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
         data["edit_topic_policy"] = edit_topic_policy
 
-    # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
-    # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
+    # Realm.notifications_stream, Realm.report_message_stream and Realm.signup_notifications_stream
+    # are not boolean, str or integer fields, and thus doesn't fit into the do_set_realm_property
+    # framework.
     if notifications_stream_id is not None:
         if realm.notifications_stream is None or (
             realm.notifications_stream.id != notifications_stream_id
@@ -297,6 +300,20 @@ def update_realm(
                 acting_user=user_profile,
             )
             data["signup_notifications_stream_id"] = signup_notifications_stream_id
+
+    if report_message_stream_id is not None:
+        if realm.report_message_stream is None or (
+            realm.report_message_stream.id != report_message_stream_id
+        ):
+            new_report_message_stream = None
+            if report_message_stream_id >= 0:
+                (new_report_message_stream, sub) = access_stream_by_id(
+                    user_profile, report_message_stream_id
+                )
+            do_set_realm_report_message_stream(
+                realm, new_report_message_stream, report_message_stream_id, acting_user=user_profile
+            )
+            data["report_message_stream_id"] = report_message_stream_id
 
     if default_code_block_language is not None:
         # Migrate '', used in the API to encode the default/None behavior of this feature.

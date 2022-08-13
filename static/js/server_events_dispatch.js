@@ -215,6 +215,7 @@ export function dispatch_normal_event(event) {
                 name: notifications.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: noop,
+                report_message_stream_id: noop,
                 org_type: noop,
                 private_message_policy: noop,
                 send_welcome_emails: noop,
@@ -490,6 +491,10 @@ export function dispatch_normal_event(event) {
                         if (page_params.realm_notifications_stream_id === stream.stream_id) {
                             page_params.realm_notifications_stream_id = -1;
                             settings_org.sync_realm_settings("notifications_stream_id");
+                        }
+                        if (page_params.realm_report_message_stream_id === stream.stream_id) {
+                            page_params.realm_report_message_stream_id = -1;
+                            settings_org.sync_realm_settings("report_message_stream_id");
                         }
                         if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                             page_params.realm_signup_notifications_stream_id = -1;

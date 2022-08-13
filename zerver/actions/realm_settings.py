@@ -191,7 +191,7 @@ def do_set_realm_message_editing(
 
 def do_set_realm_stream(
     realm: Realm,
-    field: Literal["notifications_stream", "signup_notifications_stream"],
+    field: Literal["notifications_stream", "signup_notifications_stream", "report_message_stream"],
     stream: Optional[Stream],
     stream_id: int,
     *,
@@ -207,6 +207,10 @@ def do_set_realm_stream(
         old_value = realm.signup_notifications_stream_id
         realm.signup_notifications_stream = stream
         property = "signup_notifications_stream_id"
+    elif field == "report_message_stream":
+        old_value = realm.report_message_stream_id
+        realm.report_message_stream = stream
+        property = "report_message_stream_id"
     else:
         raise AssertionError("Invalid realm stream field.")
 
@@ -249,6 +253,12 @@ def do_set_realm_signup_notifications_stream(
     do_set_realm_stream(
         realm, "signup_notifications_stream", stream, stream_id, acting_user=acting_user
     )
+
+
+def do_set_realm_report_message_stream(
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    do_set_realm_stream(realm, "report_message_stream", stream, stream_id, acting_user=acting_user)
 
 
 def do_set_realm_user_default_setting(

@@ -35,6 +35,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_last_message_id
 from zerver.lib.queue import queue_json_publish
@@ -82,6 +83,11 @@ if TYPE_CHECKING:
 def do_deactivate_stream(
     stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
+    # Error if this stream is used for reporting messages. Note that this also works for
+    # merge_streams admin command on the command-line.
+    if Realm.objects.filter(id=stream.realm_id, report_message_stream=stream).exists():
+        raise JsonableError(_("Cannot deactivate abuse report stream."))
+
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
     # "Get the user's first unread message".  Since this can be an

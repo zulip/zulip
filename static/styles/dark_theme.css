@@ -1206,6 +1206,18 @@ body.dark-theme {
         }
     }
 
+    .report_message-box {
+        background-color: hsla(0, 0%, 0%, 0.2);
+
+        .report_message-buttons .btn-wrapper .button {
+            background-color: hsla(0, 0%, 0%, 0.2);
+        }
+
+        .report_message-buttons .btn-wrapper .report_message_cancel {
+            border-color: hsla(0, 0%, 0%, 0.6);
+        }
+    }
+
     #read_receipts_modal #read_receipts_list li {
         &:hover {
             background-color: hsla(0, 0%, 100%, 0.05);

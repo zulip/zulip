@@ -44,6 +44,14 @@
     </li>
     {{/if}}
 
+    {{#if should_display_report_message}}
+    <li>
+        <a class="report_message" data-message-id="{{message_id}}"tabindex="0">
+            <i class="fa fa-flag" aria-hidden="true"></i> {{t "Report message" }}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_uncollapse}}
     <li>
         <a class="popover_toggle_collapse" data-message-id="{{message_id}}" tabindex="0">

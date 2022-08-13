@@ -1,13 +1,17 @@
+import re
 import sys
 from email.headerregistry import Address
 from typing import Iterable, Optional, Sequence, Union, cast
 
 from dateutil.parser import parse as dateparser
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
+from django.utils.translation import override as override_language
 
 from zerver.actions.message_send import (
     check_schedule_message,
@@ -17,14 +21,15 @@ from zerver.actions.message_send import (
     create_mirror_user_if_needed,
     extract_private_recipients,
     extract_stream_indicator,
+    send_message_to_report_message_stream,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.message import render_markdown
+from zerver.lib.message import access_message, render_markdown
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import to_float
+from zerver.lib.validator import check_string_in, to_float, to_non_negative_int
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -32,8 +37,13 @@ from zerver.models import (
     Message,
     Realm,
     RealmDomain,
+    Recipient,
     UserProfile,
+    get_huddle_user_ids,
+    get_stream_by_id_in_realm,
+    get_system_bot,
     get_user_including_cross_realm,
+    get_user_profile_by_id_in_realm,
 )
 
 if sys.version_info < (3, 9):  # nocoverage
@@ -346,3 +356,96 @@ def render_message_backend(
 
     rendering_result = render_markdown(message, content, realm=user_profile.realm)
     return json_success(request, data={"rendered": rendering_result.rendered_content})
+
+
+REPORT_MESSAGE_REASONS = {
+    "spam": gettext_lazy("Spam"),
+    "harassment": gettext_lazy("Harassment"),
+    "inappropriate": gettext_lazy("Inappropriate content"),
+    "norms": gettext_lazy("Violates community norms"),
+    "other": gettext_lazy("Other reason"),
+}
+
+# must be kept in sync with ./static/shared/js/fenced_code.js
+def get_unused_fence(content: str) -> str:
+    # same algorithm as JS, but this is the more natural way to express in python
+    return "`" * (1 + max([2] + [len(x) for x in re.findall(r"`+", content)]))
+
+
+def get_quoted_text(content: str) -> str:
+    fence = get_unused_fence(content)
+    return f"\n{fence}quote\n{content}\n{fence}\n"
+
+
+@has_request_variables
+def report_message_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int = REQ(converter=to_non_negative_int, path_only=True),
+    reason: str = REQ(
+        default="other", str_validator=check_string_in(list(REPORT_MESSAGE_REASONS.keys()))
+    ),
+    explanation: str = REQ(default=""),
+) -> HttpResponse:
+    request_notes = RequestNotes.get_notes(request)
+    assert request_notes.log_data is not None
+    orig_message, ignored = access_message(user_profile, message_id, lock_message=False)
+    reason_str = REPORT_MESSAGE_REASONS[reason]
+    explanation = explanation.strip()
+    if reason == "other" and explanation == "":
+        raise JsonableError(_("For reason=other, an explanation must be provided."))
+
+    user_name, user_id = user_profile.full_name, user_profile.id
+    sender_name, sender_id = orig_message.sender.full_name, orig_message.sender.id
+    quoted_message = get_quoted_text(orig_message.content)
+    user = f"@_**{user_name}|{user_id}**"
+    sender = f"@_**{sender_name}|{sender_id}**"
+
+    # compute recipient
+    if orig_message.recipient.type == Recipient.STREAM:
+        stream = get_stream_by_id_in_realm(orig_message.recipient.type_id, user_profile.realm)
+        recipient = f"#**{stream.name}>{orig_message.topic_name()}**\n"
+    elif orig_message.recipient.type == Recipient.PERSONAL:
+        receiver = get_user_profile_by_id_in_realm(
+            orig_message.recipient.type_id, user_profile.realm
+        )
+        recipient = f"@**{receiver.full_name}|{receiver.id}**\n"
+    else:
+        recipient = " ".join([f"@**|{id}**" for id in get_huddle_user_ids(orig_message.recipient)])
+
+    # note: put original message at the end, so if the report_message gets truncated, it's from the original.
+    if explanation == "":
+        report_message = _(
+            "{user} reported a message sent by {sender} to {recipient} as containing **`{reason_str}`**.\n\nOriginal message:\n{quoted_message}"
+        ).format(
+            user=user,
+            sender=sender,
+            recipient=recipient,
+            reason_str=reason_str,
+            quoted_message=quoted_message,
+        )
+    else:
+        explanation = get_quoted_text(explanation)
+        report_message = _(
+            "{user} reported a message sent by {sender} to {recipient} as containing **`{reason_str}`** with these notes:\n{explanation}\nOriginal message:\n{quoted_message}"
+        ).format(
+            user=user,
+            sender=sender,
+            recipient=recipient,
+            reason_str=reason_str,
+            explanation=explanation,
+            quoted_message=quoted_message,
+        )
+
+    with override_language(user_profile.realm.default_language):
+        sender = get_system_bot(settings.NOTIFICATION_BOT, user_profile.realm_id)
+        topic = _("sent by {sender_name}").format(sender_name=sender_name)
+        send_message_to_report_message_stream(
+            sender, user_profile, user_profile.realm, report_message, topic
+        )
+
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{user_profile.full_name}, {message_id}, {reason}, {explanation}]"
+
+    return json_success(request)

@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
+from zerver.actions.message_send import send_message_to_report_message_stream
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
     do_change_realm_org_type,
@@ -21,6 +22,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_user_default_setting,
 )
 from zerver.actions.streams import do_deactivate_stream, merge_streams
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
@@ -470,6 +472,71 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(notifications_stream.id, verona.id)
         do_deactivate_stream(notifications_stream, acting_user=None)
         self.assertIsNone(realm.get_notifications_stream())
+
+    def test_deactivating_reporting_stream(self) -> None:
+        realm = get_realm("zulip")
+        reporting_stream = realm.get_report_message_stream()
+        assert reporting_stream is not None
+
+        realm.report_message_stream = None
+        realm.save(update_fields=["report_message_stream"])
+        do_deactivate_stream(reporting_stream, acting_user=None)
+
+        # change the stream and let it error
+        verona = get_stream("verona", realm)
+        realm.report_message_stream = verona
+        realm.save(update_fields=["report_message_stream"])
+        with self.assertRaisesRegex(JsonableError, "Cannot deactivate abuse report stream"):
+            do_deactivate_stream(verona, acting_user=None)
+
+    def test_change_report_message_stream(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+
+        realm = get_realm("zulip")
+        old_reporting_stream = realm.get_report_message_stream()
+
+        disabled_report_message_stream_id = -1
+        req = dict(
+            report_message_stream_id=orjson.dumps(disabled_report_message_stream_id).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        self.assertEqual(realm.report_message_stream, None)
+
+        new_reporting_stream_id = Stream.objects.get(name="Denmark").id
+        req = dict(report_message_stream_id=orjson.dumps(new_reporting_stream_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        realm = get_realm("zulip")
+        # for mypy
+        assert realm.report_message_stream is not None
+        self.assertEqual(realm.report_message_stream.id, new_reporting_stream_id)
+
+        # ok to deactivate the old stream now
+        do_deactivate_stream(old_reporting_stream, acting_user=None)
+
+        invalid_report_message_stream_id = 1234
+        req = dict(report_message_stream_id=orjson.dumps(invalid_report_message_stream_id).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid stream ID")
+        realm = get_realm("zulip")
+        # for mypy
+        assert realm.report_message_stream is not None
+        self.assertNotEqual(realm.report_message_stream.id, invalid_report_message_stream_id)
+
+        realm = get_realm("zulip")
+        realm.report_message_stream = None
+        with self.assertRaisesRegex(JsonableError, "stream no longer exists"):
+            with self.assertLogs(level="ERROR"):
+                send_message_to_report_message_stream(
+                    self.example_user("iago"),
+                    self.example_user("cordelia"),
+                    realm,
+                    "msgtext",
+                    "mytopic",
+                )
 
     def test_merge_streams(self) -> None:
         realm = get_realm("zulip")

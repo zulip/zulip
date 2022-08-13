@@ -1,0 +1,48 @@
+<div class="report_message-box" class="controls" id="message-history" style="display:none">
+    <div class="radio-input-parent">
+        <label>{{t 'What is the problem with this message?'}}
+            {{> help_link_widget link="/help/stream-permissions" }}
+        </label>
+        <label class="radio">
+            <input type="radio" name="report_message-reason" value="spam"/>{{t "Spam" }}
+        </label>
+        <label class="radio">
+            <input type="radio" name="report_message-reason" value="harassment"/>
+            {{t "Harassment" }}
+        </label>
+        <label class="radio">
+            <!-- "content" = text, multimedia or links -->
+            <input type="radio" name="report_message-reason" value="inappropriate"/>
+            {{t "Inappropriate content" }}
+        </label>
+        <label class="radio">
+            <input type="radio" name="report_message-reason" value="norms"/>
+            {{t "Violates community norms" }}
+        </label>
+        <label class="radio">
+            <input type="radio" name="report_message-reason" value="other"/>
+            {{t "Other (please explain) "}}
+        </label>
+    </div>
+
+    <div class="report_message-details action-buttons">
+        <label>{{t 'Can you provide more details?'}}</label>
+        <textarea class="report_message-explain" name="report_message-explain"></textarea>
+
+        <div class="report_message-buttons">
+            <div class="btn-wrapper inline-block">
+                <button type="button" class="button small rounded sea-green report_message_submit">
+                    <img class="loader" alt="" src="" />
+                    <span>{{t "Submit" }}</span>
+                </button>
+            </div>
+            <div class="btn-wrapper inline-block">
+                <button type="button" class="button small rounded report_message_cancel">
+                    {{t "Cancel" }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="float-clear"></div>
+</div>

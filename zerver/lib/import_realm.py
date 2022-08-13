@@ -931,6 +931,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # notifications_stream.
     update_model_ids(Stream, data, "stream")
     re_map_foreign_keys(data, "zerver_realm", "notifications_stream", related_table="stream")
+    re_map_foreign_keys(data, "zerver_realm", "report_message_stream", related_table="stream")
     re_map_foreign_keys(data, "zerver_realm", "signup_notifications_stream", related_table="stream")
 
     fix_datetime_fields(data, "zerver_realm")
@@ -947,6 +948,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     else:
         notifications_stream_id = None
     realm.notifications_stream_id = None
+    if realm.report_message_stream_id is not None:
+        report_message_stream_id: Optional[int] = int(realm.report_message_stream_id)
+    else:
+        report_message_stream_id = None
+    realm.report_message_stream_id = None
     if realm.signup_notifications_stream_id is not None:
         signup_notifications_stream_id: Optional[int] = int(realm.signup_notifications_stream_id)
     else:
@@ -965,6 +971,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     realm.notifications_stream_id = notifications_stream_id
     realm.signup_notifications_stream_id = signup_notifications_stream_id
+    realm.report_message_stream_id = report_message_stream_id
     realm.save()
 
     # Remap the user IDs for notification_bot and friends to their

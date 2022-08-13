@@ -29,6 +29,7 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
+import * as message_report from "./message_report";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
 import * as muted_users_ui from "./muted_users_ui";
@@ -499,6 +500,8 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
+        const should_display_report_message = !message.sent_by_me && not_spectator;
+
         const should_display_edit_and_view_source =
             message.content !== "<p>(deleted)</p>" ||
             editability === message_edit.editability_types.FULL ||
@@ -521,6 +524,7 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item,
             should_display_collapse,
             should_display_uncollapse,
+            should_display_report_message,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option,
             should_display_hide_option,
@@ -822,6 +826,43 @@ export function hide_playground_links_popover() {
         $current_playground_links_popover_elem.popover("destroy");
         $current_playground_links_popover_elem = undefined;
     }
+}
+
+export function register_report_message_click_handlers(message_id, $report_message) {
+    const $row = message_lists.current.get_row(message_id);
+    const message = message_lists.current.get(rows.id($row));
+    $report_message.find("div,label,input[type=radio]").on("click", (e) => {
+        // don't initiate a reply-message, which is the default behavior in zulip
+        e.stopPropagation();
+    });
+    $report_message.find("button.report_message_cancel").on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        $report_message.slideUp(400);
+    });
+    $report_message.find("button.report_message_submit").on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const reason = $report_message
+            .find("input[type=radio][name=report_message-reason]:checked")
+            .val();
+        if (!["spam", "harassment", "inappropriate", "norms", "other"].includes(reason)) {
+            message_report.msgreport_alert($t({defaultMessage: "Please select a reason."}));
+            return;
+        }
+        let explanation = $report_message.find("textarea[name=report_message-explain]").val();
+        if (explanation === undefined) {
+            explanation = "";
+        }
+        if (reason === "other" && explanation === "") {
+            message_report.msgreport_alert(
+                $t({defaultMessage: "'Other' requires an explanation."}),
+            );
+            return;
+        }
+
+        message_report.report_message(message, $report_message, reason, explanation);
+    });
 }
 
 export function register_click_handlers() {
@@ -1236,6 +1277,16 @@ export function register_click_handlers() {
         hide_actions_popover();
         message_edit_history.show_history(message);
         $("#message-history-cancel").trigger("focus");
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".report_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const $row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id($row));
+        hide_actions_popover();
+        message_report.show_report_dialog(message, register_report_message_click_handlers);
         e.stopPropagation();
         e.preventDefault();
     });

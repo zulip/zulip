@@ -494,6 +494,25 @@ export function on_topic_narrow() {
     $("#compose-textarea").trigger("focus").trigger("select");
 }
 
+export function get_quoted_message(message) {
+    // Final message looks like:
+    //     @_**Iago|5** [said](link to message):
+    //     ```quote
+    //     message content
+    //     ```
+    let content = $t(
+        {defaultMessage: "{username} [said]({link_to_message}):"},
+        {
+            username: `@_**${message.sender_full_name}|${message.sender_id}**`,
+            link_to_message: `${hash_util.by_conversation_and_time_url(message)}`,
+        },
+    );
+    content += "\n";
+    const fence = fenced_code.get_unused_fence(message.raw_content);
+    content += `${fence}quote\n${message.raw_content}\n${fence}`;
+    return content;
+}
+
 export function quote_and_reply(opts) {
     const $textarea = $("#compose-textarea");
     const message_id = message_lists.current.selected_id();
@@ -521,22 +540,8 @@ export function quote_and_reply(opts) {
     compose_ui.insert_syntax_and_focus(quoting_placeholder + "\n", $textarea);
 
     function replace_content(message) {
-        // Final message looks like:
-        //     @_**Iago|5** [said](link to message):
-        //     ```quote
-        //     message content
-        //     ```
         const prev_caret = $textarea.caret();
-        let content = $t(
-            {defaultMessage: "{username} [said]({link_to_message}):"},
-            {
-                username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-                link_to_message: `${hash_util.by_conversation_and_time_url(message)}`,
-            },
-        );
-        content += "\n";
-        const fence = fenced_code.get_unused_fence(message.raw_content);
-        content += `${fence}quote\n${message.raw_content}\n${fence}`;
+        const content = get_quoted_message(message);
 
         const placeholder_offset = $($textarea).val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);

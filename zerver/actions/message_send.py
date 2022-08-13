@@ -1296,6 +1296,20 @@ def send_pm_if_empty_stream(
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 
+def send_message_to_report_message_stream(
+    sender: UserProfile, reporter: UserProfile, realm: Realm, message: str, topic_name: str
+) -> None:
+    report_message_stream = realm.get_report_message_stream()
+    if report_message_stream is None:
+        # obscure error condition where the stream was somehow deleted after being set as the target.
+        # This shouldn't happen normally, i.e. someone fiddled with the database
+        logging.error("report_message_backend: target stream doesn't exist or no longer exists.")
+        raise JsonableError(_("Target stream no longer exists - please alert your administrator."))
+
+    with override_language(realm.default_language):
+        internal_send_stream_message(sender, report_message_stream, topic_name, message)
+
+
 def validate_stream_name_with_pm_notification(
     stream_name: str, realm: Realm, sender: UserProfile
 ) -> Stream:

@@ -75,7 +75,12 @@ from zerver.views.message_flags import (
     mark_topic_as_read,
     update_message_flags,
 )
-from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
+from zerver.views.message_send import (
+    render_message_backend,
+    report_message_backend,
+    send_message_backend,
+    zcommand_backend,
+)
 from zerver.views.muting import mute_user, unmute_user, update_muted_topic
 from zerver.views.portico import (
     app_download_link_redirect,
@@ -337,6 +342,7 @@ v1_api_and_json_patterns = [
     rest_path("messages/flags", POST=update_message_flags),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
+    rest_path("messages/<int:message_id>/report", POST=report_message_backend),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
     rest_path("submessage", POST=process_submessage),

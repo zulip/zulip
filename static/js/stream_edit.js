@@ -660,7 +660,7 @@ export function initialize() {
                 return;
             }
             const $row = $(".stream-row.active");
-            archive_stream(stream_id, $(".stream_change_property_info"), $row);
+            archive_stream(stream_id, $("#stream_settings_error"), $row);
         }
 
         const stream = sub_store.get(stream_id);

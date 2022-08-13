@@ -109,6 +109,8 @@ IGNORED_PHRASES = [
     # Use in compose box.
     r"to send",
     r"to add a new line",
+    # Used in reported messages
+    r"sent by",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

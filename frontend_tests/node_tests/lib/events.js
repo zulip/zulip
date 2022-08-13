@@ -349,6 +349,13 @@ exports.fixtures = {
         value: 50,
     },
 
+    realm__update__report_message_stream_id: {
+        type: "realm",
+        op: "update",
+        property: "report_message_stream_id",
+        value: 18,
+    },
+
     realm__update__signup_notifications_stream_id: {
         type: "realm",
         op: "update",

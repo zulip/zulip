@@ -5717,6 +5717,61 @@ paths:
                         "rendered": "<p><strong>foo</strong></p>",
                         "result": "success",
                       }
+  /messages/{message_id}/report:
+    post:
+      operationId: report-message
+      summary: Report a message to admins for review.
+      tags: ["messages"]
+      description: |
+        Sends a message to a given stream, configured per realm in the organization
+        settings UI, which alerts admins to review this message.
+
+        `POST {{ api_url }}/v1/messages/{message_id}/report`
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+        - name: reason
+          in: query
+          description: |
+            The type of malfeasance that the reporting-users believes
+            is being exhibited in this message.
+          schema:
+            type: string
+            enum:
+              - spam
+              - harassment
+              - inappropriate
+              - norms
+              - other
+          example: harassment
+          required: true
+        - name: explanation
+          in: query
+          description: |
+            A deeper explanation of why the reporting-user believes
+            this message should be reviewed.
+          schema:
+            type: string
+          example: "this message is bullying Frodo."
+          allowEmptyValue: true
+          required: false
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "result": "error",
+                        "msg": "Invalid reason",
+                        "code": "BAD_REQUEST",
+                      }
+                    description: |
+                      An example JSON error response for when the emoji code is invalid:
   /messages/{message_id}/reactions:
     post:
       operationId: add-reaction
@@ -12024,8 +12079,18 @@ paths:
 
                           Since these automated messages are sent by the server, this field is
                           primarily relevant to clients containing UI for changing it.
-
                           [new-stream-announce]: /help/configure-notification-bot#new-stream-announcements
+                      realm_report_message_stream_id:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The ID of the stream to which notifications are sent regarding messages
+                          that admins should review. -1 if such notifications are disabled.
+
+                          Since these notifications are sent by the server, this field is
+                          primarily relevant to clients containing UI for changing it.
+                          [report-message-announce]: /help/configure-notification-bot#report-message-announcements
                       realm_signup_notifications_stream_id:
                         type: integer
                         description: |

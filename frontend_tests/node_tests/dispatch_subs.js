@@ -246,6 +246,7 @@ test("stream delete (special streams)", ({override}) => {
     // sanity check data
     assert.equal(event.streams.length, 2);
     page_params.realm_notifications_stream_id = event.streams[0].stream_id;
+    page_params.realm_report_message_stream_id = event.streams[1].stream_id;
     page_params.realm_signup_notifications_stream_id = event.streams[1].stream_id;
 
     override(stream_settings_ui, "remove_stream", noop);

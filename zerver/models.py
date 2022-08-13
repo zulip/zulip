@@ -495,6 +495,13 @@ class Realm(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
+    report_message_stream: Optional["Stream"] = models.ForeignKey(
+        "Stream",
+        related_name="+",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
         "unlimited": -1,
@@ -869,6 +876,11 @@ class Realm(models.Model):
     def get_notifications_stream(self) -> Optional["Stream"]:
         if self.notifications_stream is not None and not self.notifications_stream.deactivated:
             return self.notifications_stream
+        return None
+
+    def get_report_message_stream(self) -> Optional["Stream"]:
+        if self.report_message_stream is not None and not self.report_message_stream.deactivated:
+            return self.report_message_stream
         return None
 
     def get_signup_notifications_stream(self) -> Optional["Stream"]:

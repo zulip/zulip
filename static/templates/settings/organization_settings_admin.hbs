@@ -47,6 +47,13 @@
               list_placeholder=(t 'Filter streams')
               reset_button_text=(t '[Disable]')
               label=admin_settings_label.realm_signup_notifications_stream }}
+
+            {{> dropdown_list_widget
+              widget_name="realm_report_message_stream_id"
+              list_placeholder=(t 'Filter streams')
+              reset_button_text=(t '[Disable]')
+              label=admin_settings_label.realm_report_message_stream }}
+
             <div class="realm_default_language">
                 {{> language_selection_widget
                   section_name="realm_default_language"

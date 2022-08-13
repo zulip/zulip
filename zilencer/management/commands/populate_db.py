@@ -602,6 +602,9 @@ class Command(BaseCommand):
                 Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list
             ]
 
+            zulip_realm.report_message_stream = get_stream(signups_stream, zulip_realm)
+            zulip_realm.save(update_fields=["report_message_stream"])
+
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
@@ -855,6 +858,12 @@ class Command(BaseCommand):
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     },
+                    "reported messages": {
+                        "description": "stream for reported messages",
+                        "invite_only": True,
+                        "is_web_public": False,
+                        "history_public_to_subscribers": False,
+                    },
                     "design": {"description": "For design"},
                     "support": {"description": "For support"},
                     "social": {"description": "For socializing"},
@@ -913,6 +922,9 @@ class Command(BaseCommand):
                 zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
                 zulip_realm.save(update_fields=["notifications_stream"])
 
+                zulip_realm.report_message_stream = get_stream("reported messages", zulip_realm)
+                zulip_realm.save(update_fields=["report_message_stream"])
+
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
                     DefaultStream.objects.create(
@@ -939,6 +951,8 @@ class Command(BaseCommand):
 
         for job in jobs:
             generate_and_send_messages(job)
+
+        # TODO: report a couple of messages to populate "reported messages" stream
 
         if options["delete"]:
             if not options["test_suite"]:
@@ -1011,7 +1025,11 @@ def generate_and_send_messages(
     # We need to filter out streams from the analytics realm as we don't want to generate
     # messages to its streams - and they might also have no subscribers, which would break
     # our message generation mechanism below.
-    stream_ids = Stream.objects.filter(realm=get_realm("zulip")).values_list("id", flat=True)
+    stream_ids = (
+        Stream.objects.filter(realm=get_realm("zulip"))
+        .exclude(name="reported messages")
+        .values_list("id", flat=True)
+    )
     recipient_streams: List[int] = [
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)

@@ -435,6 +435,11 @@ run_test("realm settings", ({override}) => {
     assert_same(page_params.realm_notifications_stream_id, 42);
     page_params.realm_notifications_stream_id = -1; // make sure to reset for future tests
 
+    event = event_fixtures.realm__update__report_message_stream_id;
+    dispatch(event);
+    assert_same(page_params.realm_report_message_stream_id, 18);
+    page_params.realm_report_message_stream_id = -1; // make sure to reset for future tests
+
     event = event_fixtures.realm__update__signup_notifications_stream_id;
     dispatch(event);
     assert_same(page_params.realm_signup_notifications_stream_id, 41);

@@ -40,6 +40,7 @@ const stream_settings_data = zrequire("stream_settings_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
+const stream_data = zrequire("stream_data");
 
 function test(label, f) {
     run_test(label, (helpers) => {
@@ -749,11 +750,13 @@ test("misc", ({override_rewire}) => {
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
         {name: "some_stream", stream_id: 42},
+        {name: "some_stream", stream_id: 18},
     ]);
 
     // Set stubs for dropdown_list_widget:
     const widget_settings = [
         "realm_notifications_stream_id",
+        "realm_report_message_stream_id",
         "realm_signup_notifications_stream_id",
         "realm_default_code_block_language",
     ];
@@ -771,8 +774,10 @@ test("misc", ({override_rewire}) => {
     blueslip.expect(
         "warn",
         "dropdown-list-widget: Called without a default value; using null value",
-        3,
+        4,
     );
+    // is_private requires infrastructure we don't have
+    stream_data.is_private = (id) => id === 18;
     settings_org.init_dropdown_widgets();
 
     let setting_name = "realm_notifications_stream_id";
@@ -783,6 +788,17 @@ test("misc", ({override_rewire}) => {
     assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.notifications_stream_widget.render(undefined);
+    assert.equal($elem.text(), "translated: Disabled");
+    assert.ok($elem.hasClass("text-warning"));
+
+    setting_name = "realm_report_message_stream_id";
+    $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
+    $elem.closest = () => $stub_notification_disable_parent;
+    settings_org.report_message_stream_widget.render(18);
+    assert.equal($elem.text(), "#some_stream");
+    assert.ok(!$elem.hasClass("text-warning"));
+
+    settings_org.report_message_stream_widget.render(undefined);
     assert.equal($elem.text(), "translated: Disabled");
     assert.ok($elem.hasClass("text-warning"));
 
