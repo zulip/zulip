@@ -239,9 +239,6 @@ export function analyze_selection(selection) {
         // last message
         if ($endc.attr("id") === "bottom_whitespace" || $endc.attr("id") === "compose_close") {
             $initial_end_tr = $(".message_row").last();
-            // The selection goes off the end of the message feed, so
-            // this is a multi-message selection.
-            skip_same_td_check = true;
         } else {
             $initial_end_tr = $($endc.parents(".selectable_row")[0]);
         }
