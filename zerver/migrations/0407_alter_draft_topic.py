@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0406_alter_message_subject'),
+        ("zerver", "0406_alter_message_subject_and_reset_fts_update_trigger"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='draft',
-            name='topic',
+            model_name="draft",
+            name="topic",
             field=models.CharField(db_index=True, max_length=200),
         ),
     ]
