@@ -1764,13 +1764,6 @@ input[type="checkbox"] {
         float: none;
     }
 
-    #linkifier-settings .new-linkifier-form .controls,
-    #playground-settings .new-playground-form .controls,
-    #profile-field-settings .new-profile-field-form .controls {
-        margin: auto;
-        text-align: center;
-    }
-
     #settings_page .save-button-controls {
         display: block;
         margin: 10px 0 0;
