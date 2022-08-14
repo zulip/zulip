@@ -453,7 +453,6 @@ export function dispatch_normal_event(event) {
         case "stream":
             switch (event.op) {
                 case "update":
-                    // Legacy: Stream properties are still managed by stream_settings_ui.js on the client side.
                     stream_events.update_property(event.stream_id, event.property, event.value, {
                         rendered_description: event.rendered_description,
                         history_public_to_subscribers: event.history_public_to_subscribers,
