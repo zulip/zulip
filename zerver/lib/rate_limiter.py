@@ -582,6 +582,8 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     """Returns whether or not a user was rate limited. Will raise a RateLimited exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
+    if not should_rate_limit(request):
+        return
 
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
@@ -591,6 +593,9 @@ def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
 
 
 def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
+    if not should_rate_limit(request):
+        return
+
     # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
     # with the nginx configuration to guarantee this to be *the* correct
     # IP address to use - without worrying we'll grab the IP of a proxy.
@@ -625,16 +630,3 @@ def should_rate_limit(request: HttpRequest) -> bool:
         return False
 
     return True
-
-
-def rate_limit(request: HttpRequest) -> None:
-    if not should_rate_limit(request):
-        return
-
-    user = request.user
-
-    if not user.is_authenticated:
-        rate_limit_request_by_ip(request, domain="api_by_ip")
-    else:
-        assert isinstance(user, UserProfile)
-        rate_limit_user(request, user, domain="api_by_user")

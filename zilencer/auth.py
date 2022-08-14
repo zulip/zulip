@@ -54,6 +54,9 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
 def rate_limit_remote_server(
     request: HttpRequest, remote_server: RemoteZulipServer, domain: str
 ) -> None:
+    if not should_rate_limit(request):
+        return
+
     try:
         RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
     except RateLimited as e:
@@ -98,8 +101,7 @@ def authenticated_remote_server_view(
         except JsonableError as e:
             raise UnauthorizedError(e.msg)
 
-        if should_rate_limit(request):
-            rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
+        rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
         return view_func(request, remote_server, *args, **kwargs)
 
     return _wrapped_view_func
