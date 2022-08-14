@@ -95,6 +95,10 @@
             border: 0;
         }
 
+        .messagebox-content {
+            padding: 4px 10px 1px;
+        }
+
         .messagebox {
             cursor: auto;
             box-shadow: none;
@@ -104,19 +108,15 @@
             line-height: 1;
             padding-top: 10px;
             padding-bottom: 10px;
+            padding-right: 10px;
             margin-left: 0;
         }
 
         .draft_controls {
             display: inline-block;
-            position: absolute;
-            top: 9px;
-            right: -103px;
+            padding-top: 10px;
+            float: right;
             font-size: 0.9em;
-
-            @media (width < $sm_min) {
-                right: 0;
-            }
 
             [data-tippy-root] {
                 width: max-content;
