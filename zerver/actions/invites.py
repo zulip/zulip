@@ -138,7 +138,14 @@ def do_invite_users(
     if settings.BILLING_ENABLED:
         from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
 
-        check_spare_licenses_available_for_inviting_new_users(user_profile.realm, num_invites)
+        if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
+            check_spare_licenses_available_for_inviting_new_users(
+                user_profile.realm, extra_guests_count=num_invites
+            )
+        else:
+            check_spare_licenses_available_for_inviting_new_users(
+                user_profile.realm, extra_non_guests_count=num_invites
+            )
 
     realm = user_profile.realm
     if not realm.invite_required:

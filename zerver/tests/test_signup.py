@@ -1299,6 +1299,14 @@ class InviteUserTest(InviteUserBase):
             result, "All Zulip licenses for this organization are currently in use"
         )
 
+        with self.settings(BILLING_ENABLED=True):
+            result = self.invite(
+                self.nonreg_email("bob"),
+                ["Denmark"],
+                invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+            )
+        self.assert_json_success(result)
+
     def test_cross_realm_bot(self) -> None:
         inviter = self.example_user("hamlet")
         self.login_user(inviter)
@@ -2365,7 +2373,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "http://zulip.testserver/")
 
-        self.subscribe_realm_to_monthly_plan_on_manual_license_management(realm, 5, 5)
+        # We want to simulate the organization having exactly all their licenses
+        # used, to verify that joining as a regular user is not allowed,
+        # but as a guest still works (guests are free up to a certain number).
+        current_seat_count = get_latest_seat_count(realm)
+        self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+            realm, current_seat_count, current_seat_count
+        )
 
         email = self.nonreg_email("bob")
         prereg_user = PreregistrationUser.objects.create(
@@ -2379,6 +2393,25 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_in_success_response(
             ["New members cannot join this organization because all Zulip licenses are"], response
         )
+
+        guest_prereg_user = PreregistrationUser.objects.create(
+            email=email,
+            referred_by=inviter,
+            realm=realm,
+            invited_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+        )
+        confirmation_link = create_confirmation_link(
+            guest_prereg_user, Confirmation.USER_REGISTRATION
+        )
+        registration_key = confirmation_link.split("/")[-1]
+        url = "/accounts/register/"
+
+        self.client_post(
+            url, {"key": registration_key, "from_confirmation": 1, "full_name": "alice"}
+        )
+        response = self.submit_reg_form_for_user(email, "password", key=registration_key)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "http://zulip.testserver/")
 
 
 class InvitationsTestCase(InviteUserBase):
