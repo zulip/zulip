@@ -58,14 +58,23 @@ STRIPE_API_VERSION = "2020-08-27"
 
 
 def get_latest_seat_count(realm: Realm) -> int:
+    return get_seat_count(realm, extra_non_guests_count=0, extra_guests_count=0)
+
+
+def get_seat_count(
+    realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
+) -> int:
     non_guests = (
         UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
         .exclude(role=UserProfile.ROLE_GUEST)
         .count()
+    ) + extra_non_guests_count
+    guests = (
+        UserProfile.objects.filter(
+            realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
+        ).count()
+        + extra_guests_count
     )
-    guests = UserProfile.objects.filter(
-        realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
-    ).count()
 
     # This formula achieves the pricing of the first 5*N guests
     # being free of charge (where N is the number of non-guests in the organization)
