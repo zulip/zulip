@@ -646,14 +646,9 @@ def rate_limit(request: HttpRequest) -> None:
     if not should_rate_limit(request):
         return
 
-    from zerver.lib.request import RequestNotes
-
     user = request.user
-    remote_server = RequestNotes.get_notes(request).remote_server
 
-    if settings.ZILENCER_ENABLED and remote_server is not None:
-        rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
-    elif not user.is_authenticated:
+    if not user.is_authenticated:
         rate_limit_request_by_ip(request, domain="api_by_ip")
     else:
         assert isinstance(user, UserProfile)

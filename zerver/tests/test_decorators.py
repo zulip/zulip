@@ -723,6 +723,7 @@ class RateLimitTestCase(ZulipTestCase):
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_rate_limiting_happens_if_remote_server(self) -> None:
+        user = self.example_user("hamlet")
         server_uuid = str(uuid.uuid4())
         server = RemoteZulipServer(
             uuid=server_uuid,
@@ -730,16 +731,18 @@ class RateLimitTestCase(ZulipTestCase):
             hostname="demo.example.com",
             last_updated=timezone_now(),
         )
-        META = {"REMOTE_ADDR": "3.3.3.3"}
+        server.save()
 
-        req = HostRequestMock(client_name="external", remote_server=server, meta_data=META)
-
-        f = self.get_ratelimited_view()
-
-        with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.lib.rate_limiter.rate_limit_remote_server") as rate_limit_mock:
-                with self.errors_disallowed():
-                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
+        with self.settings(RATE_LIMITING=True), mock.patch(
+            "zerver.lib.rate_limiter.rate_limit_remote_server"
+        ) as rate_limit_mock:
+            result = self.uuid_post(
+                server_uuid,
+                "/api/v1/remotes/push/unregister/all",
+                {"user_id": user.id},
+                subdomain="",
+            )
+            self.assert_json_success(result)
 
         self.assertTrue(rate_limit_mock.called)
 
