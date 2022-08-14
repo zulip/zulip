@@ -6,7 +6,7 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-const muted_topics = zrequire("muted_topics");
+const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
 const {MessageListData} = zrequire("../js/message_list_data");
 const {Filter} = zrequire("filter");
@@ -143,7 +143,7 @@ run_test("muting", () => {
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ];
 
-    muted_topics.add_muted_topic(1, "muted");
+    user_topics.add_muted_topic(1, "muted");
     muted_users.add_muted_user(10);
 
     // `messages_filtered_for_topic_mutes` should skip filtering

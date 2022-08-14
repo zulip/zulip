@@ -49,7 +49,7 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-mock_esm("../../static/js/muted_topics", {
+mock_esm("../../static/js/user_topics", {
     is_topic_muted: () => false,
 });
 

@@ -22,7 +22,6 @@ import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as muted_topics from "./muted_topics";
 import * as muted_topics_ui from "./muted_topics_ui";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
@@ -38,6 +37,7 @@ import * as sub_store from "./sub_store";
 import * as ui_report from "./ui_report";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 
 // We handle stream popovers and topic popovers in this
 // module.  Both are popped up from the left sidebar.
@@ -279,7 +279,7 @@ function build_topic_popover(opts) {
     popovers.hide_all();
     show_streamlist_sidebar();
 
-    const topic_muted = muted_topics.is_topic_muted(sub.stream_id, topic_name);
+    const topic_muted = user_topics.is_topic_muted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
     // Arguably, we could offer the "Move topic" option even if users
     // can only edit the name within a stream.

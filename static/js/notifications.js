@@ -10,7 +10,6 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
-import * as muted_topics from "./muted_topics";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -25,6 +24,7 @@ import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 
 const notice_memory = new Map();
 
@@ -378,10 +378,7 @@ export function message_is_notifiable(message) {
         return false;
     }
 
-    if (
-        message.type === "stream" &&
-        muted_topics.is_topic_muted(message.stream_id, message.topic)
-    ) {
+    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
         return false;
     }
 
@@ -559,10 +556,7 @@ export function get_local_notify_mix_reason(message) {
         return undefined;
     }
 
-    if (
-        message.type === "stream" &&
-        muted_topics.is_topic_muted(message.stream_id, message.topic)
-    ) {
+    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
         return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
     }
 

@@ -11,7 +11,7 @@ const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 
 const settings_muted_topics = zrequire("settings_muted_topics");
 const stream_data = zrequire("stream_data");
-const muted_topics = zrequire("muted_topics");
+const user_topics = zrequire("user_topics");
 
 const noop = () => {};
 
@@ -22,7 +22,7 @@ const frontend = {
 stream_data.add_sub(frontend);
 
 run_test("settings", ({override}) => {
-    muted_topics.add_muted_topic(frontend.stream_id, "js", 1577836800);
+    user_topics.add_muted_topic(frontend.stream_id, "js", 1577836800);
     let populate_list_called = false;
     override(list_widget, "create", ($container, list) => {
         assert.deepEqual(list, [

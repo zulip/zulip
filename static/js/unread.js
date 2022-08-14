@@ -1,12 +1,12 @@
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
-import * as muted_topics from "./muted_topics";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import {user_settings} from "./user_settings";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 // The unread module tracks the message IDs and locations of the
@@ -251,7 +251,7 @@ class UnreadTopicCounter {
             let stream_count = 0;
             for (const [topic, msgs] of per_stream_bucketer) {
                 const topic_count = msgs.size;
-                if (!muted_topics.is_topic_muted(stream_id, topic)) {
+                if (!user_topics.is_topic_muted(stream_id, topic)) {
                     stream_count += topic_count;
                 }
             }
@@ -316,7 +316,7 @@ class UnreadTopicCounter {
 
         const sub = sub_store.get(stream_id);
         for (const [topic, msgs] of per_stream_bucketer) {
-            if (sub && !muted_topics.is_topic_muted(stream_id, topic)) {
+            if (sub && !user_topics.is_topic_muted(stream_id, topic)) {
                 stream_count += msgs.size;
             }
         }
@@ -348,7 +348,7 @@ class UnreadTopicCounter {
         const ids = [];
         const sub = sub_store.get(stream_id);
         for (const [topic, id_set] of per_stream_bucketer) {
-            if (sub && !muted_topics.is_topic_muted(stream_id, topic)) {
+            if (sub && !user_topics.is_topic_muted(stream_id, topic)) {
                 for (const id of id_set) {
                     ids.push(id);
                 }
@@ -484,7 +484,7 @@ export function update_message_for_mention(message) {
     const is_unmuted_mention =
         message.type === "stream" &&
         message.mentioned &&
-        !muted_topics.is_topic_muted(message.stream_id, message.topic);
+        !user_topics.is_topic_muted(message.stream_id, message.topic);
 
     if (is_unmuted_mention || message.mentioned_me_directly) {
         unread_mentions_counter.add(message.id);

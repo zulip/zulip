@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muted_topics = zrequire("muted_topics");
+const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
@@ -23,7 +23,7 @@ const params = {
 function test(label, f) {
     run_test(label, ({override}) => {
         pmc.clear_for_testing();
-        muted_topics.set_muted_topics([]);
+        user_topics.set_muted_topics([]);
         muted_users.set_muted_users([]);
         people.initialize_current_user(15);
         f({override});

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const muted_topics = mock_esm("../../static/js/muted_topics");
+const user_topics = mock_esm("../../static/js/user_topics");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 const unread = mock_esm("../../static/js/unread");
@@ -105,7 +105,7 @@ run_test("topics", ({override}) => {
         [devel_stream_id, muted_stream_id].includes(stream_id),
     );
 
-    override(muted_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
+    override(user_topics, "is_topic_muted", (stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {

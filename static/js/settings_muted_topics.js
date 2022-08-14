@@ -3,14 +3,14 @@ import $ from "jquery";
 import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 
 import * as ListWidget from "./list_widget";
-import * as muted_topics from "./muted_topics";
 import * as muted_topics_ui from "./muted_topics_ui";
 import * as ui from "./ui";
+import * as user_topics from "./user_topics";
 
 export let loaded = false;
 
 export function populate_list() {
-    const all_muted_topics = muted_topics.get_muted_topics();
+    const all_muted_topics = user_topics.get_muted_topics();
     const $muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 

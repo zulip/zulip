@@ -6,7 +6,6 @@ import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
-import * as muted_topics from "./muted_topics";
 import * as overlays from "./overlays";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as settings_muted_topics from "./settings_muted_topics";
@@ -14,6 +13,7 @@ import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as unread_ui from "./unread_ui";
+import * as user_topics from "./user_topics";
 
 export function rerender_for_muted_topic(old_muted_topics) {
     stream_list.update_streams_sidebar();
@@ -28,7 +28,7 @@ export function rerender_for_muted_topic(old_muted_topics) {
     // We only update those topics which could have been affected, because
     // we want to avoid doing a complete rerender of the recent topics view,
     // because that can be expensive.
-    const current_muted_topics = muted_topics.get_muted_topics();
+    const current_muted_topics = user_topics.get_muted_topics();
     const maybe_affected_topics = _.unionWith(old_muted_topics, current_muted_topics, _.isEqual);
 
     for (const topic_data of maybe_affected_topics) {
@@ -37,8 +37,8 @@ export function rerender_for_muted_topic(old_muted_topics) {
 }
 
 export function handle_topic_updates(muted_topics_list) {
-    const old_muted_topics = muted_topics.get_muted_topics();
-    muted_topics.set_muted_topics(muted_topics_list);
+    const old_muted_topics = user_topics.get_muted_topics();
+    user_topics.set_muted_topics(muted_topics_list);
     stream_popover.hide_topic_popover();
     unread_ui.update_unread_counts();
     rerender_for_muted_topic(old_muted_topics);
@@ -108,7 +108,7 @@ export function toggle_topic_mute(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;
 
-    if (muted_topics.is_topic_muted(stream_id, topic)) {
+    if (user_topics.is_topic_muted(stream_id, topic)) {
         unmute_topic(stream_id, topic);
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic, true);

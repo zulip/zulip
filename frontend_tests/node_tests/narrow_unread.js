@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-mock_esm("../../static/js/muted_topics", {
+mock_esm("../../static/js/user_topics", {
     is_topic_muted: () => false,
 });
 
