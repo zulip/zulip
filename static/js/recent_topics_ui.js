@@ -14,7 +14,6 @@ import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
-import * as muted_topics from "./muted_topics";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
@@ -30,6 +29,7 @@ import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import * as user_topics from "./user_topics";
 
 let topics_widget;
 // Sets the number of avatars to display.
@@ -267,7 +267,7 @@ function format_topic(topic_data) {
     // We only supply the data to the topic rows and let jquery
     // display / hide them according to filters instead of
     // doing complete re-render.
-    const topic_muted = Boolean(muted_topics.is_topic_muted(stream_id, topic));
+    const topic_muted = Boolean(user_topics.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
     const unread_count = unread.num_unread_for_topic(stream_id, topic);
@@ -386,7 +386,7 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (!filters.has("include_muted")) {
-        const topic_muted = Boolean(muted_topics.is_topic_muted(msg.stream_id, msg.topic));
+        const topic_muted = Boolean(user_topics.is_topic_muted(msg.stream_id, msg.topic));
         const stream_muted = stream_data.is_muted(msg.stream_id);
         if (topic_muted || stream_muted) {
             return true;

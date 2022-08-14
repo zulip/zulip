@@ -3,10 +3,10 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
-import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
 import {page_params} from "./page_params";
 import * as unread from "./unread";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 export class MessageListData {
@@ -175,7 +175,7 @@ export class MessageListData {
                 return true;
             }
             return (
-                !muted_topics.is_topic_muted(message.stream_id, message.topic) || message.mentioned
+                !user_topics.is_topic_muted(message.stream_id, message.topic) || message.mentioned
             );
         });
     }

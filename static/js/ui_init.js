@@ -50,7 +50,6 @@ import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
-import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
@@ -103,6 +102,7 @@ import * as user_groups from "./user_groups";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
+import * as user_topics from "./user_topics";
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -620,7 +620,7 @@ export function initialize_everything() {
     stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
-    muted_topics.initialize();
+    user_topics.initialize();
     muted_users.initialize();
     stream_settings_ui.initialize();
     stream_list.initialize();

@@ -21,7 +21,6 @@ import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as $message_viewport from "./message_viewport";
-import * as muted_topics from "./muted_topics";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
@@ -35,6 +34,7 @@ import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
+import * as user_topics from "./user_topics";
 import * as util from "./util";
 
 function same_day(earlier_msg, later_msg) {
@@ -212,7 +212,7 @@ function populate_group_from_message_container(group, message_container) {
             group.stream_id = sub.stream_id;
         }
         group.topic_is_resolved = resolved_topic.is_resolved(group.topic);
-        group.topic_muted = muted_topics.is_topic_muted(group.stream_id, group.topic);
+        group.topic_muted = user_topics.is_topic_muted(group.stream_id, group.topic);
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
