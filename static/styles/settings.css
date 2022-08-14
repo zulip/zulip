@@ -1746,15 +1746,15 @@ input[type="checkbox"] {
         margin: auto;
     }
 
-    #linkifier-settings .new-linkifier-form,
-    #playground-settings .new-playground-form,
-    #profile-field-settings .new-profile-field-form {
-        width: 100%;
+    #linkifier-settings .new-linkifier-form input,
+    #playground-settings .new-playground-form input,
+    #profile-field-settings .new-profile-field-form input {
+        width: calc(100% - 20px) !important;
     }
 
-    #linkifier-settings .new-linkifier-form .control-label,
-    #playground-settings .new-playground-form .control-label,
-    #profile-field-settings .new-profile-field-form .control-label {
+    #linkifier-settings .new-linkifier-form label,
+    #playground-settings .new-playground-form label,
+    #profile-field-settings .new-profile-field-form label {
         display: block;
         width: 120px;
         padding: 0;
