@@ -1025,10 +1025,11 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     # assuming in this very rare case that the user has manually
     # dismissed these notifications on the device side, and the server
     # should no longer track them as outstanding notifications.
-    UserMessage.objects.filter(
-        user_profile_id=user_profile_id,
-        message_id__in=message_ids,
-    ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
+    with transaction.atomic(savepoint=False):
+        UserMessage.select_for_update_query().filter(
+            user_profile_id=user_profile_id,
+            message_id__in=message_ids,
+        ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
 @statsd_increment("push_notifications")

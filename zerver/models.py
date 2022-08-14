@@ -3337,6 +3337,20 @@ class UserMessage(AbstractUserMessage):
         display_recipient = get_display_recipient(self.message.recipient)
         return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
 
+    @staticmethod
+    def select_for_update_query() -> QuerySet["UserMessage"]:
+        """This SELECT FOR UPDATE query ensures consistent ordering on
+        the row locks acquired by a bulk update operation to modify
+        message flags using bitand/bitor.
+
+        This consistent ordering is important to prevent to prevent
+        deadlocks when 2 or more bulk updates to the same rows in the
+        UserMessage table race against each other (For example, if a
+        client submits simultaneous duplicate API requests to mark a
+        certain set of messages as read).
+        """
+        return UserMessage.objects.select_for_update().order_by("message_id")
+
 
 def get_usermessage_by_message_id(
     user_profile: UserProfile, message_id: int
