@@ -15,7 +15,7 @@ from zerver.lib.exceptions import (
     RemoteServerDeactivatedError,
     UnauthorizedError,
 )
-from zerver.lib.rate_limiter import rate_limit
+from zerver.lib.rate_limiter import rate_limit_remote_server, should_rate_limit
 from zerver.lib.request import RequestNotes
 from zerver.lib.rest import get_target_view_function_or_response
 from zerver.lib.subdomains import get_subdomain
@@ -80,7 +80,8 @@ def authenticated_remote_server_view(
         except JsonableError as e:
             raise UnauthorizedError(e.msg)
 
-        rate_limit(request)
+        if should_rate_limit(request):
+            rate_limit_remote_server(request, remote_server, domain="api_by_remote_server")
         return view_func(request, remote_server, *args, **kwargs)
 
     return _wrapped_view_func
