@@ -927,7 +927,15 @@ button#register_auth_button_gitlab {
     }
 
     legend {
+        display: block;
+        width: 100%;
+        padding: 0;
         margin-bottom: 0;
+        font-size: 21px;
+        line-height: 40px;
+        color: hsla(0, 0%, 0%, 0.2);
+        border: 0;
+        border-bottom: 1px solid hsla(0, 0%, 90%, 1);
 
         + .input-box {
             margin-top: 20px;
