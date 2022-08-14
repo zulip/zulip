@@ -718,7 +718,7 @@ class RateLimitTestCase(ZulipTestCase):
         server.save()
 
         with self.settings(RATE_LIMITING=True), mock.patch(
-            "zerver.lib.rate_limiter.rate_limit_remote_server"
+            "zilencer.auth.rate_limit_remote_server"
         ) as rate_limit_mock:
             result = self.uuid_post(
                 server_uuid,

@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 from typing import Any, Callable
 
@@ -12,15 +13,22 @@ from zerver.decorator import get_basic_credentials, process_client
 from zerver.lib.exceptions import (
     ErrorCode,
     JsonableError,
+    RateLimited,
     RemoteServerDeactivatedError,
     UnauthorizedError,
 )
-from zerver.lib.rate_limiter import rate_limit_remote_server, should_rate_limit
+from zerver.lib.rate_limiter import should_rate_limit
 from zerver.lib.request import RequestNotes
 from zerver.lib.rest import get_target_view_function_or_response
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
-from zilencer.models import RemoteZulipServer, get_remote_server_by_uuid
+from zilencer.models import (
+    RateLimitedRemoteZulipServer,
+    RemoteZulipServer,
+    get_remote_server_by_uuid,
+)
+
+logger = logging.getLogger(__name__)
 
 ParamT = ParamSpec("ParamT")
 
@@ -41,6 +49,16 @@ class InvalidZulipServerKeyError(InvalidZulipServerError):
     @staticmethod
     def msg_format() -> str:
         return "Zulip server auth failure: key does not match role {role}"
+
+
+def rate_limit_remote_server(
+    request: HttpRequest, remote_server: RemoteZulipServer, domain: str
+) -> None:
+    try:
+        RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
+    except RateLimited as e:
+        logger.warning("Remote server %s exceeded rate limits on domain %s", remote_server, domain)
+        raise e
 
 
 def validate_remote_server(

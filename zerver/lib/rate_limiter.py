@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Type, cast
+from typing import Dict, List, Optional, Set, Tuple, Type, cast
 
 import orjson
 import redis
@@ -15,9 +15,6 @@ from zerver.lib.exceptions import RateLimited
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.utils import statsd
 from zerver.models import UserProfile
-
-if TYPE_CHECKING:
-    from zilencer.models import RemoteZulipServer
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
 # https://www.domaintools.com/resources/blog/rate-limiting-with-redis
@@ -618,18 +615,6 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         logger.warning("Failed to fetch TOR exit node list: %s", err)
         pass
     rate_limit_ip(request, ip_addr, domain=domain)
-
-
-def rate_limit_remote_server(
-    request: HttpRequest, remote_server: "RemoteZulipServer", domain: str
-) -> None:
-    if settings.ZILENCER_ENABLED:
-        from zilencer.models import RateLimitedRemoteZulipServer
-    try:
-        RateLimitedRemoteZulipServer(remote_server, domain=domain).rate_limit_request(request)
-    except RateLimited as e:
-        logger.warning("Remote server %s exceeded rate limits on domain %s", remote_server, domain)
-        raise e
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
