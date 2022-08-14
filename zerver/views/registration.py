@@ -219,7 +219,7 @@ def accounts_register(
 
         if settings.BILLING_ENABLED:
             try:
-                check_spare_licenses_available_for_registering_new_user(realm, email)
+                check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:
                 return render(request, "zerver/no_spare_licenses.html")
 
@@ -697,7 +697,12 @@ def accounts_home(
         invited_as = multiuse_object.invited_as
 
     if request.method == "POST":
-        form = HomepageForm(request.POST, realm=realm, from_multiuse_invite=from_multiuse_invite)
+        form = HomepageForm(
+            request.POST,
+            realm=realm,
+            from_multiuse_invite=from_multiuse_invite,
+            invited_as=invited_as,
+        )
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")

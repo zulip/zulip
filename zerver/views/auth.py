@@ -211,7 +211,12 @@ def maybe_send_to_registration(
     else:
         invited_as = PreregistrationUser.INVITE_AS["MEMBER"]
 
-    form = HomepageForm({"email": email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
+    form = HomepageForm(
+        {"email": email},
+        realm=realm,
+        from_multiuse_invite=from_multiuse_invite,
+        invited_as=invited_as,
+    )
     if form.is_valid():
         # If the email address is allowed to sign up for an account in
         # this organization, construct a PreregistrationUser and

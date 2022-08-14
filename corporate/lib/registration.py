@@ -3,11 +3,11 @@ from typing import Optional
 from django.conf import settings
 from django.utils.translation import gettext as _
 
-from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count
+from corporate.lib.stripe import LicenseLimitError, get_latest_seat_count, get_seat_count
 from corporate.models import get_current_plan_by_realm
 from zerver.actions.create_user import send_message_to_signup_notification_stream
 from zerver.lib.exceptions import InvitationError
-from zerver.models import Realm, get_system_bot
+from zerver.models import Realm, UserProfile, get_system_bot
 
 
 def generate_licenses_low_warning_message_if_required(realm: Realm) -> Optional[str]:
@@ -69,7 +69,7 @@ def send_user_unable_to_signup_message_to_signup_notification_stream(
 
 
 def check_spare_licenses_available_for_adding_new_users(
-    realm: Realm, number_of_users_to_add: int
+    realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
 ) -> None:
     plan = get_current_plan_by_realm(realm)
     if (
@@ -79,23 +79,35 @@ def check_spare_licenses_available_for_adding_new_users(
     ):
         return
 
-    if plan.licenses() < get_latest_seat_count(realm) + number_of_users_to_add:
+    if plan.licenses() < get_seat_count(
+        realm, extra_non_guests_count=extra_non_guests_count, extra_guests_count=extra_guests_count
+    ):
         raise LicenseLimitError()
 
 
 def check_spare_licenses_available_for_registering_new_user(
-    realm: Realm, user_email_to_add: str
+    realm: Realm,
+    user_email_to_add: str,
+    role: int,
 ) -> None:
     try:
-        check_spare_licenses_available_for_adding_new_users(realm, 1)
+        if role == UserProfile.ROLE_GUEST:
+            check_spare_licenses_available_for_adding_new_users(realm, extra_guests_count=1)
+        else:
+            check_spare_licenses_available_for_adding_new_users(realm, extra_non_guests_count=1)
     except LicenseLimitError:
         send_user_unable_to_signup_message_to_signup_notification_stream(realm, user_email_to_add)
         raise
 
 
-def check_spare_licenses_available_for_inviting_new_users(realm: Realm, num_invites: int) -> None:
+def check_spare_licenses_available_for_inviting_new_users(
+    realm: Realm, extra_non_guests_count: int = 0, extra_guests_count: int = 0
+) -> None:
+    num_invites = extra_non_guests_count + extra_guests_count
     try:
-        check_spare_licenses_available_for_adding_new_users(realm, num_invites)
+        check_spare_licenses_available_for_adding_new_users(
+            realm, extra_non_guests_count, extra_guests_count
+        )
     except LicenseLimitError:
         if num_invites == 1:
             message = _("All Zulip licenses for this organization are currently in use.")

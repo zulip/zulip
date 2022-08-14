@@ -167,6 +167,7 @@ class HomepageForm(forms.Form):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.realm = kwargs.pop("realm", None)
         self.from_multiuse_invite = kwargs.pop("from_multiuse_invite", False)
+        self.invited_as = kwargs.pop("invited_as", None)
         super().__init__(*args, **kwargs)
 
     def clean_email(self) -> str:
@@ -214,8 +215,9 @@ class HomepageForm(forms.Form):
             email_is_not_mit_mailing_list(email)
 
         if settings.BILLING_ENABLED:
+            role = self.invited_as if self.invited_as is not None else UserProfile.ROLE_MEMBER
             try:
-                check_spare_licenses_available_for_registering_new_user(realm, email)
+                check_spare_licenses_available_for_registering_new_user(realm, email, role=role)
             except LicenseLimitError:
                 raise ValidationError(
                     _(
