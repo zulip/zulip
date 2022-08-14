@@ -53,7 +53,7 @@ from zerver.lib.exceptions import (
     WebhookError,
 )
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.rate_limiter import is_local_addr, rate_limit, rate_limit_user
+from zerver.lib.rate_limiter import is_local_addr, rate_limit_request_by_ip, rate_limit_user
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_method_not_allowed, json_success
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
@@ -347,8 +347,7 @@ def webhook_view(
                 client_name=full_webhook_client_name(webhook_client_name),
             )
 
-            if settings.RATE_LIMITING:
-                rate_limit_user(request, user_profile, domain="api_by_user")
+            rate_limit_user(request, user_profile, domain="api_by_user")
             try:
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
@@ -481,7 +480,12 @@ def add_logging_data(
         request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
     ) -> HttpResponse:
         process_client(request, request.user, is_browser_view=True, query=view_func.__name__)
-        rate_limit(request)
+
+        if request.user.is_authenticated:
+            rate_limit_user(request, request.user, domain="api_by_user")
+        else:
+            rate_limit_request_by_ip(request, domain="api_by_ip")
+
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func
@@ -673,7 +677,7 @@ def authenticated_uploads_api_view(
         ) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:
-                rate_limit(request)
+                rate_limit_user(request, user_profile, domain="api_by_user")
             return view_func(request, user_profile, *args, **kwargs)
 
         return _wrapped_func_arguments
@@ -751,8 +755,7 @@ def authenticated_rest_api_view(
                 raise UnauthorizedError(e.msg)
             try:
                 if not skip_rate_limiting:
-                    # Apply rate limiting
-                    rate_limit(request)
+                    rate_limit_user(request, profile, domain="api_by_user")
                 return view_func(request, profile, *args, **kwargs)
             except Exception as err:
                 if not webhook_client_name:
@@ -839,7 +842,7 @@ def public_json_view(
 
         # Otherwise, process the request for a logged-out visitor.
         if not skip_rate_limiting:
-            rate_limit(request)
+            rate_limit_request_by_ip(request, domain="api_by_ip")
 
         process_client(
             request,
@@ -870,7 +873,7 @@ def authenticated_json_view(
 
         user_profile = request.user
         if not skip_rate_limiting:
-            rate_limit(request)
+            rate_limit_user(request, user_profile, domain="api_by_user")
 
         validate_account_and_subdomain(request, user_profile)
 

@@ -31,6 +31,7 @@ from zerver.decorator import (
     public_json_view,
     return_success_on_head_request,
     validate_api_key,
+    web_public_view,
     webhook_view,
     zulip_login_required,
     zulip_otp_required_if_logged_in,
@@ -467,7 +468,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.META["HTTP_AUTHORIZATION"] = self.encode_email(self.example_email("hamlet"))
         request.method = "POST"
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
@@ -476,7 +477,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.META["HTTP_AUTHORIZATION"] = self.encode_email(self.example_email("hamlet"))
         request.method = "POST"
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_rate_limited_view(request)
 
         # Don't assert json_success, since it'll be the rate_limit mock object
@@ -494,7 +495,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
         request.POST["api_key"] = get_api_key(self.example_user("hamlet"))
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
@@ -503,7 +504,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
         request.POST["api_key"] = get_api_key(self.example_user("hamlet"))
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_rate_limited_view(request)
 
         # Don't assert json_success, since it'll be the rate_limit mock object
@@ -519,7 +520,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
         request.user = self.example_user("hamlet")
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_unlimited_view(request)
 
         self.assert_json_success(result)
@@ -528,7 +529,7 @@ class SkipRateLimitingTest(ZulipTestCase):
         request = HostRequestMock(host="zulip.testserver")
         request.method = "POST"
         request.user = self.example_user("hamlet")
-        with mock.patch("zerver.decorator.rate_limit") as rate_limit_mock:
+        with mock.patch("zerver.decorator.rate_limit_user") as rate_limit_mock:
             result = my_rate_limited_view(request)
 
         # Don't assert json_success, since it'll be the rate_limit mock object
@@ -631,9 +632,14 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 class RateLimitTestCase(ZulipTestCase):
     @staticmethod
     @public_json_view
-    def public_view(
+    def ratelimited_json_view(
         req: HttpRequest, maybe_user_profile: Union[AnonymousUser, UserProfile], /
     ) -> HttpResponse:
+        return HttpResponse("some value")
+
+    @staticmethod
+    @web_public_view
+    def ratelimited_web_view(req: HttpRequest) -> HttpResponse:
         return HttpResponse("some value")
 
     def errors_disallowed(self) -> Any:
@@ -648,18 +654,23 @@ class RateLimitTestCase(ZulipTestCase):
         return mock.patch("logging.error", side_effect=TestLoggingErrorException)
 
     def check_rate_limit_public_or_user_views(
-        self, remote_addr: str, client_name: str, expect_rate_limit: bool
+        self,
+        remote_addr: str,
+        client_name: str,
+        expect_rate_limit: bool,
+        check_web_view: bool = False,
     ) -> None:
         META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test"}
 
         request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
+        view_func = self.ratelimited_web_view if check_web_view else self.ratelimited_json_view
 
         with mock.patch(
-            "zerver.lib.rate_limiter.rate_limit_user"
+            "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
             "zerver.lib.rate_limiter.rate_limit_ip"
         ) as rate_limit_ip_mock, self.errors_disallowed():
-            self.assert_in_success_response(["some value"], self.public_view(request))
+            self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_ip_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_user_mock.called)
 
@@ -671,11 +682,11 @@ class RateLimitTestCase(ZulipTestCase):
             user_profile=user, host="zulip.testserver", client_name=client_name, meta_data=META
         )
         with mock.patch(
-            "zerver.lib.rate_limiter.rate_limit_user"
+            "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
             "zerver.lib.rate_limiter.rate_limit_ip"
         ) as rate_limit_ip_mock, self.errors_disallowed():
-            self.assert_in_success_response(["some value"], self.public_view(request))
+            self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_user_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_ip_mock.called)
 
@@ -703,6 +714,15 @@ class RateLimitTestCase(ZulipTestCase):
         with self.settings(RATE_LIMITING=True):
             self.check_rate_limit_public_or_user_views(
                 remote_addr="3.3.3.3", client_name="external", expect_rate_limit=True
+            )
+
+    def test_rate_limiting_web_public_views(self) -> None:
+        with self.settings(RATE_LIMITING=True):
+            self.check_rate_limit_public_or_user_views(
+                remote_addr="3.3.3.3",
+                client_name="external",
+                expect_rate_limit=True,
+                check_web_view=True,
             )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
