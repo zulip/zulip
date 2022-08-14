@@ -46,7 +46,7 @@ from zerver.lib.exceptions import (
     UnsupportedWebhookEventType,
 )
 from zerver.lib.initial_password import initial_password
-from zerver.lib.rate_limiter import is_local_addr, rate_limit
+from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.request import (
     REQ,
     RequestConfusingParmsError,
@@ -629,12 +629,12 @@ class DecoratorLoggingTestCase(ZulipTestCase):
 
 
 class RateLimitTestCase(ZulipTestCase):
-    def get_ratelimited_view(self) -> Callable[..., HttpResponse]:
-        def f(req: Any) -> HttpResponse:
-            rate_limit(req)
-            return json_response(msg="some value")
-
-        return f
+    @staticmethod
+    @public_json_view
+    def public_view(
+        req: HttpRequest, maybe_user_profile: Union[AnonymousUser, UserProfile], /
+    ) -> HttpResponse:
+        return HttpResponse("some value")
 
     def errors_disallowed(self) -> Any:
         # Due to what is probably a hack in rate_limit(),
@@ -647,28 +647,42 @@ class RateLimitTestCase(ZulipTestCase):
 
         return mock.patch("logging.error", side_effect=TestLoggingErrorException)
 
-    def check_rate_limit_public_or_user_views(self, remote_addr: str, client_name: str) -> None:
-        META = {"REMOTE_ADDR": remote_addr}
+    def check_rate_limit_public_or_user_views(
+        self, remote_addr: str, client_name: str, expect_rate_limit: bool
+    ) -> None:
+        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test"}
 
-        request = HostRequestMock(client_name=client_name, meta_data=META)
-
-        f = self.get_ratelimited_view()
+        request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
 
         with mock.patch(
             "zerver.lib.rate_limiter.rate_limit_user"
         ) as rate_limit_user_mock, mock.patch(
             "zerver.lib.rate_limiter.rate_limit_ip"
-        ) as rate_limit_ip_mock:
-            with self.errors_disallowed():
-                self.assertEqual(orjson.loads(f(request).content).get("msg"), "some value")
-
-        self.assertFalse(rate_limit_ip_mock.called)
+        ) as rate_limit_ip_mock, self.errors_disallowed():
+            self.assert_in_success_response(["some value"], self.public_view(request))
+        self.assertEqual(rate_limit_ip_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_user_mock.called)
+
+        # We need to recreate the request, because process_client mutates client on
+        # the associated RequestNotes, causing the request to be incorrectly rate limited, since
+        # should_rate_limit checks the client to determine if rate limiting should be skipped.
+        user = self.example_user("hamlet")
+        request = HostRequestMock(
+            user_profile=user, host="zulip.testserver", client_name=client_name, meta_data=META
+        )
+        with mock.patch(
+            "zerver.lib.rate_limiter.rate_limit_user"
+        ) as rate_limit_user_mock, mock.patch(
+            "zerver.lib.rate_limiter.rate_limit_ip"
+        ) as rate_limit_ip_mock, self.errors_disallowed():
+            self.assert_in_success_response(["some value"], self.public_view(request))
+        self.assertEqual(rate_limit_user_mock.called, expect_rate_limit)
+        self.assertFalse(rate_limit_ip_mock.called)
 
     def test_internal_local_clients_skip_rate_limiting(self) -> None:
         with self.settings(RATE_LIMITING=True):
             self.check_rate_limit_public_or_user_views(
-                remote_addr="127.0.0.1", client_name="internal"
+                remote_addr="127.0.0.1", client_name="internal", expect_rate_limit=False
             )
 
     def test_debug_clients_skip_rate_limiting(self) -> None:
@@ -676,29 +690,20 @@ class RateLimitTestCase(ZulipTestCase):
             # Rate limiting is skipped for internal clients with an external address
             # when DEBUG_RATE_LIMITING is True.
             self.check_rate_limit_public_or_user_views(
-                remote_addr="3.3.3.3", client_name="internal"
+                remote_addr="3.3.3.3", client_name="internal", expect_rate_limit=False
             )
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self) -> None:
         with self.settings(RATE_LIMITING=False):
             self.check_rate_limit_public_or_user_views(
-                remote_addr="3.3.3.3", client_name="external"
+                remote_addr="3.3.3.3", client_name="external", expect_rate_limit=False
             )
 
     def test_rate_limiting_happens_in_normal_case(self) -> None:
-        META = {"REMOTE_ADDR": "3.3.3.3"}
-        user = self.example_user("hamlet")
-
-        req = HostRequestMock(client_name="external", user_profile=user, meta_data=META)
-
-        f = self.get_ratelimited_view()
-
         with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.lib.rate_limiter.rate_limit_user") as rate_limit_mock:
-                with self.errors_disallowed():
-                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
-
-        self.assertTrue(rate_limit_mock.called)
+            self.check_rate_limit_public_or_user_views(
+                remote_addr="3.3.3.3", client_name="external", expect_rate_limit=True
+            )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
     def test_rate_limiting_happens_if_remote_server(self) -> None:
@@ -722,20 +727,6 @@ class RateLimitTestCase(ZulipTestCase):
                 subdomain="",
             )
             self.assert_json_success(result)
-
-        self.assertTrue(rate_limit_mock.called)
-
-    def test_rate_limiting_happens_by_ip_if_unauthed(self) -> None:
-        META = {"REMOTE_ADDR": "3.3.3.3"}
-
-        req = HostRequestMock(client_name="external", meta_data=META)
-
-        f = self.get_ratelimited_view()
-
-        with self.settings(RATE_LIMITING=True):
-            with mock.patch("zerver.lib.rate_limiter.rate_limit_ip") as rate_limit_mock:
-                with self.errors_disallowed():
-                    self.assertEqual(orjson.loads(f(req).content).get("msg"), "some value")
 
         self.assertTrue(rate_limit_mock.called)
 
