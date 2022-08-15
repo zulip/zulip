@@ -73,7 +73,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   stores, or [help others find
   Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#help-others-find-zulip).
 
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
+You may also be interested in reading our [blogs](https://blog.zulip.org/), and
 following us on [Twitter](https://twitter.com/zulip) and
 [LinkedIn](https://www.linkedin.com/company/zulip-project/).
 
