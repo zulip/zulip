@@ -90,7 +90,10 @@ def get_target_view_function_or_response(
     if method_to_use in supported_methods:
         entry = supported_methods[method_to_use]
         if isinstance(entry, tuple):
-            return entry
+            handler, view_flags = entry
+            assert callable(handler)
+            assert isinstance(view_flags, set)
+            return handler, view_flags
         return supported_methods[method_to_use], set()
 
     return json_method_not_allowed(list(supported_methods.keys()))
