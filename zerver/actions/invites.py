@@ -36,7 +36,7 @@ from zerver.tornado.django_api import send_event
 def notify_invites_changed(realm: Realm) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
-    send_event(realm, event, admin_ids)
+    transaction.on_commit(lambda: send_event(realm, event, admin_ids))
 
 
 def do_send_confirmation_email(

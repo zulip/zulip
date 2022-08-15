@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import urllib
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import timedelta
 from typing import (
     TYPE_CHECKING,
@@ -967,18 +967,22 @@ Output:
         to_user: UserProfile,
         content: str = "test content",
         sending_client_name: str = "test suite",
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         recipient_list = [to_user.id]
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
-            from_user,
-            sending_client,
-            "private",
-            recipient_list,
-            None,
-            content,
-        )
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            return check_send_message(
+                from_user,
+                sending_client,
+                "private",
+                recipient_list,
+                None,
+                content,
+            )
 
     def send_huddle_message(
         self,
@@ -986,20 +990,24 @@ Output:
         to_users: List[UserProfile],
         content: str = "test content",
         sending_client_name: str = "test suite",
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         to_user_ids = [u.id for u in to_users]
         assert len(to_user_ids) >= 2
 
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        return check_send_message(
-            from_user,
-            sending_client,
-            "private",
-            to_user_ids,
-            None,
-            content,
-        )
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            return check_send_message(
+                from_user,
+                sending_client,
+                "private",
+                to_user_ids,
+                None,
+                content,
+            )
 
     def send_stream_message(
         self,
@@ -1010,17 +1018,21 @@ Output:
         recipient_realm: Optional[Realm] = None,
         sending_client_name: str = "test suite",
         allow_unsubscribed_sender: bool = False,
+        capture_on_commit_callbacks: bool = True,
     ) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
-        message_id = check_send_stream_message(
-            sender=sender,
-            client=sending_client,
-            stream_name=stream_name,
-            topic=topic_name,
-            body=content,
-            realm=recipient_realm,
-        )
+        with self.captureOnCommitCallbacks(
+            execute=True
+        ) if capture_on_commit_callbacks else nullcontext():
+            message_id = check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name=stream_name,
+                topic=topic_name,
+                body=content,
+                realm=recipient_realm,
+            )
         if (
             not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()
             and not sender.is_bot

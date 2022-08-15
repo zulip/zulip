@@ -440,20 +440,33 @@ class NormalActionsTest(BaseAction):
         for i in range(3):
             content = "mentioning... @**" + user.full_name + "** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                lambda: self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    capture_on_commit_callbacks=False,
+                ),
             )
 
     def test_wildcard_mentioned_send_message_events(self) -> None:
         for i in range(3):
             content = "mentioning... @**all** hello " + str(i)
             self.verify_action(
-                lambda: self.send_stream_message(self.example_user("cordelia"), "Verona", content),
+                lambda: self.send_stream_message(
+                    self.example_user("cordelia"),
+                    "Verona",
+                    content,
+                    capture_on_commit_callbacks=False,
+                ),
             )
 
     def test_pm_send_message_events(self) -> None:
         self.verify_action(
             lambda: self.send_personal_message(
-                self.example_user("cordelia"), self.example_user("hamlet"), "hola"
+                self.example_user("cordelia"),
+                self.example_user("hamlet"),
+                "hola",
+                capture_on_commit_callbacks=False,
             ),
         )
 
@@ -500,19 +513,25 @@ class NormalActionsTest(BaseAction):
             self.example_user("othello"),
         ]
         self.verify_action(
-            lambda: self.send_huddle_message(self.example_user("cordelia"), huddle, "hola"),
+            lambda: self.send_huddle_message(
+                self.example_user("cordelia"), huddle, "hola", capture_on_commit_callbacks=False
+            ),
         )
 
     def test_stream_send_message_events(self) -> None:
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+            ),
             client_gravatar=False,
         )
         check_message("events[0]", events[0])
         assert isinstance(events[0]["message"]["avatar_url"], str)
 
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Verona", "hello"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+            ),
             client_gravatar=True,
         )
         check_message("events[0]", events[0])
@@ -724,12 +743,16 @@ class NormalActionsTest(BaseAction):
             "hello 1",
         )
         self.verify_action(
-            lambda: self.send_stream_message(sender, "Verona", "hello 2"),
+            lambda: self.send_stream_message(
+                sender, "Verona", "hello 2", capture_on_commit_callbacks=False
+            ),
             state_change_expected=True,
         )
 
     def test_add_reaction(self) -> None:
-        message_id = self.send_stream_message(self.example_user("hamlet"), "Verona", "hello")
+        message_id = self.send_stream_message(
+            self.example_user("hamlet"), "Verona", "hello", capture_on_commit_callbacks=False
+        )
         message = Message.objects.get(id=message_id)
         events = self.verify_action(
             lambda: do_add_reaction(self.user_profile, message, "tada", "1f389", "unicode_emoji"),
@@ -904,7 +927,7 @@ class NormalActionsTest(BaseAction):
             num_events=7,
         )
 
-        check_invites_changed("events[1]", events[1])
+        check_invites_changed("events[5]", events[5])
 
     def test_typing_events(self) -> None:
         events = self.verify_action(
@@ -1122,20 +1145,20 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
         self.assert_length(events, 5)
 
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_register_events_email_address_visibility(self) -> None:
         do_set_realm_property(
@@ -1147,20 +1170,20 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
         self.assert_length(events, 5)
-        check_realm_user_add("events[1]", events[1])
+        check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
-        check_subscription_peer_add("events[4]", events[4])
+        check_subscription_peer_add("events[3]", events[3])
 
-        check_message("events[0]", events[0])
+        check_message("events[4]", events[4])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[0]["message"]["content"],
+            events[4]["message"]["content"],
         )
 
+        check_user_group_add_members("events[1]", events[1])
         check_user_group_add_members("events[2]", events[2])
-        check_user_group_add_members("events[3]", events[3])
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -2393,7 +2416,13 @@ class NormalActionsTest(BaseAction):
         assert uri is not None
         body = f"First message ...[zulip.txt](http://{hamlet.realm.host}" + uri + ")"
         events = self.verify_action(
-            lambda: self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test"),
+            lambda: self.send_stream_message(
+                self.example_user("hamlet"),
+                "Denmark",
+                body,
+                "test",
+                capture_on_commit_callbacks=False,
+            ),
             num_events=2,
         )
 
