@@ -315,12 +315,20 @@ def notify_created_user(user_profile: UserProfile) -> None:
     if user_ids_with_real_email_access:
         person["delivery_email"] = user_profile.delivery_email
         event: Dict[str, Any] = dict(type="realm_user", op="add", person=person)
-        send_event(user_profile.realm, event, user_ids_with_real_email_access)
+        transaction.on_commit(
+            lambda event=event: send_event(
+                user_profile.realm, event, user_ids_with_real_email_access
+            )
+        )
 
     if user_ids_without_real_email_access:
         del person["delivery_email"]
         event = dict(type="realm_user", op="add", person=person)
-        send_event(user_profile.realm, event, user_ids_without_real_email_access)
+        transaction.on_commit(
+            lambda event=event: send_event(
+                user_profile.realm, event, user_ids_without_real_email_access
+            )
+        )
 
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -357,7 +365,9 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
 
 def notify_created_bot(user_profile: UserProfile) -> None:
     event = created_bot_event(user_profile)
-    send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
+    transaction.on_commit(
+        lambda: send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
+    )
 
 
 def do_create_user(
@@ -535,32 +545,32 @@ def do_activate_mirror_dummy_user(
     notify_created_user(user_profile)
 
 
+@transaction.atomic(savepoint=False)
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     """Reactivate a user that had previously been deactivated"""
-    with transaction.atomic():
-        change_user_is_active(user_profile, True)
+    change_user_is_active(user_profile, True)
 
-        event_time = timezone_now()
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            modified_user=user_profile,
-            acting_user=acting_user,
-            event_type=RealmAuditLog.USER_REACTIVATED,
-            event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
-        )
-        do_increment_logging_stat(
-            user_profile.realm,
-            COUNT_STATS["active_users_log:is_bot:day"],
-            user_profile.is_bot,
-            event_time,
-        )
-        if settings.BILLING_ENABLED:
-            update_license_ledger_if_needed(user_profile.realm, event_time)
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        modified_user=user_profile,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.USER_REACTIVATED,
+        event_time=event_time,
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            }
+        ).decode(),
+    )
+    do_increment_logging_stat(
+        user_profile.realm,
+        COUNT_STATS["active_users_log:is_bot:day"],
+        user_profile.is_bot,
+        event_time,
+    )
+    if settings.BILLING_ENABLED:
+        update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 
