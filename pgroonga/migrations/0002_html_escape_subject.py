@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(rebuild_pgroonga_index, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython (rebuild_pgroonga_index, reverse_code=migrations.RunPython.noop),
     ]
