@@ -1,7 +1,6 @@
 from typing import Dict, List
 
 from django.conf import settings
-from django.db import transaction
 from django.db.models import Count
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
@@ -230,7 +229,6 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     )
 
 
-@transaction.atomic
 def send_initial_realm_messages(realm: Realm) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT, realm.id)
     # Make sure each stream created in the realm creation process has at least one message below
