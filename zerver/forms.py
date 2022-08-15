@@ -239,7 +239,12 @@ def email_not_system_bot(email: str) -> None:
 
 
 def email_is_not_disposable(email: str) -> None:
-    if is_disposable_domain(Address(addr_spec=email).domain):
+    try:
+        domain = Address(addr_spec=email).domain
+    except ValueError:
+        raise ValidationError(_("Please use your real email address."))
+
+    if is_disposable_domain(domain):
         raise ValidationError(_("Please use your real email address."))
 
 

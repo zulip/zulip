@@ -3763,6 +3763,11 @@ class RealmCreationTest(ZulipTestCase):
         self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 0)
 
     @override_settings(OPEN_REALM_CREATION=True)
+    def test_invalid_email_signup(self) -> None:
+        result = self.client_post("/new/", {"email": "foo\x00bar"})
+        self.assert_in_response("Please use your real email address.", result)
+
+    @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
         result = self.client_post("/new/", {"email": "hi@mailinator.com"})
         self.assert_in_response("Please use your real email address.", result)
