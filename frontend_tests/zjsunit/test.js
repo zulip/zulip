@@ -44,6 +44,6 @@ exports.run_test = (label, f, opts) => {
         console.info();
         throw error;
     }
-    // defensively reset blueslip after each test.
+    // Defensively reset blueslip after each test.
     zblueslip.reset();
 };
