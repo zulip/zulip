@@ -1,5 +1,3 @@
-import datetime
-from decimal import Decimal
 from typing import Any, Dict, Optional, Union
 
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -18,21 +16,17 @@ class Customer(models.Model):
     and the active plan, if any.
     """
 
-    realm: Optional[Realm] = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
-    remote_server: Optional[RemoteZulipServer] = models.OneToOneField(
-        RemoteZulipServer, on_delete=CASCADE, null=True
-    )
-    stripe_customer_id: Optional[str] = models.CharField(max_length=255, null=True, unique=True)
-    sponsorship_pending: bool = models.BooleanField(default=False)
+    realm = models.OneToOneField(Realm, on_delete=CASCADE, null=True)
+    remote_server = models.OneToOneField(RemoteZulipServer, on_delete=CASCADE, null=True)
+    stripe_customer_id = models.CharField(max_length=255, null=True, unique=True)
+    sponsorship_pending = models.BooleanField(default=False)
     # A percentage, like 85.
-    default_discount: Optional[Decimal] = models.DecimalField(
-        decimal_places=4, max_digits=7, null=True
-    )
+    default_discount = models.DecimalField(decimal_places=4, max_digits=7, null=True)
     # Some non-profit organizations on manual license management pay
     # only for their paid employees.  We don't prevent these
     # organizations from adding more users than the number of licenses
     # they purchased.
-    exempt_from_from_license_number_check: bool = models.BooleanField(default=False)
+    exempt_from_from_license_number_check = models.BooleanField(default=False)
 
     @property
     def is_self_hosted(self) -> bool:
@@ -96,8 +90,8 @@ def get_last_associated_event_by_type(
 
 
 class Session(models.Model):
-    customer: Customer = models.ForeignKey(Customer, on_delete=CASCADE)
-    stripe_session_id: str = models.CharField(max_length=255, unique=True)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
+    stripe_session_id = models.CharField(max_length=255, unique=True)
     payment_intent = models.ForeignKey("PaymentIntent", null=True, on_delete=CASCADE)
 
     UPGRADE_FROM_BILLING_PAGE = 1
@@ -105,11 +99,11 @@ class Session(models.Model):
     FREE_TRIAL_UPGRADE_FROM_BILLING_PAGE = 20
     FREE_TRIAL_UPGRADE_FROM_ONBOARDING_PAGE = 30
     CARD_UPDATE_FROM_BILLING_PAGE = 40
-    type: int = models.SmallIntegerField()
+    type = models.SmallIntegerField()
 
     CREATED = 1
     COMPLETED = 10
-    status: int = models.SmallIntegerField(default=CREATED)
+    status = models.SmallIntegerField(default=CREATED)
 
     def get_status_as_string(self) -> str:
         return {Session.CREATED: "created", Session.COMPLETED: "completed"}[self.status]
@@ -142,8 +136,8 @@ class Session(models.Model):
 
 
 class PaymentIntent(models.Model):
-    customer: Customer = models.ForeignKey(Customer, on_delete=CASCADE)
-    stripe_payment_intent_id: str = models.CharField(max_length=255, unique=True)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
+    stripe_payment_intent_id = models.CharField(max_length=255, unique=True)
 
     REQUIRES_PAYMENT_METHOD = 1
     REQUIRES_CONFIRMATION = 20
@@ -153,7 +147,7 @@ class PaymentIntent(models.Model):
     CANCELLED = 60
     SUCCEEDED = 70
 
-    status: int = models.SmallIntegerField()
+    status = models.SmallIntegerField()
     last_payment_error = models.JSONField(default=None, null=True)
 
     @classmethod
@@ -200,47 +194,47 @@ class CustomerPlan(models.Model):
     # A customer can only have one ACTIVE plan, but old, inactive plans
     # are preserved to allow auditing - so there can be multiple
     # CustomerPlan objects pointing to one Customer.
-    customer: Customer = models.ForeignKey(Customer, on_delete=CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=CASCADE)
 
-    automanage_licenses: bool = models.BooleanField(default=False)
-    charge_automatically: bool = models.BooleanField(default=False)
+    automanage_licenses = models.BooleanField(default=False)
+    charge_automatically = models.BooleanField(default=False)
 
     # Both of these are in cents. Exactly one of price_per_license or
     # fixed_price should be set. fixed_price is only for manual deals, and
     # can't be set via the self-serve billing system.
-    price_per_license: Optional[int] = models.IntegerField(null=True)
-    fixed_price: Optional[int] = models.IntegerField(null=True)
+    price_per_license = models.IntegerField(null=True)
+    fixed_price = models.IntegerField(null=True)
 
     # Discount that was applied. For display purposes only.
-    discount: Optional[Decimal] = models.DecimalField(decimal_places=4, max_digits=6, null=True)
+    discount = models.DecimalField(decimal_places=4, max_digits=6, null=True)
 
     # Initialized with the time of plan creation. Used for calculating
     # start of next billing cycle, next invoice date etc. This value
     # should never be modified. The only exception is when we change
     # the status of the plan from free trial to active and reset the
     # billing_cycle_anchor.
-    billing_cycle_anchor: datetime.datetime = models.DateTimeField()
+    billing_cycle_anchor = models.DateTimeField()
 
     ANNUAL = 1
     MONTHLY = 2
-    billing_schedule: int = models.SmallIntegerField()
+    billing_schedule = models.SmallIntegerField()
 
     # The next date the billing system should go through ledger
     # entries and create invoices for additional users or plan
     # renewal. Since we use a daily cron job for invoicing, the
     # invoice will be generated the first time the cron job runs after
     # next_invoice_date.
-    next_invoice_date: Optional[datetime.datetime] = models.DateTimeField(db_index=True, null=True)
+    next_invoice_date = models.DateTimeField(db_index=True, null=True)
 
     # On next_invoice_date, we go through ledger entries that were
     # created after invoiced_through and process them by generating
     # invoices for any additional users and/or plan renewal. Once the
     # invoice is generated, we update the value of invoiced_through
     # and set it to the last ledger entry we processed.
-    invoiced_through: Optional["LicenseLedger"] = models.ForeignKey(
+    invoiced_through = models.ForeignKey(
         "LicenseLedger", null=True, on_delete=CASCADE, related_name="+"
     )
-    end_date: Optional[datetime.datetime] = models.DateTimeField(null=True)
+    end_date = models.DateTimeField(null=True)
 
     DONE = 1
     STARTED = 2
@@ -248,12 +242,12 @@ class CustomerPlan(models.Model):
     # This status field helps ensure any errors encountered during the
     # invoicing process do not leave our invoicing system in a broken
     # state.
-    invoicing_status: int = models.SmallIntegerField(default=DONE)
+    invoicing_status = models.SmallIntegerField(default=DONE)
 
     STANDARD = 1
     PLUS = 2  # not available through self-serve signup
     ENTERPRISE = 10
-    tier: int = models.SmallIntegerField()
+    tier = models.SmallIntegerField()
 
     ACTIVE = 1
     DOWNGRADE_AT_END_OF_CYCLE = 2
@@ -265,7 +259,7 @@ class CustomerPlan(models.Model):
     LIVE_STATUS_THRESHOLD = 10
     ENDED = 11
     NEVER_STARTED = 12
-    status: int = models.SmallIntegerField(default=ACTIVE)
+    status = models.SmallIntegerField(default=ACTIVE)
 
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
@@ -329,38 +323,38 @@ class LicenseLedger(models.Model):
     in case of issues.
     """
 
-    plan: CustomerPlan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)
+    plan = models.ForeignKey(CustomerPlan, on_delete=CASCADE)
 
     # Also True for the initial upgrade.
-    is_renewal: bool = models.BooleanField(default=False)
+    is_renewal = models.BooleanField(default=False)
 
-    event_time: datetime.datetime = models.DateTimeField()
+    event_time = models.DateTimeField()
 
     # The number of licenses ("seats") purchased by the the organization at the time of ledger
     # entry creation. Normally, to add a user the organization needs at least one spare license.
     # Once a license is purchased, it is valid till the end of the billing period, irrespective
     # of whether the license is used or not. So the value of licenses will never decrease for
     # subsequent LicenseLedger entries in the same billing period.
-    licenses: int = models.IntegerField()
+    licenses = models.IntegerField()
 
     # The number of licenses the organization needs in the next billing cycle. The value of
     # licenses_at_next_renewal can increase or decrease for subsequent LicenseLedger entries in
     # the same billing period. For plans on automatic license management this value is usually
     # equal to the number of activated users in the organization.
-    licenses_at_next_renewal: Optional[int] = models.IntegerField(null=True)
+    licenses_at_next_renewal = models.IntegerField(null=True)
 
 
 class ZulipSponsorshipRequest(models.Model):
-    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    requested_by: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
-    org_type: int = models.PositiveSmallIntegerField(
+    org_type = models.PositiveSmallIntegerField(
         default=Realm.ORG_TYPES["unspecified"]["id"],
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
 
     MAX_ORG_URL_LENGTH: int = 200
-    org_website: str = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
+    org_website = models.URLField(max_length=MAX_ORG_URL_LENGTH, blank=True, null=True)
 
-    org_description: str = models.TextField(default="")
+    org_description = models.TextField(default="")
