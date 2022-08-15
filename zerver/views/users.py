@@ -324,6 +324,12 @@ def avatar(
     return redirect(url)
 
 
+def avatar_medium(
+    request: HttpRequest, maybe_user_profile: Union[UserProfile, AnonymousUser], email_or_id: str
+) -> HttpResponse:
+    return avatar(request, maybe_user_profile, email_or_id, medium=True)
+
+
 def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
     if stream:
         return stream.name
