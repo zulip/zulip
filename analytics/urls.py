@@ -61,7 +61,7 @@ v1_api_and_json_patterns = [
     ),
 ]
 
-i18n_urlpatterns += [
+i18n_urlpatterns +=[
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
 ]
