@@ -195,6 +195,7 @@ from zerver.views.user_settings import (
 from zerver.views.users import (
     add_bot_backend,
     avatar,
+    avatar_medium,
     create_user_backend,
     deactivate_bot_backend,
     deactivate_user_backend,
@@ -725,8 +726,10 @@ urls += [
     ),
     rest_path(
         "avatar/<email_or_id>/medium",
-        {"medium": True},
-        GET=(avatar, {"override_api_url_scheme", "allow_anonymous_user_web"}),
+        GET=(
+            avatar_medium,
+            {"override_api_url_scheme", "allow_anonymous_user_web"},
+        ),
     ),
 ]
 

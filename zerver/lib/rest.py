@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Mapping, Set, Tuple, Union, cast
+from typing import Any, Callable, Dict, Set, Tuple, Union, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
@@ -199,7 +199,6 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 def rest_path(
     route: str,
-    kwargs: Mapping[str, object] = {},
     **handlers: Union[Callable[..., HttpResponse], Tuple[Callable[..., HttpResponse], Set[str]]],
 ) -> URLPattern:
-    return path(route, rest_dispatch, {**kwargs, **handlers})
+    return path(route, rest_dispatch, handlers)
