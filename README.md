@@ -49,7 +49,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
 - **Checking Zulip out**. The best way to see Zulip in action is to drop by the
   [Zulip community server](https://zulip.com/development-community/). We also
   recommend reading about Zulip's [unique
-  approach](https://zulip.com/why-zulip/) to organizing conversations.
+  approach] (https://zulip.com/why-zulip/) to organizing conversations.
 
 - **Running a Zulip server**. Self host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
