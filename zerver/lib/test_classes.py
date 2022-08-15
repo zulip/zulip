@@ -1133,7 +1133,7 @@ Output:
         self.assertIn(substring, response.content.decode())
 
     def assert_in_success_response(
-        self, substrings: List[str], response: "TestHttpResponse"
+        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
@@ -1141,7 +1141,7 @@ Output:
             self.assertIn(substring, decoded)
 
     def assert_not_in_success_response(
-        self, substrings: List[str], response: "TestHttpResponse"
+        self, substrings: List[str], response: Union["TestHttpResponse", HttpResponse]
     ) -> None:
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode()
