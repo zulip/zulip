@@ -120,12 +120,17 @@ test("update_property", ({override}) => {
         assert.equal(args.val, "blue");
     }
 
-    // Test in home view
+    // Test in home view (code coverage; until event/property removed)
+    {
+        stream_events.update_property(stream_id, "in_home_view", false);
+    }
+
+    // Test is muted
     {
         const stub = make_stub();
         override(stream_muting, "update_is_muted", stub.f);
         override(stream_list, "refresh_muted_or_unmuted_stream", noop);
-        stream_events.update_property(stream_id, "in_home_view", false);
+        stream_events.update_property(stream_id, "is_muted", true);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("sub", "val");
         assert.equal(args.sub.stream_id, stream_id);

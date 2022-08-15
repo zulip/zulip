@@ -45,7 +45,11 @@ export function update_property(stream_id, property, value, other_values) {
             stream_color.update_stream_color(sub, value, {update_historical: true});
             break;
         case "in_home_view":
-            stream_muting.update_is_muted(sub, !value);
+            // Legacy in_home_view events are only sent as duplicates of
+            // modern is_muted events, which we handle below.
+            break;
+        case "is_muted":
+            stream_muting.update_is_muted(sub, value);
             stream_list.refresh_muted_or_unmuted_stream(sub);
             recent_topics_ui.complete_rerender();
             break;
