@@ -2328,7 +2328,8 @@ class GetOldMessagesTest(ZulipTestCase):
             ("日本語", "昨日、日本のお菓子を送りました。"),
             ("english", "I want to go to 日本!"),
             ("english", "Can you speak https://en.wikipedia.org/wiki/Japanese?"),
-            ("english", "https://google.com"),
+            ("english", "https://domain.com/path/to.something-I,want/"),
+            ("english", "foo.cht"),
             ("bread & butter", "chalk & cheese"),
         ]
 
@@ -2419,19 +2420,82 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>今<span class="highlight">朝は</span>ごはんを食<span class="highlight">べました</span>。</p>',
         )
 
-        narrow = [dict(operator="search", operand="https://google.com")]
-        link_search_result: Dict[str, Any] = self.get_and_check_messages(
-            dict(
-                narrow=orjson.dumps(narrow).decode(),
-                anchor=next_message_id,
-                num_after=10,
-                num_before=0,
+        def search(operand: str, link: Optional[str], highlight: str) -> None:
+            narrow = [dict(operator="search", operand=operand)]
+            link_search_result: Dict[str, Any] = self.get_and_check_messages(
+                dict(
+                    narrow=orjson.dumps(narrow).decode(),
+                    anchor=next_message_id,
+                    num_after=10,
+                    num_before=0,
+                )
             )
+            self.assert_length(link_search_result["messages"], 1)
+            self.assertEqual(
+                link_search_result["messages"][0]["match_content"],
+                f'<p><a href="{link}">{highlight}</a></p>' if link else f"<p>{highlight}</p>",
+            )
+
+        search("foo.cht", None, '<span class="highlight">foo.cht</span>')
+        search("foo", None, '<span class="highlight">foo</span>.cht')
+        search("cht", None, 'foo.<span class="highlight">cht</span>')
+
+        url = "https://domain.com/path/to.something-I,want/"
+        search(url, url, f'<span class="highlight">{url}</span>')
+        search(
+            "https://domain",
+            url,
+            '<span class="highlight">https://domain</span>.com/path/to.something-I,want/',
         )
-        self.assert_length(link_search_result["messages"], 1)
-        self.assertEqual(
-            link_search_result["messages"][0]["match_content"],
-            '<p><a href="https://google.com"><span class="highlight">https://google.com</span></a></p>',
+        search(
+            "domain",
+            url,
+            'https://<span class="highlight">domain</span>.com/path/to.something-I,want/',
+        )
+        search(
+            "domain.",
+            url,
+            'https://<span class="highlight">domain.</span>com/path/to.something-I,want/',
+        )
+        search(
+            "domain.com",
+            url,
+            'https://<span class="highlight">domain.com</span>/path/to.something-I,want/',
+        )
+        search(
+            "domain.com/",
+            url,
+            'https://<span class="highlight">domain.com/</span>path/to.something-I,want/',
+        )
+        search(
+            "domain.com/path",
+            url,
+            'https://<span class="highlight">domain.com/path</span>/to.something-I,want/',
+        )
+        search(
+            ".something",
+            url,
+            'https://domain.com/path/to<span class="highlight">.something</span>-I,want/',
+        )
+        search(
+            "to.something",
+            url,
+            'https://domain.com/path/<span class="highlight">to.something</span>-I,want/',
+        )
+        search(
+            "something-I",
+            url,
+            'https://domain.com/path/to.<span class="highlight">something-I</span>,want/',
+        )
+        search(
+            ",want",
+            url,
+            'https://domain.com/path/to.something-I<span class="highlight">,want</span>/',
+        )
+        search(
+            "I,want",
+            url,
+            'https://domain.com/path/to.something-<span class="highlight">I,want</span>/',
         )
 
         # Search operands with HTML special characters
