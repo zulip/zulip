@@ -174,6 +174,7 @@ test("stream update", ({override}) => {
     const stub = make_stub();
     override(stream_events, "update_property", stub.f);
     override(settings_streams, "update_default_streams_table", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("stream_id", "property", "value");
@@ -189,6 +190,7 @@ test("stream create", ({override}) => {
     const event = event_fixtures.stream__create;
 
     override(stream_settings_ui, "add_sub_to_table", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(overlays, "streams_open", () => true);
     dispatch(event);
 
@@ -224,6 +226,7 @@ test("stream delete (normal)", ({override}) => {
     override(stream_list, "remove_sidebar_row", () => {
         removed_sidebar_rows += 1;
     });
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     dispatch(event);
 
@@ -253,6 +256,7 @@ test("stream delete (special streams)", ({override}) => {
     override(settings_streams, "update_default_streams_table", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     dispatch(event);
 

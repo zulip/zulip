@@ -459,6 +459,7 @@ export function dispatch_normal_event(event) {
                         is_web_public: event.is_web_public,
                     });
                     settings_streams.update_default_streams_table();
+                    stream_list.update_subscribe_to_more_streams_link();
                     break;
                 case "create":
                     stream_data.create_streams(event.streams);
@@ -469,6 +470,7 @@ export function dispatch_normal_event(event) {
                             stream_settings_ui.add_sub_to_table(sub);
                         }
                     }
+                    stream_list.update_subscribe_to_more_streams_link();
                     break;
                 case "delete":
                     for (const stream of event.streams) {
@@ -495,6 +497,7 @@ export function dispatch_normal_event(event) {
                             settings_org.sync_realm_settings("signup_notifications_stream_id");
                         }
                     }
+                    stream_list.update_subscribe_to_more_streams_link();
                     break;
                 default:
                     blueslip.error("Unexpected event type stream/" + event.op);

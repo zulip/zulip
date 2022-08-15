@@ -464,7 +464,7 @@ class CommonUtils {
     }
 
     async open_streams_modal(page: Page): Promise<void> {
-        const all_streams_selector = "#add-stream-link";
+        const all_streams_selector = "#subscribe-to-more-streams";
         await page.waitForSelector(all_streams_selector, {visible: true});
         await page.click(all_streams_selector);
 

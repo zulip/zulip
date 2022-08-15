@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
+import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
 import * as color_class from "./color_class";
@@ -16,6 +17,7 @@ import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
@@ -212,6 +214,25 @@ export function get_stream_li(stream_id) {
     }
 
     return $li;
+}
+
+export function update_subscribe_to_more_streams_link() {
+    const can_subscribe_stream_count = stream_data
+        .unsubscribed_subs()
+        .filter((sub) => stream_data.can_toggle_subscription(sub)).length;
+
+    const can_create_streams =
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams();
+
+    $("#subscribe-to-more-streams").html(
+        render_subscribe_to_more_streams({
+            can_subscribe_stream_count,
+            can_create_streams,
+            exactly_one_unsusbcribed_stream: can_subscribe_stream_count === 1,
+        }),
+    );
 }
 
 function stream_id_for_elt($elt) {
@@ -537,6 +558,7 @@ export function initialize() {
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list();
+    update_subscribe_to_more_streams_link();
     set_event_handlers();
 }
 

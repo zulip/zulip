@@ -141,6 +141,7 @@ export function mark_subscribed(sub, subscribers, color) {
     message_util.do_unread_count_updates(all_messages_data.all_messages());
 
     stream_list.add_sidebar_row(sub);
+    stream_list.update_subscribe_to_more_streams_link();
 }
 
 export function mark_unsubscribed(sub) {
@@ -164,6 +165,7 @@ export function mark_unsubscribed(sub) {
     }
 
     stream_list.remove_sidebar_row(sub.stream_id);
+    stream_list.update_subscribe_to_more_streams_link();
 }
 
 export function remove_deactivated_user_from_all_streams(user_id) {

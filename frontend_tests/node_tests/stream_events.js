@@ -281,6 +281,7 @@ test("marked_subscribed (normal)", ({override}) => {
     const message_util_stub = make_stub();
 
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
     override(message_util, "do_unread_count_updates", message_util_stub.f);
     override(
         message_view_header,
@@ -309,6 +310,7 @@ test("marked_subscribed (normal)", ({override}) => {
 test("marked_subscribed (color)", ({override}) => {
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     const sub = {
         subscribed: false,
@@ -344,6 +346,7 @@ test("marked_subscribed (emails)", ({override}) => {
     // narrow state is undefined
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
@@ -369,6 +372,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
 
     override(stream_settings_ui, "update_settings_for_unsubscribed", stub.f);
     override(stream_list, "remove_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
@@ -390,6 +394,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(stream_settings_ui, "update_settings_for_unsubscribed", noop);
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
+    override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
     stream_events.mark_unsubscribed(sub);
 
