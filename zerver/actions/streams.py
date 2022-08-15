@@ -399,7 +399,11 @@ def send_peer_subscriber_events(
                 stream_ids=[stream_id],
                 user_ids=sorted(altered_user_ids),
             )
-            send_event(realm, event, peer_user_ids)
+            transaction.on_commit(
+                lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                    realm, event, peer_user_ids
+                )
+            )
 
     public_stream_ids = [
         stream_id
@@ -437,7 +441,11 @@ def send_peer_subscriber_events(
                         stream_ids=[stream_id],
                         user_ids=sorted(altered_user_ids),
                     )
-                    send_event(realm, event, peer_user_ids)
+                    transaction.on_commit(
+                        lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                            realm, event, peer_user_ids
+                        )
+                    )
 
         for user_id, stream_ids in user_streams.items():
             peer_user_ids = public_peer_ids - {user_id}
@@ -447,7 +455,11 @@ def send_peer_subscriber_events(
                 stream_ids=sorted(stream_ids),
                 user_ids=[user_id],
             )
-            send_event(realm, event, peer_user_ids)
+            transaction.on_commit(
+                lambda event=event, peer_user_ids=peer_user_ids: send_event(
+                    realm, event, peer_user_ids
+                )
+            )
 
 
 SubT = Tuple[List[SubInfo], List[SubInfo]]

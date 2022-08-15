@@ -904,7 +904,7 @@ class NormalActionsTest(BaseAction):
             num_events=7,
         )
 
-        check_invites_changed("events[3]", events[3])
+        check_invites_changed("events[1]", events[1])
 
     def test_typing_events(self) -> None:
         events = self.verify_action(
@@ -1122,20 +1122,20 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
         self.assert_length(events, 5)
 
-        check_realm_user_add("events[0]", events[0])
+        check_realm_user_add("events[1]", events[1])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
 
-        check_subscription_peer_add("events[1]", events[1])
+        check_subscription_peer_add("events[4]", events[4])
 
-        check_message("events[2]", events[2])
+        check_message("events[0]", events[0])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[2]["message"]["content"],
+            events[0]["message"]["content"],
         )
 
+        check_user_group_add_members("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
 
     def test_register_events_email_address_visibility(self) -> None:
         do_set_realm_property(
@@ -1147,20 +1147,20 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=5)
         self.assert_length(events, 5)
-        check_realm_user_add("events[0]", events[0])
+        check_realm_user_add("events[1]", events[1])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
 
-        check_subscription_peer_add("events[1]", events[1])
+        check_subscription_peer_add("events[4]", events[4])
 
-        check_message("events[2]", events[2])
+        check_message("events[0]", events[0])
         self.assertIn(
             f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
-            events[2]["message"]["content"],
+            events[0]["message"]["content"],
         )
 
+        check_user_group_add_members("events[2]", events[2])
         check_user_group_add_members("events[3]", events[3])
-        check_user_group_add_members("events[4]", events[4])
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -2024,7 +2024,7 @@ class NormalActionsTest(BaseAction):
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot("test")
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
         action = lambda: self.create_bot(
             "test_outgoing_webhook",
@@ -2036,7 +2036,7 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=4)
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
         action = lambda: self.create_bot(
             "test_embedded",
@@ -2046,7 +2046,7 @@ class NormalActionsTest(BaseAction):
             bot_type=UserProfile.EMBEDDED_BOT,
         )
         events = self.verify_action(action, num_events=4)
-        check_realm_bot_add("events[1]", events[1])
+        check_realm_bot_add("events[3]", events[3])
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
