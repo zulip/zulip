@@ -642,17 +642,6 @@ class RateLimitTestCase(ZulipTestCase):
     def ratelimited_web_view(req: HttpRequest) -> HttpResponse:
         return HttpResponse("some value")
 
-    def errors_disallowed(self) -> Any:
-        # Due to what is probably a hack in rate_limit(),
-        # some tests will give a false positive (or succeed
-        # for the wrong reason), unless we complain
-        # about logging errors.  There might be a more elegant way
-        # make logging errors fail than what I'm doing here.
-        class TestLoggingErrorException(Exception):
-            pass
-
-        return mock.patch("logging.error", side_effect=TestLoggingErrorException)
-
     def check_rate_limit_public_or_user_views(
         self,
         remote_addr: str,
@@ -669,7 +658,7 @@ class RateLimitTestCase(ZulipTestCase):
             "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
             "zerver.lib.rate_limiter.rate_limit_ip"
-        ) as rate_limit_ip_mock, self.errors_disallowed():
+        ) as rate_limit_ip_mock:
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_ip_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_user_mock.called)
@@ -685,7 +674,7 @@ class RateLimitTestCase(ZulipTestCase):
             "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
             "zerver.lib.rate_limiter.rate_limit_ip"
-        ) as rate_limit_ip_mock, self.errors_disallowed():
+        ) as rate_limit_ip_mock:
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_user_mock.called, expect_rate_limit)
         self.assertFalse(rate_limit_ip_mock.called)
