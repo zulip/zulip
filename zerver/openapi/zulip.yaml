@@ -231,7 +231,8 @@ paths:
                                 alert_words:
                                   type: array
                                   description: |
-                                    Array of strings, each a configured alert word.
+                                    An array of strings, where each string is an alert word (or phrase)
+                                    configured by the user.
                                   items:
                                     type: string
                               additionalProperties: false
