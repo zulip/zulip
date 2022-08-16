@@ -100,6 +100,16 @@ visible to the subdomain (so it's not possible for a single
 browser/client to be logged into both). So we don't recommend that
 configuration.
 
+### Changing subdomains
+
+You can [change the subdomain][help-center-change-url] for an existing
+organization using a [management command][management-commands]. Be
+sure you understand the implications of changing the organization URL
+before doing so, as it can be disruptive to users.
+
+[management-commands]: ../production/management-commands.md
+[help-center-change-url]: https://zulip.com/help/change-organization-url
+
 ### Authentication
 
 Many of Zulip's supported authentication methods (Google, GitHub,
