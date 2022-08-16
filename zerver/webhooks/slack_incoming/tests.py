@@ -167,6 +167,8 @@ Build bla bla succeeded
 **Requested by**: Some user
 **Duration**: 00:02:03
 **Build pipeline**: ConsumerAddressModule
+**Title without value**
+Value without title
         """.strip()
 
         self.check_webhook(
@@ -197,3 +199,148 @@ Build bla bla succeeded
         else:
             file_type = "json"
         return self.webhook_fixture_data("slack_incoming", fixture_name, file_type=file_type)
+
+    def test_attachment_pieces_title_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+Sample pretext.
+
+Sample text.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+Sample footer.
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_title_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_image_url_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## [Sample title.](https://www.google.com)
+
+Sample pretext.
+
+Sample text.
+
+Sample footer.
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_image_url_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_ts_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## [Sample title.](https://www.google.com)
+
+Sample pretext.
+
+Sample text.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+Sample footer.
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_ts_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_text_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## [Sample title.](https://www.google.com)
+
+Sample pretext.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+Sample footer.
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_text_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_pretext_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## [Sample title.](https://www.google.com)
+
+Sample text.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+Sample footer.
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_pretext_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_footer_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## [Sample title.](https://www.google.com)
+
+Sample pretext.
+
+Sample text.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_footer_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_title_link_null(self) -> None:
+        expected_topic = "(no topic)"
+        expected_message = """
+## Sample title.
+
+Sample pretext.
+
+Sample text.
+
+[](https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg)
+
+Sample footer.
+
+<time:1655945306>
+        """.strip()
+
+        self.check_webhook(
+            "attachment_pieces_title_link_null",
+            expected_topic,
+            expected_message,
+        )
+
+    def test_attachment_pieces_all_null(self) -> None:
+        self.check_webhook("attachment_pieces_all_null", expect_noop=True)

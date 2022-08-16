@@ -17,6 +17,21 @@
           "title": "Build pipeline",
           "value": "ConsumerAddressModule",
           "short": true
+        },
+        {
+          "title": "Title without value",
+          "value": null,
+          "short": true
+        },
+        {
+          "title": null,
+          "value": "Value without title",
+          "short": true
+        },
+        {
+          "title": null,
+          "value": null,
+          "short": true
         }
       ],
       "pretext": "Build bla bla succeeded",
