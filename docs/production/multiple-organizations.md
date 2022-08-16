@@ -45,11 +45,6 @@ things:
   authentication method, review
   [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#authentication).
 
-For servers hosting a large number of organizations, like
-[zulip.com](https://zulip.com), one can set
-`ROOT_DOMAIN_LANDING_PAGE = True` in `/etc/zulip/settings.py` so that
-the homepage for the server is a copy of the Zulip homepage.
-
 ### SSL certificates
 
 You'll need to install an SSL certificate valid for all the
