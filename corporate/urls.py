@@ -65,7 +65,7 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/development-community.html"},
     ),
-    path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
+    path("attribution/", landing_view, {"template_name": "corporate/attribution.html"}),
     path("team/", team_view),
     path("history/", landing_view, {"template_name": "zerver/history.html"}),
     path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
