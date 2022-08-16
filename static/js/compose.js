@@ -84,6 +84,7 @@ export function clear_private_stream_alert() {
 
 export function clear_preview_area() {
     $("#compose-textarea").show();
+    $("#compose-textarea").trigger("focus");
     $("#compose .undo_markdown_preview").hide();
     $("#compose .preview_message_area").hide();
     $("#compose .preview_content").empty();

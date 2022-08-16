@@ -898,6 +898,8 @@ test_ui("on_events", ({override, override_rewire}) => {
             stopPropagation: noop,
         };
 
+        override(compose_actions, "update_placeholder_text", noop);
+
         handler(event);
 
         assert.ok($("#compose-textarea").visible());
