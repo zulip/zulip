@@ -273,8 +273,8 @@ export function enter_with_preview_open() {
         // If enter_sends is enabled, we attempt to send the message
         finish();
     } else {
-        // Otherwise, we return to the compose box and focus it
-        $("#compose-textarea").trigger("focus");
+        // Otherwise, we return to the normal compose state.
+        clear_preview_area();
     }
 }
 
