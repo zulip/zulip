@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
@@ -15,7 +16,8 @@ FRESHPING_MESSAGE_TEMPLATE_UNREACHABLE = """
 Error code: {http_status_code}.
 """.strip()
 FRESHPING_MESSAGE_TEMPLATE_UP = "{request_url} is back up and no longer unreachable."
-ALL_EVENT_TYPES = ["Reporting Error", "Available"]
+CHECK_STATE_NAME_TO_EVENT_TYPE = {"Reporting Error": "reporting_error", "Available": "available"}
+ALL_EVENT_TYPES = list(CHECK_STATE_NAME_TO_EVENT_TYPE.values())
 
 
 @webhook_view("Freshping", all_event_types=ALL_EVENT_TYPES)
@@ -28,13 +30,16 @@ def api_freshping_webhook(
 
     body = get_body_for_http_request(payload)
     subject = get_subject_for_http_request(payload)
+    check_state_name = payload["webhook_event_data"]["check_state_name"].tame(check_string)
+    if check_state_name not in CHECK_STATE_NAME_TO_EVENT_TYPE:
+        raise UnsupportedWebhookEventType(check_state_name)
 
     check_send_webhook_message(
         request,
         user_profile,
         subject,
         body,
-        payload["webhook_event_data"]["check_state_name"].tame(check_string),
+        CHECK_STATE_NAME_TO_EVENT_TYPE[check_state_name],
     )
     return json_success(request)
 
