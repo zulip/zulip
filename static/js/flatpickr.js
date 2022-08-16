@@ -11,7 +11,7 @@ function is_numeric_key(key) {
 }
 
 export function show_flatpickr(element, callback, default_timestamp, options = {}) {
-    const $flatpickr_input = $("<input>", {id: "#timestamp_flatpickr"});
+    const $flatpickr_input = $("<input>").attr("id", "#timestamp_flatpickr");
 
     const instance = $flatpickr_input.flatpickr({
         mode: "single",

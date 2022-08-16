@@ -22,6 +22,9 @@ mock_jquery((arg) => {
     }
 
     return {
+        addClass() {
+            return this;
+        },
         replace: (regex, string) => {
             arg = arg.replace(regex, string);
         },

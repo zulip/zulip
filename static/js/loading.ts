@@ -21,21 +21,23 @@ export function make_indicator(
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
         const container_id = $container.attr("id")!;
-        let $inner_container = $("<div>", {id: `${container_id}_box_container`});
+        let $inner_container = $("<div>").attr("id", `${container_id}_box_container`);
         $container.append($inner_container);
         $container = $inner_container;
-        $inner_container = $("<div>", {id: `${container_id}_box`});
+        $inner_container = $("<div>").attr("id", `${container_id}_box`);
         $container.append($inner_container);
         $container = $inner_container;
     }
 
-    const $spinner_elem = $("<div>", {class: "loading_indicator_spinner", ["aria-hidden"]: "true"});
+    const $spinner_elem = $("<div>")
+        .addClass("loading_indicator_spinner")
+        .attr("aria-hidden", "true");
     $spinner_elem.html(render_loader({container_id: $outer_container.attr("id")}));
     $container.append($spinner_elem);
     let text_width = 0;
 
     if (text !== undefined) {
-        const $text_elem = $("<span>", {class: "loading_indicator_text"});
+        const $text_elem = $("<span>").addClass("loading_indicator_text");
         $text_elem.text(text);
         $container.append($text_elem);
         // See note, below

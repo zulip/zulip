@@ -183,10 +183,10 @@ export function render_lightbox_list_images(preview_source) {
             const src = img.getAttribute("src");
             const className = preview_source === src ? "image selected" : "image";
 
-            const $node = $("<div>", {
-                class: className,
-                "data-src": src,
-            }).css({backgroundImage: "url(" + src + ")"});
+            const $node = $("<div>")
+                .addClass(className)
+                .attr("data-src", src)
+                .css({backgroundImage: "url(" + src + ")"});
 
             $image_list.append($node);
 

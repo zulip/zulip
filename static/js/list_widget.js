@@ -202,7 +202,7 @@ export function create($container, list, opts) {
                 if ($list_item.length) {
                     const $link_elem = $list_item.find("a").expectOne();
                     $list_item.addClass("checked");
-                    $link_elem.prepend($("<i>", {class: "fa fa-check"}));
+                    $link_elem.prepend($("<i>").addClass(["fa", "fa-check"]));
                 }
             }
         }

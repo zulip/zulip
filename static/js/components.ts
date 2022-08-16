@@ -32,7 +32,7 @@ export function toggle(opts: {
     child_wants_focus?: boolean;
     selected?: number;
 }): Toggle {
-    const $component = $("<div>", {class: "tab-switcher"});
+    const $component = $("<div>").addClass("tab-switcher");
     if (opts.html_class) {
         // add a check inside passed arguments in case some extra
         // classes need to be added for correct alignment or other purposes
@@ -41,12 +41,9 @@ export function toggle(opts: {
     for (const [i, value] of opts.values.entries()) {
         // create a tab with a tab-id so they don't have to be referenced
         // by text value which can be inconsistent.
-        const $tab = $("<div>", {
-            class: "ind-tab",
-            "data-tab-key": value.key,
-            "data-tab-id": i,
-            tabindex: 0,
-        });
+        const $tab = $("<div>")
+            .addClass("ind-tab")
+            .attr({"data-tab-key": value.key, "data-tab-id": i, tabindex: 0});
 
         /* istanbul ignore if */
         if (value.label_html !== undefined) {

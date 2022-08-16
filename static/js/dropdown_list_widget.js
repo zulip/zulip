@@ -415,7 +415,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
     add_check_mark($element) {
         const value = $element.attr("data-value");
         const $link_elem = $element.find("a").expectOne();
-        $link_elem.prepend($("<i>", {class: "fa fa-check"}));
+        $link_elem.prepend($("<i>").addClass(["fa", "fa-check"]));
         $element.addClass("checked");
         this.data_selected.push(value);
     }
