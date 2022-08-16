@@ -73,12 +73,19 @@ Python dictionary, like this:
 
 ```python
 REALM_HOSTS = {
-    'mysubdomain': 'hostname.example.com',
+    "mysubdomain": "hostname.example.com",
 }
 ```
 
-What this will do is map the hostname `hostname.example.com` to the
-realm whose `subdomain` in the Zulip database is `mysubdomain`.
+This will make `hostname.example.com` the hostname for the realm that
+would, without this configuration, have been
+`mysubdomain.zulip.example.com`. To create your new realm on
+`hostname.example.com`, one should enter `mysubdomain` as the
+"subdomain" for the new realm.
+
+The value you choose for `mysubdomain` will not be displayed to users;
+the main constraint is that it will be impossible to create a
+different realm on `mysubdomain.zulip.example.com`.
 
 In a future version of Zulip, we expect to move this configuration
 into the database.
