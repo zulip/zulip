@@ -140,9 +140,15 @@ Here are a few common macros used to document Zulip's integrations:
   For an example rendering, see
   [Zulip's Beanstalk integration](https://zulip.com/integrations/doc/beanstalk).
 
+- `{!event-filtering-instructions}` macro - Instructs user to use the event
+  filtering feature and shows a list of event types that the integration supports.
+  For an example rendering, see the last 4 paragraphs of **Step 2** in
+  [the docs for Zulip's Front integration][front].
+
 [github-integration]: https://zulip.com/integrations/doc/github
 [codebase]: https://zulip.com/integrations/doc/codebase
 [beanstalk]: https://zulip.com/integrations/doc/beanstalk
+[front]: https://zulip.com/integrations/doc/front
 [integrations-file]: https://github.com/zulip/zulip/blob/main/zerver/lib/integrations.py
 
 ## Writing guidelines

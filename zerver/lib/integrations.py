@@ -211,9 +211,12 @@ class WebhookIntegration(Integration):
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
 
         if isinstance(function, str):
-            function = import_string(function)
+            # We rename the imported function as view_function here to appease
+            # mypy, since it does not allow redefinition of variables with
+            # different types.
+            view_function = import_string(function)
 
-        self.function = function
+        self.function = view_function
 
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
