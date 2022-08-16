@@ -714,7 +714,7 @@ html_rules: List["Rule"] = [
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
             "templates/zerver/billing_nav.html",
-            "templates/zerver/features.html",
+            "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
             "templates/corporate/billing.html",
             "templates/corporate/upgrade.html",

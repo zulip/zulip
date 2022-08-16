@@ -52,7 +52,7 @@ landing_page_urls = [
     # Landing page, features pages, signup form, etc.
     path("hello/", hello_view),
     path("new-user/", RedirectView.as_view(url="/hello", permanent=True)),
-    path("features/", landing_view, {"template_name": "zerver/features.html"}),
+    path("features/", landing_view, {"template_name": "corporate/features.html"}),
     path("plans/", plans_view, name="plans"),
     path("apps/", apps_view),
     path("apps/download/<platform>", app_download_link_redirect),
