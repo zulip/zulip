@@ -681,6 +681,7 @@ export function initialize() {
         $("#compose-textarea").hide();
         $("#compose .markdown_preview").hide();
         $("#compose .undo_markdown_preview").show();
+        $("#compose .undo_markdown_preview").trigger("focus");
         $("#compose .preview_message_area").show();
 
         render_and_show_preview(
