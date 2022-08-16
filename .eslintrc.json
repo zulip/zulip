@@ -73,6 +73,7 @@
         "no-implied-eval": "error",
         "no-inner-declarations": "off",
         "no-iterator": "error",
+        "no-jquery/no-constructor-attributes": "error",
         "no-jquery/no-parse-html-literal": "error",
         "no-label-var": "error",
         "no-labels": "error",

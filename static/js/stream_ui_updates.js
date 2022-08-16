@@ -24,7 +24,7 @@ export function initialize_disable_btn_hint_popover(
     $disabled_btn.css("pointer-events", "none");
     $popover_btn.popover({
         placement: "bottom",
-        content: $("<div>", {class: "sub_disable_btn_hint"}).text(hint_text).prop("outerHTML"),
+        content: $("<div>").addClass("sub_disable_btn_hint").text(hint_text).prop("outerHTML"),
         trigger: "manual",
         html: true,
         animation: false,

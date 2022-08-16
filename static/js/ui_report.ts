@@ -65,10 +65,10 @@ export function success(response_html: string, $status_box: JQuery, remove_after
 }
 
 export function generic_embed_error(error_html: string): void {
-    const $alert = $("<div>", {class: "alert home-error-bar show"});
-    const $exit = $("<div>", {class: "exit"});
+    const $alert = $("<div>").addClass(["alert", "home-error-bar", "show"]);
+    const $exit = $("<div>").addClass("exit");
 
-    $(".alert-box").append($alert.append($exit, $("<div>", {class: "content"}).html(error_html)));
+    $(".alert-box").append($alert.append($exit, $("<div>").addClass("content").html(error_html)));
 }
 
 export function generic_row_button_error(xhr: JQuery.jqXHR, $btn: JQuery): void {

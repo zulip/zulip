@@ -95,7 +95,7 @@ export function update_view_on_deactivate(user_id) {
     $row.find("i.deactivated-user-icon").show();
     $button.addClass("btn-warning reactivate");
     $button.removeClass("deactivate btn-danger");
-    $button.empty().append($("<i>", {class: "fa fa-user-plus", ["aria-hidden"]: "true"}));
+    $button.empty().append($("<i>").addClass(["fa", "fa-user-plus"]).attr("aria-hidden", "true"));
     $button.attr("title", "Reactivate");
     $row.addClass("deactivated_user");
 
@@ -115,7 +115,7 @@ function update_view_on_reactivate($row) {
     $button.addClass("btn-danger deactivate");
     $button.removeClass("btn-warning reactivate");
     $button.attr("title", "Deactivate");
-    $button.empty().append($("<i>", {class: "fa fa-user-times", ["aria-hidden"]: "true"}));
+    $button.empty().append($("<i>").addClass(["fa", "fa-user-times"]).attr("aria-hidden", "true"));
     $row.removeClass("deactivated_user");
 
     if ($user_role) {

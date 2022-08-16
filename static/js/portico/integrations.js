@@ -156,9 +156,14 @@ function hide_catalog_show_integration() {
                     link = name;
                 }
             }
-            const $category_el = $("<a>", {href: "/integrations/" + link}).append(
-                $("<h3>", {class: "integration-category", ["data-category"]: link}).text(category),
-            );
+            const $category_el = $("<a>")
+                .attr("href", "/integrations/" + link)
+                .append(
+                    $("<h3>")
+                        .addClass("integration-category")
+                        .attr("data-category", link)
+                        .text(category),
+                );
             $("#integration-instructions-group .categories").append($category_el);
         }
         $("#integration-instructions-group").css({
