@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Set, Tuple, Union, cast
+from typing import Callable, Dict, Set, Tuple, Union, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
@@ -42,7 +42,7 @@ def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
 
 
 def get_target_view_function_or_response(
-    request: HttpRequest, rest_dispatch_kwargs: Dict[str, Any]
+    request: HttpRequest, rest_dispatch_kwargs: Dict[str, object]
 ) -> Union[Tuple[Callable[..., HttpResponse], Set[str]], HttpResponse]:
     """Helper for REST API request dispatch. The rest_dispatch_kwargs
     parameter is expected to be a dictionary mapping HTTP methods to
@@ -60,7 +60,7 @@ def get_target_view_function_or_response(
     this feature; it's not clear it's actually used.
 
     """
-    supported_methods: Dict[str, Any] = {}
+    supported_methods: Dict[str, object] = {}
     request_notes = RequestNotes.get_notes(request)
     if request_notes.saved_response is not None:
         # For completing long-polled Tornado requests, we skip the
@@ -94,14 +94,15 @@ def get_target_view_function_or_response(
             assert callable(handler)
             assert isinstance(view_flags, set)
             return handler, view_flags
-        return supported_methods[method_to_use], set()
+        assert callable(entry)
+        return entry, set()
 
     return json_method_not_allowed(list(supported_methods.keys()))
 
 
 @default_never_cache_responses
 @csrf_exempt
-def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+def rest_dispatch(request: HttpRequest, **kwargs: object) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Authentication is verified in the following ways:
