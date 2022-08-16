@@ -4,7 +4,6 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
-import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
@@ -24,7 +23,6 @@ function set_count(count) {
 }
 
 function remove_expanded_private_messages() {
-    stream_popover.hide_topic_popover();
     ui.get_content_element($("#private-container")).empty();
 }
 
@@ -64,7 +62,6 @@ export function update_private_messages() {
 
 export function expand() {
     private_messages_open = true;
-    stream_popover.hide_topic_popover();
     update_private_messages();
     if (pm_list_data.is_all_privates()) {
         $(".top_left_private_messages").addClass("active-filter");
