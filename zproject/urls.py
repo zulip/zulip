@@ -77,14 +77,6 @@ from zerver.views.message_flags import (
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
 from zerver.views.muting import mute_user, unmute_user, update_muted_topic
-from zerver.views.portico import (
-    app_download_link_redirect,
-    apps_view,
-    hello_view,
-    landing_view,
-    plans_view,
-    team_view,
-)
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,
@@ -621,61 +613,6 @@ i18n_urls = [
     path("integrations/doc-html/<integration_name>", integration_doc),
     path("integrations/", integrations_view),
     path("integrations/<path:path>", integrations_view),
-    # Landing page, features pages, signup form, etc.
-    path("hello/", hello_view),
-    path("new-user/", RedirectView.as_view(url="/hello", permanent=True)),
-    path("features/", landing_view, {"template_name": "zerver/features.html"}),
-    path("plans/", plans_view, name="plans"),
-    path("apps/", apps_view),
-    path("apps/download/<platform>", app_download_link_redirect),
-    path("apps/<platform>", apps_view),
-    path(
-        "development-community/",
-        landing_view,
-        {"template_name": "zerver/development-community.html"},
-    ),
-    # Renamed to have a cleared URL.
-    path(
-        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
-    ),
-    path("attribution/", landing_view, {"template_name": "zerver/attribution.html"}),
-    path("team/", team_view),
-    path("history/", landing_view, {"template_name": "zerver/history.html"}),
-    path("why-zulip/", landing_view, {"template_name": "zerver/why-zulip.html"}),
-    path("for/education/", landing_view, {"template_name": "zerver/for-education.html"}),
-    path("for/events/", landing_view, {"template_name": "zerver/for-events.html"}),
-    path("for/open-source/", landing_view, {"template_name": "zerver/for-open-source.html"}),
-    path("for/research/", landing_view, {"template_name": "zerver/for-research.html"}),
-    path("for/business/", landing_view, {"template_name": "zerver/for-business.html"}),
-    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
-    path("case-studies/idrift/", landing_view, {"template_name": "zerver/idrift-case-study.html"}),
-    path("case-studies/tum/", landing_view, {"template_name": "zerver/tum-case-study.html"}),
-    path("case-studies/ucsd/", landing_view, {"template_name": "zerver/ucsd-case-study.html"}),
-    path("case-studies/rust/", landing_view, {"template_name": "zerver/rust-case-study.html"}),
-    path("case-studies/lean/", landing_view, {"template_name": "zerver/lean-case-study.html"}),
-    path(
-        "case-studies/asciidoctor/",
-        landing_view,
-        {"template_name": "zerver/asciidoctor-case-study.html"},
-    ),
-    path(
-        "case-studies/recurse-center/",
-        landing_view,
-        {"template_name": "zerver/recurse-center-case-study.html"},
-    ),
-    path(
-        "for/communities/",
-        landing_view,
-        {"template_name": "zerver/for-communities.html"},
-    ),
-    # We merged this into /for/communities.
-    path(
-        "for/working-groups-and-communities/",
-        RedirectView.as_view(url="/for/communities/", permanent=True),
-    ),
-    path("use-cases/", landing_view, {"template_name": "zerver/use-cases.html"}),
-    path("self-hosting/", landing_view, {"template_name": "zerver/self-hosting.html"}),
-    path("security/", landing_view, {"template_name": "zerver/security.html"}),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english

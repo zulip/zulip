@@ -1,7 +1,7 @@
 # Setting up Zulip for a class
 
 Welcome to Zulip! This page will guide you through setting everything
-up for [teaching with Zulip](/for/education/). If you are using Zulip
+up for [teaching with Zulip](https://zulip.com/for/education/). If you are using Zulip
 for a different purpose, we recommend checking out the [Setting up
 your organization][setting-up] guide instead.
 
@@ -18,7 +18,7 @@ us know!
 
 ## Trying out Zulip
 
-You can start by reading about [Zulip for Education](/for/education/),
+You can start by reading about [Zulip for Education](https://zulip.com/for/education/),
 and how Zulip can become the communication hub for your class. Zulip
 is the only [modern team chat app](/features/) that is
 [ideal](/why-zulip/) for both live and asynchronous
@@ -53,7 +53,7 @@ ensure you can always move from our hosting to yours (and back).
 * Always updated to the latest version of Zulip.
 * Anyone can [start with Zulip Cloud Free](/new/), which works well for a typical class.
 * For large classes and departments, we offer [special Zulip for
-  Education pricing](/for/education/#feature-pricing), with the same
+  Education pricing](https://zulip.com/for/education/#feature-pricing), with the same
   features as Zulip Cloud Standard. You can always get started with
   Zulip Cloud Free, and upgrade down the line if needed.
 

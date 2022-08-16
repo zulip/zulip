@@ -1,7 +1,7 @@
 # Zulip Cloud billing
 
 This page answers some frequently asked questions about [Zulip Cloud plans and
-pricing](/plans). If you have any other questions, please don't hesitate to
+pricing](https://zulip.com/plans). If you have any other questions, please don't hesitate to
 reach out at sales@zulip.com.
 
 ## Differences between Zulip Cloud plans
