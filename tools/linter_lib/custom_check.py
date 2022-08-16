@@ -620,7 +620,7 @@ html_rules: List["Rule"] = [
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
         "exclude": {
             "templates/corporate/billing.html",
-            "templates/zerver/hello.html",
+            "templates/corporate/hello.html",
             "templates/corporate/upgrade.html",
             "templates/corporate/event_status.html",
         },
