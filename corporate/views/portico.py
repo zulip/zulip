@@ -19,7 +19,7 @@ def apps_view(request: HttpRequest, platform: Optional[str] = None) -> HttpRespo
     if settings.ZILENCER_ENABLED:
         return TemplateResponse(
             request,
-            "zerver/apps.html",
+            "corporate/apps.html",
         )
     return HttpResponseRedirect("https://zulip.com/apps/", status=301)
 
