@@ -70,7 +70,7 @@ landing_page_urls = [
     path("history/", landing_view, {"template_name": "corporate/history.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
-    path("security/", landing_view, {"template_name": "zerver/security.html"}),
+    path("security/", landing_view, {"template_name": "corporate/security.html"}),
     # /for pages
     path("use-cases/", landing_view, {"template_name": "corporate/for/use-cases.html"}),
     path(
