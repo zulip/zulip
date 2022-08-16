@@ -436,6 +436,9 @@ function update_rendered_drafts(has_drafts_from_conversation, has_other_drafts) 
 function show_scheduled_messages() {
     console.log('show scheduled messages')
 
+    $('.normal-drafts').removeClass('selected-tab')
+    $('.scheduled-messages').addClass('selected-tab')
+
     channel.get({
         url: "/json/scheduled_messages",
         success(data) {
@@ -447,7 +450,13 @@ function show_scheduled_messages() {
             const request = []
         
             for(const message of data.scheduled_messages) {
-                const stream_color = stream_data.get_color(message.stream);
+                let stream_color
+                let dark_background
+
+                if(message.stream) {
+                    stream_color = stream_data.get_color(message.stream);
+                    dark_background = color_class.get_css_class(stream_color)
+                }
 
                 const time = new Date(message.scheduled_timestamp);
 
@@ -456,6 +465,8 @@ function show_scheduled_messages() {
                 if (time_stamp === $t({defaultMessage: "Today"})) {
                     time_stamp = timerender.stringify_time(time);
                 }
+
+                console.log('recipient: ' + JSON.stringify(message.to, null, 2))
         
                 const message_template = render_scheduled_message({
                     is_stream: message.type === 'stream',
@@ -464,7 +475,8 @@ function show_scheduled_messages() {
                     time_stamp: time_stamp,
                     content: `<p>${message.content}</p>`,
                     stream_color: stream_color,
-                    dark_background: color_class.get_css_class(stream_color)
+                    dark_background: dark_background,
+                    recipients: recipients.full_name
                 })
                 // console.log('template: ', message_template)
         
@@ -572,6 +584,9 @@ export function launch() {
         });
 
         $(".normal-drafts").on("click", function () {
+            $('.scheduled-messages').removeClass('selected-tab')
+            $('.normal-drafts').addClass('selected-tab')
+
             const drafts = format_drafts(draft_model.get());
 
             let drafts_list = ''

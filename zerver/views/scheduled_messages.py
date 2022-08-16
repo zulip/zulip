@@ -15,6 +15,7 @@ from zerver.lib.drafts import (
 
 def fetch_scheduled_messages(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     user_scheduled_messages = ScheduledMessage.objects.filter(sender=user_profile)
+    print(user_scheduled_messages)
     scheduled_messages_dicts = [scheduled_message.to_dict() for scheduled_message in user_scheduled_messages]
     
     return json_success(request, data={"count": user_scheduled_messages.count(), "scheduled_messages": scheduled_messages_dicts})

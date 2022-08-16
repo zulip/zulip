@@ -4318,15 +4318,28 @@ class ScheduledMessage(models.Model):
         return f"<ScheduledMessage: {display_recipient} {self.subject} {self.sender} {self.scheduled_timestamp}>"
     
     def to_dict(self) -> Dict[str, Any]:
+        if self.recipient is None:
+            to = []
+        elif self.recipient.type == Recipient.STREAM:
+            to = [self.recipient.type_id]
+        else:
+            if self.recipient.type == Recipient.PERSONAL:
+                to = [self.recipient.type_id]
+            else:
+                to = []
+                for r in get_display_recipient(self.recipient):
+                    assert not isinstance(r, str)  # It will only be a string for streams
+                    if not r["id"] == self.sender.id:
+                        to.append(r["id"])
         return {
             "id": self.id,
             "sender": self.sender.id,
-            "recipient": self.recipient.__str__(),
+            "recipient": to,
             "type": self.recipient.type_name(),
             "subject": self.subject,
             "content": self.content,
             "sending_client": self.sending_client.__str__(),
-            "stream": self.stream.name,
+            "stream": self.stream.name if self.stream is not None else None,
             "realm": self.realm.__str__(),
             "scheduled_timestamp": self.scheduled_timestamp.__str__(),
             "delivered": self.delivered

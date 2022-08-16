@@ -111,26 +111,26 @@ export function schedule_message(request = compose.create_message_object(), succ
     const future_message = true;
     transmit.send_message(request, success, error, future_message);
 
-    console.log('request: ' + JSON.stringify(request, null, 2))
+    // console.log('request: ' + JSON.stringify(request, null, 2))
 
-    channel.post({
-        url: "/json/scheduled_messages",
-        data: {
-            scheduled_messages: JSON.stringify([{
-                type: request.type,
-                deliver_at: new Date(request.deliver_at).getTime() / 1000,
-                content: request.content,
-                to: request.to,
-                topic: request.topic,
-                sending_client: 1,
-                stream: request.stream,
-                realm_name: page_params.realm_name
-            }])
-        },
-        success(data) {
-            console.log("Data: ", JSON.stringify(data))
-        }
-    })
+    // channel.post({
+    //     url: "/json/scheduled_messages",
+    //     data: {
+    //         scheduled_messages: JSON.stringify([{
+    //             type: request.type,
+    //             deliver_at: new Date(request.deliver_at).getTime() / 1000,
+    //             content: request.content,
+    //             to: request.to,
+    //             topic: request.topic,
+    //             sending_client: 1,
+    //             stream: request.stream,
+    //             realm_name: page_params.realm_name
+    //         }])
+    //     },
+    //     success(data) {
+    //         console.log("Data: ", JSON.stringify(data))
+    //     }
+    // })
 }
 
 export function do_set_reminder_for_message(message_id, timestamp) {
