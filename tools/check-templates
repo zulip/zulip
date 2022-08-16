@@ -52,8 +52,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
     logging.basicConfig(format="%(levelname)s:%(message)s")
     templates = sorted(fn for fn in templates)
     # Use of lodash templates <%= %>.
-    if "templates/zerver/team.html" in templates:
-        templates.remove("templates/zerver/team.html")
+    if "templates/corporate/team.html" in templates:
+        templates.remove("templates/corporate/team.html")
 
     def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
         template_id_dict = build_id_dict(templates)

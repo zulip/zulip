@@ -85,7 +85,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
 
     return TemplateResponse(
         request,
-        "zerver/team.html",
+        "corporate/team.html",
         context={
             "page_params": {
                 "contributors": data["contributors"],
