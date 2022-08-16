@@ -1,6 +1,6 @@
 * Zulip is [100% open-source software][zulip-github], with no "open core" catch.
   When you self-host Zulip, you get the same software as [Zulip Cloud
-  Standard](/plans/) customers.
+  Standard](https://zulip.com/plans/) customers.
 
 * Retain full control over your data and simplify compliance by self-hosting
   Zulip behind your firewall.
