@@ -630,9 +630,6 @@ i18n_urls = [
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
     path(
-        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
-    ),
-    path(
         "development-community/",
         landing_view,
         {"template_name": "zerver/development-community.html"},
