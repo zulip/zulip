@@ -175,33 +175,43 @@ def render_block_element(element: WildValue) -> str:
 
 def render_attachment(attachment: WildValue) -> str:
     # https://api.slack.com/reference/messaging/attachments
+    # Slack recommends the usage of "blocks" even within attachments; the
+    # rest of the fields we handle here are legacy fields. These fields are
+    # optional and may contain null values.
     pieces = []
-    if "title" in attachment:
+    if "title" in attachment and attachment["title"]:
         title = attachment["title"].tame(check_string)
-        if "title_link" in attachment:
+        if "title_link" in attachment and attachment["title_link"]:
             title_link = attachment["title_link"].tame(check_url)
             pieces.append(f"## [{title}]({title_link})")
         else:
             pieces.append(f"## {title}")
-    if "pretext" in attachment:
+    if "pretext" in attachment and attachment["pretext"]:
         pieces.append(attachment["pretext"].tame(check_string))
-    if "text" in attachment:
+    if "text" in attachment and attachment["text"]:
         pieces.append(attachment["text"].tame(check_string))
     if "fields" in attachment:
         fields = []
         for field in attachment["fields"]:
-            title = field["title"].tame(check_string)
-            value = field["value"].tame(check_string)
-            fields.append(f"*{title}*: {value}")
+            if field["title"] and field["value"]:
+                title = field["title"].tame(check_string)
+                value = field["value"].tame(check_string)
+                fields.append(f"*{title}*: {value}")
+            elif field["title"]:
+                title = field["title"].tame(check_string)
+                fields.append(f"*{title}*")
+            elif field["value"]:
+                value = field["value"].tame(check_string)
+                fields.append(f"{value}")
         pieces.append("\n".join(fields))
     if "blocks" in attachment and attachment["blocks"]:
         for block in attachment["blocks"]:
             pieces.append(render_block(block))
-    if "image_url" in attachment:
+    if "image_url" in attachment and attachment["image_url"]:
         pieces.append("[]({})".format(attachment["image_url"].tame(check_url)))
-    if "footer" in attachment:
+    if "footer" in attachment and attachment["footer"]:
         pieces.append(attachment["footer"].tame(check_string))
-    if "ts" in attachment:
+    if "ts" in attachment and attachment["ts"]:
         time = attachment["ts"].tame(check_int)
         pieces.append(f"<time:{time}>")
 
