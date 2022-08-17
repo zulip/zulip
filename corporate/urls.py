@@ -6,6 +6,14 @@ from django.views.generic import RedirectView, TemplateView
 
 from corporate.views.billing_page import billing_home, update_plan
 from corporate.views.event_status import event_status, event_status_page
+from corporate.views.portico import (
+    app_download_link_redirect,
+    apps_view,
+    hello_view,
+    landing_view,
+    plans_view,
+    team_view,
+)
 from corporate.views.session import (
     start_card_update_stripe_session,
     start_retry_payment_intent_session,
@@ -14,14 +22,6 @@ from corporate.views.support import support_request
 from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
-from zerver.views.portico import (
-    app_download_link_redirect,
-    apps_view,
-    hello_view,
-    landing_view,
-    plans_view,
-    team_view,
-)
 
 i18n_urlpatterns: Any = [
     # Zephyr/MIT
