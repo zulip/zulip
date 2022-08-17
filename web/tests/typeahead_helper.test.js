@@ -671,6 +671,12 @@ test("highlight_with_escaping", () => {
     expected = "<strong>development h</strong>elp";
     result = highlight(query, item);
     assert.equal(result, expected);
+
+    item = "Prefix notprefix prefix";
+    query = "pre";
+    expected = "<strong>Pre</strong>fix notprefix <strong>pre</strong>fix";
+    result = highlight(query, item);
+    assert.equal(result, expected);
 });
 
 test("render_person when emails hidden", ({mock_template}) => {
