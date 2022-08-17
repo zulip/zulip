@@ -588,10 +588,6 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> Non
     RateLimitedUser(user, domain=domain).rate_limit_request(request)
 
 
-def rate_limit_ip(request: HttpRequest, ip_addr: str, domain: str) -> None:
-    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
-
-
 def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
     if not should_rate_limit(request):
         return
@@ -619,7 +615,7 @@ def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
         # service doesn't silently remove this functionality.
         logger.warning("Failed to fetch TOR exit node list: %s", err)
         pass
-    rate_limit_ip(request, ip_addr, domain=domain)
+    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
 
 
 def should_rate_limit(request: HttpRequest) -> bool:
