@@ -8,6 +8,14 @@ export function set_current(msg_list) {
     current = msg_list;
 }
 
+export function all_rendered_message_lists() {
+    const rendered_message_lists = [home];
+    if (current !== home) {
+        rendered_message_lists.push(current);
+    }
+    return rendered_message_lists;
+}
+
 export function initialize() {
     home = new message_list.MessageList({
         table_name: "zhome",

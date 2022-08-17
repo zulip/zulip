@@ -33,9 +33,8 @@ export function mark_all_as_read() {
 }
 
 function process_newly_read_message(message, options) {
-    message_lists.home.show_message_as_read(message, options);
-    if (message_list.narrowed) {
-        message_list.narrowed.show_message_as_read(message, options);
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        msg_list.show_message_as_read(message, options);
     }
     notifications.close_notification(message);
     recent_topics_ui.update_topic_unread_count(message);

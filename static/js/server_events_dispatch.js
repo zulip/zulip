@@ -21,7 +21,6 @@ import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_topics_ui from "./muted_topics_ui";
@@ -642,9 +641,8 @@ export function dispatch_normal_event(event) {
             }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
-                message_lists.home.rerender();
-                if (message_lists.current === message_list.narrowed) {
-                    message_list.narrowed.rerender();
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
                 }
             }
             if (event.property === "high_contrast_mode") {
@@ -695,9 +693,8 @@ export function dispatch_normal_event(event) {
                 settings_display.report_emojiset_change(settings_display.user_settings_panel);
 
                 // Rerender the whole message list UI
-                message_lists.home.rerender();
-                if (message_lists.current === message_list.narrowed) {
-                    message_list.narrowed.rerender();
+                for (const msg_list of message_lists.all_rendered_message_lists()) {
+                    msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
                 activity.build_user_sidebar();

@@ -9,7 +9,6 @@ import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
@@ -327,10 +326,8 @@ export function edit_locally(message, request) {
     // We don't have logic to adjust unread counts, because message
     // reaching this code path must either have been sent by us or the
     // topic isn't being edited, so unread counts can't have changed.
-
-    message_lists.home.view.rerender_messages([message]);
-    if (message_lists.current === message_list.narrowed) {
-        message_list.narrowed.view.rerender_messages([message]);
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        msg_list.view.rerender_messages([message]);
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
@@ -367,13 +364,11 @@ export function update_message_lists({old_id, new_id}) {
     if (all_messages_data !== undefined) {
         all_messages_data.change_message_id(old_id, new_id);
     }
-    for (const msg_list of [message_lists.home, message_list.narrowed]) {
-        if (msg_list !== undefined) {
-            msg_list.change_message_id(old_id, new_id);
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        msg_list.change_message_id(old_id, new_id);
 
-            if (msg_list.view !== undefined) {
-                msg_list.view.change_message_id(old_id, new_id);
-            }
+        if (msg_list.view !== undefined) {
+            msg_list.view.change_message_id(old_id, new_id);
         }
     }
 }
@@ -434,9 +429,8 @@ export function process_from_server(messages) {
         // changes in either the rounded timestamp we display or the
         // message content, but in practice, there's no harm to just
         // doing it unconditionally.
-        message_lists.home.view.rerender_messages(msgs_to_rerender);
-        if (message_lists.current === message_list.narrowed) {
-            message_list.narrowed.view.rerender_messages(msgs_to_rerender);
+        for (const msg_list of message_lists.all_rendered_message_lists()) {
+            msg_list.view.rerender_messages(msgs_to_rerender);
         }
     }
 

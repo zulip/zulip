@@ -9,13 +9,13 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const condense = mock_esm("../../static/js/condense");
 const message_edit = mock_esm("../../static/js/message_edit");
-const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const notifications = mock_esm("../../static/js/notifications");
 const pm_list = mock_esm("../../static/js/pm_list");
 const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ui = mock_esm("../../static/js/unread_ui");
 message_lists.current = {};
+message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
@@ -96,6 +96,7 @@ run_test("update_messages", () => {
         rendered_mgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };
+    message_lists.home = message_lists.current;
 
     const side_effects = [
         [condense, "un_cache_message_content_height"],
@@ -109,7 +110,6 @@ run_test("update_messages", () => {
     const helper = test_helper(side_effects);
 
     page_params.realm_allow_edit_history = false;
-    message_list.narrowed = "stub-to-ignore";
 
     const $message_edit_history_modal = $.create("#message-edit-history");
     const $modal = $.create("micromodal").addClass("modal--open");

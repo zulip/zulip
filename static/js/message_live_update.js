@@ -1,13 +1,9 @@
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as people from "./people";
 
 export function rerender_messages_view() {
-    for (const list of [message_lists.home, message_list.narrowed]) {
-        if (list === undefined) {
-            continue;
-        }
+    for (const list of message_lists.all_rendered_message_lists()) {
         if (list.table_name !== undefined) {
             list.rerender_view();
         }
@@ -15,8 +11,8 @@ export function rerender_messages_view() {
 }
 
 function rerender_messages_view_for_user(user_id) {
-    for (const list of [message_lists.home, message_list.narrowed]) {
-        if (list?.table_name === undefined) {
+    for (const list of message_lists.all_rendered_message_lists()) {
+        if (list.table_name === undefined) {
             continue;
         }
         const messages = list.data.get_messages_sent_by_user(user_id);

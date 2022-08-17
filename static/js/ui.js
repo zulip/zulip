@@ -2,7 +2,6 @@ import $ from "jquery";
 import SimpleBar from "simplebar";
 
 import {$t} from "./i18n";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 
 // What, if anything, obscures the home tab?
@@ -49,11 +48,8 @@ export function reset_scrollbar($element) {
 }
 
 function update_message_in_all_views(message_id, callback) {
-    for (const list of [message_lists.home, message_list.narrowed]) {
-        if (list === undefined) {
-            continue;
-        }
-        const $row = list.get_row(message_id);
+    for (const msg_list of message_lists.all_rendered_message_lists()) {
+        const $row = msg_list.get_row(message_id);
         if ($row === undefined) {
             // The row may not exist, e.g. if you do an action on a message in
             // a narrowed view

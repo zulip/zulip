@@ -506,9 +506,8 @@ export function update_messages(events) {
         // edited. We should replace any_message_content_edited with
         // passing two sets to rerender_messages; the set of all that
         // are changed, and the set with content changes.
-        message_lists.current.view.rerender_messages(msgs_to_rerender, any_message_content_edited);
-        if (message_lists.current === message_list.narrowed) {
-            message_lists.home.view.rerender_messages(msgs_to_rerender);
+        for (const list of message_lists.all_rendered_message_lists()) {
+            list.view.rerender_messages(msgs_to_rerender, any_message_content_edited);
         }
     }
 
@@ -525,10 +524,7 @@ export function update_messages(events) {
 
 export function remove_messages(message_ids) {
     all_messages_data.remove(message_ids);
-    for (const list of [message_lists.home, message_list.narrowed]) {
-        if (list === undefined) {
-            continue;
-        }
+    for (const list of message_lists.all_rendered_message_lists()) {
         list.remove_and_rerender(message_ids);
     }
     recent_senders.update_topics_of_deleted_message_ids(message_ids);

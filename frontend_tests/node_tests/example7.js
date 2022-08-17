@@ -50,7 +50,6 @@ const {run_test} = require("../zjsunit/test");
 */
 
 const channel = mock_esm("../../static/js/channel");
-const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_viewport = mock_esm("../../static/js/message_viewport");
 const notifications = mock_esm("../../static/js/notifications");
@@ -58,6 +57,7 @@ const unread_ui = mock_esm("../../static/js/unread_ui");
 
 message_lists.current = {};
 message_lists.home = {};
+message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const message_store = zrequire("message_store");
 const recent_topics_util = zrequire("recent_topics_util");
@@ -102,13 +102,11 @@ run_test("unread_ops", ({override}) => {
     // Make our "test" message appear visible.
     override(message_viewport, "bottom_message_visible", () => true);
 
-    // Make us not be in a narrow (somewhat hackily).
-    message_list.narrowed = undefined;
-
     // Set message_lists.current containing messages that can be marked read
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
+    override(message_lists.current, "show_message_as_read", () => {});
     override(message_lists.home, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
