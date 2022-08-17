@@ -657,7 +657,7 @@ class RateLimitTestCase(ZulipTestCase):
         with mock.patch(
             "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
-            "zerver.lib.rate_limiter.rate_limit_ip"
+            "zerver.lib.rate_limiter.RateLimitedIPAddr"
         ) as rate_limit_ip_mock:
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_ip_mock.called, expect_rate_limit)
@@ -673,7 +673,7 @@ class RateLimitTestCase(ZulipTestCase):
         with mock.patch(
             "zerver.lib.rate_limiter.RateLimitedUser"
         ) as rate_limit_user_mock, mock.patch(
-            "zerver.lib.rate_limiter.rate_limit_ip"
+            "zerver.lib.rate_limiter.RateLimitedIPAddr"
         ) as rate_limit_ip_mock:
             self.assert_in_success_response(["some value"], view_func(request))
         self.assertEqual(rate_limit_user_mock.called, expect_rate_limit)
