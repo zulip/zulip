@@ -359,7 +359,7 @@ run_test("spoiler-header-empty-fill", () => {
     // Test that an empty header gets the default text applied (through i18n filter).
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
-    $header.html("");
+    $header.empty();
     rm.update_elements($content);
     assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
 });

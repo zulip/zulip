@@ -286,7 +286,7 @@ export function add_custom_profile_fields_to_settings() {
     }
 
     const element_id = "#profile-settings .custom-profile-fields-form";
-    $(element_id).html("");
+    $(element_id).empty();
 
     append_custom_profile_fields(element_id, people.my_current_user_id());
     initialize_custom_user_type_fields(element_id, people.my_current_user_id(), true, true);

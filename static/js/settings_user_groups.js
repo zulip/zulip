@@ -31,7 +31,7 @@ export function reload() {
     }
 
     const $user_groups_section = $("#user-groups").expectOne();
-    $user_groups_section.html("");
+    $user_groups_section.empty();
     populate_user_groups();
 }
 

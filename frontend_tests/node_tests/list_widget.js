@@ -44,6 +44,7 @@ const ListWidget = zrequire("list_widget");
 
 function make_container() {
     const $container = {};
+    $container.empty = () => {};
 
     // Make our append function just set a field we can
     // check in our tests.
@@ -159,9 +160,6 @@ run_test("scrolling", () => {
         $simplebar_container: $scroll_container,
     };
 
-    $container.html = (html) => {
-        assert.equal(html, "");
-    };
     ListWidget.create($container, items, opts);
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
@@ -213,9 +211,6 @@ run_test("not_scrolling", () => {
         get_min_load_count,
     };
 
-    $container.html = (html) => {
-        assert.equal(html, "");
-    };
     ListWidget.create($container, items, opts);
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
@@ -251,9 +246,6 @@ run_test("filtering", () => {
         $simplebar_container: $scroll_container,
     };
 
-    $container.html = (html) => {
-        assert.equal(html, "");
-    };
     const widget = ListWidget.create($container, list, opts);
 
     let expected_html =
@@ -287,7 +279,6 @@ run_test("filtering", () => {
 run_test("no filtering", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
-    $container.html = () => {};
 
     let callback_called = false;
     // Opts does not require a filter key.
@@ -365,9 +356,6 @@ run_test("wire up filter element", () => {
     const $scroll_container = make_scroll_container();
     const $filter_element = make_filter_element();
 
-    // We don't care about what gets drawn initially.
-    $container.html = () => {};
-
     const opts = {
         filter: {
             filterer: (list, value) => list.filter((item) => item.toLowerCase().includes(value)),
@@ -388,8 +376,7 @@ run_test("sorting", () => {
     const $sort_container = make_sort_container();
 
     let cleared;
-    $container.html = (html) => {
-        assert.equal(html, "");
+    $container.empty = () => {
         cleared = true;
     };
 
@@ -487,7 +474,6 @@ run_test("sorting", () => {
 run_test("custom sort", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
-    $container.html = () => {};
 
     const n42 = {x: 6, y: 7};
     const n43 = {x: 1, y: 43};
@@ -538,7 +524,6 @@ run_test("clear_event_handlers", () => {
 
     // We don't care about actual data for this test.
     const list = [];
-    $container.html = () => {};
 
     const opts = {
         name: "list-we-create-twice",
@@ -613,7 +598,6 @@ run_test("errors", () => {
     });
     blueslip.reset();
 
-    $container.html = () => {};
     blueslip.expect("error", "List item is not a string: 999");
     ListWidget.create($container, list, {
         modifier: () => 999,
@@ -647,7 +631,6 @@ run_test("sort helpers", () => {
 run_test("replace_list_data w/filter update", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
-    $container.html = () => {};
 
     const list = [1, 2, 3, 4];
     let num_updates = 0;
@@ -722,7 +705,6 @@ run_test("render item", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
     const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
-    $container.html = () => {};
     let called = false;
     $scroll_container.find = (query) => {
         const expected_queries = [
@@ -840,7 +822,6 @@ run_test("Multiselect dropdown retain_selected_items", () => {
     const list = ["one", "two", "three", "four"].map((x) => ({name: x, value: x}));
     const data = ["one"]; // Data initially selected.
 
-    $container.html = () => {};
     $container.find = (elem) => DropdownItem(elem);
 
     // We essentially create fake jQuery functions

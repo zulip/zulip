@@ -278,7 +278,7 @@ export function create($container, list, opts) {
     };
 
     widget.clear = function () {
-        $container.html("");
+        $container.empty();
         meta.offset = 0;
     };
 

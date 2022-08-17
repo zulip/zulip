@@ -973,7 +973,7 @@ export function register_click_handlers() {
             emoji_name: "",
             emoji_code: "",
             success() {
-                $(".info_popover_actions #status_message").html("");
+                $(".info_popover_actions #status_message").empty();
             },
         });
     });

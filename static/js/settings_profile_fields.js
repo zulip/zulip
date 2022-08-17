@@ -153,7 +153,7 @@ function clear_form_data() {
     // Set default type "Short text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from select field form
-    $("#profile_field_choices").html("");
+    $("#profile_field_choices").empty();
     create_choice_row($("#profile_field_choices"));
     update_choice_delete_btn($("#profile_field_choices"), false);
     $("#profile_field_choices_row").hide();
@@ -314,7 +314,7 @@ function set_up_select_field_edit_form($profile_field_form, field_data) {
     // Re-render field choices in edit form to load initial select data
     const $choice_list = $profile_field_form.find(".edit_profile_field_choices_container");
     $choice_list.off();
-    $choice_list.html("");
+    $choice_list.empty();
 
     const choices_data = parse_field_choices_from_field_data(field_data);
 
