@@ -35,8 +35,12 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
-    await page.waitForSelector("#settings_page", {visible: true});
-    await page.waitForFunction(() => location.href.includes("/#settings/")); // eslint-disable-line no-undef
+    const profile_section_tab_selector = "li[data-section='profile']";
+    await page.waitForSelector(profile_section_tab_selector, {visible: true});
+    await page.click(profile_section_tab_selector);
+    await page.waitForFunction(
+        () => document.activeElement?.getAttribute("data-section") === "profile",
+    );
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
