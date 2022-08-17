@@ -128,8 +128,24 @@ exports.fixtures = {
     custom_profile_fields: {
         type: "custom_profile_fields",
         fields: [
-            {id: 1, name: "teams", type: 1, hint: "", field_data: "", order: 1},
-            {id: 2, name: "hobbies", type: 1, hint: "", field_data: "", order: 2},
+            {
+                id: 1,
+                name: "teams",
+                type: 1,
+                hint: "",
+                field_data: "",
+                order: 1,
+                display_in_profile_summary: false,
+            },
+            {
+                id: 2,
+                name: "hobbies",
+                type: 1,
+                hint: "",
+                field_data: "",
+                order: 2,
+                display_in_profile_summary: false,
+            },
         ],
     },
 
