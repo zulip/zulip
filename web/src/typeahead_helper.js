@@ -57,21 +57,12 @@ export function highlight_with_escaping_and_regex(regex, item) {
 }
 
 export function make_query_highlighter(query) {
-    let i;
     query = query.toLowerCase();
 
     const regex = build_highlight_regex(query);
 
     return function (phrase) {
-        let result = "";
-        const parts = phrase.split(" ");
-        for (i = 0; i < parts.length; i += 1) {
-            if (i > 0) {
-                result += " ";
-            }
-            result += highlight_with_escaping_and_regex(regex, parts[i]);
-        }
-        return result;
+        return highlight_with_escaping_and_regex(regex, phrase);
     };
 }
 
