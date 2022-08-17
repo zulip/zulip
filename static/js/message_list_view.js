@@ -700,7 +700,7 @@ export class MessageListView {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
 
-        if (messages.length === 0 || this.table_name === undefined) {
+        if (messages.length === 0) {
             return undefined;
         }
 
@@ -1082,10 +1082,6 @@ export class MessageListView {
     }
 
     maybe_rerender() {
-        if (this.table_name === undefined) {
-            return false;
-        }
-
         const selected_idx = this.list.selected_idx();
 
         // We rerender under the following conditions:

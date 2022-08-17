@@ -4,17 +4,12 @@ import * as people from "./people";
 
 export function rerender_messages_view() {
     for (const list of message_lists.all_rendered_message_lists()) {
-        if (list.table_name !== undefined) {
-            list.rerender_view();
-        }
+        list.rerender_view();
     }
 }
 
 function rerender_messages_view_for_user(user_id) {
     for (const list of message_lists.all_rendered_message_lists()) {
-        if (list.table_name === undefined) {
-            continue;
-        }
         const messages = list.data.get_messages_sent_by_user(user_id);
         if (messages.length === 0) {
             continue;

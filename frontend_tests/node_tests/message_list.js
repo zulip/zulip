@@ -27,6 +27,17 @@ const narrow_state = mock_esm("../../static/js/narrow_state");
 const stream_data = mock_esm("../../static/js/stream_data");
 
 const {MessageList} = zrequire("message_list");
+function MessageListView() {
+    return {
+        maybe_rerender: noop,
+        append: noop,
+        prepend: noop,
+        clear_rendering_state: noop,
+    };
+}
+mock_esm("../../static/js/message_list_view", {
+    MessageListView,
+});
 const {Filter} = zrequire("filter");
 
 run_test("basics", ({override}) => {

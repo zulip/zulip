@@ -83,8 +83,18 @@ mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
-message_lists.current = {};
-message_lists.home = {};
+message_lists.current = {
+    rerender_view: noop,
+    data: {
+        get_messages_sent_by_user: () => [],
+    },
+};
+message_lists.home = {
+    rerender_view: noop,
+    data: {
+        get_messages_sent_by_user: () => [],
+    },
+};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 // page_params is highly coupled to dispatching now

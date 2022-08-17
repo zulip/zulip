@@ -366,10 +366,7 @@ export function update_message_lists({old_id, new_id}) {
     }
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.change_message_id(old_id, new_id);
-
-        if (msg_list.view !== undefined) {
-            msg_list.view.change_message_id(old_id, new_id);
-        }
+        msg_list.view.change_message_id(old_id, new_id);
     }
 }
 

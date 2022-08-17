@@ -10,11 +10,20 @@ const $ = require("../zjsunit/zjquery");
 mock_esm("../../static/js/recent_topics_util", {
     is_visible: () => false,
 });
-
+const noop = () => {};
 // Mocking and stubbing things
 set_global("document", "document-stub");
 const message_lists = mock_esm("../../static/js/message_lists");
-
+function MessageListView() {
+    return {
+        maybe_rerender: noop,
+        append: noop,
+        prepend: noop,
+    };
+}
+mock_esm("../../static/js/message_list_view", {
+    MessageListView,
+});
 // Code we're actually using/testing
 const compose_closed_ui = zrequire("compose_closed_ui");
 const {Filter} = zrequire("filter");
