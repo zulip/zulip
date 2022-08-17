@@ -744,7 +744,7 @@ def authenticated_rest_api_view(
 
             # Now we try to do authentication or die
             try:
-                profile = validate_api_key(
+                user_profile = validate_api_key(
                     request,
                     role,
                     api_key,
@@ -755,8 +755,8 @@ def authenticated_rest_api_view(
                 raise UnauthorizedError(e.msg)
             try:
                 if not skip_rate_limiting:
-                    rate_limit_user(request, profile, domain="api_by_user")
-                return view_func(request, profile, *args, **kwargs)
+                    rate_limit_user(request, user_profile, domain="api_by_user")
+                return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
                 if not webhook_client_name:
                     raise err
