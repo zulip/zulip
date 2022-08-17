@@ -59,7 +59,7 @@ export class BuddyList extends BuddyListConf {
 
     populate(opts) {
         this.render_count = 0;
-        this.$container.html("");
+        this.$container.empty();
 
         // We rely on our caller to give us items
         // in already-sorted order.

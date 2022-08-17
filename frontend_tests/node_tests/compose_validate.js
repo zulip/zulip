@@ -791,7 +791,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     compose_validate.clear_topic_resolved_warning();
     // Hack to make this empty for zjquery; this is conceptually done
     // in the previous line.
-    $error_area.html("");
+    $error_area.empty();
     assert.ok(!$error_area.visible());
 
     compose_state.set_message_type("stream");

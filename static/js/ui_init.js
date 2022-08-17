@@ -117,7 +117,7 @@ function message_unhover() {
     if ($current_message_hover === undefined) {
         return;
     }
-    $current_message_hover.find("span.edit_content").html("");
+    $current_message_hover.find("span.edit_content").empty();
     $current_message_hover = undefined;
 }
 

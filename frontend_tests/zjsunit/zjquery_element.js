@@ -59,6 +59,7 @@ function FakeElement(selector, opts) {
         empty(arg) {
             if (arg === undefined) {
                 find_results.clear();
+                html = "";
             }
             return $self;
         },

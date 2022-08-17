@@ -302,6 +302,7 @@ test("handlers", ({override, mock_template}) => {
             keys: [me.user_id, alice.user_id, fred.user_id],
         });
         activity.set_cursor_and_filter();
+        $("#user_presences").empty = () => {};
 
         $me_li = $.create("me stub");
         $alice_li = $.create("alice stub");

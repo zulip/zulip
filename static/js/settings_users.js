@@ -588,7 +588,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
         }
 
         const element = "#edit-user-form .custom-profile-field-form";
-        $(element).html("");
+        $(element).empty();
         settings_account.append_custom_profile_fields(element, user_id);
         settings_account.initialize_custom_date_type_fields(element);
         fields_user_pills = settings_account.initialize_custom_user_type_fields(

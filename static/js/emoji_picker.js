@@ -337,7 +337,7 @@ function round_off_to_previous_multiple(number_to_round, multiple) {
 }
 
 function reset_emoji_showcase() {
-    $(".emoji-showcase-container").html("");
+    $(".emoji-showcase-container").empty();
 }
 
 function update_emoji_showcase($focused_emoji) {
