@@ -287,10 +287,7 @@ def rewrite_local_links_to_relative(db_data: Optional[DbData], link: str) -> str
 
     if db_data:
         realm_uri_prefix = db_data.realm_uri + "/"
-        if (
-            link.startswith(realm_uri_prefix)
-            and urllib.parse.urljoin(realm_uri_prefix, link[len(realm_uri_prefix) :]) == link
-        ):
+        if link.startswith((realm_uri_prefix + "#", realm_uri_prefix + "user_uploads/")):
             return link[len(realm_uri_prefix) :]
 
     return link
@@ -1218,9 +1215,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if uncle_link not in parent_links:
                 return insertion_index
 
-    def is_absolute_url(self, url: str) -> bool:
-        return bool(urllib.parse.urlparse(url).netloc)
-
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1271,12 +1265,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
-            if not self.is_absolute_url(url):
-                if self.is_image(url):
-                    self.handle_image_inlining(root, found_url)
-                # We don't have a strong use case for doing URL preview for relative links.
-                continue
-
             dropbox_image = self.dropbox_image(url)
             if dropbox_image is not None:
                 class_attr = "message_inline_ref"
@@ -1303,6 +1291,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         result=(image_source, image_source),
                     )
                 self.handle_image_inlining(root, found_url)
+                continue
+
+            netloc = urlsplit(url).netloc
+            if netloc == "" or (
+                self.md.zulip_realm is not None and netloc == self.md.zulip_realm.host
+            ):
+                # We don't have a strong use case for doing URL preview for relative links.
                 continue
 
             if get_tweet_id(url) is not None:
