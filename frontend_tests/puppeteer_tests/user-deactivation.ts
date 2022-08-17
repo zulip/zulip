@@ -79,9 +79,13 @@ async function test_deactivated_users_section(page: Page): Promise<void> {
     await page.waitForSelector(deactivated_users_section, {visible: true});
     await page.click(deactivated_users_section);
 
-    await page.waitForSelector(
-        "#admin_deactivated_users_table " + cordelia_user_row + " .reactivate",
-        {visible: true},
+    // Instead of waiting for reactivate button using the `waitForSelector` function,
+    // we wait until the input is focused because the `waitForSelector` function
+    // doesn't guarantee that element is interactable.
+    await page.waitForSelector("input[aria-label='Filter deactivated users']", {visible: true});
+    await page.click("input[aria-label='Filter deactivated users']");
+    await page.waitForFunction(
+        () => document.activeElement?.classList?.contains("search") === true,
     );
     await page.click("#admin_deactivated_users_table " + cordelia_user_row + " .reactivate");
 
@@ -134,7 +138,4 @@ async function user_deactivation_test(page: Page): Promise<void> {
 
 // Test temporarily disabled due to nondeterminsitic failures
 
-// eslint-disable-next-line no-constant-condition
-if (false) {
-    common.run_test(user_deactivation_test);
-}
+common.run_test(user_deactivation_test);
