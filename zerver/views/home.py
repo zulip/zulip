@@ -115,7 +115,11 @@ def home(request: HttpRequest) -> HttpResponse:
 
     # If settings.ROOT_DOMAIN_LANDING_PAGE and this is the root
     # domain, send the user the landing page.
-    if settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+    if (
+        settings.ROOT_DOMAIN_LANDING_PAGE
+        and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        and settings.CORPORATE_ENABLED
+    ):
         return hello_view(request)
 
     realm = get_realm_from_request(request)
