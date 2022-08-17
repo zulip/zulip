@@ -379,7 +379,7 @@ class AboutPageTest(ZulipTestCase):
         self.assert_in_success_response(["2017-11-20"], result)
         self.assert_in_success_response(["timabbott", "showell", "gnprice", "rishig"], result)
 
-        with mock.patch("zerver.views.portico.open", side_effect=FileNotFoundError) as m:
+        with mock.patch("corporate.views.portico.open", side_effect=FileNotFoundError) as m:
             result = self.client_get("/team/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(["Never ran"], result)
@@ -556,7 +556,7 @@ class AppsPageTest(ZulipTestCase):
     def test_app_download_link_view(self) -> None:
         return_value = "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
         with mock.patch(
-            "zerver.views.portico.get_latest_github_release_download_link_for_platform",
+            "corporate.views.portico.get_latest_github_release_download_link_for_platform",
             return_value=return_value,
         ) as m:
             result = self.client_get("/apps/download/windows")
