@@ -2760,11 +2760,23 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "http://zulip.testserver/#narrow/stream/999-hello"
 
+        msg = "http://zulip.testserver/#narrow/stream/999-hello"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
             '<p><a href="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>',
+        )
+
+        msg = f"http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt</a></p>',
+        )
+
+        msg = "http://zulip.testserver/not:relative"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="http://zulip.testserver/not:relative">http://zulip.testserver/not:relative</a></p>',
         )
 
     def test_relative_link_streams_page(self) -> None:
@@ -2782,11 +2794,23 @@ class MarkdownTest(ZulipTestCase):
         realm = get_realm("zulip")
         sender_user_profile = self.example_user("othello")
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
 
+        msg = "[hello](http://zulip.testserver/#narrow/stream/999-hello)"
         self.assertEqual(
             markdown_convert(msg, message_realm=realm, message=message).rendered_content,
             '<p><a href="#narrow/stream/999-hello">hello</a></p>',
+        )
+
+        msg = f"[hello](http://zulip.testserver/user_uploads/{realm.id}/ff/file.txt)"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            f'<p><a href="user_uploads/{realm.id}/ff/file.txt">hello</a></p>',
+        )
+
+        msg = "[hello](http://zulip.testserver/not:relative)"
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm, message=message).rendered_content,
+            '<p><a href="http://zulip.testserver/not:relative">hello</a></p>',
         )
 
     def test_html_entity_conversion(self) -> None:
