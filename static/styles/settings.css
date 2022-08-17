@@ -213,8 +213,9 @@ h3,
         width: 20%;
     }
 
-    .admin-table-wrapper table.admin_profile_fields_table tr td {
-        width: 28%;
+    /* Limit the actions column to not using excessive width */
+    .admin-table-wrapper table.admin_profile_fields_table tr .actions {
+        width: 11%;
     }
 }
 
@@ -640,6 +641,10 @@ input[type="checkbox"] {
         margin-left: calc(10em + 20px) !important;
     }
     margin-bottom: 15px;
+
+    .checkbox {
+        margin-top: 5px;
+    }
 }
 
 .grey-box .wrapper {
@@ -1868,5 +1873,13 @@ $option_title_width: 180px;
         font-size: 1em;
         max-width: 160px;
         margin-top: 12px;
+    }
+}
+
+#add-new-custom-profile-field-form,
+#edit-custom-profile-field-form-modal {
+    .disabled_label {
+        cursor: default;
+        opacity: 0.7;
     }
 }

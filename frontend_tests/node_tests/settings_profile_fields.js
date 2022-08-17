@@ -13,10 +13,14 @@ const SHORT_TEXT_ID = 1;
 
 const SELECT_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
+const LONG_TEXT_ID = 2;
+const USER_FIELD_ID = 6;
 
 const SHORT_TEXT_NAME = "Short text";
 const SELECT_NAME = "Select";
 const EXTERNAL_ACCOUNT_NAME = "External account";
+const LONG_TEXT_NAME = "Long text";
+const USER_FIELD_NAME = "Person";
 
 const custom_profile_field_types = {
     SHORT_TEXT: {
@@ -30,6 +34,14 @@ const custom_profile_field_types = {
     EXTERNAL_ACCOUNT: {
         id: EXTERNAL_ACCOUNT_ID,
         name: EXTERNAL_ACCOUNT_NAME,
+    },
+    LONG_TEXT: {
+        id: LONG_TEXT_ID,
+        name: LONG_TEXT_NAME,
+    },
+    USER: {
+        id: USER_FIELD_ID,
+        name: USER_FIELD_NAME,
     },
 };
 
@@ -71,6 +83,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
     page_params.custom_profile_fields = {};
     page_params.realm_default_external_accounts = JSON.stringify({});
 
+    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = () => {};
+
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
         template_data.push(data);
@@ -84,6 +98,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
             name: "favorite color",
             hint: "blue?",
             field_data: "",
+            display_in_profile_summary: false,
+            valid_to_display_in_summary: true,
         },
         {
             type: SELECT_ID,
@@ -100,6 +116,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                     order: 1,
                 },
             ]),
+            display_in_profile_summary: false,
+            valid_to_display_in_summary: true,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -109,6 +127,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
             field_data: JSON.stringify({
                 subtype: "github",
             }),
+            display_in_profile_summary: true,
+            valid_to_display_in_summary: true,
         },
         {
             type: EXTERNAL_ACCOUNT_ID,
@@ -119,6 +139,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 subtype: "custom",
                 url_pattern: "https://chat.zulip.com/%(username)s",
             }),
+            display_in_profile_summary: true,
+            valid_to_display_in_summary: true,
         },
     ];
     const expected_template_data = [
@@ -131,6 +153,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 choices: [],
                 is_select_field: false,
                 is_external_account_field: false,
+                display_in_profile_summary: false,
+                valid_to_display_in_summary: true,
             },
             can_modify: true,
             realm_default_external_accounts: page_params.realm_default_external_accounts,
@@ -147,6 +171,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 ],
                 is_select_field: true,
                 is_external_account_field: false,
+                display_in_profile_summary: false,
+                valid_to_display_in_summary: true,
             },
             can_modify: true,
             realm_default_external_accounts: page_params.realm_default_external_accounts,
@@ -160,6 +186,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 choices: [],
                 is_select_field: false,
                 is_external_account_field: true,
+                display_in_profile_summary: true,
+                valid_to_display_in_summary: true,
             },
             can_modify: true,
             realm_default_external_accounts: page_params.realm_default_external_accounts,
@@ -173,6 +201,8 @@ run_test("populate_profile_fields", ({mock_template}) => {
                 choices: [],
                 is_select_field: false,
                 is_external_account_field: true,
+                display_in_profile_summary: true,
+                valid_to_display_in_summary: true,
             },
             can_modify: true,
             realm_default_external_accounts: page_params.realm_default_external_accounts,

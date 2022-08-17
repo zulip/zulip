@@ -367,4 +367,26 @@ export function initialize() {
         // Avoid inheriting `position: relative` CSS on the stream sorter widget.
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        // This tooltip appears on the "Summary" checkboxes in
+        // settings > custom profile fields, when at the limit of 2
+        // fields with display_in_profile_summary enabled.
+        target: [
+            "#profile-field-settings .display_in_profile_summary_tooltip",
+            "#edit-custom-profile-field-form-modal .display_in_profile_summary_tooltip",
+            "#add-new-custom-profile-field-form .display_in_profile_summary_tooltip",
+        ],
+        content: $t({
+            defaultMessage: "Only 2 custom profile fields can be displayed in the profile summary.",
+        }),
+        appendTo: () => document.body,
+        onTrigger(instance) {
+            // Sometimes just removing class is not enough to destroy/remove tooltip, especially in
+            // "Add a new custom profile field" form, so here we are manually calling `destroy()`.
+            if (!instance.reference.classList.contains("display_in_profile_summary_tooltip")) {
+                instance.destroy();
+            }
+        },
+    });
 }

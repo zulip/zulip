@@ -39,6 +39,7 @@ export function maybe_disable_widgets() {
         .prop("disabled", true);
 }
 
+let display_in_profile_summary_fields_limit_reached = false;
 let order = [];
 const field_types = page_params.custom_profile_field_types;
 
@@ -56,6 +57,14 @@ export function field_type_id_to_string(type_id) {
         }
     }
     return undefined;
+}
+
+// Checking custom profile field type is valid for showing display in profile summary checkbox field.
+function is_valid_to_display_in_summary(field_type) {
+    if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
+        return false;
+    }
+    return true;
 }
 
 function update_profile_fields_table_element() {
@@ -206,8 +215,9 @@ function set_up_create_field_form() {
     $("#dialog_error").hide();
     const $field_elem = $("#profile_field_external_accounts");
     const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
+    const profile_field_type = Number.parseInt($("#profile_field_type").val(), 10);
 
-    if (Number.parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
+    if (profile_field_type === field_types.EXTERNAL_ACCOUNT.id) {
         $field_elem.show();
         const $profile_field_external_account_type = $(
             "#profile_field_external_accounts_type",
@@ -229,6 +239,13 @@ function set_up_create_field_form() {
         $("#profile_field_hint").prop("disabled", false);
         $field_url_pattern_elem.hide();
         $field_elem.hide();
+    }
+
+    // Not showing "display in profile summary" option for long text/user profile field.
+    if (is_valid_to_display_in_summary(profile_field_type)) {
+        $("#profile_field_display_in_profile_summary").closest(".input-group").show();
+    } else {
+        $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
     }
 }
 
@@ -261,6 +278,9 @@ function open_custom_profile_field_form_modal() {
             hint: $("#profile_field_hint").val(),
             field_type,
             field_data: JSON.stringify(field_data),
+            display_in_profile_summary: $("#profile_field_display_in_profile_summary").is(
+                ":checked",
+            ),
         };
         const url = "/json/realm/profile_fields";
         const opts = {
@@ -275,6 +295,22 @@ function open_custom_profile_field_form_modal() {
         set_up_select_field();
         set_up_external_account_field();
         clear_form_data();
+
+        // If we already have 2 custom profile fields configured to be
+        // displayed in the user profile summary, disable the input to
+        // change it.
+        $("#add-new-custom-profile-field-form #profile_field_display_in_profile_summary").prop(
+            "disabled",
+            display_in_profile_summary_fields_limit_reached,
+        );
+        $("#add-new-custom-profile-field-form .profile_field_display_label").toggleClass(
+            "disabled_label",
+            display_in_profile_summary_fields_limit_reached,
+        );
+        $("#add-new-custom-profile-field-form .checkbox").toggleClass(
+            "display_in_profile_summary_tooltip",
+            display_in_profile_summary_fields_limit_reached,
+        );
     }
 
     dialog_widget.launch({
@@ -409,14 +445,27 @@ function open_edit_form_modal(e) {
             name: field.name,
             hint: field.hint,
             choices,
+            display_in_profile_summary: field.display_in_profile_summary === true,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
+            valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
         },
         realm_default_external_accounts: page_params.realm_default_external_accounts,
     });
 
     function set_initial_values_of_profile_field() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
+
+        // If its passes or equals the max limit we are disabling option for display custom profile field
+        // in user profile summary and adding tooptip except already checked field.
+        if (display_in_profile_summary_fields_limit_reached && !field.display_in_profile_summary) {
+            $profile_field_form
+                .find("input[name=display_in_profile_summary]")
+                .prop("disabled", true);
+            $profile_field_form
+                .find(".checkbox")
+                .addClass("display_in_profile_summary_tooltip disabled_label");
+        }
 
         if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
             set_up_select_field_edit_form($profile_field_form, field_data);
@@ -450,6 +499,9 @@ function open_edit_form_modal(e) {
 
         data.name = $profile_field_form.find("input[name=name]").val();
         data.hint = $profile_field_form.find("input[name=hint]").val();
+        data.display_in_profile_summary = $profile_field_form
+            .find("input[name=display_in_profile_summary]")
+            .is(":checked");
 
         const new_field_data = read_field_data_from_form(
             Number.parseInt(field.type, 10),
@@ -493,10 +545,50 @@ function open_edit_form_modal(e) {
         form_id: edit_custom_profile_field_form_id,
         html_heading: $t_html({defaultMessage: "Edit custom profile field"}),
         html_body,
+        id: "edit-custom-profile-field-form-modal",
         on_click: submit_form,
         post_render: set_initial_values_of_profile_field,
         loading_spinner: true,
     });
+}
+
+// If passes or equals the max limit, we are disabling option for
+// display custom profile field in user profile summary and adding tooltip.
+function update_profile_fields_checkboxes() {
+    // Disabling only uncheck checkboxes in table, so user should able uncheck checked checkboxes.
+    $("#admin_profile_fields_table .display_in_profile_summary_checkbox_false").prop(
+        "disabled",
+        display_in_profile_summary_fields_limit_reached,
+    );
+    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass(
+        "display_in_profile_summary_tooltip",
+        display_in_profile_summary_fields_limit_reached,
+    );
+}
+
+function toggle_display_in_profile_summary_profile_field(e) {
+    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const field = get_profile_field(field_id);
+
+    let field_data;
+    if (field.field_data) {
+        field_data = field.field_data;
+    }
+
+    const data = {
+        name: field.name,
+        hint: field.hint,
+        field_data,
+        display_in_profile_summary: !field.display_in_profile_summary,
+    };
+    const $profile_field_status = $("#admin-profile-field-status").expectOne();
+
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/profile_fields/" + field_id,
+        data,
+        $profile_field_status,
+    );
 }
 
 export function reset() {
@@ -533,6 +625,7 @@ export function do_populate_profile_fields(profile_fields_data) {
     $profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
     order = [];
 
+    let display_in_profile_summary_fields_count = 0;
     for (const profile_field of profile_fields_data) {
         order.push(profile_field.id);
         let field_data = {};
@@ -544,6 +637,7 @@ export function do_populate_profile_fields(profile_fields_data) {
             choices = parse_field_choices_from_field_data(field_data);
         }
 
+        const display_in_profile_summary = profile_field.display_in_profile_summary === true;
         $profile_fields_table.append(
             render_admin_profile_field_list({
                 profile_field: {
@@ -555,12 +649,22 @@ export function do_populate_profile_fields(profile_fields_data) {
                     is_select_field: profile_field.type === field_types.SELECT.id,
                     is_external_account_field:
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
+                    display_in_profile_summary,
+                    valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
                 },
                 can_modify: page_params.is_admin,
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
             }),
         );
+
+        // Keeping counts of all display_in_profile_summary profile fields, to keep track.
+        if (display_in_profile_summary) {
+            display_in_profile_summary_fields_count += 1;
+        }
     }
+
+    // Update whether we're at the limit for display_in_profile_summary.
+    display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
     if (page_params.is_admin) {
         const field_list = $("#admin_profile_fields_table")[0];
@@ -571,6 +675,7 @@ export function do_populate_profile_fields(profile_fields_data) {
         });
     }
 
+    update_profile_fields_checkboxes();
     update_profile_fields_table_element();
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
@@ -647,4 +752,9 @@ export function build_page() {
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
     $("#add-custom-profile-field-btn").on("click", open_custom_profile_field_form_modal);
     $("#admin_profile_fields_table").on("click", ".open-edit-form-modal", open_edit_form_modal);
+    $("#admin_profile_fields_table").on(
+        "click",
+        ".display_in_profile_summary",
+        toggle_display_in_profile_summary_profile_field,
+    );
 }
