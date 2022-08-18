@@ -44,7 +44,6 @@ def make_set(files: List[str]) -> Set[str]:
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = make_set(
     [
-        "frontend_tests/node_tests/event_status.js",
         "frontend_tests/zjsunit/mdiff.js",
         "static/js/about_zulip.js",
         "static/js/add_subscribers_pill.js",

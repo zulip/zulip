@@ -1,11 +1,5 @@
 "use strict";
 
-// This test is known to be nondeterministically broken because our
-// test runner has no real support for asynchronous tests. Skip it for
-// now.
-/* eslint-disable no-unreachable */
-return;
-
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire, mock_esm} = require("../zjsunit/namespace");
