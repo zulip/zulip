@@ -316,32 +316,28 @@ function set_msg_edit_limit_dropdown() {
     );
 }
 
-function message_delete_limit_setting_enabled() {
+function message_delete_limit_setting_enabled(setting_value) {
     // This function is used to check whether the time-limit setting
     // should be enabled. The setting is disabled when delete_own_message_policy
     // is set to 'admins only' as admins can delete messages irrespective of
     // time limit.
-    if (
-        page_params.realm_delete_own_message_policy ===
-        settings_config.common_message_policy_values.by_admins_only.code
-    ) {
+    if (setting_value === settings_config.common_message_policy_values.by_admins_only.code) {
         return false;
     }
     return true;
 }
 
-function set_delete_own_message_policy_dropdown() {
-    const value = get_property_value("realm_delete_own_message_policy");
-    $("#id_realm_delete_own_message_policy").val(value);
+function set_delete_own_message_policy_dropdown(setting_value) {
+    $("#id_realm_delete_own_message_policy").val(setting_value);
     settings_ui.disable_sub_setting_onchange(
-        message_delete_limit_setting_enabled(),
+        message_delete_limit_setting_enabled(setting_value),
         "id_realm_msg_delete_limit_setting",
         true,
     );
     const limit_value = get_property_value("realm_msg_delete_limit_setting");
     if (limit_value === "custom_limit") {
         settings_ui.disable_sub_setting_onchange(
-            message_delete_limit_setting_enabled(),
+            message_delete_limit_setting_enabled(setting_value),
             "id_realm_message_content_delete_limit_minutes",
             true,
         );
@@ -482,7 +478,7 @@ function update_dependent_subsettings(property_name) {
             set_msg_delete_limit_dropdown();
             break;
         case "realm_delete_own_message_policy":
-            set_delete_own_message_policy_dropdown();
+            set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
             break;
         case "realm_org_join_restrictions":
             set_org_join_restrictions_dropdown();
@@ -1133,7 +1129,7 @@ export function build_page() {
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
-    set_delete_own_message_policy_dropdown();
+    set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
     set_message_retention_setting_dropdown();
     set_org_join_restrictions_dropdown();
     set_message_content_in_email_notifications_visiblity();
