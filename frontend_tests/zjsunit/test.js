@@ -18,7 +18,7 @@ exports.set_verbose = (value) => {
 
 exports.suite = [];
 
-function execute_test(label, f, opts) {
+async function execute_test(label, f, opts) {
     const {sloppy_$} = opts || {};
 
     /* istanbul ignore if */
@@ -33,8 +33,8 @@ function execute_test(label, f, opts) {
 
     try {
         namespace._start_template_mocking();
-        namespace.with_overrides((helpers) => {
-            f({
+        await namespace.with_overrides(async (helpers) => {
+            await f({
                 ...helpers,
                 mock_template: namespace._mock_template,
             });

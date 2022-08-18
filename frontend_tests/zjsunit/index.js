@@ -89,7 +89,7 @@ function short_tb(tb) {
 
 require("../../static/js/templates"); // register Zulip extensions
 
-function run_one_module(file) {
+async function run_one_module(file) {
     zjquery.clear_initialize_function();
     zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".js"));
@@ -97,14 +97,14 @@ function run_one_module(file) {
     test.suite.length = 0;
     require(file);
     for (const f of test.suite) {
-        f();
+        await f();
     }
     namespace.complain_about_unused_mocks();
 }
 
 test.set_verbose(files.length === 1);
 
-try {
+(async () => {
     for (const file of files) {
         namespace.start();
         namespace.set_global("window", window);
@@ -129,7 +129,7 @@ try {
         namespace.mock_esm("../../static/js/realm_user_settings_defaults", zpage_params);
         require("../../static/js/realm_user_settings_defaults");
 
-        run_one_module(file);
+        await run_one_module(file);
 
         if (blueslip.reset) {
             blueslip.reset();
@@ -137,7 +137,7 @@ try {
 
         namespace.finish();
     }
-} catch (error) /* istanbul ignore next */ {
+})().catch((error) => /* istanbul ignore next */ {
     if (process.env.USING_INSTRUMENTED_CODE) {
         console.info(`
     TEST FAILED! Before using the --coverage option please make sure that your
@@ -150,4 +150,4 @@ try {
         console.info(error);
     }
     process.exit(1);
-}
+});
