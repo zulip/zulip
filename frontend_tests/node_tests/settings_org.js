@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {FormData} = require("formdata-node");
+
 const {$t} = require("../zjsunit/i18n");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
@@ -25,14 +27,7 @@ mock_esm("../../static/js/loading", {
     destroy_indicator: noop,
 });
 
-set_global(
-    "FormData",
-    class FormData {
-        append(field, val) {
-            this[field] = val;
-        }
-    },
-);
+set_global("FormData", FormData);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
@@ -280,9 +275,9 @@ function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
     override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
-        assert.equal(req.data.csrfmiddlewaretoken, "token-stub");
-        assert.equal(req.data["file-0"], "image1.png");
-        assert.equal(req.data["file-1"], "image2.png");
+        assert.equal(req.data.get("csrfmiddlewaretoken"), "token-stub");
+        assert.equal(req.data.get("file-0"), "image1.png");
+        assert.equal(req.data.get("file-1"), "image2.png");
     });
 
     upload_realm_logo_or_icon(file_input, null, true);
