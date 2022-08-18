@@ -30,8 +30,8 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
     };
 }
 
-export const height = make_dimen_wrapper("height", $($message_pane).height);
-export const width = make_dimen_wrapper("width", $($message_pane).width);
+export const height = make_dimen_wrapper("height", $.fn.height);
+export const width = make_dimen_wrapper("width", $.fn.width);
 
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.

@@ -61,7 +61,7 @@ export function show_flatpickr(element, callback, default_timestamp, options = {
         ...options,
     });
 
-    const $container = $($(instance.innerContainer).parent());
+    const $container = $(instance.innerContainer).parent();
 
     $container.on("keydown", (e) => {
         if (is_numeric_key(e.key)) {

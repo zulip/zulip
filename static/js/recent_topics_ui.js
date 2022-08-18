@@ -523,9 +523,9 @@ function topic_offset_to_visible_area(topic_row) {
     const thead_height = 30;
     const under_closed_compose_region_height = 50;
 
-    const scroll_container_top = $($scroll_container).offset().top + thead_height;
+    const scroll_container_top = $scroll_container.offset().top + thead_height;
     const scroll_container_bottom =
-        scroll_container_top + $($scroll_container).height() - under_closed_compose_region_height;
+        scroll_container_top + $scroll_container.height() - under_closed_compose_region_height;
 
     const topic_row_top = $(topic_row).offset().top;
     const topic_row_bottom = topic_row_top + $(topic_row).height();

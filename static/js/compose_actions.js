@@ -538,7 +538,7 @@ export function quote_and_reply(opts) {
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
 
-        const placeholder_offset = $($textarea).val().indexOf(quoting_placeholder);
+        const placeholder_offset = $textarea.val().indexOf(quoting_placeholder);
         compose_ui.replace_syntax(quoting_placeholder, content, $textarea);
         compose_ui.autosize_textarea($("#compose-textarea"));
 

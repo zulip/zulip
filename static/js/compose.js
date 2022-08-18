@@ -493,8 +493,8 @@ export function initialize() {
 
         const $invite_row = $(event.target).parents(".compose_invite_user");
 
-        const user_id = Number.parseInt($($invite_row).data("user-id"), 10);
-        const stream_id = Number.parseInt($($invite_row).data("stream-id"), 10);
+        const user_id = Number.parseInt($invite_row.data("user-id"), 10);
+        const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
 
         function success() {
             const $all_invites = $("#compose_invite_users");

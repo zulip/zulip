@@ -138,8 +138,8 @@ export function launch(conf) {
         conf.on_click(e);
     });
 
-    $($send_email_checkbox).on("change", () => {
-        if ($($send_email_checkbox).is(":checked")) {
+    $send_email_checkbox.on("change", () => {
+        if ($send_email_checkbox.is(":checked")) {
             $email_field.show();
         } else {
             $email_field.hide();

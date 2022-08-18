@@ -34,7 +34,7 @@ test("pan_and_zoom", ({override}) => {
     const $link = $.create("link-stub");
     const $msg = $.create("msg-stub");
 
-    $($img).closest = () => [];
+    $img.closest = () => [];
 
     $img.set_parent($link);
     $link.closest = () => $msg;
@@ -71,9 +71,9 @@ test("youtube", ({override}) => {
         return 4321;
     });
 
-    $($img).attr("src", href);
+    $img.attr("src", href);
 
-    $($img).closest = (sel) => {
+    $img.closest = (sel) => {
         if (sel === ".youtube-video") {
             // We just need a nonempty array to
             // set is_youtube_video to true.

@@ -252,16 +252,17 @@ export function update_muted_stream_state(sub) {
         `#stream-specific-notify-table .stream-row[data-stream-id='${CSS.escape(sub.stream_id)}']`,
     );
 
-    $($row).toggleClass("control-label-disabled", sub.is_muted);
+    $row.toggleClass("control-label-disabled", sub.is_muted);
     if (sub.is_muted) {
-        $($row).find(".unmute_stream").show();
+        $row.find(".unmute_stream").show();
     } else {
-        $($row).find(".unmute_stream").hide();
+        $row.find(".unmute_stream").hide();
     }
-    $($row).find("input").prop("disabled", sub.is_muted);
-    $($row)
-        .find('[name="push_notifications"]')
-        .prop("disabled", !page_params.realm_push_notifications_enabled || sub.is_muted);
+    $row.find("input").prop("disabled", sub.is_muted);
+    $row.find('[name="push_notifications"]').prop(
+        "disabled",
+        !page_params.realm_push_notifications_enabled || sub.is_muted,
+    );
 }
 
 export function initialize() {
