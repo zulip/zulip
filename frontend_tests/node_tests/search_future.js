@@ -117,7 +117,7 @@ test("initialize", ({mock_template}) => {
                     [
                         "stream:Verona",
                         {
-                            description_html: "Stream&nbsp;<strong>Ver</strong>ona",
+                            description_html: "Stream <strong>Ver</strong>ona",
                             search_string: "stream:Verona",
                         },
                     ],
@@ -139,10 +139,10 @@ test("initialize", ({mock_template}) => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    Search for ver\n</div>\n`;
+            let expected_value = `<div class="search_list_item">\n    <span>Search for ver</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    Stream&nbsp;<strong>Ver</strong>ona\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>Stream <strong>Ver</strong>ona</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
             /* Test sorter */
@@ -215,16 +215,16 @@ test("initialize", ({mock_template}) => {
             assert.equal(source, expected_source_value);
 
             /* Test highlighter */
-            let expected_value = `<div class="search_list_item">\n    Search for zo\n</div>\n`;
+            let expected_value = `<div class="search_list_item">\n    <span>Search for zo</span>\n</div>\n`;
             assert.equal(opts.highlighter(source[0]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    sent by\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>sent by</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[1]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    private messages with\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>private messages with</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[2]), expected_value);
 
-            expected_value = `<div class="search_list_item">\n    group private messages including\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
+            expected_value = `<div class="search_list_item">\n    <span>group private messages including</span>\n    <span class="pill-container pill-container-btn">\n        <div class='pill ' tabindex=0>\n    <img class="pill-image" src="https://secure.gravatar.com/avatar/0f030c97ab51312c7bbffd3966198ced?d&#x3D;identicon&amp;version&#x3D;1&amp;s&#x3D;50" />\n    <span class="pill-value">&lt;strong&gt;Zo&lt;/strong&gt;e</span>\n    <div class="exit">\n        <span aria-hidden="true">&times;</span>\n    </div>\n</div>\n    </span>\n</div>\n`;
             assert.equal(opts.highlighter(source[3]), expected_value);
 
             /* Test sorter */
