@@ -84,4 +84,4 @@ machine, take a look at our tips for
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
 [ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
-[install-via-wsl]: setup-advanced.md#installing-directly-on-windows-10-with-wsl-2
+[install-via-wsl]: setup-vagrant.md#windows-10
