@@ -121,7 +121,7 @@ function get_stream_suggestions(last, operators) {
         const prefix = "stream";
         const highlighted_stream = highlight_query(regex, stream);
         const verb = last.negated ? "exclude " : "";
-        const description_html = verb + prefix + "&nbsp;" + highlighted_stream;
+        const description_html = verb + prefix + " " + highlighted_stream;
         const term = {
             operator: "stream",
             operand: stream,
