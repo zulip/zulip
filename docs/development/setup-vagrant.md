@@ -1,13 +1,13 @@
-## Vagrant environment setup tutorial
+## Recommended environment setup tutorial
 
 This section guides first-time contributors through installing the
 Zulip development environment on Windows, macOS, and Linux.
 
-The recommended method for installing the Zulip development environment is to use
-Vagrant with VirtualBox on Windows, and Vagrant with Docker on
-macOS and Linux. This method creates a virtual machine (for Windows)
-or a Linux container (for macOS and Linux) inside which the Zulip server and
-all related services will run.
+The recommended method for installing the Zulip development environment is
+to use WSL 2 on Windows, and Vagrant with Docker on macOS and Linux.
+This methoduses the Windows Subsystem for Linux or creates a Linux container
+(for macOS and Linux) inside which the Zulip server and all related
+services will run.
 
 Contents:
 
@@ -47,7 +47,8 @@ an active internet connection throughout the entire installation
 processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
 a proxy to access the internet.)
 
-- **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
+- **All**: 2GB available RAM, Active broadband internet connection,
+  [GitHub account](#step-0-set-up-git--github).
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 22.04
 - **Debian**: 11
@@ -158,83 +159,109 @@ docker distribution, you can follow
 
 #### Windows 10
 
-:::{note}
-We recommend using [WSL 2 for Windows development](setup-advanced.md#installing-directly-on-windows-10-with-wsl-2).
-:::
+Zulip's development environment is most easily set up on Windows using
+the Windows Subsystem for Linux ([WSL
+2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
+installation method described here.
 
-1. Install [Git for Windows][git-bash], which installs _Git BASH_.
-2. Install [VirtualBox][vbox-dl] (latest).
-3. Install [Vagrant][vagrant-dl] (latest).
+1. Enable virtualization through your BIOS settings. This sequence
+   depends on your specific hardware and brand, but here are [some
+   basic instructions.][windows-bios-virtualization]
 
-(Note: While _Git BASH_ is recommended, you may also use [Cygwin][cygwin-dl].
-If you do, make sure to **install default required packages** along with
-**git**, **curl**, **openssh**, and **rsync** binaries.)
+1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
 
-Also, you must have hardware virtualization enabled (VT-x or AMD-V) in your
-computer's BIOS.
+1. Launch the Ubuntu shell as an administrator and run the following command:
 
-#### Running Git BASH as an administrator
+   ```bash
+   sudo apt update && sudo apt upgrade
+   ```
 
-It is important that you **always run Git BASH with administrator
-privileges** when working on Zulip code, as not doing so will cause
-errors in the development environment (such as symlink creation). You
-might wish to configure your Git BASH shortcut to always run with
-these privileges enabled (see this [guide][bash-admin-setup] for how
-to set this up).
+1. Install dependencies with the following command:
 
-##### Enable native symlinks
+   ```bash
+   sudo apt install rabbitmq-server memcached redis-server postgresql
+   ```
 
-The Zulip code includes symbolic links (symlinks). By default, native Windows
-symlinks are not enabled in either Git BASH or Cygwin, so you need to do a bit
-of configuration. **You must do this before you clone the Zulip code.**
+1. Open `/etc/rabbitmq/rabbitmq-env.conf` using e.g.:
 
-In **Git for BASH**:
+   ```bash
+   sudo nano /etc/rabbitmq/rabbitmq-env.conf
+   ```
 
-Open **Git BASH as an administrator** and run:
+   Confirm the following lines are at the end of your file, and add
+   them if not present. Then save your changes (`Ctrl+O`, then `Enter`
+   to confirm the path), and exit `nano` (`Ctrl+X`).
 
-```console
-$ git config --global core.symlinks true
-```
+   ```ini
+   NODE_IP_ADDRESS=127.0.0.1
+   NODE_PORT=5672
+   ```
 
-Now confirm the setting:
+1. Run the command below to make sure you are inside the WSL disk and not
+   in a Windows mounted disk. You will run into permission issues if you
+   run `provision` from `zulip` in a Windows mounted disk.
 
-```console
-$ git config core.symlinks
-true
-```
+   ```bash
+   cd ~  # or cd /home/USERNAME
+   ```
 
-If you see `true`, you are ready for [Step 2: Get Zulip
-code](#step-2-get-zulip-code).
+1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
+   the [Zulip server repository](https://github.com/zulip/zulip).
 
-Otherwise, if the above command prints `false` or nothing at all, then symlinks
-have not been enabled.
+1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
+   Machine and add it to your GitHub account. Note that SSH keys
+   linked to your Windows computer will not work within the virtual
+   machine.
 
-In **Cygwin**:
+1. Clone and connect to the Zulip upstream repository:
 
-Open a Cygwin window **as an administrator** and do this:
+   ```bash
+   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git ~/zulip
+   cd zulip
+   git remote add -f upstream https://github.com/zulip/zulip.git
+   ```
 
-```console
-christie@win10 ~
-$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
-```
+1. Run the following to install the Zulip development environment and
+   start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
 
-Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
-should see:
+   ```bash
+   # Start database, cache, and other services
+   ./tools/wsl/start_services
+   # Install/update the Zulip development environment
+   ./tools/provision
+   # Enter the Zulip Python environment
+   source /srv/zulip-py3-venv/bin/activate
+   # Start the development server
+   ./tools/run-dev.py
+   ```
 
-```console
-christie@win10 ~
-$ echo $CYGWIN
-winsymlinks:native
-```
+   :::{note}
+   If you shut down WSL, after starting it again, you will have to manually start
+   the services using `./tools/wsl/start_services`.
+   :::
 
-Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
+1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
+   you can try running `./tools/provision` again.
 
-(Note: The **GitHub Desktop client** for Windows has a bug where it
-will automatically set `git config core.symlink false` on a repository
-if you use it to clone a repository, which will break the Zulip
-development environment, because we use symbolic links. For that
-reason, we recommend avoiding using GitHub Desktop client to clone
-projects and to instead follow these instructions exactly.)
+1. The [Visual Studio Code Remote -
+   WSL](https://code.visualstudio.com/docs/remote/wsl) extension is
+   recommended for editing files when developing with WSL. When you
+   have it installed, you can run:
+
+   ```bash
+   code .
+   ```
+
+   to open VSCode connected to your WSL environment.
+
+1. You're done! Now you're ready for [Step 4: Developing](#step-4-developing),
+   ignoring the parts about `vagrant` (since you're not using it).
+
+WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
+
+[create-ssh-key]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+[uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+[windows-bios-virtualization]: https://www.thewindowsclub.com/disable-hardware-virtualization-in-windows-10
 
 ### Step 2: Get Zulip code
 
@@ -1046,15 +1073,11 @@ If at any time you wish to revert back to the default settings, simply
 remove the `GUEST_CPUS` and `GUEST_MEMORY_MB` lines from
 `~/.zulip-vagrant-config`.
 
-[cygwin-dl]: https://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
-[vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [install-advanced]: setup-advanced.md
 [rtd-git-guide]: ../git/index.md
 [rtd-testing]: ../testing/testing.md
 [rtd-using-dev-env]: using.md
 [rtd-dev-remote]: remote.md
-[git-bash]: https://git-for-windows.github.io/
-[bash-admin-setup]: https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10
 [set-up-git]: ../git/setup.md
 [ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
