@@ -1237,6 +1237,6 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
             const message_id = data.messages[0].id;
             success_cb(message_id);
         },
-        error_cb,
+        error: error_cb,
     });
 }
