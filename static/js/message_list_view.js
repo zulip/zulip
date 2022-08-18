@@ -822,9 +822,10 @@ export class MessageListView {
 
             for (const message_container of targets) {
                 const $row = this.get_row(message_container.msg.id);
-                $($row)
-                    .find("div.messagebox")
-                    .toggleClass("next_is_same_sender", message_container.next_is_same_sender);
+                $row.find("div.messagebox").toggleClass(
+                    "next_is_same_sender",
+                    message_container.next_is_same_sender,
+                );
             }
         }
 

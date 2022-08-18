@@ -15,7 +15,7 @@ export function next_visible($message_row) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
-    const $next_recipient_rows = $($recipient_row).nextAll(".recipient_row");
+    const $next_recipient_rows = $recipient_row.nextAll(".recipient_row");
     if ($next_recipient_rows.length === 0) {
         return $();
     }
@@ -31,7 +31,7 @@ export function prev_visible($message_row) {
         return $row;
     }
     const $recipient_row = get_message_recipient_row($message_row);
-    const $prev_recipient_rows = $($recipient_row).prevAll(".recipient_row");
+    const $prev_recipient_rows = $recipient_row.prevAll(".recipient_row");
     if ($prev_recipient_rows.length === 0) {
         return $();
     }
@@ -151,11 +151,11 @@ export function first_message_in_group(message_group) {
 }
 
 export function get_message_recipient_row($message_row) {
-    return $($message_row).parent(".recipient_row").expectOne();
+    return $message_row.parent(".recipient_row").expectOne();
 }
 
 export function get_message_recipient_header($message_row) {
-    return $($message_row).parent(".recipient_row").find(".message_header").expectOne();
+    return $message_row.parent(".recipient_row").find(".message_header").expectOne();
 }
 
 export function recipient_from_group(message_group) {

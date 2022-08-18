@@ -311,8 +311,8 @@ function integration_events() {
             for (const integration_element of $(".integration-lozenges").children()) {
                 const $integration = $(integration_element).find(".integration-lozenge");
 
-                if ($($integration).css("display") !== "none") {
-                    $($integration).closest("a")[0].click();
+                if ($integration.css("display") !== "none") {
+                    $integration.closest("a")[0].click();
                     break;
                 }
             }

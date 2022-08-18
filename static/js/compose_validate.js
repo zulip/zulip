@@ -143,7 +143,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
         const $error_area = $("#compose_invite_users");
         const $existing_invites_area = $("#compose_invite_users .compose_invite_user");
 
-        const existing_invites = Array.from($($existing_invites_area), (user_row) =>
+        const existing_invites = Array.from($existing_invites_area, (user_row) =>
             Number.parseInt($(user_row).data("user-id"), 10),
         );
 

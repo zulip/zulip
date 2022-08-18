@@ -51,7 +51,7 @@ run_test("copy_data_attribute_value", ({override}) => {
     override(document, "execCommand", noop);
 
     $("body").append = noop;
-    $($input).val = (arg) => {
+    $input.val = (arg) => {
         assert.equal(arg, admin_emails_val);
         return {
             trigger: noop,

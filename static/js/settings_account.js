@@ -643,7 +643,7 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const $field = $(e.target).closest(".custom_user_field").expectOne();
-        const field_id = Number.parseInt($($field).attr("data-field-id"), 10);
+        const field_id = Number.parseInt($field.attr("data-field-id"), 10);
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
