@@ -446,15 +446,34 @@ exports.with_overrides = function (test_function) {
     };
 
     let ret;
+    let is_promise = false;
     try {
         ret = test_function({override, override_rewire, disallow, disallow_rewire});
-        ok = true;
+        is_promise = typeof ret?.then === "function";
+        ok = !is_promise;
     } finally {
-        restore_callbacks.reverse();
-        for (const restore_callback of restore_callbacks) {
-            restore_callback();
+        if (!is_promise) {
+            restore_callbacks.reverse();
+            for (const restore_callback of restore_callbacks) {
+                restore_callback();
+            }
         }
     }
 
-    return ret;
+    if (!is_promise) {
+        return ret;
+    }
+
+    return (async () => {
+        try {
+            ret = await ret;
+            ok = true;
+            return ret;
+        } finally {
+            restore_callbacks.reverse();
+            for (const restore_callback of restore_callbacks) {
+                restore_callback();
+            }
+        }
+    })();
 };
