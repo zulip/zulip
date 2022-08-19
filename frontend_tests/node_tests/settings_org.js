@@ -463,14 +463,16 @@ function test_discard_changes_button(discard_changes) {
     const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
-    const $msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_period");
+    const $msg_delete_limit_setting = $("#id_realm_message_content_delete_limit_seconds").val(
+        "custom_period",
+    );
     const $message_content_delete_limit_minutes = $(
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
 
     $allow_edit_history.attr("id", "id_realm_allow_edit_history");
     $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
-    $msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
+    $msg_delete_limit_setting.attr("id", "id_realm_message_content_delete_limit_seconds");
     $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
     $message_content_delete_limit_minutes.attr(
