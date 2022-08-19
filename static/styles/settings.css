@@ -1494,7 +1494,7 @@ $option_title_width: 180px;
 #id_realm_move_messages_between_streams_policy,
 #id_realm_invite_to_realm_policy,
 #id_realm_edit_topic_policy,
-#id_realm_msg_edit_limit_setting,
+#id_realm_message_content_edit_limit_seconds,
 #id_realm_delete_own_message_policy,
 #id_realm_msg_delete_limit_setting {
     width: 325px;

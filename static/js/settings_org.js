@@ -170,7 +170,7 @@ function get_property_value(property_name, for_realm_default_settings) {
         return "custom_days";
     }
 
-    if (property_name === "realm_msg_edit_limit_setting") {
+    if (property_name === "realm_message_content_edit_limit_seconds") {
         if (page_params.realm_message_content_edit_limit_seconds === null) {
             return "any_time";
         }
@@ -305,7 +305,11 @@ function set_giphy_rating_dropdown() {
 }
 
 function update_message_edit_sub_settings(is_checked) {
-    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_msg_edit_limit_setting", true);
+    settings_ui.disable_sub_setting_onchange(
+        is_checked,
+        "id_realm_message_content_edit_limit_seconds",
+        true,
+    );
     settings_ui.disable_sub_setting_onchange(
         is_checked,
         "id_realm_message_content_edit_limit_minutes",
@@ -315,8 +319,8 @@ function update_message_edit_sub_settings(is_checked) {
 }
 
 function set_msg_edit_limit_dropdown() {
-    const value = get_property_value("realm_msg_edit_limit_setting");
-    $("#id_realm_msg_edit_limit_setting").val(value);
+    const value = get_property_value("realm_message_content_edit_limit_seconds");
+    $("#id_realm_message_content_edit_limit_seconds").val(value);
     change_element_block_display_property(
         "id_realm_message_content_edit_limit_minutes",
         value === "custom_period",
@@ -473,7 +477,7 @@ function update_dependent_subsettings(property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
-        case "realm_msg_edit_limit_setting":
+        case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_edit_limit_minutes":
             set_msg_edit_limit_dropdown();
             break;
@@ -965,7 +969,9 @@ export function register_save_discard_widget_handlers(
 
         switch (subsection) {
             case "msg_editing": {
-                const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
+                const edit_limit_setting_value = $(
+                    "#id_realm_message_content_edit_limit_seconds",
+                ).val();
                 data.allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
                 switch (edit_limit_setting_value) {
                     case "custom_period": {
@@ -1196,7 +1202,7 @@ export function build_page() {
         }
     });
 
-    $("#id_realm_msg_edit_limit_setting").on("change", (e) => {
+    $("#id_realm_message_content_edit_limit_seconds").on("change", (e) => {
         const msg_edit_limit_dropdown_value = e.target.value;
         const show_custom_limit_input = msg_edit_limit_dropdown_value === "custom_period";
         change_element_block_display_property(
