@@ -36,7 +36,6 @@ const hotspots = mock_esm("../../static/js/hotspots");
 const linkifiers = mock_esm("../../static/js/linkifiers");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
-const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
@@ -758,14 +757,6 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.escape_navigates_to_default_view, true);
     assert_same(toggled, ["notdisplayed"]);
-
-    // We alias message_list.narrowed to message_lists.current
-    // to make sure we get line coverage on re-rendering
-    // the current message list.  The actual code tests
-    // that these two objects are equal.  It is possible
-    // we want a better strategy for that, or at least
-    // a helper.
-    message_list.narrowed = message_lists.current;
 
     let called = false;
     message_lists.current.rerender = () => {
