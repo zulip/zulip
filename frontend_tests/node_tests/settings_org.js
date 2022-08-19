@@ -370,17 +370,17 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit dropdown value sync */
-        const $property_elem = $("#id_realm_msg_edit_limit_setting");
+        const $property_elem = $("#id_realm_message_content_edit_limit_seconds");
         $property_elem.length = 1;
-        $property_elem.attr("id", "id_realm_msg_edit_limit_setting");
+        $property_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
 
         page_params.realm_message_content_edit_limit_seconds = 120;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "upto_two_min");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "upto_two_min");
 
         page_params.realm_message_content_edit_limit_seconds = 130;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_period");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "custom_period");
     }
 
     {
@@ -457,7 +457,9 @@ function test_discard_changes_button(discard_changes) {
     const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
         settings_config.common_message_policy_values.by_admins_only.code,
     );
-    const $msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_period");
+    const $msg_edit_limit_setting = $("#id_realm_message_content_edit_limit_seconds").val(
+        "custom_period",
+    );
     const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
@@ -467,7 +469,7 @@ function test_discard_changes_button(discard_changes) {
     ).val(130);
 
     $allow_edit_history.attr("id", "id_realm_allow_edit_history");
-    $msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
+    $msg_edit_limit_setting.attr("id", "id_realm_message_content_edit_limit_seconds");
     $msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
     $edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
     $message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
