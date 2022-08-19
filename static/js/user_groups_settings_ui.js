@@ -3,11 +3,13 @@ import $ from "jquery";
 import render_browse_user_groups_list_item from "../templates/user_group_settings/browse_user_groups_list_item.hbs";
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
+import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import * as people from "./people";
+import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as user_group_create from "./user_group_create";
@@ -47,9 +49,72 @@ export const show_user_group_settings_pane = {
     },
 };
 
-export function open_create_user_group() {
+export function do_open_create_user_group() {
     user_group_create.create_user_group_clicked();
+}
+
+export function open_create_user_group() {
+    do_open_create_user_group();
     browser_history.update("#groups/new");
+}
+
+export function row_for_group_id(group_id) {
+    return $(`.group-row[data-group-id='${CSS.escape(group_id)}']`);
+}
+
+export function get_active_data() {
+    const $active_row = $("div.group-row.active");
+    const valid_active_id = Number.parseInt($active_row.attr("data-group-id"), 10);
+    const $active_tabs = $(".user-groups-container").find("div.ind-tab.selected");
+    return {
+        $row: $active_row,
+        id: valid_active_id,
+        $tabs: $active_tabs,
+    };
+}
+
+export function switch_to_group_row(group_id) {
+    const $group_row = row_for_group_id(group_id);
+    const $container = $(".user-groups-list");
+
+    get_active_data().$row.removeClass("active");
+    $group_row.addClass("active");
+
+    scroll_util.scroll_element_into_container($group_row, $container);
+
+    // It's dubious that this timeout is needed.
+    setTimeout(() => {
+        if (group_id === get_active_data().id) {
+            $group_row.trigger("click");
+        }
+    }, 100);
+}
+
+function show_right_section() {
+    $(".right").addClass("show");
+    $(".user-groups-header").addClass("slide-left");
+}
+
+export function change_state(section) {
+    if (!section) {
+        show_user_group_settings_pane.nothing_selected();
+        return;
+    }
+    if (section === "new") {
+        do_open_create_user_group();
+        return;
+    }
+
+    // if the section is a valid number.
+    if (/\d+/.test(section)) {
+        const group_id = Number.parseInt(section, 10);
+        show_right_section();
+        switch_to_group_row(group_id);
+        return;
+    }
+
+    blueslip.warn("invalid section for groups: " + section);
+    show_user_group_settings_pane.nothing_selected();
 }
 
 export function setup_page(callback) {
@@ -110,7 +175,7 @@ export function initialize() {
     });
 }
 
-export function launch() {
+export function launch(section) {
     setup_page(() => {
         overlays.open_overlay({
             name: "group_subscriptions",
@@ -119,5 +184,13 @@ export function launch() {
                 browser_history.exit_overlay();
             },
         });
+        change_state(section);
     });
+    if (!get_active_data().id) {
+        if (section === "new") {
+            $("#create_user_group_name").trigger("focus");
+        } else {
+            $("#search_group_name").trigger("focus");
+        }
+    }
 }
