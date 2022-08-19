@@ -198,12 +198,12 @@
                 </div>
 
                 <div class="input-group time-limit-setting">
-                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                    <label for="realm_message_content_delete_limit_seconds" class="dropdown-title">
                         {{t "Time limit for deleting messages" }}
                         <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
-                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
+                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element">
                         {{#each msg_delete_limit_dropdown_values}}
                             <option value="{{0}}">{{1.text}}</option>
                         {{/each}}
