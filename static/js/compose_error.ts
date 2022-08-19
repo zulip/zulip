@@ -2,6 +2,14 @@ import $ from "jquery";
 
 import * as common from "./common";
 
+// banner types
+export const WARNING = "warning";
+
+export const CLASSNAMES = {
+    // warnings
+    topic_resolved: "topic_resolved",
+};
+
 export function show(error_html: string, $bad_input?: JQuery, alert_class = "alert-error"): void {
     $("#compose-send-status")
         .removeClass(common.status_classes)

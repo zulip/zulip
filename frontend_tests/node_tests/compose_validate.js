@@ -2,19 +2,22 @@
 
 const {strict: assert} = require("assert");
 
-const {$t_html} = require("../zjsunit/i18n");
+const {$t, $t_html} = require("../zjsunit/i18n");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
+const {mock_banners} = require("./lib/compose_banner");
+
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
-const compose_state = zrequire("compose_state");
 const ui_util = mock_esm("../../static/js/ui_util");
 
+const compose_error = zrequire("compose_error");
 const compose_pm_pill = zrequire("compose_pm_pill");
+const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -761,23 +764,23 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     assert.ok(looked_for_existing);
 });
 
-test_ui("test clear_topic_resolved_warning", () => {
-    $("#compose_resolved_topic").show();
-    $("#compose-send-status").show();
-
-    compose_validate.clear_topic_resolved_warning();
-
-    assert.ok(!$("#compose_resolved_topic").visible());
-    assert.ok(!$("#compose-send-status").visible());
-});
-
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
+    mock_banners();
+    $("#compose_banners .topic_resolved").length = 0;
     override(settings_data, "user_can_move_messages_between_streams", () => true);
 
-    mock_template("compose_resolved_topic.hbs", false, (context) => {
-        assert.ok(context.can_move_topic);
-        assert.ok(resolved_topic.is_resolved(context.topic_name));
-        return "fake-compose_resolved_topic";
+    let error_shown = false;
+    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+        assert.equal(data.classname, compose_error.CLASSNAMES.topic_resolved);
+        assert.equal(
+            data.banner_text,
+            $t({
+                defaultMessage:
+                    "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.",
+            }),
+        );
+        error_shown = true;
+        return "topic_resolved_warning_stub";
     });
 
     const sub = {
@@ -786,40 +789,36 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     };
     stream_data.add_sub(sub);
 
-    // The error message area where it is shown
-    const $error_area = $("#compose_resolved_topic");
-    compose_validate.clear_topic_resolved_warning();
-    // Hack to make this empty for zjquery; this is conceptually done
-    // in the previous line.
-    $error_area.empty();
-    assert.ok(!$error_area.visible());
-
     compose_state.set_message_type("stream");
     compose_state.stream_name("Do not exist");
     compose_state.topic(resolved_topic.resolve_name("hello"));
     compose_state.message_content("content");
 
-    // Do not show a warning if stream name does not exist
+    error_shown = false;
     compose_validate.warn_if_topic_resolved(true);
-    assert.ok(!$error_area.visible());
+    assert.ok(!error_shown);
 
     compose_state.stream_name("random");
 
     // Show the warning now as stream also exists
+    error_shown = false;
     compose_validate.warn_if_topic_resolved(true);
-    assert.ok($error_area.visible());
+    assert.ok(error_shown);
 
-    // Call it again with false; this should be a noop.
+    // Call it again with false; this should do the same thing.
+    error_shown = false;
     compose_validate.warn_if_topic_resolved(false);
-    assert.ok($error_area.visible());
+    assert.ok(error_shown);
 
     compose_state.topic("hello");
 
     // The warning will be cleared now
+    error_shown = false;
     compose_validate.warn_if_topic_resolved(true);
-    assert.ok(!$error_area.visible());
+    assert.ok(!error_shown);
 
     // Calling with false won't do anything.
+    error_shown = false;
     compose_validate.warn_if_topic_resolved(false);
-    assert.ok(!$error_area.visible());
+    assert.ok(!error_shown);
 });

@@ -1,0 +1,10 @@
+<div
+  class="compose_banner {{banner_type}} {{classname}}"
+  {{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}}
+  {{#if topic_name}}data-topic-name="{{topic_name}}"{{/if}}>
+    <p class="banner_content">{{banner_text}}</p>
+    {{#if button_text}}
+    <button class="compose_banner_action_button" >{{button_text}}</button>
+    {{/if}}
+    <a role="button" class="zulip-icon zulip-icon-close compose_banner_close_button"></a>
+</div>

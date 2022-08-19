@@ -198,6 +198,7 @@ export function clear_compose_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
+    $("#compose_banners").empty();
     compose_ui.hide_compose_spinner();
 }
 
@@ -473,24 +474,22 @@ export function initialize() {
         $("#compose-send-status").hide();
     });
 
-    $("#compose_resolved_topic").on("click", ".compose_unresolve_topic", (event) => {
-        event.preventDefault();
+    $("#compose_banners").on(
+        "click",
+        `.${compose_error.CLASSNAMES.topic_resolved} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
 
-        const $target = $(event.target).parents(".compose_resolved_topic");
-        const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
-        const topic_name = $target.attr("data-topic-name");
+            const $target = $(event.target).parents(".compose_banner");
+            const stream_id = Number.parseInt($target.attr("data-stream-id"), 10);
+            const topic_name = $target.attr("data-topic-name");
 
-        message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
-            message_edit.toggle_resolve_topic(message_id, topic_name);
-            compose_validate.clear_topic_resolved_warning(true);
-        });
-    });
-
-    $("#compose_resolved_topic").on("click", ".compose_resolved_topic_close", (event) => {
-        event.preventDefault();
-
-        compose_validate.clear_topic_resolved_warning(true);
-    });
+            message_edit.with_first_message_id(stream_id, topic_name, (message_id) => {
+                message_edit.toggle_resolve_topic(message_id, topic_name);
+                compose_validate.clear_topic_resolved_warning(true);
+            });
+        },
+    );
 
     $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
         event.preventDefault();
@@ -550,6 +549,18 @@ export function initialize() {
             }
         },
     );
+
+    for (const classname of Object.values(compose_error.CLASSNAMES)) {
+        const classname_selector = `.${classname}`;
+        $("#compose_banners").on(
+            "click",
+            `${classname_selector} .compose_banner_close_button`,
+            (event) => {
+                event.preventDefault();
+                $(event.target).parents(classname_selector).remove();
+            },
+        );
+    }
 
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field

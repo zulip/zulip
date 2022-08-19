@@ -11,6 +11,8 @@ const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
+const {mock_banners} = require("./lib/compose_banner");
+
 const noop = () => {};
 
 set_global("document", {
@@ -110,6 +112,7 @@ function initialize_handlers({override}) {
 }
 
 test_ui("send_message_success", ({override_rewire}) => {
+    mock_banners();
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
@@ -133,6 +136,7 @@ test_ui("send_message_success", ({override_rewire}) => {
 });
 
 test_ui("send_message", ({override, override_rewire}) => {
+    mock_banners();
     MockDate.set(new Date(fake_now * 1000));
 
     override(sent_messages, "start_tracking_message", () => {});
@@ -283,6 +287,7 @@ test_ui("send_message", ({override, override_rewire}) => {
 });
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
+    mock_banners();
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -331,6 +336,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 });
 
 test_ui("finish", ({override, override_rewire}) => {
+    mock_banners();
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));

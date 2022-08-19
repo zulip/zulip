@@ -171,6 +171,39 @@
         opacity: 0.4;
     }
 
+    .compose_banner {
+        &.warning {
+            background-color: hsl(53, 100%, 11%);
+            border-color: hsla(38, 44%, 60%, 0.4);
+            color: hsl(50, 45%, 61%);
+
+            .compose_banner_close_button {
+                color: hsl(50, 45%, 61%, 0.5);
+
+                &:hover {
+                    color: hsl(50, 45%, 61%);
+                }
+
+                &:active {
+                    color: hsl(50, 45%, 61%, 0.75);
+                }
+            }
+
+            .compose_banner_action_button {
+                background-color: hsla(50, 45%, 61%, 0.1);
+                color: inherit;
+
+                &:hover {
+                    background-color: hsla(50, 45%, 61%, 0.15);
+                }
+
+                &:active {
+                    background-color: hsla(50, 45%, 61%, 0.2);
+                }
+            }
+        }
+    }
+
     .message_embed .data-container::after {
         background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
     }

@@ -2,17 +2,17 @@ import $ from "jquery";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
+import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
-import render_compose_resolved_topic from "../templates/compose_resolved_topic.hbs";
 
 import * as channel from "./channel";
 import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -164,9 +164,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 }
 
 export function clear_topic_resolved_warning() {
-    $("#compose_resolved_topic").hide();
-    $("#compose_resolved_topic").empty();
-    $("#compose-send-status").hide();
+    $(`#compose_banners .${compose_error.CLASSNAMES.topic_resolved}`).remove();
 }
 
 export function warn_if_topic_resolved(topic_changed) {
@@ -191,29 +189,34 @@ export function warn_if_topic_resolved(topic_changed) {
     const stream_name = compose_state.stream_name();
     const message_content = compose_state.message_content();
     const sub = stream_data.get_sub(stream_name);
-    const $resolved_notice_area = $("#compose_resolved_topic");
+    const $compose_banner_area = $("#compose_banners");
 
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
-        if ($resolved_notice_area.html()) {
+        if ($(`#compose_banners .${compose_error.CLASSNAMES.topic_resolved}`).length) {
             // Error is already displayed; no action required.
             return;
         }
 
+        const button_text = settings_data.user_can_edit_topic_of_any_message()
+            ? $t({defaultMessage: "Unresolve topic"})
+            : null;
+
         const context = {
+            banner_type: compose_error.WARNING,
             stream_id: sub.stream_id,
             topic_name,
-            can_move_topic: settings_data.user_can_edit_topic_of_any_message(),
+            banner_text: $t({
+                defaultMessage:
+                    "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.",
+            }),
+            button_text,
+            classname: compose_error.CLASSNAMES.topic_resolved,
         };
 
-        const new_row = render_compose_resolved_topic(context);
-        $resolved_notice_area.append(new_row);
-
-        $resolved_notice_area.show();
+        const new_row = render_compose_banner(context);
+        $compose_banner_area.append(new_row);
     } else {
-        // Only clear the notice if already displayed.
-        if ($resolved_notice_area.html()) {
-            clear_topic_resolved_warning();
-        }
+        clear_topic_resolved_warning();
     }
 }
 

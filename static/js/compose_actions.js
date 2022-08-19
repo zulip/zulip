@@ -92,6 +92,7 @@ function show_compose_box(msg_type, opts) {
         $("#private_message_toggle").addClass("active");
     }
     $("#compose-send-status").removeClass(common.status_classes).hide();
+    $("#compose_banners").empty();
     $("#compose").css({visibility: "visible"});
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
@@ -118,6 +119,7 @@ function clear_box() {
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
+    $("#compose_banners").empty();
 }
 
 export function autosize_message_content() {

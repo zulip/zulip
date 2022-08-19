@@ -277,7 +277,79 @@
     display: none;
 }
 
-.compose_resolved_topic,
+.compose_banner {
+    margin-bottom: 20px;
+    border-radius: 5px;
+    padding-right: 11px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 15px;
+    line-height: 18px;
+
+    p {
+        margin: 0; /* override bootstrap */
+        /* 5px right padding + 10px left-margin of the neighbouring button will match the left padding */
+        padding: 12px 5px 12px 15px;
+    }
+
+    .banner_content {
+        flex-grow: 1;
+    }
+
+    .compose_banner_action_button {
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-weight: 600;
+        margin-left: 10px;
+        margin-top: 4.5px;
+        margin-bottom: 4.5px;
+        height: 32px;
+        white-space: nowrap;
+    }
+
+    .compose_banner_close_button {
+        font-size: 17px;
+        text-decoration: none;
+        margin-left: 10px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    &.warning {
+        background-color: hsl(50, 75%, 92%);
+        border-color: hsla(38, 44%, 27%, 0.4);
+        color: hsl(38, 44%, 27%);
+
+        .compose_banner_close_button {
+            color: hsla(38, 44%, 27%, 0.5);
+
+            &:hover {
+                color: hsl(38, 44%, 27%);
+            }
+
+            &:active {
+                color: hsla(38, 44%, 27%, 0.75);
+            }
+        }
+
+        .compose_banner_action_button {
+            background-color: hsla(38, 44%, 27%, 0.1);
+            color: inherit;
+
+            &:hover {
+                background-color: hsla(38, 44%, 27%, 0.12);
+            }
+
+            &:active {
+                background-color: hsla(38, 44%, 27%, 0.15);
+            }
+        }
+    }
+}
+
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
@@ -294,7 +366,6 @@
     position: absolute;
 }
 
-.compose_resolved_topic_user_controls .compose_resolved_topic_close,
 .compose_invite_user_controls .compose_invite_close,
 .compose_private_stream_alert_controls .compose_private_stream_alert_close {
     display: inline-block;
@@ -304,7 +375,6 @@
     width: 10px;
 }
 
-.compose_resolved_topic_user_controls,
 .compose-all-everyone-controls,
 .compose_invite_user_controls,
 .compose_private_stream_alert_controls {
@@ -313,7 +383,6 @@
 }
 
 .compose_invite_user p,
-.compose_resolved_topic p,
 .compose_not_subscribed p {
     margin: 5px 20px;
     display: inline-block;
