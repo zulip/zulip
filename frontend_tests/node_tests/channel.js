@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {mock_jquery, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -329,24 +327,6 @@ test("unexpected_403_response", () => {
             options.simulate_error();
         },
     });
-});
-
-test("too_many_pending", () => {
-    channel.clear_for_tests();
-    $.ajax = () => {
-        const xhr = {stub: 0};
-        return xhr;
-    };
-
-    blueslip.expect(
-        "warn",
-        "The length of pending_requests is over 50. " +
-            "Most likely they are not being correctly removed.",
-    );
-    _.times(51, () => {
-        channel.post({});
-    });
-    channel.clear_for_tests();
 });
 
 test("xhr_error_message", () => {

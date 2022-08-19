@@ -15,29 +15,6 @@ export function set_password_change_in_progress(value) {
     }
 }
 
-const pending_requests = [];
-
-export function clear_for_tests() {
-    pending_requests.length = 0;
-}
-
-function add_pending_request(jqXHR) {
-    pending_requests.push(jqXHR);
-    if (pending_requests.length > 50) {
-        blueslip.warn(
-            "The length of pending_requests is over 50. Most likely " +
-                "they are not being correctly removed.",
-        );
-    }
-}
-
-function remove_pending_request(jqXHR) {
-    const pending_request_index = pending_requests.indexOf(jqXHR);
-    if (pending_request_index !== -1) {
-        pending_requests.splice(pending_request_index, 1);
-    }
-}
-
 function call(args) {
     if (reload_state.is_in_progress() && !args.ignore_reload) {
         // If we're in the process of reloading, most HTTP requests
@@ -59,8 +36,6 @@ function call(args) {
         orig_error = function () {};
     }
     args.error = function wrapped_error(xhr, error_type, xhn) {
-        remove_pending_request(xhr);
-
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
             // there's no point in running the error handler,
@@ -122,8 +97,6 @@ function call(args) {
         orig_success = function () {};
     }
     args.success = function wrapped_success(data, textStatus, jqXHR) {
-        remove_pending_request(jqXHR);
-
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
             // there's no point in running the success handler,
@@ -136,10 +109,7 @@ function call(args) {
         orig_success(data, textStatus, jqXHR);
     };
 
-    const jqXHR = $.ajax(args);
-    add_pending_request(jqXHR);
-
-    return jqXHR;
+    return $.ajax(args);
 }
 
 export function get(options) {
