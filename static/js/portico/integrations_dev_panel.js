@@ -223,8 +223,6 @@ function get_fixtures(integration_name) {
     // /devtools/integrations/<integration_name>/fixtures
     channel.get({
         url: "/devtools/integrations/" + integration_name + "/fixtures",
-        // Since the user may add or modify fixtures as they edit.
-        idempotent: false,
         success(response) {
             loaded_fixtures.set(integration_name, response.fixtures);
             load_fixture_options(integration_name);
