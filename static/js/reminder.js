@@ -125,7 +125,6 @@ export function do_set_reminder_for_message(message_id, timestamp) {
         const msg_list = message_lists.current;
         channel.get({
             url: "/json/messages/" + message.id,
-            idempotent: true,
             success(data) {
                 if (message_lists.current === msg_list) {
                     message.raw_content = data.raw_content;

@@ -808,7 +808,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         override(channel, "post", (payload) => {
             assert.equal(payload.url, "/json/messages/render");
-            assert.ok(payload.idempotent);
             assert.ok(payload.data);
             assert.deepEqual(payload.data.content, current_message);
 

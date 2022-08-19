@@ -353,7 +353,6 @@ export function activate(raw_operators, opts) {
             // for it.
             channel.get({
                 url: `/json/messages/${id_info.target_id}`,
-                idempotent: true,
                 success(data) {
                     // After the message is fetched, we make the
                     // message locally available and then call

@@ -169,7 +169,6 @@ run_test("read", ({override}) => {
     send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[1,2,3,4,5]",
             op: "add",
@@ -185,7 +184,6 @@ run_test("read", ({override}) => {
     channel_post_opts.success(success_response_data);
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[6,7]",
             op: "add",
@@ -213,7 +211,6 @@ run_test("read", ({override}) => {
     send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[3,4,5,6,7]",
             op: "add",
@@ -252,7 +249,6 @@ run_test("read", ({override}) => {
     // Former locally echoed messages flagging retried
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[1,2]",
             op: "add",
@@ -304,7 +300,6 @@ run_test("collapse_and_uncollapse", ({override}) => {
 
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[5]",
             op: "add",
@@ -316,7 +311,6 @@ run_test("collapse_and_uncollapse", ({override}) => {
 
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: "[5]",
             op: "remove",

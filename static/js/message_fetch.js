@@ -261,7 +261,6 @@ export function load_messages(opts) {
     channel.get({
         url: "/json/messages",
         data,
-        idempotent: true,
         success(data) {
             get_messages_success(data, opts);
         },

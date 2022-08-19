@@ -556,7 +556,6 @@ export function set_up() {
         const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         channel.post({
             url: "/json/bots/" + encodeURIComponent(bot_id) + "/api_key/regenerate",
-            idempotent: true,
             success(data) {
                 const $row = $(e.currentTarget).closest("li");
                 $row.find(".api_key").find(".value").text(data.api_key);

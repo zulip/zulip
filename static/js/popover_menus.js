@@ -176,7 +176,6 @@ export function initialize() {
 
                 return channel.patch({
                     url: "/json/settings",
-                    idempotent: true,
                     data: {enter_sends: selected_behaviour},
                 });
             });

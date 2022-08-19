@@ -431,7 +431,6 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
     // request fails.
     channel.get({
         url: "/json/invites",
-        idempotent: true,
         timeout: 10 * 1000,
         success(data) {
             let number_of_invites_by_user = 0;

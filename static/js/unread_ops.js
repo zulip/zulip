@@ -18,7 +18,6 @@ export function mark_all_as_read() {
 
     channel.post({
         url: "/json/mark_all_as_read",
-        idempotent: true,
         success: () => {
             // After marking all messages as read, we reload the browser.
             // This is useful to avoid leaving ourselves deep in the past.
@@ -183,7 +182,6 @@ export function mark_current_list_as_read(options) {
 export function mark_stream_as_read(stream_id, cont) {
     channel.post({
         url: "/json/mark_stream_as_read",
-        idempotent: true,
         data: {stream_id},
         success: cont,
     });
@@ -192,7 +190,6 @@ export function mark_stream_as_read(stream_id, cont) {
 export function mark_topic_as_read(stream_id, topic, cont) {
     channel.post({
         url: "/json/mark_topic_as_read",
-        idempotent: true,
         data: {stream_id, topic_name: topic},
         success: cont,
     });

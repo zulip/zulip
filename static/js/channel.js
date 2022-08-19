@@ -39,7 +39,7 @@ function remove_pending_request(jqXHR) {
     }
 }
 
-function call(args, idempotent) {
+function call(args) {
     if (reload_state.is_in_progress() && !args.ignore_reload) {
         // If we're in the process of reloading, most HTTP requests
         // are useless, with exceptions like cleaning up our event
@@ -128,15 +128,6 @@ function call(args, idempotent) {
             return;
         }
 
-        if (!data && idempotent) {
-            // If idempotent, retry
-            blueslip.log("Retrying idempotent" + args);
-            setTimeout(() => {
-                const jqXHR = $.ajax(args);
-                add_pending_request(jqXHR);
-            }, 0);
-            return;
-        }
         orig_success(data, textStatus, jqXHR);
     };
 
@@ -154,23 +145,23 @@ function call(args, idempotent) {
 
 export function get(options) {
     const args = {type: "GET", dataType: "json", ...options};
-    return call(args, options.idempotent);
+    return call(args);
 }
 
 export function post(options) {
     const args = {type: "POST", dataType: "json", ...options};
-    return call(args, options.idempotent);
+    return call(args);
 }
 
 export function put(options) {
     const args = {type: "PUT", dataType: "json", ...options};
-    return call(args, options.idempotent);
+    return call(args);
 }
 
 // Not called exports.delete because delete is a reserved word in JS
 export function del(options) {
     const args = {type: "DELETE", dataType: "json", ...options};
-    return call(args, options.idempotent);
+    return call(args);
 }
 
 export function patch(options) {
@@ -183,7 +174,7 @@ export function patch(options) {
     } else {
         options.data = {...options.data, method: "PATCH"};
     }
-    return post(options, options.idempotent);
+    return post(options);
 }
 
 export function xhr_error_message(message, xhr) {

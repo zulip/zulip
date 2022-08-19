@@ -17,7 +17,6 @@ export function server_update(opts) {
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         },
-        idempotent: true,
         success() {
             if (opts.success) {
                 opts.success();

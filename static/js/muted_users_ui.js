@@ -16,7 +16,6 @@ import * as settings_muted_users from "./settings_muted_users";
 export function mute_user(user_id) {
     channel.post({
         url: "/json/users/me/muted_users/" + user_id,
-        idempotent: true,
     });
 }
 
@@ -40,7 +39,6 @@ export function confirm_mute_user(user_id) {
 export function unmute_user(user_id) {
     channel.del({
         url: "/json/users/me/muted_users/" + user_id,
-        idempotent: true,
     });
 }
 

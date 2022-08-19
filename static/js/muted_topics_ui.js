@@ -54,7 +54,6 @@ export function mute_topic(stream_id, topic, from_hotkey) {
 
     channel.patch({
         url: "/json/users/me/subscriptions/muted_topics",
-        idempotent: true,
         data,
         success() {
             if (!from_hotkey) {
@@ -96,7 +95,6 @@ export function unmute_topic(stream_id, topic) {
 
     channel.patch({
         url: "/json/users/me/subscriptions/muted_topics",
-        idempotent: true,
         data,
         success() {
             feedback_widget.dismiss();

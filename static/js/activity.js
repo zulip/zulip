@@ -197,7 +197,6 @@ export function send_presence_to_server(want_redraw) {
             new_user_input,
             slim_presence: true,
         },
-        idempotent: true,
         success(data) {
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {

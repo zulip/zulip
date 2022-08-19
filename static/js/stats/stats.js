@@ -1041,7 +1041,6 @@ function get_chart_data(data, callback) {
     $.get({
         url: "/json/analytics/chart_data" + page_params.data_url_suffix,
         data,
-        idempotent: true,
         success(data) {
             callback(data);
             update_last_full_update(data.end_times);

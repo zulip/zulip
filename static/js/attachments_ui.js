@@ -53,7 +53,6 @@ function delete_attachments(attachment) {
     const $status = $("#delete-upload-status");
     channel.del({
         url: "/json/attachments/" + attachment,
-        idempotent: true,
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $status);
         },
@@ -152,7 +151,6 @@ export function set_up_attachments() {
 
     channel.get({
         url: "/json/attachments",
-        idempotent: true,
         success(data) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
             format_attachment_data(data.attachments);

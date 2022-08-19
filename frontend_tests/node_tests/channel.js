@@ -9,11 +9,6 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
 
-set_global("setTimeout", (f, delay) => {
-    assert.equal(delay, 0);
-    f();
-});
-
 const xhr_401 = {
     status: 401,
     responseText: '{"msg": "Use cannot access XYZ"}',
@@ -332,30 +327,6 @@ test("unexpected_403_response", () => {
         check_ajax_options(options) {
             blueslip.expect("error", "Unexpected 403 response from server");
             options.simulate_error();
-        },
-    });
-});
-
-test("retry", () => {
-    test_with_mock_ajax({
-        run_code() {
-            channel.post({
-                idempotent: true,
-                data: 42,
-            });
-        },
-
-        check_ajax_options(options) {
-            blueslip.expect("log", "Retrying idempotent[object Object]");
-            test_with_mock_ajax({
-                run_code() {
-                    options.simulate_success();
-                },
-
-                check_ajax_options(options) {
-                    assert.equal(options.data, 42);
-                },
-            });
         },
     });
 });

@@ -381,7 +381,6 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
         }
         channel.post({
             url: "/json/messages/render",
-            idempotent: true,
             data: {content},
             success(response_data) {
                 if (markdown.contains_backend_only_syntax(content)) {

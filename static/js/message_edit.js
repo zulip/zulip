@@ -705,7 +705,6 @@ export function start($row, edit_box_open_callback) {
     const msg_list = message_lists.current;
     channel.get({
         url: "/json/messages/" + message.id,
-        idempotent: true,
         success(data) {
             if (message_lists.current === msg_list) {
                 message.raw_content = data.raw_content;
@@ -1232,7 +1231,6 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
     channel.get({
         url: "/json/messages",
         data,
-        idempotent: true,
         success(data) {
             const message_id = data.messages[0].id;
             success_cb(message_id);

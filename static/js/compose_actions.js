@@ -566,7 +566,6 @@ export function quote_and_reply(opts) {
 
     channel.get({
         url: "/json/messages/" + message_id,
-        idempotent: true,
         success(data) {
             message.raw_content = data.raw_content;
             replace_content(message);

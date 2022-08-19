@@ -141,7 +141,6 @@ run_test("unread_ops", ({override}) => {
     // url and parameters are specified:
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
-        idempotent: true,
         data: {messages: "[50]", op: "add", flag: "read"},
         success: channel_post_opts.success,
     });

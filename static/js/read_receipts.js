@@ -20,7 +20,6 @@ export function show_user_list(message_id) {
             loading.make_indicator($("#read_receipts_modal .loading_indicator"));
             channel.get({
                 url: `/json/messages/${message_id}/read_receipts`,
-                idempotent: true,
                 success(data) {
                     const users = data.user_ids.map((id) => {
                         const user = people.get_by_user_id(id);

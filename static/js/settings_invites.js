@@ -168,7 +168,6 @@ export function set_up(initialize_event_handlers = true) {
     // Populate invites table
     channel.get({
         url: "/json/invites",
-        idempotent: true,
         timeout: 10 * 1000,
         success(data) {
             on_load_success(data, initialize_event_handlers);

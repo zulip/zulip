@@ -9,7 +9,6 @@ import * as unread_ops from "./unread_ops";
 function send_flag_update_for_messages(msg_ids, flag, op) {
     channel.post({
         url: "/json/messages/flags",
-        idempotent: true,
         data: {
             messages: JSON.stringify(msg_ids),
             flag,
@@ -40,7 +39,6 @@ export const send_read = (function () {
 
         channel.post({
             url: "/json/messages/flags",
-            idempotent: true,
             data: {messages: JSON.stringify(real_msg_ids_batch), op: "add", flag: "read"},
             success: on_success,
         });
@@ -140,7 +138,6 @@ export function unstar_all_messages_in_topic(stream_id, topic) {
     channel.get({
         url: "/json/messages",
         data,
-        idempotent: true,
         success(data) {
             const messages = data.messages;
             const starred_message_ids = messages.map((message) => message.id);
