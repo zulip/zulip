@@ -12,9 +12,9 @@
             </div>
             <div>
                 {{#if completed}}
-                <strike><strong>{{ task }}</strong>{{#if desc }} - {{ desc }}{{/if}}</strike>
+                <strike><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</strike>
                 {{else}}
-                <strong>{{ task }}</strong>{{#if desc }} - {{ desc }}{{/if}}
+                <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
                 {{/if}}
             </div>
         </label>
