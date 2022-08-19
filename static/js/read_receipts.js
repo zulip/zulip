@@ -22,7 +22,14 @@ export function show_user_list(message_id) {
                 url: `/json/messages/${message_id}/read_receipts`,
                 idempotent: true,
                 success(data) {
-                    const users = data.user_ids.map((id) => people.get_by_user_id(id));
+                    const users = data.user_ids.map((id) => {
+                        const user = people.get_by_user_id(id);
+                        return {
+                            user_id: user.user_id,
+                            full_name: user.full_name,
+                            avatar_url: people.small_avatar_url_for_person(user),
+                        };
+                    });
                     users.sort(people.compare_by_name);
 
                     loading.destroy_indicator($("#read_receipts_modal .loading_indicator"));
