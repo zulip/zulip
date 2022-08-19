@@ -12,7 +12,7 @@ import * as compose_error from "./compose_error";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import {$t, $t_html} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -346,11 +346,12 @@ function validate_stream_message_mentions(stream_id) {
     // stream, check if they permission to do so.
     if (wildcard_mention !== null && stream_count > wildcard_mention_large_stream_threshold) {
         if (!wildcard_mention_allowed()) {
-            compose_error.show(
-                $t_html({
+            compose_error.show_error_message(
+                $t({
                     defaultMessage:
                         "You do not have permission to use wildcard mentions in this stream.",
                 }),
+                compose_error.CLASSNAMES.wildcards_not_allowed,
             );
             return false;
         }
@@ -377,26 +378,14 @@ function validate_stream_message_mentions(stream_id) {
 }
 
 export function validation_error(error_type, stream_name) {
-    let response;
-
     switch (error_type) {
         case "does-not-exist":
-            response = $t_html(
-                {
-                    defaultMessage:
-                        "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>",
-                },
-                {
-                    stream_name,
-                    "z-link": (content_html) =>
-                        `<a href='#streams/all'>${content_html.join("")}</a>`,
-                },
-            );
-            compose_error.show(response, $("#stream_message_recipient_stream"));
+            compose_error.show_stream_does_not_exist_error(stream_name);
             return false;
         case "error":
-            compose_error.show(
-                $t_html({defaultMessage: "Error checking subscription"}),
+            compose_error.show_error_message(
+                $t({defaultMessage: "Error checking subscription."}),
+                compose_error.CLASSNAMES.subscription_error,
                 $("#stream_message_recipient_stream"),
             );
             return false;
@@ -424,8 +413,9 @@ export function validate_stream_message_address_info(stream_name) {
 function validate_stream_message() {
     const stream_name = compose_state.stream_name();
     if (stream_name === "") {
-        compose_error.show(
-            $t_html({defaultMessage: "Please specify a stream"}),
+        compose_error.show_error_message(
+            $t({defaultMessage: "Please specify a stream."}),
+            compose_error.CLASSNAMES.missing_stream,
             $("#stream_message_recipient_stream"),
         );
         return false;
@@ -436,8 +426,9 @@ function validate_stream_message() {
         // TODO: We plan to migrate the empty topic to only using the
         // `""` representation for i18n reasons, but have not yet done so.
         if (topic === "" || topic === "(no topic)") {
-            compose_error.show(
-                $t_html({defaultMessage: "Topics are required in this organization"}),
+            compose_error.show_error_message(
+                $t({defaultMessage: "Topics are required in this organization."}),
+                compose_error.CLASSNAMES.topic_missing,
                 $("#stream_message_recipient_topic"),
             );
             return false;
@@ -450,10 +441,11 @@ function validate_stream_message() {
     }
 
     if (!stream_data.can_post_messages_in_stream(sub)) {
-        compose_error.show(
-            $t_html({
+        compose_error.show_error_message(
+            $t({
                 defaultMessage: "You do not have permission to post in this stream.",
             }),
+            compose_error.CLASSNAMES.no_post_permissions,
         );
         return false;
     }
@@ -484,16 +476,18 @@ function validate_private_message() {
         (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
     ) {
         // Unless we're composing to a bot
-        compose_error.show(
-            $t_html({defaultMessage: "Private messages are disabled in this organization."}),
+        compose_error.show_error_message(
+            $t({defaultMessage: "Private messages are disabled in this organization."}),
+            compose_error.CLASSNAMES.private_messages_disabled,
             $("#private_message_recipient"),
         );
         return false;
     }
 
     if (compose_state.private_message_recipient().length === 0) {
-        compose_error.show(
-            $t_html({defaultMessage: "Please specify at least one valid recipient"}),
+        compose_error.show_error_message(
+            $t({defaultMessage: "Please specify at least one valid recipient."}),
+            compose_error.CLASSNAMES.missing_private_message_recipient,
             $("#private_message_recipient"),
         );
         return false;
@@ -507,15 +501,17 @@ function validate_private_message() {
     let context = {};
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join(",")};
-        compose_error.show(
-            $t_html({defaultMessage: "The recipient {recipient} is not valid"}, context),
+        compose_error.show_error_message(
+            $t({defaultMessage: "The recipient {recipient} is not valid."}, context),
+            compose_error.CLASSNAMES.invalid_recipient,
             $("#private_message_recipient"),
         );
         return false;
     } else if (invalid_recipients.length > 1) {
         context = {recipients: invalid_recipients.join(",")};
-        compose_error.show(
-            $t_html({defaultMessage: "The recipients {recipients} are not valid"}, context),
+        compose_error.show_error_message(
+            $t({defaultMessage: "The recipients {recipients} are not valid."}, context),
+            compose_error.CLASSNAMES.invalid_recipients,
             $("#private_message_recipient"),
         );
         return false;
@@ -524,11 +520,9 @@ function validate_private_message() {
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
             context = {full_name: people.get_by_user_id(user_id).full_name};
-            compose_error.show(
-                $t_html(
-                    {defaultMessage: "You cannot send messages to deactivated users."},
-                    context,
-                ),
+            compose_error.show_error_message(
+                $t({defaultMessage: "You cannot send messages to deactivated users."}, context),
+                compose_error.CLASSNAMES.deactivated_user,
                 $("#private_message_recipient"),
             );
 
@@ -551,14 +545,15 @@ export function check_overflow_text() {
         $indicator.addClass("over_limit");
         $("#compose-textarea").addClass("over_limit");
         $indicator.text(text.length + "/" + max_length);
-        compose_error.show(
-            $t_html(
+        compose_error.show_error_message(
+            $t(
                 {
                     defaultMessage:
                         "Message length shouldn't be greater than {max_length} characters.",
                 },
                 {max_length},
             ),
+            compose_error.CLASSNAMES.message_too_long,
         );
         $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
@@ -567,17 +562,13 @@ export function check_overflow_text() {
         $indicator.text(text.length + "/" + max_length);
 
         $("#compose-send-button").prop("disabled", false);
-        if ($("#compose-send-status").hasClass("alert-error")) {
-            $("#compose-send-status").stop(true).fadeOut();
-        }
+        $(`#compose_banners .${compose_error.CLASSNAMES.message_too_long}`).remove();
     } else {
         $indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);
-        if ($("#compose-send-status").hasClass("alert-error")) {
-            $("#compose-send-status").stop(true).fadeOut();
-        }
+        $(`#compose_banners .${compose_error.CLASSNAMES.message_too_long}`).remove();
     }
 
     return text.length;
@@ -598,20 +589,23 @@ export function validate() {
         // Avoid showing an error message when "enter sends" is enabled,
         // as it is more likely that the user has hit "Enter" accidentally.
         if (!user_settings.enter_sends) {
-            compose_error.show(
-                $t_html({defaultMessage: "You have nothing to send!"}),
+            compose_error.show_error_message(
+                $t({defaultMessage: "You have nothing to send!"}),
+                compose_error.CLASSNAMES.empty_message,
                 $("#compose-textarea"),
             );
         }
         return false;
     }
+    $(`#compose_banners .${compose_error.CLASSNAMES.empty_message}`).remove();
 
     if ($("#zephyr-mirror-error").is(":visible")) {
-        compose_error.show(
-            $t_html({
+        compose_error.show_error_message(
+            $t({
                 defaultMessage:
                     "You need to be running Zephyr mirroring in order to send messages!",
             }),
+            compose_error.CLASSNAMES.zephyr_not_running,
         );
         return false;
     }

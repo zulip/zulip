@@ -4,7 +4,7 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {$t, $t_html} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -135,7 +135,7 @@ test_ui("send_message_success", ({override_rewire}) => {
     assert.ok(reify_message_id_checked);
 });
 
-test_ui("send_message", ({override, override_rewire}) => {
+test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
     MockDate.set(new Date(fake_now * 1000));
 
@@ -258,6 +258,12 @@ test_ui("send_message", ({override, override_rewire}) => {
     })();
 
     (function test_error_codepath_local_id_undefined() {
+        let banner_rendered = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "generic_compose_error");
+            assert.equal(data.banner_text, "Error sending message: Server says 408");
+            banner_rendered = true;
+        });
         stub_state = initialize_state_stub_dict();
         $("#compose-textarea").val("foobarfoobar");
         $("#compose-textarea").trigger("blur");
@@ -278,7 +284,7 @@ test_ui("send_message", ({override, override_rewire}) => {
         };
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
-        assert.equal($("#compose-error-msg").html(), "Error sending message: Server says 408");
+        assert.ok(banner_rendered);
         assert.equal($("#compose-textarea").val(), "foobarfoobar");
         assert.ok($("#compose-textarea").is_focused());
         assert.ok($("#compose-send-status").visible());
@@ -335,7 +341,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
-test_ui("finish", ({override, override_rewire}) => {
+test_ui("finish", ({override, override_rewire, mock_template}) => {
     mock_banners();
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
@@ -347,6 +353,10 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "empty_message");
+            assert.equal(data.banner_text, $t({defaultMessage: "You have nothing to send!"}));
+        });
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
@@ -357,10 +367,6 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.equal(res, false);
         assert.ok(!$("#compose_invite_users").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
-        assert.equal(
-            $("#compose-error-msg").html(),
-            $t_html({defaultMessage: "You have nothing to send!"}),
-        );
         assert.ok(show_button_spinner_called);
     })();
 

@@ -202,6 +202,37 @@
                 }
             }
         }
+
+        &.error {
+            background-color: hsl(0, 60%, 19%);
+            border-color: hsla(3, 73%, 74%, 0.4);
+            color: hsl(3, 73%, 74%);
+
+            .compose_banner_close_button {
+                color: hsla(3, 73%, 74%, 0.5);
+
+                &:hover {
+                    color: hsl(3, 73%, 74%);
+                }
+
+                &:active {
+                    color: hsl(3, 73%, 74%, 0.75);
+                }
+            }
+
+            .compose_banner_action_button {
+                background-color: hsla(3, 73%, 74%, 0.1);
+                color: inherit;
+
+                &:hover {
+                    background: hsla(3, 73%, 74%, 0.15);
+                }
+
+                &:active {
+                    background: hsla(3, 73%, 74%, 0.2);
+                }
+            }
+        }
     }
 
     .message_embed .data-container::after {

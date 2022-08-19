@@ -348,6 +348,37 @@
             }
         }
     }
+
+    &.error {
+        background-color: hsl(4, 35%, 90%);
+        border-color: hsla(3, 57%, 33%, 0.4);
+        color: hsl(4, 58%, 33%);
+
+        .compose_banner_close_button {
+            color: hsla(4, 58%, 33%, 0.5);
+
+            &:hover {
+                color: hsl(4, 58%, 33%);
+            }
+
+            &:active {
+                color: hsla(4, 58%, 33%, 0.75);
+            }
+        }
+
+        .compose_banner_action_button {
+            background-color: hsla(3, 57%, 33%, 0.1);
+            color: inherit;
+
+            &:hover {
+                background-color: hsla(3, 57%, 33%, 0.12);
+            }
+
+            &:active {
+                background-color: hsla(3, 57%, 33%, 0.15);
+            }
+        }
+    }
 }
 
 .compose_invite_user,

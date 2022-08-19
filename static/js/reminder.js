@@ -1,5 +1,4 @@
 import $ from "jquery";
-import _ from "lodash";
 
 import * as channel from "./channel";
 import * as compose from "./compose";
@@ -72,7 +71,11 @@ export function schedule_message(request = compose.create_message_object()) {
     }
 
     if (error_message) {
-        compose_error.show(error_message, $("#compose-textarea"));
+        compose_error.show_error_message(
+            error_message,
+            compose_error.CLASSNAMES.generic_compose_error,
+            $("#compose-textarea"),
+        );
         $("#compose-textarea").prop("disabled", false);
         return;
     }
@@ -96,7 +99,11 @@ export function schedule_message(request = compose.create_message_object()) {
     };
     const error = function (response) {
         $("#compose-textarea").prop("disabled", false);
-        compose_error.show(_.escape(response), $("#compose-textarea"));
+        compose_error.show_error_message(
+            response,
+            compose_error.CLASSNAMES.generic_compose_error,
+            $("#compose-textarea"),
+        );
     };
     /* We are adding a disable on compose under this block because we
     want slash commands to be blocking in nature. */
