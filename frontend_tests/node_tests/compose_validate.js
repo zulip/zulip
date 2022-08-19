@@ -60,68 +60,68 @@ people.add_cross_realm_user(welcome_bot);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, (helpers) => {
+    run_test(label, async (helpers) => {
         $("#compose-textarea").val("some message");
-        f(helpers);
+        await f(helpers);
     });
 }
 
-test_ui("validate_stream_message_address_info", ({mock_template}) => {
+test_ui("validate_stream_message_address_info", async ({mock_template}) => {
     const sub = {
         stream_id: 101,
         name: "social",
         subscribed: true,
     };
     stream_data.add_sub(sub);
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(await compose_validate.validate_stream_message_address_info("social"));
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
     mock_template("compose_not_subscribed.hbs", false, () => "compose_not_subscribed_stub");
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(!(await compose_validate.validate_stream_message_address_info("social")));
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
     page_params.narrow_stream = false;
-    channel.post = (payload) => {
+    channel.post = async (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.data.subscribed = true;
-        payload.success(payload.data);
+        return payload.data;
     };
-    assert.ok(compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(await compose_validate.validate_stream_message_address_info("social"));
 
     sub.name = "Frontend";
     sub.stream_id = 102;
     stream_data.add_sub(sub);
-    channel.post = (payload) => {
+    channel.post = async (payload) => {
         assert.equal(payload.data.stream, "Frontend");
         payload.data.subscribed = false;
-        payload.success(payload.data);
+        return payload.data;
     };
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
+    assert.ok(!(await compose_validate.validate_stream_message_address_info("Frontend")));
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
-    channel.post = (payload) => {
+    channel.post = async (payload) => {
         assert.equal(payload.data.stream, "Frontend");
-        payload.error({status: 404});
+        throw {status: 404}; // eslint-disable-line no-throw-literal
     };
-    assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
+    assert.ok(!(await compose_validate.validate_stream_message_address_info("Frontend")));
     assert.equal(
         $("#compose-error-msg").html(),
         "translated HTML: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
     );
 
-    channel.post = (payload) => {
+    channel.post = async (payload) => {
         assert.equal(payload.data.stream, "social");
-        payload.error({status: 500});
+        throw {status: 500}; // eslint-disable-line no-throw-literal
     };
-    assert.ok(!compose_validate.validate_stream_message_address_info("social"));
+    assert.ok(!(await compose_validate.validate_stream_message_address_info("social")));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Error checking subscription"}),
     );
 });
 
-test_ui("validate", ({override, mock_template}) => {
+test_ui("validate", async ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});
 
     function initialize_pm_pill() {
@@ -151,7 +151,7 @@ test_ui("validate", ({override, mock_template}) => {
     }
 
     initialize_pm_pill();
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.equal(
@@ -159,7 +159,7 @@ test_ui("validate", ({override, mock_template}) => {
         $t_html({defaultMessage: "You have nothing to send!"}),
     );
 
-    compose_validate.validate();
+    await compose_validate.validate();
 
     add_content_to_compose_box();
     let zephyr_checked = false;
@@ -168,7 +168,7 @@ test_ui("validate", ({override, mock_template}) => {
         zephyr_checked = true;
         return true;
     };
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.ok(zephyr_checked);
     assert.equal(
         $("#compose-error-msg").html(),
@@ -184,7 +184,7 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.set_message_type("private");
 
     compose_state.private_message_recipient("");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Please specify at least one valid recipient"}),
@@ -194,7 +194,7 @@ test_ui("validate", ({override, mock_template}) => {
     add_content_to_compose_box();
     compose_state.private_message_recipient("foo@zulip.com");
 
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
 
     assert.equal(
         $("#compose-error-msg").html(),
@@ -202,7 +202,7 @@ test_ui("validate", ({override, mock_template}) => {
     );
 
     compose_state.private_message_recipient("foo@zulip.com,alice@zulip.com");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
 
     assert.equal(
         $("#compose-error-msg").html(),
@@ -211,27 +211,27 @@ test_ui("validate", ({override, mock_template}) => {
 
     people.add_active_user(bob);
     compose_state.private_message_recipient("bob@example.com");
-    assert.ok(compose_validate.validate());
+    assert.ok(await compose_validate.validate());
 
     people.deactivate(bob);
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You cannot send messages to deactivated users."}),
     );
 
     page_params.realm_is_zephyr_mirror_realm = true;
-    assert.ok(compose_validate.validate());
+    assert.ok(await compose_validate.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
 
     initialize_pm_pill();
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
-    assert.ok(compose_validate.validate());
+    assert.ok(await compose_validate.validate());
 
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Please specify a stream"}),
@@ -240,14 +240,14 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Topics are required in this organization"}),
     );
 
     compose_state.topic("(no topic)");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "Topics are required in this organization"}),
@@ -326,7 +326,7 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert.ok(!compose_validate.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
+test_ui("validate_stream_message", async ({override_rewire, mock_template}) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -340,7 +340,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     };
     stream_data.add_sub(sub);
     compose_state.stream_name("social");
-    assert.ok(compose_validate.validate());
+    assert.ok(await compose_validate.validate());
     assert.ok(!$("#compose-all-everyone").visible());
     assert.ok(!$("#compose-send-status").visible());
 
@@ -359,14 +359,14 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
 
     override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(!$("#compose-send-status").visible());
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert.ok($("#compose-all-everyone").visible());
 
     override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
@@ -375,7 +375,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", () => {
+test_ui("test_validate_stream_message_post_policy_admin_only", async () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -391,7 +391,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     compose_state.topic("subject102");
     compose_state.stream_name("stream102");
     stream_data.add_sub(sub);
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You do not have permission to post in this stream."}),
@@ -405,14 +405,14 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
 
     compose_state.topic("subject102");
     compose_state.stream_name("stream102");
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You do not have permission to post in this stream."}),
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
+test_ui("test_validate_stream_message_post_policy_moderators_only", async () => {
     page_params.is_admin = false;
     page_params.is_moderator = false;
     page_params.is_guest = false;
@@ -427,7 +427,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     compose_state.topic("subject104");
     compose_state.stream_name("stream104");
     stream_data.add_sub(sub);
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({
@@ -447,7 +447,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", async () => {
     page_params.is_admin = false;
     page_params.is_guest = true;
     const sub = {
@@ -460,7 +460,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     compose_state.topic("subject103");
     compose_state.stream_name("stream103");
     stream_data.add_sub(sub);
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal(
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You do not have permission to post in this stream."}),
@@ -504,7 +504,7 @@ test_ui("test_check_overflow_text", () => {
     assert.ok(!$textarea.hasClass("over_limit"));
 });
 
-test_ui("test_message_overflow", () => {
+test_ui("test_message_overflow", async () => {
     page_params.max_message_length = 10000;
 
     const sub = {
@@ -521,11 +521,11 @@ test_ui("test_message_overflow", () => {
     compose_state.topic("priyam");
     $("#compose-textarea").val(message);
 
-    assert.ok(!compose_validate.validate());
+    assert.ok(!(await compose_validate.validate()));
     assert.equal($("#compose-error-msg").html(), "never-been-set");
 
     $("#compose-textarea").val("a");
-    assert.ok(compose_validate.validate());
+    assert.ok(await compose_validate.validate());
 });
 
 test_ui("needs_subscribe_warning", () => {

@@ -233,7 +233,7 @@ function handle_keydown(e) {
                         !$("#compose-send-button").prop("disabled")
                     ) {
                         $("#compose-send-button").prop("disabled", true);
-                        compose.finish();
+                        void compose.finish();
                     }
                     return;
                 }

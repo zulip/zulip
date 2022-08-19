@@ -153,7 +153,7 @@ export function initialize() {
                 draft_id: vars.draft_id || "",
             });
             if (send_now) {
-                compose.finish();
+                void compose.finish();
             }
         } catch (error) {
             // We log an error if we can't open the compose box, but otherwise

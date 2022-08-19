@@ -256,36 +256,26 @@ export function get_invalid_recipient_emails() {
     return invalid_recipients;
 }
 
-function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
-    let result;
+async function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
     if (!autosubscribe) {
         return "not-subscribed";
     }
 
     // In the rare circumstance of the autosubscribe option, we
-    // *Synchronously* try to subscribe to the stream before sending
+    // try to subscribe to the stream immediately before sending
     // the message.  This is deprecated and we hope to remove it; see
     // #4650.
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: {stream: stream_name, autosubscribe: true},
-        async: false,
-        success(data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error(xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
+    let data;
+    try {
+        data = await channel.post({
+            url: "/json/subscriptions/exists",
+            data: {stream: stream_name, autosubscribe: true},
+        });
+    } catch (error) {
+        return error.status === 404 ? "does-not-exist" : "error";
+    }
+
+    return data.subscribed ? "subscribed" : "not-subscribed";
 }
 
 export function wildcard_mention_allowed() {
@@ -415,16 +405,16 @@ export function validation_error(error_type, stream_name) {
     return true;
 }
 
-export function validate_stream_message_address_info(stream_name) {
+export async function validate_stream_message_address_info(stream_name) {
     if (stream_data.is_subscribed_by_name(stream_name)) {
         return true;
     }
     const autosubscribe = page_params.narrow_stream !== undefined;
-    const error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+    const error_type = await check_unsubscribed_stream_for_send(stream_name, autosubscribe);
     return validation_error(error_type, stream_name);
 }
 
-function validate_stream_message() {
+async function validate_stream_message() {
     const stream_name = compose_state.stream_name();
     if (stream_name === "") {
         compose_error.show(
@@ -467,7 +457,7 @@ function validate_stream_message() {
     wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
 
     if (
-        !validate_stream_message_address_info(stream_name) ||
+        !(await validate_stream_message_address_info(stream_name)) ||
         !validate_stream_message_mentions(sub.stream_id)
     ) {
         return false;
@@ -594,7 +584,7 @@ export function warn_for_text_overflow_when_tries_to_send() {
     return true;
 }
 
-export function validate() {
+export async function validate() {
     const message_content = compose_state.message_content();
     if (/^\s*$/.test(message_content)) {
         // Avoid showing an error message when "enter sends" is enabled,
@@ -624,5 +614,5 @@ export function validate() {
     if (compose_state.get_message_type() === "private") {
         return validate_private_message();
     }
-    return validate_stream_message();
+    return await validate_stream_message();
 }

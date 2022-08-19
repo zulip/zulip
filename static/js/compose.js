@@ -268,20 +268,20 @@ export function send_message(request = create_message_object()) {
     }
 }
 
-export function enter_with_preview_open(ctrl_pressed = false) {
+export async function enter_with_preview_open(ctrl_pressed = false) {
     if (
         (user_settings.enter_sends && !ctrl_pressed) ||
         (!user_settings.enter_sends && ctrl_pressed)
     ) {
         // If this enter should send, we attempt to send the message.
-        finish();
+        await finish();
     } else {
         // Otherwise, we return to the normal compose state.
         clear_preview_area();
     }
 }
 
-export function finish() {
+export async function finish() {
     clear_preview_area();
     clear_invites();
     clear_private_stream_alert();
@@ -300,7 +300,7 @@ export function finish() {
 
     compose_ui.show_compose_spinner();
 
-    if (!compose_validate.validate()) {
+    if (!(await compose_validate.validate())) {
         // If the message failed validation, hide compose spinner.
         compose_ui.hide_compose_spinner();
         return false;
@@ -427,7 +427,7 @@ export function initialize() {
 
     $("#compose form").on("submit", (e) => {
         e.preventDefault();
-        finish();
+        void finish();
     });
 
     resize.watch_manual_resize("#compose-textarea");
@@ -447,7 +447,7 @@ export function initialize() {
         $(event.target).parents(".compose-all-everyone").remove();
         compose_validate.set_user_acknowledged_all_everyone_flag(true);
         compose_validate.clear_all_everyone_warnings();
-        finish();
+        void finish();
     });
 
     $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {

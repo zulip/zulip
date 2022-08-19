@@ -278,7 +278,7 @@ test_ui("send_message", ({override, override_rewire}) => {
     })();
 });
 
-test_ui("enter_with_preview_open", ({override, override_rewire}) => {
+test_ui("enter_with_preview_open", async ({override, override_rewire}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -304,7 +304,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     override_rewire(compose, "send_message", () => {
         send_message_called = true;
     });
-    compose.enter_with_preview_open();
+    await compose.enter_with_preview_open();
     assert.ok($("#compose-textarea").visible());
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
@@ -314,7 +314,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
     user_settings.enter_sends = false;
     $("#compose-textarea").trigger("blur");
-    compose.enter_with_preview_open();
+    await compose.enter_with_preview_open();
     assert.ok($("#compose-textarea").is_focused());
 
     // Test sending a message without content.
@@ -322,11 +322,11 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     $("#compose .preview_message_area").show();
     user_settings.enter_sends = true;
 
-    compose.enter_with_preview_open();
+    await compose.enter_with_preview_open();
     assert.equal($("#compose-error-msg").html(), "never-been-set");
 });
 
-test_ui("finish", ({override, override_rewire}) => {
+test_ui("finish", async ({override, override_rewire}) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -336,14 +336,14 @@ test_ui("finish", ({override, override_rewire}) => {
         show_button_spinner_called = true;
     });
 
-    (function test_when_compose_validation_fails() {
+    await (async function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
         $("#compose-send-button .loader").hide();
         $("#compose-textarea").off("select");
         $("#compose-textarea").val("");
-        const res = compose.finish();
+        const res = await compose.finish();
         assert.equal(res, false);
         assert.ok(!$("#compose_invite_users").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
@@ -354,7 +354,7 @@ test_ui("finish", ({override, override_rewire}) => {
         assert.ok(show_button_spinner_called);
     })();
 
-    (function test_when_compose_validation_succeed() {
+    await (async function test_when_compose_validation_succeed() {
         // Testing successfully sending of a message.
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
@@ -372,7 +372,7 @@ test_ui("finish", ({override, override_rewire}) => {
         override_rewire(compose, "send_message", () => {
             send_message_called = true;
         });
-        assert.ok(compose.finish());
+        assert.ok(await compose.finish());
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
@@ -394,7 +394,7 @@ test_ui("finish", ({override, override_rewire}) => {
             schedule_message = true;
         });
         reminder.is_deferred_delivery = () => true;
-        assert.ok(compose.finish());
+        assert.ok(await compose.finish());
         assert.ok($("#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
