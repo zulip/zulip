@@ -14,7 +14,6 @@ export function set_password_change_in_progress(value) {
         password_changes += 1;
     }
 }
-export const xhr_password_changes = new WeakMap();
 
 const pending_requests = [];
 
@@ -47,6 +46,12 @@ function call(args) {
         return undefined;
     }
 
+    // Remember the number of completed password changes when the
+    // request was initiated. This allows us to detect race
+    // situations where a password change occurred before we got a
+    // response that failed due to the ongoing password change.
+    const orig_password_changes = password_changes;
+
     // Wrap the error handlers to reload the page if we get a CSRF error
     // (What probably happened is that the user logged out in another tab).
     let orig_error = args.error;
@@ -66,7 +71,7 @@ function call(args) {
         }
 
         if (xhr.status === 401) {
-            if (password_change_in_progress || xhr.password_changes !== password_changes) {
+            if (password_change_in_progress || orig_password_changes !== password_changes) {
                 // The backend for handling password change API requests
                 // will replace the user's session; this results in a
                 // brief race where any API request will fail with a 401
@@ -133,12 +138,6 @@ function call(args) {
 
     const jqXHR = $.ajax(args);
     add_pending_request(jqXHR);
-
-    // Remember the number of completed password changes when the
-    // request was initiated. This allows us to detect race
-    // situations where a password change occurred before we got a
-    // response that failed due to the ongoing password change.
-    jqXHR.password_changes = password_changes;
 
     return jqXHR;
 }
