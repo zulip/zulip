@@ -433,6 +433,9 @@ input[type="checkbox"] {
 
 #id_org_profile_preview {
     margin-bottom: 20px;
+    display: inline-flex;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 .inline-block.organization-permissions-parent div:first-of-type {
