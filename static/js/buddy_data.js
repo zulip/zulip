@@ -169,7 +169,8 @@ export function user_last_seen_time_status(user_id) {
     } else {
         last_seen = timerender.last_seen_status_from_date(last_active_date);
     }
-    return $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
+    last_seen = last_seen.toLowerCase();
+    return $t({defaultMessage: "Active {last_seen}"}, {last_seen});
 }
 
 export function info_for(user_id) {

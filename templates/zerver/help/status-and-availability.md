@@ -105,7 +105,7 @@ information for your account.  The result is that you will always
 appear to other users as **Offline** (or **Unavailable**, if you've
 set an appropriate status), regardless of your activity in Zulip.
 
-With this setting, your "Last active" time displayed to other users in
+With this setting, your "Active" time displayed to other users in
 the UI will be frozen as the time you enabled this setting.
 
 {start_tabs}
