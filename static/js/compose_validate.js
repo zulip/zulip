@@ -1,9 +1,9 @@
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
-import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
+import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
@@ -22,7 +22,7 @@ import * as stream_data from "./stream_data";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
-let user_acknowledged_all_everyone = false;
+let user_acknowledged_wildcard = false;
 let wildcard_mention;
 
 export let wildcard_mention_large_stream_threshold = 15;
@@ -226,32 +226,36 @@ export function warn_if_topic_resolved(topic_changed) {
     }
 }
 
-function show_all_everyone_warnings(stream_id) {
-    const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
+function show_wildcard_warnings(stream_id) {
+    const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
-    const all_everyone_template = render_compose_all_everyone({
-        count: stream_count,
-        mention: wildcard_mention,
+    const $compose_banner_area = $("#compose_banners");
+    const classname = compose_error.CLASSNAMES.wildcard_warning;
+    const $wildcard_template = render_wildcard_warning({
+        banner_type: compose_error.WARNING,
+        subscriber_count,
+        stream_name: compose_state.stream_name(),
+        wildcard_mention,
+        button_text: $t({defaultMessage: "Yes, send"}),
+        hide_close_button: true,
+        classname,
     });
-    const $error_area_all_everyone = $("#compose-all-everyone");
 
     // only show one error for any number of @all or @everyone mentions
-    if (!$error_area_all_everyone.is(":visible")) {
-        $error_area_all_everyone.append(all_everyone_template);
+    if ($(`#compose_banners .${classname}`).length === 0) {
+        $compose_banner_area.append($wildcard_template);
     }
 
-    $error_area_all_everyone.show();
-    user_acknowledged_all_everyone = false;
+    user_acknowledged_wildcard = false;
 }
 
-export function clear_all_everyone_warnings() {
-    $("#compose-all-everyone").hide();
-    $("#compose-all-everyone").empty();
-    $("#compose-send-status").hide();
+export function clear_wildcard_warnings() {
+    const classname = compose_error.CLASSNAMES.wildcard_warning;
+    $(`#compose_banners .${classname}`).remove();
 }
 
-export function set_user_acknowledged_all_everyone_flag(value) {
-    user_acknowledged_all_everyone = value;
+export function set_user_acknowledged_wildcard_flag(value) {
+    user_acknowledged_wildcard = value;
 }
 
 export function get_invalid_recipient_emails() {
@@ -346,11 +350,11 @@ export function set_wildcard_mention_large_stream_threshold(value) {
 }
 
 function validate_stream_message_mentions(stream_id) {
-    const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
+    const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
     // stream, check if they permission to do so.
-    if (wildcard_mention !== null && stream_count > wildcard_mention_large_stream_threshold) {
+    if (wildcard_mention !== null && subscriber_count > wildcard_mention_large_stream_threshold) {
         if (!wildcard_mention_allowed()) {
             compose_error.show_error_message(
                 $t({
@@ -362,12 +366,9 @@ function validate_stream_message_mentions(stream_id) {
             return false;
         }
 
-        if (
-            user_acknowledged_all_everyone === undefined ||
-            user_acknowledged_all_everyone === false
-        ) {
+        if (user_acknowledged_wildcard === undefined || user_acknowledged_wildcard === false) {
             // user has not seen a warning message yet if undefined
-            show_all_everyone_warnings(stream_id);
+            show_wildcard_warnings(stream_id);
 
             $("#compose-send-button").prop("disabled", false);
             compose_ui.hide_compose_spinner();
@@ -375,10 +376,10 @@ function validate_stream_message_mentions(stream_id) {
         }
     } else {
         // the message no longer contains @all or @everyone
-        clear_all_everyone_warnings();
+        clear_wildcard_warnings();
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
-    user_acknowledged_all_everyone = undefined;
+    user_acknowledged_wildcard = undefined;
 
     return true;
 }

@@ -450,14 +450,16 @@ export function initialize() {
 
     upload.feature_check($("#compose .compose_upload_file"));
 
-    $("#compose-all-everyone").on("click", ".compose-all-everyone-confirm", (event) => {
-        event.preventDefault();
-
-        $(event.target).parents(".compose-all-everyone").remove();
-        compose_validate.set_user_acknowledged_all_everyone_flag(true);
-        compose_validate.clear_all_everyone_warnings();
-        finish();
-    });
+    $("#compose_banners").on(
+        "click",
+        `.${compose_error.CLASSNAMES.wildcard_warning} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
+            compose_validate.clear_wildcard_warnings();
+            compose_validate.set_user_acknowledged_wildcard_flag(true);
+            finish();
+        },
+    );
 
     $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
         event.preventDefault();

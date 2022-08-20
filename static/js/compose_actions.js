@@ -109,9 +109,9 @@ function clear_box() {
 
     // TODO: Better encapsulate at-mention warnings.
     compose_validate.clear_topic_resolved_warning();
-    compose_validate.clear_all_everyone_warnings();
+    compose_validate.clear_wildcard_warnings();
     compose.clear_private_stream_alert();
-    compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
+    compose_validate.set_user_acknowledged_wildcard_flag(undefined);
 
     compose.clear_preview_area();
     clear_textarea();

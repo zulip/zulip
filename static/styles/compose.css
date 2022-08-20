@@ -382,7 +382,6 @@
 }
 
 .compose_private_stream_alert,
-.compose-all-everyone,
 .compose_not_subscribed {
     padding: 4px 0;
     display: flex;
@@ -404,7 +403,6 @@
     width: 10px;
 }
 
-.compose-all-everyone-controls,
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;

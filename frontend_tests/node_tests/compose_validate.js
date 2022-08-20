@@ -356,6 +356,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
     // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
     mock_banners();
+    $("#compose_banners .wildcard_warning").length = 0;
     page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
     const sub = {
@@ -373,22 +374,19 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    mock_template("compose_all_everyone.hbs", false, (data) => {
-        assert.equal(data.count, 16);
-        return "compose_all_everyone_stub";
+    let wildcard_warning_rendered = false;
+    $("#compose_banner_area .wildcard_warning").length = 0;
+    mock_template("compose_banner/wildcard_warning.hbs", false, (data) => {
+        wildcard_warning_rendered = true;
+        assert.equal(data.subscriber_count, 16);
     });
-    let compose_content;
-    $("#compose-all-everyone").append = (data) => {
-        compose_content = data;
-    };
 
     override_rewire(compose_validate, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert.ok(!compose_validate.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert.ok(!$("#compose-send-status").visible());
-    assert.equal(compose_content, "compose_all_everyone_stub");
-    assert.ok($("#compose-all-everyone").visible());
+    assert.ok(wildcard_warning_rendered);
 
     let wildcards_not_allowed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

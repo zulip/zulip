@@ -561,7 +561,7 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
     assert.ok(compose_finish_checked);
 });
 
-test_ui("on_events", ({override, override_rewire}) => {
+test_ui("on_events", ({override}) => {
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
@@ -594,34 +594,6 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         return helper;
     }
-
-    (function test_compose_all_everyone_confirm_clicked() {
-        const handler = $("#compose-all-everyone").get_on_handler(
-            "click",
-            ".compose-all-everyone-confirm",
-        );
-
-        const helper = setup_parents_and_mock_remove(
-            "compose-all-everyone",
-            "compose-all-everyone",
-            ".compose-all-everyone",
-        );
-
-        $("#compose-all-everyone").show();
-        $("#compose-send-status").show();
-
-        let compose_finish_checked = false;
-        override_rewire(compose, "finish", () => {
-            compose_finish_checked = true;
-        });
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(compose_finish_checked);
-        assert.ok(!$("#compose-all-everyone").visible());
-        assert.ok(!$("#compose-send-status").visible());
-    })();
 
     (function test_compose_not_subscribed_clicked() {
         const handler = $("#compose-send-status").get_on_handler("click", ".sub_unsub_button");
