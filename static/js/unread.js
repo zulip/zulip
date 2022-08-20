@@ -31,6 +31,7 @@ export const unread_mentions_counter = new Set();
 const unread_messages = new Set();
 
 class Bucketer {
+    // Maps item_id => bucket_key for items present in a bucket.
     reverse_lookup = new Map();
 
     constructor(options) {
@@ -58,12 +59,13 @@ class Bucketer {
         } else {
             bucket.add(item_id);
         }
-        this.reverse_lookup.set(item_id, bucket);
+        this.reverse_lookup.set(item_id, bucket_key);
     }
 
     delete(item_id) {
-        const bucket = this.reverse_lookup.get(item_id);
-        if (bucket) {
+        const bucket_key = this.reverse_lookup.get(item_id);
+        if (bucket_key) {
+            const bucket = this.get_bucket(bucket_key);
             bucket.delete(item_id);
             this.reverse_lookup.delete(item_id);
         }
