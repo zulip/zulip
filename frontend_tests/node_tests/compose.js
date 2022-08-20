@@ -41,7 +41,6 @@ const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
-const subscriber_api = mock_esm("../../static/js/subscriber_api");
 const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
@@ -365,7 +364,7 @@ test_ui("finish", ({override, override_rewire, mock_template}) => {
         $("#compose-textarea").val("");
         const res = compose.finish();
         assert.equal(res, false);
-        assert.ok(!$("#compose_invite_users").visible());
+        assert.ok(!$("#compose_banners .recipient_not_subscribed").visible());
         assert.ok(!$("#compose-send-button .loader").visible());
         assert.ok(show_button_spinner_called);
     })();
@@ -622,85 +621,6 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert.ok(compose_finish_checked);
         assert.ok(!$("#compose-all-everyone").visible());
         assert.ok(!$("#compose-send-status").visible());
-    })();
-
-    (function test_compose_invite_users_clicked() {
-        const handler = $("#compose_invite_users").get_on_handler("click", ".compose_invite_link");
-        const subscription = {
-            stream_id: 102,
-            name: "test",
-            subscribed: true,
-        };
-        const mentioned = {
-            full_name: "Foo Barson",
-            email: "foo@bar.com",
-            user_id: 34,
-        };
-        people.add_active_user(mentioned);
-
-        override(subscriber_api, "add_user_ids_to_stream", (user_ids, sub, success) => {
-            assert.deepEqual(user_ids, [mentioned.user_id]);
-            assert.equal(sub, subscription);
-            success(); // This will check success callback path.
-        });
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_invite_users",
-            "compose_invite_link",
-            ".compose_invite_user",
-        );
-
-        helper.$container.data = (field) => {
-            switch (field) {
-                case "user-id":
-                    return "34";
-                case "stream-id":
-                    return "102";
-                /* istanbul ignore next */
-                default:
-                    throw new Error(`Unknown field ${field}`);
-            }
-        };
-        helper.$target.prop("disabled", false);
-
-        // !sub will result in true here and we check the success code path.
-        stream_data.add_sub(subscription);
-        $("#stream_message_recipient_stream").val("test");
-        let all_invite_children_called = false;
-        $("#compose_invite_users").children = () => {
-            all_invite_children_called = true;
-            return [];
-        };
-        $("#compose_invite_users").show();
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(!$("#compose_invite_users").visible());
-        assert.ok(all_invite_children_called);
-    })();
-
-    (function test_compose_invite_close_clicked() {
-        const handler = $("#compose_invite_users").get_on_handler("click", ".compose_invite_close");
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_invite_users_close",
-            "compose_invite_close",
-            ".compose_invite_user",
-        );
-
-        let all_invite_children_called = false;
-        $("#compose_invite_users").children = () => {
-            all_invite_children_called = true;
-            return [];
-        };
-        $("#compose_invite_users").show();
-
-        handler(helper.event);
-
-        assert.ok(helper.container_was_removed());
-        assert.ok(all_invite_children_called);
-        assert.ok(!$("#compose_invite_users").visible());
     })();
 
     (function test_compose_not_subscribed_clicked() {

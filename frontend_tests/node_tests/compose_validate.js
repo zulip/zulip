@@ -401,7 +401,6 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
             }),
         );
         wildcards_not_allowed_rendered = true;
-        return "wildcard_warning_stub";
     });
     override_rewire(compose_validate, "wildcard_mention_allowed", () => false);
     assert.ok(!compose_validate.validate());
@@ -673,22 +672,30 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     }
 });
 
-test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, mock_template}) => {
+test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
     override(settings_data, "user_can_subscribe_other_users", () => true);
 
     let mentioned_details = {
         email: "foo@bar.com",
     };
 
-    $("#compose_invite_users .compose_invite_user").length = 0;
+    let new_banner_rendered = false;
+    mock_template("compose_banner/not_subscribed_warning.hbs", false, (data) => {
+        assert.equal(data.classname, compose_error.CLASSNAMES.recipient_not_subscribed);
+        assert.equal(data.user_id, 34);
+        assert.equal(data.stream_id, 111);
+        assert.equal(data.name, "Foo Barson");
+        new_banner_rendered = true;
+    });
 
     function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
+        new_banner_rendered = false;
         const msg_type = is_private ? "private" : "stream";
         compose_state.set_message_type(msg_type);
         page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
         mentioned_details.is_broadcast = is_broadcast;
         compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
-        assert.equal($("#compose_invite_users").visible(), false);
+        assert.ok(!new_banner_rendered);
     }
 
     test_noop_case(true, false, false);
@@ -700,9 +707,10 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     page_params.realm_is_zephyr_mirror_realm = false;
 
     // Test with empty stream name in compose box. It should return noop.
+    new_banner_rendered = false;
     assert.equal(compose_state.stream_name(), "");
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
-    assert.equal($("#compose_invite_users").visible(), false);
+    assert.ok(!new_banner_rendered);
 
     compose_state.stream_name("random");
     const sub = {
@@ -711,93 +719,39 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, override_rewire, moc
     };
 
     // Test with invalid stream in compose box. It should return noop.
+    new_banner_rendered = false;
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
-    assert.equal($("#compose_invite_users").visible(), false);
+    assert.ok(!new_banner_rendered);
 
     // Test mentioning a user that should gets a warning.
-
-    const checks = [
-        (function () {
-            let called;
-            override_rewire(compose_validate, "needs_subscribe_warning", (user_id, stream_id) => {
-                called = true;
-                assert.equal(user_id, 34);
-                assert.equal(stream_id, 111);
-                return true;
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            mock_template("compose_invite_users.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.user_id, 34);
-                assert.equal(context.stream_id, 111);
-                assert.equal(context.name, "Foo Barson");
-                return "fake-compose-invite-user-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_invite_users").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose-invite-user-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
     mentioned_details = {
         email: "foo@bar.com",
         user_id: 34,
         full_name: "Foo Barson",
     };
+    people.add_active_user(mentioned_details);
 
     stream_data.add_sub(sub);
+    new_banner_rendered = false;
+    $("#compose_banners .recipient_not_subscribed").length = 0;
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
-    assert.equal($("#compose_invite_users").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
+    assert.ok(new_banner_rendered);
 
     // Simulate that the row was added to the DOM.
-    const $warning_row = $("<warning-row-stub>");
-
-    let looked_for_existing;
-    $warning_row.data = (field) => {
-        switch (field) {
-            case "user-id":
-                looked_for_existing = true;
-                return "34";
-            /* istanbul ignore next */
-            case "stream-id":
-                return "111";
-            /* istanbul ignore next */
-            default:
-                throw new Error(`Unknown field ${field}`);
-        }
-    };
-
-    const $previous_users = $("#compose_invite_users .compose_invite_user");
-    $previous_users.length = 1;
-    $previous_users[0] = $warning_row;
-    $("#compose_invite_users").hide();
+    const $warning_row = $("#compose_banners .recipient_not_subscribed");
+    $warning_row.data = (key) =>
+        ({
+            "user-id": "34",
+            "stream-id": "111",
+        }[key]);
+    $("#compose_banners .recipient_not_subscribed").length = 1;
+    $("#compose_banners .recipient_not_subscribed")[0] = $warning_row;
 
     // Now try to mention the same person again. The template should
     // not render.
+    new_banner_rendered = false;
     compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details);
-    assert.equal($("#compose_invite_users").visible(), true);
-    assert.ok(looked_for_existing);
+    assert.ok(!new_banner_rendered);
 });
 
 test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {

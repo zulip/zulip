@@ -381,7 +381,6 @@
     }
 }
 
-.compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
 .compose_not_subscribed {
@@ -397,7 +396,6 @@
     position: absolute;
 }
 
-.compose_invite_user_controls .compose_invite_close,
 .compose_private_stream_alert_controls .compose_private_stream_alert_close {
     display: inline-block;
     position: absolute;
@@ -407,13 +405,11 @@
 }
 
 .compose-all-everyone-controls,
-.compose_invite_user_controls,
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;
 }
 
-.compose_invite_user p,
 .compose_not_subscribed p {
     margin: 5px 20px;
     display: inline-block;

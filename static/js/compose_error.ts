@@ -12,6 +12,7 @@ export const ERROR = "error";
 export const CLASSNAMES = {
     // warnings
     topic_resolved: "topic_resolved",
+    recipient_not_subscribed: "recipient_not_subscribed",
     // errors
     empty_message: "empty_message",
     wildcards_not_allowed: "wildcards_not_allowed",

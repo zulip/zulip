@@ -1,5 +1,6 @@
 <div
   class="compose_banner {{banner_type}} {{classname}}"
+  {{#if user_id}}data-user-id="{{user_id}}"{{/if}}
   {{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}}
   {{#if topic_name}}data-topic-name="{{topic_name}}"{{/if}}>
     {{#if banner_text}}

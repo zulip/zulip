@@ -74,8 +74,7 @@ export function update_video_chat_button_display() {
 }
 
 export function clear_invites() {
-    $("#compose_invite_users").hide();
-    $("#compose_invite_users").empty();
+    $(`#compose_banners .${compose_error.CLASSNAMES.recipient_not_subscribed}`).remove();
 }
 
 export function clear_private_stream_alert() {
@@ -495,53 +494,41 @@ export function initialize() {
         },
     );
 
-    $("#compose_invite_users").on("click", ".compose_invite_link", (event) => {
-        event.preventDefault();
+    $("#compose_banners").on(
+        "click",
+        `.${compose_error.CLASSNAMES.recipient_not_subscribed} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
 
-        const $invite_row = $(event.target).parents(".compose_invite_user");
+            const $invite_row = $(event.target).parents(".compose_banner");
 
-        const user_id = Number.parseInt($invite_row.data("user-id"), 10);
-        const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
+            const user_id = Number.parseInt($invite_row.data("user-id"), 10);
+            const stream_id = Number.parseInt($invite_row.data("stream-id"), 10);
 
-        function success() {
-            const $all_invites = $("#compose_invite_users");
-            $invite_row.remove();
-
-            if ($all_invites.children().length === 0) {
-                $all_invites.hide();
+            function success() {
+                $invite_row.remove();
             }
-        }
 
-        function failure(error_msg) {
-            clear_invites();
-            compose_error.show_error_message(
-                error_msg,
-                compose_error.CLASSNAMES.generic_compose_error,
-                $("#compose-textarea"),
-            );
-            $(event.target).prop("disabled", true);
-        }
+            function failure(error_msg) {
+                clear_invites();
+                compose_error.show_error_message(
+                    error_msg,
+                    compose_error.CLASSNAMES.generic_compose_error,
+                    $("#compose-textarea"),
+                );
+                $(event.target).prop("disabled", true);
+            }
 
-        function xhr_failure(xhr) {
-            const error = JSON.parse(xhr.responseText);
-            failure(error.msg);
-        }
+            function xhr_failure(xhr) {
+                const error = JSON.parse(xhr.responseText);
+                failure(error.msg);
+            }
 
-        const sub = sub_store.get(stream_id);
+            const sub = sub_store.get(stream_id);
 
-        subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
-    });
-
-    $("#compose_invite_users").on("click", ".compose_invite_close", (event) => {
-        const $invite_row = $(event.target).parents(".compose_invite_user");
-        const $all_invites = $("#compose_invite_users");
-
-        $invite_row.remove();
-
-        if ($all_invites.children().length === 0) {
-            $all_invites.hide();
-        }
-    });
+            subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
+        },
+    );
 
     $("#compose_private_stream_alert").on(
         "click",
