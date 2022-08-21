@@ -22,6 +22,7 @@ from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
@@ -38,11 +39,11 @@ from zerver.lib.response import (
     json_unauthorized,
 )
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
 from zerver.models import Realm, SCIMClient, flush_per_request_caches, get_realm
 
+ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
 slow_query_logger = logging.getLogger("zulip.slow_queries")
 
@@ -368,8 +369,8 @@ class LogRequests(MiddlewareMixin):
     def process_view(
         self,
         request: HttpRequest,
-        view_func: ViewFuncT,
-        args: List[str],
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
         kwargs: Dict[str, Any],
     ) -> None:
         request_notes = RequestNotes.get_notes(request)
@@ -475,7 +476,11 @@ class JsonErrorHandler(MiddlewareMixin):
 
 class TagRequests(MiddlewareMixin):
     def process_view(
-        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
     ) -> None:
         self.process_request(request)
 

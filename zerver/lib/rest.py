@@ -1,11 +1,12 @@
 from functools import wraps
-from typing import Callable, Dict, Set, Tuple, Union, cast
+from typing import Callable, Dict, Set, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.decorator import (
     authenticated_json_view,
@@ -17,12 +18,14 @@ from zerver.decorator import (
 from zerver.lib.exceptions import MissingAuthenticationError
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_method_not_allowed
-from zerver.lib.types import ViewFuncT
 
+ParamT = ParamSpec("ParamT")
 METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "PATCH")
 
 
-def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
+def default_never_cache_responses(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     """Patched version of the standard Django never_cache_responses
     decorator that adds headers to a response so that it will never be
     cached, unless the view code has already set a Cache-Control
@@ -30,7 +33,9 @@ def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
     """
 
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         response = view_func(request, *args, **kwargs)
         if response.has_header("Cache-Control"):
             return response
@@ -38,7 +43,7 @@ def default_never_cache_responses(view_func: ViewFuncT) -> ViewFuncT:
         add_never_cache_headers(response)
         return response
 
-    return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func
 
 
 def get_target_view_function_or_response(
@@ -102,7 +107,7 @@ def get_target_view_function_or_response(
 
 @default_never_cache_responses
 @csrf_exempt
-def rest_dispatch(request: HttpRequest, **kwargs: object) -> HttpResponse:
+def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Authentication is verified in the following ways:
