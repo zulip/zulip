@@ -627,6 +627,35 @@ test("stream_has_any_unread_mentions", () => {
     assert.equal(unread.stream_has_any_unread_mentions(muted_stream_id), false);
 });
 
+test("topics with unread mentions", () => {
+    const message_with_mention = {
+        id: 98,
+        type: "stream",
+        stream_id: 999,
+        topic: "topic with mention",
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    const message_without_mention = {
+        id: 99,
+        type: "stream",
+        stream_id: 999,
+        topic: "topic without mention",
+        mentioned: false,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message_with_mention, message_without_mention]);
+    assert.equal(unread.get_topics_with_unread_mentions(999).size, 1);
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set(["topic with mention"]));
+    unread.mark_as_read(message_with_mention.id);
+    assert.equal(unread.get_topics_with_unread_mentions(999).size, 0);
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set([]));
+});
+
 test("starring", () => {
     // We don't need any setup here, because we just hard code
     // this to [] in the code.

@@ -50,6 +50,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(empty_list_info, {
         items: [],
+        more_topics_have_unread_mention_messages: false,
         more_topics_unreads: 0,
         num_possible_topics: 0,
     });
@@ -77,9 +78,11 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     list_info = get_list_info();
     assert.equal(list_info.items.length, 5);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 7);
 
     assert.deepEqual(list_info.items[0], {
+        contains_unread_mention: false,
         is_active_topic: true,
         is_muted: false,
         is_zero: true,
@@ -91,6 +94,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     });
 
     assert.deepEqual(list_info.items[1], {
+        contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
         is_zero: true,
@@ -108,6 +112,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     list_info = get_list_info(zoomed);
     assert.equal(list_info.items.length, 7);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 7);
 
     add_topic_message("After Brooklyn", 1008);
@@ -117,6 +122,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     list_info = get_list_info(zoomed);
     assert.equal(list_info.items.length, 2);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 2);
 });
 
@@ -144,6 +150,20 @@ test("get_list_info unreads", ({override}) => {
         );
     }
 
+    function add_unreads_with_mention(topic, count) {
+        unread.process_loaded_messages(
+            Array.from({length: count}, () => ({
+                id: (message_id += 1),
+                stream_id: general.stream_id,
+                topic,
+                type: "stream",
+                unread: true,
+                mentioned: true,
+                mentioned_me_directly: true,
+            })),
+        );
+    }
+
     /*
         We have 15 topics, but we only show up
         to 8 topics, depending on how many have
@@ -156,9 +176,18 @@ test("get_list_info unreads", ({override}) => {
     add_unreads("topic 8", 8);
     add_unreads("topic 9", 9);
 
+    /*
+        We added 9 unread messages in 'topic 9',
+        but now we would add a unread message
+        with `mention` for user, to test
+        `more_topics_have_unread_mention_messages`.
+    */
+    add_unreads_with_mention("topic 9", 1);
+
     list_info = get_list_info();
     assert.equal(list_info.items.length, 7);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
@@ -171,7 +200,8 @@ test("get_list_info unreads", ({override}) => {
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
-    assert.equal(list_info.more_topics_unreads, 9);
+    assert.equal(list_info.more_topics_unreads, 10);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
@@ -190,7 +220,8 @@ test("get_list_info unreads", ({override}) => {
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);
-    assert.equal(list_info.more_topics_unreads, 9 + 13);
+    assert.equal(list_info.more_topics_unreads, 10 + 13);
+    assert.equal(list_info.more_topics_have_unread_mention_messages, true);
     assert.equal(list_info.num_possible_topics, 15);
 
     assert.deepEqual(
