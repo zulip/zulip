@@ -255,6 +255,7 @@ h4.stream_setting_subsection_title {
 }
 
 .subscriptions-container .subscriptions-header .fa-chevron-left,
+.user-groups-container .user-groups-header .fa-chevron-left,
 #settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0);
@@ -277,6 +278,7 @@ h4.stream_setting_subsection_title {
     opacity: 1;
 }
 
+.user-groups-container,
 .subscriptions-container {
     position: relative;
     height: 95%;
@@ -291,6 +293,7 @@ h4.stream_setting_subsection_title {
         width: auto;
     }
 
+    .user-groups-header,
     .subscriptions-header {
         padding: 12px;
         text-align: center;
@@ -302,6 +305,7 @@ h4.stream_setting_subsection_title {
             display: none;
         }
 
+        .user-groups-title,
         .subscriptions-title {
             display: inline-block;
             transition: all 0.3s ease;
@@ -970,6 +974,7 @@ h4.stream_setting_subsection_title {
 }
 
 @media (width < $lg_min) {
+    .user-groups-container,
     .subscriptions-container {
         max-width: 95%;
     }
@@ -1005,6 +1010,7 @@ h4.stream_setting_subsection_title {
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
 @media (width < $md_min) {
+    .user-groups-container,
     .subscriptions-container {
         position: relative;
         overflow: hidden;
@@ -1013,6 +1019,7 @@ h4.stream_setting_subsection_title {
             text-align: left;
         }
 
+        .user-groups-header .fa-chevron-left,
         .subscriptions-header .fa-chevron-left {
             display: block;
         }
@@ -1048,11 +1055,13 @@ h4.stream_setting_subsection_title {
         }
     }
 
-    #subscription_overlay {
+    #subscription_overlay,
+    #groups_overlay {
         .display-type {
             display: none;
         }
 
+        .user-groups-container,
         .subscriptions-container {
             height: 95%;
         }

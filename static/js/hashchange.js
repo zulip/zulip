@@ -27,6 +27,7 @@ import * as stream_settings_ui from "./stream_settings_ui";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_report from "./ui_report";
 import * as ui_util from "./ui_util";
+import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -299,6 +300,11 @@ function do_hashchange_overlay(old_hash) {
 
     if (base === "streams") {
         stream_settings_ui.launch(section);
+        return;
+    }
+
+    if (base === "groups") {
+        user_groups_settings_ui.launch();
         return;
     }
 

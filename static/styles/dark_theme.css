@@ -634,6 +634,7 @@ body.dark-theme {
     .nav > li > a:focus,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
+    .user-groups-container .user-groups-header,
     .grey-box,
     .white-box,
     .stream-email,
