@@ -573,6 +573,7 @@ body.dark-theme {
         border-top: none;
     }
 
+    .group-row.active,
     .stream-row.active,
     .emoji-info-popover .emoji-showcase-container,
     .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,

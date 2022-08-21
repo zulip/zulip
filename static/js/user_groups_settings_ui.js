@@ -35,6 +35,11 @@ export const show_user_group_settings_pane = {
             $t({defaultMessage: "User group settings"}),
         );
     },
+    settings(group) {
+        $(".settings, #user-group-creation").hide();
+        $("#groups_overlay .settings").show();
+        $("#groups_overlay .user-group-info-title").text(group.name);
+    },
     create_user_group() {
         $(".nothing-selected, .settings, #user-group-creation").hide();
         $("#user-group-creation").show();
