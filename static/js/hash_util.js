@@ -153,6 +153,11 @@ export function stream_edit_url(sub) {
     return hash;
 }
 
+export function group_edit_url(group) {
+    const hash = `#groups/${group.id}/${internal_url.encodeHashComponent(group.name)}`;
+    return hash;
+}
+
 export function search_public_streams_notice_url(operators) {
     const public_operator = {operator: "streams", operand: "public"};
     return operators_to_hash([public_operator].concat(operators));
