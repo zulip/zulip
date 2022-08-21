@@ -3,7 +3,7 @@ import secrets
 import urllib
 from email.headerregistry import Address
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, cast
 from urllib.parse import urlencode
 
 import jwt
@@ -29,6 +29,7 @@ from markupsafe import Markup as mark_safe
 from social_django.utils import load_backend, load_strategy
 from two_factor.forms import BackupTokenForm
 from two_factor.views import LoginView as BaseTwoFactorLoginView
+from typing_extensions import Concatenate, ParamSpec
 
 from confirmation.models import (
     Confirmation,
@@ -65,7 +66,6 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
-from zerver.lib.types import ViewFuncT
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.users import get_api_key, is_2fa_verified
@@ -102,6 +102,7 @@ from zproject.backends import (
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
 
+ParamT = ParamSpec("ParamT")
 ExtraContext = Optional[Dict[str, Any]]
 
 
@@ -554,16 +555,20 @@ def oauth_redirect_to_root(
     return redirect(append_url_query_string(main_site_uri, urllib.parse.urlencode(params)))
 
 
-def handle_desktop_flow(func: ViewFuncT) -> ViewFuncT:
+def handle_desktop_flow(
+    func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
     @wraps(func)
-    def wrapper(request: HttpRequest, *args: object, **kwargs: object) -> HttpResponse:
+    def wrapper(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
         user_agent = parse_user_agent(request.headers.get("User-Agent", "Missing User-Agent"))
         if user_agent["name"] == "ZulipElectron":
             return render(request, "zerver/desktop_login.html")
 
         return func(request, *args, **kwargs)
 
-    return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
+    return wrapper
 
 
 @handle_desktop_flow

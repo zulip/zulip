@@ -1,10 +1,11 @@
 import time
 from functools import wraps
-from typing import Any, Dict, List, Set, cast
+from typing import Any, Callable, Dict, List, Set
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
@@ -12,7 +13,6 @@ from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.types import ViewFuncT
 from zerver.lib.validator import (
     check_dict_only,
     check_float,
@@ -26,6 +26,7 @@ from zerver.lib.validator import (
 from zerver.models import Draft, UserProfile
 from zerver.tornado.django_api import send_event
 
+ParamT = ParamSpec("ParamT")
 VALID_DRAFT_TYPES: Set[str] = {"", "private", "stream"}
 
 # A validator to verify if the structure (syntax) of a dictionary
@@ -87,16 +88,22 @@ def further_validated_draft_dict(
     }
 
 
-def draft_endpoint(view_func: ViewFuncT) -> ViewFuncT:
+def draft_endpoint(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:
     @wraps(view_func)
     def draft_view_func(
-        request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
+        request: HttpRequest,
+        user_profile: UserProfile,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.enable_drafts_synchronization:
             raise JsonableError(_("User has disabled synchronizing drafts."))
         return view_func(request, user_profile, *args, **kwargs)
 
-    return cast(ViewFuncT, draft_view_func)  # https://github.com/python/mypy/issues/1927
+    return draft_view_func
 
 
 def do_create_drafts(draft_dicts: List[Dict[str, Any]], user_profile: UserProfile) -> List[Draft]:

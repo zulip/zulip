@@ -2,11 +2,8 @@ import datetime
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
-from django.http import HttpResponse
 from django.utils.functional import Promise
 from typing_extensions import NotRequired
-
-ViewFuncT = TypeVar("ViewFuncT", bound=Callable[..., HttpResponse])
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
