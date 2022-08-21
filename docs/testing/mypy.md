@@ -114,44 +114,6 @@ everything in the third-party module as an `Any`, which is the right
 model (one certainly wouldn't want to need stubs for everything just
 to use `mypy`!), but means the code can't be fully type-checked.
 
-## `type_debug.py`
-
-`zerver/lib/type_debug.py` has a useful decorator `print_types`. It
-prints the types of the parameters of the decorated function and the
-return type whenever that function is called. This can help find out
-what parameter types a function is supposed to accept, or if
-parameters with the wrong types are being passed to a function.
-
-Here is an example using the interactive console:
-
-```pycon
->>> from zerver.lib.type_debug import print_types
->>>
->>> @print_types
-... def func(x, y):
-...     return x + y
-...
->>> func(1.0, 2)
-func(float, int) -> float
-3.0
->>> func('a', 'b')
-func(str, str) -> str
-'ab'
->>> func((1, 2), (3,))
-func((int, int), (int,)) -> (int, int, int)
-(1, 2, 3)
->>> func([1, 2, 3], [4, 5, 6, 7])
-func([int, ...], [int, ...]) -> [int, ...]
-[1, 2, 3, 4, 5, 6, 7]
-```
-
-`print_all` prints the type of the first item of lists. So `[int, ...]` represents
-a list whose first element's type is `int`. Types of all items are not printed
-because a list can have many elements, which would make the output too large.
-
-Similarly in dicts, one key's type and the corresponding value's type are printed.
-So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
-
 ## Using @overload to accurately describe variations
 
 Sometimes, a function's type is most precisely expressed as a few
