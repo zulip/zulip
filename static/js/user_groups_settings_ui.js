@@ -10,6 +10,20 @@ import * as people from "./people";
 import * as ui from "./ui";
 import * as user_groups from "./user_groups";
 
+export function set_up_click_handlers() {
+    $("#groups_overlay").on("click", ".left #clear_search_group_name", (e) => {
+        const $input = $("#groups_overlay .left #search_group_name");
+        $input.val("");
+
+        // This is a hack to rerender complete
+        // stream list once the text is cleared.
+        $input.trigger("input");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+}
+
 export function setup_page(callback) {
     function populate_and_fill() {
         const rendered = render_user_group_settings_overlay();
@@ -30,8 +44,20 @@ export function setup_page(callback) {
                 );
                 return render_browse_user_groups_list_item(item);
             },
+            filter: {
+                $element: $("#manage_groups_container .left #search_group_name"),
+                predicate(item, value) {
+                    return (
+                        item &&
+                        (item.name.toLocaleLowerCase().includes(value) ||
+                            item.description.toLocaleLowerCase().includes(value))
+                    );
+                },
+            },
             $simplebar_container: $container,
         });
+
+        set_up_click_handlers();
 
         if (callback) {
             callback();

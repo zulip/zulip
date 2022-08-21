@@ -170,6 +170,7 @@ body.dark-theme {
 
     .column-left .left-sidebar,
     .stream_name_search_section,
+    .group_name_search_section,
     .column-right .right-sidebar {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
