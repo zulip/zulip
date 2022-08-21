@@ -99,6 +99,7 @@ import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_groups from "./user_groups";
+import * as user_group_settings_ui from "./user_groups_settings_ui";
 import {initialize_user_settings, user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -623,6 +624,7 @@ export function initialize_everything() {
     user_topics.initialize();
     muted_users.initialize();
     stream_settings_ui.initialize();
+    user_group_settings_ui.initialize();
     stream_list.initialize();
     condense.initialize();
     spoilers.initialize();

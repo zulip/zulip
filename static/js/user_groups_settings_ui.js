@@ -4,11 +4,13 @@ import render_browse_user_groups_list_item from "../templates/user_group_setting
 import render_user_group_settings_overlay from "../templates/user_group_settings/user_group_settings_overlay.hbs";
 
 import * as browser_history from "./browser_history";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as ui from "./ui";
+import * as user_group_create from "./user_group_create";
 import * as user_groups from "./user_groups";
 
 export function set_up_click_handlers() {
@@ -23,6 +25,26 @@ export function set_up_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
+}
+
+export const show_user_group_settings_pane = {
+    nothing_selected() {
+        $(".settings, #user-group-creation").hide();
+        $(".nothing-selected").show();
+        $("#groups_overlay .user-group-info-title").text(
+            $t({defaultMessage: "User group settings"}),
+        );
+    },
+    create_user_group() {
+        $(".nothing-selected, .settings, #user-group-creation").hide();
+        $("#user-group-creation").show();
+        $("#groups_overlay .user-group-info-title").text($t({defaultMessage: "Create user group"}));
+    },
+};
+
+export function open_create_user_group() {
+    user_group_create.create_user_group_clicked();
+    browser_history.update("#groups/new");
 }
 
 export function setup_page(callback) {
@@ -63,6 +85,7 @@ export function setup_page(callback) {
         });
 
         set_up_click_handlers();
+        user_group_create.set_up_handlers();
 
         // show the "User group settings" header by default.
         $(".display-type #user_group_settings_title").show();
@@ -73,6 +96,13 @@ export function setup_page(callback) {
     }
 
     populate_and_fill();
+}
+
+export function initialize() {
+    $("#manage_groups_container").on("click", ".create_user_group_button", (e) => {
+        e.preventDefault();
+        open_create_user_group();
+    });
 }
 
 export function launch() {

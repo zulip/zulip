@@ -96,10 +96,12 @@
     }
 }
 
+#create_user_group_description,
 #create_stream_description {
     width: calc(100% - 15px);
 }
 
+.user_group_creation_error,
 .stream_creation_error {
     display: none;
     margin-left: 2px;
@@ -107,26 +109,30 @@
 }
 
 /* TODO: Unify with settings.css definition */
-h3.stream_setting_subsection_title {
+h3.stream_setting_subsection_title,
+h3.user_group_setting_subsection_title {
     display: inline-block;
     font-size: 1.5em;
     font-weight: normal;
     line-height: 1.5;
 }
 
-h4.stream_setting_subsection_title {
+h4.stream_setting_subsection_title,
+h4.user_group_setting_subsection_title {
     display: inline-block;
     font-size: 1.35em;
     font-weight: normal;
     line-height: 1.5;
 }
 
+.member-list-box,
 .subscriber-list-box {
     text-align: center;
     border-left: 1px solid hsl(0, 0%, 87%);
     border-right: 1px solid hsl(0, 0%, 87%);
     border-radius: 4px;
 
+    .member_list_container,
     .subscriber_list_container {
         position: relative;
         /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
@@ -135,6 +141,7 @@ h4.stream_setting_subsection_title {
         text-align: left;
         -webkit-overflow-scrolling: touch;
 
+        .member-list,
         .subscriber-list {
             width: 100%;
             margin: auto;
@@ -206,7 +213,8 @@ h4.stream_setting_subsection_title {
     padding-right: 8px;
 }
 
-.subscriber_list_add {
+.subscriber_list_add,
+.member_list_add {
     width: 100%;
     margin: 0 0 10px;
 
@@ -225,7 +233,8 @@ h4.stream_setting_subsection_title {
     }
 }
 
-.subscriber_list_add .form-inline {
+.subscriber_list_add .form-inline,
+.member_list_add .form-inline {
     margin-bottom: 0;
 }
 
@@ -485,6 +494,7 @@ h4.stream_setting_subsection_title {
     font-weight: 400;
 }
 
+.user-group-creation-body,
 .stream-creation-body {
     section.block {
         margin-bottom: 20px;
@@ -661,7 +671,9 @@ h4.stream_setting_subsection_title {
     color: hsl(0, 0%, 67%);
 }
 
+#groups_overlay,
 #subscription_overlay {
+    #user-group-creation,
     #stream-creation {
         max-height: calc(100% - 102px);
         overflow: auto;
@@ -675,14 +687,17 @@ h4.stream_setting_subsection_title {
             padding-top: 9px;
         }
 
+        .user-group-creation-body,
         .stream-creation-body {
             padding: 15px;
         }
 
+        .add_all_users_to_user_group,
         .add_all_users_to_stream {
             margin-left: 10px;
         }
 
+        .create_user_group_member_list_header,
         .create_stream_subscriber_list_header {
             margin-top: 10px;
             margin-bottom: 3px;
@@ -697,9 +712,11 @@ h4.stream_setting_subsection_title {
             float: right;
         }
 
+        #user_group_creation_form,
         #stream_creation_form {
             margin: 0;
 
+            #user_group_creating_indicator,
             #stream_creating_indicator {
                 &:not(:empty) {
                     position: absolute;
