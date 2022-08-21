@@ -404,6 +404,32 @@ class UnreadTopicCounter {
 
         return id_set.size !== 0;
     }
+
+    get_topics_with_unread_mentions(stream_id) {
+        // Returns the set of lower cased topics with unread mentions
+        // in the given stream.
+        const result = new Set();
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+
+        if (!per_stream_bucketer) {
+            return result;
+        }
+
+        for (const message_id of unread_mentions_counter) {
+            // Because bucket keys in per_stream_bucketer are topics,
+            // we can just directly use reverse_lookup to find the
+            // topic in this stream containing a given unread message
+            // ID. If it's not in this stream, we'll get undefined.
+            const topic_match = per_stream_bucketer.reverse_lookup.get(message_id);
+            if (topic_match !== undefined) {
+                // Important: We lower-case topics here before adding them
+                // to this set, to support case-insensitive checks.
+                result.add(topic_match.toLowerCase());
+            }
+        }
+
+        return result;
+    }
 }
 const unread_topic_counter = new UnreadTopicCounter();
 
@@ -599,6 +625,10 @@ export function stream_has_any_unread_mentions(stream_id) {
 
 export function topic_has_any_unread(stream_id, topic) {
     return unread_topic_counter.topic_has_any_unread(stream_id, topic);
+}
+
+export function get_topics_with_unread_mentions(stream_id) {
+    return unread_topic_counter.get_topics_with_unread_mentions(stream_id);
 }
 
 export function num_unread_for_person(user_ids_string) {

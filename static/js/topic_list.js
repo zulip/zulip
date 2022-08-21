@@ -82,10 +82,11 @@ export function keyed_topic_li(conversation) {
     };
 }
 
-export function more_li(more_topics_unreads) {
+export function more_li(more_topics_unreads, more_topics_have_unread_mention_messages) {
     const render = () =>
         render_more_topics({
             more_topics_unreads,
+            more_topics_have_unread_mention_messages,
         });
 
     const eq = (other) => other.more_items && more_topics_unreads === other.more_topics_unreads;
@@ -142,6 +143,8 @@ export class TopicListWidget {
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
+        const more_topics_have_unread_mention_messages =
+            list_info.more_topics_have_unread_mention_messages;
 
         const is_showing_all_possible_topics =
             list_info.items.length === num_possible_topics &&
@@ -154,7 +157,7 @@ export class TopicListWidget {
         if (spinner) {
             nodes.push(spinner_li());
         } else if (!is_showing_all_possible_topics) {
-            nodes.push(more_li(more_topics_unreads));
+            nodes.push(more_li(more_topics_unreads, more_topics_have_unread_mention_messages));
         } else if (zoomed) {
             // In the zoomed topic view, we need to add the input
             // for filtering through list of topics.
