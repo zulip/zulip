@@ -17,8 +17,9 @@ import os
 import sys
 from email.headerregistry import Address
 from functools import wraps
-from typing import Any, Callable, Dict, List, Set, TypeVar, cast
+from typing import Any, Callable, Dict, List, Set, TypeVar
 
+from typing_extensions import ParamSpec
 from zulip import Client
 
 from zerver.models import get_realm, get_user
@@ -30,10 +31,13 @@ TEST_FUNCTIONS: Dict[str, Callable[..., object]] = {}
 REGISTERED_TEST_FUNCTIONS: Set[str] = set()
 CALLED_TEST_FUNCTIONS: Set[str] = set()
 
-FuncT = TypeVar("FuncT", bound=Callable[..., object])
+ParamT = ParamSpec("ParamT")
+ReturnT = TypeVar("ReturnT")
 
 
-def openapi_test_function(endpoint: str) -> Callable[[FuncT], FuncT]:
+def openapi_test_function(
+    endpoint: str,
+) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """This decorator is used to register an OpenAPI test function with
     its endpoint. Example usage:
 
@@ -41,16 +45,16 @@ def openapi_test_function(endpoint: str) -> Callable[[FuncT], FuncT]:
     def ...
     """
 
-    def wrapper(test_func: FuncT) -> FuncT:
+    def wrapper(test_func: Callable[ParamT, ReturnT]) -> Callable[ParamT, ReturnT]:
         @wraps(test_func)
-        def _record_calls_wrapper(*args: object, **kwargs: object) -> object:
+        def _record_calls_wrapper(*args: ParamT.args, **kwargs: ParamT.kwargs) -> ReturnT:
             CALLED_TEST_FUNCTIONS.add(test_func.__name__)
             return test_func(*args, **kwargs)
 
         REGISTERED_TEST_FUNCTIONS.add(test_func.__name__)
         TEST_FUNCTIONS[endpoint] = _record_calls_wrapper
 
-        return cast(FuncT, _record_calls_wrapper)  # https://github.com/python/mypy/issues/1927
+        return _record_calls_wrapper
 
     return wrapper
 

@@ -1,10 +1,11 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar, cast
+from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
@@ -413,20 +414,22 @@ class TestServiceBotConfigHandler(ZulipTestCase):
             self.bot_handler.send_message(message={"type": "private", "to": []})
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+ParamT = ParamSpec("ParamT")
 
 
-def for_all_bot_types(test_func: FuncT) -> FuncT:
+def for_all_bot_types(
+    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]
+) -> Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]:
     @wraps(test_func)
-    def _wrapped(*args: object, **kwargs: object) -> None:
-        assert len(args) > 0
-        self = cast(TestServiceBotEventTriggers, args[0])
+    def _wrapped(
+        self: "TestServiceBotEventTriggers", /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
-            test_func(*args, **kwargs)
+            test_func(self, *args, **kwargs)
 
-    return cast(FuncT, _wrapped)  # https://github.com/python/mypy/issues/1927
+    return _wrapped
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):
