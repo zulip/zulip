@@ -200,6 +200,7 @@ EXEMPT_FILES = make_set(
         "static/js/unread_ops.js",
         "static/js/unread_ui.js",
         "static/js/upload_widget.ts",
+        "static/js/user_groups_settings_ui.js",
         "static/js/user_profile.js",
         "static/js/user_settings.ts",
         "static/js/user_status_ui.js",

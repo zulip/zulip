@@ -195,6 +195,7 @@ export function is_overlay_hash(hash) {
     const overlay_list = [
         "streams",
         "drafts",
+        "groups",
         "settings",
         "organization",
         "invite",
