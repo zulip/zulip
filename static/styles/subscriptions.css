@@ -454,12 +454,22 @@ h4.stream_setting_subsection_title {
     border-bottom: 1px solid hsl(0, 0%, 87%);
 }
 
+.user-groups-list,
 .streams-list {
     position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     height: calc(100% - 85px);
     width: 100%;
+}
+
+.user-groups-list {
+    /*
+        This height rule is temporary for this preparatory commit and
+        will be removed as we add other search/filter widgets in groups list
+        and its styling similar to streams list.
+    */
+    height: 100% !important;
 }
 
 #clear_search_stream_name {
@@ -486,7 +496,8 @@ h4.stream_setting_subsection_title {
     }
 }
 
-.stream-row {
+.stream-row,
+.group-row {
     padding: 15px 10px 11px;
     border-bottom: 1px solid hsl(0, 0%, 93%);
     cursor: pointer;
@@ -561,7 +572,8 @@ h4.stream_setting_subsection_title {
         }
     }
 
-    .sub-info-box {
+    .sub-info-box,
+    .group-info-box {
         width: calc(100% - 90px);
 
         .top-bar,
@@ -572,6 +584,7 @@ h4.stream_setting_subsection_title {
         }
 
         .top-bar .stream-name,
+        .top-bar .group-name,
         .bottom-bar .description {
             white-space: nowrap;
             overflow: hidden;
@@ -596,7 +609,8 @@ h4.stream_setting_subsection_title {
             vertical-align: top;
         }
 
-        .top-bar .stream-name {
+        .top-bar .stream-name,
+        .top-bar .group-name {
             font-weight: 600;
         }
 
@@ -636,7 +650,8 @@ h4.stream_setting_subsection_title {
     }
 }
 
-.stream-row .sub-info-box .description:empty::after {
+.stream-row .sub-info-box .description:empty::after,
+.group-row .group-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
     color: hsl(0, 0%, 67%);
