@@ -695,6 +695,7 @@ html_rules: List["Rule"] = [
             # exclude_pattern above handles color, but have other issues:
             "static/templates/draft.hbs",
             "static/templates/stream_settings/browse_streams_list_item.hbs",
+            "static/templates/user_group_settings/browse_user_groups_list_item.hbs",
             "static/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up

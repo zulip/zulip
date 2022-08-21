@@ -655,8 +655,10 @@ body.dark-theme {
 
     .subscriptions-container .right .display-type,
     .stream-row,
+    .group-row,
     .subscriptions-container .left .search-container,
     .subscriptions-container .left,
+    .user-groups-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
     #subscription_overlay .subsection-parent div,
