@@ -1,0 +1,35 @@
+<div class="hide" id="user-group-creation" tabindex="-1" role="dialog"
+  aria-label="{{t 'User group creation' }}">
+    <form id="user_group_creation_form">
+        <div class="alert user_group_create_info"></div>
+        <div id="user_group_creating_indicator"></div>
+        <div class="user-group-creation-body">
+            <section class="block">
+                <label for="create_user_group_name">
+                    {{t "User group name" }}
+                </label>
+                <input type="text" name="user_group_name" id="create_user_group_name"
+                  placeholder="{{t 'User group name' }}" value="" autocomplete="off" />
+                <div id="user_group_name_error" class="user_group_creation_error"></div>
+            </section>
+            <section class="block">
+                <label for="create_user_group_description">
+                    {{t "User group description" }}
+                </label>
+                <input type="text" name="user_group_description" id="create_user_group_description"
+                  placeholder="{{t 'User group description' }}" value="" autocomplete="off" />
+            </section>
+            <section class="block">
+                <label for="people_to_add_in_group">
+                    <h4 class="user_group_setting_subsection_title">{{t "Choose members" }}</h4>
+                </label>
+                <div id="user_group_membership_error" class="user_group_creation_error"></div>
+                <div class="controls" id="people_to_add_in_group"></div>
+            </section>
+        </div>
+        <div class="modal-footer">
+            <button class="button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+            <button class="finalize_create_user_group button small sea-green rounded" type="submit">{{t "Create" }}</button>
+        </div>
+    </form>
+</div>

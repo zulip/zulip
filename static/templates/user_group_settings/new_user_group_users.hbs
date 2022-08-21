@@ -1,0 +1,27 @@
+<div class="member_list_add float-left">
+    {{> ../stream_settings/add_subscribers_form}}
+</div>
+<br />
+
+{{t "Do you want to add everyone?"}}
+<button class="add_all_users_to_user_group small button rounded sea-green">{{t 'Add all users'}}</button>
+
+<div class="create_member_list_header">
+    <h4 class="user_group_setting_subsection_title">{{t 'Members' }}</h4>
+    <input class="add-user-list-filter" name="user_list_filter" type="text"
+      autocomplete="off" placeholder="{{t 'Filter members' }}" />
+</div>
+
+<div class="member-list-box">
+    <div class="member_list_container" data-simplebar>
+        <table class="member-list table table-striped">
+            <thead class="table-sticky-headers">
+                <th>{{t "Name" }}</th>
+                <th>{{t "Email" }}</th>
+                <th>{{t "User ID" }}</th>
+                <th>{{t "Action" }}</th>
+            </thead>
+            <tbody id="create_user_group_members" class="member_table"></tbody>
+        </table>
+    </div>
+</div>

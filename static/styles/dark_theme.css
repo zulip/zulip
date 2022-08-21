@@ -424,6 +424,10 @@ body.dark-theme {
         #stream-creation
         #stream_creation_form
         #stream_creating_indicator:not(:empty),
+    #groups_overlay
+        #user-group-creation
+        #user_group_creation_form
+        #user_group_creating_indicator:not(:empty),
     .emoji-info-popover
         .emoji-popover
         .emoji-popover-emoji:not(.reacted):focus {
@@ -663,6 +667,8 @@ body.dark-theme {
     .user-groups-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
+    .member-list-box,
+    .member-list-box .member_list_container .member-list tr,
     #subscription_overlay .subsection-parent div,
     #subscription_overlay .radio-input-parent,
     #stream_privacy_modal .radio-input-parent,
