@@ -429,7 +429,8 @@ h4.stream_setting_subsection_title {
     }
 }
 
-#search_stream_name {
+#search_stream_name,
+#search_group_name {
     width: 100%;
     padding: 3px 5px;
     margin: 8px 0;
@@ -444,7 +445,8 @@ h4.stream_setting_subsection_title {
     overflow: hidden;
 }
 
-.stream_name_search_section {
+.stream_name_search_section,
+.group_name_search_section {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -466,13 +468,14 @@ h4.stream_setting_subsection_title {
 .user-groups-list {
     /*
         This height rule is temporary for this preparatory commit and
-        will be removed as we add other search/filter widgets in groups list
+        will be removed as we add other components widgets in groups list
         and its styling similar to streams list.
     */
-    height: 100% !important;
+    height: calc(100% - 42px) !important;
 }
 
-#clear_search_stream_name {
+#clear_search_stream_name,
+#clear_search_group_name {
     right: 5px !important;
 }
 
