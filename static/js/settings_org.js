@@ -1258,11 +1258,19 @@ export function build_page() {
             10,
         );
 
+        const msg_edit_limit_dropdown_value = $("#id_realm_msg_edit_limit_setting").val();
+        const edit_limit_custom_value_invalid =
+            msg_edit_limit_dropdown_value === "custom_limit" &&
+            (edit_limit_value <= 0 || Number.isNaN(edit_limit_value));
+
+        const msg_delete_limit_dropdown_value = $("#id_realm_msg_delete_limit_setting").val();
+        const delete_limit_custom_value_invalid =
+            msg_delete_limit_dropdown_value === "custom_limit" &&
+            (delete_limit_value <= 0 || Number.isNaN(delete_limit_value));
+
         const disable_save_btn =
-            edit_limit_value <= 0 ||
-            delete_limit_value <= 0 ||
-            Number.isNaN(edit_limit_value) ||
-            Number.isNaN(delete_limit_value);
+            edit_limit_custom_value_invalid || delete_limit_custom_value_invalid;
+
         $(e.target)
             .closest(".org-subsection-parent")
             .find(".subsection-changes-save button")
