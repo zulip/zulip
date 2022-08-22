@@ -22,5 +22,5 @@ run_test("compose_error_test", () => {
         return "none";
     };
 
-    compose_error.hide();
+    $("#compose-send-status").stop(true).fadeOut(500);
 });

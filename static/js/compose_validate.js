@@ -4,7 +4,6 @@ import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
-import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
 import * as channel from "./channel";
@@ -397,11 +396,25 @@ export function validation_error(error_type, stream_name) {
             );
             return false;
         case "not-subscribed": {
+            if ($(`#compose_banners .${compose_error.CLASSNAMES.user_not_subscribed}`).length) {
+                return false;
+            }
             const sub = stream_data.get_sub(stream_name);
-            const new_row = render_compose_not_subscribed({
-                should_display_sub_button: stream_data.can_toggle_subscription(sub),
+            const new_row = render_compose_banner({
+                banner_type: compose_error.ERROR,
+                banner_text: $t({
+                    defaultMessage:
+                        "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
+                }),
+                button_text: stream_data.can_toggle_subscription(sub)
+                    ? $t({defaultMessage: "Subscribe"})
+                    : null,
+                classname: compose_error.CLASSNAMES.user_not_subscribed,
+                // The message cannot be sent until the user subscribes to the stream, so
+                // closing the banner would be more confusing than helpful.
+                hide_close_button: true,
             });
-            compose_error.show_not_subscribed(new_row, $("#stream_message_recipient_stream"));
+            $("#compose_banners").append(new_row);
             return false;
         }
     }

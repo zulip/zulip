@@ -80,9 +80,15 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    mock_template("compose_not_subscribed.hbs", false, () => "compose_not_subscribed_stub");
+    $("#compose_banners .user_not_subscribed").length = 0;
+    let user_not_subscribed_rendered = false;
+    mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
+        assert.equal(data.classname, compose_error.CLASSNAMES.user_not_subscribed);
+        user_not_subscribed_rendered = true;
+        return html;
+    });
     assert.ok(!compose_validate.validate_stream_message_address_info("social"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
+    assert.ok(user_not_subscribed_rendered);
 
     page_params.narrow_stream = false;
     channel.post = (payload) => {
@@ -100,8 +106,9 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
         payload.data.subscribed = false;
         payload.success(payload.data);
     };
+    user_not_subscribed_rendered = false;
     assert.ok(!compose_validate.validate_stream_message_address_info("Frontend"));
-    assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
+    assert.ok(user_not_subscribed_rendered);
 
     let stream_does_not_exist_rendered = false;
     mock_template("compose_banner/stream_does_not_exist_error.hbs", false, (data) => {

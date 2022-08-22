@@ -381,18 +381,11 @@
     }
 }
 
-.compose_private_stream_alert,
-.compose_not_subscribed {
+.compose_private_stream_alert {
     padding: 4px 0;
     display: flex;
     justify-content: space-between;
     position: relative;
-}
-
-#compose_not_subscribed_close {
-    top: 0;
-    right: 0;
-    position: absolute;
 }
 
 .compose_private_stream_alert_controls .compose_private_stream_alert_close {
@@ -406,16 +399,6 @@
 .compose_private_stream_alert_controls {
     float: right;
     position: relative;
-}
-
-.compose_not_subscribed p {
-    margin: 5px 20px;
-    display: inline-block;
-    max-width: calc(100% - 100px);
-}
-
-#error-message-sub-button {
-    margin-right: 30px;
 }
 
 /* Like .nav-tabs > li > a */

@@ -3,8 +3,6 @@ import $ from "jquery";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 
-import * as common from "./common";
-
 // banner types
 export const WARNING = "warning";
 export const ERROR = "error";
@@ -30,6 +28,7 @@ export const CLASSNAMES = {
     topic_missing: "topic_missing",
     zephyr_not_running: "zephyr_not_running",
     generic_compose_error: "generic_compose_error",
+    user_not_subscribed: "user_not_subscribed",
 };
 
 // TODO: Replace with compose_ui.hide_compose_spinner() when it is converted to ts.
@@ -60,20 +59,6 @@ export function show_error_message(message: string, classname: string, $bad_inpu
     }
 }
 
-export function show(error_html: string, $bad_input?: JQuery, alert_class = "alert-error"): void {
-    $("#compose-send-status")
-        .removeClass(common.status_classes)
-        .addClass(alert_class)
-        .stop(true)
-        .fadeTo(0, 1);
-    $("#compose-error-msg").html(error_html);
-    hide_compose_spinner();
-
-    if ($bad_input !== undefined) {
-        $bad_input.trigger("focus").trigger("select");
-    }
-}
-
 export function show_stream_does_not_exist_error(stream_name: string): void {
     // Remove any existing banners with this warning.
     $(`#compose_banners .${CLASSNAMES.stream_does_not_exist}`).remove();
@@ -87,13 +72,4 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     $compose_banner_area.append(new_row);
     hide_compose_spinner();
     $("#stream_message_recipient_stream").trigger("focus").trigger("select");
-}
-
-export function show_not_subscribed(error_html: string, $bad_input?: JQuery): void {
-    show(error_html, $bad_input, "home-error-bar");
-    $(".compose-send-status-close").hide();
-}
-
-export function hide(): void {
-    $("#compose-send-status").stop(true).fadeOut(500);
 }

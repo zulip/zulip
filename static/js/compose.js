@@ -461,23 +461,22 @@ export function initialize() {
         },
     );
 
-    $("#compose-send-status").on("click", ".sub_unsub_button", (event) => {
-        event.preventDefault();
+    const user_not_subscribed_classname = `.${compose_error.CLASSNAMES.user_not_subscribed}`;
+    $("#compose_banners").on(
+        "click",
+        `${user_not_subscribed_classname} .compose_banner_action_button`,
+        (event) => {
+            event.preventDefault();
 
-        const stream_name = $("#stream_message_recipient_stream").val();
-        if (stream_name === undefined) {
-            return;
-        }
-        const sub = stream_data.get_sub(stream_name);
-        stream_settings_ui.sub_or_unsub(sub);
-        $("#compose-send-status").hide();
-    });
-
-    $("#compose-send-status").on("click", "#compose_not_subscribed_close", (event) => {
-        event.preventDefault();
-
-        $("#compose-send-status").hide();
-    });
+            const stream_name = $("#stream_message_recipient_stream").val();
+            if (stream_name === undefined) {
+                return;
+            }
+            const sub = stream_data.get_sub(stream_name);
+            stream_settings_ui.sub_or_unsub(sub);
+            $(user_not_subscribed_classname).remove();
+        },
+    );
 
     $("#compose_banners").on(
         "click",

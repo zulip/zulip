@@ -40,7 +40,6 @@ const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
 const resize = mock_esm("../../static/js/resize");
 const sent_messages = mock_esm("../../static/js/sent_messages");
 const server_events = mock_esm("../../static/js/server_events");
-const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui");
 const transmit = mock_esm("../../static/js/transmit");
 const upload = mock_esm("../../static/js/upload");
 
@@ -565,85 +564,6 @@ test_ui("on_events", ({override}) => {
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
-
-    function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
-        const $container = $.create("fake " + container_sel);
-        let container_removed = false;
-
-        $container.remove = () => {
-            container_removed = true;
-        };
-
-        const $target = $.create("fake click target (" + target_sel + ")");
-
-        $target.set_parents_result(parent, $container);
-
-        const event = {
-            preventDefault: noop,
-            stopPropagation: noop,
-            // FIXME: event.target should not be a jQuery object
-            target: $target,
-        };
-
-        const helper = {
-            event,
-            $container,
-            $target,
-            container_was_removed: () => container_removed,
-        };
-
-        return helper;
-    }
-
-    (function test_compose_not_subscribed_clicked() {
-        const handler = $("#compose-send-status").get_on_handler("click", ".sub_unsub_button");
-        const subscription = {
-            stream_id: 102,
-            name: "test",
-            subscribed: false,
-        };
-        let compose_not_subscribed_called = false;
-        stream_settings_ui.sub_or_unsub = () => {
-            compose_not_subscribed_called = true;
-        };
-
-        const helper = setup_parents_and_mock_remove(
-            "compose-send-status",
-            "sub_unsub_button",
-            ".compose_not_subscribed",
-        );
-
-        handler(helper.event);
-
-        assert.ok(compose_not_subscribed_called);
-
-        stream_data.add_sub(subscription);
-        $("#stream_message_recipient_stream").val("test");
-        $("#compose-send-status").show();
-
-        handler(helper.event);
-
-        assert.ok(!$("#compose-send-status").visible());
-    })();
-
-    (function test_compose_not_subscribed_close_clicked() {
-        const handler = $("#compose-send-status").get_on_handler(
-            "click",
-            "#compose_not_subscribed_close",
-        );
-
-        const helper = setup_parents_and_mock_remove(
-            "compose_user_not_subscribed_close",
-            "compose_not_subscribed_close",
-            ".compose_not_subscribed",
-        );
-
-        $("#compose-send-status").show();
-
-        handler(helper.event);
-
-        assert.ok(!$("#compose-send-status").visible());
-    })();
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
