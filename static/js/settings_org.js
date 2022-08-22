@@ -794,6 +794,16 @@ function check_property_changed(elem, for_realm_default_settings) {
             changed_val = get_email_notification_batching_setting_element_value();
             break;
         }
+        case "realm_message_content_edit_limit_minutes":
+        case "realm_message_content_delete_limit_minutes": {
+            const input_val = Number.parseInt($(`#id_${CSS.escape(property_name)}`).val(), 10);
+            if (Number.isNaN(input_val)) {
+                changed_val = null;
+                break;
+            }
+            changed_val = input_val.toString();
+            break;
+        }
         case "realm_default_language":
             changed_val = $(
                 "#org-notifications .language_selection_widget .language_selection_button span",
