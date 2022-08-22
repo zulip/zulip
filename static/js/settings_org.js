@@ -1194,15 +1194,7 @@ export function build_page() {
             "id_realm_message_content_edit_limit_minutes",
             msg_edit_limit_dropdown_value === "custom_limit",
         );
-        if (msg_edit_limit_dropdown_value === "custom_limit") {
-            const val = get_property_value("realm_message_content_edit_limit_minutes");
-            if (val === null) {
-                $("#id_realm_message_content_edit_limit_minutes")
-                    .closest(".org-subsection-parent")
-                    .find(".subsection-changes-save button")
-                    .prop("disabled", true);
-            }
-        }
+        update_save_button_state(e);
     });
 
     $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
@@ -1212,15 +1204,7 @@ export function build_page() {
             msg_delete_limit_dropdown_value === "custom_limit",
         );
 
-        if (msg_delete_limit_dropdown_value === "custom_limit") {
-            const val = get_property_value("realm_message_content_delete_limit_minutes");
-            if (val === null) {
-                $("#id_realm_message_content_delete_limit_minutes")
-                    .closest(".org-subsection-parent")
-                    .find(".subsection-changes-save button")
-                    .prop("disabled", true);
-            }
-        }
+        update_save_button_state(e);
     });
 
     $("#id_realm_message_retention_setting").on("change", (e) => {
