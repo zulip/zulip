@@ -1190,19 +1190,38 @@ export function build_page() {
 
     $("#id_realm_msg_edit_limit_setting").on("change", (e) => {
         const msg_edit_limit_dropdown_value = e.target.value;
+        const show_custom_limit_input = msg_edit_limit_dropdown_value === "custom_limit";
         change_element_block_display_property(
             "id_realm_message_content_edit_limit_minutes",
-            msg_edit_limit_dropdown_value === "custom_limit",
+            show_custom_limit_input,
         );
+
+        if (!show_custom_limit_input) {
+            // Set the input value to the original setting value if hiding the input box
+            // so that the save-discard widget is hidden again if we change the setting
+            // again to original input.
+            const setting_value = get_property_value("realm_message_content_edit_limit_minutes");
+            $("#id_realm_message_content_edit_limit_minutes").val(setting_value);
+        }
+
         update_save_button_state(e);
     });
 
     $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
         const msg_delete_limit_dropdown_value = e.target.value;
+        const show_custom_limit_input = msg_delete_limit_dropdown_value === "custom_limit";
         change_element_block_display_property(
             "id_realm_message_content_delete_limit_minutes",
-            msg_delete_limit_dropdown_value === "custom_limit",
+            show_custom_limit_input,
         );
+
+        if (!show_custom_limit_input) {
+            // Set the input value to the original setting value if hiding the input box
+            // so that the save-discard widget is hidden again if we change the setting
+            // again to original input.
+            const setting_value = get_property_value("realm_message_content_delete_limit_minutes");
+            $("#id_realm_message_content_delete_limit_minutes").val(setting_value);
+        }
 
         update_save_button_state(e);
     });
