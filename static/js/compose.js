@@ -78,8 +78,7 @@ export function clear_invites() {
 }
 
 export function clear_private_stream_alert() {
-    $("#compose_private_stream_alert").hide();
-    $("#compose_private_stream_alert").empty();
+    $(`#compose_banners .${compose_error.CLASSNAMES.private_stream_warning}`).remove();
 }
 
 export function clear_preview_area() {
@@ -528,21 +527,6 @@ export function initialize() {
             const sub = sub_store.get(stream_id);
 
             subscriber_api.add_user_ids_to_stream([user_id], sub, success, xhr_failure);
-        },
-    );
-
-    $("#compose_private_stream_alert").on(
-        "click",
-        ".compose_private_stream_alert_close",
-        (event) => {
-            const $stream_alert_row = $(event.target).parents(".compose_private_stream_alert");
-            const $stream_alert = $("#compose_private_stream_alert");
-
-            $stream_alert_row.remove();
-
-            if ($stream_alert.children().length === 0) {
-                $stream_alert.hide();
-            }
         },
     );
 

@@ -622,11 +622,20 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 
     peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
+    let banner_rendered = false;
+    mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
+        assert.equal(data.classname, compose_error.CLASSNAMES.private_stream_warning);
+        assert.equal(data.stream_name, "Denmark");
+        banner_rendered = true;
+        return "private_stream_warning_stub";
+    });
+
     function test_noop_case(invite_only) {
+        banner_rendered = false;
         compose_state.set_message_type("stream");
         denmark.invite_only = invite_only;
         compose_validate.warn_if_private_stream_is_linked(denmark);
-        assert.equal($("#compose_private_stream_alert").visible(), false);
+        assert.ok(!banner_rendered);
     }
 
     test_noop_case(false);
@@ -637,44 +646,15 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
     $("#compose_private").hide();
     compose_state.set_message_type("stream");
 
-    const checks = [
-        (function () {
-            let called;
-            mock_template("compose_private_stream_alert.hbs", false, (context) => {
-                called = true;
-                assert.equal(context.stream_name, "Denmark");
-                return "fake-compose_private_stream_alert-template";
-            });
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-
-        (function () {
-            let called;
-            $("#compose_private_stream_alert").append = (html) => {
-                called = true;
-                assert.equal(html, "fake-compose_private_stream_alert-template");
-            };
-            return function () {
-                assert.ok(called);
-            };
-        })(),
-    ];
-
     denmark = {
         invite_only: true,
         name: "Denmark",
         stream_id: 22,
     };
     stream_data.add_sub(denmark);
-
+    banner_rendered = false;
     compose_validate.warn_if_private_stream_is_linked(denmark);
-    assert.equal($("#compose_private_stream_alert").visible(), true);
-
-    for (const f of checks) {
-        f();
-    }
+    assert.ok(banner_rendered);
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {

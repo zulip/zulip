@@ -3,8 +3,8 @@ import $ from "jquery";
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_not_subscribed_warning from "../templates/compose_banner/not_subscribed_warning.hbs";
+import render_private_stream_warning from "../templates/compose_banner/private_stream_warning.hbs";
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
-import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
 import * as channel from "./channel";
 import * as compose_error from "./compose_error";
@@ -100,14 +100,13 @@ export function warn_if_private_stream_is_linked(linked_stream) {
         return;
     }
 
-    const stream_name = linked_stream.name;
+    const new_row = render_private_stream_warning({
+        banner_type: compose_error.WARNING,
+        stream_name: linked_stream.name,
+        classname: compose_error.CLASSNAMES.private_stream_warning,
+    });
 
-    const $warning_area = $("#compose_private_stream_alert");
-    const context = {stream_name};
-    const new_row = render_compose_private_stream_alert(context);
-
-    $warning_area.append(new_row);
-    $warning_area.show();
+    $("#compose_banners").append(new_row);
 }
 
 export function warn_if_mentioning_unsubscribed_user(mentioned) {

@@ -12,6 +12,7 @@ export const CLASSNAMES = {
     topic_resolved: "topic_resolved",
     recipient_not_subscribed: "recipient_not_subscribed",
     wildcard_warning: "wildcard_warning",
+    private_stream_warning: "private_stream_warning",
     // errors
     empty_message: "empty_message",
     wildcards_not_allowed: "wildcards_not_allowed",

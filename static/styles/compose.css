@@ -381,26 +381,6 @@
     }
 }
 
-.compose_private_stream_alert {
-    padding: 4px 0;
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-}
-
-.compose_private_stream_alert_controls .compose_private_stream_alert_close {
-    display: inline-block;
-    position: absolute;
-    margin-top: -2px;
-    margin-right: -2px;
-    width: 10px;
-}
-
-.compose_private_stream_alert_controls {
-    float: right;
-    position: relative;
-}
-
 /* Like .nav-tabs > li > a */
 div[id^="message-edit-send-status"],
 #compose-send-status {
