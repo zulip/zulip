@@ -434,12 +434,17 @@ def for_all_bot_types(
 
 def patch_queue_publish(
     method_to_patch: str,
-) -> Callable[[Callable[..., None]], Callable[..., None]]:
-    def inner(func: Callable[..., None]) -> Callable[..., None]:
+) -> Callable[
+    [Callable[["TestServiceBotEventTriggers", mock.Mock], None]],
+    Callable[["TestServiceBotEventTriggers"], None],
+]:
+    def inner(
+        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None]
+    ) -> Callable[["TestServiceBotEventTriggers"], None]:
         @wraps(func)
-        def _wrapped(*args: object, **kwargs: object) -> None:
+        def _wrapped(self: "TestServiceBotEventTriggers") -> None:
             with mock_queue_publish(method_to_patch) as m:
-                func(*args, m, **kwargs)
+                func(self, m)
 
         return _wrapped
 
