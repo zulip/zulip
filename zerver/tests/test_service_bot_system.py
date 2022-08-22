@@ -13,7 +13,7 @@ from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import patch_queue_publish
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile, get_realm
 
@@ -430,6 +430,20 @@ def for_all_bot_types(
             test_func(self, *args, **kwargs)
 
     return _wrapped
+
+
+def patch_queue_publish(
+    method_to_patch: str,
+) -> Callable[[Callable[..., None]], Callable[..., None]]:
+    def inner(func: Callable[..., None]) -> Callable[..., None]:
+        @wraps(func)
+        def _wrapped(*args: object, **kwargs: object) -> None:
+            with mock_queue_publish(method_to_patch) as m:
+                func(*args, m, **kwargs)
+
+        return _wrapped
+
+    return inner
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):

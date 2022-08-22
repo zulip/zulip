@@ -4,7 +4,6 @@ import re
 import sys
 import time
 from contextlib import contextmanager
-from functools import wraps
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -722,17 +721,3 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
-
-
-def patch_queue_publish(
-    method_to_patch: str,
-) -> Callable[[Callable[..., None]], Callable[..., None]]:
-    def inner(func: Callable[..., None]) -> Callable[..., None]:
-        @wraps(func)
-        def _wrapped(*args: object, **kwargs: object) -> None:
-            with mock_queue_publish(method_to_patch) as m:
-                func(*args, m, **kwargs)
-
-        return _wrapped
-
-    return inner
