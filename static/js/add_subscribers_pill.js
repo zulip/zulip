@@ -40,6 +40,7 @@ function set_up_pill_typeahead({pill_widget, $pill_container, get_users}) {
         stream: true,
         user_group: true,
         user: true,
+        prefer_user_groups: true,
     };
     pill_typeahead.set_up($pill_container.find(".input"), pill_widget, opts);
 }

@@ -147,6 +147,9 @@ run_test("set_up", ({mock_template}) => {
         const fake_group_this = {
             query: "test",
         };
+        const fake_group_with_prefix_this = {
+            query: "@test",
+        };
 
         (function test_highlighter() {
             if (opts.stream) {
@@ -201,6 +204,14 @@ run_test("set_up", ({mock_template}) => {
                 // person query with wrong item.
                 result = config.matcher.call(fake_person_this, jill);
                 assert.ok(!result);
+                if (opts.prefer_user_groups) {
+                    // call user group with @ as prefix
+                    result = config.matcher.call(fake_group_with_prefix_this, testers);
+                    assert.ok(result);
+
+                    result = config.matcher.call(fake_group_with_prefix_this, admins);
+                    assert.ok(!result);
+                }
             }
             if (opts.user_group && !opts.user) {
                 result = config.matcher.call(fake_group_this, testers);
@@ -279,7 +290,7 @@ run_test("set_up", ({mock_template}) => {
         })();
 
         (function test_updater() {
-            if (opts.user && opts.user_group && opts.stream) {
+            if (opts.user && opts.user_group && opts.stream && !opts.prefer_user_groups) {
                 // Test it only for the case when all types of pills
                 // are allowed, as it would be difficult to keep track
                 // of number of items as we call with different types multiple
@@ -324,6 +335,7 @@ run_test("set_up", ({mock_template}) => {
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
+        {user_group: true, stream: true, user: true, prefer_user_groups: true},
         {user_group: true, stream: true, user: true},
     ];
 
