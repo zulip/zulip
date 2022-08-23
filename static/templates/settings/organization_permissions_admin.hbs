@@ -9,7 +9,7 @@
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
                     <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
+                        <i class="fa fa-question-circle-o settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
                     </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
@@ -189,7 +189,7 @@
 
                 <div class="input-group">
                     <label for="realm_delete_own_message_policy" class="dropdown-title">{{t "Who can delete their own messages" }}
-                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
+                        <i class="fa fa-question-circle-o settings-info-icon tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
                     <select name="realm_delete_own_message_policy" id="id_realm_delete_own_message_policy" class="prop-element" data-setting-widget-type="number">
@@ -200,7 +200,7 @@
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Time limit for deleting messages" }}
-                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
+                        <i class="fa fa-question-circle-o settings-info-icon tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
