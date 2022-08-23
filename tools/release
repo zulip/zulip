@@ -110,7 +110,7 @@ export OUTPUT_DIR
 
 ./tools/build-release-tarball "$version"
 
-TARBALL="$OUTDIR/zulip-server-$version.tar.gz"
+TARBALL="$OUTPUT_DIR/zulip-server-$version.tar.gz"
 if ! [ -f "$TARBALL" ]; then
     echo "Did not find expected $TARBALL!"
     exit 1
