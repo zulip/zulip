@@ -44,7 +44,6 @@ function hide_box() {
     compose_fade.clear_compose();
     $(".message_comp").hide();
     $("#compose_controls").show();
-    compose.clear_preview_area();
 }
 
 function get_focus_area(msg_type, opts) {
@@ -111,6 +110,7 @@ function clear_box() {
     compose.clear_private_stream_alert();
     compose_validate.set_user_acknowledged_all_everyone_flag(undefined);
 
+    compose.clear_preview_area();
     clear_textarea();
     compose_validate.check_overflow_text();
     $("#compose-textarea").removeData("draft-id");
