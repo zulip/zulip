@@ -209,7 +209,13 @@ export default (env: {minimize?: boolean} = {}, argv: {mode?: string}): webpack.
         devServer: {
             devMiddleware: {
                 publicPath: "/webpack/",
-                stats: "errors-only",
+                stats: {
+                    // We want just errors and a clear, brief notice
+                    // whenever webpack compilation has finished.
+                    preset: "minimal",
+                    assets: false,
+                    modules: false,
+                },
             },
             headers: {
                 "Access-Control-Allow-Origin": "*",
