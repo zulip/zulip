@@ -396,7 +396,7 @@ msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
-"සබැඳිය ඔබගේ අතිරික්සුවට නිවැරදිව පිටපත් කළ බවට වග බලා ගන්න. ඔබට තවමත් මෙම "
+"සබැඳිය ඔබගේ අතිරික්සුවට නිවැරදිව පිටපත් කර තිබේ දැයි බලන්න. ඔබට තවමත් මෙම "
 "පිටුව මුණ ගැසෙනවා නම් එය බොහෝ විට අපගේ වරදක් විය හැකිය. සමාවන්න."
 
 #: templates/corporate/billing.html:20
@@ -541,7 +541,7 @@ msgstr "%(identity_provider)s සමඟ ලියාපදිංචිය"
 
 #: templates/zerver/accounts_send_confirm.html:13
 msgid "Thanks for signing up!"
-msgstr ""
+msgstr "ලියාපදිංචි වීමට තුති!"
 
 #: templates/zerver/accounts_send_confirm.html:17
 msgid "Check your email so we can get started."
@@ -709,7 +709,7 @@ msgstr ""
 
 #: templates/zerver/desktop_redirect.html:13
 msgid "Copy"
-msgstr "පිටපත්"
+msgstr "පිටපතක්"
 
 #: templates/zerver/desktop_redirect.html:15
 msgid "You may then close this window."
@@ -2079,7 +2079,7 @@ msgstr ""
 #: templates/zerver/login.html:124 templates/zerver/portico-header.html:33
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
-msgstr ""
+msgstr "ඇතුල් වන්න"
 
 #: templates/zerver/login.html:13
 msgid "Log in to Zulip"
@@ -2461,7 +2461,7 @@ msgstr ""
 #: zerver/views/realm_emoji.py:31 zerver/views/streams.py:322
 #: zerver/views/streams.py:546
 msgid "Insufficient permission"
-msgstr ""
+msgstr "ප්‍රමාණවත් අවසරයක් නැත"
 
 #: zerver/decorator.py:669
 msgid "This endpoint requires HTTP basic authentication."
@@ -3092,7 +3092,7 @@ msgstr "{email} ට දැනටමත් ගිණුමක් ඇත"
 
 #: zerver/lib/email_validation.py:180
 msgid "Already has an account."
-msgstr ""
+msgstr "දැනටමත් ගිණුමක් තිබේ."
 
 #: zerver/lib/email_validation.py:182
 msgid "Account has been deactivated."

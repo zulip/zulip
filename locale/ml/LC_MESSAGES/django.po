@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-14 23:23+0000\n"
+"POT-Creation-Date: 2022-08-23 05:17+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -3048,7 +3048,7 @@ msgstr ""
 msgid "Outside your domain."
 msgstr ""
 
-#: zerver/lib/email_validation.py:110 zerver/views/users.py:637
+#: zerver/lib/email_validation.py:110 zerver/views/users.py:638
 msgid "Email addresses containing + are not allowed."
 msgstr ""
 
@@ -3552,7 +3552,7 @@ msgstr ""
 #: zerver/lib/streams.py:266 zerver/lib/streams.py:807
 #: zerver/tornado/views.py:121 zerver/views/events_register.py:75
 #: zerver/views/message_send.py:233 zerver/views/message_send.py:239
-#: zerver/views/message_send.py:258 zerver/views/users.py:615
+#: zerver/views/message_send.py:258 zerver/views/users.py:616
 msgid "User not authorized for this query"
 msgstr ""
 
@@ -3726,7 +3726,7 @@ msgstr ""
 msgid "Name is already in use!"
 msgstr ""
 
-#: zerver/lib/users.py:77 zerver/views/users.py:434 zerver/views/users.py:620
+#: zerver/lib/users.py:77 zerver/views/users.py:435 zerver/views/users.py:621
 msgid "Bad name or username"
 msgstr ""
 
@@ -4535,8 +4535,8 @@ msgstr ""
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:137 zerver/views/users.py:355
-#: zerver/views/users.py:453
+#: zerver/views/upload.py:137 zerver/views/users.py:356
+#: zerver/views/users.py:454
 msgid "You may only upload one file at a time"
 msgstr ""
 
@@ -4593,55 +4593,55 @@ msgstr ""
 msgid "You must upload exactly one avatar."
 msgstr ""
 
-#: zerver/views/users.py:110
+#: zerver/views/users.py:111
 msgid "Cannot deactivate the only organization owner"
 msgstr ""
 
-#: zerver/views/users.py:199
+#: zerver/views/users.py:200
 msgid ""
 "The owner permission cannot be removed from the only organization owner."
 msgstr ""
 
-#: zerver/views/users.py:312
+#: zerver/views/users.py:313
 msgid "Failed to change owner, no such user"
 msgstr ""
 
-#: zerver/views/users.py:314
+#: zerver/views/users.py:315
 msgid "Failed to change owner, user is deactivated"
 msgstr ""
 
-#: zerver/views/users.py:316
+#: zerver/views/users.py:317
 msgid "Failed to change owner, bots can't own other bots"
 msgstr ""
 
-#: zerver/views/users.py:420
+#: zerver/views/users.py:421
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
 msgstr ""
 
-#: zerver/views/users.py:428
+#: zerver/views/users.py:429
 msgid "Embedded bots are not enabled."
 msgstr ""
 
-#: zerver/views/users.py:430
+#: zerver/views/users.py:431
 msgid "Invalid embedded bot name."
 msgstr ""
 
-#: zerver/views/users.py:437
+#: zerver/views/users.py:438
 msgid "Username already in use"
 msgstr ""
 
-#: zerver/views/users.py:630
+#: zerver/views/users.py:631
 #, python-brace-format
 msgid "Email '{email}' not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:635
+#: zerver/views/users.py:636
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:641
+#: zerver/views/users.py:642
 msgid "Email '{}' already in use"
 msgstr ""
 
