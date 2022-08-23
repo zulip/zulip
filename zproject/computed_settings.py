@@ -73,7 +73,7 @@ from .configured_settings import (
 ########################################################################
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = get_secret("secret_key")
+SECRET_KEY = get_mandatory_secret("secret_key")
 
 # A shared secret, used to authenticate different parts of the app to each other.
 SHARED_SECRET = get_mandatory_secret("shared_secret")
