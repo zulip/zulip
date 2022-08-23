@@ -850,7 +850,7 @@ function display_subscribe_toggle_spinner(stream_row) {
     $(stream_row).find(".check").removeClass("sub_unsub_button");
 
     /* Hide the tick. */
-    const $tick = $(stream_row).find("svg");
+    const $tick = $(stream_row).find(".zulip-icon-check");
     $tick.addClass("hide");
 
     /* Add a spinner to show the request is in process. */
@@ -865,7 +865,7 @@ function hide_subscribe_toggle_spinner(stream_row) {
     $(stream_row).find(".check").addClass("sub_unsub_button");
 
     /* Show the tick. */
-    const $tick = $(stream_row).find("svg");
+    const $tick = $(stream_row).find(".zulip-icon-check");
     $tick.removeClass("hide");
 
     /* Destroy the spinner. */
