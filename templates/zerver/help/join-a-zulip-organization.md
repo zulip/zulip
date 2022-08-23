@@ -53,3 +53,10 @@ link via another method.
   these instructions may not apply. Try going to your company's Zulip URL
   to see if there are instructions there; otherwise contact your manager
   or IT department for company-specific instructions.
+
+
+## Related articles
+
+* [Invite new users](/help/invite-new-users)
+* [Switching between organizations](/help/switching-between-organizations)
+* [Import your settings](/help/import-your-settings)

@@ -119,7 +119,9 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
                 {% if accounts %}
                 <div class="input-box">
-                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}
+                        <a href="{{ root_domain_uri }}/help/import-your-settings"><i class="fa fa-question-circle"></i></a>
+                    </label>
                 </div>
                 <div id="source_realm_select_section" class="input-group m-10 inline-block">
                     <select class="select" name="source_realm_id" id="source_realm_select">

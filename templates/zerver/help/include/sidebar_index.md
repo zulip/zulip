@@ -40,6 +40,7 @@
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
 * [Switching between organizations](/help/switching-between-organizations)
+* [Import your settings](/help/import-your-settings)
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Display settings
