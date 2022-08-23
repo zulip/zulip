@@ -19,7 +19,6 @@ from zerver.models import UserProfile
 # since we rearranged the avatars in Zulip 1.6.
 def patched_user_avatar_path(user_profile: UserProfile) -> str:
     email = user_profile.email
-    assert settings.AVATAR_SALT is not None
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
