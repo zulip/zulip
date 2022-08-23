@@ -9,6 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_redirects import (
     API_DOCUMENTATION_REDIRECTS,
     HELP_DOCUMENTATION_REDIRECTS,
+    LANDING_PAGE_REDIRECTS,
     POLICY_DOCUMENTATION_REDIRECTS,
 )
 from zerver.models import Realm, Stream
@@ -176,3 +177,8 @@ class RedirectURLTest(ZulipTestCase):
         for redirect in POLICY_DOCUMENTATION_REDIRECTS:
             result = self.client_get(redirect.old_url, follow=True)
             self.assert_in_success_response(["Policies", "Archive"], result)
+
+    def test_landing_page_redirects(self) -> None:
+        for redirect in LANDING_PAGE_REDIRECTS:
+            result = self.client_get(redirect.old_url, follow=True)
+            self.assert_in_success_response(["Download"], result)

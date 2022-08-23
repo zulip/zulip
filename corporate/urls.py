@@ -23,6 +23,7 @@ from corporate.views.support import support_request
 from corporate.views.upgrade import initial_upgrade, sponsorship, upgrade
 from corporate.views.webhook import stripe_webhook
 from zerver.lib.rest import rest_path
+from zerver.lib.url_redirects import LANDING_PAGE_REDIRECTS
 
 i18n_urlpatterns: Any = [
     # Zephyr/MIT
@@ -52,15 +53,11 @@ v1_api_and_json_patterns = [
 landing_page_urls = [
     # Landing page, features pages, signup form, etc.
     path("hello/", hello_view),
-    path("new-user/", RedirectView.as_view(url="/hello", permanent=True)),
     path("features/", landing_view, {"template_name": "corporate/features.html"}),
     path("plans/", plans_view, name="plans"),
     path("apps/", apps_view),
     path("apps/download/<platform>", app_download_link_redirect),
     path("apps/<platform>", apps_view),
-    path(
-        "developer-community/", RedirectView.as_view(url="/development-community/", permanent=True)
-    ),
     path(
         "development-community/",
         landing_view,
@@ -79,17 +76,11 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/for/communities.html"},
     ),
-    # We merged this into /for/communities.
-    path(
-        "for/working-groups-and-communities/",
-        RedirectView.as_view(url="/for/communities/", permanent=True),
-    ),
     path("for/education/", landing_view, {"template_name": "corporate/for/education.html"}),
     path("for/events/", landing_view, {"template_name": "corporate/for/events.html"}),
     path("for/open-source/", landing_view, {"template_name": "corporate/for/open-source.html"}),
     path("for/research/", landing_view, {"template_name": "corporate/for/research.html"}),
     path("for/business/", landing_view, {"template_name": "corporate/for/business.html"}),
-    path("for/companies/", RedirectView.as_view(url="/for/business/", permanent=True)),
     # case-studies
     path(
         "case-studies/idrift/",
@@ -128,6 +119,12 @@ landing_page_urls = [
     ),
     path("communities/", communities_view),
 ]
+
+# Redirects due to us having moved or combined landing pages:
+for redirect in LANDING_PAGE_REDIRECTS:
+    old_url = redirect.old_url.lstrip("/")
+    landing_page_urls += [path(old_url, RedirectView.as_view(url=redirect.new_url, permanent=True))]
+
 i18n_urlpatterns += landing_page_urls
 
 # Make a copy of i18n_urlpatterns so that they appear without prefix for English

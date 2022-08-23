@@ -51,6 +51,14 @@ HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     URLRedirect("/help/web-public-streams", "/help/public-access-option"),
 ]
 
+LANDING_PAGE_REDIRECTS = [
+    # Add URL redirects for corporate landing pages here.
+    URLRedirect("/new-user/", "/hello"),
+    URLRedirect("/developer-community/", "/development-community"),
+    URLRedirect("/for/companies/", "/for/business"),
+    URLRedirect("/for/working-groups-and-communities/", "/for/communities"),
+]
+
 DOCUMENTATION_REDIRECTS = (
     API_DOCUMENTATION_REDIRECTS + POLICY_DOCUMENTATION_REDIRECTS + HELP_DOCUMENTATION_REDIRECTS
 )
