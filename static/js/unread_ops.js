@@ -8,6 +8,7 @@ import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
 import * as people from "./people";
 import * as recent_topics_ui from "./recent_topics_ui";
+import * as recent_topics_util from "./recent_topics_util";
 import * as reload from "./reload";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
@@ -154,6 +155,11 @@ export function notify_server_message_read(message, options) {
 }
 
 export function process_scrolled_to_bottom() {
+    if (recent_topics_util.is_visible()) {
+        // First, verify the current message list is visible.
+        return;
+    }
+
     if (message_lists.current.can_mark_messages_read()) {
         mark_current_list_as_read();
         return;
