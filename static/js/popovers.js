@@ -241,7 +241,6 @@ function render_user_info_popover(
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
-        show_user_profile: !user.is_bot,
         user_email: people.get_visible_email(user),
         user_full_name: user.full_name,
         user_id: user.user_id,

@@ -190,7 +190,6 @@ test_ui("sender_hover", ({override, mock_template}) => {
             sent_by_uri: "#narrow/sender/42-alice",
             private_message_class: "respond_personal_button",
             show_email: false,
-            show_user_profile: true,
             is_me: false,
             is_active: true,
             is_bot: undefined,
