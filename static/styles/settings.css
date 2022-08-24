@@ -737,6 +737,10 @@ input[type="checkbox"] {
         .copy-gold {
             color: hsl(51, 90%, 50%);
         }
+
+        .purple {
+            color: hsl(278, 62%, 68%);
+        }
     }
 
     .bot-information-box {

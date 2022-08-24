@@ -20,6 +20,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as ui_report from "./ui_report";
+import * as user_profile from "./user_profile";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
@@ -580,6 +581,14 @@ export function set_up() {
         const $bot_info = $(this).closest(".bot-information-box").find(".bot_info");
         const bot_id = Number.parseInt($bot_info.attr("data-user-id"), 10);
         $(this).attr("href", generate_zuliprc_uri(bot_id));
+    });
+
+    $("#active_bots_list").on("click", "button.open_bots_subscribed_streams", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const bot_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const bot = people.get_by_user_id(bot_id);
+        user_profile.show_user_profile(bot, "user-profile-streams-tab");
     });
 
     new ClipboardJS("#copy_zuliprc", {
