@@ -323,22 +323,32 @@ def full_webhook_client_name(raw_client_name: Optional[str] = None) -> Optional[
     return f"Zulip{raw_client_name}Webhook"
 
 
+@has_request_variables
+def get_api_key_from_request(request: HttpRequest, api_key: str = REQ()) -> str:
+    return api_key
+
+
 # Use this for webhook views that don't get an email passed in.
 def webhook_view(
     webhook_client_name: str,
     notify_bot_owner_on_invalid_json: bool = True,
     all_event_types: Optional[Sequence[str]] = None,
-) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    # Unfortunately, callback protocols are insufficient for this:
-    # https://mypy.readthedocs.io/en/stable/protocols.html#callback-protocols
-    # Variadic generics are necessary: https://github.com/python/typing/issues/193
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
+    def _wrapped_view_func(
+        view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @csrf_exempt
-        @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest,
+            /,
+            *args: ParamT.args,
+            **kwargs: ParamT.kwargs,
         ) -> HttpResponse:
+            api_key = get_api_key_from_request(request)
             user_profile = validate_api_key(
                 request,
                 None,
@@ -667,14 +677,22 @@ def require_user_group_edit_permission(
 # HTTP basic authentication headers.
 def authenticated_uploads_api_view(
     skip_rate_limiting: bool = False,
-) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+) -> Callable[
+    [Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]],
+    Callable[Concatenate[HttpRequest, ParamT], HttpResponse],
+]:
+    def _wrapped_view_func(
+        view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+    ) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
         @csrf_exempt
-        @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(
-            request: HttpRequest, /, api_key: str = REQ(), *args: object, **kwargs: object
+            request: HttpRequest,
+            /,
+            *args: ParamT.args,
+            **kwargs: ParamT.kwargs,
         ) -> HttpResponse:
+            api_key = get_api_key_from_request(request)
             user_profile = validate_api_key(request, None, api_key, False)
             if not skip_rate_limiting:
                 rate_limit_user(request, user_profile, domain="api_by_user")
