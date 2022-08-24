@@ -2,11 +2,13 @@ import datetime
 from typing import List, Optional, Union
 
 import orjson
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
+from zerver.actions.presence import do_update_user_presence
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_delete,
@@ -26,9 +28,11 @@ from zerver.models import (
     RealmAuditLog,
     ScheduledEmail,
     ScheduledMessageNotificationEmail,
+    UserPresence,
     UserProfile,
     active_user_ids,
     bot_owner_user_ids,
+    get_client,
     get_user_profile_by_id,
 )
 from zerver.tornado.django_api import send_event
@@ -454,3 +458,43 @@ def do_change_user_setting(
         # not deleted every previously synced draft - to do that use the DELETE
         # endpoint.
         Draft.objects.filter(user_profile=user_profile).delete()
+
+    if setting_name == "presence_enabled":
+        # The presence_enabled setting's primary function is to stop
+        # doing presence updates for the user altogether.
+        #
+        # When a user toggles the presence_enabled setting, we
+        # immediately trigger a presence update, so all users see the
+        # user's current presence state as consistent with the new
+        # setting; not doing so can make it look like the settings
+        # change didn't have any effect.
+        if setting_value:
+            status = UserPresence.ACTIVE
+            presence_time = timezone_now()
+        else:
+            # HACK: Remove existing presence data for the current user
+            # when disabling presence. This hack will go away when we
+            # replace our presence data structure with a simpler model
+            # that doesn't separate individual clients.
+            UserPresence.objects.filter(user_profile_id=user_profile.id).delete()
+
+            # We create a single presence entry for the user, old
+            # enough to be guaranteed to be treated as offline by
+            # correct clients, such that the user will, for as long as
+            # presence remains disabled, appear to have been last
+            # online a few minutes before they disabled presence.
+            #
+            # We add a small additional offset as a fudge factor in
+            # case of clock skew.
+            status = UserPresence.IDLE
+            presence_time = timezone_now() - datetime.timedelta(
+                seconds=settings.OFFLINE_THRESHOLD_SECS + 120
+            )
+
+        do_update_user_presence(
+            user_profile,
+            get_client("website"),
+            presence_time,
+            status,
+            force_send_update=True,
+        )
