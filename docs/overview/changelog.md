@@ -100,6 +100,17 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 5.x series
 
+### 5.6 -- 2022-08-24
+
+- CVE-2022-36048: Change the Markdown renderer to only rewrite known
+  local links as relative links, rather than rewriting all local
+  links. This fix also protects against a vulnerability in the Zulip
+  mobile app (CVE-2022-35962).
+- Added hardening against timing attacks to an internal authentication check.
+- Improved documentation for hosting multiple organizations on a server.
+- Updated dependencies.
+- Updated translations.
+
 ### 5.5 -- 2022-07-21
 
 - CVE-2022-31168: Fix authorization check for changing bot roles. Due
