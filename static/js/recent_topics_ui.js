@@ -11,7 +11,6 @@ import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {localstorage} from "./localstorage";
-import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
@@ -664,7 +663,6 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
-    message_lists.set_current(message_lists.home);
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
