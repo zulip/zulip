@@ -102,7 +102,6 @@
     {{else}}
 
         <hr />
-        {{#if show_user_profile}}
         <li>
             <a tabindex="0" class="view_full_user_profile">
                 {{#if is_me}}
@@ -112,7 +111,6 @@
                 {{/if}}
             </a>
         </li>
-        {{/if}}
         {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">

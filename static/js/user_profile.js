@@ -17,6 +17,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_data from "./stream_data";
@@ -24,10 +25,32 @@ import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
+import * as user_pill from "./user_pill";
 import * as util from "./util";
 
 function compare_by_name(a, b) {
     return util.strcmp(a.name, b.name);
+}
+
+function initialize_bot_owner(element_id, bot_id) {
+    const user_pills = new Map();
+    const bot = people.get_by_user_id(bot_id);
+    const bot_owner = people.get_bot_owner_user(bot);
+    // Bot owner's pill displaying on bots full profile modal.
+    if (bot_owner) {
+        const $pill_container = $(element_id)
+            .find(
+                `.bot_owner_user_field[data-field-id="${CSS.escape(
+                    bot_owner.user_id,
+                )}"] .pill-container`,
+            )
+            .expectOne();
+        const pills = user_pill.create_pills($pill_container);
+
+        user_pill.append_user(bot_owner, pills);
+        user_pills.set(bot_owner.user_id, pills);
+    }
+    return user_pills;
 }
 
 function format_user_stream_list_item(stream, user) {
@@ -154,6 +177,7 @@ export function show_user_profile(user) {
         profile_data,
         user_avatar: people.medium_avatar_url_for_person(user),
         is_me: people.is_current_user(user.email),
+        is_bot: user.is_bot,
         date_joined: dateFormat.format(parseISO(user.date_joined)),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
         last_seen: buddy_data.user_last_seen_time_status(user.user_id),
@@ -162,6 +186,19 @@ export function show_user_profile(user) {
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
     };
+
+    if (user.is_bot) {
+        const is_system_bot = user.is_system_bot;
+        const bot_owner_id = user.bot_owner_id;
+        if (is_system_bot) {
+            args.is_system_bot = is_system_bot;
+        } else if (bot_owner_id) {
+            const bot_owner = people.get_by_user_id(bot_owner_id);
+            args.bot_owner = bot_owner;
+            args.show_email = true;
+        }
+        args.bot_type = settings_bots.type_id_to_string(user.bot_type);
+    }
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     overlays.open_modal("user-profile-modal", {autoremove: true});
@@ -193,12 +230,16 @@ export function show_user_profile(user) {
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
 
-    settings_account.initialize_custom_user_type_fields(
-        "#user-profile-modal #content",
-        user.user_id,
-        false,
-        false,
-    );
+    if (!user.is_bot) {
+        settings_account.initialize_custom_user_type_fields(
+            "#user-profile-modal #content",
+            user.user_id,
+            false,
+            false,
+        );
+    } else {
+        initialize_bot_owner("#user-profile-modal #content", user.user_id);
+    }
 }
 
 function handle_remove_stream_subscription(target_user_id, sub, success, failure) {
