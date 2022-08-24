@@ -160,7 +160,7 @@ export function hide_user_profile() {
     overlays.close_modal("user-profile-modal");
 }
 
-export function show_user_profile(user) {
+export function show_user_profile(user, default_tab_key = "profile-tab") {
     popovers.hide_all();
 
     const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
@@ -203,9 +203,16 @@ export function show_user_profile(user) {
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     overlays.open_modal("user-profile-modal", {autoremove: true});
     $(".tabcontent").hide();
-    $("#profile-tab").show(); // Show general profile details by default.
+
+    let default_tab = 0;
+    // Only checking this tab key as currently we only open this tab directly
+    // other than profile-tab.
+    if (default_tab_key === "user-profile-streams-tab") {
+        default_tab = 1;
+    }
+
     const opts = {
-        selected: 0,
+        selected: default_tab,
         child_wants_focus: true,
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
