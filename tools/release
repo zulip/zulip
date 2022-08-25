@@ -118,7 +118,7 @@ fi
 
 ./tools/upload-release "$TARBALL"
 
-git push "$version"
+git push "$remote" "$version"
 
 # Upload to Github
 gh release create "$version" \
