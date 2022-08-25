@@ -2,8 +2,8 @@ import Handlebars from "handlebars/runtime";
 
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
-import type {RealmDefaultSettingsType} from "./realm_user_settings_defaults";
-import type {UserSettingsType} from "./user_settings";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import type {UserSettings} from "./user_settings";
 
 /*
     This file contains translations between the integer values used in
@@ -571,8 +571,8 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type SettingsObjectType = UserSettingsType | RealmDefaultSettingsType;
-type PageParamsItem = keyof SettingsObjectType;
+type Settings = UserSettings | RealmDefaultSettings;
+type PageParamsItem = keyof Settings;
 export const stream_notification_settings: PageParamsItem[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
@@ -667,7 +667,7 @@ type NotificationSettingCheckbox = {
 
 export function get_notifications_table_row_data(
     notify_settings: PageParamsItem[],
-    settings_object: SettingsObjectType,
+    settings_object: Settings,
 ): NotificationSettingCheckbox[] {
     return general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
@@ -710,7 +710,7 @@ export interface AllNotifications {
     };
 }
 
-export const all_notifications = (settings_object: SettingsObjectType): AllNotifications => ({
+export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [
         {
             label: $t({defaultMessage: "Streams"}),
