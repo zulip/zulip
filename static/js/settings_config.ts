@@ -3,6 +3,7 @@ import Handlebars from "handlebars/runtime";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import type {StreamSpecificNotificationSettings} from "./sub_store";
 import type {
     PmNotificationSettings,
     StreamNotificationSettings,
@@ -567,7 +568,7 @@ export const general_notifications_table_labels = {
     },
 };
 
-export const stream_specific_notification_settings = [
+export const stream_specific_notification_settings: (keyof StreamSpecificNotificationSettings)[] = [
     "desktop_notifications",
     "audible_notifications",
     "push_notifications",
