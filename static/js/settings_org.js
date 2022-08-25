@@ -788,52 +788,52 @@ function check_property_changed(elem, for_realm_default_settings) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
     let current_val = get_property_value(property_name, for_realm_default_settings);
-    let changed_val;
+    let proposed_val;
 
     switch (property_name) {
         case "realm_authentication_methods":
             current_val = sort_object_by_key(current_val);
             current_val = JSON.stringify(current_val);
-            changed_val = get_auth_method_list_data();
-            changed_val = JSON.stringify(changed_val);
+            proposed_val = get_auth_method_list_data();
+            proposed_val = JSON.stringify(proposed_val);
             break;
         case "realm_notifications_stream_id":
-            changed_val = Number.parseInt(notifications_stream_widget.value(), 10);
+            proposed_val = Number.parseInt(notifications_stream_widget.value(), 10);
             break;
         case "realm_signup_notifications_stream_id":
-            changed_val = Number.parseInt(signup_notifications_stream_widget.value(), 10);
+            proposed_val = Number.parseInt(signup_notifications_stream_widget.value(), 10);
             break;
         case "realm_default_code_block_language":
-            changed_val = default_code_language_widget.value();
+            proposed_val = default_code_language_widget.value();
             break;
         case "email_notifications_batching_period_seconds":
         case "email_notification_batching_period_edit_minutes": {
-            changed_val = get_email_notification_batching_setting_element_value();
+            proposed_val = get_email_notification_batching_setting_element_value();
             break;
         }
         case "realm_message_content_edit_limit_minutes":
         case "realm_message_content_delete_limit_minutes": {
             const input_val = Number.parseInt($(`#id_${CSS.escape(property_name)}`).val(), 10);
             if (Number.isNaN(input_val)) {
-                changed_val = null;
+                proposed_val = null;
                 break;
             }
-            changed_val = input_val.toString();
+            proposed_val = input_val.toString();
             break;
         }
         case "realm_default_language":
-            changed_val = $(
+            proposed_val = $(
                 "#org-notifications .language_selection_widget .language_selection_button span",
             ).attr("data-language-code");
             break;
         default:
             if (current_val !== undefined) {
-                changed_val = get_input_element_value($elem, typeof current_val);
+                proposed_val = get_input_element_value($elem, typeof current_val);
             } else {
                 blueslip.error("Element refers to unknown property " + property_name);
             }
     }
-    return current_val !== changed_val;
+    return current_val !== proposed_val;
 }
 
 export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
