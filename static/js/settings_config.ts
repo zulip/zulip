@@ -291,7 +291,7 @@ export const common_message_policy_values = {
     },
 };
 
-const time_limit_dropdown_values = [
+export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
         value: "any_time",

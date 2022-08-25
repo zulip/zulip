@@ -156,7 +156,7 @@
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_edit_limit_seconds" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
-                    <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}}>
+                    <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
                         {{#each msg_edit_limit_dropdown_values}}
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
@@ -203,7 +203,7 @@
                         <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
-                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element">
+                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element" data-setting-widget-type="time-limit">
                         {{#each msg_delete_limit_dropdown_values}}
                             <option value="{{value}}">{{text}}</option>
                         {{/each}}
