@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {visibility_policy} = require("../../static/js/user_topics");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -207,6 +208,64 @@ test("unknown streams", () => {
             id: 2,
         },
     ]);
+});
+
+test("set_user_topics", () => {
+    blueslip.expect("warn", "Unknown stream ID in set_user_topic: 999");
+
+    user_topics.set_muted_topics([]);
+    assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
+    assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
+
+    const user_topic_events = [
+        {
+            stream_id: social.stream_id,
+            topic_name: "breakfast",
+            last_updated: "1577836800",
+            visibility_policy: visibility_policy.MUTED,
+        },
+        {
+            stream_id: design.stream_id,
+            topic_name: "typography",
+            last_updated: "1577836800",
+            visibility_policy: visibility_policy.MUTED,
+        },
+        {
+            stream_id: 999, // BOGUS STREAM ID
+            topic_name: "random",
+            last_updated: "1577836800",
+            visibility_policy: visibility_policy.MUTED,
+        },
+    ];
+
+    for (const user_topic of user_topic_events) {
+        user_topics.set_user_topic(user_topic);
+    }
+
+    assert.deepEqual(user_topics.get_muted_topics().sort(), [
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            stream: social.name,
+            stream_id: social.stream_id,
+            topic: "breakfast",
+        },
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            stream: design.name,
+            stream_id: design.stream_id,
+            topic: "typography",
+        },
+    ]);
+
+    user_topics.set_user_topic({
+        stream_id: design.stream_id,
+        topic_name: "typography",
+        last_updated: "1577836800",
+        visibility_policy: visibility_policy.VISIBILITY_POLICY_INHERIT,
+    });
+    assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 });
 
 test("case_insensitivity", () => {
