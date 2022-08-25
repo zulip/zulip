@@ -763,6 +763,8 @@ export function get_input_element_value(input_elem, input_type) {
                 return $input_elem.val().trim();
             }
             return undefined;
+        case "time-limit":
+            return get_message_edit_or_delete_limit_setting_value($input_elem);
         default:
             return undefined;
     }
@@ -811,6 +813,20 @@ function get_email_notification_batching_setting_element_value() {
     return setting_value_in_minutes * 60;
 }
 
+function get_message_edit_or_delete_limit_setting_value($input_elem) {
+    const select_elem_val = $input_elem.val();
+
+    if (select_elem_val === "any_time") {
+        return JSON.stringify("unlimited");
+    }
+
+    if (select_elem_val !== "custom_period") {
+        return Number.parseInt(select_elem_val, 10);
+    }
+
+    return parse_time_limit($input_elem.parent().find(".admin-realm-time-limit-input"));
+}
+
 function check_property_changed(elem, for_realm_default_settings) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
@@ -838,6 +854,12 @@ function check_property_changed(elem, for_realm_default_settings) {
             proposed_val = get_email_notification_batching_setting_element_value();
             break;
         }
+        case "realm_message_content_edit_limit_seconds":
+        case "realm_message_content_delete_limit_seconds":
+            // We only check the dropdown value here.
+            // The custom input is handled below separately.
+            proposed_val = $elem.val();
+            break;
         case "realm_message_content_edit_limit_minutes":
         case "realm_message_content_delete_limit_minutes": {
             const input_val = Number.parseInt($(`#id_${CSS.escape(property_name)}`).val(), 10);
@@ -991,57 +1013,6 @@ export function register_save_discard_widget_handlers(
         let data = {};
 
         switch (subsection) {
-            case "msg_editing": {
-                const edit_limit_setting_value = $(
-                    "#id_realm_message_content_edit_limit_seconds",
-                ).val();
-                data.allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
-                switch (edit_limit_setting_value) {
-                    case "custom_period": {
-                        data.message_content_edit_limit_seconds = parse_time_limit(
-                            $("#id_realm_message_content_edit_limit_minutes"),
-                        );
-
-                        break;
-                    }
-                    case "any_time": {
-                        data.message_content_edit_limit_seconds = JSON.stringify("unlimited");
-
-                        break;
-                    }
-                    default: {
-                        data.message_content_edit_limit_seconds = Number.parseInt(
-                            edit_limit_setting_value,
-                            10,
-                        );
-                    }
-                }
-                const delete_limit_setting_value = $(
-                    "#id_realm_message_content_delete_limit_seconds",
-                ).val();
-                switch (delete_limit_setting_value) {
-                    case "any_time": {
-                        data.message_content_delete_limit_seconds = JSON.stringify("unlimited");
-
-                        break;
-                    }
-                    case "custom_period": {
-                        data.message_content_delete_limit_seconds = parse_time_limit(
-                            $("#id_realm_message_content_delete_limit_minutes"),
-                        );
-
-                        break;
-                    }
-                    default: {
-                        data.message_content_delete_limit_seconds = Number.parseInt(
-                            delete_limit_setting_value,
-                            10,
-                        );
-                    }
-                }
-                data.delete_own_message_policy = $("#id_realm_delete_own_message_policy").val();
-                break;
-            }
             case "notifications":
                 data.notifications_stream_id = Number.parseInt(
                     notifications_stream_widget.value(),
