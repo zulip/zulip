@@ -3,7 +3,11 @@ import Handlebars from "handlebars/runtime";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
-import type {UserSettings} from "./user_settings";
+import type {
+    PmNotificationSettings,
+    StreamNotificationSettings,
+    UserSettings,
+} from "./user_settings";
 
 /*
     This file contains translations between the integer values used in
@@ -571,9 +575,7 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type Settings = UserSettings | RealmDefaultSettings;
-type PageParamsItem = keyof Settings;
-export const stream_notification_settings: PageParamsItem[] = [
+export const stream_notification_settings: (keyof StreamNotificationSettings)[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
@@ -581,7 +583,7 @@ export const stream_notification_settings: PageParamsItem[] = [
     "wildcard_mentions_notify",
 ];
 
-export const pm_mention_notification_settings: PageParamsItem[] = [
+export const pm_mention_notification_settings: (keyof PmNotificationSettings)[] = [
     "enable_desktop_notifications",
     "enable_sounds",
     "enable_offline_push_notifications",
@@ -659,6 +661,8 @@ export const all_notification_settings = other_notification_settings.concat(
     stream_notification_settings,
 );
 
+type Settings = UserSettings | RealmDefaultSettings;
+type PageParamsItem = keyof Settings;
 type NotificationSettingCheckbox = {
     setting_name: string;
     is_disabled: boolean;
