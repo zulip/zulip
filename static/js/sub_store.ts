@@ -27,20 +27,23 @@ export type Stream = {
     stream_post_policy: StreamPostPolicy;
 };
 
-export type StreamSubscription = Stream & {
+export type StreamSpecificNotificationSettings = {
     audible_notifications: boolean | null;
-    color: string;
     desktop_notifications: boolean | null;
-    email_address: string;
     email_notifications: boolean | null;
+    push_notifications: boolean | null;
+    wildcard_mentions_notify: boolean | null;
+};
+
+export type StreamSubscription = (Stream & StreamSpecificNotificationSettings) & {
+    color: string;
+    email_address: string;
     in_home_view: boolean;
     is_muted: boolean;
     pin_to_top: boolean;
-    push_notifications: boolean | null;
     role: SubscriptionRole;
     stream_weekly_traffic: number | null;
     subscribers?: number[];
-    wildcard_mentions_notify: boolean | null;
 };
 
 const subs_by_stream_id = new Map<number, StreamSubscription>();
