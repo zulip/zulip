@@ -44,3 +44,17 @@ to a given request, the values returned will be for the strictest
 limit.
 
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/security-model.html#rate-limiting
+
+## Ignored Parameters
+
+In JSON success responses, all Zulip REST API endpoints may return
+an array of parameters sent in the request that are not supported
+by that specific endpoint.
+
+While this can be expected, e.g. when sending both current and legacy
+names for a parameter to a Zulip server of unknown version, this often
+indicates either a bug in the client implementation or an attempt to
+configure a new feature while connected to an older Zulip server that
+does not support said feature.
+
+{generate_code_example|/settings:patch|fixture}
