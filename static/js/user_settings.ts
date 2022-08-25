@@ -1,4 +1,4 @@
-export type UserSettingsType = {
+export type UserSettings = {
     color_scheme: number;
     default_language: string;
     default_view: string;
@@ -39,8 +39,8 @@ export type UserSettingsType = {
     send_read_receipts: boolean;
 };
 
-export let user_settings = {} as UserSettingsType;
+export let user_settings = {} as UserSettings;
 
-export function initialize_user_settings(params: Record<string, UserSettingsType>): void {
+export function initialize_user_settings(params: Record<string, UserSettings>): void {
     user_settings = params.user_settings;
 }
