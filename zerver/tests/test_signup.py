@@ -5683,6 +5683,12 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result["Location"], "http://zulip.testserver/")
         self.assert_logged_in_user_id(user_profile.id)
 
+    @override_settings(TERMS_OF_SERVICE_VERSION=None, REALM_HOSTS={"zulip": "127.0.0.1"})
+    def test_dev_user_registration_empty_subdomain(self) -> None:
+        result = self.client_post("/devtools/register_user/", subdomain="")
+        self.assertEqual(result.status_code, 307)
+        self.assertEqual(result["Location"], "http://127.0.0.1/devtools/register_user/")
+
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_dev_user_registration_create_realm(self) -> None:
         count = UserProfile.objects.count()

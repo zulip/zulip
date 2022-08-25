@@ -65,6 +65,7 @@ from zerver.actions.user_settings import do_change_password
 from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
+from zerver.lib.camo import generate_camo_url
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -4703,6 +4704,24 @@ class DevFetchAPIKeyTest(ZulipTestCase):
                 dict(username=self.email, password=initial_password(self.email)),
             )
             self.assert_json_error_contains(result, "Invalid subdomain", 404)
+
+        result = self.client_post("/api/v1/dev_fetch_api_key", dict(username="king@lear.org"))
+        self.assert_json_error_contains(result, "Invalid subdomain", 404)
+
+
+class DevCamoUrls(ZulipTestCase):
+    def test_camo_urls(self) -> None:
+        camo_url = generate_camo_url("http://foo.com/")
+        result = self.client_get(f"/external_content/{camo_url}")
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(
+            result.url.endswith(
+                "external_content/72de13bbc6380d7b68467f14f8be6991c8894f6f/687474703a2f2f666f6f2e636f6d2f"
+            )
+        )
+
+        result = self.client_get(f"/external_content/{camo_url.replace('a', 'b')}")
+        self.assert_in_response("Not a valid URL", result)
 
 
 class DevGetEmailsTest(ZulipTestCase):

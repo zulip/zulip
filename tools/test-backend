@@ -53,6 +53,7 @@ target_fully_covered = [
     "corporate/tests/*.py",
     # As a project, we require 100% test coverage in the views files.
     "zerver/views/*.py",
+    "zerver/views/development/*.py",
     "zproject/backends.py",
     "confirmation/*.py",
     "zerver/webhooks/*/*.py",
@@ -78,20 +79,17 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/__init__.py",
     "zerver/lib/cache.py",
     "zerver/lib/cache_helpers.py",
-    "zerver/lib/i18n.py",
     "zerver/lib/send_email.py",
     "zerver/lib/url_preview/preview.py",
     "zerver/worker/queue_processors.py",
     # Markdown sub-libs should have full coverage too; a lot are really close
     "zerver/lib/markdown/api_arguments_table_generator.py",
-    "zerver/lib/markdown/fenced_code.py",
     "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
     "zerver/filters.py",
     "zerver/middleware.py",
     "zerver/lib/bot_lib.py",
-    "zerver/lib/camo.py",
     "zerver/lib/debug.py",
     "zerver/lib/error_notify.py",
     "zerver/lib/export.py",

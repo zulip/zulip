@@ -37,6 +37,16 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake"
         )
 
+        # Test malformed JSON for test coverage of check_send_webhook_fixture_message()
+        data["custom_headers"] = "{malformed_json"
+        response = self.client_post(target_url, data)
+        self.assertEqual(response.status_code, 400)
+        expected_response = {"result": "error", "msg": "Malformed JSON", "code": "BAD_REQUEST"}
+        content = orjson.loads(response.content)
+        self.assertTrue(
+            content["msg"].startswith("Custom HTTP headers are not in a valid JSON format.")
+        )
+
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/airbrake?api_key={bot.api_key}&stream=Denmark&topic=Airbrake notifications"
@@ -152,11 +162,34 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(orjson.loads(response.content)["fixtures"])
 
+        # also test an integration that uses custom HTTP headers
+        target_url = "/devtools/integrations/groove/fixtures"
+        response = self.client_get(target_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(orjson.loads(response.content)["fixtures"])
+
     def test_get_dev_panel_page(self) -> None:
         # Just to satisfy the test suite.
         target_url = "/devtools/integrations/"
         response = self.client_get(target_url)
         self.assertEqual(response.status_code, 200)
+
+    def test_send_all_webhook_fixture_messages_for_error(self) -> None:
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
+        url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow bulk notifications"
+        target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
+
+        data = {
+            "url": url,
+            "custom_headers": "{}",
+            "integration_name": "unknown_integration",
+        }
+        response = self.client_post(target_url, data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(
+            orjson.loads(response.content)["msg"],
+            '"unknown_integration" is not a valid webhook integration.',
+        )
 
     def test_send_all_webhook_fixture_messages_for_success(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)

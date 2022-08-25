@@ -2862,6 +2862,12 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert_wrapper(dedent(msg))
         self.assertEqual(converted, dedent(expected_output))
 
+        msg = "``` python\na = 5\n```"
+        expected_output = """<div class="codehilite" data-code-language="Python"><pre><span></span><code><span class="n">a</span> <span class="o">=</span> <span class="mi">5</span>
+</code></pre></div>"""
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(converted, expected_output)
+
 
 class MarkdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
@@ -2956,3 +2962,39 @@ class MarkdownErrorTests(ZulipTestCase):
 
         result = processor.run(markdown_input)
         self.assertEqual(result, expected)
+
+    def test_code_hilite(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown())
+        processor.codehilite_conf = {
+            "linenums": [True],
+            "guess_lang": [True],
+            "css_class": [""],
+            "style": [""],
+            "use_pygments": [False],
+            "pygments_style": [""],
+            "noclasses": [False],
+        }
+
+        markdown_input = """``` curl
+curl {{ api_url }}/v1/register
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d "queue_id=1375801870:2942"
+```"""
+        expected = """<pre class=""><code class="linenums">``` curl
+curl {{ api_url }}/v1/register
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d &quot;queue_id=1375801870:2942&quot;
+```
+</code></pre>"""
+        result = processor.format_code(lang=None, text=markdown_input)
+        self.assertEqual("".join(result), expected)
+
+        expected = """<pre><code>``` curl
+curl {{ api_url }}/v1/register
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+    -d &quot;queue_id=1375801870:2942&quot;
+```
+</code></pre>"""
+        processor.codehilite_conf = {}
+        result = processor.format_code(lang=None, text=markdown_input)
+        self.assertEqual("".join(result), expected)

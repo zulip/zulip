@@ -349,7 +349,7 @@ class TexHandler(ZulipBaseHandler):
 
 
 class CodeHilite(codehilite.CodeHilite):
-    def _parseHeader(self) -> None:
+    def _parseHeader(self) -> None:  # nocoverage
         # Python-Markdown has a feature to parse-and-hide shebang
         # lines present in code blocks:
         #
@@ -391,7 +391,7 @@ class CodeHilite(codehilite.CodeHilite):
 
             if self.options["linenos"] is None and m.group("shebang"):
                 # Overridable and Shebang exists - use line numbers
-                self.options["linenos"] = True
+                self.options["linenos"] = True  # nocoverage
 
             self.options["hl_lines"] = parse_hl_lines(m.group("hl_lines"))
 
@@ -547,9 +547,3 @@ class FencedBlockPreprocessor(Preprocessor):
 
 def makeExtension(*args: Any, **kwargs: None) -> FencedCodeExtension:
     return FencedCodeExtension(kwargs)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()

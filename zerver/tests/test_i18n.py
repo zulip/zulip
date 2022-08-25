@@ -1,3 +1,4 @@
+import io
 from http.cookies import SimpleCookie
 from typing import TYPE_CHECKING, Any
 from unittest import mock
@@ -5,10 +6,17 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core import mail
+from django.http import HttpRequest
 from django.utils import translation
 
 from zerver.lib.email_notifications import enqueue_welcome_emails
-from zerver.lib.i18n import get_browser_language_code
+from zerver.lib.i18n import (
+    get_and_set_request_language,
+    get_available_language_codes,
+    get_browser_language_code,
+    get_language_name,
+    get_language_translation_data,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.management.commands import makemessages
@@ -206,3 +214,21 @@ class FrontendRegexTestCase(ZulipTestCase):
             result = command.extract_strings(input_text)
             self.assert_length(result, 1)
             self.assertEqual(result[0], expected)
+
+
+class LanguageListTestCase(ZulipTestCase):
+    def test_lang_names(self) -> None:
+        self.assertEqual(get_language_name(get_available_language_codes()[0]), "Bahasa Indonesia")
+        with self.assertLogs(level="ERROR") as logs:
+            get_language_name("---")
+        self.assertEqual("ERROR:root:Unknown language code '---'", logs.output[0])
+
+    def test_lang_translation_data(self) -> None:
+        self.assertEqual(get_language_translation_data("en"), {})
+        self.assertIn("користувачів", str(get_language_translation_data("uk")))
+        with mock.patch("sys.stdout", new=io.StringIO()) as fake_stdout:
+            get_language_translation_data("---")
+        self.assertIn("Translation for --- not found at ", fake_stdout.getvalue())
+
+    def test_get_and_set_request_language(self) -> None:
+        get_and_set_request_language(HttpRequest(), "en")
