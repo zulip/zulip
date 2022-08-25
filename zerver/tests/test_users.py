@@ -921,7 +921,7 @@ class AdminCreateUserTest(ZulipTestCase):
                 short_name="DEPRECATED",
             ),
         )
-        self.assert_json_success(result)
+        self.assert_json_success(result, ignored_parameters=["short_name"])
 
         result = self.client_post(
             "/json/users",

@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 167**
+
+* [All REST API endpoints](/api/rest-error-handling#ignored-parameters):
+  Implemented `ignored_parameters_unsupported` as a possible return value
+  in the JSON success response for all endpoints. This value is a array
+  of any parameters that were sent in the request by the client that are
+  not supported by the endpoint. Previously, unsupported parameters were
+  silently ignored, except in the subset of endpoints which already
+  supported this return value; see feature levels 111, 96 and 78.
+
 **Feature level 166**
 
 * [`POST /messages`](/api/send-message): Eliminated the undocumented

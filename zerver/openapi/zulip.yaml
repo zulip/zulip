@@ -207,6 +207,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       events:
                         type: array
                         description: |
@@ -4539,6 +4540,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       stream_id:
                         type: integer
                         description: |
@@ -4667,6 +4669,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       attachments:
                         type: array
                         description: |
@@ -4779,6 +4782,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       count:
                         type: integer
                         description: |
@@ -4866,6 +4870,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       ids:
                         type: array
                         description: |
@@ -5244,6 +5249,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       anchor:
                         type: integer
                         description: |
@@ -5500,6 +5506,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       id:
                         type: integer
                         description: |
@@ -5570,6 +5577,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       message_history:
                         type: array
                         items:
@@ -5820,6 +5828,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       messages:
                         type: array
                         items:
@@ -6049,6 +6058,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       rendered:
                         type: string
                         description: |
@@ -6193,6 +6203,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       user_ids:
                         type: array
                         description: |
@@ -6289,6 +6300,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       messages:
                         type: object
                         description: |
@@ -6370,6 +6382,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       raw_content:
                         type: string
                         deprecated: true
@@ -6718,6 +6731,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       uri:
                         type: string
                         description: |
@@ -6767,6 +6781,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       url:
                         type: string
                         description: |
@@ -6817,6 +6832,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       members:
                         type: array
                         description: |
@@ -6966,6 +6982,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       user_id:
                         type: integer
                         description: |
@@ -7047,6 +7064,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       presence:
                         type: object
                         description: |
@@ -7114,6 +7132,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       avatar_url:
                         type: string
                         description: |
@@ -7340,6 +7359,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       alert_words:
                         type: array
                         description: |
@@ -7391,6 +7411,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       alert_words:
                         type: array
                         description: |
@@ -7458,6 +7479,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       alert_words:
                         type: array
                         description: |
@@ -7655,6 +7677,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       topics:
                         type: array
                         description: |
@@ -7738,6 +7761,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       subscriptions:
                         type: array
                         description: |
@@ -8017,6 +8041,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       subscribed:
                         type: object
                         description: |
@@ -8137,6 +8162,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       not_removed:
                         type: array
                         items:
@@ -8367,6 +8393,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       is_subscribed:
                         type: boolean
                         description: |
@@ -8441,6 +8468,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       emoji:
                         type: object
                         description: |
@@ -8489,6 +8517,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       server_timestamp:
                         type: number
                         description: |
@@ -8553,6 +8582,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       custom_fields:
                         type: array
                         description: |
@@ -8769,6 +8799,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       id:
                         type: integer
                         description: |
@@ -8795,9 +8826,13 @@ paths:
         Note that this endpoint cannot, at present, be used to modify
         settings for existing users in any way.
 
-        **Changes**: New in Zulip 5.0 (feature level 96).
+        **Changes**: New in Zulip 5.0 (feature level 96). If any parameters
+        sent in the request are not supported by this endpoint, an
+        [`ignored_parameters_unsupported`][ignored-parameters] array will
+        be returned in the JSON success response.
 
         [new-user-defaults]: /help/configure-default-new-user-settings
+        [ignored-parameters]: /api/rest-error-handling#ignored-parameters
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -9181,26 +9216,7 @@ paths:
           example: 1
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported:
-                        $ref: "#/components/schemas/IgnoredParametersUnsupported"
-                    example:
-                      {
-                        "ignored_parameters_unsupported":
-                          ["desktop_notifications", "demote_streams"],
-                        "msg": "",
-                        "result": "success",
-                      }
+          $ref: "#/components/responses/SuccessIgnoredParameters"
 
   /users/me/subscriptions/properties:
     post:
@@ -9215,7 +9231,9 @@ paths:
         **Changes**: Prior to Zulip 5.0 (feature level 111), response
         object included the `subscription_data` in the the
         request. The endpoint now returns the more ergonomic
-        `ignored_parameters_unsupported` field instead.
+        [`ignored_parameters_unsupported`][ignored-parameters] array instead.
+
+        [ignored-parameters]: /api/rest-error-handling#ignored-parameters
       parameters:
         - name: subscription_data
           in: query
@@ -9306,25 +9324,7 @@ paths:
           required: true
       responses:
         "200":
-          description: Success.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported:
-                        $ref: "#/components/schemas/IgnoredParametersUnsupported"
-                    example:
-                      {
-                        "ignored_parameters_unsupported": ["invalid_parameter"],
-                        "result": "success",
-                        "msg": "",
-                      }
+          $ref: "#/components/responses/SuccessIgnoredParameters"
   /users/{email}:
     get:
       operationId: get-user-by-email
@@ -9380,6 +9380,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       user:
                         $ref: "#/components/schemas/User"
                     example:
@@ -9468,6 +9469,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       user:
                         $ref: "#/components/schemas/User"
                     example:
@@ -9667,6 +9669,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       linkifiers:
                         type: array
                         description: |
@@ -9726,6 +9729,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       id:
                         type: integer
                         description: |
@@ -9827,6 +9831,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       id:
                         type: integer
                         description: |
@@ -10075,6 +10080,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       queue_id:
                         type: string
                         nullable: true
@@ -13413,10 +13419,19 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
                     description: |
-                      A typical successful JSON response for a single-organization server may look like:
+                      **Changes**: As of Zulip 7.0 (feature level 167), if any
+                      parameters sent in the request are not supported by this
+                      endpoint, a successful JSON response will include an
+                      [ignored_parameters_unsupported][ignored_params] array.
+
+                      A typical successful JSON response for a single-organization server
+                      may look like:
+
+                      [ignored_params]: /api/rest-error-handling#ignored-parameters
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       authentication_methods:
                         type: object
                         additionalProperties: false
@@ -13692,7 +13707,7 @@ paths:
         processed by including in the response object `"key": value`
         entries for values successfully changed by the request. That
         was replaced by the more ergonomic
-        `ignored_parameters_unsupported` response parameter.
+        [`ignored_parameters_unsupported`][ignored-parameters] array.
 
         The `/settings/notifications` and `/settings/display` endpoints
         also had this behavior before they became aliases of `/settings`
@@ -13700,6 +13715,8 @@ paths:
 
         Before these changes, request parameters that were not supported
         (or were unchanged) were silently ignored.
+
+        [ignored-parameters]: /api/rest-error-handling#ignored-parameters
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -14259,25 +14276,7 @@ paths:
           example: 1
       responses:
         "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccessBase"
-                  - $ref: "#/components/schemas/SuccessDescription"
-                  - additionalProperties: false
-                    properties:
-                      result: {}
-                      msg: {}
-                      ignored_parameters_unsupported:
-                        $ref: "#/components/schemas/IgnoredParametersUnsupported"
-                    example:
-                      {
-                        "ignored_parameters_unsupported": ["name", "password"],
-                        "msg": "",
-                        "result": "success",
-                      }
+          $ref: "#/components/responses/SuccessIgnoredParameters"
   /streams/{stream_id}/members:
     get:
       operationId: get-subscribers
@@ -14300,6 +14299,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       subscribers:
                         type: array
                         items:
@@ -14409,6 +14409,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       streams:
                         description: |
                           A list of `stream` objects with details on the requested streams.
@@ -14524,6 +14525,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       stream:
                         $ref: "#/components/schemas/BasicStream"
                     example:
@@ -15040,6 +15042,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       members:
                         type: array
                         items:
@@ -15150,6 +15153,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       user_groups:
                         type: array
                         items:
@@ -15295,6 +15299,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       subgroups:
                         type: array
                         items:
@@ -15329,6 +15334,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       is_user_group_member:
                         type: boolean
                         description: |
@@ -15531,6 +15537,7 @@ paths:
                     properties:
                       result: {}
                       msg: {}
+                      ignored_parameters_unsupported: {}
                       url:
                         description: |
                           The URL for the BigBlueButton video call.
@@ -15563,18 +15570,10 @@ components:
         type: string
       description: |
         An array of any parameters sent in the request that are not
-        supported by the endpoint. While this can be expected, e.g. when sending
-        both current and legacy names for a parameter to a Zulip server of
-        unknown version, this often indicates either a bug in the client
-        implementation or an attempt to configure a new feature while
-        connected to an older Zulip server that does not support said feature.
+        supported by the endpoint.
 
-        **Changes**: Added to `POST /users/me/subscriptions/properties` in
-        Zulip 5.0 (feature level 111).
-
-        Added to `PATCH /realm/user_settings_defaults` in Zulip 5.0 (feature level 96).
-
-        Introduced in `PATCH /settings` in Zulip 5.0 (feature level 78).
+        See [error handling](/api/rest-error-handling#ignored-parameters) documentation
+        for details on this and its change history.
     EventIdSchema:
       type: integer
       description: |
@@ -17107,7 +17106,14 @@ components:
           type: string
     SuccessDescription:
       description: |
+        **Changes**: As of Zulip 7.0 (feature level 167), if any
+        parameters sent in the request are not supported by this
+        endpoint, a successful JSON response will include an
+        [`ignored_parameters_unsupported`][ignored_params] array.
+
         A typical successful JSON response may look like:
+
+        [ignored_params]: /api/rest-error-handling#ignored-parameters
     JsonSuccess:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -17115,6 +17121,7 @@ components:
           properties:
             result: {}
             msg: {}
+            ignored_parameters_unsupported: {}
     JsonSuccessBase:
       allOf:
         - $ref: "#/components/schemas/JsonResponseBase"
@@ -17127,7 +17134,54 @@ components:
                 - success
             msg:
               type: string
+            ignored_parameters_unsupported:
+              $ref: "#/components/schemas/IgnoredParametersUnsupported"
           example: {"msg": "", "result": "success"}
+    IgnoredParametersSuccess:
+      allOf:
+        - $ref: "#/components/schemas/IgnoredParametersBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            ignored_parameters_unsupported: {}
+      description: |
+        **Changes**: The [`ignored_parameters_unsupported`][ignored_params]
+        array was added as a possible return value for all REST API endpoint
+        JSON success responses in Zulip 7.0 (feature level 167).
+
+        Previously, it was added to
+        [`POST /users/me/subscriptions/properties`](/api/update-subscription-settings)
+        in Zulip 5.0 (feature level 111) and to
+        [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+        in Zulip 5.0 (feature level 96). The feature was introduced in Zulip 5.0
+        (feature level 78) as a return value for the
+        [`PATCH /settings`](/api/update-settings) endpoint.
+
+        A typical successful JSON response with ignored parameters may look like:
+
+        [ignored_params]: /api/rest-error-handling#ignored-parameters
+    IgnoredParametersBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - msg
+          properties:
+            result:
+              enum:
+                - success
+            msg:
+              type: string
+            ignored_parameters_unsupported:
+              $ref: "#/components/schemas/IgnoredParametersUnsupported"
+          example:
+            {
+              "ignored_parameters_unsupported":
+                ["invalid_param_1", "invalid_param_2"],
+              "msg": "",
+              "result": "success",
+            }
     JsonError:
       allOf:
         - $ref: "#/components/schemas/JsonErrorBase"
@@ -17174,6 +17228,7 @@ components:
           properties:
             result: {}
             msg: {}
+            ignored_parameters_unsupported: {}
             api_key:
               type: string
               description: |
@@ -17265,6 +17320,7 @@ components:
           properties:
             result: {}
             msg: {}
+            ignored_parameters_unsupported: {}
             subscribed:
               type: object
               description: |
@@ -17409,6 +17465,13 @@ components:
             allOf:
               - $ref: "#/components/schemas/JsonSuccess"
               - $ref: "#/components/schemas/SuccessDescription"
+    SuccessIgnoredParameters:
+      description: Success.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/IgnoredParametersSuccess"
 
   ####################
   # Shared parameters
