@@ -330,11 +330,8 @@ export function stream_setting_changed(e, from_notification_settings) {
         return;
     }
     if (is_notification_setting(setting) && sub[setting] === null) {
-        if (setting === "wildcard_mentions_notify") {
-            sub[setting] = user_settings[setting];
-        } else {
-            sub[setting] = user_settings["enable_stream_" + setting];
-        }
+        sub[setting] =
+            user_settings[settings_config.generalize_stream_notification_setting[setting]];
     }
     set_stream_property(sub, setting, e.target.checked, status_element);
 }
