@@ -1,4 +1,4 @@
-export type RealmDefaultSettingsType = {
+export type RealmDefaultSettings = {
     color_scheme: number;
     default_language: string;
     default_view: string;
@@ -36,8 +36,8 @@ export type RealmDefaultSettingsType = {
     wildcard_mentions_notify: boolean;
 };
 
-export let realm_user_settings_defaults = {} as RealmDefaultSettingsType;
+export let realm_user_settings_defaults = {} as RealmDefaultSettings;
 
-export function initialize(params: Record<string, RealmDefaultSettingsType>): void {
+export function initialize(params: Record<string, RealmDefaultSettings>): void {
     realm_user_settings_defaults = params.realm_user_settings_defaults;
 }
