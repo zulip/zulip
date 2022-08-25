@@ -595,6 +595,17 @@ export const generalize_stream_notification_setting: Record<
     wildcard_mentions_notify: "wildcard_mentions_notify",
 };
 
+export const specialize_stream_notification_setting: Record<
+    keyof StreamNotificationSettings,
+    keyof StreamSpecificNotificationSettings
+> = {
+    enable_stream_desktop_notifications: "desktop_notifications",
+    enable_stream_audible_notifications: "audible_notifications",
+    enable_stream_push_notifications: "push_notifications",
+    enable_stream_email_notifications: "email_notifications",
+    wildcard_mentions_notify: "wildcard_mentions_notify",
+};
+
 export const pm_mention_notification_settings: (keyof PmNotificationSettings)[] = [
     "enable_desktop_notifications",
     "enable_sounds",
