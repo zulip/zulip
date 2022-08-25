@@ -736,8 +736,9 @@ export function handle_global_notification_updates(notification_name, setting) {
     }
 
     if (settings_config.stream_notification_settings.includes(notification_name)) {
-        [, notification_name] = /^enable_stream_(.*)$/.exec(notification_name);
-        stream_ui_updates.update_notification_setting_checkbox(notification_name);
+        stream_ui_updates.update_notification_setting_checkbox(
+            settings_config.specialize_stream_notification_setting[notification_name],
+        );
     }
 
     if (notification_name === "notification_sound") {
