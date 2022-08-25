@@ -507,9 +507,11 @@ h4.stream_setting_subsection_title {
             opacity: 0.5;
         }
 
-        &.disabled {
-            pointer-events: none;
-            visibility: hidden;
+        &.unchecked.disabled svg {
+          pointer-events: none;
+          cursor: not-allowed;
+          fill: hsl(218, 14%, 33%);
+          opacity: 0.5;
         }
 
         .sub_unsub_status {
@@ -532,6 +534,19 @@ h4.stream_setting_subsection_title {
     .checked svg {
         fill: hsl(170, 48%, 54%);
     }
+
+    @media (prefers-color-scheme: light) {
+      .unchecked svg {
+        fill: hsla(0, 0%, 0%, 0.85);
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .unchecked svg {
+        fill: hsla(0, 0%, 100%, 0.85);
+      }
+    }
+
 
     .icon {
         width: 35px;
@@ -616,13 +631,13 @@ h4.stream_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked) svg,
-    &.active:hover .check:not(.checked) svg {
+    &:hover .check:not(.checked):not(.disabled) svg,
+    &.active:hover .check:not(.checked):not(.disabled) svg {
         fill: hsl(0, 0%, 87%);
     }
 
-    .check:not(.checked):hover svg,
-    &.active .check:not(.checked):hover svg {
+    .check:not(.checked):not(.disabled):hover svg,
+    &.active .check:not(.checked):not(.disabled):hover svg {
         fill: hsl(0, 0%, 72%);
     }
 

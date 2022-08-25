@@ -1,13 +1,22 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
+{{log this}}
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
-
-    <div class="check {{#if subscribed }}checked{{/if}} sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}}">
-        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
-            <path d="M448,71.9c-17.3-13.4-41.5-9.3-54.1,9.1L214,344.2l-99.1-107.3c-14.6-16.6-39.1-17.4-54.7-1.8 c-15.6,15.5-16.4,41.6-1.7,58.1c0,0,120.4,133.6,137.7,147c17.3,13.4,41.5,9.3,54.1-9.1l206.3-301.7 C469.2,110.9,465.3,85.2,448,71.9z"/>
-        </svg>
-        <div class='sub_unsub_status'></div>
-    </div>
+    {{#if subscribed}}
+      <div class="check checked sub_unsub_button">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+              <path d="M448,71.9c-17.3-13.4-41.5-9.3-54.1,9.1L214,344.2l-99.1-107.3c-14.6-16.6-39.1-17.4-54.7-1.8 c-15.6,15.5-16.4,41.6-1.7,58.1c0,0,120.4,133.6,137.7,147c17.3,13.4,41.5,9.3,54.1-9.1l206.3-301.7 C469.2,110.9,465.3,85.2,448,71.9z"/>
+          </svg>
+          <div class='sub_unsub_status'></div>
+      </div>
+    {{else}}
+      <div class="check unchecked sub_unsub_button tippy-zulip-tooltip {{#unless should_display_subscription_button}}disabled{{/unless}}" data-tippy-content={{#unless should_display_subscription_button}}"Cannot subscribe to stream. Stream {{name}} is private"{{else}}"Subscribe to {{name}}"{{/unless}}>
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+             <path xmlns="http://www.w3.org/2000/svg" d="M468.433 210.554H301.446V43.567c0-17.164-13.914-31.079-31.079-31.079h-28.735c-17.164 0-31.079 13.914-31.079 31.079v166.987H43.567c-17.164 0-31.079 13.914-31.079 31.079v28.735c0 17.164 13.914 31.079 31.079 31.079h166.987v166.987c0 17.164 13.914 31.079 31.079 31.079h28.735c17.164 0 31.079-13.914 31.079-31.079V301.446h166.987c17.164 0 31.079-13.914 31.079-31.079v-28.735c-.001-17.164-13.916-31.078-31.08-31.078z"/>
+          </svg>
+          <div class='sub_unsub_status'></div>
+      </div>
+    {{/if}}
     {{> subscription_setting_icon }}
     <div class="sub-info-box">
         <div class="top-bar">
