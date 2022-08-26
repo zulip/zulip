@@ -16,6 +16,7 @@ from tools.lib import sanity_check
 sanity_check.check_venv(__file__)
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+os.environ["ZULIP_COLLECTING_STATIC"] = "1"
 from django.conf import settings
 
 from scripts.lib.node_cache import setup_node_modules
