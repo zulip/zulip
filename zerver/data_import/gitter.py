@@ -26,6 +26,7 @@ from zerver.data_import.import_util import (
 )
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.models import Recipient, UserProfile
+from zproject.backends import GitHubAuthBackend
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -45,6 +46,20 @@ def gitter_workspace_to_realm(
     """
     NOW = float(timezone_now().timestamp())
     zerver_realm: List[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, "Gitter")
+
+    # Users will have GitHub's generated noreply email addresses so their only way to log in
+    # at first is via GitHub. So we set GitHub to be the only authentication method enabled
+    # default to avoid user confusion.
+    assert len(zerver_realm) == 1
+    authentication_methods = [
+        (auth_method[0], False)
+        if auth_method[0] != GitHubAuthBackend.auth_backend_name
+        else (auth_method[0], True)
+        for auth_method in zerver_realm[0]["authentication_methods"]
+    ]
+
+    zerver_realm[0]["authentication_methods"] = authentication_methods
+
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
