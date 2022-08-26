@@ -2,9 +2,10 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "*": ["static/js/types/*"],
+            "*": ["static/js/types/*", "static/js/*.ts"],
         },
         "types": [],
+        "lib": ["dom", "es5"],
 
         /* TypeScript 3.4 added the --incremental flag but its API is not
          * currently public so ts-loader cannot use it yet.
