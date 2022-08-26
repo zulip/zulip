@@ -171,14 +171,6 @@ exports.fixtures = {
         type: "invites_changed",
     },
 
-    muted_topics: {
-        type: "muted_topics",
-        muted_topics: [
-            ["devel", "js", fake_then],
-            ["lunch", "burritos", fake_now],
-        ],
-    },
-
     muted_users: {
         type: "muted_users",
         muted_users: [
@@ -947,5 +939,13 @@ exports.fixtures = {
         type: "user_status",
         user_id: test_user.user_id,
         status_text: "out to lunch",
+    },
+
+    user_topic: {
+        type: "user_topic",
+        stream_id: 101,
+        topic_name: "js",
+        last_updated: fake_now,
+        visibility_policy: 1,
     },
 };
