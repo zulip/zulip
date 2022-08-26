@@ -273,7 +273,6 @@ function update_message_edit_sub_settings(is_checked) {
         "id_realm_message_content_edit_limit_minutes",
         true,
     );
-    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
 }
 
 function update_custom_value_input(property_name) {

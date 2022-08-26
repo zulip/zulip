@@ -57,6 +57,9 @@ run_test("get_editability", ({override}) => {
     page_params.realm_allow_message_editing = false;
     assert.equal(get_editability(message), editability_types.NO);
 
+    message.type = "stream";
+    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+
     page_params.realm_allow_message_editing = true;
     // Limit of 0 means no time limit on editing messages
     page_params.realm_message_content_edit_limit_seconds = null;
@@ -143,7 +146,7 @@ run_test("is_topic_editable", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     page_params.realm_allow_message_editing = false;
-    assert.equal(message_edit.is_topic_editable(message), false);
+    assert.equal(message_edit.is_topic_editable(message), true);
 });
 
 run_test("get_deletability", ({override}) => {
