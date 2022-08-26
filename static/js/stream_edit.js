@@ -146,7 +146,7 @@ export function open_edit_panel_for_row(stream_row) {
 }
 
 export function open_edit_panel_empty() {
-    const tab_key = $(stream_settings_ui.get_active_data().$tabs[0]).attr("data-tab-key");
+    const tab_key = stream_settings_ui.get_active_data().$tabs.first().attr("data-tab-key");
     $(".stream-row.active").removeClass("active");
     stream_settings_ui.show_subs_pane.nothing_selected();
     setup_subscriptions_tab_hash(tab_key);
