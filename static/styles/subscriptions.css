@@ -631,13 +631,13 @@ h4.stream_setting_subsection_title {
         vertical-align: top;
     }
 
-    &:hover .check:not(.checked):not(.disabled) svg,
-    &.active:hover .check:not(.checked):not(.disabled) svg {
+    &:hover .check:not(.checked, .disabled) svg,
+    &.active:hover .check:not(.checked, .disabled) svg {
         fill: hsl(0, 0%, 87%);
     }
 
-    .check:not(.checked):not(.disabled):hover svg,
-    &.active .check:not(.checked):not(.disabled):hover svg {
+    .check:not(.checked, .disabled):hover svg,
+    &.active .check:not(.checked, .disabled):hover svg {
         fill: hsl(0, 0%, 72%);
     }
 
