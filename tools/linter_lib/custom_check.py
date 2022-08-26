@@ -116,7 +116,7 @@ js_rules = RuleList(
     rules=[
         {
             "pattern": "subject|SUBJECT",
-            "exclude": {"static/js/util.js", "frontend_tests/"},
+            "exclude": {"static/js/types.ts", "static/js/util.ts", "frontend_tests/"},
             "exclude_pattern": "emails",
             "description": "avoid subject in JS code",
             "good_lines": ["topic_name"],

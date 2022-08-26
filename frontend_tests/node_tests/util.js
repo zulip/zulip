@@ -81,8 +81,6 @@ run_test("same_recipient", () => {
 
     assert.ok(!util.same_recipient({type: "private", to_user_ids: undefined}, {type: "private"}));
 
-    assert.ok(!util.same_recipient({type: "unknown type"}, {type: "unknown type"}));
-
     assert.ok(!util.same_recipient(undefined, {type: "private"}));
 
     assert.ok(!util.same_recipient(undefined, undefined));
@@ -264,6 +262,7 @@ run_test("clean_user_content_links", () => {
                 '<a href="/#fragment" target="_blank">fragment</a>' +
                 '<div class="message_inline_image">' +
                 '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" title="inline image">upload</a> ' +
+                '<a role="button">button</a> ' +
                 "</div>",
         ),
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a> ' +
@@ -273,6 +272,7 @@ run_test("clean_user_content_links", () => {
             '<a href="/#fragment" title="http://zulip.zulipdev.com/#fragment">fragment</a>' +
             '<div class="message_inline_image">' +
             '<a href="http://zulip.zulipdev.com/user_uploads/w/ha/tever/inline.png" target="_blank" rel="noopener noreferrer" aria-label="inline image">upload</a> ' +
+            '<a role="button">button</a> ' +
             "</div>",
     );
 });
