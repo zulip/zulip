@@ -51,11 +51,20 @@ EMOTICON_CONVERSIONS = {
 }
 
 
-def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
+def emoji_names_for_picker(
+    emoji_name_maps: Dict[str, Dict[str, Any]], emoji_data: List[Dict[str, Any]]
+) -> List[str]:
     emoji_names: List[str] = []
     for emoji_code, name_info in emoji_name_maps.items():
         emoji_names.append(name_info["canonical_name"])
         emoji_names.extend(name_info["aliases"])
+
+    for emoji_dict in emoji_data:
+        if emoji_is_universal(emoji_dict):
+            short_name = emoji_dict["short_name"].replace("-", "_")
+            short_names = map(lambda name: name.replace("-", "_"), emoji_dict["short_names"])
+            emoji_names.append(short_name)
+            emoji_names.extend(short_names)
 
     return sorted(emoji_names)
 
@@ -86,7 +95,7 @@ def generate_emoji_catalog(
 
     for emoji_dict in emoji_data:
         emoji_code = get_emoji_code(emoji_dict)
-        if not emoji_is_universal(emoji_dict) or emoji_code not in emoji_name_maps:
+        if not emoji_is_universal(emoji_dict):
             continue
         category = emoji_dict["category"]
         sort_order[emoji_code] = emoji_dict["sort_order"]
@@ -109,14 +118,24 @@ def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
     return True
 
 
-def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
+def generate_codepoint_to_name_map(
+    emoji_name_maps: Dict[str, Dict[str, Any]], emoji_data: List[Dict[str, Any]]
+) -> Dict[str, str]:
     codepoint_to_name: Dict[str, str] = {}
     for emoji_code, name_info in emoji_name_maps.items():
         codepoint_to_name[emoji_code] = name_info["canonical_name"]
+
+    for emoji_dict in emoji_data:
+        if emoji_is_universal(emoji_dict):
+            emoji_code = get_emoji_code(emoji_dict)
+            codepoint_to_name[emoji_code] = emoji_dict["short_name"].replace("-", "_")
+
     return codepoint_to_name
 
 
-def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
+def generate_name_to_codepoint_map(
+    emoji_name_maps: Dict[str, Dict[str, Any]], emoji_data: List[Dict[str, Any]]
+) -> Dict[str, str]:
     name_to_codepoint = {}
     for emoji_code, name_info in emoji_name_maps.items():
         canonical_name = name_info["canonical_name"]
@@ -124,4 +143,14 @@ def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
         name_to_codepoint[canonical_name] = emoji_code
         for alias in aliases:
             name_to_codepoint[alias] = emoji_code
+
+    for emoji_dict in emoji_data:
+        if emoji_is_universal(emoji_dict):
+            emoji_code = get_emoji_code(emoji_dict)
+            short_name = emoji_dict["short_name"].replace("-", "_")
+            short_names = map(lambda name: name.replace("-", "_"), emoji_dict["short_names"])
+            name_to_codepoint[short_name] = emoji_code
+            for name in short_names:
+                name_to_codepoint[name] = emoji_code
+
     return name_to_codepoint
