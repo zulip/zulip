@@ -176,7 +176,7 @@
 
                 <div class="input-group">
                     <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can edit the topic of any message" }}</label>
-                    <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number" {{#unless realm_allow_message_editing}}disabled{{/unless}}>
+                    <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=edit_topic_policy_values}}
                     </select>
                 </div>

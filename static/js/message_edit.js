@@ -61,11 +61,6 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    if (!page_params.realm_allow_message_editing) {
-        // If message editing is disabled, so is topic editing.
-        return false;
-    }
-
     // message senders can edit message topics indefinitely.
     if (message.sent_by_me) {
         return true;
@@ -140,6 +135,9 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     }
 
     if (!page_params.realm_allow_message_editing) {
+        if (message.type === "stream") {
+            return editability_types.TOPIC_ONLY;
+        }
         return editability_types.NO;
     }
 
@@ -200,10 +198,6 @@ export function get_deletability(message) {
 }
 
 export function can_move_message(message) {
-    if (!page_params.realm_allow_message_editing) {
-        return false;
-    }
-
     if (!message.is_stream) {
         return false;
     }
@@ -263,14 +257,6 @@ export function stream_and_topic_exist_in_edit_history(message, stream_id, topic
     }
 
     return false;
-}
-
-export function update_message_topic_editing_pencil() {
-    if (page_params.realm_allow_message_editing) {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
-    } else {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
-    }
 }
 
 export function hide_message_edit_spinner($row) {
