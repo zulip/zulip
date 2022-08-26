@@ -85,10 +85,9 @@ function construct_copy_div($div, start_id, end_id) {
             should_include_start_recipient_header = true;
         }
         const message = message_lists.current.get(rows.id($row));
-        const $message_firstp = $(message.content).slice(0, 1);
-        $message_firstp.prepend(message.sender_full_name + ": ");
-        $div.append($message_firstp);
-        $div.append($(message.content).slice(1));
+        const $content = $(message.content);
+        $content.first().prepend(message.sender_full_name + ": ");
+        $div.append($content);
     }
 
     if (should_include_start_recipient_header) {
@@ -218,7 +217,7 @@ export function analyze_selection(selection) {
 
         $startc = $(range.startContainer);
         start_data = find_boundary_tr(
-            $($startc.parents(".selectable_row, .message_header")[0]),
+            $startc.parents(".selectable_row, .message_header").first(),
             ($row) => $row.next(),
         );
         if (start_data === undefined) {
@@ -279,19 +278,19 @@ function get_end_tr_from_endc($endc) {
         // If the selection ends within the message following the selected
         // messages, go back to use the actual last message.
         if ($endc.parents(".message_row").length > 0) {
-            const $parent_msg = $($endc.parents(".message_row")[0]);
+            const $parent_msg = $endc.parents(".message_row").first();
             return $parent_msg.prev(".message_row");
         }
         // If it's not in a .message_row, it's probably in a .message_header and
         // we can use the last message from the previous recipient_row.
         if ($endc.parents(".message_header").length > 0) {
-            const $overflow_recipient_row = $($endc.parents(".recipient_row")[0]);
+            const $overflow_recipient_row = $endc.parents(".recipient_row").first();
             return $overflow_recipient_row.prev(".recipient_row").last(".message_row");
         }
         // If somehow we get here, do the default return.
     }
 
-    return $($endc.parents(".selectable_row")[0]);
+    return $endc.parents(".selectable_row").first();
 }
 
 export function paste_handler_converter(paste_html) {
