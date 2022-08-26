@@ -1107,7 +1107,9 @@ class SlackImporter(ZulipTestCase):
         ]
         mock_requests_get.return_value.raw = BytesIO(read_test_image_file("img.png"))
 
-        with self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
+            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
+            # uses it to generate email addresses for users without an email specified.
             do_convert_data(test_slack_zip_file, output_dir, token)
 
         self.assertTrue(os.path.exists(output_dir))

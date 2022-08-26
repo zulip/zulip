@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import orjson
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -75,6 +76,7 @@ from zerver.models import (
     get_active_streams,
     get_client,
     get_huddle_hash,
+    get_realm,
     get_stream,
 )
 
@@ -1178,6 +1180,38 @@ class RealmImportExportTest(ExportFile):
             }
 
         return getters
+
+    def test_import_realm_with_invalid_email_addresses_fails_validation(self) -> None:
+        realm = get_realm("zulip")
+
+        self.export_realm(realm)
+        data = read_json("realm.json")
+
+        data["zerver_userprofile"][0]["delivery_email"] = "invalid_email_address"
+
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
+            do_import_realm(output_dir, "test-zulip")
+
+        # Now test a weird case where delivery_email is valid, but .email is not.
+        # Such data should never reasonably get generated, but we should still
+        # be defensive against it (since it can still happen due to bugs or manual edition
+        # of export files in an attempt to get us to import malformed data).
+        self.export_realm(realm)
+        data = read_json("realm.json")
+        data["zerver_userprofile"][0]["email"] = "invalid_email_address"
+
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
+            do_import_realm(output_dir, "test-zulip2")
 
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")

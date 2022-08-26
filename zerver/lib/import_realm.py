@@ -11,6 +11,7 @@ import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
+from django.core.validators import validate_email
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
@@ -1015,6 +1016,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     user_profiles = [UserProfile(**item) for item in data["zerver_userprofile"]]
     for user_profile in user_profiles:
+        # Validate both email attributes to be defensive
+        # against any malformed data, where .delivery_email
+        # might be set correctly, but .email not.
+        validate_email(user_profile.delivery_email)
+        validate_email(user_profile.email)
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
 
