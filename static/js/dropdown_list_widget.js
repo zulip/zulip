@@ -537,7 +537,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
                 return;
             }
 
-            const $element = $(e.target.closest("li"));
+            const $element = e.target.closest("li");
             if ($element.hasClass("checked")) {
                 this.remove_check_mark($element);
             } else {
