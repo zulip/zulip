@@ -165,36 +165,12 @@ test("get_mutes", () => {
 });
 
 test("unknown streams", () => {
-    blueslip.expect("warn", "Unknown stream in set_muted_topics: BOGUS STREAM");
-
-    page_params.muted_topics = [
-        ["social", "breakfast", 1577836800],
-        ["design", "typography", 1577836800],
-        ["BOGUS STREAM", "whatever", 1577836800],
-    ];
     page_params.muted_users = [
         {id: 3, timestamp: 1577836800},
         {id: 2, timestamp: 1577836800},
     ];
-    user_topics.initialize();
-    muted_users.initialize();
 
-    assert.deepEqual(user_topics.get_muted_topics().sort(), [
-        {
-            date_muted: 1577836800000,
-            date_muted_str: "Jan\u00A001,\u00A02020",
-            stream: social.name,
-            stream_id: social.stream_id,
-            topic: "breakfast",
-        },
-        {
-            date_muted: 1577836800000,
-            date_muted_str: "Jan\u00A001,\u00A02020",
-            stream: design.name,
-            stream_id: design.stream_id,
-            topic: "typography",
-        },
-    ]);
+    muted_users.initialize();
 
     assert.deepEqual(muted_users.get_muted_users().sort(), [
         {
@@ -217,7 +193,7 @@ test("set_user_topics", () => {
     assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 
-    const user_topic_events = [
+    page_params.user_topics = [
         {
             stream_id: social.stream_id,
             topic_name: "breakfast",
@@ -238,9 +214,7 @@ test("set_user_topics", () => {
         },
     ];
 
-    for (const user_topic of user_topic_events) {
-        user_topics.set_user_topic(user_topic);
-    }
+    user_topics.initialize();
 
     assert.deepEqual(user_topics.get_muted_topics().sort(), [
         {
@@ -271,7 +245,14 @@ test("set_user_topics", () => {
 test("case_insensitivity", () => {
     user_topics.set_muted_topics([]);
     assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
-    user_topics.set_muted_topics([["SOCial", "breakfast"]]);
+    user_topics.set_muted_topics([
+        {
+            stream_id: social.stream_id,
+            topic_name: "breakfast",
+            last_updated: "1577836800",
+            visibility_policy: visibility_policy.MUTED,
+        },
+    ]);
     assert.ok(user_topics.is_topic_muted(social.stream_id, "breakfast"));
     assert.ok(user_topics.is_topic_muted(social.stream_id, "breakFAST"));
 });

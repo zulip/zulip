@@ -80,25 +80,14 @@ export function set_user_topic(user_topic) {
     }
 }
 
-export function set_muted_topics(tuples) {
+export function set_muted_topics(user_topics) {
     muted_topics.clear();
 
-    for (const tuple of tuples) {
-        const stream_name = tuple[0];
-        const topic = tuple[1];
-        const date_muted = tuple[2];
-
-        const stream_id = stream_data.get_stream_id(stream_name);
-
-        if (!stream_id) {
-            blueslip.warn("Unknown stream in set_muted_topics: " + stream_name);
-            continue;
-        }
-
-        add_muted_topic(stream_id, topic, date_muted);
+    for (const user_topic of user_topics) {
+        set_user_topic(user_topic);
     }
 }
 
 export function initialize() {
-    set_muted_topics(page_params.muted_topics);
+    set_muted_topics(page_params.user_topics);
 }

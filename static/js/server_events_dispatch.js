@@ -141,8 +141,8 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "muted_topics":
-            muted_topics_ui.handle_topic_updates(event.muted_topics);
+        case "user_topic":
+            muted_topics_ui.handle_topic_updates(event);
             break;
 
         case "muted_users":

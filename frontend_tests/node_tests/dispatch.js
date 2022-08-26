@@ -274,14 +274,14 @@ run_test("invites_changed", ({override}) => {
 });
 
 run_test("muted_topics", ({override}) => {
-    const event = event_fixtures.muted_topics;
+    const event = event_fixtures.user_topic;
 
     const stub = make_stub();
     override(muted_topics_ui, "handle_topic_updates", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("muted_topics");
-    assert_same(args.muted_topics, event.muted_topics);
+    const args = stub.get_args("user_topic");
+    assert_same(args.user_topic, event);
 });
 
 run_test("muted_users", ({override}) => {
