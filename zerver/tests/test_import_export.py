@@ -811,7 +811,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         # Make sure our export/import didn't somehow leak info into the
         # original realm.
@@ -1220,7 +1220,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         imported_realm = Realm.objects.get(string_id="test-zulip")
@@ -1243,7 +1243,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
         # Test attachments
@@ -1307,7 +1307,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         imported_realm = Realm.objects.get(string_id="test-zulip")
         test_image_data = read_test_image_file("img.png")
@@ -1391,9 +1391,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
-            realm = do_import_realm(
-                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-1"
-            )
+            realm = do_import_realm(get_output_dir(), "test-zulip-1")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, 5)
@@ -1404,9 +1402,7 @@ class RealmImportExportTest(ExportFile):
                 ).exists()
             )
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            realm = do_import_realm(
-                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-2"
-            )
+            realm = do_import_realm(get_output_dir(), "test-zulip-2")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, None)
