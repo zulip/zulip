@@ -607,7 +607,8 @@ LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, "locale"),)
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-STATICFILES_DIRS = ["static/"]
+if DEVELOPMENT or "ZULIP_COLLECTING_STATIC" in os.environ:
+    STATICFILES_DIRS = [os.path.join(DEPLOY_ROOT, "static")]
 
 if DEBUG:
     WEBPACK_BUNDLES = "../webpack/"
