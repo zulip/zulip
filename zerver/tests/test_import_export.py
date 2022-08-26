@@ -23,7 +23,10 @@ from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
-from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.realm_settings import (
+    do_change_realm_plan_type,
+    do_set_realm_authentication_methods,
+)
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_topics import do_mute_topic
 from zerver.actions.users import do_deactivate_user
@@ -686,6 +689,18 @@ class RealmImportExportTest(ExportFile):
 
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
+
+        # Change some authentication_methods so that some are enabled and some disabled
+        # for this to be properly tested, as opposed to some special case
+        # with e.g. everything enabled.
+        authentication_methods = original_realm.authentication_methods_dict()
+        authentication_methods["Email"] = False
+        authentication_methods["Dev"] = True
+
+        do_set_realm_authentication_methods(
+            original_realm, authentication_methods, acting_user=None
+        )
+
         # data to test import of huddles
         huddle = [
             self.example_user("hamlet"),
@@ -916,6 +931,11 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
         for imported_realm_emoji in all_imported_realm_emoji:
             self.assertNotEqual(imported_realm_emoji.author, None)
+
+        self.assertEqual(
+            original_realm.authentication_methods_dict(),
+            imported_realm.authentication_methods_dict(),
+        )
 
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()

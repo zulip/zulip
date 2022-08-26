@@ -587,9 +587,14 @@ def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> N
 
 
 def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_name: Field) -> None:
-    """Used to fixup the authentication_methods bitfield to be a string"""
+    """Used to fixup the authentication_methods bitfield to be an integer."""
     for item in data[table]:
-        values_as_bitstring = "".join("1" if field[1] else "0" for field in item[field_name])
+        # The ordering of bits here is important for the imported value
+        # to end up as expected.
+        charlist = ["1" if field[1] else "0" for field in item[field_name]]
+        charlist.reverse()
+
+        values_as_bitstring = "".join(charlist)
         values_as_int = int(values_as_bitstring, 2)
         item[field_name] = values_as_int
 
