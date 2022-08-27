@@ -487,10 +487,10 @@ class PasswordResetTest(ZulipTestCase):
                 result["Location"], "/accounts/go/?next=%2Faccounts%2Fpassword%2Freset%2F"
             )
 
-        mock_get_host.return_value = "www.testserver.com"
+        mock_get_host.return_value = "www.zulip.example.com"
         with self.settings(
             ROOT_DOMAIN_LANDING_PAGE=True,
-            EXTERNAL_HOST="www.testserver.com",
+            EXTERNAL_HOST="www.zulip.example.com",
         ):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 302)
@@ -519,8 +519,8 @@ class PasswordResetTest(ZulipTestCase):
         result = self.client_get("/accounts/password/reset/")
         self.assertEqual(result.status_code, 200)
 
-        mock_get_host.return_value = "www.testserver.com"
-        with self.settings(EXTERNAL_HOST="www.testserver.com", ROOT_SUBDOMAIN_ALIASES=[]):
+        mock_get_host.return_value = "www.zulip.example.com"
+        with self.settings(EXTERNAL_HOST="www.zulip.example.com", ROOT_SUBDOMAIN_ALIASES=[]):
             result = self.client_get("/accounts/password/reset/")
             self.assertEqual(result.status_code, 200)
 
@@ -5809,10 +5809,10 @@ class TestLoginPage(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "/accounts/go/?next=%2Fupgrade%2F")
 
-        mock_get_host.return_value = "www.testserver.com"
+        mock_get_host.return_value = "www.zulip.example.com"
         with self.settings(
             ROOT_DOMAIN_LANDING_PAGE=True,
-            EXTERNAL_HOST="www.testserver.com",
+            EXTERNAL_HOST="www.zulip.example.com",
             ROOT_SUBDOMAIN_ALIASES=["test"],
         ):
             result = self.client_get("/en/login/")

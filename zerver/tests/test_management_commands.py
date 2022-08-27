@@ -600,7 +600,7 @@ class TestSendCustomEmail(ZulipTestCase):
                 f"--path={path}",
                 f"-u={user.delivery_email}",
                 "--subject=Test email",
-                "--from-name=zulip@testserver.com",
+                "--from-name=zulip@zulip.example.com",
                 "--dry-run",
             )
             self.assertEqual(
