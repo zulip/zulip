@@ -8,6 +8,8 @@ const {run_test} = require("../zjsunit/test");
 const user_topics = mock_esm("../../static/js/user_topics");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
+const topic_list = mock_esm("../../static/js/topic_list");
+const topic_list_data = mock_esm("../../static/js/topic_list_data");
 const unread = mock_esm("../../static/js/unread");
 
 const pm_conversations = zrequire("pm_conversations");
@@ -43,7 +45,7 @@ run_test("streams", () => {
 run_test("topics", ({override}) => {
     const streams = [1, 2, 3, 4];
     const topics = new Map([
-        [1, ["read", "read", "1a", "1b", "read", "1c"]],
+        [1, ["read", "read", "1a", "2a", "1b", "read", "1c"]],
         [2, []],
         [3, ["3a", "read", "read", "3b", "read"]],
         [4, ["4a"]],
@@ -61,8 +63,21 @@ run_test("topics", ({override}) => {
         return tg.next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic);
     }
 
+    override(topic_list, "active_stream_id", () => 1);
+    override(topic_list_data, "get_list_info", () => ({
+        items: [{topic_name: "1a"}, {topic_name: "1b"}, {topic_name: "1c"}],
+    }));
     assert.deepEqual(next_topic(1, "1a"), {stream: 1, topic: "1b"});
+    assert.deepEqual(next_topic(1, "1c"), {stream: 1, topic: "1a"});
+    override(topic_list_data, "get_list_info", () => ({
+        items: [],
+    }));
+    assert.deepEqual(next_topic(1, "1a"), {stream: 1, topic: "2a"});
     assert.deepEqual(next_topic(1, undefined), {stream: 1, topic: "1a"});
+    override(topic_list, "active_stream_id", () => 2);
+    override(topic_list_data, "get_list_info", () => ({
+        items: [],
+    }));
     assert.deepEqual(next_topic(2, "bogus"), {stream: 3, topic: "3a"});
     assert.deepEqual(next_topic(3, "3b"), {stream: 3, topic: "3a"});
     assert.deepEqual(next_topic(4, "4a"), {stream: 1, topic: "1a"});
