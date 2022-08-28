@@ -7,8 +7,10 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {user_settings} = require("../zjsunit/zpage_params");
 
+const compose_pm_pill = zrequire("compose_pm_pill");
+const user_pill = zrequire("user_pill");
 const people = zrequire("people");
-
+const compose_state = zrequire("compose_state");
 const aaron = {
     email: "aaron@zulip.com",
     user_id: 6,
@@ -23,7 +25,6 @@ set_global("setTimeout", (f, delay) => {
     assert.equal(delay, setTimeout_delay);
     f();
 });
-const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
 });
@@ -171,30 +172,34 @@ test("draft_model delete", ({override}) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-test("snapshot_message", ({override}) => {
+test("snapshot_message", ({override_rewire}) => {
+    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override_rewire(compose_pm_pill, "set_from_emails", noop);
+
     let curr_draft;
 
-    function map(field, f) {
-        override(compose_state, field, f);
+    function set_compose_state() {
+        compose_state.set_message_type(curr_draft.type);
+        compose_state.message_content(curr_draft.content);
+        compose_state.stream_name(curr_draft.stream);
+        compose_state.topic(curr_draft.topic);
+        compose_state.private_message_recipient(curr_draft.private_message_recipient);
     }
 
-    map("get_message_type", () => curr_draft.type);
-    map("composing", () => Boolean(curr_draft.type));
-    map("message_content", () => curr_draft.content);
-    map("stream_name", () => curr_draft.stream);
-    map("topic", () => curr_draft.topic);
-    map("private_message_recipient", () => curr_draft.private_message_recipient);
-
     curr_draft = draft_1;
+    set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), draft_1);
 
     curr_draft = draft_2;
+    set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), draft_2);
 
     curr_draft = short_msg;
+    set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), undefined);
 
     curr_draft = {};
+    set_compose_state();
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
@@ -243,15 +248,16 @@ test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-test("update_draft", ({override}) => {
-    override(compose_state, "composing", () => false);
+test("update_draft", ({override, override_rewire}) => {
+    compose_state.set_message_type(null);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
-    override(compose_state, "composing", () => true);
-    override(compose_state, "message_content", () => "dummy content");
-    override(compose_state, "get_message_type", () => "private");
-    override(compose_state, "private_message_recipient", () => "aaron@zulip.com");
+    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    compose_state.set_message_type("private");
+    compose_state.message_content("dummy content");
+    compose_state.private_message_recipient(aaron.email);
 
     const $container = $(".top_left_drafts");
     const $child = $(".unread_count");
@@ -274,7 +280,7 @@ test("update_draft", ({override}) => {
 
     override(Date, "now", () => 6);
 
-    override(compose_state, "message_content", () => "dummy content edited once");
+    compose_state.message_content("dummy content edited once");
     tippy_show_called = false;
     tippy_destroy_called = false;
     draft_id = drafts.update_draft();
@@ -294,7 +300,7 @@ test("update_draft", ({override}) => {
 
     override(Date, "now", () => 8);
 
-    override(compose_state, "message_content", () => "dummy content edited a second time");
+    compose_state.message_content("dummy content edited a second time");
     tippy_show_called = false;
     tippy_destroy_called = false;
     draft_id = drafts.update_draft({no_notify: true});
@@ -317,7 +323,7 @@ test("delete_all_drafts", () => {
     assert.deepEqual(draft_model.get(), {});
 });
 
-test("format_drafts", ({override, override_rewire, mock_template}) => {
+test("format_drafts", ({override_rewire, mock_template}) => {
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -425,9 +431,9 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
         return {name: "stream"};
     };
 
-    override(compose_state, "composing", () => true);
-    override(compose_state, "get_message_type", () => "private");
-    override(compose_state, "private_message_recipient", () => "");
+    override_rewire(user_pill, "get_user_ids", () => []);
+    compose_state.set_message_type("private");
+    compose_state.private_message_recipient(null);
 
     mock_template("draft_table_body.hbs", false, (data) => {
         // Tests formatting and time-sorting of drafts
@@ -458,7 +464,7 @@ test("format_drafts", ({override, override_rewire, mock_template}) => {
     drafts.launch();
 });
 
-test("filter_drafts", ({override, override_rewire, mock_template}) => {
+test("filter_drafts", ({override_rewire, mock_template}) => {
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
@@ -584,13 +590,10 @@ test("filter_drafts", ({override, override_rewire, mock_template}) => {
 
     override_rewire(drafts, "set_initial_element", noop);
 
-    override(compose_state, "composing", () => true);
-    override(compose_state, "get_message_type", () => "private");
-    override(
-        compose_state,
-        "private_message_recipient",
-        () => pm_draft_1.private_message_recipient,
-    );
+    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    compose_state.set_message_type("private");
+    compose_state.private_message_recipient(aaron.email);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
