@@ -20,6 +20,7 @@ import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_users from "./settings_users";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subscriber_api from "./subscriber_api";
@@ -109,6 +110,12 @@ function render_user_group_list(groups, user) {
     });
 }
 
+function render_manage_profile_content(user) {
+    const $container = $("#manage-profile-tab");
+    $container.empty();
+    settings_users.show_edit_user_info_modal(user.user_id, $container);
+}
+
 export function get_custom_profile_field_data(user, field, field_types, dateFormat) {
     const field_value = people.get_custom_profile_data(user.user_id, field.id);
     const field_type = field.type;
@@ -187,6 +194,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
+    const can_manage_profile = people.is_person_active(user.user_id) && page_params.is_admin;
     const args = {
         user_id: user.user_id,
         full_name: user.full_name,
@@ -222,12 +230,11 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     $(".tabcontent").hide();
 
     let default_tab = 0;
-    // Only checking this tab key as currently we only open this tab directly
-    // other than profile-tab.
     if (default_tab_key === "user-profile-streams-tab") {
         default_tab = 1;
+    } else if (default_tab_key === "manage-profile-tab") {
+        default_tab = 3;
     }
-
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
@@ -249,9 +256,20 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
                 case "user-profile-streams-tab":
                     render_user_stream_list(user_streams, user);
                     break;
+                case "manage-profile-tab":
+                    render_manage_profile_content(user);
+                    break;
             }
         },
     };
+
+    if (can_manage_profile) {
+        const manage_profile_tab = {
+            label: $t({defaultMessage: "Manage user"}),
+            key: "manage-profile-tab",
+        };
+        opts.values.push(manage_profile_tab);
+    }
 
     const $elem = components.toggle(opts).get();
     $elem.addClass("large allow-overflow");

@@ -23,13 +23,29 @@ import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
+import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
+import * as user_profile from "./user_profile";
 
 const section = {
     active: {},
     deactivated: {},
     bots: {},
 };
+
+function show_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", true);
+    $button.find("span").hide();
+    loading.make_indicator($spinner);
+}
+
+function hide_button_spinner($button) {
+    const $spinner = $button.find(".modal__spinner");
+    $button.prop("disabled", false);
+    $button.find("span").show();
+    loading.destroy_indicator($spinner);
+}
 
 function compare_a_b(a, b) {
     if (a > b) {
@@ -559,7 +575,7 @@ function handle_reactivation($tbody) {
     });
 }
 
-export function show_edit_user_info_modal(user_id, from_user_info_popover) {
+export function show_edit_user_info_modal(user_id, $container) {
     const person = people.get_by_user_id(user_id);
 
     if (!person) {
@@ -575,43 +591,41 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
         user_role_values: settings_config.user_role_values,
         disable_role_dropdown: person.is_owner && !page_params.is_owner,
     });
+    $container.append(html_body);
 
-    let fields_user_pills;
-
-    function set_role_dropdown_and_fields_user_pills() {
-        $("#user-role-select").val(person.role);
-        if (!page_params.is_owner) {
-            $("#user-role-select")
-                .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
-                .hide();
-        }
-
-        const element = "#edit-user-form .custom-profile-field-form";
-        $(element).empty();
-        settings_account.append_custom_profile_fields(element, user_id);
-        settings_account.initialize_custom_date_type_fields(element);
-        fields_user_pills = settings_account.initialize_custom_user_type_fields(
-            element,
-            user_id,
-            true,
-            false,
-        );
-
-        $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const user_id = $("#edit-user-form").data("user-id");
-            function handle_confirm() {
-                const url = "/json/users/" + encodeURIComponent(user_id);
-                dialog_widget.submit_api_request(channel.del, url);
-            }
-            const open_deactivate_modal_callback = () =>
-                confirm_deactivation(user_id, handle_confirm, true);
-            dialog_widget.close_modal(open_deactivate_modal_callback);
-        });
+    // Set role dropdown and fields user pills
+    $("#user-role-select").val(person.role);
+    if (!page_params.is_owner) {
+        $("#user-role-select")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
+            .hide();
     }
 
-    function submit_user_details() {
+    const element = "#edit-user-form .custom-profile-field-form";
+    $(element).empty();
+    settings_account.append_custom_profile_fields(element, user_id);
+    settings_account.initialize_custom_date_type_fields(element);
+    const fields_user_pills = settings_account.initialize_custom_user_type_fields(
+        element,
+        user_id,
+        true,
+        false,
+    );
+
+    // Handle deactivation
+    $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const user_id = $("#edit-user-form").data("user-id");
+        function handle_confirm() {
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            dialog_widget.submit_api_request(channel.del, url);
+        }
+        confirm_deactivation(user_id, handle_confirm, true);
+    });
+
+    // Submit user details
+    $("#edit-user-form").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");
         const profile_data = get_human_profile_data(fields_user_pills);
@@ -622,23 +636,32 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
-        const opts = {
-            error_continuation() {
+        const $submit_btn = $("#edit-user-form .dialog_submit_button");
+        const $cancel_btn = $("#edit-user-form .dialog_cancel_button");
+        show_button_spinner($submit_btn);
+        $cancel_btn.prop("disabled", true);
+
+        channel.patch({
+            url,
+            data,
+            success() {
+                user_profile.hide_user_profile();
+            },
+            error(xhr) {
+                ui_report.error(
+                    $t_html({defaultMessage: "Failed"}),
+                    xhr,
+                    $("#edit-user-form-error"),
+                );
                 // Scrolling modal to top, to make error visible to user.
                 $("#edit-user-form")
                     .closest(".simplebar-content-wrapper")
                     .animate({scrollTop: 0}, "fast");
-            },
-        };
-        dialog_widget.submit_api_request(channel.patch, url, data, opts);
-    }
 
-    dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Manage user"}),
-        html_body,
-        on_click: submit_user_details,
-        post_render: set_role_dropdown_and_fields_user_pills,
-        loading_spinner: from_user_info_popover,
+                hide_button_spinner($submit_btn);
+                $cancel_btn.prop("disabled", false);
+            },
+        });
     });
 }
 
@@ -647,7 +670,8 @@ function handle_human_form($tbody) {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        show_edit_user_info_modal(user_id, false);
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user, "manage-profile-tab");
     });
 }
 

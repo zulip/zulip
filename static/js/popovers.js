@@ -1337,7 +1337,7 @@ export function register_click_handlers() {
         if (user.is_bot) {
             settings_bots.show_edit_bot_info_modal(user_id, true);
         } else {
-            settings_users.show_edit_user_info_modal(user_id, true);
+            user_profile.show_user_profile(user, "manage-profile-tab");
         }
     });
 }

@@ -1,5 +1,6 @@
 <div id="edit-user-form" data-user-id="{{user_id}}">
     <form class="form-horizontal name-setting">
+        <div class="alert" id="edit-user-form-error"></div>
         <input type="hidden" name="is_full_name" value="true" />
         <div class="input-group name_change_container">
             <label for="edit_user_full_name">{{t "Full name" }}</label>
@@ -28,6 +29,13 @@
     <div class="input-group new-style">
         <button class="button rounded btn-danger deactivate_user_button">
             {{t 'Deactivate user' }}
+        </button>
+    </div>
+    <div class="modal__footer">
+        <button type="button" class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+        <button type="button" class="modal__btn dialog_submit_button">
+            <span>{{t "Save changes"}}</span>
+            <div class="modal__spinner"></div>
         </button>
     </div>
 </div>
