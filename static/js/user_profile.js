@@ -115,7 +115,11 @@ function render_user_group_list(groups, user) {
 function render_manage_profile_content(user) {
     const $container = $("#manage-profile-tab");
     $container.empty();
-    settings_users.show_edit_user_info_modal(user.user_id, $container);
+    if (user.is_bot) {
+        settings_bots.show_edit_bot_info_modal(user.user_id, $container);
+    } else {
+        settings_users.show_edit_user_info_modal(user.user_id, $container);
+    }
     $("#user-profile-modal .modal__footer").show();
 }
 
@@ -197,7 +201,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         .filter((f) => f.name !== undefined);
     const user_streams = stream_data.get_subscribed_streams_for_user(user.user_id);
     const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
-    const can_manage_profile = people.is_person_active(user.user_id) && page_params.is_admin;
+    const can_manage_profile =
+        (people.is_person_active(user.user_id) && page_params.is_admin) ||
+        (user.is_bot && user.bot_owner_id && user.bot_owner_id === page_params.user_id);
     const args = {
         user_id: user.user_id,
         full_name: user.full_name,
@@ -268,8 +274,12 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     };
 
     if (can_manage_profile) {
+        let manage_profile_tab_label = "Manage user";
+        if (user.is_bot) {
+            manage_profile_tab_label = "Manage bot";
+        }
         const manage_profile_tab = {
-            label: $t({defaultMessage: "Manage user"}),
+            label: $t({defaultMessage: "{manage_profile_tab_label}"}, {manage_profile_tab_label}),
             key: "manage-profile-tab",
         };
         opts.values.push(manage_profile_tab);

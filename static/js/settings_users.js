@@ -33,14 +33,14 @@ const section = {
     bots: {},
 };
 
-function show_button_spinner($button) {
+export function show_button_spinner($button) {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", true);
     $button.find("span").hide();
     loading.make_indicator($spinner);
 }
 
-function hide_button_spinner($button) {
+export function hide_button_spinner($button) {
     const $spinner = $button.find(".modal__spinner");
     $button.prop("disabled", false);
     $button.find("span").show();
@@ -680,7 +680,8 @@ function handle_bot_form($tbody) {
         e.stopPropagation();
         e.preventDefault();
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
-        settings_bots.show_edit_bot_info_modal(user_id, false);
+        const user = people.get_by_user_id(user_id);
+        user_profile.show_user_profile(user, 3);
     });
 }
 

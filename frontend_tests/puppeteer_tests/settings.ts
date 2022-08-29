@@ -191,7 +191,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {full_name: "Bot one"});
-    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
+    const save_btn_selector = "#user-profile-modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
@@ -226,7 +226,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
 
     await common.fill_form(page, edit_form_selector, {full_name: "Bot 2"});
-    const save_btn_selector = "#edit_bot_modal .dialog_submit_button";
+    const save_btn_selector = "#user-profile-modal .dialog_submit_button";
     await page.click(save_btn_selector);
 
     // The form should not get closed on saving. Errors should be visible on the form.
@@ -237,7 +237,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         "Failed: Name is already in use!",
     );
 
-    const cancel_button_selector = "#edit_bot_modal .dialog_cancel_button";
+    const cancel_button_selector = "#user-profile-modal .dialog_cancel_button";
     await page.waitForFunction(
         (cancel_button_selector: string) =>
             !document.querySelector(cancel_button_selector)?.hasAttribute("disabled"),

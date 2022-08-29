@@ -43,7 +43,6 @@ import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
-import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
@@ -1334,11 +1333,7 @@ export function register_click_handlers() {
         hide_all();
         const user_id = elem_to_user_id($(e.target).parents("ul"));
         const user = people.get_by_user_id(user_id);
-        if (user.is_bot) {
-            settings_bots.show_edit_bot_info_modal(user_id, true);
-        } else {
-            user_profile.show_user_profile(user, "manage-profile-tab");
-        }
+        user_profile.show_user_profile(user, "manage-profile-tab");
     });
 }
 
