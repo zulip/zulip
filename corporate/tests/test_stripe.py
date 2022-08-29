@@ -2336,7 +2336,7 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         response = self.client_get("/billing/", follow=True)
-        self.assert_in_success_response(["cannot be upgraded"], response)
+        self.assert_in_success_response(["cannot be directly upgraded"], response)
 
     def test_redirect_for_upgrade_page(self) -> None:
         user = self.example_user("iago")
