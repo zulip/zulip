@@ -44,7 +44,7 @@ stream_data.add_sub(social);
 
 function test(label, f) {
     run_test(label, ({override}) => {
-        user_topics.set_muted_topics([]);
+        user_topics.set_user_topics([]);
         muted_users.set_muted_users([]);
         f({override});
     });
@@ -189,7 +189,7 @@ test("unknown streams", () => {
 test("set_user_topics", () => {
     blueslip.expect("warn", "Unknown stream ID in set_user_topic: 999");
 
-    user_topics.set_muted_topics([]);
+    user_topics.set_user_topics([]);
     assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
     assert.ok(!user_topics.is_topic_muted(design.stream_id, "typography"));
 
@@ -243,9 +243,9 @@ test("set_user_topics", () => {
 });
 
 test("case_insensitivity", () => {
-    user_topics.set_muted_topics([]);
+    user_topics.set_user_topics([]);
     assert.ok(!user_topics.is_topic_muted(social.stream_id, "breakfast"));
-    user_topics.set_muted_topics([
+    user_topics.set_user_topics([
         {
             stream_id: social.stream_id,
             topic_name: "breakfast",
