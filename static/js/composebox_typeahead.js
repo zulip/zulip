@@ -422,7 +422,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
         aliases: "",
-        placeholder: "Question",
+        placeholder: $t({defaultMessage: "Question"}),
     },
     {
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
