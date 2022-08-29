@@ -1,6 +1,7 @@
 import $ from "jquery";
 import {Sortable} from "sortablejs";
 
+import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.hbs";
 import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
 import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.hbs";
 import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
@@ -72,13 +73,39 @@ function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    settings_ui.do_settings_change(
-        channel.del,
-        "/json/realm/profile_fields/" + encodeURIComponent($(this).attr("data-profile-field-id")),
-        {},
-        $("#admin-profile-field-status").expectOne(),
-    );
-    update_profile_fields_table_element();
+    const profile_field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const profile_field = get_profile_field(profile_field_id);
+    const active_user_ids = people.get_active_user_ids();
+    let users_using_deleting_profile_field = 0;
+
+    for (const user_id of active_user_ids) {
+        const user_profile_data = people.get_custom_profile_data(user_id, profile_field_id);
+        if (user_profile_data) {
+            users_using_deleting_profile_field += 1;
+        }
+    }
+
+    const html_body = render_confirm_delete_profile_field({
+        profile_field_name: profile_field.name,
+        count: users_using_deleting_profile_field,
+    });
+
+    function request_delete() {
+        const url = "/json/realm/profile_fields/" + profile_field_id;
+        const opts = {
+            success_continuation() {
+                display_success_status();
+                update_profile_fields_table_element();
+            },
+        };
+        dialog_widget.submit_api_request(channel.del, url, {}, opts);
+    }
+
+    confirm_dialog.launch({
+        html_body,
+        html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
+        on_click: request_delete,
+    });
 }
 
 function read_select_field_data_from_form($profile_field_form, old_field_data) {
