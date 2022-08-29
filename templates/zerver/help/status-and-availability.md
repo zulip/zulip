@@ -123,3 +123,4 @@ minutes after disabling updates to your availability.
 ## Related articles
 
 * [Typing notifications](/help/typing-notifications)
+* [Read receipts](/help/read-receipts)
