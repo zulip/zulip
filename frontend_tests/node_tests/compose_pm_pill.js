@@ -18,6 +18,7 @@ let pills = {
 
 run_test("pills", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
+    override(compose_actions, "update_narrow_to_recipient_visibility", () => {});
 
     const othello = {
         user_id: 1,

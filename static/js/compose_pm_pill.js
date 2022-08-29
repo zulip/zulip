@@ -34,6 +34,7 @@ export function initialize() {
 
     widget.onPillRemove(() => {
         compose_actions.update_placeholder_text();
+        compose_actions.update_narrow_to_recipient_visibility();
     });
 }
 

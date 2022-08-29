@@ -135,8 +135,15 @@
 
     #private-message .to_text {
         vertical-align: middle;
-
         font-weight: 600;
+        color: inherit;
+        opacity: 0.7;
+        cursor: default;
+
+        &.narrow_to_compose_recipients:hover {
+            cursor: pointer;
+            opacity: 1;
+        }
     }
 
     #compose-lock-icon,
