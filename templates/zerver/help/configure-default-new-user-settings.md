@@ -12,6 +12,9 @@ users will be able to customize their own settings once they
 join. Administrators can customize defaults for all personal
 preference settings, including the following:
 
+* Privacy settings, including:
+    * [Displaying availability to other users](/help/status-and-availability)
+    * [Allowing others to see when the user has read messages](/help/read-receipts)
 * Display settings, including:
     * Default view ([Recent topics](/help/recent-topics) vs. [All messages](/help/reading-strategies#all-messages))
     * [Light theme vs. dark theme](/help/dark-theme)
@@ -28,7 +31,7 @@ preference settings, including the following:
 
 {settings_tab|default-user-settings}
 
-2. Review all settings and adjust as needed.
+1. Review all settings and adjust as needed.
 
 {end_tabs}
 
