@@ -193,34 +193,37 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
         # Use argument section design for better visuals
         # Directly using `###` for subheading causes errors so use h3 with made up id.
         argument_template = (
-            '<div class="api-argument"><p class="api-argument-name"><h3 id="{h3_id}">'
-            + " {event_type} {op}</h3></p></div> \n{description}\n\n\n"
+            '<div markdown="1" class="api-event"><div class="api-argument"><p class="api-argument-name"><button id="{h3_id}" class="reveal_hidden_event"> {event_type} {op}</button></p></div> \n{description}\n\n\n'
         )
         for events in events_dict["oneOf"]:
             event_type: Dict[str, Any] = events["properties"]["type"]
             event_type_str: str = event_type["enum"][0]
             # Internal hyperlink name
             h3_id: str = event_type_str
-            event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
+            # event_type_str = f'<span class="api-argument-required"> {event_type_str}</span>'
             op: Optional[Dict[str, Any]] = events["properties"].pop("op", None)
             op_str: str = ""
             if op is not None:
                 op_str = op["enum"][0]
                 h3_id += "-" + op_str
-                op_str = f'<span class="api-argument-deprecated">op: {op_str}</span>'
+                op_str = f'op: {op_str}'
             description = events["description"]
             text.append(
                 argument_template.format(
                     event_type=event_type_str, op=op_str, description=description, h3_id=h3_id
                 )
             )
+            text += [f'<div markdown="1" class="event-content" id="{h3_id}">\n']
+            print(text)
             text += self.render_table(events["properties"], 0)
+            print(text)
             # This part is for adding examples of individual events
             text.append("**Example**")
             text.append("\n```json\n")
             example = json.dumps(events["example"], indent=4, sort_keys=True)
             text.append(example)
             text.append("```\n\n")
+            text+=["</div></div>"]
         return text
 
 
