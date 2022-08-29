@@ -291,9 +291,7 @@ body.dark-theme {
         color: hsl(236, 33%, 90%);
     }
 
-    .recent_topics_container .unread_count,
-    .topic-list-item .unread_count,
-    .expanded_private_message .unread_count {
+    .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }
 
