@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from typing import Any
 from unittest import mock
 
@@ -28,7 +29,8 @@ class GitterImporter(ZulipTestCase):
             gitter_data = orjson.loads(f.read())
         sent_datetime = dateutil.parser.parse(gitter_data[1]["sent"])
         with self.assertLogs(level="INFO"), mock.patch(
-            "zerver.data_import.import_util.timezone_now", return_value=sent_datetime
+            "zerver.data_import.import_util.timezone_now",
+            return_value=sent_datetime + timedelta(days=1),
         ):
             do_convert_data(gitter_file, output_dir)
 

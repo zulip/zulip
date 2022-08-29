@@ -776,7 +776,7 @@ def long_term_idle_helper(
         if user in recent_senders:
             continue
 
-        if NOW - timestamp < 60:
+        if NOW - timestamp < 60 * 24 * 60 * 60:
             recent_senders.add(user)
 
         sender_counts[user] += 1
