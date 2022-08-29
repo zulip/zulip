@@ -80,7 +80,7 @@ export function set_user_topic(user_topic) {
     }
 }
 
-export function set_muted_topics(user_topics) {
+export function set_user_topics(user_topics) {
     muted_topics.clear();
 
     for (const user_topic of user_topics) {
@@ -89,5 +89,5 @@ export function set_muted_topics(user_topics) {
 }
 
 export function initialize() {
-    set_muted_topics(page_params.user_topics);
+    set_user_topics(page_params.user_topics);
 }

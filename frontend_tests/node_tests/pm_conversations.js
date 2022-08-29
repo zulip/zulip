@@ -23,7 +23,7 @@ const params = {
 function test(label, f) {
     run_test(label, ({override}) => {
         pmc.clear_for_testing();
-        user_topics.set_muted_topics([]);
+        user_topics.set_user_topics([]);
         muted_users.set_muted_users([]);
         people.initialize_current_user(15);
         f({override});

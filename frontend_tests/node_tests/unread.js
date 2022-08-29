@@ -57,7 +57,7 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 function test(label, f) {
     run_test(label, (helpers) => {
         unread.declare_bankruptcy();
-        user_topics.set_muted_topics([]);
+        user_topics.set_user_topics([]);
         f(helpers);
     });
 }
