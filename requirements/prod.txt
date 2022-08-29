@@ -1235,8 +1235,9 @@ s3transfer==0.6.0 \
     --hash=sha256:06176b74f3a15f61f1b4f25a1fc29a4429040b7647133a463da8fa5bd28d5ecd \
     --hash=sha256:2ed07d3866f523cc561bf4a00fc5535827981b117dd7876f036b0c1aca42c947
     # via boto3
-scim2-filter-parser==0.3.9 \
-    --hash=sha256:10873af0dbe279acaaaf176b1506b3d2c2730bd74c02e8753acfa0515b8f0f70
+scim2-filter-parser==0.4.0 \
+    --hash=sha256:7171e8cc4e110928bfdb83e5f0a19781d2d8b21f31e5905d92243c5067f2cf59 \
+    --hash=sha256:ca6e08c167a559d75081a044315c0dd34941c5d61d54aad04e9f6cefc1b929be
     # via django-scim2
 sentry-sdk==1.9.5 \
     --hash=sha256:2d7ec7bc88ebbdf2c4b6b2650b3257893d386325a96c9b723adcd31033469b63 \
