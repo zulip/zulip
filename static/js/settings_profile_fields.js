@@ -15,10 +15,18 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_ui from "./settings_ui";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
 };
+
+function display_success_status() {
+    const $spinner = $("#admin-profile-field-status").expectOne();
+    const success_msg_html = settings_ui.strings.success_html;
+    ui_report.success(success_msg_html, $spinner, 1000);
+    settings_ui.display_checkmark($spinner);
+}
 
 export function maybe_disable_widgets() {
     if (page_params.is_admin) {
@@ -228,7 +236,12 @@ function open_custom_profile_field_form_modal() {
             field_data: JSON.stringify(field_data),
         };
         const url = "/json/realm/profile_fields";
-        dialog_widget.submit_api_request(channel.post, url, data);
+        const opts = {
+            success_continuation() {
+                display_success_status();
+            },
+        };
+        dialog_widget.submit_api_request(channel.post, url, data, opts);
     }
 
     function set_up_form_fields() {
@@ -413,7 +426,12 @@ function open_edit_form_modal(e) {
 
         function update_profile_field() {
             const url = "/json/realm/profile_fields/" + field_id;
-            dialog_widget.submit_api_request(channel.patch, url, data);
+            const opts = {
+                success_continuation() {
+                    display_success_status();
+                },
+            };
+            dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
         if (field.type === field_types.SELECT.id) {
