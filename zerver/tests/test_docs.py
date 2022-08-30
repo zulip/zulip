@@ -174,7 +174,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/for/communities/", "Zulip for communities")
         self._test("/self-hosting/", "Self-host Zulip")
         self._test("/security/", "TLS encryption")
-        self._test("/attribution/", "Attributions")
+        self._test("/attribution/", "Website attributions")
         self._test("/devlogin/", "Normal users", landing_page=False)
         self._test("/devtools/", "Useful development URLs")
         self._test("/errors/404/", "Page not found")
