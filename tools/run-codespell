@@ -9,7 +9,20 @@
 IGNORE_WORDS_FILE=.codespellignore
 if [ "$#" -eq 0 ]; then
     echo "No argument specified. Checking on the entire repo..."
-    FILES_TO_BE_CHECKED="$(git ls-files -- ':(exclude)locale' ':(exclude)*fixtures*' ':(exclude)*.svg' ':(exclude)docs/translating' ':(exclude)yarn.lock' ':(exclude)docs/THIRDPARTY' ':(exclude)*postgresql.conf.template.erb' ':(exclude)tools/setup/emoji/emoji_names.py' ':(exclude)tools/setup/emoji/emoji_map.json' ':(exclude)zerver/management/data/unified_reactions.json')"
+    FILES_TO_BE_CHECKED="$(
+        git ls-files -- \
+            ':!*.asc' \
+            ':!*.svg' \
+            ':!*/fixtures/*' \
+            ':!docs/THIRDPARTY' \
+            ':!docs/translating' \
+            ':!locale' \
+            ':!postgresql.conf.template.erb' \
+            ':!tools/setup/emoji/emoji_map.json' \
+            ':!tools/setup/emoji/emoji_names.py' \
+            ':!yarn.lock' \
+            ':!zerver/management/data/unified_reactions.json'
+    )"
     mapfile -t FILES_TO_BE_CHECKED <<<"$FILES_TO_BE_CHECKED"
 else
     FILES_TO_BE_CHECKED=("$@")
