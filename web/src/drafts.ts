@@ -377,17 +377,17 @@ type UpdateDraftOptions = {
 export function update_draft(opts: UpdateDraftOptions = {}): string | undefined {
     const no_notify = opts.no_notify ?? false;
     const draft = snapshot_message();
+    const draft_id = $("textarea#compose-textarea").data("draft-id");
 
     if (draft === undefined) {
         // The user cleared the compose box, which means
-        // there is nothing to save here.  Don't obliterate
-        // the existing draft yet--the user may have mistakenly
-        // hit delete after select-all or something.
-        // Just do nothing.
+        // there is nothing to save here but delete the
+        // draft if exists.
+        if (draft_id) {
+            draft_model.deleteDraft(draft_id);
+        }
         return undefined;
     }
-
-    const draft_id = $("textarea#compose-textarea").data("draft-id");
 
     if (draft_id !== undefined) {
         // We don't save multiple drafts of the same message;
