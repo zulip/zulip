@@ -235,6 +235,20 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     );
 }
 
+async function test_delete_draft_on_clearing_text(page: Page): Promise<void> {
+    console.log("Deleting draft by clearing compose box textarea.");
+    await page.click("#drafts_table .message_row:not(.private-message) .restore-overlay-message");
+    await wait_for_drafts_to_disappear(page);
+    await page.waitForSelector("#send_message_form", {visible: true});
+    await common.fill_form(page, "form#send_message_form", {content: ""});
+    await page.click("#compose_close");
+    await page.waitForSelector("#send_message_form", {hidden: true});
+    await page.click(drafts_button);
+    await wait_for_drafts_to_appear(page);
+    const drafts_count = await get_drafts_count(page);
+    assert.strictEqual(drafts_count, 1, "Draft not deleted.");
+}
+
 async function drafts_test(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
@@ -256,6 +270,7 @@ async function drafts_test(page: Page): Promise<void> {
     await test_restore_private_message_draft_via_draft_overlay(page);
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
+    await test_delete_draft_on_clearing_text(page);
 }
 
 common.run_test(drafts_test);
