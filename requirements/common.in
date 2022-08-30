@@ -89,7 +89,7 @@ sourcemap
 tornado
 
 # Fast JSON parser
-orjson<3.7.9  # https://github.com/ijl/orjson/issues/285
+orjson
 
 # Needed for iOS push notifications
 aioapns
