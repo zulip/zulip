@@ -44,7 +44,8 @@ pg_args["dbname"] = settings.DATABASES["default"]["NAME"]
 pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
 pg_args["connect_timeout"] = "600"
 
-conn = psycopg2.connect(**pg_args)
+# connection_factory=None lets mypy understand the return type
+conn = psycopg2.connect(connection_factory=None, **pg_args)
 conn.autocommit = True
 
 pg_server_version = conn.server_version
