@@ -1352,7 +1352,7 @@ class MessageAccessTests(ZulipTestCase):
         # don't have protected history
         self.assert_length(filtered_messages, 2)
 
-        # Testing messages accessiblity for an unsubscribed user
+        # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
 
         with queries_captured() as queries:
@@ -1372,7 +1372,7 @@ class MessageAccessTests(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        # Testing messages accessiblity including a public stream message
+        # Testing messages accessibility including a public stream message
         stream_name = "public_stream"
         stream = self.subscribe(user, stream_name)
         message_one_id = self.send_stream_message(user, stream_name, "Message one")
