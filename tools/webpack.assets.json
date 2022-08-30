@@ -57,6 +57,12 @@
         "./static/styles/portico/landing_page.css",
         "./static/styles/portico/integrations.css"
     ],
+    "communities": [
+        "./static/js/bundles/portico",
+        "./static/js/portico/communities",
+        "./static/styles/portico/landing_page.css",
+        "./static/styles/portico/integrations.css"
+    ],
     "signup": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "register": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "confirm-preregistrationuser": [

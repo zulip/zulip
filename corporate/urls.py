@@ -9,6 +9,7 @@ from corporate.views.event_status import event_status, event_status_page
 from corporate.views.portico import (
     app_download_link_redirect,
     apps_view,
+    communities_view,
     hello_view,
     landing_view,
     plans_view,
@@ -125,6 +126,7 @@ landing_page_urls = [
         landing_view,
         {"template_name": "corporate/case-studies/recurse-center-case-study.html"},
     ),
+    path("communities/", communities_view),
 ]
 i18n_urlpatterns += landing_page_urls
 

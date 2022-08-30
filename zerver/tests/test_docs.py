@@ -199,6 +199,13 @@ class DocPageTest(ZulipTestCase):
         result = self.client_get("/for/companies/", follow=True)
         self.assert_in_success_response(["Communication efficiency represents"], result)
 
+    def test_open_organizations_endpoint(self) -> None:
+        realm = get_realm("zulip")
+        realm.want_advertise_in_communities_directory = True
+        realm.save()
+
+        self._test("/communities/", "Open communities directory")
+
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
         url = "/why-zulip/"

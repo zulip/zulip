@@ -342,7 +342,8 @@ $category-text: hsl(219, 23%, 33%);
             font-weight: 400;
         }
 
-        .integration-category {
+        .integration-category,
+        .realm-category {
             font-size: 0.85em;
             margin-top: 5px;
             font-weight: 400;
@@ -390,7 +391,8 @@ $category-text: hsl(219, 23%, 33%);
                 font-size: 1em;
             }
 
-            .integration-category {
+            .integration-category,
+            .realm-category {
                 font-size: 0.8em;
             }
         }
@@ -416,7 +418,8 @@ $category-text: hsl(219, 23%, 33%);
                 font-size: 0.9em;
             }
 
-            .integration-category {
+            .integration-category,
+            .realm-category {
                 font-size: 0.77em;
             }
         }
@@ -465,7 +468,8 @@ $category-text: hsl(219, 23%, 33%);
                 margin: 0 21px 20px;
                 order: 1;
 
-                .integration-category {
+                .integration-category,
+                .realm-category {
                     display: none;
                 }
 
@@ -501,7 +505,8 @@ $category-text: hsl(219, 23%, 33%);
             .categories {
                 order: 2;
 
-                .integration-category {
+                .integration-category,
+                .realm-category {
                     font-size: 0.9em;
                     font-weight: 400;
                     padding: 6px 3px;
@@ -582,6 +587,92 @@ $category-text: hsl(219, 23%, 33%);
 
         @media (width <= 450px) {
             padding: 0 25px;
+        }
+    }
+}
+
+.portico-landing.integrations.communities {
+    .main {
+        visibility: visible;
+    }
+
+    .portico-page-heading {
+        color: hsl(0, 0%, 0%);
+        font-size: 44px;
+    }
+
+    .portico-page-subheading {
+        font-size: 16px;
+        font-weight: 400;
+        color: hsl(0, 0%, 20%);
+        max-width: 340px;
+        margin: auto;
+    }
+
+    .integration-categories-sidebar h3 {
+        color: hsl(0, 0%, 0%);
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .catalog {
+        margin-top: 50px;
+    }
+
+    .eligible_realms {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+
+        .eligible_realm {
+            display: flex;
+            gap: 20px;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+
+            &:hover {
+                border: 1px solid hsl(167, 34%, 56%);
+            }
+
+            .eligible_realm_logo {
+                display: flex;
+                width: 60px;
+                height: 60px;
+            }
+
+            .eligible_realm_details {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .eligible_realm_name {
+                    font-weight: 400;
+                    font-size: 21px;
+                    color: hsl(220.6, 20%, 33.3%);
+                    line-height: 23px;
+                    margin: 0;
+                }
+
+                .eligible_realm_description {
+                    font-weight: 400;
+                    font-size: 15px;
+                    color: hsl(220, 2.7%, 56.5%);
+                    line-height: 19px;
+                    margin: 0;
+                    width: min(600px, 50vw);
+                    /* For restricting text to only two lines.
+                       See https://caniuse.com/?search=display%3A%20-webkit-box for support. */
+                    overflow: hidden;
+                    display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                }
+            }
+        }
+
+        .eligible_realm_end_notice {
+            text-align: center;
         }
     }
 }
