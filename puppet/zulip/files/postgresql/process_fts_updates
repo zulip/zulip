@@ -168,7 +168,8 @@ if options.nagios_check:
         pg_args["user"] = options.nagios_user
     else:
         del pg_args["user"]
-    conn = psycopg2.connect(**pg_args)
+    # connection_factory=None lets mypy understand the return type
+    conn = psycopg2.connect(connection_factory=None, **pg_args)
     cursor = conn.cursor()
     cursor.execute("SELECT count(*) FROM fts_update_log")
     num = cursor.fetchall()[0][0]
@@ -195,7 +196,8 @@ retries = 1
 while True:
     try:
         if conn is None:
-            conn = psycopg2.connect(**pg_args)
+            # connection_factory=None lets mypy understand the return type
+            conn = psycopg2.connect(connection_factory=None, **pg_args)
             cursor = conn.cursor()
             retries = 30
 
