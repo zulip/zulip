@@ -14,7 +14,7 @@ const {mock_banners} = require("./lib/compose_banner");
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 
-const compose_error = zrequire("compose_error");
+const compose_banner = zrequire("compose_banner");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_state = zrequire("compose_state");
 const compose_validate = zrequire("compose_validate");
@@ -83,7 +83,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
     $("#compose_banners .user_not_subscribed").length = 0;
     let user_not_subscribed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", true, (data, html) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.user_not_subscribed);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
         user_not_subscribed_rendered = true;
         return html;
     });
@@ -112,7 +112,7 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 
     let stream_does_not_exist_rendered = false;
     mock_template("compose_banner/stream_does_not_exist_error.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.stream_does_not_exist);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.stream_does_not_exist);
         assert.equal(data.stream_name, "Frontend");
         stream_does_not_exist_rendered = true;
     });
@@ -174,7 +174,7 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.private_message_recipient("");
     let pm_recipient_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.missing_private_message_recipient);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.missing_private_message_recipient);
         assert.equal(
             data.banner_text,
             $t({defaultMessage: "Please specify at least one valid recipient."}),
@@ -194,7 +194,7 @@ test_ui("validate", ({override, mock_template}) => {
     people.deactivate(bob);
     let deactivated_user_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.deactivated_user);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.deactivated_user);
         assert.equal(
             data.banner_text,
             $t({defaultMessage: "You cannot send messages to deactivated users."}),
@@ -216,7 +216,7 @@ test_ui("validate", ({override, mock_template}) => {
     let zephyr_error_rendered = false;
     let empty_message_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        if (data.classname === compose_error.CLASSNAMES.zephyr_not_running) {
+        if (data.classname === compose_banner.CLASSNAMES.zephyr_not_running) {
             assert.equal(
                 data.banner_text,
                 $t({
@@ -225,7 +225,7 @@ test_ui("validate", ({override, mock_template}) => {
                 }),
             );
             zephyr_error_rendered = true;
-        } else if (data.classname === compose_error.CLASSNAMES.empty_message) {
+        } else if (data.classname === compose_banner.CLASSNAMES.empty_message) {
             assert.equal(data.banner_text, $t({defaultMessage: "You have nothing to send!"}));
             empty_message_error_rendered = true;
         }
@@ -257,7 +257,7 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.stream_name("");
     let empty_stream_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.missing_stream);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.missing_stream);
         assert.equal(data.banner_text, $t({defaultMessage: "Please specify a stream."}));
         empty_stream_error_rendered = true;
     });
@@ -269,7 +269,7 @@ test_ui("validate", ({override, mock_template}) => {
     compose_state.topic("");
     let missing_topic_error_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.topic_missing);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
         assert.equal(
             data.banner_text,
             $t({defaultMessage: "Topics are required in this organization."}),
@@ -397,7 +397,7 @@ test_ui("validate_stream_message", ({override_rewire, mock_template}) => {
 
     let wildcards_not_allowed_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.wildcards_not_allowed);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.wildcards_not_allowed);
         assert.equal(
             data.banner_text,
             $t({
@@ -432,7 +432,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", ({mock_template})
 
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.no_post_permissions);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
         assert.equal(
             data.banner_text,
             $t({
@@ -475,7 +475,7 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", ({mock_templ
     stream_data.add_sub(sub);
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.no_post_permissions);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
         assert.equal(
             data.banner_text,
             $t({
@@ -510,7 +510,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", ({mock_tem
     stream_data.add_sub(sub);
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.no_post_permissions);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.no_post_permissions);
         assert.equal(
             data.banner_text,
             $t({
@@ -532,7 +532,7 @@ test_ui("test_check_overflow_text", ({mock_template}) => {
     const $send_button = $("#compose-send-button");
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.message_too_long);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.message_too_long);
         assert.equal(
             data.banner_text,
             $t({
@@ -624,7 +624,7 @@ test_ui("warn_if_private_stream_is_linked", ({mock_template}) => {
 
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.private_stream_warning);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
         assert.equal(data.stream_name, "Denmark");
         banner_rendered = true;
         return "private_stream_warning_stub";
@@ -666,7 +666,7 @@ test_ui("warn_if_mentioning_unsubscribed_user", ({override, mock_template}) => {
 
     let new_banner_rendered = false;
     mock_template("compose_banner/not_subscribed_warning.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.recipient_not_subscribed);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.recipient_not_subscribed);
         assert.equal(data.user_id, 34);
         assert.equal(data.stream_id, 111);
         assert.equal(data.name, "Foo Barson");
@@ -746,7 +746,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
 
     let error_shown = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_error.CLASSNAMES.topic_resolved);
+        assert.equal(data.classname, compose_banner.CLASSNAMES.topic_resolved);
         assert.equal(
             data.banner_text,
             $t({

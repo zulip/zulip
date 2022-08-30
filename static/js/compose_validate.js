@@ -7,7 +7,7 @@ import render_private_stream_warning from "../templates/compose_banner/private_s
 import render_wildcard_warning from "../templates/compose_banner/wildcard_warning.hbs";
 
 import * as channel from "./channel";
-import * as compose_error from "./compose_error";
+import * as compose_banner from "./compose_banner";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -101,9 +101,9 @@ export function warn_if_private_stream_is_linked(linked_stream) {
     }
 
     const new_row = render_private_stream_warning({
-        banner_type: compose_error.WARNING,
+        banner_type: compose_banner.WARNING,
         stream_name: linked_stream.name,
-        classname: compose_error.CLASSNAMES.private_stream_warning,
+        classname: compose_banner.CLASSNAMES.private_stream_warning,
     });
 
     $("#compose_banners").append(new_row);
@@ -139,7 +139,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 
     if (needs_subscribe_warning(user_id, sub.stream_id)) {
         const $existing_invites_area = $(
-            `#compose_banners .${compose_error.CLASSNAMES.recipient_not_subscribed}`,
+            `#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`,
         );
 
         const existing_invites = Array.from($existing_invites_area, (user_row) =>
@@ -152,13 +152,13 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
             const context = {
                 user_id,
                 stream_id: sub.stream_id,
-                banner_type: compose_error.WARNING,
+                banner_type: compose_banner.WARNING,
                 button_text: can_subscribe_other_users
                     ? $t({defaultMessage: "Subscribe them"})
                     : null,
                 can_subscribe_other_users,
                 name: mentioned.full_name,
-                classname: compose_error.CLASSNAMES.recipient_not_subscribed,
+                classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
             };
 
             const new_row = render_not_subscribed_warning(context);
@@ -168,7 +168,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 }
 
 export function clear_topic_resolved_warning() {
-    $(`#compose_banners .${compose_error.CLASSNAMES.topic_resolved}`).remove();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.topic_resolved}`).remove();
 }
 
 export function warn_if_topic_resolved(topic_changed) {
@@ -196,7 +196,7 @@ export function warn_if_topic_resolved(topic_changed) {
     const $compose_banner_area = $("#compose_banners");
 
     if (sub && message_content !== "" && resolved_topic.is_resolved(topic_name)) {
-        if ($(`#compose_banners .${compose_error.CLASSNAMES.topic_resolved}`).length) {
+        if ($(`#compose_banners .${compose_banner.CLASSNAMES.topic_resolved}`).length) {
             // Error is already displayed; no action required.
             return;
         }
@@ -206,7 +206,7 @@ export function warn_if_topic_resolved(topic_changed) {
             : null;
 
         const context = {
-            banner_type: compose_error.WARNING,
+            banner_type: compose_banner.WARNING,
             stream_id: sub.stream_id,
             topic_name,
             banner_text: $t({
@@ -214,7 +214,7 @@ export function warn_if_topic_resolved(topic_changed) {
                     "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.",
             }),
             button_text,
-            classname: compose_error.CLASSNAMES.topic_resolved,
+            classname: compose_banner.CLASSNAMES.topic_resolved,
         };
 
         const new_row = render_compose_banner(context);
@@ -228,9 +228,9 @@ function show_wildcard_warnings(stream_id) {
     const subscriber_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     const $compose_banner_area = $("#compose_banners");
-    const classname = compose_error.CLASSNAMES.wildcard_warning;
+    const classname = compose_banner.CLASSNAMES.wildcard_warning;
     const $wildcard_template = render_wildcard_warning({
-        banner_type: compose_error.WARNING,
+        banner_type: compose_banner.WARNING,
         subscriber_count,
         stream_name: compose_state.stream_name(),
         wildcard_mention,
@@ -248,7 +248,7 @@ function show_wildcard_warnings(stream_id) {
 }
 
 export function clear_wildcard_warnings() {
-    const classname = compose_error.CLASSNAMES.wildcard_warning;
+    const classname = compose_banner.CLASSNAMES.wildcard_warning;
     $(`#compose_banners .${classname}`).remove();
 }
 
@@ -354,12 +354,12 @@ function validate_stream_message_mentions(stream_id) {
     // stream, check if they permission to do so.
     if (wildcard_mention !== null && subscriber_count > wildcard_mention_large_stream_threshold) {
         if (!wildcard_mention_allowed()) {
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 $t({
                     defaultMessage:
                         "You do not have permission to use wildcard mentions in this stream.",
                 }),
-                compose_error.CLASSNAMES.wildcards_not_allowed,
+                compose_banner.CLASSNAMES.wildcards_not_allowed,
             );
             return false;
         }
@@ -385,22 +385,22 @@ function validate_stream_message_mentions(stream_id) {
 export function validation_error(error_type, stream_name) {
     switch (error_type) {
         case "does-not-exist":
-            compose_error.show_stream_does_not_exist_error(stream_name);
+            compose_banner.show_stream_does_not_exist_error(stream_name);
             return false;
         case "error":
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 $t({defaultMessage: "Error checking subscription."}),
-                compose_error.CLASSNAMES.subscription_error,
+                compose_banner.CLASSNAMES.subscription_error,
                 $("#stream_message_recipient_stream"),
             );
             return false;
         case "not-subscribed": {
-            if ($(`#compose_banners .${compose_error.CLASSNAMES.user_not_subscribed}`).length) {
+            if ($(`#compose_banners .${compose_banner.CLASSNAMES.user_not_subscribed}`).length) {
                 return false;
             }
             const sub = stream_data.get_sub(stream_name);
             const new_row = render_compose_banner({
-                banner_type: compose_error.ERROR,
+                banner_type: compose_banner.ERROR,
                 banner_text: $t({
                     defaultMessage:
                         "You're not subscribed to this stream. You will not be notified if other users reply to your message.",
@@ -408,7 +408,7 @@ export function validation_error(error_type, stream_name) {
                 button_text: stream_data.can_toggle_subscription(sub)
                     ? $t({defaultMessage: "Subscribe"})
                     : null,
-                classname: compose_error.CLASSNAMES.user_not_subscribed,
+                classname: compose_banner.CLASSNAMES.user_not_subscribed,
                 // The message cannot be sent until the user subscribes to the stream, so
                 // closing the banner would be more confusing than helpful.
                 hide_close_button: true,
@@ -432,9 +432,9 @@ export function validate_stream_message_address_info(stream_name) {
 function validate_stream_message() {
     const stream_name = compose_state.stream_name();
     if (stream_name === "") {
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({defaultMessage: "Please specify a stream."}),
-            compose_error.CLASSNAMES.missing_stream,
+            compose_banner.CLASSNAMES.missing_stream,
             $("#stream_message_recipient_stream"),
         );
         return false;
@@ -445,9 +445,9 @@ function validate_stream_message() {
         // TODO: We plan to migrate the empty topic to only using the
         // `""` representation for i18n reasons, but have not yet done so.
         if (topic === "" || topic === "(no topic)") {
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 $t({defaultMessage: "Topics are required in this organization."}),
-                compose_error.CLASSNAMES.topic_missing,
+                compose_banner.CLASSNAMES.topic_missing,
                 $("#stream_message_recipient_topic"),
             );
             return false;
@@ -460,11 +460,11 @@ function validate_stream_message() {
     }
 
     if (!stream_data.can_post_messages_in_stream(sub)) {
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({
                 defaultMessage: "You do not have permission to post in this stream.",
             }),
-            compose_error.CLASSNAMES.no_post_permissions,
+            compose_banner.CLASSNAMES.no_post_permissions,
         );
         return false;
     }
@@ -495,18 +495,18 @@ function validate_private_message() {
         (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot)
     ) {
         // Unless we're composing to a bot
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({defaultMessage: "Private messages are disabled in this organization."}),
-            compose_error.CLASSNAMES.private_messages_disabled,
+            compose_banner.CLASSNAMES.private_messages_disabled,
             $("#private_message_recipient"),
         );
         return false;
     }
 
     if (compose_state.private_message_recipient().length === 0) {
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({defaultMessage: "Please specify at least one valid recipient."}),
-            compose_error.CLASSNAMES.missing_private_message_recipient,
+            compose_banner.CLASSNAMES.missing_private_message_recipient,
             $("#private_message_recipient"),
         );
         return false;
@@ -520,17 +520,17 @@ function validate_private_message() {
     let context = {};
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join(",")};
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({defaultMessage: "The recipient {recipient} is not valid."}, context),
-            compose_error.CLASSNAMES.invalid_recipient,
+            compose_banner.CLASSNAMES.invalid_recipient,
             $("#private_message_recipient"),
         );
         return false;
     } else if (invalid_recipients.length > 1) {
         context = {recipients: invalid_recipients.join(",")};
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({defaultMessage: "The recipients {recipients} are not valid."}, context),
-            compose_error.CLASSNAMES.invalid_recipients,
+            compose_banner.CLASSNAMES.invalid_recipients,
             $("#private_message_recipient"),
         );
         return false;
@@ -539,9 +539,9 @@ function validate_private_message() {
     for (const user_id of user_ids) {
         if (!people.is_person_active(user_id)) {
             context = {full_name: people.get_by_user_id(user_id).full_name};
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 $t({defaultMessage: "You cannot send messages to deactivated users."}, context),
-                compose_error.CLASSNAMES.deactivated_user,
+                compose_banner.CLASSNAMES.deactivated_user,
                 $("#private_message_recipient"),
             );
 
@@ -564,7 +564,7 @@ export function check_overflow_text() {
         $indicator.addClass("over_limit");
         $("#compose-textarea").addClass("over_limit");
         $indicator.text(text.length + "/" + max_length);
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t(
                 {
                     defaultMessage:
@@ -572,7 +572,7 @@ export function check_overflow_text() {
                 },
                 {max_length},
             ),
-            compose_error.CLASSNAMES.message_too_long,
+            compose_banner.CLASSNAMES.message_too_long,
         );
         $("#compose-send-button").prop("disabled", true);
     } else if (text.length > 0.9 * max_length) {
@@ -581,13 +581,13 @@ export function check_overflow_text() {
         $indicator.text(text.length + "/" + max_length);
 
         $("#compose-send-button").prop("disabled", false);
-        $(`#compose_banners .${compose_error.CLASSNAMES.message_too_long}`).remove();
+        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
     } else {
         $indicator.text("");
         $("#compose-textarea").removeClass("over_limit");
 
         $("#compose-send-button").prop("disabled", false);
-        $(`#compose_banners .${compose_error.CLASSNAMES.message_too_long}`).remove();
+        $(`#compose_banners .${compose_banner.CLASSNAMES.message_too_long}`).remove();
     }
 
     return text.length;
@@ -608,23 +608,23 @@ export function validate() {
         // Avoid showing an error message when "enter sends" is enabled,
         // as it is more likely that the user has hit "Enter" accidentally.
         if (!user_settings.enter_sends) {
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 $t({defaultMessage: "You have nothing to send!"}),
-                compose_error.CLASSNAMES.empty_message,
+                compose_banner.CLASSNAMES.empty_message,
                 $("#compose-textarea"),
             );
         }
         return false;
     }
-    $(`#compose_banners .${compose_error.CLASSNAMES.empty_message}`).remove();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.empty_message}`).remove();
 
     if ($("#zephyr-mirror-error").is(":visible")) {
-        compose_error.show_error_message(
+        compose_banner.show_error_message(
             $t({
                 defaultMessage:
                     "You need to be running Zephyr mirroring in order to send messages!",
             }),
-            compose_error.CLASSNAMES.zephyr_not_running,
+            compose_banner.CLASSNAMES.zephyr_not_running,
         );
         return false;
     }

@@ -5,8 +5,8 @@ import _ from "lodash";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as compose_banner from "./compose_banner";
 import {get_recipient_label} from "./compose_closed_ui";
-import * as compose_error from "./compose_error";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -74,11 +74,11 @@ export function update_video_chat_button_display() {
 }
 
 export function clear_invites() {
-    $(`#compose_banners .${compose_error.CLASSNAMES.recipient_not_subscribed}`).remove();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.recipient_not_subscribed}`).remove();
 }
 
 export function clear_private_stream_alert() {
-    $(`#compose_banners .${compose_error.CLASSNAMES.private_stream_warning}`).remove();
+    $(`#compose_banners .${compose_banner.CLASSNAMES.private_stream_warning}`).remove();
 }
 
 export function clear_preview_area() {
@@ -251,9 +251,9 @@ export function send_message(request = create_message_object()) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error.show_error_message(
+            compose_banner.show_error_message(
                 response,
-                compose_error.CLASSNAMES.generic_compose_error,
+                compose_banner.CLASSNAMES.generic_compose_error,
                 $("#compose-textarea"),
             );
             return;
@@ -451,7 +451,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_error.CLASSNAMES.wildcard_warning} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.wildcard_warning} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
             compose_validate.clear_wildcard_warnings();
@@ -460,7 +460,7 @@ export function initialize() {
         },
     );
 
-    const user_not_subscribed_classname = `.${compose_error.CLASSNAMES.user_not_subscribed}`;
+    const user_not_subscribed_classname = `.${compose_banner.CLASSNAMES.user_not_subscribed}`;
     $("#compose_banners").on(
         "click",
         `${user_not_subscribed_classname} .compose_banner_action_button`,
@@ -479,7 +479,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_error.CLASSNAMES.topic_resolved} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.topic_resolved} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
 
@@ -496,7 +496,7 @@ export function initialize() {
 
     $("#compose_banners").on(
         "click",
-        `.${compose_error.CLASSNAMES.recipient_not_subscribed} .compose_banner_action_button`,
+        `.${compose_banner.CLASSNAMES.recipient_not_subscribed} .compose_banner_action_button`,
         (event) => {
             event.preventDefault();
 
@@ -511,9 +511,9 @@ export function initialize() {
 
             function failure(error_msg) {
                 clear_invites();
-                compose_error.show_error_message(
+                compose_banner.show_error_message(
                     error_msg,
-                    compose_error.CLASSNAMES.generic_compose_error,
+                    compose_banner.CLASSNAMES.generic_compose_error,
                     $("#compose-textarea"),
                 );
                 $(event.target).prop("disabled", true);
@@ -530,7 +530,7 @@ export function initialize() {
         },
     );
 
-    for (const classname of Object.values(compose_error.CLASSNAMES)) {
+    for (const classname of Object.values(compose_banner.CLASSNAMES)) {
         const classname_selector = `.${classname}`;
         $("#compose_banners").on(
             "click",

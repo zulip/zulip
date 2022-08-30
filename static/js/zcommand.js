@@ -1,5 +1,5 @@
 import * as channel from "./channel";
-import * as compose_error from "./compose_error";
+import * as compose_banner from "./compose_banner";
 import * as dark_theme from "./dark_theme";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
@@ -48,7 +48,7 @@ export function send(opts) {
 export function tell_user(msg) {
     // This is a bit hacky, but we don't have a super easy API now
     // for just telling users stuff.
-    compose_error.show_error_message(msg, compose_error.CLASSNAMES.generic_compose_error);
+    compose_banner.show_error_message(msg, compose_banner.CLASSNAMES.generic_compose_error);
 }
 
 export function switch_to_light_theme() {
