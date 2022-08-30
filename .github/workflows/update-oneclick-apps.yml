@@ -2,6 +2,9 @@ name: Update one click apps
 on:
   release:
     types: [published]
+permissions:
+  contents: read
+
 jobs:
   update-digitalocean-oneclick-app:
     runs-on: ubuntu-latest

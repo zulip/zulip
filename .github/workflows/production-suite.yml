@@ -26,6 +26,9 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+
 jobs:
   production_build:
     # This job builds a release tarball from the current commit, which

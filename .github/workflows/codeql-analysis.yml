@@ -6,8 +6,15 @@ on:
       - dependabot/** # https://github.com/github/codeql-action/pull/435
   pull_request: {}
 
+permissions:
+  contents: read
+
 jobs:
   CodeQL:
+    permissions:
+      actions: read # for github/codeql-action/init to get workflow details
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/analyze to upload SARIF results
     if: ${{!github.event.repository.private}}
     runs-on: ubuntu-latest
 
