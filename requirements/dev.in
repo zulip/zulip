@@ -15,7 +15,7 @@ Twisted
 Scrapy
 
 # Needed to compute test coverage
-coverage
+coverage<6.4.3  # undiagnosed bug
 
 # fake for LDAP testing
 fakeldap
@@ -65,7 +65,7 @@ https://github.com/zulip/zulint/archive/34adbc13d54ebeb4291c8f91483f946fce18a160
 cairosvg
 
 # Needed for tools/check-thirdparty
-python-debian
+python-debian<0.1.45  # https://salsa.debian.org/python-debian-team/python-debian/-/merge_requests/106
 
 # Pattern-based lint tool
 semgrep
