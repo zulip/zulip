@@ -67,6 +67,10 @@
             }
         }
     }
+
+    .add-task-bar {
+        margin-bottom: 5px;
+    }
 }
 
 .todo-widget,
@@ -87,7 +91,7 @@
     }
 
     & ul {
-        margin: 0 0 5px;
+        margin: 5px 0;
         padding: 0;
     }
 
