@@ -552,13 +552,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
 
-        with responses.RequestsMock() as resp, mock.patch(
-            "zerver.lib.remote_server.logging.warning"
-        ) as mock_warning:
+        with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as mock_warning:
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
             send_analytics_to_remote_server()
-            mock_warning.assert_called_once_with(
-                "ConnectionError while trying to connect to push notification bouncer"
+            self.assertIn(
+                "WARNING:root:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
+                mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
 
