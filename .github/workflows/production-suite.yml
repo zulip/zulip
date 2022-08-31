@@ -116,7 +116,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        extra_args: [""]
+        extra-args: [""]
         include:
           # Docker images are built from 'tools/ci/Dockerfile'; the comments at
           # the top explain how to build and upload these images.
@@ -131,7 +131,7 @@ jobs:
           - docker_image: zulip/ci:bullseye
             name: Debian 11 production install with custom db name and user
             os: bullseye
-            extra_args: --test-custom-db
+            extra-args: --test-custom-db
 
     name: ${{ matrix.name  }}
     container:
