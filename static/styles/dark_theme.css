@@ -142,6 +142,7 @@ body.dark-theme {
     #compose,
     .column-left .left-sidebar,
     .column-right .right-sidebar,
+    #groups_overlay .right,
     #subscription_overlay .right,
     #settings_page .right {
         background-color: hsl(212, 28%, 18%);

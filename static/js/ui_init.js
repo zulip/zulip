@@ -99,6 +99,7 @@ import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_group_edit from "./user_group_edit";
+import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
 import {initialize_user_settings, user_settings} from "./user_settings";
@@ -622,6 +623,7 @@ export function initialize_everything() {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
+    user_group_edit_members.initialize();
     pm_conversations.recent.initialize(pm_conversations_params);
     user_topics.initialize();
     muted_users.initialize();

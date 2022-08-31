@@ -204,6 +204,7 @@ EXEMPT_FILES = make_set(
         "static/js/user_group_create_members.js",
         "static/js/user_group_create_members_data.js",
         "static/js/user_group_edit.js",
+        "static/js/user_group_edit_members.js",
         "static/js/user_group_ui_updates.js",
         "static/js/user_groups_settings_ui.js",
         "static/js/user_profile.js",

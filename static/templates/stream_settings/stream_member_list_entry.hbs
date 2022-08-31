@@ -8,7 +8,7 @@
     <td class="hidden-subscriber-email">{{t "(hidden)"}}</td>
     {{/if}}
     <td class="subscriber-user-id">{{user_id}}</td>
-    {{#if displaying_for_admin}}
+    {{#if can_edit_subscribers}}
     <td class="unsubscribe">
         <div class="subscriber_list_remove">
             <form class="remove-subscriber-form">
