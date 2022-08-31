@@ -460,11 +460,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "ConnectionError while trying to connect to push notification bouncer",
                     502,
                 )
-                self.assertEqual(
-                    error_log.output,
-                    [
-                        f"ERROR:django.request:Bad Gateway: {endpoint}",
-                    ],
+                self.assertIn(
+                    f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback",
+                    error_log.output[0],
                 )
 
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
@@ -472,11 +470,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
                 self.assertEqual(
-                    warn_log.output,
-                    [
-                        "WARNING:root:Received 500 from push notification bouncer",
-                        f"ERROR:django.request:Bad Gateway: {endpoint}",
-                    ],
+                    warn_log.output[0],
+                    "WARNING:root:Received 500 from push notification bouncer",
+                )
+                self.assertIn(
+                    f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback", warn_log.output[1]
                 )
 
         # Add tokens
