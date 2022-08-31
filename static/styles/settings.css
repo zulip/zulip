@@ -364,10 +364,6 @@ td .button {
     }
 }
 
-.dependent-block {
-    margin: -5px 0 15px 23px;
-}
-
 .dependent-inline-block {
     display: inline-block;
     margin: 0 0 0 10px !important;
