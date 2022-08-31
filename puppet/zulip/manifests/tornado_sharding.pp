@@ -43,7 +43,7 @@ class zulip::tornado_sharding {
 
   # The ports of Tornado processes to run on the server; defaults to
   # 9800.
-  $tornado_ports = zulipconf_keys('tornado_sharding')
+  $tornado_ports = unique(zulipconf_keys('tornado_sharding').map |$key| { regsubst($key, /_regex$/, '') })
 
   file { '/etc/nginx/zulip-include/tornado-upstreams':
     require => [Package[$zulip::common::nginx], Exec['stage_updated_sharding']],
