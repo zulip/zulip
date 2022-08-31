@@ -13,6 +13,7 @@ server {
 <% end -%>
 
 include /etc/nginx/zulip-include/upstreams;
+include /etc/zulip/nginx_sharding_map.conf;
 
 server {
 <% if @nginx_http_only -%>
@@ -30,7 +31,6 @@ server {
         alias /home/zulip/local-static;
     }
 
-    include /etc/zulip/nginx_sharding.conf;
     include /etc/nginx/zulip-include/certbot;
     include /etc/nginx/zulip-include/app;
 }
