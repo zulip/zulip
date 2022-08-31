@@ -31,10 +31,8 @@ def write_updated_configs() -> None:
     config_file = get_config_file()
     ports = get_tornado_ports(config_file)
 
-    expected_ports = list(range(9800, max(ports) + 1))
-    assert (
-        sorted(ports) == expected_ports
-    ), f"ports ({sorted(ports)}) must be contiguous, starting with 9800"
+    expected_ports = list(range(9800, ports[-1] + 1))
+    assert ports == expected_ports, f"ports ({ports}) must be contiguous, starting with 9800"
 
     with open("/etc/zulip/nginx_sharding_map.conf.tmp", "w") as nginx_sharding_conf_f, open(
         "/etc/zulip/sharding.json.tmp", "w"
@@ -50,26 +48,33 @@ def write_updated_configs() -> None:
         nginx_sharding_conf_f.write("map $http_host $tornado_server {\n")
         nginx_sharding_conf_f.write("    default http://tornado9800;\n")
         shard_map: Dict[str, int] = {}
+        shard_regexes = []
         external_host = subprocess.check_output(
             [os.path.join(BASE_DIR, "scripts/get-django-setting"), "EXTERNAL_HOST"],
             text=True,
         ).strip()
-        for port in config_file["tornado_sharding"]:
-            shards = config_file["tornado_sharding"][port].strip()
-
-            if shards:
-                for shard in shards.split(" "):
+        for key, shards in config_file["tornado_sharding"].items():
+            if key.endswith("_regex"):
+                port = int(key[: -len("_regex")])
+                shard_regexes.append((shards, port))
+                nginx_sharding_conf_f.write(
+                    f"    {nginx_quote('~*' + shards)} http://tornado{port};\n"
+                )
+            else:
+                port = int(key)
+                for shard in shards.split():
                     if "." in shard:
                         host = shard
                     else:
                         host = f"{shard}.{external_host}"
                     assert host not in shard_map, f"host {host} duplicated"
-                    shard_map[host] = int(port)
+                    shard_map[host] = port
                     nginx_sharding_conf_f.write(f"    {nginx_quote(host)} http://tornado{port};\n")
             nginx_sharding_conf_f.write("\n")
         nginx_sharding_conf_f.write("}\n")
 
-        sharding_json_f.write(json.dumps(shard_map) + "\n")
+        data = {"shard_map": shard_map, "shard_regexes": shard_regexes}
+        sharding_json_f.write(json.dumps(data) + "\n")
 
 
 parser = argparse.ArgumentParser(

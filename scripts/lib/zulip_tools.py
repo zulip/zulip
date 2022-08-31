@@ -595,7 +595,12 @@ def run_psql_as_postgres(
 def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
     ports = []
     if config_file.has_section("tornado_sharding"):
-        ports = [int(port) for port in config_file.options("tornado_sharding")]
+        ports = sorted(
+            {
+                int(key[: -len("_regex")] if key.endswith("_regex") else key)
+                for key in config_file.options("tornado_sharding")
+            }
+        )
     if not ports:
         ports = [9800]
     return ports
