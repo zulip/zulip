@@ -29,7 +29,7 @@ function format_member_list_elem(person) {
         user_id: person.user_id,
         is_current_user: person.user_id === page_params.user_id,
         email: settings_data.email_for_user_settings(person),
-        displaying_for_admin: page_params.is_admin,
+        can_edit_subscribers: page_params.is_admin,
         show_email: settings_data.show_email(),
     });
 }
@@ -243,7 +243,11 @@ function remove_subscriber({stream_id, target_user_id, $list_entry}) {
     }
 
     if (sub.invite_only && people.is_my_user_id(target_user_id)) {
-        const html_body = render_unsubscribe_private_stream_modal();
+        const html_body = render_unsubscribe_private_stream_modal({
+            message: $t({
+                defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
+            }),
+        });
 
         confirm_dialog.launch({
             html_heading: $t_html(

@@ -2,10 +2,12 @@
     margin: 10px auto;
 }
 
+.member_list_loading_indicator,
 .subscriber_list_loading_indicator {
     margin: 10px auto;
 }
 
+.member_list_loading_indicator:empty,
 .subscriber_list_loading_indicator:empty {
     margin: 0;
 }
@@ -218,6 +220,7 @@ h4.user_group_setting_subsection_title {
     width: 100%;
     margin: 0 0 10px;
 
+    .user_group_subscription_request_result,
     .stream_subscription_request_result {
         a {
             color: inherit;
@@ -225,6 +228,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.member-search,
 .subscriber-search {
     margin: 10px 0 0;
 
@@ -279,6 +283,7 @@ h4.user_group_setting_subsection_title {
     transition: all 0.3s ease;
 }
 
+.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
 .subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
@@ -740,6 +745,7 @@ h4.user_group_setting_subsection_title {
         margin: 20px;
     }
 
+    .group_settings_header,
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
@@ -1042,6 +1048,7 @@ h4.user_group_setting_subsection_title {
         text-align: center;
     }
 
+    #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
     }
@@ -1155,7 +1162,9 @@ h4.user_group_setting_subsection_title {
 }
 
 @media (width <= 500px) {
+    #groups_overlay,
     #subscription_overlay {
+        .groups_settings_header,
         .stream_settings_header {
             display: block;
             text-align: center;

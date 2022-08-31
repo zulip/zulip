@@ -15,6 +15,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as ui from "./ui";
+import * as user_group_edit_members from "./user_group_edit_members";
 import * as user_group_ui_updates from "./user_group_ui_updates";
 import * as user_groups from "./user_groups";
 import * as user_group_settings_ui from "./user_groups_settings_ui";
@@ -68,6 +69,17 @@ export function get_edit_container(group) {
     );
 }
 
+function show_membership_settings(group) {
+    const $edit_container = get_edit_container(group);
+    user_group_ui_updates.update_add_members_elements(group);
+
+    const $member_container = $edit_container.find(".edit_members_for_user_group");
+    user_group_edit_members.enable_member_management({
+        group,
+        $parent_container: $member_container,
+    });
+}
+
 export function show_settings_for(node) {
     const group = get_user_group_for_target(node);
     const html = render_user_group_settings({
@@ -83,6 +95,7 @@ export function show_settings_for(node) {
     $(".nothing-selected").hide();
 
     $edit_container.show();
+    show_membership_settings(group);
 }
 
 export function setup_group_settings(node) {
