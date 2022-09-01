@@ -291,71 +291,51 @@ export const common_message_policy_values = {
     },
 };
 
-const time_limit_dropdown_values = new Map([
-    [
-        "any_time",
-        {
-            text: $t({defaultMessage: "Any time"}),
-            seconds: null,
-        },
-    ],
-    [
-        "upto_two_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "2 minutes"})},
-            ),
-            seconds: 2 * 60,
-        },
-    ],
-    [
-        "upto_ten_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "10 minutes"})},
-            ),
-            seconds: 10 * 60,
-        },
-    ],
-    [
-        "upto_one_hour",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 hour"})},
-            ),
-            seconds: 60 * 60,
-        },
-    ],
-    [
-        "upto_one_day",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 day"})},
-            ),
-            seconds: 24 * 60 * 60,
-        },
-    ],
-    [
-        "upto_one_week",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 week"})},
-            ),
-            seconds: 7 * 24 * 60 * 60,
-        },
-    ],
-    [
-        "custom_period",
-        {
-            text: $t({defaultMessage: "Custom"}),
-        },
-    ],
-]);
+const time_limit_dropdown_values = [
+    {
+        text: $t({defaultMessage: "Any time"}),
+        value: "any_time",
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "2 minutes"})},
+        ),
+        value: 2 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "10 minutes"})},
+        ),
+        value: 10 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 hour"})},
+        ),
+        value: 60 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 day"})},
+        ),
+        value: 24 * 60 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 week"})},
+        ),
+        value: 7 * 24 * 60 * 60,
+    },
+    {
+        text: $t({defaultMessage: "Custom"}),
+        value: "custom_period",
+    },
+];
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
