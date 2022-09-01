@@ -7,7 +7,7 @@
 
 * We work hard to make it easy to [install][install-zulip], [back
   up][back-up-zulip], and [maintain][maintain-zulip] a self-hosted
-  Zulip server. Self host Zulip directly on Ubuntu or Debian Linux, in
+  Zulip server. Self-host Zulip directly on Ubuntu or Debian Linux, in
   <a href="https://github.com/zulip/docker-zulip">Docker</a>, or with
   prebuilt images for <a
   href="https://marketplace.digitalocean.com/apps/zulip">Digital
