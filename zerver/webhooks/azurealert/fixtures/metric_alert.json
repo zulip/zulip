@@ -1,0 +1,58 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.AlertsManagement/alerts/12345678-1234-1234-1234-1234567890ab",
+            "alertRule": "test-metricAlertRule",
+            "severity": "Sev3",
+            "signalType": "Metric",
+            "monitorCondition": "Fired",
+            "monitoringService": "Platform",
+            "alertTargetIDs": [
+                "/subscriptions/11111111-1111-1111-1111-111111111111/resourcegroups/test-RG/providers/Microsoft.Storage/storageAccounts/test-storageAccount"
+            ],
+            "configurationItems": [
+                "test-storageAccount"
+            ],
+            "originAlertId": "11111111-1111-1111-1111-111111111111_test-RG_microsoft.insights_metricAlerts_test-metricAlertRule_1234567890",
+            "firedDateTime": "2021-11-15T09:35:24.3468506Z",
+            "description": "Alert rule description",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.0"
+        },
+        "alertContext": {
+            "properties": {
+                "customKey1": "value1",
+                "customKey2": "value2"
+            },
+            "conditionType": "DynamicThresholdCriteria",
+            "condition": {
+                "windowSize": "PT15M",
+                "allOf": [
+                    {
+                        "alertSensitivity": "Low",
+                        "failingPeriods": {
+                            "numberOfEvaluationPeriods": 3,
+                            "minFailingPeriodsToAlert": 3
+                        },
+                        "ignoreDataBefore": null,
+                        "metricName": "Transactions",
+                        "metricNamespace": "Microsoft.Storage/storageAccounts",
+                        "operator": "GreaterThan",
+                        "threshold": "0.3",
+                        "timeAggregation": "Average",
+                        "dimensions": [],
+                        "metricValue": 78.09,
+                        "webTestName": null
+                    }
+                ],
+                "windowStartTime": "2021-12-15T01:04:11.719Z",
+                "windowEndTime": "2021-12-15T01:19:11.719Z"
+            }
+        },
+        "customProperties": {
+            "customKey1": "value1",
+            "customKey2": "value2"
+        }
+    }
+}
