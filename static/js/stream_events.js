@@ -84,6 +84,7 @@ export function update_property(stream_id, property, value, other_values) {
                 history_public_to_subscribers: other_values.history_public_to_subscribers,
                 is_web_public: other_values.is_web_public,
             });
+            recent_topics_ui.complete_rerender();
             break;
         case "stream_post_policy":
             stream_settings_ui.update_stream_post_policy(sub, value);
