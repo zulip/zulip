@@ -21,7 +21,6 @@ import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_panel_menu from "./settings_panel_menu";
-import * as settings_ui from "./settings_ui";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as user_pill from "./user_pill";
@@ -483,8 +482,6 @@ function handle_deactivation($tbody) {
 
         function handle_confirm() {
             const url = "/json/users/" + encodeURIComponent(user_id);
-            dialog_widget.submit_api_request(channel.del, url);
-
             let data = {};
             if ($(".send_email").is(":checked")) {
                 data = {
@@ -492,9 +489,7 @@ function handle_deactivation($tbody) {
                 };
             }
 
-            const $status_field = $("#admin-user-list .alert-notification");
-
-            settings_ui.do_settings_change(channel.del, url, data, $status_field);
+            dialog_widget.submit_api_request(channel.del, url, data);
         }
 
         confirm_deactivation(user_id, handle_confirm, true);
