@@ -16,9 +16,7 @@ Note that organization administrators cannot deactivate organization owners.
 
 {tab|via-user-profile}
 
-{!profile-summary-three-dot-menu.md!}
-
-1. Click **Manage this user**.
+{!manage-this-user.md!}
 
 1. Click the **Deactivate user** button at the bottom.
 
