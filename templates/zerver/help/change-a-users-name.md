@@ -14,9 +14,7 @@ Organization administrators can always change any user's name.
 
 {tab|via-user-profile}
 
-{!profile-summary-three-dot-menu.md!}
-
-1. Click **Manage this user**.
+{!manage-this-user.md!}
 
 1. Under **Full name**, enter a new name.
 
@@ -34,3 +32,8 @@ Organization administrators can always change any user's name.
 {!save-changes.md!}
 
 {end_tabs}
+
+## Related articles
+
+* [Change a user's role](/help/change-a-users-role)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
