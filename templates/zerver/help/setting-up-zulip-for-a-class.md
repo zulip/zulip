@@ -357,4 +357,4 @@ HTML archive](https://github.com/zulip/zulip-archive) to archive the information
 
 [make-private]: /help/change-the-privacy-of-a-stream
 [add-to-stream]: /help/add-or-remove-users-from-a-stream
-[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-ban-a-user
+[deactivate-user]: /help/deactivate-or-reactivate-a-user#deactivate-a-user
