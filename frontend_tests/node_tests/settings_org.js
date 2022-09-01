@@ -376,7 +376,7 @@ function test_sync_realm_settings() {
 
         page_params.realm_message_content_edit_limit_seconds = 120;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "upto_two_min");
+        assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "120");
 
         page_params.realm_message_content_edit_limit_seconds = 130;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
@@ -500,9 +500,9 @@ function test_discard_changes_button(discard_changes) {
         $edit_topic_policy.val(),
         settings_config.common_message_policy_values.by_everyone.code,
     );
-    assert.equal($msg_edit_limit_setting.val(), "upto_one_hour");
+    assert.equal($msg_edit_limit_setting.val(), "3600");
     assert.equal($message_content_edit_limit_minutes.val(), "60");
-    assert.equal($msg_delete_limit_setting.val(), "upto_two_min");
+    assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
     assert.ok(props.hidden);
 }
