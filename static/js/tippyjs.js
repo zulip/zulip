@@ -366,4 +366,9 @@ export function initialize() {
         // Avoid inheriting `position: relative` CSS on the stream sorter widget.
         appendTo: () => document.body,
     });
+
+    delegate("body", {
+        target: "#rt_select_stream_widget .fa-times",
+        content: $t({defaultMessage: "Clear stream filter"}),
+    });
 }
