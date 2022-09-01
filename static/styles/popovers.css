@@ -660,6 +660,20 @@ ul {
     }
 }
 
+.dropdown-menu {
+    @media (width > $md_min) {
+        min-width: 300px;
+
+        .dropdown-search {
+            text-align: center;
+
+            input {
+                width: 260px;
+            }
+        }
+    }
+}
+
 #move_topic_modal {
     form {
         margin: 0;
