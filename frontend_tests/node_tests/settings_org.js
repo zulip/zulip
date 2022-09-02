@@ -358,8 +358,11 @@ function test_sync_realm_settings() {
     {
         /* Test message content edit limit minutes sync */
         const $property_elem = $("#id_realm_message_content_edit_limit_minutes");
+        const $property_dropdown_elem = $("#id_realm_message_content_edit_limit_seconds");
         $property_elem.length = 1;
+        $property_dropdown_elem.length = 1;
         $property_elem.attr("id", "id_realm_message_content_edit_limit_minutes");
+        $property_dropdown_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
 
         page_params.realm_create_public_stream_policy = 1;
         page_params.realm_message_content_edit_limit_seconds = 120;
@@ -370,10 +373,6 @@ function test_sync_realm_settings() {
 
     {
         /* Test message content edit limit dropdown value sync */
-        const $property_elem = $("#id_realm_message_content_edit_limit_seconds");
-        $property_elem.length = 1;
-        $property_elem.attr("id", "id_realm_message_content_edit_limit_seconds");
-
         page_params.realm_message_content_edit_limit_seconds = 120;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
         assert.equal($("#id_realm_message_content_edit_limit_seconds").val(), "120");
@@ -486,8 +485,6 @@ function test_discard_changes_button(discard_changes) {
         $msg_edit_limit_setting,
         $msg_delete_limit_setting,
         $edit_topic_policy,
-        $message_content_edit_limit_minutes,
-        $message_content_delete_limit_minutes,
     ];
 
     const {$discard_button, props} = createSaveButtons("msg-editing");
