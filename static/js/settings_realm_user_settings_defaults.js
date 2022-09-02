@@ -63,6 +63,14 @@ export function set_up() {
     );
 
     maybe_disable_widgets();
+
+    $container.on("input", ".email_notification_batching_period_edit_minutes", (e) => {
+        settings_org.update_save_button_state(e);
+    });
+
+    $container.on("change", ".setting_email_notifications_batching_period_seconds", (e) => {
+        settings_org.update_save_button_state(e);
+    });
 }
 
 export function initialize() {
