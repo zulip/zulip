@@ -81,6 +81,10 @@ in order to export private message data.
    string of numbers and characters starting with `xoxb-`. Copy this token. You
    will use it to download user and emoji data from your Slack workspace.
 
+!!! warn ""
+    You may also come across a token starting with `xoxe-`. This token cannot
+    be used for the Slack export process.
+
 {end_tabs}
 
 ### Import your data into Zulip
@@ -229,7 +233,9 @@ Once the import process is completed, you will need to:
    and [how users can join your organization](/help/restrict-account-creation).
 
 2. All users from your Slack workspace will have accounts in your new Zulip
-   organization. However, you will need to decide how users will log in for the first time (see below).
+   organization. However, you will need to let users know about their new
+   accounts, and [decide how they will log
+   in](/help/import-from-slack#decide-how-users-will-log-in) for the first time.
 
 3. Share the URL for your new Zulip organization, and (recommended) the [Getting
    started with Zulip guide](/help/getting-started-with-zulip).
@@ -262,6 +268,11 @@ will allow them to set an initial password.
 
 If you imported your organization into Zulip Cloud, simply e-mail
 [support@zulip.com](mailto:support@zulip.com) to request this.
+
+!!! warn ""
+    To avoid confusion, first make sure that
+    the users in your organization are aware that their Slack account has been
+    moved to Zulip, and are expecting to receive a password reset email.
 
 #### Send password reset emails (self-hosted organization)
 
