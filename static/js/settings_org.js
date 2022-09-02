@@ -1164,32 +1164,24 @@ export function build_page() {
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
     function update_save_button_state(e) {
-        const edit_limit_value = Number.parseInt(
-            $("#id_realm_message_content_edit_limit_minutes").val(),
-            10,
-        );
-        const delete_limit_value = Number.parseInt(
-            $("#id_realm_message_content_delete_limit_minutes").val(),
-            10,
-        );
+        const $subsection_elem = $(e.target).closest(".org-subsection-parent");
+        const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
+        let disable_save_btn = false;
+        for (const setting_elem of time_limit_settings) {
+            const dropdown_elem_val = $(setting_elem).find("select").val();
+            const custom_input_elem_val = Number.parseInt(
+                $(setting_elem).find(".admin-realm-time-limit-input").val(),
+                10,
+            );
 
-        const msg_edit_limit_dropdown_value = $("#id_realm_msg_edit_limit_setting").val();
-        const edit_limit_custom_value_invalid =
-            msg_edit_limit_dropdown_value === "custom_limit" &&
-            (edit_limit_value <= 0 || Number.isNaN(edit_limit_value));
-
-        const msg_delete_limit_dropdown_value = $("#id_realm_msg_delete_limit_setting").val();
-        const delete_limit_custom_value_invalid =
-            msg_delete_limit_dropdown_value === "custom_limit" &&
-            (delete_limit_value <= 0 || Number.isNaN(delete_limit_value));
-
-        const disable_save_btn =
-            edit_limit_custom_value_invalid || delete_limit_custom_value_invalid;
-
-        $(e.target)
-            .closest(".org-subsection-parent")
-            .find(".subsection-changes-save button")
-            .prop("disabled", disable_save_btn);
+            disable_save_btn =
+                dropdown_elem_val === "custom_limit" &&
+                (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
+            if (disable_save_btn) {
+                break;
+            }
+        }
+        $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
     }
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {

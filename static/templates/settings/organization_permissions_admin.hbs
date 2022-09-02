@@ -154,7 +154,7 @@
                   is_checked=realm_allow_message_editing
                   label=admin_settings_label.realm_allow_message_editing}}
 
-                <div class="input-group">
+                <div class="input-group time-limit-setting">
                     <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
                     <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}}>
                         {{#each msg_edit_limit_dropdown_values}}
@@ -197,7 +197,7 @@
                     </select>
                 </div>
 
-                <div class="input-group">
+                <div class="input-group time-limit-setting">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Time limit for deleting messages" }}
                         <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
