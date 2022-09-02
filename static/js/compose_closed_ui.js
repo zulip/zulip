@@ -8,6 +8,7 @@ import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_util from "./recent_topics_util";
+import * as settings_config from "./settings_config";
 
 export function get_recipient_label(message) {
     if (message === undefined) {
@@ -64,7 +65,10 @@ function update_buttons(text_stream) {
     const title_stream = text_stream + " (c)";
     const text_conversation = $t({defaultMessage: "New private message"});
     let title_conversation = text_conversation + " (x)";
-    if (page_params.realm_private_message_policy === 2) {
+    if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.disabled.code
+    ) {
         title_conversation = "Private messages are disabled in this organization.";
     }
     update_stream_button(text_stream, title_stream);
@@ -123,9 +127,15 @@ export function initialize() {
         compose_actions.start("stream", {trigger: "new topic button"});
     });
 
-    if (page_params.realm_private_message_policy === 2) {
+    if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.disabled.code
+    ) {
         $(".compose_private_button").attr("disabled", true);
-    } else if (page_params.realm_private_message_policy === 1) {
+    } else if (
+        page_params.realm_private_message_policy ===
+        settings_config.private_message_policy_values.by_anyone.code
+    ) {
         $("body").on("click", ".compose_private_button", () => {
             compose_actions.start("private", {trigger: "new private message"});
         });
