@@ -887,7 +887,7 @@ export function init_dropdown_widgets() {
     default_code_language_widget.setup();
 }
 
-function update_save_button_state(e) {
+export function update_save_button_state(e) {
     const $subsection_elem = $(e.target).closest(".org-subsection-parent");
     const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
     let disable_save_btn = false;
