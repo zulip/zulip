@@ -354,7 +354,12 @@ li.top_left_recent_topics {
     font-size: 11px;
 }
 
-.top_left_mentions i.fa-at,
+.top_left_mentions .at-sign {
+    height: 14px;
+    padding-right: 3px;
+    opacity: 0.7;
+}
+
 .top_left_starred_messages i.fa-star {
     font-size: 13px;
 }
