@@ -340,8 +340,12 @@ li.top_left_recent_topics {
 }
 
 .top_left_all_messages i.fa-align-left {
-    position: relative;
-    font-size: 15px;
+    margin-left: 2px;
+    font-size: 13px;
+}
+
+.top_left_recent_topics i.fa-clock-o {
+    font-size: 14px;
 }
 
 .top_left_private_messages i.fa-envelope {
@@ -352,6 +356,10 @@ li.top_left_recent_topics {
 
 .top_left_mentions i.fa-at,
 .top_left_starred_messages i.fa-star {
+    font-size: 13px;
+}
+
+.top_left_drafts .fa-pencil {
     font-size: 13px;
 }
 
