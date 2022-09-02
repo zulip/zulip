@@ -325,6 +325,22 @@ function update_message_edit_sub_settings(is_checked) {
     settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
 }
 
+function update_custom_value_input(property_name) {
+    const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
+    const custom_input_elem_id = $dropdown_elem
+        .parent()
+        .find(".admin-realm-time-limit-input")
+        .attr("id");
+
+    const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
+    change_element_block_display_property(custom_input_elem_id, show_custom_limit_input);
+    if (show_custom_limit_input) {
+        $(`#${CSS.escape(custom_input_elem_id)}`).val(
+            get_realm_time_limits_in_minutes(property_name),
+        );
+    }
+}
+
 function set_msg_edit_limit_dropdown() {
     const value = get_property_value("realm_message_content_edit_limit_seconds");
     $("#id_realm_message_content_edit_limit_seconds").val(value.toString());
@@ -1211,38 +1227,12 @@ export function build_page() {
         }
     });
 
-    $("#id_realm_message_content_edit_limit_seconds").on("change", (e) => {
-        const msg_edit_limit_dropdown_value = e.target.value;
-        const show_custom_limit_input = msg_edit_limit_dropdown_value === "custom_period";
-        change_element_block_display_property(
-            "id_realm_message_content_edit_limit_minutes",
-            show_custom_limit_input,
-        );
-
-        if (!show_custom_limit_input) {
-            // Set the input value to the original setting value if hiding the input box
-            // so that the save-discard widget is hidden again if we change the setting
-            // again to original input.
-            const setting_value = get_property_value("realm_message_content_edit_limit_minutes");
-            $("#id_realm_message_content_edit_limit_minutes").val(setting_value);
-        }
+    $("#id_realm_message_content_edit_limit_seconds").on("change", () => {
+        update_custom_value_input("realm_message_content_edit_limit_seconds");
     });
 
-    $("#id_realm_message_content_delete_limit_seconds").on("change", (e) => {
-        const msg_delete_limit_dropdown_value = e.target.value;
-        const show_custom_limit_input = msg_delete_limit_dropdown_value === "custom_period";
-        change_element_block_display_property(
-            "id_realm_message_content_delete_limit_minutes",
-            show_custom_limit_input,
-        );
-
-        if (!show_custom_limit_input) {
-            // Set the input value to the original setting value if hiding the input box
-            // so that the save-discard widget is hidden again if we change the setting
-            // again to original input.
-            const setting_value = get_property_value("realm_message_content_delete_limit_minutes");
-            $("#id_realm_message_content_delete_limit_minutes").val(setting_value);
-        }
+    $("#id_realm_message_content_delete_limit_seconds").on("change", () => {
+        update_custom_value_input("realm_message_content_delete_limit_seconds");
     });
 
     $("#id_realm_message_retention_setting").on("change", (e) => {
