@@ -888,6 +888,27 @@ export function init_dropdown_widgets() {
     default_code_language_widget.setup();
 }
 
+function update_save_button_state(e) {
+    const $subsection_elem = $(e.target).closest(".org-subsection-parent");
+    const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
+    let disable_save_btn = false;
+    for (const setting_elem of time_limit_settings) {
+        const dropdown_elem_val = $(setting_elem).find("select").val();
+        const custom_input_elem_val = Number.parseInt(
+            $(setting_elem).find(".admin-realm-time-limit-input").val(),
+            10,
+        );
+
+        disable_save_btn =
+            dropdown_elem_val === "custom_limit" &&
+            (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
+        if (disable_save_btn) {
+            break;
+        }
+    }
+    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
 export function register_save_discard_widget_handlers(
     $container,
     patch_url,
@@ -1162,27 +1183,6 @@ export function build_page() {
     set_create_web_public_stream_dropdown_visibility();
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
-
-    function update_save_button_state(e) {
-        const $subsection_elem = $(e.target).closest(".org-subsection-parent");
-        const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
-        let disable_save_btn = false;
-        for (const setting_elem of time_limit_settings) {
-            const dropdown_elem_val = $(setting_elem).find("select").val();
-            const custom_input_elem_val = Number.parseInt(
-                $(setting_elem).find(".admin-realm-time-limit-input").val(),
-                10,
-            );
-
-            disable_save_btn =
-                dropdown_elem_val === "custom_limit" &&
-                (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
-            if (disable_save_btn) {
-                break;
-            }
-        }
-        $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
-    }
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
