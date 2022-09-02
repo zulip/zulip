@@ -5,6 +5,7 @@ import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics_util from "./recent_topics_util";
 
@@ -62,7 +63,10 @@ function update_conversation_button(btn_text, title) {
 function update_buttons(text_stream) {
     const title_stream = text_stream + " (c)";
     const text_conversation = $t({defaultMessage: "New private message"});
-    const title_conversation = text_conversation + " (x)";
+    let title_conversation = text_conversation + " (x)";
+    if (page_params.realm_private_message_policy === 2) {
+        title_conversation = "Private messages are disabled in this organization.";
+    }
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
 }
@@ -119,9 +123,13 @@ export function initialize() {
         compose_actions.start("stream", {trigger: "new topic button"});
     });
 
-    $("body").on("click", ".compose_private_button", () => {
-        compose_actions.start("private", {trigger: "new private message"});
-    });
+    if (page_params.realm_private_message_policy === 2) {
+        $(".compose_private_button").attr("disabled", true);
+    } else if (page_params.realm_private_message_policy === 1) {
+        $("body").on("click", ".compose_private_button", () => {
+            compose_actions.start("private", {trigger: "new private message"});
+        });
+    }
 
     $("body").on("click", ".compose_reply_button", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
