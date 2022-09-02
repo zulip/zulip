@@ -278,6 +278,10 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
         mention_data = MentionData(mention_backend, content)
         self.assertTrue(mention_data.message_has_wildcards())
+        self.assertFalse(mention_data.message_has_topic_wildcards())
+        content = "@**topic**"
+        mention_data = MentionData(mention_backend, content)
+        self.assertTrue(mention_data.message_has_topic_wildcards())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -2072,15 +2076,23 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(rendering_result.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
-            self.assertEqual(possible_mentions(content), (names, has_wildcards))
+        def assert_mentions(
+            content: str,
+            names: Set[str],
+            has_wildcards: bool = False,
+            has_topic_wildcards: bool = False,
+        ) -> None:
+            self.assertEqual(
+                possible_mentions(content), (names, has_wildcards, has_topic_wildcards)
+            )
 
         aaron = self.example_user("aaron")
 
         assert_mentions("", set())
         assert_mentions("boring", set())
-        assert_mentions("@**all**", set(), True)
+        assert_mentions("@**all**", set(), has_wildcards=True)
         assert_mentions("smush@**steve**smush", set())
+        assert_mentions("@**topic**", set(), has_wildcards=True, has_topic_wildcards=True)
 
         assert_mentions(
             f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
