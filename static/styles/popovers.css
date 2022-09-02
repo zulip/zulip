@@ -118,6 +118,11 @@ ul {
     &.info_popover_actions i.fa-edit {
         vertical-align: middle;
     }
+
+    &.info_popover_actions .at-sign {
+        height: 14px;
+        margin-right: 3px;
+    }
 }
 
 .user_popover {

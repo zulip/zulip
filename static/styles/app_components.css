@@ -566,7 +566,12 @@ div.overlay {
 .unread_mention_info:not(:empty) {
     margin-right: 5px;
     margin-left: 2px;
-    opacity: 0.7;
+
+    .at-sign {
+        height: 14px;
+        opacity: 0.7;
+        max-width: inherit;
+    }
 }
 
 /* Implement the web app's default-hidden convention for alert

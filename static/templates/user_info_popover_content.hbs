@@ -124,13 +124,13 @@
         <li>
             {{#if has_message_context}}
             <a tabindex="0" class="mention_user">
-                <i class="fa fa-at" aria-hidden="true"></i>
+                <img class="at-sign" src='/static/images/at-sign.svg' alt="" />
                 {{#if is_bot}}{{#tr}}Reply mentioning bot{{/tr}}{{else}}{{#tr}}Reply mentioning user{{/tr}}{{/if}}
                 {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
             </a>
             {{else}}
             <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
-                <i class="fa fa-at" aria-hidden="true"></i>
+                <img class="at-sign" src='/static/images/at-sign.svg' alt="" />
                 {{#tr}}Copy mention syntax{{/tr}}
                 {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
             </a>
