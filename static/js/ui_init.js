@@ -37,6 +37,7 @@ import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
+import * as inbox_util from "./inbox_util";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
 import * as linkifiers from "./linkifiers";
@@ -158,6 +159,7 @@ function initialize_bottom_whitespace() {
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_guest: page_params.is_guest,
+        development_environment: page_params.development_environment,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
@@ -252,7 +254,11 @@ export function initialize_kitchen_sink_stuff() {
 
     message_viewport.$message_pane.on("wheel", (e) => {
         const delta = e.originalEvent.deltaY;
-        if (!overlays.is_overlay_or_modal_open() && !recent_topics_util.is_visible()) {
+        if (
+            !overlays.is_overlay_or_modal_open() &&
+            !recent_topics_util.is_visible() &&
+            !inbox_util.is_visible()
+        ) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }

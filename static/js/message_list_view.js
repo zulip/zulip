@@ -17,6 +17,7 @@ import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as inbox_util from "./inbox_util";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -740,6 +741,7 @@ export class MessageListView {
         const restore_scroll_position = () => {
             if (
                 !recent_topics_util.is_visible() &&
+                !inbox_util.is_visible() &&
                 list === message_lists.current &&
                 orig_scrolltop_offset !== undefined
             ) {

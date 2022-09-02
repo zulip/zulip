@@ -13,6 +13,17 @@
                 </a>
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
+            {{#if development_environment}}
+            <li class="top_left_inbox top_left_row hidden-for-spectators" title="{{t 'Inbox' }} (t)">
+                <a href="#inbox">
+                    <span class="filter-icon">
+                        <i class="fa fa-inbox" aria-hidden="true"></i>
+                    </span>
+                    {{~!-- squash whitespace --~}}
+                    <span>{{t 'Inbox' }}</span>
+                </a>
+            </li>
+            {{/if}}
             <li class="top_left_recent_topics top_left_row" title="{{t 'Recent topics' }} (t)">
                 <a href="#recent_topics">
                     <span class="filter-icon">

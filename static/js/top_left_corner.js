@@ -33,6 +33,7 @@ function deselect_top_left_corner_items() {
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_topics"));
+    remove($(".top_left_inbox"));
 }
 
 export function handle_narrow_activated(filter) {
@@ -76,7 +77,21 @@ export function narrow_to_recent_topics() {
     remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
+    remove($(".top_left_inbox"));
     $(".top_left_recent_topics").addClass("active-filter");
+    pm_list.close();
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}
+
+export function narrow_to_inbox() {
+    remove($(".top_left_all_messages"));
+    remove($(".top_left_private_messages"));
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_recent_topics"));
+    remove($(".top_left_mentions"));
+    $(".top_left_inbox").addClass("active-filter");
     pm_list.close();
     setTimeout(() => {
         resize.resize_stream_filters_container();

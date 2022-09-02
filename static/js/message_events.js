@@ -9,6 +9,7 @@ import * as compose_validate from "./compose_validate";
 import * as condense from "./condense";
 import * as drafts from "./drafts";
 import * as huddle_data from "./huddle_data";
+import * as inbox_ui from "./inbox_ui";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
@@ -141,6 +142,7 @@ export function insert_new_messages(messages, sent_by_this_client) {
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_topics_ui.process_messages(messages);
+    inbox_ui.process_new_messages(messages);
 }
 
 export function update_messages(events) {

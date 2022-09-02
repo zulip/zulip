@@ -21,6 +21,7 @@ import * as dark_theme from "./dark_theme";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
+import * as inbox_ui from "./inbox_ui";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
@@ -493,6 +494,54 @@ export function initialize() {
         $("#recent_topics_search").val("");
         recent_topics_ui.update_filters_view();
     });
+
+    // INBOX VIEW
+
+    $("body").on("click", "#inbox_list .on_hover_topic_read", (e) => {
+        e.stopPropagation();
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const topic = $(e.currentTarget).attr("data-topic-name");
+        if (topic) {
+            unread_ops.mark_topic_as_read(stream_id, topic);
+        } else {
+            unread_ops.mark_stream_as_read(stream_id);
+        }
+    });
+
+    $("body").on(
+        "keyup",
+        "#inbox_search",
+        _.debounce(() => {
+            inbox_ui.update_filters_view();
+            // Wait for user to go idle before initiating search.
+        }, 300),
+    );
+
+    $("body").on("click", "#inbox_search_clear", (e) => {
+        e.stopPropagation();
+        $("#inbox_search").val("");
+        inbox_ui.inbox_list_renderer();
+    });
+
+    $("body").on("keydown", ".inbox_header", ui_util.convert_enter_to_click);
+
+    $("body").on("click", "#inbox_list .inbox_header", (e) => {
+        const container_id = $(e.currentTarget).attr("id");
+        inbox_ui.collapse_or_expand(container_id);
+        e.stopPropagation();
+    })
+
+    $("body").on("keydown", ".inbox_row", ui_util.convert_enter_to_click);
+
+    $("body").on("click", "#inbox_list .inbox_row", (e) => {
+        inbox_ui.focus_clicked_element($(e.currentTarget))
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    })
+
+    $("body").on("click", ".btn-inbox-filter", (e) => {
+        console.log("Mute");
+        inbox_ui.set_filter();
+    })
 
     // RECIPIENT BARS
 

@@ -17,6 +17,8 @@ import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
@@ -135,6 +137,7 @@ const keypress_mappings = {
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    84: {name: "open_inbox", message_view_only: true}, // 'T'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
@@ -233,6 +236,10 @@ export function process_escape_key(e) {
     ) {
         // Recent topics uses escape to switch focus from RT search / filters to topics table.
         // If focus is already on the table it returns false.
+        return true;
+    }
+
+    if (inbox_util.is_in_focus() && inbox_ui.change_focused_element($(e.target), "escape")) {
         return true;
     }
 
@@ -565,10 +572,16 @@ export function process_hotkey(e, hotkey) {
         case "vim_right":
         case "tab":
         case "shift_tab":
+        case "open_inbox":
         case "open_recent_topics":
             if (recent_topics_util.is_in_focus()) {
                 return recent_topics_ui.change_focused_element($(e.target), event_name);
             }
+        case "open_inbox":
+            if (inbox_util.is_in_focus()) {
+                return inbox_ui.change_focused_element($(e.target), event_name);
+            }
+ 
     }
 
     // We handle the most complex keys in their own functions.
@@ -806,6 +819,9 @@ export function process_hotkey(e, hotkey) {
         case "open_recent_topics":
             browser_history.go_to_location("#recent_topics");
             return true;
+        case "open_inbox":
+            browser_history.go_to_location("#inbox");
+            return true;
         case "all_messages":
             browser_history.go_to_location("#all_messages");
             return true;
@@ -842,6 +858,10 @@ export function process_hotkey(e, hotkey) {
     // We don't want hotkeys below this to work when recent topics is
     // open. These involve hotkeys that can only be performed on a message.
     if (recent_topics_util.is_visible()) {
+        return false;
+    }
+
+    if (inbox_util.is_visible()) {
         return false;
     }
 

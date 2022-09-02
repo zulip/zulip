@@ -1,0 +1,29 @@
+<div id="inbox_list" data-simplebar>
+    {{#unless has_unread}}
+    No unread messages.
+    {{/unless}}
+
+    {{#if has_pms}}
+    {{> inbox_row this}}
+    <div id="pm_container">
+        {{#each pms_dict}}
+            {{> inbox_row this}}
+        {{/each}}
+    </div>
+    {{/if}}
+
+    <div id="stream_container">
+        {{#each filtered_topic_list as |topic_list|}}
+            <div id="{{@key}}">
+                {{#with (lookup ../streams_dict @key) as |streams_header|}}
+                    {{> inbox_row streams_header}}
+                    <div id="topics:{{streams_header.stream_id}}">
+                        {{#each topic_list as |stream_message|}}
+                            {{> inbox_row this}}
+                        {{/each}}
+                    </div>
+                {{/with}}
+            </div>
+        {{/each}}
+    </div>
+</div>

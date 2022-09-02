@@ -266,6 +266,38 @@ class UnreadTopicCounter {
         return res;
     }
 
+    get_topics_count() {
+        const res = {};
+        res.stream_unread_messages = 0;
+        res.stream_count = new Map(); // hash by stream_id -> count
+        for (const [stream_id, per_stream_bucketer] of this.bucketer) {
+            // We track unread counts for streams that may be currently
+            // unsubscribed.  Since users may re-subscribe, we don't
+            // completely throw away the data.  But we do ignore it here,
+            // so that callers have a view of the **current** world.
+            const sub = sub_store.get(stream_id);
+            if (!sub || !stream_data.is_subscribed(stream_id)) {
+                continue;
+            }
+
+            const topic_unread = new Map();
+            let stream_count = 0;
+            for (const [topic, msgs] of per_stream_bucketer) {
+                const topic_count = msgs.size;
+                if (!user_topics.is_topic_muted(stream_id, topic)) {
+                    topic_unread.set(topic, topic_count);
+                    stream_count += topic_count;
+                }
+            }
+            res.stream_count.set(stream_id, topic_unread);
+            if (!stream_data.is_muted(stream_id)) {
+                res.stream_unread_messages += stream_count;
+            }
+        }
+
+        return res;
+    }
+
     get_missing_topics(opts) {
         /* Clients have essentially complete unread data, but
          * stream_topic_history.is_complete_for_stream_id() can be
@@ -556,6 +588,16 @@ export function declare_bankruptcy() {
     unread_topic_counter.clear();
     unread_mentions_counter.clear();
     unread_messages.clear();
+}
+
+export function get_unread_pm() {
+    const pm_res = unread_pm_counter.get_counts();
+    return pm_res;
+}
+
+export function get_unread_topics() {
+    const topics_res = unread_topic_counter.get_topics_count();
+    return topics_res;
 }
 
 export function get_counts() {

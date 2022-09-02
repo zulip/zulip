@@ -4,6 +4,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
+import * as inbox_util from "./inbox_util";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
@@ -294,7 +295,7 @@ export function initialize() {
     // alignment issues) when they are initially rendered in the
     // background because recent topics is displayed.
 
-    if (recent_topics_util.is_visible()) {
+    if (recent_topics_util.is_visible() || inbox_util.is_visible()) {
         // We bind the handler for the message_feed_container shown event, such
         // that it will only get executed once.
         //

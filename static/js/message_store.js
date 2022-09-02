@@ -31,7 +31,6 @@ export function get(message_id) {
         // ids as strings.
         message_id = Number.parseFloat(message_id);
     }
-
     return stored_messages.get(message_id);
 }
 

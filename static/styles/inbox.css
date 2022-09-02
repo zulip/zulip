@@ -1,0 +1,187 @@
+.inbox_container {
+    padding: 0;
+    border-radius: 4px;
+    background-color: hsl(1, 0%, 100%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+
+    #inbox_pane {
+        max-width: 100%;
+        overflow: hidden !important;
+        display: flex;
+        flex-direction: column;
+        border-style: solid;
+        border-color: hsl(0, 0%, 88%);
+        border-width: 0 1px;
+        border-radius: 0;
+        margin-top: 40px;
+        /* To make the table span full height
+         * when rows don't reach bottom of the
+         * window. This makes the border span
+         * fully to bottom in that case.
+         */
+        min-height: 100vw;
+
+        a {
+            color: hsl(0, 0%, 0%);
+            text-decoration: none;
+        }
+
+        .search_group {
+            display: flex;
+            margin: 0 0 5px;
+        }
+
+        .btn-inbox-filter {
+            border: none;
+            height: 30px;
+            margin-top: 15px;
+            border-radius: 5px;
+
+            &:focus {
+                background-color: hsl(0, 0%, 80%);
+                outline: 0;
+            }
+
+            &.fake_disabled_button {
+                cursor: not-allowed;
+                opacity: 0.5;
+
+                &:hover {
+                    background-color: hsl(0, 0%, 100%);
+                    border-color: hsl(0, 0%, 80%);
+                }
+            }
+        }
+
+        .btn-inbox-selected {
+            background-color: hsl(0, 11%, 93%);
+        }
+
+        #inbox_search {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin-top: 15px;
+            margin-left: 25px;
+            width: 50%;
+            background-color: hsla(0, 0%, 0%, 0.05);
+            border: none;
+            padding-right: 20px;
+        }
+
+        #inbox_list {
+            /* Full height(100vh) - height of the closed compose box */
+            height: calc(100vh - 150px);
+            border-top: 1px solid hsl(0, 0%, 88%);
+
+            .inbox_header {
+                display: flex;
+                font-size: 15px;
+                padding: 5px;
+                height: 20px;
+
+                &:focus {
+                    border: 1px solid hsla(217, 64%, 59%, 1);
+                    /* border-radius: 5px; */
+                    outline: 0;
+                    padding: 4px;
+                }
+            }
+
+            .fa-group {
+                margin-right: 7px;
+                margin-left: 20px;
+            }
+
+            .fa-lock {
+                margin-right: 3px;
+            }
+
+            .fa-envelope {
+                margin-right: 4px;
+                margin-left: 15px;
+            }
+
+            .fa-caret-down {
+                opacity: 0.7;
+            }
+
+            .fa-caret-right { 
+                opacity: 0.7;
+                margin-right: 3px;
+            }
+
+            .user_circle {
+                /* size the user activity circle */
+                min-width: 7px;
+                height: 7px;
+                margin-left: 23px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+
+            .inbox_row {
+                display: flex;
+                height: 30px;
+                padding: 1px;
+
+                .left_part {
+                    margin-left: 8px;
+                }
+
+                &:hover {
+                    background: hsla(0, 0%, 95%, 1);
+                }
+
+                &:focus {
+                    outline: 0;
+                    padding: 0;
+                    border: 1px solid hsla(217, 64%, 59%, 1);
+                }
+            }
+
+            .unread_count {
+                margin-right: 5px;
+                margin-left: 10px;
+                align-self: center;
+                background-color: hsl(105, 2%, 50%);
+            }
+
+            .stream-privacy {
+                margin-right: 4px;
+                margin-left: 17px;
+            }
+
+            .topic_name {
+                margin-left: 42px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .topic_name,
+            .recipients_name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                width: 100%;
+            }
+
+            .left_part {
+                width: 50%;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+    }
+}
+
+#inbox_view {
+    display: none;
+    position: relative;
+}

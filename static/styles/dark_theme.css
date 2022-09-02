@@ -596,7 +596,8 @@ body.dark-theme {
         }
     }
 
-    .recent_topics_container {
+    .recent_topics_container,
+    .inbox_container {
         background-color: hsl(212, 28%, 18%) !important;
     }
 
@@ -621,7 +622,8 @@ body.dark-theme {
         }
     }
 
-    #recent_topics_table td a {
+    #recent_topics_table td a,
+    #inbox_list a {
         color: hsl(206, 89%, 74%);
         text-decoration: none;
 
@@ -630,8 +632,45 @@ body.dark-theme {
         }
     }
 
-    #recent_topics_table {
+    #recent_topics_table,
+    #inbox_pane,
+    #inbox_pane #inbox_list {
         border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
+    .inbox_container {
+        color: hsl(0, 0%, 100%) !important;
+    }
+
+    .inbox_container #inbox_list #pm_header {
+        background-color: hsla(46, 25%, 20%, 1);
+    }
+
+    .inbox_container .inbox_row:hover {
+        background-color: hsl(212, 28%, 25%) !important;
+    }
+
+    .btn-inbox-filter {
+        background: hsl(212, 28%, 18%);
+        color: hsl(0, 0%, 100%);
+
+        &:focus {
+            background: hsl(212, 28%, 25%) !important;
+        }
+
+        &.fake_disabled_button {
+            &:hover {
+                background-color: hsl(212, 28%, 18%) !important;
+            }
+        }
+    }
+
+    #inbox_pane #inbox_search {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .btn-inbox-selected {
+        background-color: hsl(212, 28%, 22%) !important;
     }
 
     thead,

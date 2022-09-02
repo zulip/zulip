@@ -4,6 +4,7 @@ import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
+import * as inbox_ui from "./inbox_ui";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
@@ -436,6 +437,8 @@ export function initialize(home_view_loaded) {
             home_view_loaded();
             start_backfilling_messages();
             return;
+        } else {
+            inbox_ui.complete_rerender();
         }
 
         // If we fall through here, we need to keep fetching more data, and

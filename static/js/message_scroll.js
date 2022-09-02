@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
+import * as inbox_util from "./inbox_util";
 import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
@@ -109,7 +110,7 @@ export function update_top_of_narrow_notices(msg_list) {
         message_lists.current !== message_lists.home
     ) {
         const filter = narrow_state.filter();
-        if (filter === undefined && recent_topics_util.is_visible()) {
+        if (filter === undefined && (recent_topics_util.is_visible() || inbox_util.is_visible())) {
             // user moved away from the narrow / filter to recent topics.
             return;
         }

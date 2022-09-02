@@ -1,0 +1,42 @@
+{{#if has_pms}}
+<div id="pm_header" tabindex="0" class="inbox_header" style="background: {{pm_header_color}}">
+    <div class="collapsible-button"><i id="toggle-stream-header-icon" class="fa fa-caret-down"></i></div>
+    <div class="left_part">
+        <div class="inbox_header_name">
+            <i class="fa fa-envelope"></i>
+            <a href="/#narrow/is/private">{{t 'Private message'}}</a>
+        </div>
+        <span class="unread_count">{{unread_pms_count}}</span>
+    </div>
+</div>
+{{else if is_stream}}
+<div id="inbox_header:{{stream_id}}" class="inbox_header" tabindex="0" style="background: {{stream_header_color}};">
+    <div class="collapsible-button"><i id="toggle-stream-header-icon" class="fa fa-caret-down"></i></div>
+    <div class="left_part">
+        <div class="inbox_header_name">
+            <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{stream_color}}">
+                {{> stream_privacy }}
+            </span>
+            <a href="{{stream_url}}">{{stream_name}}</a>
+        </div>
+        <span class="unread_count tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+    </div>
+</div>
+{{else}}
+<div id="inbox:{{conversation_key}}" class="inbox_row" tabindex="0">
+    <div class="left_part">
+        {{#if is_private}}
+            {{#if is_group}}
+            <i class="fa fa-group"></i>
+            {{else}}
+            <span class="{{user_circle_class}} user_circle"></span>
+            {{/if}}
+            <div class="recipients_name"><a href="{{pm_url}}">{{recipients_string}}</a></div>
+            <span class="unread_count">{{unread_count}}</span>
+        {{else if is_topic}}
+            <div class="topic_name"><a href="{{topic_url}}">{{topic_name}}</a></div>
+            <span class="unread_count tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic_name}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
+        {{/if}}
+    </div>
+</div>
+{{/if}}

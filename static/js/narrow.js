@@ -11,6 +11,8 @@ import * as condense from "./condense";
 import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
+import * as inbox_ui from "./inbox_ui";
+import * as inbox_util from "./inbox_util";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
@@ -393,6 +395,8 @@ export function activate(raw_operators, opts) {
 
     if (recent_topics_util.is_visible()) {
         recent_topics_ui.hide();
+    } else if (inbox_util.is_visible()) {
+        inbox_ui.hide();
     } else {
         // If recent topics was not visible, then we are switching
         // from another message list view. Save the scroll position in

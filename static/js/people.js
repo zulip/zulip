@@ -716,6 +716,15 @@ export function sender_info_for_recent_topics_row(sender_ids) {
     return senders_info;
 }
 
+export function sender_info_for_pm(user_ids_string) {
+    const senders_info = [];
+    const sender = get_by_user_id(user_ids_string);
+    sender.avatar_url_small = small_avatar_url_for_person(sender);
+    sender.is_muted = muted_users.is_user_muted(user_ids_string);
+    senders_info.push(sender);
+    return senders_info;
+}
+
 export function small_avatar_url(message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help

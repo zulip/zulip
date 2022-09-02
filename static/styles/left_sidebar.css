@@ -318,6 +318,7 @@ li.top_left_all_messages,
 li.top_left_mentions,
 li.top_left_starred_messages,
 li.top_left_drafts,
+li.top_left_inbox,
 li.top_left_recent_topics {
     position: relative;
     padding-top: 1px;

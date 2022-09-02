@@ -1,4 +1,5 @@
 import * as channel from "./channel";
+import * as inbox_ui from "./inbox_ui";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
@@ -38,6 +39,7 @@ function process_newly_read_message(message, options) {
     }
     notifications.close_notification(message);
     recent_topics_ui.update_topic_unread_count(message);
+    inbox_ui.update_unread_count(message.stream_id, message.topic);
 }
 
 export function process_read_messages_event(message_ids) {
@@ -111,6 +113,8 @@ export function process_unread_messages_event({message_ids, message_details}) {
                 stream_id: message_info.stream_id,
                 topic: message_info.topic,
             });
+
+            inbox_ui.update_unread_count(message_info.stream_id, message_info.topic);
         }
     }
 
