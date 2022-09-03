@@ -350,7 +350,7 @@ const time_limit_dropdown_values = new Map([
         },
     ],
     [
-        "custom_limit",
+        "custom_period",
         {
             text: $t({defaultMessage: "Custom"}),
         },
