@@ -135,3 +135,78 @@ Someone is testing the alert notification within grafana.
             expected_message,
             content_type="application/x-www-form-urlencoded",
         )
+
+    def test_alert_new(self) -> None:
+        expected_topic = "[RESOLVED:1]"
+        expected_message = """
+:checkbox: **RESOLVED**
+
+Webhook test message.
+
+---
+**Alert 1**: TestAlert.
+
+This alert was fired at <time:2022-08-31T05:54:04.52289368Z>.
+
+This alert was resolved at <time:2022-08-31T10:30:00.52288431Z>.
+
+Labels:
+- alertname: TestAlert
+- instance: Grafana
+
+Annotations:
+- summary: Notification test
+
+1 alert(s) truncated.
+""".strip()
+
+        self.check_webhook(
+            "alert_new",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_alert_new_multiple(self) -> None:
+        expected_topic = "[FIRING:2]"
+        expected_message = """
+:alert: **FIRING**
+
+Webhook test message.
+
+---
+**Alert 1**: High memory usage.
+
+This alert was fired at <time:2021-10-12T09:51:03.157076+02:00>.
+Labels:
+- alertname: High memory usage
+- team: blue
+- zone: us-1
+
+Annotations:
+- description: The system has high memory usage
+- runbook_url: https://myrunbook.com/runbook/1234
+- summary: This alert was triggered for zone us-1
+
+
+---
+**Alert 2**: High CPU usage.
+
+This alert was fired at <time:2021-10-12T09:56:03.157076+02:00>.
+Labels:
+- alertname: High CPU usage
+- team: blue
+- zone: eu-1
+
+Annotations:
+- description: The system has high CPU usage
+- runbook_url: https://myrunbook.com/runbook/1234
+- summary: This alert was triggered for zone eu-1
+""".strip()
+
+        self.check_webhook(
+            "alert_new_multiple",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
