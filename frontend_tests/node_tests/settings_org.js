@@ -375,7 +375,7 @@ function test_sync_realm_settings() {
 
         page_params.realm_message_content_edit_limit_seconds = 130;
         settings_org.sync_realm_settings("message_content_edit_limit_seconds");
-        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_limit");
+        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_period");
     }
 
     {
@@ -452,11 +452,11 @@ function test_discard_changes_button(discard_changes) {
     const $edit_topic_policy = $("#id_realm_edit_topic_policy").val(
         settings_config.common_message_policy_values.by_admins_only.code,
     );
-    const $msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_limit");
+    const $msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_period");
     const $message_content_edit_limit_minutes = $(
         "#id_realm_message_content_edit_limit_minutes",
     ).val(130);
-    const $msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_limit");
+    const $msg_delete_limit_setting = $("#id_realm_msg_delete_limit_setting").val("custom_period");
     const $message_content_delete_limit_minutes = $(
         "#id_realm_message_content_delete_limit_minutes",
     ).val(130);
