@@ -1,5 +1,5 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
-  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
+  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#if mention_classname}} {{mention_classname}}{{/if}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row"
   role="listitem">
     <div class="unread_marker"><div class="unread-marker-fill"></div></div>
     {{#if want_date_divider}}

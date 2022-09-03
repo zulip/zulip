@@ -27,7 +27,7 @@ import {user_settings} from "./user_settings";
     is being displayed.
 */
 
-function get_user_id_for_mention_button(elem) {
+export function get_user_id_for_mention_button(elem) {
     const user_id_string = $(elem).attr("data-user-id");
     // Handle legacy Markdown that was rendered before we cut
     // over to using data-user-id.
