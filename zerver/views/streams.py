@@ -694,7 +694,6 @@ def send_messages_for_new_subscribers(
 
             notifications.append(
                 internal_prep_private_message(
-                    realm=realm,
                     sender=sender,
                     recipient_user=recipient_user,
                     content=msg,

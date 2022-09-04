@@ -2257,13 +2257,12 @@ class InternalPrepTest(ZulipTestCase):
         )
 
     def test_error_handling(self) -> None:
-        realm = get_realm("zulip")
         sender = self.example_user("cordelia")
         recipient_user = self.example_user("hamlet")
         content = "x" * 15000
 
         result = internal_prep_private_message(
-            realm=realm, sender=sender, recipient_user=recipient_user, content=content
+            sender=sender, recipient_user=recipient_user, content=content
         )
         assert result is not None
         message = result.message
@@ -2274,7 +2273,7 @@ class InternalPrepTest(ZulipTestCase):
         recipient_user = self.mit_user("starnine")
         with self.assertLogs(level="ERROR") as m:
             result = internal_prep_private_message(
-                realm=realm, sender=sender, recipient_user=recipient_user, content=content
+                sender=sender, recipient_user=recipient_user, content=content
             )
 
         self.assertEqual(
