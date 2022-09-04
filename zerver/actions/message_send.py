@@ -1593,7 +1593,6 @@ def internal_prep_stream_message_by_name(
 
 
 def internal_prep_private_message(
-    realm: Realm,
     sender: UserProfile,
     recipient_user: UserProfile,
     content: str,
@@ -1603,6 +1602,7 @@ def internal_prep_private_message(
     See _internal_prep_message for details of how this works.
     """
     addressee = Addressee.for_user_profile(recipient_user)
+    realm = recipient_user.realm
 
     return _internal_prep_message(
         realm=realm,
@@ -1616,8 +1616,7 @@ def internal_prep_private_message(
 def internal_send_private_message(
     sender: UserProfile, recipient_user: UserProfile, content: str
 ) -> Optional[int]:
-    realm = recipient_user.realm
-    message = internal_prep_private_message(realm, sender, recipient_user, content)
+    message = internal_prep_private_message(sender, recipient_user, content)
     if message is None:
         return None
     message_ids = do_send_messages([message])
