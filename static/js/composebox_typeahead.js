@@ -862,16 +862,21 @@ export function content_typeahead_selected(item, event) {
             // Isolate the end index of the triple backticks/tildes, including
             // possibly a space afterward
             const backticks = beginning.length - this.token.length;
+            beginning = beginning.slice(0, backticks) + item;
+            if (item === "spoiler") {
+                // to add in and highlight placeholder "Header"
+                const placeholder = $t({defaultMessage: "Header"});
+                highlight.start = beginning.length + 1;
+                beginning = beginning + " " + placeholder;
+                highlight.end = highlight.start + placeholder.length;
+            }
+            // If cursor is at end of input ("rest" is empty), then
+            // add a closing fence after the cursor
+            // If there is more text after the cursor, then don't
+            // touch "rest" (i.e. do not add a closing fence)
             if (rest === "") {
-                // If cursor is at end of input ("rest" is empty), then
-                // complete the token before the cursor, and add a closing fence
-                // after the cursor
-                beginning = beginning.slice(0, backticks) + item + "\n";
+                beginning = beginning + "\n";
                 rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
-            } else {
-                // If more text after the input, then complete the token, but don't touch
-                // "rest" (i.e. do not add a closing fence)
-                beginning = beginning.slice(0, backticks) + item;
             }
             break;
         }
