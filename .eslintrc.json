@@ -19,7 +19,9 @@
     },
     "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"],
+        "formatjs": {
+            "additionalFunctionNames": ["$t", "$t_html"]
+        },
         "no-jquery": {
             "collectionReturningPlugins": {
                 "expectOne": "always"
