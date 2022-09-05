@@ -1120,6 +1120,8 @@ else:
 
 SOCIAL_AUTH_GITHUB_SECRET = get_secret("social_auth_github_secret")
 SOCIAL_AUTH_GITLAB_SECRET = get_secret("social_auth_gitlab_secret")
+SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = get_secret("social_auth_azuread_oauth2_secret")
+
 SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
 if SOCIAL_AUTH_GITHUB_ORG_NAME or SOCIAL_AUTH_GITHUB_TEAM_ID:
     SOCIAL_AUTH_GITHUB_SCOPE.append("read:org")

@@ -509,15 +509,19 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 ## To set up Microsoft Azure AD authentication, you'll need to do the following:
 ##
-## (1) Register an OAuth2 application with Microsoft at:
-## https://apps.dev.microsoft.com
-## Generate a new password under Application Secrets
-## Generate a new platform (web) under Platforms. For Redirect URL, enter:
-##   https://zulip.example.com/complete/azuread-oauth2/
-## Add User.Read permission under Microsoft Graph Permissions
+## (1) Open "App registrations" at
+## https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade
+## and click "New registration".
 ##
-## (2) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY here
-## (3) Put the application password in zulip-secrets.conf as 'azure_oauth2_secret'.
+## (2) In the "Redirect URI (optional)" section, select Web as the platform
+## and enter https://zulip.example.com/complete/azuread-oauth2/ as the redirect URI,
+## based on your values of EXTERNAL_HOST and SOCIAL_AUTH_SUBDOMAIN.
+##
+## (3) After registering the app, go to "Certificates & secrets" and
+## generate a new client secret. Make sure to save the generated Value.
+##
+## (4) Enter the application ID for the app as SOCIAL_AUTH_AZUREAD_OAUTH2_KEY below
+## and the generated secret Value in zulip-secrets.conf as `social_auth_azuread_oauth2_secret`.
 # SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = ""
 
 ########
