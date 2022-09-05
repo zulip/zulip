@@ -2,8 +2,6 @@
 {% if allow_search_engine_indexing %}
     {% if PAGE_DESCRIPTION %}
     <meta name="description" content="{{ PAGE_DESCRIPTION }}" />
-    {% else %}
-    <meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones." />
     {% endif %}
 {% else %}
     <meta name="robots" content="noindex,nofollow" />
@@ -15,10 +13,9 @@
 <meta property="og:site_name" content="Zulip" />
 {% if PAGE_TITLE %}
 <meta property="og:title" content="{{ PAGE_TITLE }}" />
+{% endif %}
+{% if PAGE_DESCRIPTION %}
 <meta property="og:description" content="{{ PAGE_DESCRIPTION }}" />
-{% else %}
-<meta property="og:title" content="Chat for distributed teams" />
-<meta property="og:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones." />
 {% endif %}
 {% if PAGE_METADATA_IMAGE %}
 <meta property="og:image" content="{{ PAGE_METADATA_IMAGE }}" />
