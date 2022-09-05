@@ -810,12 +810,22 @@ li.actual-dropdown-menu > a:focus {
     outline: 0;
 }
 
-li.actual-dropdown-menu i {
-    /* In gear menu, make icons the same width so labels line up. */
+li.actual-dropdown-menu i,
+.active_stream .stream-privacy span,
+.stream_list_item .stream-privacy span,
+.active_stream .stream-privacy i,
+.stream_list_item .stream-privacy i {
+    /* Make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
     text-align: center;
     margin-right: 3px;
+    min-width: unset;
+}
+
+.active_stream .stream-privacy span,
+.stream_list_item .stream-privacy span {
+    margin-right: 0;
 }
 
 #gear_menu_about_zulip {
@@ -2588,14 +2598,7 @@ select.invite-as {
         margin-top: 0;
     }
 
-    /* Override the default border-radius to properly align
-       the button corners with `stream_header_colorblock`. */
-    .dropdown-toggle {
-        border-radius: 1px 4px 4px 1px !important;
-    }
-
-    .dropdown-list-widget,
-    .stream_header_colorblock {
+    .dropdown-list-widget {
         margin-bottom: 10px;
     }
 

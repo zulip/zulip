@@ -3,6 +3,8 @@ import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
 import * as typeahead from "../shared/src/typeahead";
+import render_selected_stream_in_dropdown from "../templates/settings/selected_stream_in_dropdown.hbs";
+import render_stream_dropdown_list from "../templates/settings/stream_dropdown_list.hbs";
 
 import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
@@ -1022,6 +1024,8 @@ export function initialize_topic_edit_typeahead(form_field, stream_name, dropup)
         source() {
             return topics_seen_for(stream_name);
         },
+        modifier: (item) => render_stream_dropdown_list({item}),
+        selected_text_modifier: (item) => render_selected_stream_in_dropdown(item),
         items: 5,
     };
     form_field.typeahead(options);

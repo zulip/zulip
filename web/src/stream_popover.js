@@ -6,6 +6,8 @@ import render_all_messages_sidebar_actions from "../templates/all_messages_sideb
 import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
 import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
 import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
+import render_selected_stream_in_dropdown from "../templates/settings/selected_stream_in_dropdown.hbs";
+import render_stream_dropdown_list from "../templates/settings/stream_dropdown_list.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
@@ -30,7 +32,6 @@ import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
-import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_ui from "./stream_settings_ui";
@@ -48,7 +49,6 @@ let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
 let drafts_sidebar_elem;
 let stream_widget;
-let $stream_header_colorblock;
 
 // Keep the menu icon over which the popover is based off visible.
 function show_left_sidebar_menu_icon(element) {
@@ -548,10 +548,6 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
 
     function move_topic_post_render() {
         const $topic_input = $("#move_topic_form .inline_topic_edit");
-        $stream_header_colorblock = $("#dialog_widget_modal .topic_stream_edit_header").find(
-            ".stream_header_colorblock",
-        );
-        stream_bar.decorate(current_stream_name, $stream_header_colorblock, false);
         const streams_list =
             message_edit.get_available_streams_for_moving_messages(current_stream_id);
         const opts = {
@@ -561,6 +557,8 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             include_current_item: false,
             value: current_stream_id,
             on_update: move_topic_on_update,
+            modifier: (item) => render_stream_dropdown_list({item}),
+            selected_text_modifier: (item) => render_selected_stream_in_dropdown(item),
         };
         stream_widget = new DropdownListWidget(opts);
 
@@ -640,11 +638,6 @@ export function register_click_handlers() {
         if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
             return;
         }
-        const stream_name = stream_data.maybe_get_stream_name(
-            Number.parseInt(stream_widget.value(), 10),
-        );
-
-        stream_bar.decorate(stream_name, $stream_header_colorblock, false);
     });
 
     register_stream_handlers();

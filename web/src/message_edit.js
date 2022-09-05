@@ -419,6 +419,9 @@ export function get_available_streams_for_moving_messages(current_stream_id) {
         })
         .map((stream) => ({
             name: stream.name,
+            invite_only: stream.invite_only,
+            is_web_public: stream.is_web_public,
+            color: stream.color,
             value: stream.stream_id.toString(),
         }))
         .sort((a, b) => {

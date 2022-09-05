@@ -19,16 +19,20 @@ export class DropdownListWidget {
         include_current_item = true,
         value,
         on_update = () => {},
+        modifier = (item) => render_dropdown_list({item}),
+        selected_text_modifier = null,
     }) {
         // Initializing values
         this.widget_name = widget_name;
         this.data = data;
         this.default_text = default_text;
         this.render_text = render_text;
+        this.selected_text_modifier = selected_text_modifier;
         this.null_value = null_value;
         this.include_current_item = include_current_item;
         this.initial_value = value;
         this.on_update = on_update;
+        this.modifier = modifier;
 
         this.container_id = `${widget_name}_widget`;
         this.value_id = `id_${widget_name}`;
@@ -62,11 +66,17 @@ export class DropdownListWidget {
             this.render_default_text($elem);
             return;
         }
+        $elem.empty();
 
-        const text = this.render_text(item.name);
-        $elem.text(text);
-        $elem.removeClass("text-warning");
-        $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
+        if (this.selected_text_modifier) {
+            // Render text with custom modifier.
+            $elem.append(this.selected_text_modifier(item));
+        } else {
+            const text = this.render_text(item.name);
+            $elem.text(text);
+            $elem.removeClass("text-warning");
+            $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
+        }
     }
 
     update(value) {
@@ -115,9 +125,7 @@ export class DropdownListWidget {
 
         ListWidget.create($dropdown_list_body, get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
-            modifier(item) {
-                return render_dropdown_list({item});
-            },
+            modifier: this.modifier,
             filter: {
                 $element: $search_input,
                 predicate(item, value) {
@@ -396,9 +404,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
 
         ListWidget.create($dropdown_list_body, data, {
             name: `${CSS.escape(this.widget_name)}_list`,
-            modifier(item) {
-                return render_dropdown_list({item});
-            },
+            modifier: this.modifier,
             multiselect: {
                 selected_items: this.data_selected,
             },

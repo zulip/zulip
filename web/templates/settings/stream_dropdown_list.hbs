@@ -1,0 +1,13 @@
+<div class="stream_list_item_wrapper">
+    {{#with item}}
+        <li class="list_item stream_list_item" role="presentation" data-value="{{value}}">
+            <a role="menuitem" tabindex="0">
+                <span class="stream-privacy" style="color: {{color}};">
+                    {{> ../stream_privacy
+                      invite_only=invite_only
+                      is_web_public=is_web_public
+                      }} </span> {{name}}
+            </a>
+        </li>
+    {{/with}}
+</div>

@@ -1525,6 +1525,21 @@ $option_title_width: 180px;
         }
     }
 
+    a.active_stream {
+        display: inline-block;
+        clear: both;
+        font-weight: normal;
+        color: inherit;
+
+        .zulip-icon {
+            font-size: 13px;
+        }
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
     button.multiselect_btn {
         /* Matches the dropdown input margin so as to keep it aligned */
         margin-left: 9px;
