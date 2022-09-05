@@ -89,8 +89,16 @@ class DocPageTest(ZulipTestCase):
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
             if not doc_html_str:
-                # Every page has a meta-description
-                self.assert_in_success_response(['<meta name="description" content="'], result)
+                # Confirm page has the following HTML elements:
+                self.assert_in_success_response(
+                    [
+                        "<title>",
+                        '<meta name="description" content="',
+                        '<meta property="og:title" content="',
+                        '<meta property="og:description" content="',
+                    ],
+                    result,
+                )
             self.assert_not_in_success_response(
                 ['<meta name="robots" content="noindex,nofollow" />'], result
             )
@@ -150,12 +158,14 @@ class DocPageTest(ZulipTestCase):
 
     def test_dev_environment_endpoints(self) -> None:
         self._test("/devlogin/", "Normal users", landing_page=False)
-        self._test("/devtools/", "Useful development URLs")
-        self._test("/emails/", "manually generate most of the emails by clicking")
+        self._test("/devtools/", "Useful development URLs", landing_page=False)
+        self._test(
+            "/emails/", "manually generate most of the emails by clicking", landing_page=False
+        )
 
     def test_error_endpoints(self) -> None:
-        self._test("/errors/404/", "Page not found")
-        self._test("/errors/5xx/", "Internal server error")
+        self._test("/errors/404/", "Page not found", landing_page=False)
+        self._test("/errors/5xx/", "Internal server error", landing_page=False)
 
     def test_corporate_portico_endpoints(self) -> None:
         if settings.ZILENCER_ENABLED:
@@ -201,21 +211,6 @@ class DocPageTest(ZulipTestCase):
         realm.want_advertise_in_communities_directory = True
         realm.save()
         self._test("/communities/", "Open communities directory", extra_strings=zulip_dev_info)
-
-    def test_portico_pages_open_graph_metadata(self) -> None:
-        # Why Zulip
-        url = "/why-zulip/"
-        title = '<meta property="og:title" content="Team chat with first-class threading" />'
-        description = '<meta property="og:description" content="Most team chats are overwhelming'
-        self._test(url, title, doc_html_str=True)
-        self._test(url, description, doc_html_str=True)
-
-        # Features
-        url = "/features/"
-        title = '<meta property="og:title" content="Zulip features" />'
-        description = '<meta property="og:description" content="First class threading'
-        self._test(url, title, doc_html_str=True)
-        self._test(url, description, doc_html_str=True)
 
     def test_integration_doc_endpoints(self) -> None:
         self._test(
