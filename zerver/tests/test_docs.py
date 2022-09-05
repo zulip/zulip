@@ -175,6 +175,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/self-hosting/", "Self-host Zulip")
         self._test("/security/", "TLS encryption")
         self._test("/attribution/", "Website attributions")
+        self._test("/communities/", "Open communities directory")
         self._test("/devlogin/", "Normal users", landing_page=False)
         self._test("/devtools/", "Useful development URLs")
         self._test("/errors/404/", "Page not found")
@@ -182,11 +183,15 @@ class DocPageTest(ZulipTestCase):
         self._test("/emails/", "manually generate most of the emails by clicking")
 
     def test_open_organizations_endpoint(self) -> None:
+        zulip_dev_info = ["Zulip Dev", "great for testing!"]
+
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(zulip_dev_info, result)
+
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True
         realm.save()
-
-        self._test("/communities/", "Open communities directory")
+        self._test("/communities/", "Open communities directory", extra_strings=zulip_dev_info)
 
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
