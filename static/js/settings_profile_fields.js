@@ -304,17 +304,20 @@ function show_modal_for_deleting_options(field, deleted_values, update_profile_f
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value && deleted_values.has(field_value.value)) {
+        if (field_value && deleted_values[field_value.value]) {
             users_count_with_deleted_option_selected += 1;
         }
     }
+    const deleted_options_count = Object.keys(deleted_values).length;
     const html_body = render_confirm_delete_profile_field_option({
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
+        deleted_options_count,
+        deleted_values,
     });
 
     let modal_heading_text = "Delete this option?";
-    if (Object.keys(deleted_values).length !== 1) {
+    if (deleted_options_count !== 1) {
         modal_heading_text = "Delete these options?";
     }
     confirm_dialog.launch({
@@ -463,13 +466,15 @@ function open_edit_form_modal(e) {
         }
 
         if (field.type === field_types.SELECT.id) {
-            const old_values = new Set(Object.keys(field_data));
             const new_values = new Set(Object.keys(new_field_data));
-            const deleted_values = new Set(
-                [...old_values].filter((value) => !new_values.has(value)),
-            );
+            const deleted_values = {};
+            for (const [value, option] of Object.entries(field_data)) {
+                if (!new_values.has(value)) {
+                    deleted_values[value] = option.text;
+                }
+            }
 
-            if (deleted_values.size !== 0) {
+            if (Object.keys(deleted_values).length !== 0) {
                 const edit_select_field_modal_callback = () =>
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 dialog_widget.close_modal(edit_select_field_modal_callback);
