@@ -779,8 +779,10 @@ export function content_typeahead_selected(item, event) {
     let beginning = pieces[0];
     let rest = pieces[1];
     const $textbox = this.$element;
-    // this highlight object will hold the start and end indices
-    // for highlighting any placeholder text
+    // Accepting some typeahead selections, like polls, will generate
+    // placeholder text that is selected, in order to clarify for the
+    // user what a given parameter is for. This object stores the
+    // highlight offsets for that purpose.
     const highlight = {};
 
     switch (this.completing) {
@@ -919,11 +921,9 @@ export function content_typeahead_selected(item, event) {
     // placeholder text, as Bootstrap will call $textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(() => {
-        if (item.placeholder) {
-            // This placeholder block is exclusively for slash
-            // commands, which always appear at the start of the message.
-            $textbox.get(0).setSelectionRange(highlight.start, highlight.end);
-            $textbox.trigger("focus");
+        // Select any placeholder text configured to be highlighted.
+        if (highlight.start && highlight.end) {
+            $textbox.range(highlight.start, highlight.end);
         } else {
             $textbox.caret(beginning.length, beginning.length);
         }
