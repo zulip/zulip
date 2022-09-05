@@ -198,21 +198,21 @@ class MarkdownDirectoryView(ApiURLView):
             elif (
                 self.path_template == "/zerver/api/%s.md" and "{generate_api_header(" in first_line
             ):
-                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1]
+                api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
                 article_title = first_line.lstrip("#").strip()
                 endpoint_name = endpoint_method = None
             if context["not_index_page"]:
-                context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
+                context["PAGE_TITLE"] = f"{article_title} ({title_base})"
             else:
-                context["OPEN_GRAPH_TITLE"] = title_base
+                context["PAGE_TITLE"] = title_base
             request_notes = RequestNotes.get_notes(self.request)
             request_notes.placeholder_open_graph_description = (
-                f"REPLACEMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
+                f"REPLACEMENT_PAGE_DESCRIPTION_{int(2**24 * random.random())}"
             )
-            context["OPEN_GRAPH_DESCRIPTION"] = request_notes.placeholder_open_graph_description
+            context["PAGE_DESCRIPTION"] = request_notes.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
         # An "article" might require the api_uri_context to be rendered
@@ -264,17 +264,17 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context["OPEN_GRAPH_TITLE"] = f"Connect {integration.display_name} to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        context["PAGE_TITLE"] = f"Connect {integration.display_name} to Zulip"
+        context["PAGE_DESCRIPTION"] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context["OPEN_GRAPH_TITLE"] = f"Connect your {category} tools to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        context["PAGE_TITLE"] = f"Connect your {category} tools to Zulip"
+        context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":
-        context["OPEN_GRAPH_TITLE"] = "Connect the tools you use to Zulip"
-        context["OPEN_GRAPH_DESCRIPTION"] = description
+        context["PAGE_TITLE"] = "Connect the tools you use to Zulip"
+        context["PAGE_DESCRIPTION"] = description
 
 
 class IntegrationView(ApiURLView):
