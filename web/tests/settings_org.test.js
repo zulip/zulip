@@ -771,7 +771,7 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", ({override_rewire}) => {
+test("misc", ({override_rewire, mock_template}) => {
     page_params.is_admin = false;
     $("#user-avatar-upload-widget").length = 1;
     $("#user_details_section").length = 1;
@@ -845,7 +845,13 @@ test("misc", ({override_rewire}) => {
 
     override_rewire(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
-        {name: "some_stream", stream_id: 42},
+        {
+            name: "some_stream",
+            stream_id: 42,
+            invite_only: true,
+            is_web_public: false,
+            color: "#ffffff",
+        },
     ]);
 
     // Set stubs for dropdown_list_widget:
@@ -875,19 +881,29 @@ test("misc", ({override_rewire}) => {
     let setting_name = "realm_notifications_stream_id";
     let $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
+
+    let active_stream_html;
+    mock_template(
+        "settings/selected_stream_in_dropdown.hbs",
+        true,
+        (_, html) => (active_stream_html = html),
+    );
+
     settings_org.notifications_stream_widget.render(42);
-    assert.equal($elem.text(), "#some_stream");
+    assert.ok(active_stream_html.includes("<span>some_stream</span>"));
+    active_stream_html = "";
     assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.notifications_stream_widget.render(undefined);
     assert.equal($elem.text(), "translated: Disabled");
+    assert.equal(active_stream_html, "");
     assert.ok($elem.hasClass("text-warning"));
 
     setting_name = "realm_signup_notifications_stream_id";
     $elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     $elem.closest = () => $stub_notification_disable_parent;
     settings_org.signup_notifications_stream_widget.render(75);
-    assert.equal($elem.text(), "#some_stream");
+    assert.ok(active_stream_html.includes("<span>some_stream</span>"));
     assert.ok(!$elem.hasClass("text-warning"));
 
     settings_org.signup_notifications_stream_widget.render(undefined);

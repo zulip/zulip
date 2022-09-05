@@ -68,14 +68,14 @@ export class DropdownListWidget {
         }
         $elem.empty();
 
+        $elem.removeClass("text-warning");
+        $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
         if (this.selected_text_modifier) {
             // Render text with custom modifier.
             $elem.append(this.selected_text_modifier(item));
         } else {
             const text = this.render_text(item.name);
             $elem.text(text);
-            $elem.removeClass("text-warning");
-            $elem.closest(".input-group").find(".dropdown_list_reset_button").show();
         }
     }
 

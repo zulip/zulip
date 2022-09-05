@@ -40,14 +40,17 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         "rome",
     );
 
-    const rome_in_dropdown = await page.waitForSelector(
-        `xpath///*[@id="realm_notifications_stream_id_widget"]//*[${common.has_class_x(
-            "dropdown-list-body",
-        )} and count(li)=1]/li[normalize-space()="Rome"]`,
-        {visible: true},
-    );
-    assert.ok(rome_in_dropdown);
-    await rome_in_dropdown.click();
+    // Instead of using puppeteer click function, we are executing javascript inside browser because,
+    // puppeteer click was creating flake, and I was not able to find the better way to wait until
+    // the dropdown item is interactable.
+    await page.waitForFunction(() => {
+        // eslint-disable-next-line no-undef
+        if ($("#realm_notifications_stream_id_widget .stream_list_item").text().trim() === "Rome") {
+            $("#realm_notifications_stream_id_widget .stream_list_item").trigger("click"); // eslint-disable-line no-undef
+            return true;
+        }
+        return false;
+    });
 
     await submit_notifications_stream_settings(page);
 
@@ -72,7 +75,7 @@ async function test_change_signup_notifications_stream(page: Page): Promise<void
         "verona",
     );
     await page.waitForSelector(
-        "#realm_signup_notifications_stream_id_widget  .dropdown-list-body > li.list_item",
+        "#realm_signup_notifications_stream_id_widget  .dropdown-list-body > .stream_list_item_wrapper > li.list_item",
         {visible: true},
     );
     await page.keyboard.press("ArrowDown");

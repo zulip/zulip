@@ -3,6 +3,8 @@ import $ from "jquery";
 import pygments_data from "../generated/pygments_data.json";
 import render_settings_deactivate_realm_modal from "../templates/confirm_dialog/confirm_deactivate_realm.hbs";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
+import render_selected_stream_in_dropdown from "../templates/settings/selected_stream_in_dropdown.hbs";
+import render_stream_dropdown_list from "../templates/settings/stream_dropdown_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -1011,13 +1013,17 @@ export function init_dropdown_widgets() {
         data: streams.map((x) => ({
             name: x.name,
             value: x.stream_id.toString(),
+            invite_only: x.invite_only,
+            is_web_public: x.is_web_public,
+            color: x.color,
         })),
         on_update() {
             save_discard_widget_status_handler($("#org-notifications"));
         },
         default_text: $t({defaultMessage: "Disabled"}),
-        render_text: (x) => `#${x}`,
         null_value: -1,
+        modifier: (item) => render_stream_dropdown_list({item}),
+        selected_text_modifier: (value) => render_selected_stream_in_dropdown(value),
     };
     notifications_stream_widget = new DropdownListWidget({
         widget_name: "realm_notifications_stream_id",
