@@ -181,13 +181,6 @@ class DocPageTest(ZulipTestCase):
         self._test("/errors/5xx/", "Internal server error")
         self._test("/emails/", "manually generate most of the emails by clicking")
 
-        result = self.client_get(
-            "/integrations/doc-html/nonexistent_integration",
-            follow=True,
-            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
-        )
-        self.assertEqual(result.status_code, 404)
-
     def test_open_organizations_endpoint(self) -> None:
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True
@@ -224,6 +217,13 @@ class DocPageTest(ZulipTestCase):
         for integration in INTEGRATIONS.keys():
             url = f"/integrations/doc-html/{integration}"
             self._test(url, "", doc_html_str=True)
+
+        result = self.client_get(
+            "/integrations/doc-html/nonexistent_integration",
+            follow=True,
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(result.status_code, 404)
 
     def test_integration_pages_open_graph_metadata(self) -> None:
         url = "/integrations/doc/github"
