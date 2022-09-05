@@ -188,17 +188,6 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
-        result = self.client_get("/new-user/")
-        self.assertEqual(result.status_code, 301)
-        self.assertIn("hello", result["Location"])
-
-        result = self.client_get("/developer-community/")
-        self.assertEqual(result.status_code, 301)
-        self.assertIn("development-community", result["Location"])
-
-        result = self.client_get("/for/companies/", follow=True)
-        self.assert_in_success_response(["Communication efficiency represents"], result)
-
     def test_open_organizations_endpoint(self) -> None:
         realm = get_realm("zulip")
         realm.want_advertise_in_communities_directory = True

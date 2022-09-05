@@ -182,3 +182,7 @@ class RedirectURLTest(ZulipTestCase):
         for redirect in LANDING_PAGE_REDIRECTS:
             result = self.client_get(redirect.old_url, follow=True)
             self.assert_in_success_response(["Download"], result)
+
+            result = self.client_get(redirect.old_url)
+            self.assertEqual(result.status_code, 301)
+            self.assertIn(redirect.new_url, result["Location"])
