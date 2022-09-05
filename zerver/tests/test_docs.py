@@ -129,7 +129,7 @@ class DocPageTest(ZulipTestCase):
         )
         self.assertEqual(result.status_code, 404)
 
-    def test_doc_endpoints(self) -> None:
+        # Test some API doc endpoints for specific content and metadata.
         self._test("/api/", "The Zulip API")
         self._test("/api/api-keys", "be careful with it")
         self._test("/api/installation-instructions", "No download required!")
@@ -147,21 +147,42 @@ class DocPageTest(ZulipTestCase):
         self._test("/api/subscribe", "authorization_errors_fatal")
         self._test("/api/create-user", "zuliprc-admin")
         self._test("/api/unsubscribe", "not_removed")
+
+    def test_dev_environment_endpoints(self) -> None:
+        self._test("/devlogin/", "Normal users", landing_page=False)
+        self._test("/devtools/", "Useful development URLs")
+        self._test("/emails/", "manually generate most of the emails by clicking")
+
+    def test_error_endpoints(self) -> None:
+        self._test("/errors/404/", "Page not found")
+        self._test("/errors/5xx/", "Internal server error")
+
+    def test_corporate_portico_endpoints(self) -> None:
         if settings.ZILENCER_ENABLED:
             self._test("/team/", "industry veterans")
+            self._test("/apps/", "Apps for every platform.")
+
         self._test("/history/", "Cambridge, Massachusetts")
         # Test the i18n version of one of these pages.
         self._test("/en/history/", "Cambridge, Massachusetts")
-        if settings.ZILENCER_ENABLED:
-            self._test("/apps/", "Apps for every platform.")
-        self._test("/features/", "Beautiful messaging")
-        self._test("/use-cases/", "Use cases and customer stories")
+
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
+        self._test("/attribution/", "Website attributions")
+        self._test("/communities/", "Open communities directory")
         self._test("/development-community/", "Zulip development community")
+        self._test("/features/", "Beautiful messaging")
+        self._test("/self-hosting/", "Self-host Zulip")
+        self._test("/security/", "TLS encryption")
+        self._test("/use-cases/", "Use cases and customer stories")
         self._test("/why-zulip/", "Why Zulip?")
+        # /for/... pages
         self._test("/for/open-source/", "for open source projects")
         self._test("/for/events/", "for conferences and events")
         self._test("/for/education/", "education pricing")
+        self._test("/for/research/", "for research")
+        self._test("/for/business/", "Communication efficiency represents")
+        self._test("/for/communities/", "Zulip for communities")
+        # case-studies
         self._test("/case-studies/tum/", "Technical University of Munich")
         self._test("/case-studies/ucsd/", "UCSD")
         self._test("/case-studies/rust/", "Rust programming language")
@@ -169,18 +190,6 @@ class DocPageTest(ZulipTestCase):
         self._test("/case-studies/lean/", "Lean theorem prover")
         self._test("/case-studies/idrift/", "Case study: iDrift AS")
         self._test("/case-studies/asciidoctor/", "Case study: Asciidoctor")
-        self._test("/for/research/", "for research")
-        self._test("/for/business/", "Communication efficiency represents")
-        self._test("/for/communities/", "Zulip for communities")
-        self._test("/self-hosting/", "Self-host Zulip")
-        self._test("/security/", "TLS encryption")
-        self._test("/attribution/", "Website attributions")
-        self._test("/communities/", "Open communities directory")
-        self._test("/devlogin/", "Normal users", landing_page=False)
-        self._test("/devtools/", "Useful development URLs")
-        self._test("/errors/404/", "Page not found")
-        self._test("/errors/5xx/", "Internal server error")
-        self._test("/emails/", "manually generate most of the emails by clicking")
 
     def test_open_organizations_endpoint(self) -> None:
         zulip_dev_info = ["Zulip Dev", "great for testing!"]
