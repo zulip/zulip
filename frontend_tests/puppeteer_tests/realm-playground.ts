@@ -74,6 +74,11 @@ async function test_invalid_playground_parameters(page: Page): Promise<void> {
 
 async function test_successful_playground_deletion(page: Page): Promise<void> {
     await page.click(".playground_row button.delete");
+
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#confirm_delete_code_playgrounds_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+
     await page.waitForSelector(".playground_row", {hidden: true});
 }
 
