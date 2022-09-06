@@ -133,7 +133,7 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 pre_context = convert_lines_to_traceback_string(
                     exception_frame.get("pre_context", None)
                 )
-                context_line = exception_frame["context_line"] + "\n"
+                context_line = exception_frame.get("context_line", "") + "\n"
                 post_context = convert_lines_to_traceback_string(
                     exception_frame.get("post_context", None)
                 )
