@@ -2721,6 +2721,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .flatpickr-time input {
         margin: 0 5px;
+        min-height: 30px;
     }
 
     .flatpickr-confirm {
