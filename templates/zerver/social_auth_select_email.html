@@ -1,5 +1,9 @@
 {% extends "zerver/portico_signup.html" %}
 
+{% block title %}
+<title>{{ _("Select account for authentication") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 <div class="register-account flex full-page new-style" id="choose_email">
     <div class="lead">

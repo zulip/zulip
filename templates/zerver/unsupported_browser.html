@@ -1,5 +1,9 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Unsupported browser") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="error_page unsupported_browser_page">

@@ -1,6 +1,10 @@
 {% extends "zerver/base.html" %}
 {% set entrypoint = "digest" %}
 
+{% block title %}
+<title>{{ _("Digest") }} | Zulip</title>
+{% endblock %}
+
 {% block content %}
 <body>
     <div class="portico-wrap">
