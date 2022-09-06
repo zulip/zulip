@@ -203,6 +203,10 @@ async function test_add_emoji(page: Page): Promise<void> {
 async function test_delete_emoji(page: Page): Promise<void> {
     await page.click("tr#emoji_zulip_logo button.delete");
 
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#confirm_deactivate_custom_emoji_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+
     // assert the emoji is deleted.
     await page.waitForSelector("tr#emoji_zulip_logo", {hidden: true});
 }
