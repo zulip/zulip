@@ -158,13 +158,13 @@ run_test("read", ({override}) => {
     }
 
     let msgs_to_flag_read = [
-        {locally_echoed: false, id: 1},
-        {locally_echoed: false, id: 2},
-        {locally_echoed: false, id: 3},
-        {locally_echoed: false, id: 4},
-        {locally_echoed: false, id: 5},
-        {locally_echoed: false, id: 6},
-        {locally_echoed: false, id: 7},
+        {locally_echoed: false, id: 1, unread: true},
+        {locally_echoed: false, id: 2, unread: true},
+        {locally_echoed: false, id: 3, unread: true},
+        {locally_echoed: false, id: 4, unread: true},
+        {locally_echoed: false, id: 5, unread: true},
+        {locally_echoed: false, id: 6, unread: true},
+        {locally_echoed: false, id: 7, unread: true},
     ];
     send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
@@ -196,17 +196,53 @@ run_test("read", ({override}) => {
     };
     channel_post_opts.success(success_response_data);
 
+    // Messages still not acked yet
+    const events = {};
+    const stub_delay = 100;
+    function set_timeout(f, delay) {
+        assert.equal(delay, stub_delay);
+        events.f = f;
+        events.timer_set = true;
+        return;
+    }
+    set_global("setTimeout", set_timeout);
+
+    // Test already read message.
+    msgs_to_flag_read = [
+        {locally_echoed: false, id: 1, unread: true},
+        {locally_echoed: false, id: 2, unread: false},
+    ];
+    send_read(msgs_to_flag_read);
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[1]",
+            op: "add",
+            flag: "read",
+        },
+        success: channel_post_opts.success,
+    });
+
+    // Mock successful flagging of ids
+    success_response_data = {
+        messages: [1],
+    };
+    channel_post_opts.success(success_response_data);
+    // Since all message are read, no server request was queued.
+    assert.ok(!events.timer_set);
+
     // Don't flag locally echoed messages as read
     const local_msg_1 = {locally_echoed: true, id: 1};
     const local_msg_2 = {locally_echoed: true, id: 2};
     msgs_to_flag_read = [
         local_msg_1,
         local_msg_2,
-        {locally_echoed: false, id: 3},
-        {locally_echoed: false, id: 4},
-        {locally_echoed: false, id: 5},
-        {locally_echoed: false, id: 6},
-        {locally_echoed: false, id: 7},
+        {locally_echoed: false, id: 3, unread: true},
+        {locally_echoed: false, id: 4, unread: true},
+        {locally_echoed: false, id: 5, unread: true},
+        {locally_echoed: false, id: 6, unread: true},
+        {locally_echoed: false, id: 7, unread: true},
     ];
     send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
@@ -219,16 +255,6 @@ run_test("read", ({override}) => {
         success: channel_post_opts.success,
     });
 
-    // Messages still not acked yet
-    const events = {};
-    const stub_delay = 100;
-    function set_timeout(f, delay) {
-        assert.equal(delay, stub_delay);
-        events.f = f;
-        events.timer_set = true;
-        return;
-    }
-    set_global("setTimeout", set_timeout);
     // Mock successful flagging of ids
     success_response_data = {
         messages: [3, 4, 5, 6, 7],
@@ -274,7 +300,7 @@ run_test("read_empty_data", ({override}) => {
     }
 
     // send read to obtain success callback
-    send_read({locally_echoed: false, id: 1});
+    send_read([{locally_echoed: false, id: 1, unread: true}]);
 
     // verify early return on empty data
     const success_callback = channel_post_opts.success;
