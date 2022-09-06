@@ -1,5 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
 {% set entrypoint = "register" %}
+
+{% block title %}
+<title>{{ _("Registration") }} | Zulip</title>
+{% endblock %}
+
 {#
 Gather other user information, after having confirmed
 their email address.

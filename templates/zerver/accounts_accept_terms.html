@@ -1,4 +1,9 @@
 {% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Accept the Terms of Service") }} | Zulip</title>
+{% endblock %}
+
 {#
 Allow the user to accept a TOS, creating an email record of that fact.
 Users only hit this page if they are coming from a migration or other update of the TOS;

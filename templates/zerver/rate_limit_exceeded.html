@@ -1,5 +1,9 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Rate limit exceeded") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="error_page">

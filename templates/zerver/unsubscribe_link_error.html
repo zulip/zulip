@@ -1,5 +1,9 @@
 {% extends "zerver/portico.html" %}
 
+{% block title %}
+<title>{{ _("Error unsubscribing email") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 
 <h1>{% trans %}Unknown email unsubscribe request{% endtrans %}</h1>
