@@ -2,6 +2,7 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
+import render_stream_icon_search from "../templates/stream_with_icon_in_search_result.hbs";
 
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -1024,7 +1025,20 @@ export class Filter {
             if (is(operators[0], "stream") && is(operators[1], "topic")) {
                 const stream = operators[0].operand;
                 const topic = operators[1].operand;
-                const part = "stream " + stream + " > " + topic;
+                const stream_sub = stream_data.get_sub(stream);
+
+                const rendered_stream_search_icon = render_stream_icon_search({
+                    is_web_public: stream_sub.is_web_public,
+                    color: stream_sub.color,
+                    invite_only: stream_sub.invite_only,
+                    name: stream,
+                });
+
+                const part =
+                    "stream" +
+                    rendered_stream_search_icon.trim() +
+                    Handlebars.Utils.escapeExpression(" > ") +
+                    topic;
                 parts = [part];
                 operators = operators.slice(2);
             }
@@ -1056,6 +1070,21 @@ export class Filter {
                 elem.negated,
             );
             if (prefix_for_operator !== "") {
+                const is_stream = canonicalized_operator === "stream";
+
+                if (is_stream) {
+                    const stream_sub = stream_data.get_sub_by_name(operand);
+                    if (stream_sub) {
+                        const rendered_stream_search_icon = render_stream_icon_search({
+                            is_web_public: stream_sub.is_web_public,
+                            color: stream_sub.color,
+                            invite_only: stream_sub.invite_only,
+                            name: operand,
+                        });
+                        return prefix_for_operator + rendered_stream_search_icon.trim();
+                    }
+                }
+
                 return prefix_for_operator + " " + operand;
             }
             return "unknown operator";
@@ -1064,7 +1093,10 @@ export class Filter {
     }
 
     static describe(operators) {
-        return Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
+        const is_stream = operators.some((elem) => elem.operator === "stream");
+        return is_stream
+            ? Filter.describe_unescaped(operators)
+            : Handlebars.Utils.escapeExpression(Filter.describe_unescaped(operators));
     }
 
     static is_spectator_compatible(ops) {

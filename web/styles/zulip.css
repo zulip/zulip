@@ -23,6 +23,10 @@ $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
 $right_sidebar_width: 250px;
 
+/* The width of the empty space in the sidebar to separate
+   content from the edge of the window */
+$far_left_gutter_size: 10px;
+
 body,
 html {
     width: 100%;
@@ -2195,6 +2199,48 @@ div.focused_table {
 .nav .dropdown-menu a,
 .typeahead.dropdown-menu a {
     color: inherit;
+}
+
+.subscription_block,
+.stream-icon-name-wrapper {
+    padding: 0;
+    margin-right: 25px;
+    margin-left: $far_left_gutter_size;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    &::after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+
+    .stream-name {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        width: 100%;
+        padding-right: 2px;
+    }
+
+    &.stream-with-count {
+        margin-right: 15px;
+    }
+
+    &:not(.subscription_block) {
+        margin-left: 4px;
+        margin-right: 0;
+        display: inline-flex;
+
+        .stream-privacy {
+            min-width: 16px;
+        }
+    }
 }
 
 .typeahead.dropdown-menu {

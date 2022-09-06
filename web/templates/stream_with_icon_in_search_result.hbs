@@ -1,0 +1,15 @@
+<div class="stream-icon-name-wrapper" tabindex="0">
+    <span class="stream-privacy" style="color: {{color}};">
+        {{> stream_privacy
+          invite_only=invite_only
+          is_web_public=is_web_public
+          }}
+    </span>
+    <span class="stream-name">
+        {{#if name}}
+        {{name}}
+        {{else}}
+        {{{rendered_stream_name}}}
+        {{/if}}
+    </span>
+</div>

@@ -1,5 +1,7 @@
 import Handlebars from "handlebars/runtime";
 
+import render_stream_icon_search from "../templates/stream_with_icon_in_search_result.hbs";
+
 import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -121,14 +123,27 @@ function get_stream_suggestions(last, operators) {
         const prefix = "stream";
         const highlighted_stream = highlight_query(regex, stream);
         const verb = last.negated ? "exclude " : "";
-        const description_html = verb + prefix + " " + highlighted_stream;
         const term = {
             operator: "stream",
             operand: stream,
             negated: last.negated,
         };
         const search_string = Filter.unparse([term]);
-        return {description_html, search_string};
+        const stream_sub = stream_data.get_sub(stream);
+
+        const rendered_stream_search_icon = render_stream_icon_search({
+            is_web_public: stream_sub.is_web_public,
+            color: stream_sub.color,
+            invite_only: stream_sub.invite_only,
+            rendered_stream_name: highlighted_stream,
+        });
+
+        const description_html = verb + prefix + rendered_stream_search_icon;
+
+        return {
+            description_html,
+            search_string,
+        };
     });
 
     return objs;

@@ -1101,7 +1101,7 @@ test("unparse", () => {
     assert.deepEqual(Filter.unparse(operators), string);
 });
 
-test("describe", () => {
+test("describe", ({mock_template}) => {
     let narrow;
     let string;
 
@@ -1113,11 +1113,38 @@ test("describe", () => {
     string = "exclude streams public";
     assert.equal(Filter.describe(narrow), string);
 
+    stream_data.add_sub({
+        stream_id: 88,
+        name: "devel",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data, html) => {
+        assert.deepEqual(data, {
+            color: "red",
+            invite_only: true,
+            is_web_public: false,
+            name: "devel",
+        });
+        return html;
+    });
+    const stream_icon_html = `<div class="stream-icon-name-wrapper" tabindex="0">
+    <span class="stream-privacy" style="color: red;">
+        <i class="fa fa-lock" aria-hidden="true"></i>
+    </span>
+    <span class="stream-name">
+        devel
+    </span>
+</div>`;
+
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred"},
     ];
-    string = "stream devel, starred messages";
+    string = `stream${stream_icon_html}, starred messages`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1131,7 +1158,7 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS"},
     ];
-    string = "stream devel &gt; JS";
+    string = `stream${stream_icon_html} &gt; JS`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1170,7 +1197,7 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS", negated: true},
     ];
-    string = "stream devel, exclude topic JS";
+    string = `stream${stream_icon_html}, exclude topic JS`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1184,28 +1211,28 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred", negated: true},
     ];
-    string = "stream devel, exclude starred messages";
+    string = `stream${stream_icon_html}, exclude starred messages`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "stream devel, exclude messages with one or more image";
+    string = `stream${stream_icon_html}, exclude messages with one or more image`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "stream", operand: "devel"},
     ];
-    string = "invalid abc operand for has operator, stream devel";
+    string = `invalid abc operand for has operator, stream${stream_icon_html}`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "stream", operand: "devel"},
     ];
-    string = "exclude messages with one or more image, stream devel";
+    string = `exclude messages with one or more image, stream${stream_icon_html}`;
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [];

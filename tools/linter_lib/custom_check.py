@@ -206,6 +206,9 @@ js_rules = RuleList(
             "description": "Avoid using the `style=` attribute; we prefer styling in CSS files",
             "exclude": {
                 "web/tests/copy_and_paste.test.js",
+                "web/tests/filter.test.js",
+                "web/tests/search_suggestion_future.test.js",
+                "web/tests/search_suggestion_now.test.js",
             },
             "good_lines": ["#my-style {color: blue;}", "const style =", 'some_style = "test"'],
             "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],

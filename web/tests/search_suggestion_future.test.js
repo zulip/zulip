@@ -358,11 +358,29 @@ test("group_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("empty_query_suggestions", () => {
+test("empty_query_suggestions", ({mock_template}) => {
     const query = "";
 
-    stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    stream_data.add_sub({
+        stream_id: 44,
+        name: "devel",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+    stream_data.add_sub({
+        stream_id: 77,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "blue",
+        invite_only: true,
+    });
+
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data) => {
+        assert.ok(["red", "blue"].includes(data.color));
+    });
 
     const suggestions = get_suggestions("", query);
 
@@ -457,10 +475,28 @@ test("has_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("check_is_suggestions", ({override}) => {
+test("check_is_suggestions", ({override, mock_template}) => {
     let query = "i";
-    stream_data.add_sub({stream_id: 44, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    stream_data.add_sub({
+        stream_id: 44,
+        name: "devel",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+    stream_data.add_sub({
+        stream_id: 77,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "blue",
+        invite_only: true,
+    });
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data) => {
+        assert.ok(["red", "blue"].includes(data.color));
+    });
+
     override(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
@@ -659,20 +695,49 @@ test("sent_by_me_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("topic_suggestions", ({override}) => {
+test("topic_suggestions", ({override, mock_template}) => {
     let suggestions;
     let expected;
 
     override(stream_topic_history_util, "get_server_history", () => {});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+
     override(narrow_state, "stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
-    stream_data.add_sub({stream_id: devel_id, name: "devel", subscribed: true});
-    stream_data.add_sub({stream_id: office_id, name: "office", subscribed: true});
+    stream_data.add_sub({
+        stream_id: devel_id,
+        name: "devel",
+        subscribed: true,
+
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+    stream_data.add_sub({
+        stream_id: office_id,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data, html) => {
+        if (data.name) {
+            assert.equal("office", data.name);
+        } else {
+            assert.equal("<strong>office</strong>", data.rendered_stream_name);
+        }
+        assert.equal(data.color, "red");
+        assert.equal(data.is_web_public, false);
+        assert.equal(data.invite_only, true);
+
+        return html;
+    });
 
     suggestions = get_suggestions("", "te");
+
     expected = [
         "te",
         "sender:ted@zulip.com",
@@ -708,7 +773,15 @@ test("topic_suggestions", ({override}) => {
         return suggestions.lookup_table.get(q).description_html;
     }
     assert.equal(describe("te"), "Search for te");
-    assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
+    const stream_icon_html = `<div class="stream-icon-name-wrapper" tabindex="0">
+    <span class="stream-privacy" style="color: red;">
+        <i class="fa fa-lock" aria-hidden="true"></i>
+    </span>
+    <span class="stream-name">
+        office
+    </span>
+</div>`;
+    assert.equal(describe("stream:office topic:team"), `Stream${stream_icon_html} &gt; team`);
 
     suggestions = get_suggestions("topic:staplers", "stream:office");
     expected = ["stream:office"];
@@ -782,11 +855,30 @@ test("topic_suggestions (limits)", () => {
     assert_result("z", []);
 });
 
-test("whitespace_glitch", ({override}) => {
+test("whitespace_glitch", ({override, mock_template}) => {
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data, html) => {
+        if (data.name) {
+            assert.equal("office", data.name);
+        } else {
+            assert.equal("<strong>office</strong>", data.rendered_stream_name);
+        }
+        assert.equal(data.color, "red");
+        assert.equal(data.is_web_public, false);
+        assert.equal(data.invite_only, true);
+
+        return html;
+    });
     const query = "stream:office "; // note trailing space
 
     override(stream_topic_history_util, "get_server_history", () => {});
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
+    stream_data.add_sub({
+        stream_id: 77,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
 
     const suggestions = get_suggestions("", query);
 
@@ -795,9 +887,34 @@ test("whitespace_glitch", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("stream_completion", ({override}) => {
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
+test("stream_completion", ({override, mock_template}) => {
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data) => {
+        assert.ok(
+            ["dev <strong>hel</strong>p", "<strong>of</strong>fice"].includes(
+                data.rendered_stream_name,
+            ),
+        );
+
+        assert.equal(data.color, "red");
+        assert.equal(data.is_web_public, false);
+        assert.equal(data.invite_only, true);
+    });
+    stream_data.add_sub({
+        stream_id: 77,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+    stream_data.add_sub({
+        stream_id: 88,
+        name: "dev help",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
 
     override(narrow_state, "stream", () => {});
 
@@ -955,9 +1072,36 @@ test("operator_suggestions", ({override}) => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-test("queries_with_spaces", () => {
-    stream_data.add_sub({stream_id: 77, name: "office", subscribed: true});
-    stream_data.add_sub({stream_id: 88, name: "dev help", subscribed: true});
+test("queries_with_spaces", ({mock_template}) => {
+    mock_template("stream_with_icon_in_search_result.hbs", true, (data) => {
+        assert.ok(
+            [
+                "<strong>dev he</strong>lp",
+                "<strong>dev h</strong>elp",
+                "<strong>offi</strong>ce",
+            ].includes(data.rendered_stream_name),
+        );
+
+        assert.equal(data.color, "red");
+        assert.equal(data.is_web_public, false);
+        assert.equal(data.invite_only, true);
+    });
+    stream_data.add_sub({
+        stream_id: 77,
+        name: "office",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
+    stream_data.add_sub({
+        stream_id: 88,
+        name: "dev help",
+        subscribed: true,
+        is_web_public: false,
+        color: "red",
+        invite_only: true,
+    });
 
     // test allowing spaces with quotes surrounding operand
     let query = 'stream:"dev he"';
