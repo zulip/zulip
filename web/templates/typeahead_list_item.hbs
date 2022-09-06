@@ -17,6 +17,14 @@
 {{else if is_user_group}}
     <i class="typeahead-image icon fa fa-group no-presence-circle" aria-hidden="true"></i>
 {{/if}}
+{{#if is_stream}}
+    <span class="stream-privacy" style="color: {{color}};">
+        {{> stream_privacy
+          invite_only=invite_only
+          is_web_public=is_web_public
+          }}
+    </span>
+{{/if}}
 <strong>
     {{~ primary ~}}
 </strong>

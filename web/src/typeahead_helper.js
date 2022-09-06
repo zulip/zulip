@@ -126,6 +126,10 @@ export function render_stream(stream) {
         primary: stream.name,
         secondary: desc,
         is_unsubscribed: !stream.subscribed,
+        invite_only: stream.invite_only,
+        is_web_public: stream.is_web_public,
+        color: stream.color,
+        is_stream: true,
     });
 }
 
