@@ -1122,40 +1122,39 @@ td.pointer {
     line-height: 14px;
     position: relative;
     z-index: 0;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid hsl(0, 0%, 84%);
+    box-shadow: 0 0.5px 0 hsl(0, 0%, 90%);
+    background: hsl(0, 0%, 100%);
 }
 
 .message_list {
     .recipient_row {
-        border-bottom: 1px solid hsl(0, 0%, 88%);
         margin-bottom: 10px;
+
+        .message_row:last-child {
+            border-bottom: 1px solid hsl(0, 0%, 84%);
+
+            &,
+            .messagebox {
+                border-radius: 0 0 5px 5px;
+            }
+        }
     }
 }
 
 .floating_recipient {
-    .recipient_row {
-        border-top: 1px solid hsl(0, 0%, 88%);
-    }
-
     .recipient_row_date.hide-date {
         display: block;
-    }
-
-    .message_header_private_message {
-        border-bottom: 0;
-        border-left: 0;
     }
 }
 
 .stream_label {
     display: inline-block;
-    padding: 4px 6px 3px;
-    font-weight: normal;
+    padding: 4px 1px 3px 6px;
+    font-weight: 600;
     height: 17px;
     line-height: 17px;
-    border-color: hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0) hsla(0, 0%, 0%, 0)
-        hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
-    border-width: 0;
     position: relative;
     text-decoration: none;
 
@@ -1172,27 +1171,11 @@ td.pointer {
     &:hover {
         text-decoration: none;
     }
-
-    &::after {
-        left: 100%;
-        top: 50%;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-        margin-top: -11px;
-        border-style: solid;
-        border-width: 11px 0 11px 5px;
-        border-color: inherit;
-        z-index: 2;
-        transform: scale(0.9999);
-    }
 }
 
 .stream_topic {
     display: inline-block;
-    padding: 3px 3px 2px 9px;
+    padding: 3px 5px 2px 1px;
     height: 17px;
     line-height: 17px;
     overflow: hidden;
@@ -1286,22 +1269,32 @@ td.pointer {
 }
 
 .message_header_private_message {
+    background-color: hsl(45, 33%, 93%);
+
     .message_label_clickable {
-        background-color: hsl(0, 0%, 27%);
+        color: hsl(0, 0%, 15%);
+        border-radius: 5px 5px 0 0;
         display: inline-block;
         padding: 3px 6px 2px;
-        font-weight: normal;
+        font-weight: 600;
         height: 17px;
         line-height: 17px;
-        border-left-color: hsl(0, 0%, 27%);
     }
 
     /* Base color backgrounds for message boxes,
        private messages, mentions, and unread messages */
 
     .message-header-contents {
-        background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 1px 1px 0 hsl(0, 0%, 88%);
+        box-shadow: 0 1px 0 hsl(0, 0%, 84%);
+    }
+
+    .recipient_row_date {
+        color: hsl(0, 0%, 15%);
+        font-variant: all-small-caps;
+        text-align: right;
+        font-size: 15px;
+        line-height: 18px;
+        font-weight: 400;
     }
 }
 
@@ -1312,8 +1305,7 @@ td.pointer {
 
     .messagebox,
     .date_row {
-        background-color: hsla(192, 19%, 75%, 0.2);
-        box-shadow: inset 2px 0 0 0 hsl(0, 0%, 27%), -1px 0 0 0 hsl(0, 0%, 27%);
+        background-color: hsl(45, 20%, 96%);
     }
 }
 
@@ -1321,8 +1313,22 @@ td.pointer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-right: 1px solid hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
+
+    a.message_label_clickable {
+        color: hsl(0, 0%, 15%);
+    }
+
+    .stream_topic_separator {
+        /* To align it in center */
+        line-height: 0;
+        color: hsla(0, 0%, 0%, 0.3);
+    }
+
+    .private_message_header_icon {
+        position: relative;
+        top: 1px;
+        padding-right: 2px;
+    }
 }
 
 .mention .messagebox {
@@ -1451,18 +1457,6 @@ td.pointer {
     visibility: visible;
 }
 
-/* Brighten text because of the dark background */
-.dark_background a,
-.dark_background a:hover,
-a.dark_background:hover,
-.dark_background {
-    color: hsl(0, 0%, 100%) !important;
-}
-
-.dark_background a.message_label_clickable:hover {
-    color: hsl(200, 99%, 60%);
-}
-
 .message_top_line {
     position: relative;
 }
@@ -1487,12 +1481,16 @@ div.message_table {
     margin-left: auto;
     display: none;
     width: 100%;
+
+    .message_row {
+        background: hsl(0, 0%, 100%);
+    }
 }
 
 .message_row {
     position: relative;
-    border-left: 1px solid hsla(0, 0%, 0%, 0.1);
-    border-right: 1px solid hsla(0, 0%, 0%, 0.1);
+    border-left: 1px solid hsl(0, 0%, 84%);
+    border-right: 1px solid hsl(0, 0%, 84%);
 
     &.selected_message {
         z-index: 2;
@@ -2547,8 +2545,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 .date_row {
-    padding-left: 2px;
-
     .date-direction {
         display: inline-block;
         padding-right: 5px;
@@ -2558,8 +2554,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
         display: inline-block;
         vertical-align: middle;
         width: 33%;
-        border-top: 1px solid hsl(0, 0%, 88%);
-        border-bottom: 1px solid hsl(0, 0%, 100%);
+        border-top: 1px solid hsl(0, 0%, 80%);
+        border-bottom: 0;
         margin: 0 5px;
     }
 }
@@ -2593,8 +2589,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
     width: 50%;
     height: 0;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
+    border-top: 1px solid hsl(0, 0%, 80%);
+    border-bottom: 0;
 }
 
 .sub-unsub-message span::before,

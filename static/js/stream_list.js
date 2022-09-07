@@ -7,7 +7,6 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as blueslip from "./blueslip";
-import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -309,7 +308,6 @@ function build_stream_sidebar_li(sub) {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
     };
-    args.dark_background = color_class.get_css_class(args.color);
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
 }
@@ -369,12 +367,10 @@ export function redraw_stream_privacy(sub) {
     }
 
     const $div = $li.find(".stream-privacy");
-    const dark_background = color_class.get_css_class(sub.color);
 
     const args = {
         invite_only: sub.invite_only,
         is_web_public: sub.is_web_public,
-        dark_background,
     };
 
     const html = render_stream_privacy(args);

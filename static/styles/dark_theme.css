@@ -181,6 +181,21 @@ body.dark-theme {
         color: hsl(212, 28%, 18%);
     }
 
+    .message_header .stream_label,
+    .stream_topic .message_label_clickable {
+        color: hsl(0, 0%, 100%);
+    }
+
+    .message-header-contents .stream_topic_separator {
+        color: hsl(0, 0%, 100%, 0.3);
+    }
+
+    .stream_topic:hover {
+        .message_label_clickable {
+            color: hsl(0, 0%, 100%);
+        }
+    }
+
     .new-style label.checkbox input[type="checkbox"] ~ span {
         border-color: hsla(0, 0%, 100%, 0.4);
     }
@@ -204,9 +219,6 @@ body.dark-theme {
         color: inherit;
     }
 
-    .dark_background a,
-    a.dark_background:hover,
-    .dark_background,
     .message_reactions .message_reaction_count,
     .message_reactions .reaction_button i,
     .message_reactions:hover .message_reaction + .reaction_button {
@@ -224,10 +236,7 @@ body.dark-theme {
         background-color: hsl(208, 17%, 29%);
     }
 
-    /* do not turn the .message_header .stream_label text dark on hover because they're
-       on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background)
-        a.stream_label:not(.dark_background):hover {
+    .message_header a.stream_label:hover {
         color: hsl(212, 28%, 18%);
     }
 
@@ -378,8 +387,77 @@ body.dark-theme {
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
-    .message-header-contents,
-    .message_header_private_message .message-header-contents {
+    .floating_recipient {
+        background-color: transparent;
+
+        .message_header {
+            border: 1px solid hsla(0, 0%, 0%, 0.3);
+            box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.3);
+            border-radius: 5px 5px 0px 0px;
+        }
+    }
+
+    .message_table .message_row {
+        background-color: hsl(0, 0%, 11%);
+        border-left: 1px solid hsla(0, 0%, 0%, 0.3);
+        border-right: 1px solid hsla(0, 0%, 0%, 0.3);
+
+        .messagebox,
+        .date_row {
+            background-color: hsl(0, 0%, 14%);
+        }
+    }
+
+    .message_table .private-message {
+        .alert-msg {
+            background-color: hsl(208, 17%, 29%);
+        }
+
+        .messagebox,
+        .date_row {
+            background-color: hsla(46, 25%, 14%, 1);
+        }
+    }
+
+    .message_row.private-message {
+        background-color: hsl(0, 0%, 11%);
+    }
+
+    .message_list .recipient_row .message_row:last-child {
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.3);
+
+        .messagebox {
+            border-radius: 0 0 5px 5px;
+        }
+    }
+
+    .messagebox {
+        .sender_name {
+            color: hsl(0, 0%, 100%, 0.9);
+            font-weight: 600;
+        }
+
+        .message_content {
+            color: hsl(0, 0%, 100%, 0.75);
+        }
+    }
+
+    .message_header {
+        background-color: hsl(0, 0%, 14%);
+        border-color: hsla(0, 0%, 0%, 0.3);
+        box-shadow: 0 0.5px 0 hsla(0, 0%, 0%, 0.3);
+    }
+
+    .message_header_private_message {
+        .message-header-contents,
+        .message_label_clickable,
+        .recipient_row_date {
+            background-color: hsla(46, 25%, 20%, 1);
+            color: hsl(0, 0%, 100%);
+        }
+    }
+
+    .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: transparent;
     }
@@ -911,7 +989,6 @@ body.dark-theme {
     }
 
     .upgrade-tip,
-    .upgrade-or-sponsorship-tip,
     .tip {
         color: inherit;
         background-color: hsla(46, 28%, 38%, 0.27);

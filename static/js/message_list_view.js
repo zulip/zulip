@@ -1,6 +1,7 @@
 import {isSameDay} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
+import chroma from "chroma-js";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_bookend from "../templates/bookend.hbs";
@@ -9,9 +10,9 @@ import render_message_group from "../templates/message_group.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
+import *  as settings_data from "./settings_data";
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
-import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
@@ -188,13 +189,31 @@ function set_topic_edit_properties(group, message) {
     }
 }
 
+function correctStreamColor(color) {
+    const color_l = chroma(color).get("lch.l");
+    const min_color_l = 20;
+    const max_color_l = 75;
+    if (color_l < min_color_l) {
+        return chroma(color).set("lch.l", min_color_l).hex();
+    } else if (color_l > max_color_l) {
+        return chroma(color).set("lch.l", max_color_l).hex();
+    } 
+    return color;
+}
+
+function getRecipientBarColor(color) {
+    const using_dark_theme = settings_data.using_dark_theme();
+    return chroma.mix(color, using_dark_theme ? "black" : "white", 0.8, "rgb").hex();
+}
+
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
 
     if (group.is_stream) {
-        group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = color_class.get_css_class(group.background_color);
+        const stream_color = stream_data.get_color(message_container.msg.stream)
+        group.recipient_bar_color = getRecipientBarColor(stream_color);
+        group.stream_privacy_icon_color = correctStreamColor(stream_color)
         group.invite_only = stream_data.is_invite_only_by_stream_name(message_container.msg.stream);
         group.is_web_public = stream_data.is_web_public(message_container.msg.stream_id);
         group.topic = message_container.msg.topic;
