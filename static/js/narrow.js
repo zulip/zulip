@@ -488,8 +488,7 @@ export function activate(raw_operators, opts) {
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
-    message_list.set_narrowed(msg_list);
-    message_lists.set_current(message_list.narrowed);
+    message_lists.set_current(msg_list);
 
     let then_select_offset;
     if (id_info.target_id === id_info.final_select_id) {

@@ -55,9 +55,9 @@ function process_result(data, opts) {
     }
 
     if (
-        opts.msg_list === message_list.narrowed &&
-        message_lists.current === message_list.narrowed &&
-        message_list.narrowed.empty()
+        opts.msg_list === message_lists.current &&
+        opts.msg_list.narrowed &&
+        opts.msg_list.empty()
     ) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
