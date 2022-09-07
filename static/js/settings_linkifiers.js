@@ -1,9 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_delete_linkifier from "../templates/confirm_dialog/confirm_delete_linkifier.hbs";
 import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -181,14 +183,15 @@ export function build_page() {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
+        const html_body = render_confirm_delete_linkifier();
+        const url = "/json/realm/filters/" + encodeURIComponent($btn.attr("data-linkifier-id"));
 
-        channel.del({
-            url: "/json/realm/filters/" + encodeURIComponent($btn.attr("data-linkifier-id")),
-            error(xhr) {
-                ui_report.generic_row_button_error(xhr, $btn);
-            },
-            // There is no need for an on-success action here since the row is removed by
-            // the `realm_linkifiers` event handler which builds the linkifier list again.
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Delete linkifier?"}),
+            html_body,
+            id: "confirm_delete_linkifiers_modal",
+            on_click: () => dialog_widget.submit_api_request(channel.del, url),
+            loading_spinner: true,
         });
     });
 
