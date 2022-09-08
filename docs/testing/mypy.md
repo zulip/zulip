@@ -38,11 +38,7 @@ CI testing process in the `backend` build.
 
 ## Installing mypy
 
-mypy is installed by default in the Zulip development environment. If
-you'd like to install just the version of `mypy` that we're using
-(useful if e.g. you want `mypy` installed on your laptop outside the
-Vagrant guest), you can do that with
-`pip install -r requirements/mypy.txt`.
+mypy is installed by default in the Zulip development environment.
 
 ## Running mypy on Zulip's code locally
 

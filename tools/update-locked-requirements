@@ -50,7 +50,7 @@ if [ $# -gt 0 ]; then
 fi
 
 compile_requirements requirements/dev.in "$OUTPUT_BASE_DIR/dev.txt"
-for name in pip prod mypy docs; do
+for name in pip prod docs; do
     cp "$OUTPUT_BASE_DIR/dev.txt" "$OUTPUT_BASE_DIR/$name.txt"
     compile_requirements "requirements/$name.in" "$OUTPUT_BASE_DIR/$name.txt"
 done
