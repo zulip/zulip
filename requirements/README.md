@@ -5,10 +5,10 @@ dev +-> prod +-> common
 +
 |
 v
-mypy,docs,pip
+docs,pip
 ```
 
-Of the files, only dev, prod, and mypy have been used in the install
+Of the files, only dev and prod have been used in the install
 scripts directly. The rest are implicit dependencies.
 
 Steps to update a lock file, e.g. to update ipython from 5.3.0 to latest version:

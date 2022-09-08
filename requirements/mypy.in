@@ -1,6 +1,5 @@
 # After editing this file, you MUST afterward run
-# /tools/update-locked-requirements to update requirements/dev.txt
-# and requirements/mypy.txt.
+# /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
 mypy
 
