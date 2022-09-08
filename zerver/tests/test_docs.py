@@ -11,7 +11,7 @@ from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import INTEGRATIONS
+from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, META_CATEGORY
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.models import Realm, get_realm
@@ -235,25 +235,33 @@ class DocPageTest(ZulipTestCase):
         self.assertEqual(result.status_code, 404)
 
     def test_integration_pages_open_graph_metadata(self) -> None:
+        og_description = '<meta property="og:description" content="Zulip comes with over'
+
+        # Test a particular integration page
         url = "/integrations/doc/github"
-        title = '<meta property="og:title" content="Connect GitHub to Zulip" />'
+        title = '<meta property="og:title" content="GitHub | Zulip integrations" />'
         description = '<meta property="og:description" content="Zulip comes with over'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
         # Test category pages
-        url = "/integrations/communication"
-        title = '<meta property="og:title" content="Connect your Communication tools to Zulip" />'
-        description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, title, doc_html_str=True)
-        self._test(url, description, doc_html_str=True)
+        for category in CATEGORIES.keys():
+            url = f"/integrations/{category}"
+            if category in META_CATEGORY.keys():
+                title = f"<title>{CATEGORIES[category]} | Zulip integrations</title>"
+                og_title = f'<meta property="og:title" content="{CATEGORIES[category]} | Zulip integrations" />'
+            else:
+                title = f"<title>{CATEGORIES[category]} tools | Zulip integrations</title>"
+                og_title = f'<meta property="og:title" content="{CATEGORIES[category]} tools | Zulip integrations" />'
+            self._test(url, title)
+            self._test(url, og_title, doc_html_str=True)
+            self._test(url, og_description, doc_html_str=True)
 
-        # Test integrations page
+        # Test integrations index page
         url = "/integrations/"
-        title = '<meta property="og:title" content="Connect the tools you use to Zulip" />'
-        description = '<meta property="og:description" content="Zulip comes with over'
-        self._test(url, title, doc_html_str=True)
-        self._test(url, description, doc_html_str=True)
+        og_title = '<meta property="og:title" content="Zulip integrations" />'
+        self._test(url, og_title, doc_html_str=True)
+        self._test(url, og_description, doc_html_str=True)
 
     def test_doc_html_str_non_ajax_call(self) -> None:
         # We don't need to test all the pages for 404
