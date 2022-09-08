@@ -12,7 +12,13 @@ from django.views.generic import TemplateView
 
 from zerver.context_processors import zulip_default_context
 from zerver.decorator import add_google_analytics_context
-from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, WebhookIntegration
+from zerver.lib.integrations import (
+    CATEGORIES,
+    INTEGRATIONS,
+    META_CATEGORY,
+    HubotIntegration,
+    WebhookIntegration,
+)
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
@@ -164,7 +170,7 @@ class MarkdownDirectoryView(ApiURLView):
             context["doc_root_title"] = "Help center"
             sidebar_article = self.get_path("include/sidebar_index")
             sidebar_index = sidebar_article.article_path
-            title_base = "Zulip Help Center"
+            title_base = "Zulip help center"
         elif self.path_template == f"{settings.POLICIES_DIRECTORY}/%s.md":
             context["page_is_policy_center"] = True
             context["doc_root"] = "/policies/"
@@ -205,7 +211,7 @@ class MarkdownDirectoryView(ApiURLView):
                 article_title = first_line.lstrip("#").strip()
                 endpoint_name = endpoint_method = None
             if context["not_index_page"]:
-                context["PAGE_TITLE"] = f"{article_title} ({title_base})"
+                context["PAGE_TITLE"] = f"{article_title} | {title_base}"
             else:
                 context["PAGE_TITLE"] = title_base
             request_notes = RequestNotes.get_notes(self.request)
@@ -264,16 +270,19 @@ def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRe
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context["PAGE_TITLE"] = f"Connect {integration.display_name} to Zulip"
+        context["PAGE_TITLE"] = f"{integration.display_name} | Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context["PAGE_TITLE"] = f"Connect your {category} tools to Zulip"
+        if path_name in META_CATEGORY:
+            context["PAGE_TITLE"] = f"{category} | Zulip integrations"
+        else:
+            context["PAGE_TITLE"] = f"{category} tools | Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":
-        context["PAGE_TITLE"] = "Connect the tools you use to Zulip"
+        context["PAGE_TITLE"] = "Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
 
