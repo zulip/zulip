@@ -2,4 +2,4 @@
 {{ integration_display_name }}. Make sure that you select
 **Incoming webhook** as the **Bot type**:
 
-![](/static/images/integrations/bot_types.png)
+![](/static/images/integrations/bot_types_incoming_webhook.png)

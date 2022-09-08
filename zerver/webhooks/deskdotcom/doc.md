@@ -3,8 +3,7 @@
     Keep in mind you still need to create the stream first even
     if you are using this recommendation.
 
-1.  Next, on your {{ settings_html|safe }}, create a bot and
-    note its email and API key.
+1.  {!create-an-incoming-webhook.md!}
 
 1.  Next, in Desk.com, open your **Admin** view via the top-left
     dropdown. In the **Admin** view, click on **Apps**, then
