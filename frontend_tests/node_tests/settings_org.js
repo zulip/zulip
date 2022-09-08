@@ -531,11 +531,39 @@ test("set_up", ({override, override_rewire}) => {
         update: noop,
     }));
     $("#id_realm_message_content_edit_limit_minutes").set_parent(
-        $.create("<stub edit limit parent>"),
+        $.create("<stub edit limit custom input parent>"),
     );
     $("#id_realm_message_content_delete_limit_minutes").set_parent(
-        $.create("<stub delete limit parent>"),
+        $.create("<stub delete limit custom input parent>"),
     );
+    const $stub_message_content_edit_limit_parent = $.create(
+        "<stub message_content_edit_limit parent",
+    );
+    $("#id_realm_message_content_edit_limit_seconds").set_parent(
+        $stub_message_content_edit_limit_parent,
+    );
+
+    const $stub_message_content_delete_limit_parent = $.create(
+        "<stub message_content_delete_limit parent",
+    );
+    $("#id_realm_message_content_delete_limit_seconds").set_parent(
+        $stub_message_content_delete_limit_parent,
+    );
+
+    const $custom_edit_limit_input = $("#id_realm_message_content_edit_limit_minutes");
+    $stub_message_content_edit_limit_parent.set_find_results(
+        ".admin-realm-time-limit-input",
+        $custom_edit_limit_input,
+    );
+    $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
+
+    const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
+    $stub_message_content_delete_limit_parent.set_find_results(
+        ".admin-realm-time-limit-input",
+        $custom_delete_limit_input,
+    );
+    $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
+
     $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
