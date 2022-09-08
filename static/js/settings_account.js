@@ -719,8 +719,7 @@ export function set_up() {
     });
 
     $("#show_my_user_profile_modal").on("click", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
+        overlays.close_overlay("settings");
 
         const user = people.get_by_user_id(people.my_current_user_id());
         user_profile.show_user_profile(user);
