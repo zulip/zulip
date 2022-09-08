@@ -1,4 +1,4 @@
-{!create-a-bot.md!}
+{!create-an-incoming-webhook.md!}
 
 Construct the URL for the {{ integration_display_name }}
 bot using the bot's API key and the desired stream name:
