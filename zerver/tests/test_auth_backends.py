@@ -3610,13 +3610,6 @@ class GitHubAuthBackendTest(SocialAuthBase):
             body=json.dumps(email_data),
         )
 
-        requests_mock.add(
-            requests_mock.GET,
-            "https://api.github.com/teams/zulip-webapp/members/None",
-            status=200,
-            body=json.dumps(email_data),
-        )
-
         self.email_data = email_data
 
     def get_account_data_dict(
@@ -3647,7 +3640,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             ],
         )
 
-    @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="zulip-webapp")
+    @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="51246")
     def test_social_auth_github_team_not_member_failed(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         subdomain = "zulip"
@@ -3669,7 +3662,7 @@ class GitHubAuthBackendTest(SocialAuthBase):
             ],
         )
 
-    @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="zulip-webapp")
+    @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID="51247")
     def test_social_auth_github_team_member_success(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         with mock.patch(
