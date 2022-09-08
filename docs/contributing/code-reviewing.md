@@ -200,7 +200,7 @@ If the PR makes any frontend changes, you should make sure to play with the part
 of the app being changed to validate that things look and work as expected.
 While not all of the situations below will apply, here are some ideas for things
 that should be tested if they are applicable. Use the [development
-environment][development-environment] to test any webapp changes.
+environment][development-environment] to test any web app changes.
 
 This might seem like a long process, but you can go through it quite quickly
 once you get the hang of it. Trust us, it will save time and review round-trips
@@ -265,7 +265,7 @@ Some scenarios to consider:
 - Try clicking on any interactive elements, multiple times, in a variety of orders.
 - If the feature affects the **message view**, try it out in different types of
   narrows: topic, stream, All messages, PMs.
-- If the feature affects the **compose box** in the webapp, try both ways of
+- If the feature affects the **compose box** in the web app, try both ways of
   [resizing the compose box](https://zulip.com/help/resize-the-compose-box).
   Test both stream messages and PMs.
 - If the feature might require **elevated permissions**, check it out as a user who has

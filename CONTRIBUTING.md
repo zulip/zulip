@@ -263,7 +263,7 @@ Your pull request will likely go through several stages of review.
    progress on the PR by getting more frequent feedback. A project maintainer
    may leave a comment asking someone with expertise in the area you're working
    on to review your work.
-5. Final code review and integration for server and webapp PRs is generally done
+5. Final code review and integration for server and web app PRs is generally done
    by `@timabbott`.
 
 #### How to help move the review process forward
