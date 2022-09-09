@@ -11,7 +11,6 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.validator import (
     WildValue,
-    check_anything,
     check_bool,
     check_int,
     check_none_or,
@@ -95,19 +94,17 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
 
     def update_string(blacklist: Sequence[str] = []) -> str:
         assert "previous_attributes" in payload["data"]
-        previous_attributes = {
-            key: value
-            for key, value in payload["data"]["previous_attributes"].items()
-            if key not in blacklist
-        }
+        previous_attributes = set(payload["data"]["previous_attributes"].keys()).difference(
+            blacklist
+        )
         if not previous_attributes:  # nocoverage
             raise SuppressedEvent()
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
             + " is now "
-            + stringify(object_[attribute].tame(check_anything))
-            for attribute in sorted(previous_attributes.keys())
+            + stringify(object_[attribute].value)
+            for attribute in sorted(previous_attributes)
         )
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
@@ -178,7 +175,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
                     body += "\nEmail: {}".format(object_["email"].tame(check_string))
                 if object_["metadata"]:  # nocoverage
                     for key, value in object_["metadata"].items():
-                        body += f"\n{key}: {value}"
+                        body += f"\n{key}: {value.tame(check_string)}"
         if resource == "discount":
             body = "Discount {verbed} ([{coupon_name}]({coupon_url})).".format(
                 verbed=event.replace("_", " "),
