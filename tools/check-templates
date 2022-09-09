@@ -42,7 +42,7 @@ def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: Lis
         exclude=EXCLUDED_FILES,
     )
 
-    check_handlebar_templates(by_lang["hbs"], fix)
+    check_handlebars_templates(by_lang["hbs"], fix)
     check_html_templates(by_lang["html"], all_dups, fix)
 
 
@@ -108,8 +108,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             sys.exit(1)
 
 
-def check_handlebar_templates(templates: Iterable[str], fix: bool) -> None:
-    # Check all our handlebars templates.
+def check_handlebars_templates(templates: Iterable[str], fix: bool) -> None:
+    # Check all our Handlebars templates.
     templates = [fn for fn in templates if fn.endswith(".hbs")]
 
     for fn in templates:
