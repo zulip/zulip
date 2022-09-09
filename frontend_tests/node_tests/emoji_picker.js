@@ -21,7 +21,7 @@ run_test("initialize", () => {
 
     const complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, "name");
     assert.equal(complete_emoji_catalog.length, 11);
-    assert.equal(emoji.emojis_by_name.size, 1052);
+    assert.equal(emoji.emojis_by_name.size, 1053);
 
     let total_emoji_in_categories = 0;
 

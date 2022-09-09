@@ -876,6 +876,7 @@ EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {
     "1f925": {"canonical_name": "lying", "aliases": []},
     "1f926": {"canonical_name": "face_palm", "aliases": []},
     "1f927": {"canonical_name": "sneezing", "aliases": []},
+    "1f929": {"canonical_name": "grinning_face_with_star_eyes", "aliases": ["star_struck"]},
     "1f930": {"canonical_name": "pregnant", "aliases": ["expecting"]},
     "1f933": {"canonical_name": "selfie", "aliases": []},
     "1f934": {"canonical_name": "prince", "aliases": []},
