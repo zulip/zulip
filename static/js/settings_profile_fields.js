@@ -313,8 +313,12 @@ function show_modal_for_deleting_options(field, deleted_values, update_profile_f
         field_name: field.name,
     });
 
+    let modal_heading_text = "Delete this option?";
+    if (Object.keys(deleted_values).length !== 1) {
+        modal_heading_text = "Delete these options?";
+    }
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete option"}),
+        html_heading: $t_html({defaultMessage: "{modal_heading_text}"}, {modal_heading_text}),
         html_body,
         on_click: update_profile_field,
     });
