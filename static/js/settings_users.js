@@ -601,12 +601,12 @@ export function show_edit_user_info_modal(user_id, $container) {
             .hide();
     }
 
-    const element = "#edit-user-form .custom-profile-field-form";
-    $(element).empty();
-    settings_account.append_custom_profile_fields(element, user_id);
-    settings_account.initialize_custom_date_type_fields(element);
+    const custom_profile_field_form = "#edit-user-form .custom-profile-field-form";
+    $(custom_profile_field_form).empty();
+    settings_account.append_custom_profile_fields(custom_profile_field_form, user_id);
+    settings_account.initialize_custom_date_type_fields(custom_profile_field_form);
     const fields_user_pills = settings_account.initialize_custom_user_type_fields(
-        element,
+        custom_profile_field_form,
         user_id,
         true,
         false,
