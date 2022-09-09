@@ -28,9 +28,8 @@ Mirror an IRC channel in Zulip!
 
 ### Configure the bridge
 
-1. In Zulip, [create a bot](/help/add-a-bot-or-integration), using **Generic bot**
-   for the bot type. Download the bot's `zuliprc` configuration file to your
-   computer.
+1. {!create-a-generic-bot.md!}
+   Download the bot's `zuliprc` configuration file to your computer.
 
 1. [Subscribe the bot](/help/add-or-remove-users-from-a-stream) to the Zulip
    stream that will contain the mirror.
