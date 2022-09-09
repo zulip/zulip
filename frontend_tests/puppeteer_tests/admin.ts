@@ -35,13 +35,19 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
         "rome",
     );
+    await page.waitForFunction(
+        () =>
+            $(
+                "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
+            ).val() === "rome",
+    );
 
-    const verona_in_dropdown = await page.waitForXPath(
+    const rome_in_dropdown = await page.waitForXPath(
         '//*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
         {visible: true},
     );
-    assert.ok(verona_in_dropdown);
-    await (verona_in_dropdown as ElementHandle<Element>).click();
+    assert.ok(rome_in_dropdown);
+    await (rome_in_dropdown as ElementHandle<Element>).click();
 
     await submit_notifications_stream_settings(page);
 
