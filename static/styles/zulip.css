@@ -668,6 +668,13 @@ strong {
             /* Setting a maximum height is just for aesthetics; the modal looks
                weird if its aspect ratio gets too stretched. */
             max-height: 480px;
+
+            /* For the notification bot error, we want to keep the modal clean and small.
+               The 16px padding is intended to match the padding at the top of the modal. */
+            &.compact {
+                min-height: unset;
+                padding-bottom: 16px;
+            }
         }
     }
 

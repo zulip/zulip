@@ -109,6 +109,8 @@ IGNORED_PHRASES = [
     # Use in compose box.
     r"to send",
     r"to add a new line",
+    # Used in showing Notification Bot read receipts message
+    "Notification Bot",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
