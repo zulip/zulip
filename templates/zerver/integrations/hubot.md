@@ -4,14 +4,14 @@
    which `bin/hubot` starts a vanilla Hubot instance with
    the shell backend.
 
-2. In your Hubot's directory, install the Zulip adapter. Run:
+1. In your Hubot's directory, install the Zulip adapter. Run:
    `npm install --save hubot-zulip`
 
-3. On your {{ settings_html|safe }}, create a bot account. Note
-   its username, API key and full name; you will use them on the
-   next step.
+1. {!create-a-generic-bot.md!}
+   Note its username, API key and full name; you will use them
+   on the next step.
 
-4. To run Hubot locally, first, set the following environment
+1. To run Hubot locally, first, set the following environment
    variables by running:
 
 ```
