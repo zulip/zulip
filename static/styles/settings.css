@@ -809,13 +809,6 @@ input[type="checkbox"] {
     margin-top: 5px;
 }
 
-#edit_bot_modal {
-    /* Ensure that the dropdown can overflow the modal. */
-    .modal__content {
-        overflow: visible;
-    }
-}
-
 .edit_bot_form {
     font-size: 100%;
     margin: 0;
