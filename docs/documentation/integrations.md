@@ -76,11 +76,19 @@ Here are a few common macros used to document Zulip's integrations:
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][github-integration].
 
+- `{!create-an-incoming-webhook.md!}` macro - Instructs users to create a bot
+  for a given integration and select **Incoming webhook** as the **Bot type**.
+  This macro is usually used right after `{!create-stream!}`. For an example
+  rendering, see **Step 2** of [the docs for Zulip's Zendesk integration][zendesk].
+
+- `{!create-a-generic-bot.md!}` macro - Instructs users to create a bot
+  for a given integration and select **Generic bot** as the **Bot type**. For an
+  example rendering, see [the docs for Zulip's Matrix integration][matrix].
+
 - `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
-  for a given integration and construct a webhook URL using the bot API key
-  and stream name. The URL is generated automatically for every incoming webhook
-  by using attributes in the `WebhookIntegration` class in
-  [zerver/lib/integrations.py][integrations-file].
+  for a given integration and select **Incoming webhook** as the **Bot type**.
+  The URL is generated automatically for every incoming webhook by using
+  attributes in the `WebhookIntegration` class in [zerver/lib/integrations.py][integrations-file].
   This macro is usually used right after `{!create-stream!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github-integration].
 
@@ -111,7 +119,7 @@ Here are a few common macros used to document Zulip's integrations:
   [API page](https://zulip.com/api/) to download and install Zulip's
   API bindings. This macro is usually used in non-webhook integration docs under
   `templates/zerver/integrations/<integration_name>.md`. For an example
-  rendering, see **Step 2** of
+  rendering, see **Step 3** of
   [the docs for Zulip's Codebase integration][codebase].
 
 - `{!change-zulip-config-file.md!}` macro - Instructs users to create a bot and
@@ -146,6 +154,8 @@ Here are a few common macros used to document Zulip's integrations:
   [the docs for Zulip's Front integration][front].
 
 [github-integration]: https://zulip.com/integrations/doc/github
+[zendesk]: https://zulip.com/integrations/doc/zendesk
+[matrix]: https://zulip.com/integrations/doc/matrix#configure-the-bridge
 [codebase]: https://zulip.com/integrations/doc/codebase
 [beanstalk]: https://zulip.com/integrations/doc/beanstalk
 [front]: https://zulip.com/integrations/doc/front
