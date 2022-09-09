@@ -5,6 +5,7 @@ export type RealmDefaultSettings = {
     desktop_icon_count_display: number;
     demote_inactive_streams: number;
     dense_mode: boolean;
+    display_emoji_reaction_users: boolean;
     email_notifications_batching_period_seconds: number;
     emojiset: string;
     enable_desktop_notifications: boolean;
@@ -32,7 +33,6 @@ export type RealmDefaultSettings = {
     realm_name_in_notifications: boolean;
     starred_message_counts: boolean;
     translate_emoticons: boolean;
-    display_emoji_reaction_users: boolean;
     twenty_four_hour_time: boolean;
     wildcard_mentions_notify: boolean;
 };
