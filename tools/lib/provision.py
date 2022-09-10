@@ -69,7 +69,7 @@ except OSError:
     )
     print("See this page for more information:")
     print(
-        "  https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html#os-symlink-error"
+        "  https://zulip.readthedocs.io/en/latest/development/setup-recommended.html#os-symlink-error"
     )
     sys.exit(1)
 

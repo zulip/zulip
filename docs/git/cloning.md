@@ -100,7 +100,7 @@ source projects in general, we recommend following our [detailed guide for
 first-time contributors][zulip-rtd-dev-first-time].
 
 If you are in the middle of installing the recommended setup on Windows 10,
-you are ready to [continue with step 8](../development/setup-vagrant.md#windows-10).
+you are ready to [continue with step 8](../development/setup-recommended.md#windows-10).
 
 ## Step 3: Configure continuous integration for your fork
 
@@ -138,6 +138,6 @@ You can check the `Actions` tab of your repository to see the builds.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [github-actions]: https://docs.github.com/en/actions
-[zulip-rtd-dev-first-time]: ../development/setup-vagrant.md
+[zulip-rtd-dev-first-time]: ../development/setup-recommended.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: zulip-tools.md#set-up-git-repo-script

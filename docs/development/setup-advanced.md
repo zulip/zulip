@@ -50,13 +50,13 @@ source /srv/zulip-py3-venv/bin/activate
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
-environment](setup-vagrant.md#step-4-developing),
+environment](setup-recommended.md#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing using Vagrant with VirtualBox on Windows 10
 
 :::{note}
-We recommend using [WSL 2 for Windows development](setup-vagrant.md#windows-10)
+We recommend using [WSL 2 for Windows development](setup-recommended.md#windows-10)
 because it is easier to set up and provides a substantially better experience.
 :::
 
@@ -101,7 +101,7 @@ $ git config core.symlinks
 true
 ```
 
-If you see `true`, you are ready for [Step 2: Get Zulip code](setup-vagrant.md#step-2-get-zulip-code).
+If you see `true`, you are ready for [Step 2: Get Zulip code](setup-recommended.md#step-2-get-zulip-code).
 
 Otherwise, if the above command prints `false` or nothing at all, then symlinks
 have not been enabled.
@@ -124,7 +124,7 @@ $ echo $CYGWIN
 winsymlinks:native
 ```
 
-Now you are ready for [Step 2: Get Zulip code](setup-vagrant.md#step-2-get-zulip-code).
+Now you are ready for [Step 2: Get Zulip code](setup-recommended.md#step-2-get-zulip-code).
 
 (Note: The **GitHub Desktop client** for Windows has a bug where it
 will automatically set `git config core.symlink false` on a repository

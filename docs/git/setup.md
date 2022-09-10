@@ -31,7 +31,7 @@ We also highly recommend the following:
   [Bash][gitbook-other-envs-bash] and [Zsh][gitbook-other-envs-zsh].
 
 If you are installing the Zulip development environment, now you are ready to
-continue with [Step 1: Install prerequisites](../development/setup-vagrant.md#step-1-install-prerequisites).
+continue with [Step 1: Install prerequisites](../development/setup-recommended.md#step-1-install-prerequisites).
 
 ## Get a graphical client
 
