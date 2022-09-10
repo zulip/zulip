@@ -1,19 +1,18 @@
 Run your favorite chatbot in Zulip!
 
-0. [Install errbot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html)
+1. [Install errbot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html)
    and follow to instructions to set up a `config.py`.
 
-0. Check out our [Errbot integration package for Zulip](https://github.com/zulip/errbot-backend-zulip).
+1. Check out our [Errbot integration package for Zulip](https://github.com/zulip/errbot-backend-zulip).
    Clone this repository somewhere convenient.
 
-0. Install the requirements listed in `errbot-backend-zulip/requirements.txt`.
+1. Install the requirements listed in `errbot-backend-zulip/requirements.txt`.
 
-0. Next, on your {{ settings_html|safe }}, [create a bot](/help/add-a-bot-or-integration) for
-   {{ integration_display_name }}. Make sure that you select **Generic bot** as the **Bot type**.
+1. {!create-a-generic-bot.md!}
 
-0. Download your Zulip bot's `zuliprc` config file. You will need its content for the next step.
+1. Download your Zulip bot's `zuliprc` config file. You will need its content for the next step.
 
-0. Edit your ErrBot's `config.py`. Use the following template for a minimal configuration:
+1. Edit your ErrBot's `config.py`. Use the following template for a minimal configuration:
 
         import logging
 
@@ -37,7 +36,7 @@ Run your favorite chatbot in Zulip!
 
     Sections you need to edit are marked with `<>`.
 
-7. [Start ErrBot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html#starting-the-daemon).
+1. [Start ErrBot](https://errbot.readthedocs.io/en/latest/user_guide/setup.html#starting-the-daemon).
 
 {!congrats.md!}
 

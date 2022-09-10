@@ -1,6 +1,6 @@
 Get Zulip notifications for your Git repositories!
 
-1. {!create-a-bot.md!}
+1. {!create-an-incoming-webhook.md!}
 
 1. {!download-python-bindings.md!}
 

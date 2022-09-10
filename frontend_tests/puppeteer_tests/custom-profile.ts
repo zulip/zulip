@@ -26,8 +26,8 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
     await page.click("#dialog_widget_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForXPath(
-        '//*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="Teams"]',
+    await page.waitForSelector(
+        'xpath///*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="Teams"]',
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
@@ -52,8 +52,8 @@ async function test_edit_profile_field(page: Page): Promise<void> {
     await page.click("#dialog_widget_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
-    await page.waitForXPath(
-        '//*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="team"]',
+    await page.waitForSelector(
+        'xpath///*[@id="admin_profile_fields_table"]//tr[last()]/td[normalize-space()="team"]',
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),

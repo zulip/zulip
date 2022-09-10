@@ -2,7 +2,7 @@ Zulip supports both SVN and Git notifications from Beanstalk.
 
 1. {!create-stream.md!}
 
-1. {!create-a-bot.md!}
+1. {!create-an-incoming-webhook.md!}
 
     {!webhook-url-with-bot-email.md!}
     {!git-append-branches.md!}

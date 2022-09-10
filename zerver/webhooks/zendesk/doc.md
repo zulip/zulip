@@ -1,6 +1,6 @@
 1.  {!create-stream.md!}
 
-1.  Next, on your {{ settings_html|safe }}, create a bot.
+1.  {!create-an-incoming-webhook.md!}
 
 1.  Construct a webhook URL like the following:
 

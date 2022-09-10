@@ -217,6 +217,9 @@ def json_change_settings(
     ),
     send_stream_typing_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    user_list_style: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
+    ),
 ) -> HttpResponse:
     if (
         default_language is not None

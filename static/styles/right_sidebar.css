@@ -130,6 +130,24 @@
     align-items: flex-start;
     justify-content: space-between;
 
+    .user-name-and-status-emoji {
+        display: flex;
+    }
+
+    .status-text {
+        display: block;
+        width: 170px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 0.75;
+        font-size: 90%;
+    }
+
+    span.status-text:not(:empty) {
+        margin-top: -3px;
+    }
+
     .unread_count {
         display: none;
         margin-top: 2.5px;

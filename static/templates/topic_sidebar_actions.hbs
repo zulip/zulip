@@ -11,14 +11,14 @@
     {{#unless topic_muted}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-bell-slash" aria-hidden="true"></i>
+            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
             {{t "Mute topic"}}
         </a>
     </li>
     {{else}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-bell" aria-hidden="true"></i>
+            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
             {{t "Unmute topic"}}
         </a>
     </li>

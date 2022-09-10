@@ -1,6 +1,6 @@
 1. {!create-stream.md!}
 
-1. {!create-a-bot.md!}
+1. {!create-an-incoming-webhook.md!}
 
 1. Install the "Zulip" plugin by going to
    **Manage Jenkins > Manage Plugins > Available**,

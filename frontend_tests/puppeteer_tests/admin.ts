@@ -42,12 +42,12 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
             ).val() === "rome",
     );
 
-    const rome_in_dropdown = await page.waitForXPath(
-        '//*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
+    const rome_in_dropdown = await page.waitForSelector(
+        'xpath///*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
         {visible: true},
     );
     assert.ok(rome_in_dropdown);
-    await (rome_in_dropdown as ElementHandle<Element>).click();
+    await rome_in_dropdown.click();
 
     await submit_notifications_stream_settings(page);
 
