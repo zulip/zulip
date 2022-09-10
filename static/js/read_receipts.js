@@ -5,7 +5,7 @@ import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
 
 import * as channel from "./channel";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as people from "./people";
@@ -37,13 +37,17 @@ export function show_user_list(message_id) {
                             $t({defaultMessage: "No one has read this message yet."}),
                         );
                     } else {
-                        $("#read_receipts_modal .read_receipts_info").text(
-                            $t(
+                        $("#read_receipts_modal .read_receipts_info").html(
+                            $t_html(
                                 {
                                     defaultMessage:
-                                        "{num_of_people, plural, one {This message has been read by {num_of_people} person:} other {This message has been read by {num_of_people} people:}}",
+                                        "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}",
                                 },
-                                {num_of_people: users.length},
+                                {
+                                    num_of_people: users.length,
+                                    "z-link": (content_html) =>
+                                        `<a href="/help/read-receipts">${content_html}</a>`,
+                                },
                             ),
                         );
                         $("#read_receipts_modal .modal__container").addClass(
