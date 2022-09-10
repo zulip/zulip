@@ -177,8 +177,8 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
-    await page.waitForXPath(
-        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+    await page.waitForSelector(
+        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);
@@ -221,8 +221,8 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         cancel_button_selector,
     );
     await page.click(cancel_button_selector);
-    await page.waitForXPath(
-        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+    await page.waitForSelector(
+        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);

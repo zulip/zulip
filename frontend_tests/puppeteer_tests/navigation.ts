@@ -108,8 +108,8 @@ async function navigation_tests(page: Page): Promise<void> {
     await test_reload_hash(page);
 
     // Verify that we're narrowed to the target stream
-    await page.waitForXPath(
-        '//*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
+    await page.waitForSelector(
+        'xpath///*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
     );
 }
 

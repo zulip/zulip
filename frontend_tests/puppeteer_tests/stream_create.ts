@@ -78,7 +78,7 @@ async function test_user_filter_ui(page: Page): Promise<void> {
 }
 
 async function create_stream(page: Page): Promise<void> {
-    await page.waitForXPath('//*[text()="Create stream"]', {visible: true});
+    await page.waitForSelector('xpath///*[text()="Create stream"]', {visible: true});
     await common.fill_form(page, "form#stream_creation_form", {
         stream_name: "Puppeteer",
         stream_description: "Everything Puppeteer",

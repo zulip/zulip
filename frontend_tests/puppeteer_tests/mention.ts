@@ -29,8 +29,8 @@ async function test_mention(page: Page): Promise<void> {
     assert.ok(stream_size > threshold);
     await page.click("#compose-send-button");
 
-    await page.waitForXPath(
-        '//*[@class="compose-all-everyone-msg" and contains(text(), "Are you sure you want to mention all")]',
+    await page.waitForSelector(
+        'xpath///*[@class="compose-all-everyone-msg" and contains(text(), "Are you sure you want to mention all")]',
     );
     await page.click(".compose-all-everyone-confirm");
     await page.waitForSelector(".compose-all-everyone-msg", {hidden: true});

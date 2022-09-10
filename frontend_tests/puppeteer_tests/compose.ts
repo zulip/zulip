@@ -17,12 +17,8 @@ async function close_compose_box(page: Page): Promise<void> {
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
 
-function get_message_xpath(text: string): string {
-    return `//p[text()='${text}']`;
-}
-
-function get_last_element<T>(array: T[]): T {
-    return array.slice(-1)[0];
+function get_message_selector(text: string): string {
+    return `xpath///p[text()='${text}'][last()]`;
 }
 
 async function test_send_messages(page: Page): Promise<void> {
@@ -59,9 +55,8 @@ async function test_keyboard_shortcuts(page: Page): Promise<void> {
 }
 
 async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): Promise<void> {
-    const stream_message_xpath = get_message_xpath("Compose stream reply test");
-    await page.waitForXPath(stream_message_xpath, {visible: true});
-    const stream_message = get_last_element(await page.$x(stream_message_xpath));
+    const stream_message_selector = get_message_selector("Compose stream reply test");
+    const stream_message = await page.waitForSelector(stream_message_selector, {visible: true});
     // we chose only the last element make sure we don't click on any duplicates.
     await (stream_message as ElementHandle<Element>).click();
     await common.check_form_contents(page, "#send_message_form", {
@@ -75,8 +70,8 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
 async function test_reply_by_click_prepopulates_private_message_recipient(
     page: Page,
 ): Promise<void> {
-    const private_message = get_last_element(
-        await page.$x(get_message_xpath("Compose private message reply test")),
+    const private_message = await page.$(
+        get_message_selector("Compose private message reply test"),
     );
     await (private_message as ElementHandle<Element>).click();
     await page.waitForSelector("#private_message_recipient", {visible: true});

@@ -499,12 +499,12 @@ class CommonUtils {
     ): Promise<void> {
         console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
         await this.clear_and_type(page, field_selector, str);
-        const entry = await page.waitForXPath(
-            `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
+        const entry = await page.waitForSelector(
+            `xpath///*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
             {visible: true},
         );
         assert.ok(entry);
-        await (entry as ElementHandle<Element>).hover();
+        await entry.hover();
         await page.evaluate((entry) => {
             if (!(entry instanceof HTMLElement)) {
                 throw new TypeError("expected HTMLElement");
