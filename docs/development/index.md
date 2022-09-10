@@ -6,7 +6,7 @@ maxdepth: 3
 ---
 
 Development environment installation <overview>
-Recommended setup <setup-vagrant>
+Recommended setup <setup-recommended>
 Advanced setup <setup-advanced>
 Using the development environment <using>
 Developing remotely <remote>

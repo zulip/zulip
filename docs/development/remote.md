@@ -271,7 +271,7 @@ Next, read the following to learn more about developing for Zulip:
 - [Testing][rtd-testing]
 
 [install-direct]: setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-vagrant]: setup-vagrant.md
+[install-vagrant]: setup-recommended.md
 [rtd-git-guide]: ../git/index.md
 [rtd-using-dev-env]: using.md
 [rtd-testing]: ../testing/testing.md
