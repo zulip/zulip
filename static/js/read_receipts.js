@@ -41,7 +41,7 @@ export function show_user_list(message_id) {
                             $t_html(
                                 {
                                     defaultMessage:
-                                        "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}",
+                                        "{num_of_people, plural, one {This message has been <z-link>read</z-link> by one person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}",
                                 },
                                 {
                                     num_of_people: users.length,
