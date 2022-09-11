@@ -16,6 +16,7 @@ from urllib.parse import urljoin
 
 import boto3
 import botocore
+import requests
 from boto3.session import Session
 from botocore.client import Config
 from django.conf import settings
@@ -297,6 +298,9 @@ class ZulipUploadBackend:
         raise NotImplementedError()
 
     def get_realm_logo_url(self, realm_id: int, version: int, night: bool) -> str:
+        raise NotImplementedError()
+
+    def get_realm_icon(self, realm_id: int) -> bytes:
         raise NotImplementedError()
 
     def upload_emoji_image(
@@ -647,6 +651,12 @@ class S3UploadBackend(ZulipUploadBackend):
         public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
         return public_url + f"?version={version}"
 
+    def get_realm_icon(self, realm_id: int) -> bytes:
+        # this is likely not the right way of doing things
+        public_url = self.get_public_upload_url(f"{realm_id}/realm/icon.png")
+        response = requests.get(public_url)
+        return response.content
+
     def upload_realm_logo_image(
         self, logo_file: IO[bytes], user_profile: UserProfile, night: bool
     ) -> None:
@@ -932,6 +942,10 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         write_local_file(upload_path, "icon.png", resized_data)
+
+    def get_realm_icon(self, realm_id: int) -> bytes:
+        store_path = os.path.join(str(realm_id), "realm")
+        return read_local_file("avatars", store_path + "/icon.png")
 
     def get_realm_icon_url(self, realm_id: int, version: int) -> str:
         return f"/user_avatars/{realm_id}/realm/icon.png?version={version}"

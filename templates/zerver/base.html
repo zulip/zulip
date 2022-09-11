@@ -14,8 +14,30 @@
                 {% endif %}
             {% endif %}
         {% endblock %}
+        <!--
+        The order of the alternate_icon and the icon here is important.
+
+        The spec (https://html.spec.whatwg.org/multipage/links.html#rel-icon)
+        mentions "If there are multiple equally appropriate icons,
+        user agents must use the last one declared in tree order at
+        the time that the user agent collected the list of icons."
+
+        If the order was reversed and the user had realm_icon_as_favicon
+        set to true, we would have a bug whereby after once getting to 0
+        unreads the png image would be favoured in place of the svg image
+        ie the count would not be shown. (This bug would not effect first
+        page loads at 0 unreads.)
+
+        It's unclear why the same bug isn't seen with the default
+        zulip svg.
+        -->
+        {% if user_profile and user_profile.realm_icon_as_favicon %}
+        <link id="alternate_icon" rel="alternate icon" href="{{ page_params.realm_icon_url }}" sizes="any"/>
+        <link id="favicon" rel="icon" href="{{ page_params.realm_icon_url }}" sizes="any"/>
+        {% else %}
+        <link id="alternate_icon" rel="alternate icon" href="/static/images/favicon.png?v=4" />
         <link id="favicon" rel="icon" href="/static/images/favicon.svg?v=4" />
-        <link rel="alternate icon" href="/static/images/favicon.png?v=4" />
+        {% endif %}
         {% block meta_viewport %}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {% endblock %}

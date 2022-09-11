@@ -272,6 +272,7 @@ export function dispatch_normal_event(event) {
                         case "icon":
                             page_params.realm_icon_url = event.data.icon_url;
                             page_params.realm_icon_source = event.data.icon_source;
+                            page_params.realm_icon_data_url = event.data.data_url;
                             realm_icon.rerender();
                             {
                                 const electron_bridge = window.electron_bridge;
@@ -281,6 +282,13 @@ export function dispatch_normal_event(event) {
                                         event.data.icon_url,
                                     );
                                 }
+                            }
+                            if (user_settings.realm_icon_as_favicon) {
+                                // it's a bit strange that we're calling a function in
+                                // notifications to redraw the favicon... but we do this
+                                // because favicon.js does not keep track of unreads,
+                                // once they have been rendered.
+                                notifications.redraw_favicon();
                             }
                             break;
                         case "logo":
@@ -660,6 +668,10 @@ export function dispatch_normal_event(event) {
                 $("body").toggleClass("more_dense_mode");
             }
             if (event.property === "realm_icon_as_favicon") {
+                // it's a bit strange that we're calling a function in
+                // notifications to redraw the favicon... but we do this
+                // because favicon.js does not keep track of unreads,
+                // once they have been rendered.
                 notifications.redraw_favicon();
             }
             if (event.property === "color_scheme") {

@@ -160,7 +160,11 @@ export function update_unread_counts(new_unread_count, new_pm_count) {
 }
 
 export function redraw_favicon() {
-    // Add redraw call here
+    favicon.update_favicon(unread_count, pm_count);
+    // this ensures that we have the sizes attribute set correctly, thus making
+    // them equivalent to the browser, so the browser will actually pick our svg
+    // icon over the png icon based on their order in the html.
+    favicon.update_attrs_and_alt_icon();
 }
 
 export function is_window_focused() {

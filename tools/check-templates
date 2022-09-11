@@ -69,6 +69,8 @@ def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) ->
             "id_terms",
             "logout_form",
             "send_confirm",
+            "favicon",
+            "alternate_icon",
             "charged_amount",
             "change-plan-status",
         ]

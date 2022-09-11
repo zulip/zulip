@@ -3,7 +3,7 @@ from typing import Optional
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.realm_icon import get_realm_icon_data_url, realm_icon_url
 from zerver.models import Realm, RealmAuditLog, UserProfile, active_user_ids
 from zerver.tornado.django_api import send_event
 
@@ -29,7 +29,11 @@ def do_change_icon_source(
         type="realm",
         op="update_dict",
         property="icon",
-        data=dict(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
+        data=dict(
+            icon_source=realm.icon_source,
+            icon_url=realm_icon_url(realm),
+            data_url=get_realm_icon_data_url(realm),
+        ),
     )
     transaction.on_commit(
         lambda: send_event(

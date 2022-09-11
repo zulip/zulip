@@ -1,7 +1,5 @@
 # Use organization profile picture as browser tab favicon
 
-This feature has not yet been implemented.
-
 Zulip allows you to use choose between showing the Zulip logo or your
 organization's profile picture as the browser tab icon (favicon).
 
