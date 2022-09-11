@@ -44,6 +44,11 @@
          * The bug was only found in Firefox.
          */
         height: 0 !important;
+        /* We use the same transform value used
+         * by tippyjs documentation for the small
+         * arrow size.
+         */
+        transform: scale(0.75);
     }
     /* If the text in the tooltips stretches to multiple lines,
      * we want the lines to be left-indented and not right-indented
