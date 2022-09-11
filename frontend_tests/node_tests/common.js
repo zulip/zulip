@@ -80,16 +80,16 @@ run_test("copy_data_attribute_value", ({override}) => {
     assert.ok(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", ({override}) => {
+run_test("adjust_mac_kbd_tags non-mac", ({override}) => {
     override(navigator, "platform", "Windows");
 
-    // The adjust_mac_shortcuts has a really simple guard
+    // The adjust_mac_kbd_tags has a really simple guard
     // at the top, and we just test the early-return behavior
     // by trying to pass it garbage.
-    common.adjust_mac_shortcuts("selector-that-does-not-exist");
+    common.adjust_mac_kbd_tags("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", ({override}) => {
+run_test("adjust_mac_kbd_tags mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -134,11 +134,97 @@ run_test("adjust_mac_shortcuts mac", ({override}) => {
 
     $.create(".markdown kbd", {children});
 
-    common.adjust_mac_shortcuts(".markdown kbd");
+    common.adjust_mac_kbd_tags(".markdown kbd");
 
     for (const test_item of test_items) {
         assert.equal(test_item.$stub.text(), test_item.mac_key);
         assert.equal(test_item.$stub.hasClass("arrow-key"), test_item.adds_arrow_key);
+    }
+});
+
+run_test("adjust_mac_tooltip_keys non-mac", ({override}) => {
+    override(navigator, "platform", "Windows");
+
+    // The adjust_mac_tooltip_keys has a really simple guard
+    // at the top, and we just test the early-return behavior
+    // by trying to pass it garbage.
+    common.adjust_mac_tooltip_keys("not-an-array");
+});
+
+// Test default values of adjust_mac_tooltip_keys
+// Expected values
+run_test("adjust_mac_tooltip_keys mac expected", ({override}) => {
+    const keys_to_test_mac = new Map([
+        [["Backspace"], ["Delete"]],
+        [["Enter"], ["Return"]],
+        [["Home"], ["Fn", "←"]],
+        [["End"], ["Fn", "→"]],
+        [["PgUp"], ["Fn", "↑"]],
+        [["PgDn"], ["Fn", "↓"]],
+        [["Ctrl"], ["⌘"]],
+        [["Alt"], ["⌘"]],
+    ]);
+
+    override(navigator, "platform", "MacIntel");
+
+    const test_items = [];
+
+    for (const [old_key, mac_key] of keys_to_test_mac) {
+        const test_item = {};
+        common.adjust_mac_tooltip_keys(old_key);
+
+        test_item.mac_key = mac_key;
+        test_item.adjusted_key = old_key;
+        test_items.push(test_item);
+    }
+
+    for (const test_item of test_items) {
+        assert.deepStrictEqual(test_item.mac_key, test_item.adjusted_key);
+    }
+});
+
+// Test non-default values of adjust_mac_tooltip_keys
+// Random values
+run_test("adjust_mac_tooltip_keys mac random", ({override}) => {
+    const keys_to_test_mac = new Map([
+        [
+            ["Ctrl", "["],
+            ["⌘", "["],
+        ],
+        [
+            ["Ctrl", "K"],
+            ["⌘", "K"],
+        ],
+        [
+            ["Shift", "G"],
+            ["Shift", "G"],
+        ],
+        [["Space"], ["Space"]],
+        [
+            ["Alt", "←"],
+            ["⌘", "←"],
+        ],
+        [
+            ["Alt", "→"],
+            ["⌘", "→"],
+        ],
+    ]);
+
+    override(navigator, "platform", "MacIntel");
+
+    const test_items = [];
+
+    for (const [old_key, mac_key] of keys_to_test_mac) {
+        const test_item = {};
+        common.adjust_mac_tooltip_keys(old_key);
+
+        test_item.mac_key = mac_key;
+        test_item.adjusted_key = old_key;
+        test_items.push(test_item);
+    }
+
+    for (const test_item of test_items) {
+        assert.deepStrictEqual(test_item.mac_key, test_item.adjusted_key);
     }
 });
 
