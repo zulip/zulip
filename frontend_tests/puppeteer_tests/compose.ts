@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import * as common from "../puppeteer_lib/common";
 
@@ -54,8 +54,9 @@ async function test_keyboard_shortcuts(page: Page): Promise<void> {
 async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): Promise<void> {
     const stream_message_selector = get_message_selector("Compose stream reply test");
     const stream_message = await page.waitForSelector(stream_message_selector, {visible: true});
+    assert.ok(stream_message !== null);
     // we chose only the last element make sure we don't click on any duplicates.
-    await (stream_message as ElementHandle<Element>).click();
+    await stream_message.click();
     await common.check_form_contents(page, "#send_message_form", {
         stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "Reply test",
@@ -70,7 +71,8 @@ async function test_reply_by_click_prepopulates_private_message_recipient(
     const private_message = await page.$(
         get_message_selector("Compose private message reply test"),
     );
-    await (private_message as ElementHandle<Element>).click();
+    assert.ok(private_message !== null);
+    await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
     await common.pm_recipient.expect(
         page,
@@ -190,12 +192,13 @@ async function test_markdown_rendering(page: Page): Promise<void> {
         content: "**Markdown preview** >> Test for Markdown preview",
     });
     await page.click("#compose .markdown_preview");
-    const preview_content = (await page.waitForSelector(
+    const preview_content = await page.waitForSelector(
         `xpath///*[@id="compose"]//*[${common.has_class_x(
             "preview_content",
         )} and normalize-space()!=""]`,
         {visible: true},
-    )) as ElementHandle<Element>;
+    );
+    assert.ok(preview_content !== null);
     const expected_markdown_html =
         "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
     assert.equal(

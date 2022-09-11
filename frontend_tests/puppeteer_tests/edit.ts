@@ -1,11 +1,12 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import * as common from "../puppeteer_lib/common";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
-    const msg = (await page.$$("#zhome .message_row")).at(-1) as ElementHandle<Element>;
+    const msg = (await page.$$("#zhome .message_row")).at(-1);
+    assert.ok(msg !== undefined);
     const id = await (await msg.getProperty("id")).jsonValue();
     await msg.hover();
     const info = await page.waitForSelector(
