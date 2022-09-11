@@ -160,6 +160,21 @@ export function hide_user_profile() {
     overlays.close_modal("user-profile-modal");
 }
 
+function initialize_user_type_fields(user) {
+    // Avoid duplicate pill fields, by removing existing ones.
+    $("#user-profile-modal .pill").remove();
+    if (!user.is_bot) {
+        settings_account.initialize_custom_user_type_fields(
+            "#user-profile-modal #content",
+            user.user_id,
+            false,
+            false,
+        );
+    } else {
+        initialize_bot_owner("#user-profile-modal #content", user.user_id);
+    }
+}
+
 export function show_user_profile(user, default_tab_key = "profile-tab") {
     popovers.hide_all();
 
@@ -223,6 +238,9 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
             $(".tabcontent").hide();
             $("#" + key).show();
             switch (key) {
+                case "profile-tab":
+                    initialize_user_type_fields(user);
+                    break;
                 case "user-profile-groups-tab":
                     render_user_group_list(groups_of_user, user);
                     break;
@@ -236,17 +254,6 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const $elem = components.toggle(opts).get();
     $elem.addClass("large allow-overflow");
     $("#tab-toggle").append($elem);
-
-    if (!user.is_bot) {
-        settings_account.initialize_custom_user_type_fields(
-            "#user-profile-modal #content",
-            user.user_id,
-            false,
-            false,
-        );
-    } else {
-        initialize_bot_owner("#user-profile-modal #content", user.user_id);
-    }
 }
 
 function handle_remove_stream_subscription(target_user_id, sub, success, failure) {
