@@ -127,8 +127,8 @@ providers.
 
      1. Your organization's URL
      1. From the **SAML Signing Certificate** section:
-       * **App Federation Metadata Url**
-       * Certificate downloaded from **Certificate (Base64)**
+        * **App Federation Metadata Url**
+        * Certificate downloaded from **Certificate (Base64)**
      1. From the **Set up** section
         * **Login URL**
         * **Azure AD Identifier**
