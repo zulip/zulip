@@ -5,6 +5,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
+from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -146,6 +147,9 @@ def revoke_multiuse_invite(
         raise JsonableError(_("No such invitation"))
 
     check_if_owner_required(invite.invited_as, user_profile)
+
+    if invite.status == confirmation_settings.STATUS_REVOKED:
+        raise JsonableError(_("Invitation has already been revoked"))
 
     do_revoke_multi_use_invite(invite)
     return json_success(request)

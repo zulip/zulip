@@ -99,7 +99,7 @@ def get_object_from_key(
         raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     if mark_object_used:
-        # MultiuseInvite objects have no status field, since they are
+        # MultiuseInvite objects do not use the STATUS_USED status, since they are
         # intended to be used more than once.
         assert confirmation.type != Confirmation.MULTIUSE_INVITE
         assert hasattr(obj, "status")
