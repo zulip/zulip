@@ -5,7 +5,6 @@ import tippy, {delegate} from "tippy.js";
 import render_message_inline_image_tooltip from "../templates/message_inline_image_tooltip.hbs";
 import render_narrow_to_compose_recipients_tooltip from "../templates/narrow_to_compose_recipients_tooltip.hbs";
 
-import * as common from "./common";
 import * as compose_state from "./compose_state";
 import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
@@ -273,10 +272,7 @@ export function initialize() {
                 }
             }
 
-            const shortcut_html = (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .";
-            return parse_html(
-                render_narrow_to_compose_recipients_tooltip({shortcut_html, display_current_view}),
-            );
+            return parse_html(render_narrow_to_compose_recipients_tooltip({display_current_view}));
         },
         onHidden(instance) {
             instance.destroy();

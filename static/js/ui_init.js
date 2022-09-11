@@ -227,8 +227,6 @@ function initialize_compose_box() {
             scroll_to_bottom_key_html: common.has_mac_keyboard()
                 ? "Fn + <span class='tooltip_right_arrow'>→</span>"
                 : "End",
-            narrow_to_compose_recipients_key_html:
-                (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .",
             max_stream_name_length: page_params.max_stream_name_length,
             max_topic_length: page_params.max_topic_length,
         }),
