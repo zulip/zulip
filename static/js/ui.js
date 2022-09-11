@@ -1,7 +1,6 @@
 import $ from "jquery";
 import SimpleBar from "simplebar";
 
-import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 
 // What, if anything, obscures the home tab?
@@ -74,14 +73,10 @@ export function update_starred_view(message_id, new_value) {
             $elt.removeClass("fa-star").addClass("fa-star-o");
             $star_container.addClass("empty-star");
         }
-        const title_state = starred ? $t({defaultMessage: "Unstar"}) : $t({defaultMessage: "Star"});
-        $star_container.attr(
-            "data-tippy-content",
-            $t(
-                {defaultMessage: "{starred_status} this message (Ctrl + s)"},
-                {starred_status: title_state},
-            ),
-        );
+        const data_template_id = starred
+            ? "unstar-message-tooltip-template"
+            : "star-message-tooltip-template";
+        $star_container.attr("data-tooltip-template-id", data_template_id);
     });
 }
 
