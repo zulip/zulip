@@ -18,7 +18,7 @@ async function close_compose_box(page: Page): Promise<void> {
 }
 
 function get_message_selector(text: string): string {
-    return `xpath///p[text()='${text}'][last()]`;
+    return `xpath/(//p[text()='${text}'])[last()]`;
 }
 
 async function test_send_messages(page: Page): Promise<void> {
@@ -139,7 +139,9 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     const pm = await page.waitForSelector(
         `xpath/(//*[${common.has_class_x(
             "messagebox",
-        )} and contains(normalize-space(), "${multiple_recipients_pm}")])[last()]`,
+        )} and contains(normalize-space(), "${multiple_recipients_pm}") and count(.//*[${common.has_class_x(
+            "star",
+        )}])>0])[last()]`,
     );
     assert.ok(pm !== null);
     await pm.click();
