@@ -229,7 +229,7 @@ function initialize_compose_box() {
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();
-    common.adjust_mac_shortcuts(".enter_sends kbd");
+    common.adjust_mac_kbd_tags(".enter_sends kbd");
 }
 
 function initialize_message_feed_errors() {
