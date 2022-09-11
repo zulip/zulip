@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import RealmCount
+from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, confirmation_url, create_confirmation_link
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -392,7 +393,8 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
         Confirmation.objects.filter(
             content_type=content_type, object_id=multiuse_invite.id
         ).delete()
-        multiuse_invite.delete()
+        multiuse_invite.status = confirmation_settings.STATUS_REVOKED
+        multiuse_invite.save(update_fields=["status"])
     notify_invites_changed(realm)
 
 

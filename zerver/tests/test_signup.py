@@ -40,6 +40,7 @@ from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
+    do_revoke_multi_use_invite,
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
@@ -2710,10 +2711,13 @@ class InvitationsTestCase(InviteUserBase):
         )
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assertEqual(result.status_code, 200)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
         # Test that trying to double-delete fails
         error_result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
-        self.assert_json_error(error_result, "No such invitation")
+        self.assert_json_error(error_result, "Invitation has already been revoked")
 
         # Test deleting owner mutiuse_invite.
         multiuse_invite = MultiuseInvite.objects.create(
@@ -2731,7 +2735,10 @@ class InvitationsTestCase(InviteUserBase):
         self.login("desdemona")
         result = self.client_delete("/json/invites/multiuse/" + str(multiuse_invite.id))
         self.assert_json_success(result)
-        self.assertIsNone(MultiuseInvite.objects.filter(id=multiuse_invite.id).first())
+        self.assertEqual(
+            MultiuseInvite.objects.get(id=multiuse_invite.id).status,
+            confirmation_settings.STATUS_REVOKED,
+        )
 
         # Test deleting multiuse invite from another realm
         mit_realm = get_realm("zephyr")
@@ -2747,6 +2754,10 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_delete(
             "/json/invites/multiuse/" + str(multiuse_invite_in_mit.id)
         )
+        self.assert_json_error(error_result, "No such invitation")
+
+        non_existent_id = MultiuseInvite.objects.count() + 9999
+        error_result = self.client_delete(f"/json/invites/multiuse/{non_existent_id}")
         self.assert_json_error(error_result, "No such invitation")
 
     def test_successful_resend_invitation(self) -> None:
@@ -3055,6 +3066,18 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 404)
         self.assert_in_response("The confirmation link has expired or been deactivated.", result)
+
+    def test_revoked_multiuse_link(self) -> None:
+        email = self.nonreg_email("newuser")
+        invite_link = self.generate_multiuse_invite_link()
+        multiuse_invite = MultiuseInvite.objects.last()
+        assert multiuse_invite is not None
+        do_revoke_multi_use_invite(multiuse_invite)
+
+        result = self.client_post(invite_link, {"email": email})
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("We couldn't find your confirmation link in the system.", result)
 
     def test_invalid_multiuse_link(self) -> None:
         email = self.nonreg_email("newuser")

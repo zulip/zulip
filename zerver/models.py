@@ -2333,6 +2333,12 @@ class MultiuseInvite(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
 
+    # status for tracking whether the invite has been revoked.
+    # If revoked, set to confirmation.settings.STATUS_REVOKED.
+    # STATUS_USED is not supported, because these objects are supposed
+    # to be usable multiple times.
+    status = models.IntegerField(default=0)
+
 
 class EmailChangeStatus(models.Model):
     new_email = models.EmailField()
