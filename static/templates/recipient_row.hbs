@@ -64,9 +64,17 @@
                 {{/if}}
 
                 {{#if topic_muted}}
-                    <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Unmute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                    <i class="zulip-icon zulip-icon-mute on_hover_topic_unmute recipient_bar_icon" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tooltip-template-id="topic-unmute-tooltip-template" role="button" tabindex="0" aria-label="{{t 'Unmute topic' }}"></i>
+                    <template id="topic-unmute-tooltip-template">
+                        {{#tr}}Unmute topic{{/tr}}
+                        {{hotkey_hints "M"}}
+                    </template>
                 {{else}}
-                    <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                    <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tooltip-template-id="topic-mute-tooltip-template" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
+                    <template id="topic-mute-tooltip-template">
+                        {{#tr}}Mute topic{{/tr}}
+                        {{hotkey_hints "M"}}
+                    </template>
                 {{/if}}
             </span>
             <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
