@@ -1,4 +1,4 @@
-# Zulip overview
+# Zulip
 
 [Zulip](https://zulip.com) is an open-source team collaboration tool with unique
 [topic-based threading][why-zulip] that combines the best of email and chat to
@@ -30,7 +30,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
 [rust-case-study]: https://zulip.com/case-studies/rust/
 [features]: https://zulip.com/features/
 
-## Getting started
+## Contributing
 
 - **Contributing code**. Check out our [guide for new
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
@@ -46,6 +46,12 @@ Come find us on the [development community chat](https://zulip.com/development-c
   feedback](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#user-feedback).
   We'd love to hear from you, whether you've been using Zulip for years, or are just
   trying it out for the first time.
+  
+  As new contributors, make sure to ask detailed questions in situations where you need help. In midst of your contributions, be clear as to what you are trying or have achieved. Try to be as interactive as possible in responding to feedback on pull requests.
+  
+  We appreciate your help always and are looking forward to improving Zulip with you!
+
+## How to Use Zulip
 
 - **Checking Zulip out**. The best way to see Zulip in action is to drop by the
   [Zulip community server](https://zulip.com/development-community/). We also
@@ -63,20 +69,51 @@ Come find us on the [development community chat](https://zulip.com/development-c
   Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
   organizations, including [fellow open-source
   projects](https://zulip.com/for/open-source/).
+  
+## Reporting Bugs
+
+If you run into any bugs while running Zulip, make sure to let us know by opening an issue on our GitHub.
+
+You can also join our [Zulip community server](https://zulip.com/development-community/) to figure out what might be going wrong with other developers.
+
+Including a screenshot of the issue as you're describing the bug as well as a way for fellow developers to reproduce the issue on their end.
+
+Take a look at our [Bug report guidelines](https://zulip.readthedocs.io/en/latest/contributing/bug-reports.html) for more information.
+
+## Keeping Zulip Running
 
 - **Participating in [outreach
   programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
   like [Google Summer of Code](https://developers.google.com/open-source/gsoc/)
   and [Outreachy](https://www.outreachy.org/).
+  
+- **Star us on GitHub**. Help us find potential contributors to keep Zulip running by starring our project on your Github.
 
 - **Supporting Zulip**. Advocate for your organization to use Zulip, become a
   [sponsor](https://github.com/sponsors/zulip), write a review in the mobile app
   stores, or [help others find
   Zulip](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#help-others-find-zulip).
 
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [Twitter](https://twitter.com/zulip) and
-[LinkedIn](https://www.linkedin.com/company/zulip-project/).
+## License
 
 Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
+
+## Contact
+
+Stay in touch with Zulip by following us on:
+
+- **Twitter** (https://twitter.com/zulip)
+- **LinkedIn** (https://www.linkedin.com/company/zulip-project/)
+    
+Make sure to also check our [blog] (https://blog.zulip.org/) out for regular updates!
+
+## FAQ
+
+- **What if someone is already working on an issue that I like**?
+There are plenty of other issues listed on our Github; try to find another one that might suit your taste. You can also help the contributor on that issue by reviewing their work for them.
+
+- **My PR has been on hold for a while. What do I do**?
+Make sure to check that all feedback provided by our project maintainers are addressed and, if so, leave another comment request another review.
+
+It's normal for a PR to be merged after a period of waiting. As you're waiting, help us out by working on the other issues and our maintainers will get to you as soon as possible.
