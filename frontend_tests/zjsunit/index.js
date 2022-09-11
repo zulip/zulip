@@ -20,6 +20,9 @@ process.env.NODE_ENV = "test";
 
 const dom = new JSDOM("", {url: "http://zulip.zulipdev.com/"});
 global.DOMParser = dom.window.DOMParser;
+global.navigator = {
+    userAgent: "node.js",
+};
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],

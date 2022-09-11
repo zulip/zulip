@@ -236,7 +236,7 @@ export function initialize() {
             compose_enter_sends_popover_displayed = true;
         },
         onMount(instance) {
-            common.adjust_mac_shortcuts(".enter_sends_choices kbd");
+            common.adjust_mac_kbd_tags(".enter_sends_choices kbd");
 
             $(instance.popper).one("click", ".enter_sends_choice", (e) => {
                 let selected_behaviour = $(e.currentTarget)
