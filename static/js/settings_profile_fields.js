@@ -174,18 +174,24 @@ function set_up_create_field_form() {
 
     if (Number.parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
         $field_elem.show();
-        if ($("#profile_field_external_accounts_type").val() === "custom") {
+        const $profile_field_external_account_type = $(
+            "#profile_field_external_accounts_type",
+        ).val();
+        if ($profile_field_external_account_type === "custom") {
             $field_url_pattern_elem.show();
-            $("#profile_field_name").val("").closest(".input-group").show();
-            $("#profile_field_hint").val("").closest(".input-group").show();
+            $("#profile_field_name").val("").prop("disabled", false);
+            $("#profile_field_hint").val("").prop("disabled", false);
         } else {
             $field_url_pattern_elem.hide();
-            $("#profile_field_name").closest(".input-group").hide();
-            $("#profile_field_hint").closest(".input-group").hide();
+            const profile_field_name =
+                page_params.realm_default_external_accounts[$profile_field_external_account_type]
+                    .name;
+            $("#profile_field_name").val(profile_field_name).prop("disabled", true);
+            $("#profile_field_hint").val("").prop("disabled", true);
         }
     } else {
-        $("#profile_field_name").closest(".input-group").show();
-        $("#profile_field_hint").closest(".input-group").show();
+        $("#profile_field_name").prop("disabled", false);
+        $("#profile_field_hint").prop("disabled", false);
         $field_url_pattern_elem.hide();
         $field_elem.hide();
     }
