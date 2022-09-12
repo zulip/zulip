@@ -5903,8 +5903,16 @@ paths:
 
                           The IDs of users who have disabled sending read receipts
                           (`send_read_receipts=false`) will never appear in the response,
-                          nor will the message's sender. The current user's ID will, if
-                          they have marked the read target message as read.
+                          nor will the message's sender. Additionally, the IDs of any users
+                          who have been muted by the current user or who have muted the
+                          current user will not be included in the response.
+
+                          The current user's ID will appear if they have marked the target
+                          message as read.
+
+                          **Changes**: Prior to Zulip 6.0 (feature level 143), the IDs of
+                          users who have been muted by or have muted the current user were
+                          included in the response.
                         items:
                           type: integer
                     example:

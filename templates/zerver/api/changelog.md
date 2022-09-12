@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 144**
+
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  The `user_ids` array returned by the server no longer includes IDs
+  of users who have been muted by or have muted the current user.
+
 **Feature level 143**
 
 * `PATCH /realm`: The `disallow_disposable_email_addresses`,
