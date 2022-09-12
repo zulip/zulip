@@ -29,6 +29,15 @@ def read_receipts(
     #   read the message before sending it, and showing the sender as
     #   having read their own message is likely to be confusing.
     #
+    # * Users who have muted the current user are not included, since
+    #   the current user could infer that they have been muted by
+    #   said users by noting that the muters immediately read every
+    #   message that the current user sends to mutually subscribed
+    #   streams.
+    #
+    # * Users muted by the current user are also not included, as this
+    #   is consistent with other aspects of how muting works.
+    #
     # * Deactivated users are excluded. While in theory someone
     #   could be interested in the information, not including them
     #   is a cleaner policy, and usually read receipts are only of
@@ -66,6 +75,8 @@ def read_receipts(
             user_profile__send_read_receipts=True,
         )
         .exclude(user_profile_id=message.sender_id)
+        .exclude(user_profile__muter__muted_user_id=user_profile.id)
+        .exclude(user_profile__muted__user_profile_id=user_profile.id)
         .extra(
             where=[UserMessage.where_read()],
         )
