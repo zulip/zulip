@@ -751,6 +751,62 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
 
+    def test_default_external_account_type_field(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field_data = orjson.dumps(
+            {
+                "subtype": "twitter",
+            }
+        ).decode()
+
+        field = CustomProfileField.objects.get(name="GitHub username", realm=realm)
+        # Attempting to change subtype here.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub username",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        field_data = orjson.dumps(
+            {
+                "subtype": "github",
+            }
+        ).decode()
+
+        # Attempting to change name here.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
+        field_data = orjson.dumps(
+            {
+                "subtype": "github",
+                "url_pattern": "invalid",
+            }
+        ).decode()
+
+        # Verify cannot change URL pattern
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "name": "GitHub username",
+                "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+                "field_data": field_data,
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
+
 
 class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_list(self) -> None:
