@@ -22,7 +22,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, queries_captured
-from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.user_topics import add_topic_visibility_policy
 from zerver.models import (
     Message,
     Recipient,
@@ -30,6 +30,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_realm,
     get_stream,
 )
@@ -384,11 +385,12 @@ class FixUnreadTests(ZulipTestCase):
             recipient = stream.recipient
             assert recipient is not None
 
-            add_topic_mute(
+            add_topic_visibility_policy(
                 user_profile=user,
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name=topic_name,
+                visibility_policy=UserTopic.MUTED,
             )
 
         def force_unsubscribe(stream_name: str) -> None:
@@ -584,11 +586,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         recipient = stream.recipient
         assert recipient is not None
 
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=user_profile,
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name=topic_name,
+            visibility_policy=UserTopic.MUTED,
         )
 
     def test_raw_unread_stream(self) -> None:

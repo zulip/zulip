@@ -47,7 +47,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.user_topics import add_topic_visibility_policy
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -65,6 +65,7 @@ from zerver.models import (
     UserGroupMembership,
     UserHotspot,
     UserProfile,
+    UserTopic,
     check_valid_user_ids,
     filter_to_valid_prereg_users,
     get_client,
@@ -1856,11 +1857,12 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=hamlet,
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name=topic_name,
+            visibility_policy=UserTopic.MUTED,
         )
 
         info = get_recipient_info(

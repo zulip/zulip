@@ -7,7 +7,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
-    add_topic_mute,
+    add_topic_visibility_policy,
     get_topic_mutes,
     remove_topic_mute,
     topic_is_muted,
@@ -26,12 +26,13 @@ class MutedTopicsTests(ZulipTestCase):
         mock_date_muted = datetime(2020, 1, 1, tzinfo=timezone.utc).timestamp()
 
         assert recipient is not None
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=user,
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name="Verona3",
-            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            visibility_policy=UserTopic.MUTED,
+            date_added=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
         stream.deactivated = True
@@ -58,12 +59,13 @@ class MutedTopicsTests(ZulipTestCase):
 
         def mute_topic_for_user(user: UserProfile) -> None:
             assert recipient is not None
-            add_topic_mute(
+            add_topic_visibility_policy(
                 user_profile=user,
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name="test TOPIC",
-                date_muted=timezone_now(),
+                visibility_policy=UserTopic.MUTED,
+                date_added=timezone_now(),
             )
 
         mute_topic_for_user(hamlet)
@@ -119,12 +121,13 @@ class MutedTopicsTests(ZulipTestCase):
         # topic_is_muted function to always return False when trying
         # to mute a topic that is already muted.
         assert stream.recipient is not None
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=user,
             stream_id=stream.id,
             recipient_id=stream.recipient.id,
             topic_name="Verona3",
-            date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+            visibility_policy=UserTopic.MUTED,
+            date_added=datetime(2020, 1, 1, tzinfo=timezone.utc),
         )
 
         with mock.patch("zerver.views.muting.topic_is_muted", return_value=False):
@@ -148,12 +151,13 @@ class MutedTopicsTests(ZulipTestCase):
 
         assert recipient is not None
         for data in payloads:
-            add_topic_mute(
+            add_topic_visibility_policy(
                 user_profile=user,
                 stream_id=stream.id,
                 recipient_id=recipient.id,
                 topic_name="Verona3",
-                date_muted=datetime(2020, 1, 1, tzinfo=timezone.utc),
+                visibility_policy=UserTopic.MUTED,
+                date_added=datetime(2020, 1, 1, tzinfo=timezone.utc),
             )
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
 
@@ -171,12 +175,13 @@ class MutedTopicsTests(ZulipTestCase):
         stream = get_stream("Verona", realm)
         recipient = stream.recipient
         assert recipient is not None
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=user,
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name="Verona3",
-            date_muted=timezone_now(),
+            visibility_policy=UserTopic.MUTED,
+            date_added=timezone_now(),
         )
 
         url = "/api/v1/users/me/subscriptions/muted_topics"
@@ -223,3 +228,48 @@ class MutedTopicsTests(ZulipTestCase):
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
+
+class UnmutedVisibilityTests(ZulipTestCase):
+    def test_user_ids_unmuting_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        stream = get_stream("Verona", realm)
+        recipient = stream.recipient
+        topic_name = "teST topic"
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, set())
+
+        def set_topic_visibility_for_user(user: UserProfile, visibility_policy: int) -> None:
+            assert recipient is not None
+            add_topic_visibility_policy(
+                user_profile=user,
+                stream_id=stream.id,
+                recipient_id=recipient.id,
+                topic_name="test TOPIC",
+                visibility_policy=visibility_policy,
+                date_added=timezone_now(),
+            )
+
+        set_topic_visibility_for_user(hamlet, UserTopic.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, {hamlet.id})
+        hamlet_date_unmuted = UserTopic.objects.filter(
+            user_profile=hamlet, visibility_policy=UserTopic.UNMUTED
+        )[0].last_updated
+        self.assertTrue(timezone_now() - hamlet_date_unmuted <= timedelta(seconds=100))
+
+        set_topic_visibility_for_user(cordelia, UserTopic.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, {hamlet.id, cordelia.id})
+        cordelia_date_unmuted = UserTopic.objects.filter(
+            user_profile=cordelia, visibility_policy=UserTopic.UNMUTED
+        )[0].last_updated
+        self.assertTrue(timezone_now() - cordelia_date_unmuted <= timedelta(seconds=100))

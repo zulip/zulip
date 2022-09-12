@@ -1,6 +1,7 @@
 import datetime
 from typing import Callable, List, Optional, Tuple, TypedDict
 
+from django.db import IntegrityError
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
@@ -96,38 +97,44 @@ def set_topic_mutes(
         recipient_id = stream.recipient_id
         assert recipient_id is not None
 
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=user_profile,
             stream_id=stream.id,
             recipient_id=recipient_id,
             topic_name=topic_name,
-            date_muted=date_muted,
+            visibility_policy=UserTopic.MUTED,
+            date_added=date_muted,
         )
 
 
-def add_topic_mute(
+def add_topic_visibility_policy(
     user_profile: UserProfile,
     stream_id: int,
     recipient_id: int,
     topic_name: str,
-    date_muted: Optional[datetime.datetime] = None,
+    visibility_policy: int,
+    date_added: Optional[datetime.datetime] = None,
     ignore_duplicate: bool = False,
 ) -> None:
-    if date_muted is None:
-        date_muted = timezone_now()
-    UserTopic.objects.bulk_create(
-        [
-            UserTopic(
-                user_profile=user_profile,
-                stream_id=stream_id,
-                recipient_id=recipient_id,
-                topic_name=topic_name,
-                last_updated=date_muted,
-                visibility_policy=UserTopic.MUTED,
-            ),
-        ],
-        ignore_conflicts=ignore_duplicate,
+    if date_added is None:
+        date_added = timezone_now()
+
+    (row, created) = UserTopic.objects.get_or_create(
+        user_profile=user_profile,
+        stream_id=stream_id,
+        recipient_id=recipient_id,
+        topic_name=topic_name,
+        defaults={"last_updated": date_added, "visibility_policy": visibility_policy},
     )
+
+    if not created:
+        if row.visibility_policy == visibility_policy:
+            if not ignore_duplicate:
+                raise IntegrityError
+        else:
+            row.visibility_policy = visibility_policy
+            row.last_updated = date_added
+            row.save()
 
 
 def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:

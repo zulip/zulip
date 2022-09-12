@@ -1307,7 +1307,7 @@ class EditMessageTest(EditMessageTestCase):
             )
             # This code path adds 9 (1 + 4/user with muted topics) + 1 to
             # the number of database queries for moving a topic.
-            self.assert_length(queries, 19)
+            self.assert_length(queries, 21)
 
         for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
             for user in users_to_be_notified:
@@ -1391,7 +1391,7 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 31)
+            self.assert_length(queries, 33)
 
         self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
         self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
@@ -1423,7 +1423,7 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 33)
+            self.assert_length(queries, 34)
 
         # Cordelia is not subscribed to the private stream, so
         # Cordelia should have had the topic unmuted, while Desdemona
@@ -1458,7 +1458,7 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 31)
+            self.assert_length(queries, 33)
 
         self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic 2"))
         self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic 2"))

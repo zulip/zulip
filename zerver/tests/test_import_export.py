@@ -49,7 +49,7 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
-from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.user_topics import add_topic_visibility_policy
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
@@ -777,11 +777,12 @@ class RealmImportExportTest(ExportFile):
         stream = get_stream("Verona", original_realm)
         recipient = stream.recipient
         assert recipient is not None
-        add_topic_mute(
+        add_topic_visibility_policy(
             user_profile=sample_user,
             stream_id=stream.id,
             recipient_id=recipient.id,
             topic_name="Verona2",
+            visibility_policy=UserTopic.MUTED,
         )
 
         # data to test import of muted users
