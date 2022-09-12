@@ -199,3 +199,47 @@ class MutedTopicsTests(ZulipTestCase):
         data = {"stream": stream.name, "stream_id": stream.id, "topic": "Verona3", "op": "remove"}
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Please choose one: 'stream' or 'stream_id'.")
+
+
+class UnmutedTopicsTests(ZulipTestCase):
+    def test_user_ids_unmuting_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        stream = get_stream("Verona", realm)
+        topic_name = "teST topic"
+        date_unmuted = datetime(2020, 1, 1, tzinfo=timezone.utc)
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, set())
+
+        def set_topic_visibility_for_user(user: UserProfile, visibility_policy: int) -> None:
+            do_set_user_topic_visibility_policy(
+                user,
+                stream,
+                "test TOPIC",
+                visibility_policy=visibility_policy,
+                last_updated=date_unmuted,
+            )
+
+        set_topic_visibility_for_user(hamlet, UserTopic.UNMUTED)
+        set_topic_visibility_for_user(cordelia, UserTopic.MUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, {hamlet.id})
+        hamlet_date_unmuted = UserTopic.objects.filter(
+            user_profile=hamlet, visibility_policy=UserTopic.UNMUTED
+        )[0].last_updated
+        self.assertEqual(hamlet_date_unmuted, date_unmuted)
+
+        set_topic_visibility_for_user(cordelia, UserTopic.UNMUTED)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.UNMUTED)
+        self.assertEqual(user_ids, {hamlet.id, cordelia.id})
+        cordelia_date_unmuted = UserTopic.objects.filter(
+            user_profile=cordelia, visibility_policy=UserTopic.UNMUTED
+        )[0].last_updated
+        self.assertEqual(cordelia_date_unmuted, date_unmuted)

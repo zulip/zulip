@@ -1338,7 +1338,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # This code path adds 9 (1 + 4/user with muted topics) + 1 to
         # the number of database queries for moving a topic.
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(21):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1422,7 +1422,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1453,7 +1453,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1486,7 +1486,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with self.assert_database_query_count(30):
+        with self.assert_database_query_count(32):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,

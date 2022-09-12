@@ -6,7 +6,11 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_topics import add_topic_mute, get_topic_mutes, remove_topic_mute
+from zerver.lib.user_topics import (
+    get_topic_mutes,
+    remove_topic_mute,
+    set_user_topic_visibility_policy_in_database,
+)
 from zerver.models import Stream, UserProfile, UserTopic
 from zerver.tornado.django_api import send_event
 
@@ -31,12 +35,13 @@ def do_set_user_topic_visibility_policy(
             raise JsonableError(_("Topic is not muted"))
     else:
         assert stream.recipient_id is not None
-        add_topic_mute(
+        set_user_topic_visibility_policy_in_database(
             user_profile,
             stream.id,
-            stream.recipient_id,
             topic,
-            last_updated,
+            visibility_policy=visibility_policy,
+            recipient_id=stream.recipient_id,
+            last_updated=last_updated,
             ignore_duplicate=ignore_duplicate,
         )
 
