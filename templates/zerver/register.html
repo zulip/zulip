@@ -28,6 +28,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
             <fieldset class="org-registration">
                 {% if creating_new_team %}
+                <legend>{{ _('Your organization') }}</legend>
                 <div class="input-box">
                     <div class="inline-block relative">
                         <input id="id_team_name" class="required" type="text"
@@ -92,9 +93,6 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                             <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
                             {% endfor %}
                         {% endif %}
-                    </div>
-                    <div class="help-text">
-                        {{ _("The URL users will use to access the new organization.") }}
                     </div>
                 </div>
                 {% endif %}
