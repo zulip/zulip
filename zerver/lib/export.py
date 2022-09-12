@@ -420,6 +420,8 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
         instances below.
         """
         for field in instance._meta.many_to_many:
+            if exclude is not None and field.name in exclude:
+                continue
             value = data[field.name]
             data[field.name] = [row.id for row in value]
 
@@ -775,6 +777,7 @@ def get_realm_config() -> Config:
         model=UserGroup,
         normal_parent=realm_config,
         include_rows="realm_id__in",
+        exclude=["direct_members", "direct_subgroups"],
     )
 
     Config(

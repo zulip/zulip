@@ -1171,12 +1171,6 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     if "zerver_usergroup" in data:
         re_map_foreign_keys(data, "zerver_usergroup", "realm", related_table="realm")
-        re_map_foreign_keys_many_to_many(
-            data, "zerver_usergroup", "direct_members", related_table="user_profile"
-        )
-        re_map_foreign_keys_many_to_many(
-            data, "zerver_usergroup", "direct_subgroups", related_table="usergroup"
-        )
         update_model_ids(UserGroup, data, "usergroup")
         bulk_import_model(data, UserGroup)
 

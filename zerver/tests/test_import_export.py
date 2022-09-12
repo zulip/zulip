@@ -435,6 +435,12 @@ class RealmImportExportTest(ExportFile):
         self.assert_length(exported_realm_user_default, 1)
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
+        exported_usergroups = data["zerver_usergroup"]
+        self.assert_length(exported_usergroups, 8)
+        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[1])
+        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
         exported_um = self.find_by_id(data["zerver_usermessage"], um.id)
@@ -1131,6 +1137,26 @@ class RealmImportExportTest(ExportFile):
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {membership.subgroup.name for membership in group_group_membership}
             return subgroups
+
+        @getter
+        def get_user_group_direct_members(r: Realm) -> Set[str]:
+            # We already check the members of the group through UserGroupMembership
+            # objects, but we also want to check direct_members field is set
+            # correctly since we do not include this in export data.
+            usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            direct_members = usergroup.direct_members.all()
+            direct_member_emails = {user.email for user in direct_members}
+            return direct_member_emails
+
+        @getter
+        def get_user_group_direct_subgroups(r: Realm) -> Set[str]:
+            # We already check the subgroups of the group through GroupGroupMembership
+            # objects, but we also want to check that direct_subgroups field is set
+            # correctly since we do not include this in export data.
+            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            direct_subgroups = usergroup.direct_subgroups.all()
+            direct_subgroup_names = {group.name for group in direct_subgroups}
+            return direct_subgroup_names
 
         # test botstoragedata and botconfigdata
         @getter
