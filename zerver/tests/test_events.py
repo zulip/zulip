@@ -1456,6 +1456,17 @@ class NormalActionsTest(BaseAction):
         )
         check_user_topic("events[0]", events[0])
 
+    def test_unmuted_topics_events(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        events = self.verify_action(
+            lambda: do_set_user_topic_visibility_policy(
+                self.user_profile, stream, "topic", visibility_policy=UserTopic.UNMUTED
+            ),
+            num_events=2,
+        )
+        check_muted_topics("events[0]", events[0])
+        check_user_topic("events[1]", events[1])
+
     def test_muted_users_events(self) -> None:
         muted_user = self.example_user("othello")
         events = self.verify_action(
