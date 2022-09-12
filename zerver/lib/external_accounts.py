@@ -23,14 +23,14 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": {
         "text": "Twitter",
         "url_pattern": "https://twitter.com/%(username)s",
-        "name": "Twitter",
-        "hint": "Enter your Twitter username",
+        "name": "Twitter username",
+        "hint": "",
     },
     "github": {
         "text": "GitHub",
         "url_pattern": "https://github.com/%(username)s",
-        "name": "GitHub",
-        "hint": "Enter your GitHub username",
+        "name": "GitHub username",
+        "hint": "",
     },
 }
 
