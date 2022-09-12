@@ -15,6 +15,37 @@ from zerver.models import Stream, UserProfile, UserTopic
 from zerver.tornado.django_api import send_event
 
 
+def do_set_unmuted_visibility(
+    user_profile: UserProfile,
+    stream: Stream,
+    topic: str,
+    date_unmuted: Optional[datetime.datetime] = None,
+    ignore_duplicate: bool = False,
+) -> None:
+    if date_unmuted is None:
+        date_unmuted = timezone_now()
+    assert stream.recipient_id is not None
+    add_topic_visibility_policy(
+        user_profile,
+        stream.id,
+        stream.recipient_id,
+        topic,
+        UserTopic.UNMUTED,
+        date_unmuted,
+        ignore_duplicate=ignore_duplicate,
+    )
+
+    user_topic_event: Dict[str, Any] = {
+        "type": "user_topic",
+        "stream_id": stream.id,
+        "topic_name": topic,
+        "last_updated": datetime_to_timestamp(date_unmuted),
+        "visibility_policy": UserTopic.UNMUTED,
+    }
+
+    send_event(user_profile.realm, user_topic_event, [user_profile.id])
+
+
 def do_mute_topic(
     user_profile: UserProfile,
     stream: Stream,
