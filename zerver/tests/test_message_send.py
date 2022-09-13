@@ -1,7 +1,7 @@
 import datetime
 import sys
 from email.headerregistry import Address
-from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Mapping, Optional, Set, Union
 from unittest import mock
 
 import orjson
@@ -97,7 +97,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/json/messages",
             {
                 "type": "stream",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -114,7 +114,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "stream",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -519,7 +519,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": othello.email,
+                "to": orjson.dumps([othello.email]).decode(),
             },
         )
         self.assert_json_success(result)
@@ -538,7 +538,7 @@ class MessagePOSTTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": user_profile.email,
+                "to": orjson.dumps([user_profile.email]).decode(),
             },
         )
         self.assert_json_success(result)
@@ -814,7 +814,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "sender": self.mit_email("sipbtest"),
                 "content": "Test message",
                 "client": "zephyr_mirror",
-                "to": self.mit_email("starnine"),
+                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
             },
             subdomain="zephyr",
         )
@@ -912,7 +912,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.login("hamlet")
         post_data = {
             "type": "stream",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": "  I like whitespace at the end! \n\n \n",
             "topic": "Test topic",
         }
@@ -924,7 +924,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Test if it removes the new line from the beginning of the message.
         post_data = {
             "type": "stream",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": "\nAvoid the new line at the beginning of the message.",
             "topic": "Test topic",
         }
@@ -946,7 +946,7 @@ class MessagePOSTTest(ZulipTestCase):
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
             "type": "stream",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": long_message,
             "topic": "Test topic",
         }
@@ -967,7 +967,7 @@ class MessagePOSTTest(ZulipTestCase):
         long_topic = "A" * (MAX_TOPIC_NAME_LENGTH + 1)
         post_data = {
             "type": "stream",
-            "to": "Verona",
+            "to": orjson.dumps("Verona").decode(),
             "content": "test content",
             "topic": long_topic,
         }
@@ -1189,7 +1189,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "client": "irc_mirror",
                 "topic": "from irc",
-                "to": "IRCLand",
+                "to": orjson.dumps("IRCLand").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1212,7 +1212,7 @@ class MessagePOSTTest(ZulipTestCase):
                 "content": "Test message",
                 "client": "irc_mirror",
                 "topic": "from irc",
-                "to": "IRCLand",
+                "to": orjson.dumps("IRCLand").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1236,7 +1236,7 @@ class MessagePOSTTest(ZulipTestCase):
         def test_with(sender_email: str, client: str, forged: bool) -> None:
             payload = dict(
                 type="stream",
-                to=stream_name,
+                to=orjson.dumps(stream_name).decode(),
                 client=client,
                 topic="whatever",
                 content="whatever",
@@ -1283,7 +1283,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content="whatever",
         )
@@ -1309,7 +1309,7 @@ class MessagePOSTTest(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "stream",
-                "to": "notify_channel",
+                "to": orjson.dumps("notify_channel").decode(),
                 "content": "Test message",
                 "topic": "Test topic",
             },
@@ -1330,7 +1330,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=False)
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content="whatever",
         )
@@ -1352,7 +1352,7 @@ class ScheduledMessageTest(ZulipTestCase):
     def do_schedule_message(
         self,
         msg_type: str,
-        to: str,
+        to: Union[str, int, List[str], List[int]],
         msg: str,
         defer_until: str = "",
         tz_guess: str = "",
@@ -1367,7 +1367,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         payload = {
             "type": msg_type,
-            "to": to,
+            "to": orjson.dumps(to).decode(),
             "content": msg,
             "topic": topic_name,
             "realm_str": realm_str,
@@ -1407,7 +1407,9 @@ class ScheduledMessageTest(ZulipTestCase):
         # Scheduling a private message is successful.
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
-        result = self.do_schedule_message("private", othello.email, content + " 3", defer_until_str)
+        result = self.do_schedule_message(
+            "private", [othello.email], content + " 3", defer_until_str
+        )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
         self.assertEqual(message.content, "Test message 3")
@@ -1416,14 +1418,14 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Setting a reminder in PM's to other users causes a error.
         result = self.do_schedule_message(
-            "private", othello.email, content + " 4", defer_until_str, delivery_type="remind"
+            "private", [othello.email], content + " 4", defer_until_str, delivery_type="remind"
         )
         self.assert_json_error(result, "Reminders can only be set for streams.")
 
         # Setting a reminder in PM's to ourself is successful.
         # Required by reminders from message actions popover caret feature.
         result = self.do_schedule_message(
-            "private", hamlet.email, content + " 5", defer_until_str, delivery_type="remind"
+            "private", [hamlet.email], content + " 5", defer_until_str, delivery_type="remind"
         )
         message = self.last_scheduled_message()
         self.assert_json_success(result)
@@ -1891,7 +1893,7 @@ class StreamMessagesTest(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "stream",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
                 "client": "zephyr_mirror",
                 "topic": "announcement",
