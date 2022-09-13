@@ -1028,7 +1028,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "to": "Denmark",
+                "to": orjson.dumps("Denmark").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1067,7 +1067,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_email_response_for_auth_failures",
-                "to": "announce",
+                "to": orjson.dumps("announce").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1111,7 +1111,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "to": "Denmark",
+                "to": orjson.dumps("Denmark").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1156,7 +1156,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "to": "Denmark",
+                "to": orjson.dumps("Denmark").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1192,7 +1192,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "to": "Denmark",
+                "to": orjson.dumps("Denmark").decode(),
             },
         )
         self.assert_json_success(result)
@@ -1229,7 +1229,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
                 "type": "stream",
                 "topic": "test topic",
                 "content": "test_receive_missed_stream_message_email_messages",
-                "to": "Denmark",
+                "to": orjson.dumps("Denmark").decode(),
             },
         )
         self.assert_json_success(result)

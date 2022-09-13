@@ -66,7 +66,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content="whatever",
         )
@@ -122,7 +122,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
             widget_content=orjson.dumps(widget_content).decode(),
@@ -152,7 +152,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )
@@ -180,7 +180,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )
@@ -231,7 +231,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )
@@ -259,7 +259,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )
@@ -317,7 +317,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )
@@ -374,7 +374,7 @@ class WidgetContentTestCase(ZulipTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content,
         )

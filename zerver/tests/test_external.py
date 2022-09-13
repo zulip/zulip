@@ -117,7 +117,7 @@ class RateLimitTests(ZulipTestCase):
             "/api/v1/messages",
             {
                 "type": "stream",
-                "to": "Verona",
+                "to": orjson.dumps("Verona").decode(),
                 "content": content,
                 "topic": "whatever",
             },

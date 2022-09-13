@@ -1401,7 +1401,7 @@ class TestIncomingWebhookBot(ZulipTestCase):
         payload = dict(
             type="private",
             content="Test message",
-            to=othello.email,
+            to=orjson.dumps([othello.email]).decode(),
         )
 
         result = self.api_post(webhook_bot, "/api/v1/messages", payload)
