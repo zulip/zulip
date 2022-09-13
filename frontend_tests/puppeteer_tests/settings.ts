@@ -40,7 +40,7 @@ async function test_change_full_name(page: Page): Promise<void> {
     await common.clear_and_type(page, full_name_input_selector, "New name");
 
     await page.click("#settings_content .profile-settings-form");
-    await page.waitForSelector(".full-name-change-form .alert-success", {visible: true});
+    await page.waitForSelector(".full-name-change-container .alert-success", {visible: true});
     await page.waitForFunction(
         () => document.querySelector<HTMLInputElement>("#full_name")?.value === "New name",
     );
