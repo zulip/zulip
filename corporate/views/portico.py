@@ -141,6 +141,10 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         # Remove `Unspecified` ORG_TYPE
         org_types.pop("unspecified", None)
 
+    # Change display name of non-profit orgs.
+    if org_types.get("nonprofit"):
+        org_types["nonprofit"]["name"] = "Non-profit"
+
     return TemplateResponse(
         request,
         "corporate/communities.html",
