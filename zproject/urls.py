@@ -26,6 +26,7 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
+    jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
     logout_then_login,
@@ -745,6 +746,12 @@ urls += [
 
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
+
+#  This view accepts a JWT containing an email and returns an API key
+#  and the details for a single user.
+urls += [
+    path("api/v1/jwt/fetch_api_key", jwt_fetch_api_key),
+]
 
 # SCIM2
 

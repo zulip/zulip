@@ -534,6 +534,27 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## "example.com"), otherwise leave this as None.
 # SSO_APPEND_DOMAIN = None
 
+## JWT authentication.
+##
+## JWT authentication is supported both to transparently log users
+## into Zulip or to fetch users' API keys. The JWT secret key and
+## algorithm must be configured here.
+##
+## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
+# JWT_AUTH_KEYS: Dict[str, Any] = {
+#     # Subdomain for which this JWT configuration will apply.
+#     "zulip": {
+#         # Shared secret key used to validate jwt tokens, which should be stored
+#         # in zulip-secrets.conf and is read by the get_secret call below.
+#         # The key needs to be securely, randomly generated. Note that if you're
+#         # using the default HS256 algorithm, per RFC 7518, the key needs
+#         # to have at least 256 bits of entropy.
+#         "key": get_secret("jwt_auth_key"),
+#         # Algorithm with which the JWT token are signed.
+#         "algorithms": ["HS256"],
+#     }
+# }
+
 ################
 ## Service configuration
 
