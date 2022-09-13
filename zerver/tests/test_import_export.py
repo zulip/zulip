@@ -57,6 +57,7 @@ from zerver.models import (
     BotStorageData,
     CustomProfileField,
     CustomProfileFieldValue,
+    GroupGroupMembership,
     Huddle,
     Message,
     MutedUser,
@@ -1123,6 +1124,13 @@ class RealmImportExportTest(ExportFile):
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
+
+        @getter
+        def get_group_group_membership(r: Realm) -> Set[str]:
+            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
+            subgroups = {membership.subgroup.name for membership in group_group_membership}
+            return subgroups
 
         # test botstoragedata and botconfigdata
         @getter
