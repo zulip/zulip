@@ -1423,20 +1423,42 @@ def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
     return playgrounds
 
 
-# The Recipient table is used to map Messages to the set of users who
-# received the message.  It is implemented as a set of triples (id,
-# type_id, type). We have 3 types of recipients: Huddles (for group
-# private messages), UserProfiles (for 1:1 private messages), and
-# Streams. The recipient table maps a globally unique recipient id
-# (used by the Message table) to the type-specific unique id (the
-# stream id, user_profile id, or huddle id).
 class Recipient(models.Model):
+    """Represents an audience that can potentially receive messages in Zulip.
+
+    This table essentially functions as a generic foreign key that
+    allows Message.recipient_id to be a simple ForeignKey representing
+    the audience for a message, while supporting the different types
+    of audiences Zulip supports for a message.
+
+    Recipient has just two attributes: The enum type, and a type_id,
+    which is the ID of the UserProfile/Stream/Huddle object containing
+    all the metadata for the audience. There are 3 recipient types:
+
+    1. 1:1 private message: The type_id is the ID of the UserProfile
+       who will receive any message to this Recipient. The sender
+       of such a message is represented separately.
+    2. Stream message: The type_id is the ID of the associated Stream.
+    3. Group private message: In Zulip, group private messages are
+       represented by Huddle objects, which encode the set of users
+       in the conversation. The type_id is the ID of the associated Huddle
+       object; the set of users is usually retrieved via the Subscription
+       table. See the Huddle model for details.
+
+    See also the Subscription model, which stores which UserProfile
+    objects are susbcribed to which Recipient objects.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     type_id: int = models.IntegerField(db_index=True)
     type: int = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
+
+    # The type for 1:1 private messages.
     PERSONAL = 1
+    # The type for stream messages.
     STREAM = 2
+    # The type group private messages.
     HUDDLE = 3
 
     class Meta:
@@ -2820,7 +2842,11 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
 
 class AbstractMessage(models.Model):
     sender: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    # The target of the message is signified by the Recipient object.
+    # See the Recipient class for details.
     recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
@@ -3626,6 +3652,17 @@ def get_old_unclaimed_attachments(
 
 
 class Subscription(models.Model):
+    """Keeps track of which users are part of the
+    audience for a given Recipient object.
+
+    For private and group private message Recipient objects, only the
+    user_profile and recipient fields have any meaning, defining the
+    immutable set of users who are in the audience for that Recipient.
+
+    For Recipient objects associated with a Stream, the remaining
+    fields in this model describe the user's subscription to that stream.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -3901,13 +3938,20 @@ def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
 
-# The Huddle class represents a group of individuals who have had a
-# group private message conversation together.  The actual membership
-# of the Huddle is stored in the Subscription table just like with
-# Streams, and a hash of that list is stored in the huddle_hash field
-# below, to support efficiently mapping from a set of users to the
-# corresponding Huddle object.
 class Huddle(models.Model):
+    """
+    Represents a group of individuals who may have a
+    group private message conversation together.
+
+    The membership of the Huddle is stored in the Subscription table just like with
+    Streams - for each user in the Huddle, there is a Subscription object
+    tied to the UserProfile and the Huddle's recipient object.
+
+    A hash of the list of user IDs is stored in the huddle_hash field
+    below, to support efficiently mapping from a set of users to the
+    corresponding Huddle object.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
@@ -3927,6 +3971,11 @@ def huddle_hash_cache_key(huddle_hash: str) -> str:
 
 
 def get_huddle(id_list: List[int]) -> Huddle:
+    """
+    Takes a list of user IDs and returns the Huddle object for the
+    group consisting of these users. If the Huddle object does not
+    yet exist, it will be transparently created.
+    """
     huddle_hash = get_huddle_hash(id_list)
     return get_huddle_backend(huddle_hash, id_list)
 
