@@ -5073,7 +5073,29 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
                 default: []
               example: [{"operand": "Denmark", "operator": "stream"}]
         - $ref: "#/components/parameters/ClientGravatar"
