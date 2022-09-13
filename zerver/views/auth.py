@@ -67,9 +67,9 @@ from zerver.lib.sessions import set_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.users import get_api_key, is_2fa_verified
+from zerver.lib.users import get_api_key, get_raw_user_data, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
-from zerver.lib.validator import validate_login_email
+from zerver.lib.validator import check_bool, validate_login_email
 from zerver.models import (
     MultiuseInvite,
     PreregistrationUser,
@@ -921,8 +921,49 @@ def get_api_key_fetch_authenticate_failure(return_data: Dict[str, bool]) -> Json
         return PasswordAuthDisabledError()
     if return_data.get("password_reset_needed"):
         return PasswordResetRequiredError()
+    if return_data.get("invalid_subdomain"):
+        raise InvalidSubdomainError()
 
     return AuthenticationFailedError()
+
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def jwt_fetch_api_key(
+    request: HttpRequest,
+    include_profile: bool = REQ(default=False, json_validator=check_bool),
+) -> HttpResponse:
+    remote_email, realm = get_email_and_realm_from_jwt_authentication_request(request)
+    return_data: Dict[str, bool] = {}
+
+    user_profile = authenticate(
+        username=remote_email, realm=realm, return_data=return_data, use_dummy_backend=True
+    )
+    if user_profile is None:
+        raise get_api_key_fetch_authenticate_failure(return_data)
+
+    assert isinstance(user_profile, UserProfile)
+
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+
+    result: Dict[str, Any] = {
+        "api_key": api_key,
+        "email": user_profile.delivery_email,
+    }
+
+    if include_profile:
+        members = get_raw_user_data(
+            realm,
+            user_profile,
+            target_user=user_profile,
+            client_gravatar=False,
+            user_avatar_url_field_optional=False,
+            include_custom_profile_fields=False,
+        )
+        result["user"] = members[user_profile.id]
+
+    return json_success(request, data=result)
 
 
 @csrf_exempt

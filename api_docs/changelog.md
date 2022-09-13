@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 160**
+
+* [`POST /api/v1/jwt/fetch_api_key`]: New API endpoint to fetch API
+  keys using JSON Web Token (JWT) authentication.
+* [`accounts/login/jwt/`]: Adjusted format of requests to this
+  previously undocumented, optional endpoint for
+  JWT authentication log in support.
+
 **Feature level 159**
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),

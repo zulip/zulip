@@ -864,6 +864,29 @@ assumes the name is correct, and new users will not be presented with
 a registration form unless they need to accept Terms of Service for
 the server (i.e. `TERMS_OF_SERVICE_VERSION` is set).
 
+## JWT
+
+Zulip supports using JSON Web Tokens (JWT) authentication in two ways:
+
+1. Obtaining a logged in session by making a POST request to
+   `/accounts/login/jwt/`. This allows a separate application to
+   integrate with Zulip via having a button that directly takes the user
+   to Zulip and logs them in.
+2. Fetching a user's API key by making a POST request to
+   `/api/v1/jwt/fetch_api_key`. This allows a separate application to
+   integrate with Zulip by [making API
+   requests](https://zulip.com/api/) on behalf of any user in a Zulip
+   organization.
+
+In both cases, the request should be made by sending an HTTP `POST`
+request with the JWT in the `token` parameter, with the JWT payload
+having the structure `{"email": "<target user email>"}`.
+
+In order to use JWT authentication with Zulip, one must first
+configure the JWT secret and algorithm via `JWT_AUTH_KEYS` in
+`/etc/zulip/settings.py`; see the inline comment documentation in that
+file for details.
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication
