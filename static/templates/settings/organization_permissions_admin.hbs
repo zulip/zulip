@@ -8,17 +8,17 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
+                    {{> settings_checkbox
+                      setting_name="realm_invite_required"
+                      prefix="id_"
+                      is_checked=realm_invite_required
+                      label=admin_settings_label.realm_invite_required}}
                     <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
                         <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
                     </label>
                     <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
                     </select>
-                    {{> settings_checkbox
-                      setting_name="realm_invite_required"
-                      prefix="id_"
-                      is_checked=realm_invite_required
-                      label=admin_settings_label.realm_invite_required}}
                 </div>
 
                 <div class="input-group">
