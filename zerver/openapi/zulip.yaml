@@ -5332,9 +5332,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: array
+                    items:
+                      type: string
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
