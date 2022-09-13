@@ -7,13 +7,9 @@ class zulip_ops::profile::zmirror_personals {
     'zephyr-clients',
     'krb5-config',
     'krb5-user',
-    # Packages needed to build pyzephyr
-    'libzephyr-dev',
-    'comerr-dev',
+    # Packages needed to for ctypes access to Zephyr
     'python3-dev',
-    'python2.7-dev',
-    'cython3',
-    'cython',
+    'python3-typing-extensions',
   ]
   package { $zmirror_packages:
     ensure  => installed,
@@ -70,11 +66,4 @@ class zulip_ops::profile::zmirror_personals {
     source => 'puppet:///modules/zulip_ops/iptables/zmirror.v6',
     order  => '20',
   }
-
-  # TODO: Do the rest of our setup, which includes at least:
-  # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
-  #  (https://github.com/davidben/zephyr/commit/252258d38ebd0e79b261db336c1f74f261b77128)
-  #  (to add ZLoadSession/ZDumpSession).
-  # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
-  #  (Patched with https://github.com/ebroder/python-zephyr/commit/d00cca474ed361439e68246e2687cdc4ea906de3)
 }
