@@ -10,7 +10,7 @@ import render_settings_profile_field_choice from "../templates/settings/profile_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -186,7 +186,9 @@ function set_up_create_field_form() {
             const profile_field_name =
                 page_params.realm_default_external_accounts[$profile_field_external_account_type]
                     .name;
-            $("#profile_field_name").val(profile_field_name).prop("disabled", true);
+            $("#profile_field_name")
+                .val($t({defaultMessage: "{profile_field_name}"}, {profile_field_name}))
+                .prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);
         }
     } else {
@@ -383,7 +385,16 @@ function open_edit_form_modal(e) {
         }
 
         // Set initial value in edit form
-        $profile_field_form.find("input[name=name]").val(field.name);
+        if (
+            Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id &&
+            "select[name=external_acc_field_type]" !== "custom"
+        ) {
+            $profile_field_form
+                .find("input[name=name]")
+                .val($t({defaultMessage: "{field_name}"}, {field_name: field.name}));
+        } else {
+            $profile_field_form.find("input[name=name]").val(field.name);
+        }
         $profile_field_form.find("input[name=hint]").val(field.hint);
 
         $profile_field_form
