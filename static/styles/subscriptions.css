@@ -678,9 +678,27 @@ h4.user_group_setting_subsection_title {
 
 #groups_overlay,
 #subscription_overlay {
+    #user-group-creation {
+        max-height: calc(100% - 102px);
+
+        .user-group-creation-body {
+            padding: 15px;
+        }
+    }
+
+    #stream-creation {
+        .stream-creation-body {
+            height: calc(95vh - 155px);
+            padding: 15px;
+
+            @media (width < $md_min) {
+                height: calc(95vh - 115px);
+            }
+        }
+    }
+
     #user-group-creation,
     #stream-creation {
-        max-height: calc(100% - 102px);
         overflow: auto;
         outline: none;
         -webkit-overflow-scrolling: touch;
@@ -690,11 +708,6 @@ h4.user_group_setting_subsection_title {
             bottom: 0;
             width: calc(100% - 27px);
             padding-top: 9px;
-        }
-
-        .user-group-creation-body,
-        .stream-creation-body {
-            padding: 15px;
         }
 
         .add_all_users_to_user_group,
