@@ -17,7 +17,7 @@
 - [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams).
 
 - Decide whether you want <kbd>Enter</kbd> [to send your message
-  or add a new line](/help/enable-enter-to-send).
+  or add a new line](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message).
 
 - [Configure your notifications](/#settings/notifications) to work the way
   you do. If you're joining a low traffic organization and aren't using the

@@ -22,6 +22,10 @@ POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # Add URL redirects for help center documentation here:
     URLRedirect(
+        "/help/enable-enter-to-send",
+        "/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message",
+    ),
+    URLRedirect(
         "/help/change-the-default-language-for-your-organization",
         "/help/configure-organization-language",
     ),
