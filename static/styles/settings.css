@@ -564,7 +564,7 @@ input[type="checkbox"] {
 
 #profile-settings {
     .custom-profile-fields-form .custom_user_field label,
-    .full-name-change-form label,
+    .full-name-change-container label,
     .timezone-setting-form label {
         min-width: fit-content;
     }

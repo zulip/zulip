@@ -41,7 +41,7 @@ export function update_full_name(new_full_name) {
     // Arguably, this should work more like how the `update_email`
     // flow works, where we update the name in the modal on open,
     // rather than updating it here, but this works.
-    const $full_name_input = $(".full-name-change-form input[name='full_name']");
+    const $full_name_input = $(".full-name-change-container input[name='full_name']");
     if ($full_name_input) {
         $full_name_input.val(new_full_name);
     }
