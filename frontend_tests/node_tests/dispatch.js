@@ -40,6 +40,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const muted_topics_ui = mock_esm("../../static/js/muted_topics_ui");
 const muted_users_ui = mock_esm("../../static/js/muted_users_ui");
 const notifications = mock_esm("../../static/js/notifications");
+const pm_list = mock_esm("../../static/js/pm_list");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
@@ -1020,6 +1021,7 @@ run_test("user_status", ({override}) => {
     {
         const stub = make_stub();
         override(activity, "redraw_user", stub.f);
+        override(pm_list, "update_private_messages", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("user_id");
