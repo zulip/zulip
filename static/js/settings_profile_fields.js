@@ -307,8 +307,8 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
     if ($profile_field_form.find("select[name=external_acc_field_type]").val() === "custom") {
         $profile_field_form.find("input[name=url_pattern]").val(url_pattern_val);
         $profile_field_form.find(".custom_external_account_detail").show();
-        $profile_field_form.find("input[name=name]").val("").closest(".input-group").show();
-        $profile_field_form.find("input[name=hint]").val("").closest(".input-group").show();
+        $profile_field_form.find("input[name=name]").closest(".input-group").show();
+        $profile_field_form.find("input[name=hint]").closest(".input-group").show();
     } else {
         $profile_field_form.find("input[name=name]").closest(".input-group").hide();
         $profile_field_form.find("input[name=hint]").closest(".input-group").hide();
