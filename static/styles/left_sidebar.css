@@ -8,6 +8,8 @@ $left_col_size: 19px;
    the above (and another 5px of padding not measured here) */
 $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 $topic_resolve_width: 13px;
+/* Space between section in the left sidebar. */
+$sections_vertical_gutter: 8px;
 
 #left-sidebar {
     #user-list {
@@ -48,11 +50,6 @@ $topic_resolve_width: 13px;
         position: relative;
         top: 1px;
     }
-}
-
-.pm_left_col {
-    min-width: $left_col_size;
-    margin-left: 15px;
 }
 
 #stream_filters,
@@ -106,6 +103,10 @@ li.show-more-topics {
     li {
         a {
             padding: 1px 0;
+
+            &:hover {
+                text-decoration: none;
+            }
         }
 
         ul {
@@ -190,8 +191,8 @@ li.show-more-topics {
     }
 }
 
-#private-container,
-#stream-filters-container {
+#left_sidebar_scroll_container {
+    outline: none;
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
@@ -199,16 +200,106 @@ li.show-more-topics {
     width: 100%;
 }
 
-#stream-filters-container .simplebar-content-wrapper {
-    outline: none;
+.private_messages_container {
+    background: hsl(0, 0%, 100%);
+    margin-right: 12px;
+    z-index: 1;
+
+    #toggle_private_messages_section_icon {
+        opacity: 0.7;
+        margin-left: 3px;
+        min-width: 13px;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    #private_messages_section_header {
+        cursor: pointer;
+        padding-left: $far_left_gutter_size;
+        padding-right: 10px;
+        white-space: nowrap;
+
+        #show_all_private_messages {
+            right: 0;
+            float: right;
+            position: absolute;
+            opacity: 0.7;
+            text-decoration: none;
+            color: inherit;
+            margin-right: 25px;
+            margin-top: 1px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .unread_count {
+            margin-right: 20px;
+            margin-top: 2px;
+        }
+    }
+
+    ul.pm-list {
+        list-style-type: none;
+        font-weight: 400;
+        margin-left: 0;
+        margin-bottom: 0;
+
+        span.fa-group {
+            font-size: 90%;
+        }
+
+        li.pm-list-item {
+            position: relative;
+            padding: 1px 10px 1px $far_left_gutter_size;
+            margin-left: 2px;
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            .pm_left_col {
+                min-width: $left_col_size;
+            }
+        }
+
+        li#show_more_private_messages {
+            cursor: pointer;
+            padding-right: 30px;
+            padding-left: 16px;
+
+            a {
+                font-size: 12px;
+                margin-left: $topic_resolve_width;
+            }
+
+            .unread_count {
+                margin-top: 2px;
+            }
+        }
+    }
 }
 
-#private-container {
-    max-height: 210px;
+.active_private_messages_section {
+    #private_messages_section,
+    #private_messages_list {
+        background-color: hsl(202, 56%, 91%);
+    }
 
-    /* Match the opacity for global-filters icons. */
-    span.fa-group {
-        opacity: 0.7;
+    #private_messages_section {
+        border-radius: 4px 4px 0 0;
+    }
+
+    #private_messages_list {
+        border-radius: 0 0 4px 4px;
+    }
+
+    #more_private_messages_sidebar_title {
+        font-weight: 600;
     }
 }
 
@@ -277,7 +368,7 @@ li.active-sub-filter {
 }
 
 #global_filters {
-    margin-bottom: 16px;
+    margin-bottom: $sections_vertical_gutter;
 
     .filter-icon {
         display: inline-block;
@@ -301,20 +392,12 @@ li.active-sub-filter {
         margin-top: 1px !important;
     }
 
-    .expanded_private_message .unread_count {
-        /* This margin accounts for the fact that the private messages
-           container gets a few pixels taller when expanded  */
-        margin: 0;
-        display: inline;
-    }
-
     i {
         opacity: 0.7;
     }
 }
 
 li.top_left_all_messages,
-.private_messages_header,
 li.top_left_mentions,
 li.top_left_starred_messages,
 li.top_left_drafts,
@@ -333,12 +416,6 @@ li.top_left_recent_topics {
     padding-right: 10px;
 }
 
-.top_left_row,
-.bottom_left_row,
-.top_left_private_messages {
-    border-radius: 4px;
-}
-
 .conversation-partners {
     line-height: 1.25;
 }
@@ -346,12 +423,6 @@ li.top_left_recent_topics {
 .top_left_all_messages i.fa-align-left {
     position: relative;
     font-size: 15px;
-}
-
-.top_left_private_messages i.fa-envelope {
-    position: relative;
-    top: -1px;
-    font-size: 11px;
 }
 
 .top_left_mentions i.fa-at,
@@ -475,30 +546,9 @@ ul.topic-list {
     font-weight: normal;
 }
 
-ul.expanded_private_messages {
-    list-style-type: none;
-
-    span.fa-group {
-        font-size: 90%;
-    }
-    font-weight: 400;
-    margin-left: 0;
-    padding-bottom: 2px;
-}
-
 li.topic-list-item {
     position: relative;
     padding-right: 5px;
-}
-
-li.expanded_private_message {
-    position: relative;
-    padding-top: 1px;
-    padding-bottom: 1px;
-
-    a {
-        margin: 1px 0;
-    }
 }
 
 .show-all-streams {
@@ -544,6 +594,10 @@ li.expanded_private_message {
     #topics_header {
         display: none;
     }
+
+    .zoom-out-hide {
+        display: none;
+    }
 }
 
 #topics_header {
@@ -556,7 +610,7 @@ li.expanded_private_message {
         text-transform: uppercase;
 
         i {
-            margin: 0 5px 0 10px;
+            margin: 0 6px 0 13px;
             position: relative;
             top: 1px;
         }
@@ -565,9 +619,12 @@ li.expanded_private_message {
 
 #streams_header {
     margin-right: 12px;
-    padding-left: $far_left_gutter_size;
     cursor: pointer;
-    margin-top: 3px;
+    padding: $sections_vertical_gutter 0 3px $far_left_gutter_size;
+    position: sticky;
+    top: 0;
+    background: hsl(0, 0%, 100%);
+    z-index: 1;
 
     input {
         padding-right: 20px;
@@ -639,7 +696,34 @@ li.expanded_private_message {
         display: none;
     }
 
+    #more_private_messages_sidebar_title {
+        display: inline;
+    }
+
+    #hide_more_private_messages {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        margin-left: 13px;
+        opacity: 0.7;
+
+        .fa-chevron-left {
+            padding-right: 3px;
+        }
+    }
+
     .zoom-in-hide {
         display: none;
+    }
+
+    .zoom-in-sticky {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 3px 0 3px $far_left_gutter_size;
+    }
+
+    #show_all_private_messages {
+        margin-right: 12px !important;
     }
 }

@@ -55,8 +55,7 @@ function get_new_heights() {
         Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true);
+        $("#global_filters").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -100,10 +99,8 @@ function left_userlist_get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true) -
         $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true) -
-        Number.parseInt($stream_filters.css("marginBottom"), 10);
+        $("#user_search_section").safeOuterHeight(true);
 
     const blocks = [
         {
@@ -204,7 +201,7 @@ export function resize_bottom_whitespace(h) {
 export function resize_stream_filters_container(h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     resize_bottom_whitespace(h);
-    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 }
 
 export function resize_sidebars() {
@@ -241,7 +238,7 @@ export function resize_sidebars() {
     const h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
 
     $("#buddy_list_wrapper").css("max-height", h.buddy_list_wrapper_max_height);
-    $("#stream-filters-container").css("max-height", h.stream_filters_max_height);
+    $("#left_sidebar_scroll_container").css("max-height", h.stream_filters_max_height);
 
     return h;
 }

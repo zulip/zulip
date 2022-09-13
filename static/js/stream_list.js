@@ -14,6 +14,7 @@ import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
@@ -268,9 +269,16 @@ export function zoom_in_topics(options) {
             $elt.hide();
         }
     });
+
+    // we also need to hide the PM section and allow
+    // stream list to take complete left-sidebar in zoomedIn view.
+    $(".private_messages_container").hide();
 }
 
 export function zoom_out_topics() {
+    // Show PM section
+    $(".private_messages_container").show();
+
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -599,16 +607,33 @@ export function set_event_handlers() {
             toggle_filter_displayed(e);
         });
 
+    function toggle_pm_header_icon() {
+        if (pm_list.is_private_messages_collapsed()) {
+            return;
+        }
+
+        const scroll_position = $(
+            "#left_sidebar_scroll_container .simplebar-content-wrapper",
+        ).scrollTop();
+        const pm_list_height = $("#private_messages_list").height();
+        if (scroll_position > pm_list_height) {
+            $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
+            $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
+        } else {
+            $("#toggle_private_messages_section_icon").addClass("fa-caret-down");
+            $("#toggle_private_messages_section_icon").removeClass("fa-caret-right");
+        }
+    }
+
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#stream-filters-container")).on("scroll", function () {
+    ui.get_scroll_element($("#left_sidebar_scroll_container")).on("scroll", () => {
         has_scrolled = true;
-        // remove listener once user has scrolled
-        $(this).off("scroll");
+        toggle_pm_header_icon();
     });
 
     stream_cursor = new ListCursor({
         list: {
-            scroll_container_sel: "#stream-filters-container",
+            scroll_container_sel: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
                 const li = get_stream_li(stream_id);
@@ -722,7 +747,7 @@ export function toggle_filter_displayed(e) {
 }
 
 export function scroll_stream_into_view($stream_li) {
-    const $container = $("#stream-filters-container");
+    const $container = $("#left_sidebar_scroll_container");
 
     if ($stream_li.length !== 1) {
         blueslip.error("Invalid stream_li was passed in");

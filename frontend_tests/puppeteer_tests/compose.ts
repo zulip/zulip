@@ -113,7 +113,7 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
         you_and_cordelia_selector,
     );
     const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia, Lear's daughter");
-    const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].expanded_private_message.active-sub-filter`;
+    const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].pm-list-item.active-sub-filter`;
     await page.waitForSelector(pm_list_selector, {visible: true});
     await close_compose_box(page);
 

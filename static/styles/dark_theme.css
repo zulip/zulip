@@ -144,7 +144,9 @@ body.dark-theme {
     .column-right .right-sidebar,
     #groups_overlay .right,
     #subscription_overlay .right,
-    #settings_page .right {
+    #settings_page .right,
+    #streams_header,
+    .private_messages_container {
         background-color: hsl(212, 28%, 18%);
     }
 
@@ -223,6 +225,13 @@ body.dark-theme {
 
     .private-message .alert-msg {
         background-color: hsl(208, 17%, 29%);
+    }
+
+    .active_private_messages_section {
+        #private_messages_section,
+        #private_messages_list {
+            background-color: hsla(199, 33%, 46%, 0.2);
+        }
     }
 
     /* do not turn the .message_header .stream_label text dark on hover because they're

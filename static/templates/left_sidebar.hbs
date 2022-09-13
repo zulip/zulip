@@ -22,20 +22,6 @@
                     <span>{{t 'Recent topics' }}</span>
                 </a>
             </li>
-            <li class="top_left_private_messages hidden-for-spectators">
-                <div class="private_messages_header top_left_row" title="{{t 'Private messages' }} (P)">
-                    <a href="#narrow/is/private">
-                        <span class="filter-icon">
-                            <i class="fa fa-envelope" aria-hidden="true"></i>
-                        </span>
-                        {{~!-- squash whitespace --~}}
-                        <span>{{t 'Private messages' }}</span>
-                        <span class="unread_count"></span>
-                    </a>
-                </div>
-                <div id="private-container" class="scrolling_list" data-simplebar>
-                </div>
-            </li>
             <li class="top_left_mentions top_left_row hidden-for-spectators" title="{{t 'Mentions' }}">
                 <a href="#narrow/is/mentioned">
                     <span class="filter-icon">
@@ -69,6 +55,31 @@
                 <span class="arrow drafts-sidebar-menu-icon"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
         </ul>
+    </div>
+
+    <div class="private_messages_container zoom-out hidden-for-spectators">
+        <a class="zoom-out-hide" id="hide_more_private_messages">
+            <i class="fa fa-chevron-left" aria-hidden="true"></i>
+            {{t 'BACK' }}
+        </a>
+        <div id="private_messages_section">
+            <div id="private_messages_section_header" class="zoom-out zoom-in-sticky">
+                <span id="more_private_messages_sidebar_title" class="zoom-out-hide">{{t 'Private messages' }}</span>
+                <i id="toggle_private_messages_section_icon" class="fa fa-lg fa-caret-down toggle_private_messages_section zoom-in-hide" aria-hidden="true"></i>
+                <h4 class="sidebar-title toggle_private_messages_section zoom-in-hide" data-tippy-content="{{t 'Private messages' }}">{{t 'PRIVATE MESSAGES' }}</h4>
+                <span class="unread_count"></span>
+                <a href="#narrow/is/private" id="show_all_private_messages">
+                    <i class="fa fa-align-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="left_sidebar_scroll_container" class="scrolling_list" data-simplebar>
+        <div class="private_messages_container zoom-out hidden-for-spectators">
+            <div id="private_messages_list"></div>
+        </div>
+
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-tippy-content="{{t 'Filter streams' }} (q)">{{t 'STREAMS' }}</h4>
                 <span class="tippy-zulip-tooltip streams_inline_icon_wrapper hidden-for-spectators" data-tippy-content="{{t 'Add streams' }}">
@@ -85,7 +96,7 @@
             <div id="topics_header">
                 <a class="show-all-streams" tabindex="0"> <i class="fa fa-chevron-left" aria-hidden="true"></i>{{t 'Back to streams' }}</a>
             </div>
-            <div id="stream-filters-container" class="scrolling_list" data-simplebar>
+            <div id="stream-filters-container">
                 <ul id="stream_filters" class="filters"></ul>
                 {{#unless is_guest }}
                     <div id="subscribe-to-more-streams"></div>

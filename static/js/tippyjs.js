@@ -389,4 +389,33 @@ export function initialize() {
             }
         },
     });
+
+    delegate("body", {
+        target: "#toggle_private_messages_section_icon",
+        onShow(instance) {
+            if ($("#toggle_private_messages_section_icon").hasClass("fa-caret-down")) {
+                instance.setContent(
+                    $t({
+                        defaultMessage: "Collapse private messages",
+                    }),
+                );
+            } else {
+                instance.setContent($t({defaultMessage: "Expand private messages"}));
+            }
+        },
+        appendTo: () => document.body,
+    });
+
+    delegate("body", {
+        target: "#show_all_private_messages",
+        placement: "bottom",
+        onShow(instance) {
+            instance.setContent(
+                $t({
+                    defaultMessage: "All private messages (P)",
+                }),
+            );
+        },
+        appendTo: () => document.body,
+    });
 }

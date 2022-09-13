@@ -74,6 +74,8 @@ IGNORED_PHRASES = [
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",
+    # We want the similar text in the Private Messages section to have the same capitalization.
+    r"more conversations",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",

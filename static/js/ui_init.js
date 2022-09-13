@@ -58,6 +58,7 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
+import * as pm_list from "./pm_list";
 import * as popover_menus from "./popover_menus";
 import * as presence from "./presence";
 import * as realm_logo from "./realm_logo";
@@ -675,6 +676,7 @@ export function initialize_everything() {
     unread_ui.initialize();
     activity.initialize();
     emoji_picker.initialize();
+    pm_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();
     drafts.initialize();

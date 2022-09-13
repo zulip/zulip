@@ -32,6 +32,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -735,6 +736,25 @@ export function initialize() {
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
+    });
+
+    $("body").on("click", "#private_messages_section_header", (e) => {
+        if (e.target.classList.value === "fa fa-align-right") {
+            // Let browser handle the click on link.
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+        const $left_sidebar_scrollbar = $(
+            "#left_sidebar_scroll_container .simplebar-content-wrapper",
+        );
+        const scroll_position = $left_sidebar_scrollbar.scrollTop();
+        if (scroll_position === 0 || pm_list.is_private_messages_collapsed()) {
+            // We don't toggle PM section if it is already open and user is scrolled down.
+            pm_list.toggle_private_messages_section();
+        }
+        $left_sidebar_scrollbar.scrollTop(0);
     });
 
     // WEBATHENA

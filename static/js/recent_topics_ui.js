@@ -20,6 +20,7 @@ import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import {get, process_message, topics} from "./recent_topics_data";
 import {
@@ -760,6 +761,7 @@ export function show() {
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
+    pm_list.handle_narrow_deactivated();
 
     complete_rerender();
 }
