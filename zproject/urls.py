@@ -25,6 +25,7 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
+    jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
     logout_then_login,
@@ -747,6 +748,12 @@ v1_api_mobile_patterns = [
 # View for uploading messages from email mirror
 urls += [
     path("email_mirror_message", email_mirror_message),
+]
+
+#  This view accepts a JWT containing an email and returns an API key
+#  and the details for a single user.
+urls += [
+    path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
 # Include URL configuration files for site-specified extra installed

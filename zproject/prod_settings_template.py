@@ -152,6 +152,22 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # "zproject.backends.GenericOpenIdConnectBackend",  # Generic OIDC integration, setup below
 )
 
+## JWT-based users login and API keys fetching.
+##
+## If you want to login users or fetch API keys via JWT in Zulip,
+## you need to set the secret key and algorithm to use to validate
+## JWT tokens received.
+JWT_AUTH_KEYS: Dict[str, Any] = {
+    # Subdomain for which you want to enable the service.
+    "zulip": {
+        # Shared secret key used to validate jwt tokens.
+        "key": "key1",
+        # Algorithm with which the jwt token are signed.
+        "algorithms": ["HS256"],
+    }
+}
+
+
 ## LDAP integration.
 ##
 ## Zulip supports retrieving information about users via LDAP, and
