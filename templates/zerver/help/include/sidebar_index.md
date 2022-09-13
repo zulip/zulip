@@ -63,7 +63,6 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
-* [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message drafts](/help/view-and-edit-your-message-drafts)

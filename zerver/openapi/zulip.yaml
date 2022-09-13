@@ -10546,7 +10546,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12547,7 +12547,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12777,7 +12777,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                           in the compose box is enabled.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
