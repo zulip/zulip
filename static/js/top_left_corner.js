@@ -1,6 +1,5 @@
 import $ from "jquery";
 
-import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as ui_util from "./ui_util";
 import * as unread_ui from "./unread_ui";
@@ -27,9 +26,8 @@ function remove($elem) {
     $elem.removeClass("active-filter active-sub-filter");
 }
 
-function deselect_top_left_corner_items() {
+export function deselect_top_left_corner_items() {
     remove($(".top_left_all_messages"));
-    remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     remove($(".top_left_recent_topics"));
@@ -73,11 +71,9 @@ export function handle_narrow_deactivated() {
 
 export function narrow_to_recent_topics() {
     remove($(".top_left_all_messages"));
-    remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
     $(".top_left_recent_topics").addClass("active-filter");
-    pm_list.close();
     setTimeout(() => {
         resize.resize_stream_filters_container();
     }, 0);

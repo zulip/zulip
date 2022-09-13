@@ -331,7 +331,7 @@ export function zoom_in() {
         active_widget.build();
     }
 
-    ui.get_scroll_element($("#stream-filters-container")).scrollTop(0);
+    ui.get_scroll_element($("#left_sidebar_scroll_container")).scrollTop(0);
 
     const spinner = true;
     active_widget.build(spinner);

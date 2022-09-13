@@ -79,6 +79,9 @@ IGNORED_PHRASES = [
     r"more topics",
     # Used alone in a parenthetical where capitalized looks worse.
     r"^deprecated$",
+    # We want the similar text in the Private Messages section to have the same capitalization.
+    r"more conversations",
+    r"back to streams",
     # Capital 'i' looks weird in reminders popover
     r"in 1 hour",
     r"in 20 minutes",

@@ -17,14 +17,16 @@ run_test("update_dom_with_unread_counts", () => {
     assert.equal(narrow_state.active(), true);
 
     const $total_count = $.create("total-count-stub");
-    const $private_li = $(".top_left_private_messages .private_messages_header");
+    const $private_li = $(
+        ".private_messages_container #private_messages_section #private_messages_section_header",
+    );
     $private_li.set_find_results(".unread_count", $total_count);
 
     counts = {
         private_message_count: 10,
     };
 
-    pm_list.update_dom_with_unread_counts(counts);
+    pm_list.set_count(counts.private_message_count);
     assert.equal($total_count.text(), "10");
     assert.ok($total_count.visible());
 
@@ -32,7 +34,7 @@ run_test("update_dom_with_unread_counts", () => {
         private_message_count: 0,
     };
 
-    pm_list.update_dom_with_unread_counts(counts);
+    pm_list.set_count(counts.private_message_count);
     assert.equal($total_count.text(), "");
     assert.ok(!$total_count.visible());
 });
