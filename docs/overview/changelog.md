@@ -21,6 +21,10 @@ log][commit-log] for an up-to-date list of all changes.
   [documentation](../production/upload-backends.md#s3-local-caching).
 - Removed the `application_server.no_serve_uploads` setting in
   `/etc/zulip/zulip.conf`, as all uploads requests go through Zulip now.
+- Installations using the previously undocumented [JWT authentication
+  feature](../production/authentication-methods.md#jwt) will need
+  to make minor adjustments in the format of JWT requests; see the
+  documentation for details on the new format.
 
 ## Zulip 6.x series
 
