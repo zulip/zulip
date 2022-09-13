@@ -32,6 +32,7 @@ import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics_ui from "./recent_topics_ui";
@@ -758,6 +759,47 @@ export function initialize() {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
     });
+
+    $("body").on(
+        "click",
+        ".private_messages_container.zoom-out #private_messages_section_header",
+        (e) => {
+            if (e.target.classList.value === "fa fa-align-right") {
+                // Let the browser handle the "all private messages" widget.
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            const $left_sidebar_scrollbar = $(
+                "#left_sidebar_scroll_container .simplebar-content-wrapper",
+            );
+            const scroll_position = $left_sidebar_scrollbar.scrollTop();
+
+            // This next bit of logic is a bit subtle; this header
+            // button scrolls to the top of the private messages
+            // section is uncollapsed but out of view; otherwise, we
+            // toggle its collapsed state.
+            if (scroll_position === 0 || pm_list.is_private_messages_collapsed()) {
+                pm_list.toggle_private_messages_section();
+            }
+            $left_sidebar_scrollbar.scrollTop(0);
+        },
+    );
+
+    /* The PRIVATE MESSAGES label's click behavior is complicated;
+     * only when zoomed in does it have a navigation effect, so we need
+     * this click handler rather than just a link. */
+    $("body").on(
+        "click",
+        ".private_messages_container.zoom-in #private_messages_section_header",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.location.hash = "narrow/is/private";
+        },
+    );
 
     // WEBATHENA
 

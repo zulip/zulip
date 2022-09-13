@@ -280,7 +280,9 @@ async function test_narrow_by_clicking_the_left_sidebar(page: Page): Promise<voi
     await page.click(".top_left_all_messages a");
     await expect_home(page);
 
-    await page.click(".top_left_private_messages a");
+    const all_private_messages_icon = "#show_all_private_messages";
+    await page.waitForSelector(all_private_messages_icon, {visible: true});
+    await page.click(all_private_messages_icon);
     await expect_all_pm(page);
 
     await un_narrow(page);

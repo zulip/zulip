@@ -18,7 +18,7 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
-/* These need to agree with scroll_bar.js */
+$left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
 $right_sidebar_width: 250px;
 
@@ -532,7 +532,7 @@ p.n-margin {
 
     .column-left .left-sidebar {
         width: $left_sidebar_width;
-        padding-left: 0;
+        padding-left: $left_sidebar_collapse_widget_gutter;
     }
 
     .column-right .right-sidebar {
@@ -548,7 +548,9 @@ p.n-margin {
 .column-middle,
 #compose-content {
     margin-right: $right_sidebar_width;
-    margin-left: $left_sidebar_width;
+    margin-left: calc(
+        $left_sidebar_width + $left_sidebar_collapse_widget_gutter
+    );
     position: relative;
 }
 

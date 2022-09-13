@@ -64,6 +64,16 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.waitForSelector("#subscription_overlay", {hidden: true});
 }
 
+async function navigate_to_private_messages(page: Page): Promise<void> {
+    console.log("Navigate to private messages");
+
+    const all_private_messages_icon = "#show_all_private_messages";
+    await page.waitForSelector(all_private_messages_icon, {visible: true});
+    await page.click(all_private_messages_icon);
+
+    await page.waitForSelector("#message_view_header .fa-envelope", {visible: true});
+}
+
 async function test_reload_hash(page: Page): Promise<void> {
     const initial_page_load_time = await page.evaluate(
         (): number => zulip_test.page_params.page_load_time,
@@ -99,7 +109,7 @@ async function navigation_tests(page: Page): Promise<void> {
     await navigate_to_subscriptions(page);
     await navigate_using_left_sidebar(page, "all_messages", "message_feed_container");
     await navigate_to_settings(page);
-    await navigate_using_left_sidebar(page, "narrow/is/private", "message_feed_container");
+    await navigate_to_private_messages(page);
     await navigate_to_subscriptions(page);
     await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
 
