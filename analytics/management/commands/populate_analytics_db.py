@@ -1,6 +1,5 @@
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Type, Union
-from unittest import mock
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
@@ -79,14 +78,14 @@ class Command(BaseCommand):
             string_id="analytics", name="Analytics", date_created=installation_time
         )
 
-        with mock.patch("zerver.lib.create_user.timezone_now", return_value=installation_time):
-            shylock = create_user(
-                "shylock@analytics.ds",
-                "Shylock",
-                realm,
-                full_name="Shylock",
-                role=UserProfile.ROLE_REALM_OWNER,
-            )
+        shylock = create_user(
+            "shylock@analytics.ds",
+            "Shylock",
+            realm,
+            full_name="Shylock",
+            role=UserProfile.ROLE_REALM_OWNER,
+            force_date_joined=installation_time,
+        )
         do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         stream = Stream.objects.create(name="all", realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
