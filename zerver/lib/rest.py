@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.cache import add_never_cache_headers
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_protect
 from typing_extensions import Concatenate, ParamSpec
 
 from zerver.decorator import (
@@ -105,8 +105,6 @@ def get_target_view_function_or_response(
     return json_method_not_allowed(list(supported_methods.keys()))
 
 
-@default_never_cache_responses
-@csrf_exempt
 def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
