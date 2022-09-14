@@ -1,6 +1,5 @@
 import re
 import urllib
-from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest
@@ -46,9 +45,7 @@ def is_subdomain_root_or_alias(request: HttpRequest) -> bool:
     return get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
 
 
-def user_matches_subdomain(realm_subdomain: Optional[str], user_profile: UserProfile) -> bool:
-    if realm_subdomain is None:
-        return True  # nocoverage # This state may no longer be possible.
+def user_matches_subdomain(realm_subdomain: str, user_profile: UserProfile) -> bool:
     return user_profile.realm.subdomain == realm_subdomain
 
 
