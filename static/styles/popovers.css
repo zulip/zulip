@@ -274,7 +274,7 @@ ul {
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
 
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);
