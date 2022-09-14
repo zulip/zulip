@@ -66,6 +66,28 @@ function test_ui(label, f) {
     });
 }
 
+function initialize_pm_pill({mock_template}) {
+    $.clear_all_elements();
+
+    $("#compose-send-button").prop("disabled", false);
+    $("#compose-send-button").trigger("focus");
+    $("#compose-send-button .loader").hide();
+
+    const $pm_pill_container = $.create("fake-pm-pill-container");
+    $("#private_message_recipient")[0] = {};
+    $("#private_message_recipient").set_parent($pm_pill_container);
+    $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
+    $("#private_message_recipient").before = () => {};
+
+    compose_pm_pill.initialize();
+
+    ui_util.place_caret_at_end = () => {};
+
+    $("#zephyr-mirror-error").is = () => {};
+
+    mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
+}
+
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     const sub = {
         stream_id: 101,
@@ -124,33 +146,11 @@ test_ui("validate_stream_message_address_info", ({mock_template}) => {
 test_ui("validate", ({override, mock_template}) => {
     override(compose_actions, "update_placeholder_text", () => {});
 
-    function initialize_pm_pill() {
-        $.clear_all_elements();
-
-        $("#compose-send-button").prop("disabled", false);
-        $("#compose-send-button").trigger("focus");
-        $("#compose-send-button .loader").hide();
-
-        const $pm_pill_container = $.create("fake-pm-pill-container");
-        $("#private_message_recipient")[0] = {};
-        $("#private_message_recipient").set_parent($pm_pill_container);
-        $pm_pill_container.set_find_results(".input", $("#private_message_recipient"));
-        $("#private_message_recipient").before = () => {};
-
-        compose_pm_pill.initialize();
-
-        ui_util.place_caret_at_end = () => {};
-
-        $("#zephyr-mirror-error").is = () => {};
-
-        mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
-    }
-
     function add_content_to_compose_box() {
         $("#compose-textarea").val("foobarfoobar");
     }
 
-    initialize_pm_pill();
+    initialize_pm_pill({mock_template});
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -177,7 +177,7 @@ test_ui("validate", ({override, mock_template}) => {
         }),
     );
 
-    initialize_pm_pill();
+    initialize_pm_pill({mock_template});
     add_content_to_compose_box();
 
     // test validating private messages
@@ -190,7 +190,7 @@ test_ui("validate", ({override, mock_template}) => {
         $t_html({defaultMessage: "Please specify at least one valid recipient"}),
     );
 
-    initialize_pm_pill();
+    initialize_pm_pill({mock_template});
     add_content_to_compose_box();
     compose_state.private_message_recipient("foo@zulip.com");
 
@@ -224,7 +224,7 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(compose_validate.validate());
     page_params.realm_is_zephyr_mirror_realm = false;
 
-    initialize_pm_pill();
+    initialize_pm_pill({mock_template});
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
     assert.ok(compose_validate.validate());
