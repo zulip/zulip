@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import * as resolved_topic from "../shared/js/resolved_topic";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
@@ -541,6 +542,63 @@ function validate_private_message() {
     }
 
     return true;
+}
+
+export function check_send_permissions() {
+    const $send_button = $("#compose-send-button");
+    const $send_button_container = $(".compose_right_float_container")[0];
+    const tippy_instance = $send_button_container._tippy || tippy($send_button_container);
+    const msg_type = compose_state.get_message_type();
+
+    if (msg_type === "private" && page_params.realm_private_message_policy === 2) {
+        const recipients = people.validate_user_ids(compose_pm_pill.get_user_ids());
+        const non_bot_users = recipients.filter(
+            (user_id) => !people.get_by_user_id(user_id).is_bot,
+        );
+
+        if (non_bot_users.length > 0) {
+            tippy_instance.setContent(
+                $t_html({
+                    defaultMessage:
+                        "You are not allowed to send private messages in this organization.",
+                }),
+            );
+            $send_button.prop("disabled", true);
+            return;
+        }
+    }
+
+    if (msg_type === "stream") {
+        const stream_name = compose_state.stream_name();
+        const sub = stream_data.get_sub(stream_name);
+
+        if (!sub) {
+            tippy_instance.setContent(
+                $t_html(
+                    {
+                        defaultMessage: "The stream #{stream_name} does not exist.",
+                    },
+                    {stream_name},
+                ),
+            );
+            $send_button.prop("disabled", true);
+            return;
+        } else if (!stream_data.can_post_messages_in_stream(sub)) {
+            tippy_instance.setContent(
+                $t_html(
+                    {
+                        defaultMessage: "You are not allowed to send messages to #{stream_name}.",
+                    },
+                    {stream_name},
+                ),
+            );
+            $send_button.prop("disabled", true);
+            return;
+        }
+    }
+
+    tippy_instance.destroy();
+    $send_button.prop("disabled", false);
 }
 
 export function check_overflow_text() {

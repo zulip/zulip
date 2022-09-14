@@ -86,6 +86,19 @@ function override_private_message_recipient({override}) {
     override(compose_pm_pill, "get_emails", () => recipient, {unused: false});
 }
 
+function initialize_compose_container() {
+    $.create(".compose_right_float_container", {
+        children: [
+            {
+                _tippy: {
+                    setContent: () => {},
+                    destroy: () => {},
+                },
+            },
+        ],
+    });
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         // We don't test the css calls; we just skip over them.
@@ -112,6 +125,23 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
+
+    const me = {
+        email: "me@example.com",
+        user_id: 333,
+        full_name: "Me",
+        date_joined: new Date(),
+    };
+
+    const params = {};
+    params.realm_users = [me];
+    params.realm_non_active_users = [];
+    params.cross_realm_bots = [];
+
+    people.initialize(page_params.user_id, params);
+    people.initialize_current_user(me.user_id);
+
+    initialize_compose_container();
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -175,6 +205,23 @@ test("start", ({override, override_rewire}) => {
     assert.equal($("#stream_message_recipient_topic").val(), "");
     stream_data.clear_subscriptions();
 
+    // Compose send button disables/enables depending on stream post policy
+    const announce = {
+        subscribed: true,
+        color: "green",
+        name: "announce",
+        stream_id: 3,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+    stream_data.add_sub(announce);
+    page_params.is_admin = true;
+    opts = {};
+    start("stream", opts);
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+    page_params.is_admin = false;
+    start("stream", opts);
+    assert.ok($("#compose-send-button").prop("disabled"));
+
     // Start PM
     compose_defaults = {
         private_message_recipient: "foo@example.com",
@@ -193,6 +240,7 @@ test("start", ({override, override_rewire}) => {
     assert.equal($("#compose-textarea").val(), "hello");
     assert.equal(compose_state.get_message_type(), "private");
     assert.ok(compose_state.composing());
+    assert.ok(!$("#compose-send-button").prop("disabled"));
 
     // Triggered by new private message
     opts = {
@@ -225,6 +273,7 @@ test("start", ({override, override_rewire}) => {
     assert_visible("#compose_controls");
     assert_hidden("#private-message");
     assert.ok(!compose_state.composing());
+    people.deactivate(me);
 });
 
 test("respond_to_message", ({override, override_rewire}) => {
@@ -232,6 +281,8 @@ test("respond_to_message", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
+
+    initialize_compose_container();
 
     // Test PM
     const person = {
@@ -273,6 +324,8 @@ test("reply_with_mention", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
+
+    initialize_compose_container();
 
     const msg = {
         type: "stream",
@@ -326,6 +379,8 @@ test("quote_and_reply", ({disallow, override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
+
+    initialize_compose_container();
 
     let selected_message;
     override(message_lists.current, "selected_message", () => selected_message);

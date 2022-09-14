@@ -492,6 +492,17 @@ test_ui("initialize", ({override}) => {
 test_ui("update_fade", ({override}) => {
     initialize_handlers({override});
 
+    $.create(".compose_right_float_container", {
+        children: [
+            {
+                _tippy: {
+                    setContent: () => {},
+                    destroy: () => {},
+                },
+            },
+        ],
+    });
+
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");

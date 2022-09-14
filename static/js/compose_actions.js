@@ -348,6 +348,8 @@ export function start(msg_type, opts) {
     // Show a warning if topic is resolved
     compose_validate.warn_if_topic_resolved(true);
 
+    compose_validate.check_send_permissions();
+
     // Reset the `max-height` property of `compose-textarea` so that the
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.

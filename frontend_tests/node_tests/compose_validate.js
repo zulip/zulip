@@ -88,6 +88,19 @@ function initialize_pm_pill({mock_template}) {
     mock_template("input_pill.hbs", false, () => "<div>pill-html</div>");
 }
 
+function initialize_compose_container() {
+    $.create(".compose_right_float_container", {
+        children: [
+            {
+                _tippy: {
+                    setContent: () => {},
+                    destroy: () => {},
+                },
+            },
+        ],
+    });
+}
+
 test_ui("validate_stream_message_address_info", ({mock_template}) => {
     const sub = {
         stream_id: 101,
@@ -151,6 +164,7 @@ test_ui("validate", ({override, mock_template}) => {
     }
 
     initialize_pm_pill({mock_template});
+    initialize_compose_container();
     assert.ok(!compose_validate.validate());
     assert.ok(!$("#compose-send-button .loader").visible());
     assert.equal($("#compose-send-button").prop("disabled"), false);
@@ -178,6 +192,7 @@ test_ui("validate", ({override, mock_template}) => {
     );
 
     initialize_pm_pill({mock_template});
+    initialize_compose_container();
     add_content_to_compose_box();
 
     // test validating private messages
@@ -191,6 +206,7 @@ test_ui("validate", ({override, mock_template}) => {
     );
 
     initialize_pm_pill({mock_template});
+    initialize_compose_container();
     add_content_to_compose_box();
     compose_state.private_message_recipient("foo@zulip.com");
 
@@ -225,6 +241,7 @@ test_ui("validate", ({override, mock_template}) => {
     page_params.realm_is_zephyr_mirror_realm = false;
 
     initialize_pm_pill({mock_template});
+    initialize_compose_container();
     add_content_to_compose_box();
     compose_state.private_message_recipient("welcome-bot@example.com");
     assert.ok(compose_validate.validate());
@@ -465,6 +482,104 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
         $("#compose-error-msg").html(),
         $t_html({defaultMessage: "You do not have permission to post in this stream."}),
     );
+});
+
+test_ui("test_check_send_permissions", ({override, mock_template}) => {
+    override(compose_actions, "update_placeholder_text", () => {});
+
+    const admin_sub = {
+        stream_id: 130,
+        name: "admin_sub",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.admins.code,
+    };
+
+    const mod_sub = {
+        stream_id: 131,
+        name: "mod_sub",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.moderators.code,
+    };
+
+    const non_new_sub = {
+        stream_id: 132,
+        name: "non_new_sub",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+    };
+
+    stream_data.add_sub(admin_sub);
+    stream_data.add_sub(mod_sub);
+    stream_data.add_sub(non_new_sub);
+
+    page_params.user_id = me.user_id;
+    page_params.is_admin = false;
+    page_params.is_mod = false;
+
+    compose_state.set_message_type("stream");
+    initialize_compose_container();
+
+    compose_state.stream_name("non_new_sub");
+    compose_state.topic("test");
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    compose_state.stream_name("mod_sub");
+    compose_validate.check_send_permissions();
+    assert.ok($("#compose-send-button").prop("disabled"));
+    page_params.is_moderator = true;
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    compose_state.stream_name("admin_sub");
+    compose_validate.check_send_permissions();
+    assert.ok($("#compose-send-button").prop("disabled"));
+    page_params.is_admin = true;
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    compose_state.stream_name("not_a_real_stream");
+    compose_validate.check_send_permissions();
+    assert.ok($("#compose-send-button").prop("disabled"));
+
+    // Set org private message policy to 'Private messages disabled'
+    page_params.realm_private_message_policy = 2;
+
+    compose_state.set_message_type("private");
+
+    initialize_pm_pill({mock_template});
+    initialize_compose_container();
+    compose_state.private_message_recipient("");
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    initialize_pm_pill({mock_template});
+    initialize_compose_container();
+    compose_state.private_message_recipient("welcome-bot@example.com");
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    initialize_pm_pill({mock_template});
+    initialize_compose_container();
+    compose_state.private_message_recipient("welcome-bot@example.com,alice@example.com");
+    compose_validate.check_send_permissions();
+    assert.ok($("#compose-send-button").prop("disabled"));
+
+    initialize_pm_pill({mock_template});
+    initialize_compose_container();
+    compose_state.private_message_recipient("alice@example.com");
+    compose_validate.check_send_permissions();
+    assert.ok($("#compose-send-button").prop("disabled"));
+
+    page_params.realm_private_message_policy = 1;
+
+    initialize_pm_pill({mock_template});
+    initialize_compose_container();
+    compose_state.private_message_recipient("alice@example.com");
+    compose_validate.check_send_permissions();
+    assert.ok(!$("#compose-send-button").prop("disabled"));
+
+    compose_state.set_message_type("stream");
 });
 
 test_ui("test_check_overflow_text", () => {

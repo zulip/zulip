@@ -475,6 +475,11 @@ input.recipient_box {
         position: relative;
         top: -6px;
     }
+
+    &:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
 }
 
 .enter_sends_choices {

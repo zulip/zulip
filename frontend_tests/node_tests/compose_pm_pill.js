@@ -7,6 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const compose_actions = mock_esm("../../static/js/compose_actions");
+const compose_validate = mock_esm("../../static/js/compose_validate");
 const input_pill = mock_esm("../../static/js/input_pill");
 const people = zrequire("people");
 
@@ -18,6 +19,7 @@ let pills = {
 
 run_test("pills", ({override}) => {
     override(compose_actions, "update_placeholder_text", () => {});
+    override(compose_validate, "check_send_permissions", () => {});
 
     const othello = {
         user_id: 1,

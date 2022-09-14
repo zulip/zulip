@@ -407,10 +407,16 @@ export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_on_recipient_change);
+    ).on("keyup", () => {
+        update_on_recipient_change();
+        compose_validate.check_send_permissions();
+    });
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", update_on_recipient_change);
+    ).on("change", () => {
+        update_on_recipient_change();
+        compose_validate.check_send_permissions();
+    });
     $("#compose-textarea").on("keydown", (event) => {
         compose_ui.handle_keydown(event, $("#compose-textarea").expectOne());
     });
@@ -427,6 +433,10 @@ export function initialize() {
             $("#compose_close").attr("data-tooltip-template-id", "compose_close_and_save_tooltip");
         } else {
             $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip");
+        }
+
+        if (compose_text_length <= page_params.max_message_length) {
+            compose_validate.check_send_permissions();
         }
     });
 

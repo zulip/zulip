@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as compose_actions from "./compose_actions";
+import * as compose_validate from "./compose_validate";
 import * as input_pill from "./input_pill";
 import * as people from "./people";
 import * as user_pill from "./user_pill";
@@ -30,10 +31,12 @@ export function initialize() {
 
     widget.onPillCreate(() => {
         compose_actions.update_placeholder_text();
+        compose_validate.check_send_permissions();
     });
 
     widget.onPillRemove(() => {
         compose_actions.update_placeholder_text();
+        compose_validate.check_send_permissions();
     });
 }
 
