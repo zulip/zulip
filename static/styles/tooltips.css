@@ -5,6 +5,8 @@
      */
     font-family: "Source Sans 3", sans-serif !important;
     word-wrap: break-word;
+    /* Contains stylistic variant of upper-case character "I" in Source Sans 3 */
+    font-feature-settings: "ss01" on;
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
