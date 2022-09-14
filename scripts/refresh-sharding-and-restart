@@ -33,7 +33,7 @@ mv /etc/zulip/sharding.json.tmp /etc/zulip/sharding.json
 # while Django is restarting.  For this reason it's important to
 # reload nginx only after Django.
 supervisorctl restart zulip-django
-supervisorctl restart zulip-workers:*
+supervisorctl restart 'zulip-workers:*'
 if [ -f /etc/supervisor/conf.d/zulip/zulip-once.conf ]; then
     supervisorctl restart zulip_deliver_scheduled_emails zulip_deliver_scheduled_messages
 fi
