@@ -51,7 +51,7 @@ organization's policy choices.
 * [Change users' names](/help/change-a-users-name) (e.g. to "Name (Spammer)")
   for users who sent spam private messages to many community members.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
-  [delete custom emoji](/help/custom-emoji#delete-custom-emoji).
+  [deactivate custom emoji](/help/custom-emoji#deactivate-custom-emoji).
 
 ## Public access option
 
