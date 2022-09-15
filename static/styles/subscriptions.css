@@ -1108,12 +1108,14 @@ h4.user_group_setting_subsection_title {
         }
     }
 
-    #subscription_overlay,
     #groups_overlay {
         .display-type {
             display: none;
         }
+    }
 
+    #subscription_overlay,
+    #groups_overlay {
         .user-groups-container,
         .subscriptions-container {
             height: 95%;
