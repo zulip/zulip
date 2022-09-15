@@ -2674,8 +2674,12 @@ class UserTopic(models.Model):
 
 
 class MutedUser(models.Model):
-    user_profile: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
-    muted_user: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(
+        UserProfile, related_name="muter", on_delete=CASCADE
+    )
+    muted_user: UserProfile = models.ForeignKey(
+        UserProfile, related_name="muted", on_delete=CASCADE
+    )
     date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
 
     class Meta:
