@@ -41,7 +41,7 @@ export function show_user_list(message_id) {
                             $t(
                                 {
                                     defaultMessage:
-                                        "This message has been read by {num_of_people} people:",
+                                        "This message has been read by {num_of_people, plural, one {1 person} other {# people}}:",
                                 },
                                 {num_of_people: users.length},
                             ),
