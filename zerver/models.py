@@ -1446,7 +1446,7 @@ class Recipient(models.Model):
        table. See the Huddle model for details.
 
     See also the Subscription model, which stores which UserProfile
-    objects are susbcribed to which Recipient objects.
+    objects are subscribed to which Recipient objects.
     """
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
