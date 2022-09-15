@@ -30,6 +30,7 @@ import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
+import * as settings_org from "./settings_org";
 
 export let toggler;
 export let select_tab = "personal_settings";
@@ -519,6 +520,8 @@ export function initialize() {
         stream_settings_ui.hide_or_disable_stream_privacy_options_if_required(
             $(".changeable-settings"),
         );
+
+        $("#manage_streams_container").find(".discard-button").show();
     });
 
     $("#manage_streams_container").on("click", "#save-settings", (e) => {
@@ -538,6 +541,25 @@ export function initialize() {
         });
 
         $(".changeable-settings").replaceWith(general_settings);
+    });
+
+    $("#manage_streams_container").on("change input", "input, select, textarea", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // const $subsection = $(e.target).closest(".org-subsection-parent");
+        
+        // $subsection.find(".save-button").show();
+        // const properties_elements = get_subsection_property_elements($subsection);
+        // const show_change_process_button = properties_elements.some((elem) =>
+        //     check_property_changed(elem, for_realm_default_settings),
+        // );
+    
+        const $save_btn_controls = $("#manage_streams_container").find(".save-button-controls");
+        // const button_state = show_change_process_button ? "unsaved" : "discarded";
+        settings_org.change_save_button_state($save_btn_controls, "unsaved");
+
+        return undefined;
     });
 
     $("#manage_streams_container").on("click", "#cancel-settings-change", (e) => {

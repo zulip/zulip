@@ -913,6 +913,67 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .save-button-controls {
+        float: right
+    }
+
+    .save-discard-widget-button {
+        border-radius: 5px;
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 3px 14px 4px 11px;
+        text-decoration: none;
+        color: hsl(0, 0%, 47%);
+        min-width: 80px;
+        /* Limit the height of the button */
+        line-height: 1.2;
+        vertical-align: text-bottom;
+
+        &:hover,
+        &:focus {
+            background-color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0, 0%, 61%);
+            color: hsl(0, 0%, 18%);
+
+            .save-discard-widget-button-icon {
+                color: hsl(0, 0%, 47%);
+            }
+        }
+
+        &.primary {
+            background-color: hsl(156, 30%, 50%);
+            color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(155, 30%, 50%);
+
+            &:hover,
+            &:focus {
+                background-color: hsl(166, 35%, 57%);
+                border: 1px solid hsl(166, 35%, 57%);
+            }
+
+            .save-discard-widget-button-icon {
+                font-weight: lighter;
+                color: hsl(0, 0%, 100%);
+            }
+
+            &.saving {
+                background-color: hsl(156, 14%, 40%);
+                border-color: hsl(156, 14%, 40%);
+            }
+        }
+
+        .save-discard-widget-button-icon {
+            vertical-align: middle;
+            margin-right: 3px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .save-discard-widget-button-text {
+            vertical-align: middle;
+            line-height: 1;
+        }
+    }
+
     .hash::after {
         position: relative;
         content: "#";
