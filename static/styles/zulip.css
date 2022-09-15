@@ -1731,11 +1731,6 @@ div.focused_table {
     font-weight: bold;
 }
 
-.top-navbar-border {
-    border-right: 1px solid hsl(0, 0%, 88%);
-    border-left: 1px solid hsl(0, 0%, 88%);
-}
-
 .search_icon {
     /* These rules match the .dropdown-toggle CSS for the gear menu. */
     color: inherit;

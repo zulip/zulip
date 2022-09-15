@@ -409,10 +409,6 @@ body.dark-theme {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
-    .top-navbar-border {
-        border-color: hsla(0, 0%, 0%, 0.6);
-    }
-
     #compose-container {
         background-color: hsla(0, 0%, 14%, 1);
     }
