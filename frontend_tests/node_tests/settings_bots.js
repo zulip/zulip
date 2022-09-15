@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -18,8 +18,6 @@ const bot_data_params = {
         },
     ],
 };
-
-const avatar = mock_esm("../../static/js/avatar");
 
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
@@ -90,59 +88,14 @@ test("generate_botserverrc_content", () => {
     assert.equal(content, expected);
 });
 
-function test_create_bot_type_input_box_toggle(f) {
-    const $create_payload_url = $("#create_payload_url");
-    const $payload_url_inputbox = $("#payload_url_inputbox");
-    const $config_inputbox = $("#config_inputbox");
-    const EMBEDDED_BOT_TYPE = "4";
-    const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-    const GENERIC_BOT_TYPE = "1";
-
-    $("#create_bot_type :selected").val(EMBEDDED_BOT_TYPE);
-    f();
-    assert.ok(!$create_payload_url.hasClass("required"));
-    assert.ok(!$payload_url_inputbox.visible());
-    assert.ok($("#select_service_name").hasClass("required"));
-    assert.ok($("#service_name_list").visible());
-    assert.ok($config_inputbox.visible());
-
-    $("#create_bot_type :selected").val(OUTGOING_WEBHOOK_BOT_TYPE);
-    f();
-    assert.ok($create_payload_url.hasClass("required"));
-    assert.ok($payload_url_inputbox.visible());
-    assert.ok(!$config_inputbox.visible());
-
-    $("#create_bot_type :selected").val(GENERIC_BOT_TYPE);
-    f();
-    assert.ok(!$create_payload_url.hasClass("required"));
-    assert.ok(!$payload_url_inputbox.visible());
-    assert.ok(!$config_inputbox.visible());
-}
-
-test("test tab clicks", ({override}) => {
-    override($.validator, "addMethod", () => {});
-
-    $("#create_bot_form").validate = () => {};
-
-    $("#config_inputbox").children = () => {
-        const $mock_children = {
-            hide: () => {},
-        };
-        return $mock_children;
-    };
-
-    override(avatar, "build_bot_create_widget", () => {});
-
+test("test tab clicks", () => {
     settings_bots.set_up();
-
-    test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
 
     function click_on_tab($tab_elem) {
         $tab_elem.trigger("click");
     }
 
     const tabs = {
-        $add: $("#bots_lists_navbar .add-a-new-bot-tab"),
         $active: $("#bots_lists_navbar .active-bots-tab"),
         $inactive: $("#bots_lists_navbar .inactive-bots-tab"),
     };
@@ -155,35 +108,21 @@ test("test tab clicks", ({override}) => {
     };
 
     const forms = {
-        $add: $("#add-a-new-bot-form"),
         $active: $("#active_bots_list"),
         $inactive: $("#inactive_bots_list"),
     };
 
-    click_on_tab(tabs.$add);
-    assert.ok(tabs.$add.hasClass("active"));
-    assert.ok(!tabs.$active.hasClass("active"));
-    assert.ok(!tabs.$inactive.hasClass("active"));
-
-    assert.ok(forms.$add.visible());
-    assert.ok(!forms.$active.visible());
-    assert.ok(!forms.$inactive.visible());
-
     click_on_tab(tabs.$active);
-    assert.ok(!tabs.$add.hasClass("active"));
     assert.ok(tabs.$active.hasClass("active"));
     assert.ok(!tabs.$inactive.hasClass("active"));
 
-    assert.ok(!forms.$add.visible());
     assert.ok(forms.$active.visible());
     assert.ok(!forms.$inactive.visible());
 
     click_on_tab(tabs.$inactive);
-    assert.ok(!tabs.$add.hasClass("active"));
     assert.ok(!tabs.$active.hasClass("active"));
     assert.ok(tabs.$inactive.hasClass("active"));
 
-    assert.ok(!forms.$add.visible());
     assert.ok(!forms.$active.visible());
     assert.ok(forms.$inactive.visible());
 });

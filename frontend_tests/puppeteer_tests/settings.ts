@@ -94,15 +94,26 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
+    await page.click("#bot-settings .add-a-new-bot");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new bot",
+        "Unexpected title for deactivate user modal",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+        "Deactivate button has incorrect text.",
+    );
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 1",
         bot_short_name: "1",
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
         payload_url: "http://hostname.example.com/bots/followup",
     });
-
-    await page.waitForSelector("#create_bot_button", {visible: true});
-    await page.click("#create_bot_button");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "1-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
@@ -123,16 +134,25 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
-    await page.click(".add-a-new-bot-tab");
-    await page.waitForSelector("#create_bot_button", {visible: true});
-
+    await page.click("#bot-settings .add-a-new-bot");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new bot",
+        "Unexpected title for deactivate user modal",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+        "Deactivate button has incorrect text.",
+    );
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 2",
         bot_short_name: "2",
         bot_type: GENERIC_BOT_TYPE,
     });
-
-    await page.click("#create_bot_button");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "2-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
@@ -238,7 +258,6 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
-    await page.click(".add-a-new-bot-tab");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);

@@ -692,6 +692,10 @@ input[type="checkbox"] {
     max-height: calc(95vh - 280px);
 }
 
+#bot-settings .add-a-new-bot {
+    margin-bottom: 2px;
+}
+
 .bots_list {
     display: none;
     list-style-type: none;
