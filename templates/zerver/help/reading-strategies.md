@@ -63,4 +63,5 @@ like to reply to later.
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Recent topics](/help/recent-topics)
-* [Search](/help/search-for-messages) for streams, topics, or messages.
+* [Searching for messages](/help/search-for-messages)
+* [Marking messages as read](/help/marking-messages-as-read)

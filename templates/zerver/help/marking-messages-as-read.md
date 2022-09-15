@@ -1,24 +1,26 @@
 # Marking messages as read
 
-Zulip automatically keeps track of which messages you have and haven't
-read. Unread messages have a dark line along their left side, which fade as
-the message gets marked as read.
+## Move the blue box to mark messages as read
+In the Zulip desktop or web app, messages are marked as read when the
+**blue box** passes over them. You can move the blue box with the keyboard (see
+[keyboard shortcuts for navigation](/help/keyboard-shortcuts#navigation)),
+or by scrolling the message feed with your mouse.
 
-There are two situations in which messages automatically get marked as read.
+## Scroll to mark messages as read
 
-* **End of feed**: When you get to the bottom of a view, Zulip marks all
-  messages in that view as read.
+Zulip automatically keeps track of which messages you have and haven't read.
+Unread messages have a dark line along their left side, which fades as
+the message gets marked as read. When you get to the bottom of a view, Zulip
+marks all messages in that view as read.
 
-* **Blue box**: Messages are marked as read when the blue box passes over
-  them.
+## Mark all messages as read
 
-You can move the blue box either with the keyboard (arrow keys, <kbd>End</kbd>,
-etc.) or by scrolling the feed with your mouse.
-
-You can also manually **mark all messages as read**, or **mark all messages in a
+You can manually **mark all messages as read**, or **mark all messages in a
 stream or topic as read**.
 
 {start_tabs}
+
+{tab|desktop-web}
 
 1. Hover over a stream, topic, or **All messages** in the left sidebar.
 
@@ -28,3 +30,7 @@ stream or topic as read**.
 1. Click **Mark all messages as read**.
 
 {end_tabs}
+
+## Related articles
+
+* [Reading strategies](/help/reading-strategies)
