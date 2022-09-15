@@ -6,7 +6,7 @@ body.dark-theme {
      */
     @extend %dark-theme-block;
 
-    background-color: hsl(212, 28%, 18%);
+    background-color: hsla(0, 0%, 11%, 1);
     color: hsl(236, 33%, 90%);
 
     .placeholder {
@@ -142,10 +142,12 @@ body.dark-theme {
 
     .app-main,
     #message_view_header_underpadding,
-    .floating_recipient .message-header-wrapper,
-    .column-middle,
-    #compose {
+    .floating_recipient .message-header-wrapper {
         background-color: hsla(0, 0%, 14%, 1);
+    }
+
+    .header-wrapper {
+        background-color: hsla(0, 0%, 13%, 1);
     }
 
     .header-main {
@@ -409,6 +411,14 @@ body.dark-theme {
 
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
+    #compose-container {
+        background-color: hsla(0, 0%, 14%, 1);
+    }
+
+    .message_area_padder {
+        background-color: hsla(0, 0%, 14%, 1);
     }
 
     #message_view_header .sub_count {

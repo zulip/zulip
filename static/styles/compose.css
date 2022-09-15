@@ -228,8 +228,6 @@
     left: 0;
     z-index: 2;
     width: 100%;
-
-    background-color: hsl(0, 0%, 100%);
 }
 
 #compose-container {
@@ -239,6 +237,7 @@
     /* This should match the value for .app-main */
     max-width: 1400px;
     margin: auto;
+    background-color: hsla(0, 0%, 100%, 1);
 }
 
 #compose_top {
