@@ -93,15 +93,20 @@
 }
 
 ul {
-    &.info_popover_actions i,
-    &.actions_popover i,
-    &.streams_popover i,
-    &.topics_popover i {
-        display: inline-block;
-        width: 14px;
-        text-align: center;
-        margin-right: 3px;
-        vertical-align: middle;
+    &.info_popover_actions a,
+    &.actions_popover a,
+    &.streams_popover a,
+    &.topics_popover a {
+        display: flex;
+        align-items: center;
+
+        i {
+            display: inline-block;
+            width: 14px;
+            text-align: center;
+            margin-right: 3px;
+            vertical-align: middle;
+        }
     }
 
     &.topics_popover {
@@ -114,10 +119,6 @@ ul {
                 font-size: 12px;
             }
         }
-    }
-
-    &.info_popover_actions i.fa-edit {
-        vertical-align: middle;
     }
 }
 
