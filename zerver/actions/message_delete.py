@@ -106,7 +106,6 @@ def classify_message(messages: Iterable[Message]) -> Dict[str, Dict[int, Any]]:
 
 
 def delete_deactivated_user_messages(user_profile: UserProfile, delete_policy: int) -> None:
-
     user_messages = Message.objects.filter(sender=user_profile)
 
     if delete_policy == Message.DELETE_PUBLIC_STREAM_MESSAGE:

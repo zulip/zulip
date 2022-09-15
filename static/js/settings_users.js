@@ -452,6 +452,7 @@ export function confirm_deactivation(user_id, handle_confirm, loading_spinner) {
                 admin_email: people.my_current_email(),
                 realm_uri,
                 realm_name,
+                deactivate_message_delete_action: settings_config.deactivate_message_delete_action,
             };
             const html_body = render_settings_deactivation_user_modal(opts);
 
