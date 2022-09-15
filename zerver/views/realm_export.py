@@ -24,10 +24,13 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     event_time = timezone_now()
     realm = user.realm
     EXPORT_LIMIT = 5
-    # Conservative limit on the size of message history in
-    # organizations being exported; this exists to protect Zulip
-    # against a possible unmonitored accidental DoS caused by trying
-    # to export an organization with huge history.
+
+    # Exporting organizations with a huge amount of history can
+    # potentially consume a lot of disk or otherwise have accidental
+    # DoS risk; for that reason, we require large exports to be done
+    # manually on the command line.
+    #
+    # It's very possible that higher limits would be completely safe.
     MAX_MESSAGE_HISTORY = 250000
     MAX_UPLOAD_QUOTA = 10 * 1024 * 1024 * 1024
 
@@ -40,14 +43,22 @@ def export_realm(request: HttpRequest, user: UserProfile) -> HttpResponse:
     if len(limit_check) >= EXPORT_LIMIT:
         raise JsonableError(_("Exceeded rate limit."))
 
-    total_messages = sum(
+    # The RealmCount analytics table lets us efficiently get an
+    # estimate for the number of public stream messages in an
+    # organization. It won't match the actual number of messages in
+    # the export, because this measures the number of messages that
+    # went to a public stream at the time they were sent. Thus,
+    # messages that were deleted or moved between streams will be
+    # treated differently for this check vs. in the export code.
+    exportable_messages_estimate = sum(
         realm_count.value
         for realm_count in RealmCount.objects.filter(
-            realm=user.realm, property="messages_sent:client:day"
+            realm=realm, property="messages_sent:message_type:day", subgroup="public_stream"
         )
     )
+
     if (
-        total_messages > MAX_MESSAGE_HISTORY
+        exportable_messages_estimate > MAX_MESSAGE_HISTORY
         or user.realm.currently_used_upload_space_bytes() > MAX_UPLOAD_QUOTA
     ):
         raise JsonableError(
