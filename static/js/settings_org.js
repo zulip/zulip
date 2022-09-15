@@ -626,13 +626,13 @@ export function sync_realm_settings(property) {
 }
 
 export function change_save_button_state($element, state) {
-    function show_hide_element($element, show, fadeout_delay) {
+    function show_hide_element($element, show, fadeout_delay, fadeout_callback) {
         if (show) {
             $element.removeClass("hide").addClass(".show").fadeIn(300);
             return;
         }
         setTimeout(() => {
-            $element.fadeOut(300);
+            $element.fadeOut(300, fadeout_callback);
         }, fadeout_delay);
     }
 
@@ -644,10 +644,9 @@ export function change_save_button_state($element, state) {
     }
 
     if (state === "discarded") {
-        if ($saveBtn.prop("disabled")) {
-            $saveBtn.prop("disabled", false);
-        }
-        show_hide_element($element, false, 0);
+        show_hide_element($element, false, 0, () =>
+            enable_or_disable_save_button($element.closest(".org-subsection-parent")),
+        );
         return;
     }
 
@@ -689,6 +688,9 @@ export function change_save_button_state($element, state) {
 
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
+    if (state === "unsaved") {
+        enable_or_disable_save_button($element.closest(".org-subsection-parent"));
+    }
     show_hide_element($element, is_show, 800);
 }
 
@@ -888,8 +890,7 @@ export function init_dropdown_widgets() {
     default_code_language_widget.setup();
 }
 
-export function update_save_button_state(e) {
-    const $subsection_elem = $(e.target).closest(".org-subsection-parent");
+function enable_or_disable_save_button($subsection_elem) {
     const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
     let disable_save_btn = false;
     for (const setting_elem of time_limit_settings) {
@@ -1210,8 +1211,6 @@ export function build_page() {
             const setting_value = get_property_value("realm_message_content_edit_limit_minutes");
             $("#id_realm_message_content_edit_limit_minutes").val(setting_value);
         }
-
-        update_save_button_state(e);
     });
 
     $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
@@ -1229,8 +1228,6 @@ export function build_page() {
             const setting_value = get_property_value("realm_message_content_delete_limit_minutes");
             $("#id_realm_message_content_delete_limit_minutes").val(setting_value);
         }
-
-        update_save_button_state(e);
     });
 
     $("#id_realm_message_retention_setting").on("change", (e) => {
@@ -1285,10 +1282,6 @@ export function build_page() {
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
         e.stopPropagation();
-    });
-
-    $("#org-msg-editing").on("input", ".admin-realm-time-limit-input", (e) => {
-        update_save_button_state(e);
     });
 
     $("#show_realm_domains_modal").on("click", (e) => {

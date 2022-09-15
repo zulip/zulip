@@ -86,6 +86,11 @@ function createSaveButtons(subsection) {
     $save_button_controls.fadeOut = () => {
         props.hidden = true;
     };
+
+    $save_button_controls.closest = () => $stub_save_button_header;
+    $stub_save_button_header.set_find_results(".time-limit-setting", []);
+    $stub_save_button_header.set_find_results(".subsection-changes-save button", $stub_save_button);
+
     return {
         props,
         $save_button: $stub_save_button,
