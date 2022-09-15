@@ -234,7 +234,7 @@ export function update_subscribe_to_more_streams_link() {
         render_subscribe_to_more_streams({
             can_subscribe_stream_count,
             can_create_streams,
-            exactly_one_unsusbcribed_stream: can_subscribe_stream_count === 1,
+            exactly_one_unsubscribed_stream: can_subscribe_stream_count === 1,
         }),
     );
 }
