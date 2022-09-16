@@ -202,6 +202,7 @@
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
+* [Edit a bot](/help/edit-a-bot)
 
 ## Support
 * [View Zulip version](/help/view-zulip-version)

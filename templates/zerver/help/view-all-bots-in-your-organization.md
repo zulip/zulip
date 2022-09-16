@@ -12,4 +12,6 @@ alike.
 {end_tabs}
 
 You can [deactivate or reactivate](/help/deactivate-or-reactivate-a-bot) any
+bots in your organization from this panel.  
+You can also [edit](/help/edit-a-bot#edit-a-bot-in-your-organization) any
 bots in your organization from this panel.
