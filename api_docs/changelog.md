@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 161**
+
+* [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `can_remove_subscribers_group_id` parameter to support
+  changing `can_remove_subscribers_group` setting.
+
 **Feature level 160**
 
 * [`POST /api/v1/jwt/fetch_api_key`]: New API endpoint to fetch API
