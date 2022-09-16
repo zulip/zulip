@@ -8027,14 +8027,23 @@ paths:
         Unsubscribe yourself or other users from one or more streams.
 
         In addition to managing the current user's subscriptions, this
-        endpoint can be used by organization administrators to remove
-        other users from streams, or to remove a bot that the current
-        user is the `bot_owner` for from any stream that the current
-        user can access.
+        endpoint can be used to remove other users from streams. This
+        is possible in 3 situations:
 
-        **Changes**: Before Zulip 6.0 (feature level 145), only
-        organization administrators could remove other users from
-        streams.
+        - Organization administrators can remove any user from any
+          stream.
+        - Users can remove a bot that they own from any stream that
+          the user can access.
+        - Users who can access a stream and are in the group with ID
+          `can_remove_subscribers_group_id` for that stream can
+          unsubscribe any user from that stream.
+
+        **Changes**: Before Zulip 7.0 (feature level 161),
+        `can_remove_subscribers_group_id` was always the system group
+        for organization administrators.
+
+        Before Zulip 6.0 (feature level 145), users had no special
+        privileges for managing bots that they own.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -14536,6 +14545,7 @@ paths:
           required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -17561,6 +17571,22 @@ components:
           - type: string
           - type: integer
       example: "20"
+      required: false
+    CanRemoveSubscribersGroupId:
+      name: can_remove_subscribers_group_id
+      in: query
+      description: |
+        ID of the user group whose members are allowed to unsubscribe others
+        from the stream, if they have access to this stream, even if
+        they are not an organization administrator.
+
+        This setting can currently only be set to system user groups
+        except `@role:internet` and `@role:owners` group.
+
+        **Changes**: New in Zulip 7.0 (feature level 161).
+      schema:
+        type: integer
+      example: 20
       required: false
     LinkifierPattern:
       name: pattern
