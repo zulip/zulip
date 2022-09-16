@@ -58,6 +58,33 @@ def access_user_groups_as_potential_subgroups(
     return list(user_groups)
 
 
+def access_user_group_for_setting(
+    user_group_id: int,
+    user_profile: UserProfile,
+    *,
+    setting_name: str,
+    require_system_group: bool = False,
+    allow_internet_group: bool = False,
+    allow_owners_group: bool = False,
+) -> UserGroup:
+    user_group = access_user_group_by_id(user_group_id, user_profile, for_read=True)
+
+    if require_system_group and not user_group.is_system_group:
+        raise JsonableError(_("'{}' must be a system user group.").format(setting_name))
+
+    if not allow_internet_group and user_group.name == UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME:
+        raise JsonableError(
+            _("'{}' setting cannot be set to '@role:internet' group.").format(setting_name)
+        )
+
+    if not allow_owners_group and user_group.name == UserGroup.OWNERS_GROUP_NAME:
+        raise JsonableError(
+            _("'{}' setting cannot be set to '@role:owners' group.").format(setting_name)
+        )
+
+    return user_group
+
+
 def user_groups_in_realm_serialized(realm: Realm) -> List[UserGroupDict]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
