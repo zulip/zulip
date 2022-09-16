@@ -101,7 +101,14 @@ ul {
         width: 14px;
         text-align: center;
         margin-right: 3px;
-        vertical-align: middle;
+
+        &.zulip-icon {
+            /* These icons are different from font awesome icons,
+                so they need to be aligned separately. */
+            line-height: 14px;
+            position: relative;
+            top: 2px;
+        }
     }
 
     &.topics_popover {
