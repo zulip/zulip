@@ -79,6 +79,7 @@ function format_user_group_list_item(group) {
 }
 
 function render_user_stream_list(streams, user) {
+    $("#user-profile-modal .modal__footer").hide();
     streams.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-stream-list");
     $container.empty();
@@ -98,6 +99,7 @@ function render_user_stream_list(streams, user) {
 }
 
 function render_user_group_list(groups, user) {
+    $("#user-profile-modal .modal__footer").hide();
     groups.sort(compare_by_name);
     const $container = $("#user-profile-modal .user-group-list");
     $container.empty();
@@ -114,6 +116,7 @@ function render_manage_profile_content(user) {
     const $container = $("#manage-profile-tab");
     $container.empty();
     settings_users.show_edit_user_info_modal(user.user_id, $container);
+    $("#user-profile-modal .modal__footer").show();
 }
 
 export function get_custom_profile_field_data(user, field, field_types, dateFormat) {
@@ -248,6 +251,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
             $("#" + key).show();
             switch (key) {
                 case "profile-tab":
+                    $("#user-profile-modal .modal__footer").hide();
                     initialize_user_type_fields(user);
                     break;
                 case "user-profile-groups-tab":

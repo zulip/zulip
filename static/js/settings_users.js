@@ -625,7 +625,7 @@ export function show_edit_user_info_modal(user_id, $container) {
     });
 
     // Submit user details
-    $("#edit-user-form").on("click", ".dialog_submit_button", () => {
+    $("#user-profile-modal").on("click", ".dialog_submit_button", () => {
         const role = Number.parseInt($("#user-role-select").val().trim(), 10);
         const $full_name = $("#edit-user-form").find("input[name='full_name']");
         const profile_data = get_human_profile_data(fields_user_pills);
@@ -636,8 +636,8 @@ export function show_edit_user_info_modal(user_id, $container) {
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
-        const $submit_btn = $("#edit-user-form .dialog_submit_button");
-        const $cancel_btn = $("#edit-user-form .dialog_cancel_button");
+        const $submit_btn = $("#user-profile-modal .dialog_submit_button");
+        const $cancel_btn = $("#user-profile-modal .dialog_cancel_button");
         show_button_spinner($submit_btn);
         $cancel_btn.prop("disabled", true);
 

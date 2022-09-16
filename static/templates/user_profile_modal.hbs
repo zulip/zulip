@@ -128,6 +128,14 @@
                     <div class="tabcontent" id="manage-profile-tab"></div>
                 </div>
             </main>
+            {{!-- Only display this when manage-profile-tab is open --}}
+            <div class="modal__footer hide">
+                <button type="button" class="modal__btn dialog_cancel_button" aria-label="{{t 'Close this dialog window' }}" data-micromodal-close>{{t "Cancel" }}</button>
+                <button type="button" class="modal__btn dialog_submit_button">
+                    <span>{{t "Save changes"}}</span>
+                    <div class="modal__spinner"></div>
+                </button>
+            </div>
         </div>
     </div>
 </div>
