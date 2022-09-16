@@ -49,7 +49,7 @@ from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
-from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
@@ -107,6 +107,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
 )
+from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.actions.users import (
     do_change_user_role,

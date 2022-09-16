@@ -19,7 +19,7 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_custom_profile_field,
 )
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
@@ -29,6 +29,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
 )
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
+from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_mute_topic
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
