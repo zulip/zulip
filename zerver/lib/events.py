@@ -49,7 +49,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
-from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
@@ -592,7 +592,9 @@ def fetch_initial_state_data(
 
     if want("user_status"):
         # We require creating an account to access statuses.
-        state["user_status"] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
+        state["user_status"] = (
+            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+        )
 
     if want("user_topic"):
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
