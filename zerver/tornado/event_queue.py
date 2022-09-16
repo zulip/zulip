@@ -6,6 +6,7 @@ import os
 import random
 import time
 import traceback
+import uuid
 from collections import deque
 from dataclasses import asdict
 from typing import (
@@ -419,8 +420,6 @@ realm_clients_all_streams: Dict[int, List[ClientDescriptor]] = {}
 # that is about to be deleted
 gc_hooks: List[Callable[[int, ClientDescriptor, bool], None]] = []
 
-next_queue_id = 0
-
 
 def clear_client_event_queues_for_testing() -> None:
     assert settings.TEST_SUITE
@@ -428,8 +427,6 @@ def clear_client_event_queues_for_testing() -> None:
     user_clients.clear()
     realm_clients_all_streams.clear()
     gc_hooks.clear()
-    global next_queue_id
-    next_queue_id = 0
 
 
 def add_client_gc_hook(hook: Callable[[int, ClientDescriptor, bool], None]) -> None:
@@ -458,9 +455,7 @@ def add_to_client_dicts(client: ClientDescriptor) -> None:
 
 
 def allocate_client_descriptor(new_queue_data: MutableMapping[str, Any]) -> ClientDescriptor:
-    global next_queue_id
-    queue_id = str(settings.SERVER_GENERATION) + ":" + str(next_queue_id)
-    next_queue_id += 1
+    queue_id = str(uuid.uuid4())
     new_queue_data["event_queue"] = EventQueue(queue_id).to_dict()
     client = ClientDescriptor.from_dict(new_queue_data)
     clients[queue_id] = client
