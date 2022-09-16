@@ -44,7 +44,7 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     return dct
 
 
-def get_user_info_dict(realm_id: int) -> Dict[str, UserInfoDict]:
+def get_user_status_dict(realm_id: int) -> Dict[str, UserInfoDict]:
     rows = (
         UserStatus.objects.filter(
             user_profile__realm_id=realm_id,

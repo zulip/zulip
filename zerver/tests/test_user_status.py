@@ -3,18 +3,18 @@ from typing import Any, Dict, List, Mapping, Set
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.user_status import UserInfoDict, get_user_info_dict, update_user_status
+from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
 from zerver.models import UserProfile, UserStatus, get_client
 
 
 def get_away_user_ids(realm_id: int) -> Set[int]:
-    user_dict = get_user_info_dict(realm_id)
+    user_dict = get_user_status_dict(realm_id)
 
     return {int(user_id) for user_id in user_dict if user_dict[user_id].get("away")}
 
 
-def user_info(user: UserProfile) -> UserInfoDict:
-    user_dict = get_user_info_dict(user.realm_id)
+def user_status_info(user: UserProfile) -> UserInfoDict:
+    user_dict = get_user_status_dict(user.realm_id)
     return user_dict.get(str(user.id), {})
 
 
@@ -62,7 +62,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(
                 away=True,
                 status_text="out to lunch",
@@ -90,7 +90,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(
                 status_text="out to lunch",
                 emoji_name="car",
@@ -111,7 +111,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             {},
         )
 
@@ -166,7 +166,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(status_text="in a meeting"),
         )
 
@@ -234,7 +234,7 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(away=True, status_text="on vacation"),
         )
 
@@ -254,7 +254,7 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(
                 away=True,
                 status_text="on vacation",
@@ -280,7 +280,7 @@ class UserStatusTest(ZulipTestCase):
             ),
         )
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(away=True, status_text="on vacation"),
         )
 
@@ -300,7 +300,7 @@ class UserStatusTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(status_text="in office"),
         )
 
@@ -310,7 +310,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text=""),
         )
         self.assertEqual(
-            get_user_info_dict(realm_id=realm_id),
+            get_user_status_dict(realm_id=realm_id),
             {},
         )
 
@@ -328,7 +328,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
         )
         self.assertEqual(
-            user_info(hamlet),
+            user_status_info(hamlet),
             dict(status_text="at the beach", away=True),
         )
 
