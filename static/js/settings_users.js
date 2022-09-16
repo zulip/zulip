@@ -693,4 +693,10 @@ export function set_up_humans() {
 export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
+
+    $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        settings_bots.add_a_new_bot();
+    });
 }
