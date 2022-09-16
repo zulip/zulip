@@ -192,9 +192,20 @@ export function update_bot_settings_tip() {
     $(".bot-settings-tip").text(tip_text);
 }
 
+function update_add_bot_button() {
+    if (can_create_new_bots()) {
+        $("#bot-settings .add-a-new-bot").show();
+        $("#admin-bot-list .add-a-new-bot").show();
+    } else {
+        $("#bot-settings .add-a-new-bot").hide();
+        $("#admin-bot-list .add-a-new-bot").hide();
+    }
+}
+
 export function update_bot_permissions_ui() {
     update_bot_settings_tip();
     hide_errors();
+    update_add_bot_button();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
 }
 
