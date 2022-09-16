@@ -262,7 +262,10 @@ ul {
 #user-profile-modal {
     .modal__body {
         box-sizing: border-box;
-        height: 60vh;
+    }
+
+    .top_body,
+    .tabcontent {
         padding-left: 16px;
         padding-right: 16px;
     }
@@ -408,6 +411,7 @@ ul {
         }
 
         margin-bottom: 20px;
+        height: 48vh;
     }
 
     #user-profile-streams-tab {
