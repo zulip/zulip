@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 143**
+
+* `PATCH /realm`: The `disallow_disposable_email_addresses`,
+  `emails_restricted_to_domains`, `invite_required`, and
+  `waiting_period_threshold` settings can no longer be changed by
+  organization administrators who are not owners.
+* `PATCH /realm/domains`, `POST /realm/domains`, `DELETE
+  /realm/domains`: Organization administrators who are not owners can
+  no longer access these endpoints.
+
 **Feature level 142**
 
 * [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
