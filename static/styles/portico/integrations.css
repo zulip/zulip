@@ -34,10 +34,6 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (width <= 768px) {
-            width: auto;
-        }
-
-        @media (width <= 686px) {
             width: calc(100% - 50px);
             margin: 0 auto;
         }
