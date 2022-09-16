@@ -35,6 +35,7 @@ from zerver.models import (
     get_realm_user_dicts,
     get_user,
     get_user_profile_by_id_in_realm,
+    is_cross_realm_bot_email,
 )
 
 
@@ -487,7 +488,7 @@ def format_user_row(
 
     if is_bot:
         result["bot_type"] = row["bot_type"]
-        if row["email"] in settings.CROSS_REALM_BOT_EMAILS:
+        if is_cross_realm_bot_email(row["email"]):
             result["is_system_bot"] = True
 
         # Note that bot_owner_id can be None with legacy data.
