@@ -1,8 +1,12 @@
 """
     This module stores data for "external account" custom profile field.
 """
+import copy
+from typing import Dict
+
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (
@@ -23,16 +27,25 @@ DEFAULT_EXTERNAL_ACCOUNTS = {
     "twitter": {
         "text": "Twitter",
         "url_pattern": "https://twitter.com/%(username)s",
-        "name": "Twitter username",
+        "name": gettext_lazy("Twitter username"),
         "hint": "",
     },
     "github": {
         "text": "GitHub",
         "url_pattern": "https://github.com/%(username)s",
-        "name": "GitHub username",
+        "name": gettext_lazy("GitHub username"),
         "hint": "",
     },
 }
+
+
+def get_default_external_accounts() -> Dict[str, Dict[str, str]]:
+    translated_default_external_accounts = copy.deepcopy(DEFAULT_EXTERNAL_ACCOUNTS)
+
+    for external_account in translated_default_external_accounts.values():
+        external_account["name"] = str(external_account["name"])
+
+    return translated_default_external_accounts
 
 
 def validate_external_account_field_data(field_data: ProfileFieldData) -> ProfileFieldData:

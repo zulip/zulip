@@ -20,7 +20,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
@@ -318,7 +318,7 @@ def fetch_initial_state_data(
 
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
+        state["realm_default_external_accounts"] = get_default_external_accounts()
 
         if settings.JITSI_SERVER_URL is not None:
             state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
