@@ -198,8 +198,9 @@
 ## Bots & integrations
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Request an integration](/help/request-an-integration)
+* [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Request an integration](/help/request-an-integration)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
