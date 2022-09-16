@@ -6,7 +6,7 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.users import do_deactivate_user
-from zerver.lib.presence import get_status_dict_by_realm
+from zerver.lib.presence import get_presence_dict_by_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, reset_emails_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -34,7 +34,7 @@ class UserPresenceModelTests(ZulipTestCase):
 
         user_profile = self.example_user("hamlet")
         email = user_profile.email
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 0)
 
         self.login_user(user_profile)
@@ -42,12 +42,12 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         slim_presence = False
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assert_length(presence_dct, 1)
         self.assertEqual(presence_dct[email]["website"]["status"], "active")
 
         slim_presence = True
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id, slim_presence)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id, slim_presence)
         self.assert_length(presence_dct, 1)
         info = presence_dct[str(user_profile.id)]
         self.assertEqual(set(info.keys()), {"active_timestamp"})
@@ -59,12 +59,12 @@ class UserPresenceModelTests(ZulipTestCase):
 
         # Simulate the presence being a week old first.  Nothing should change.
         back_date(num_weeks=1)
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 1)
 
         # If the UserPresence row is three weeks old, we ignore it.
         back_date(num_weeks=3)
-        presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+        presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
         self.assert_length(presence_dct, 0)
 
     def test_push_tokens(self) -> None:
@@ -78,7 +78,7 @@ class UserPresenceModelTests(ZulipTestCase):
         self.assert_json_success(result)
 
         def pushable() -> bool:
-            presence_dct = get_status_dict_by_realm(user_profile.realm_id)
+            presence_dct = get_presence_dict_by_realm(user_profile.realm_id)
             self.assert_length(presence_dct, 1)
             return presence_dct[email]["website"]["pushable"]
 
