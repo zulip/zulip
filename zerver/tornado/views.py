@@ -18,8 +18,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
 )
 from zerver.models import Client, UserProfile, get_client, get_user_profile_by_id
-from zerver.tornado.event_queue import fetch_events, get_client_descriptor, process_notification
-from zerver.tornado.exceptions import BadEventQueueIdError
+from zerver.tornado.event_queue import access_client_descriptor, fetch_events, process_notification
 
 T = TypeVar("T")
 
@@ -41,11 +40,7 @@ def notify(request: HttpRequest) -> HttpResponse:
 def cleanup_event_queue(
     request: HttpRequest, user_profile: UserProfile, queue_id: str = REQ()
 ) -> HttpResponse:
-    client = get_client_descriptor(str(queue_id))
-    if client is None:
-        raise BadEventQueueIdError(queue_id)
-    if user_profile.id != client.user_profile_id:
-        raise JsonableError(_("You are not authorized to access this queue"))
+    client = access_client_descriptor(user_profile.id, queue_id)
     log_data = RequestNotes.get_notes(request).log_data
     assert log_data is not None
     log_data["extra"] = f"[{queue_id}]"
