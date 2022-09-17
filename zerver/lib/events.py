@@ -1193,7 +1193,7 @@ def apply_event(
                 state["starred_messages"] = [
                     message
                     for message in state["starred_messages"]
-                    if not (message in event["messages"])
+                    if message not in event["messages"]
                 ]
     elif event["type"] == "realm_domains":
         if event["op"] == "add":
