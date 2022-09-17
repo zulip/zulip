@@ -7855,6 +7855,7 @@ paths:
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
+        - $ref: "#/components/parameters/CanRemoveSubscribersGroupId"
       responses:
         "200":
           description: Success.

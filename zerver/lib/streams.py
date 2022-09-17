@@ -62,6 +62,7 @@ class StreamDict(TypedDict, total=False):
     stream_post_policy: int
     history_public_to_subscribers: Optional[bool]
     message_retention_days: Optional[int]
+    can_remove_subscribers_group: Optional[UserGroup]
 
 
 def get_stream_permission_policy_name(
@@ -125,15 +126,19 @@ def create_stream_if_needed(
     history_public_to_subscribers: Optional[bool] = None,
     stream_description: str = "",
     message_retention_days: Optional[int] = None,
+    can_remove_subscribers_group: Optional[UserGroup] = None,
     acting_user: Optional[UserProfile] = None,
 ) -> Tuple[Stream, bool]:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
         realm, invite_only, history_public_to_subscribers
     )
-    administrators_user_group = UserGroup.objects.get(
-        name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
-    )
 
+    if can_remove_subscribers_group is None:
+        can_remove_subscribers_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
+        )
+
+    assert can_remove_subscribers_group is not None
     with transaction.atomic():
         (stream, created) = Stream.objects.get_or_create(
             realm=realm,
@@ -147,7 +152,7 @@ def create_stream_if_needed(
                 history_public_to_subscribers=history_public_to_subscribers,
                 is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 message_retention_days=message_retention_days,
-                can_remove_subscribers_group=administrators_user_group,
+                can_remove_subscribers_group=can_remove_subscribers_group,
             ),
         )
 
@@ -196,6 +201,7 @@ def create_streams_if_needed(
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
+            can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             acting_user=acting_user,
         )
 

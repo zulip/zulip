@@ -269,6 +269,9 @@ class TestCreateStreams(ZulipTestCase):
         self.assertTrue(self.example_user("desdemona").id in events[0]["users"])
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Private stream")
 
+        moderators_system_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
             [
@@ -278,6 +281,7 @@ class TestCreateStreams(ZulipTestCase):
                     "invite_only": True,
                     "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
                     "message_retention_days": -1,
+                    "can_remove_subscribers_group": moderators_system_group,
                 }
                 for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
             ],
@@ -294,6 +298,7 @@ class TestCreateStreams(ZulipTestCase):
             self.assertTrue(stream.invite_only)
             self.assertTrue(stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS)
             self.assertTrue(stream.message_retention_days == -1)
+            self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -465,6 +470,78 @@ class TestCreateStreams(ZulipTestCase):
 
         # But it should be marked as read for Iago, the stream creator.
         self.assert_length(iago_unread_messages, 0)
+
+    def test_can_remove_subscribers_group_on_stream_creation(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login_user(user)
+        moderators_system_group = UserGroup.objects.get(
+            name="@role:moderators", realm=realm, is_system_group=True
+        )
+        admins_system_group = UserGroup.objects.get(
+            name="@role:administrators", realm=realm, is_system_group=True
+        )
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream1", "description": "First new stream"}]
+            ).decode(),
+            "can_remove_subscribers_group_id": orjson.dumps(moderators_system_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream1", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, moderators_system_group.id)
+
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream2", "description": "Second new stream"}]
+            ).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream2", realm)
+        self.assertEqual(stream.can_remove_subscribers_group.id, admins_system_group.id)
+
+        hamletcharacters_group = UserGroup.objects.get(name="hamletcharacters", realm=realm)
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "can_remove_subscribers_group_id": orjson.dumps(hamletcharacters_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result, "'can_remove_subscribers_group' must be a system user group."
+        )
+
+        internet_group = UserGroup.objects.get(
+            name="@role:internet", is_system_group=True, realm=realm
+        )
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "can_remove_subscribers_group_id": orjson.dumps(internet_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'can_remove_subscribers_group' setting cannot be set to '@role:internet' group.",
+        )
+
+        owners_group = UserGroup.objects.get(name="@role:owners", is_system_group=True, realm=realm)
+        post_data = {
+            "subscriptions": orjson.dumps(
+                [{"name": "new_stream3", "description": "Third new stream"}]
+            ).decode(),
+            "can_remove_subscribers_group_id": orjson.dumps(owners_group.id).decode(),
+        }
+        result = self.api_post(user, "/api/v1/users/me/subscriptions", post_data, subdomain="zulip")
+        self.assert_json_error(
+            result,
+            "'can_remove_subscribers_group' setting cannot be set to '@role:owners' group.",
+        )
 
 
 class RecipientTest(ZulipTestCase):
@@ -4325,7 +4402,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.tornado_redirected_to_list(events, expected_num_events=2):
-            with self.assert_database_query_count(12):
+            with self.assert_database_query_count(13):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
@@ -4650,7 +4727,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # any tornado subscription events
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=0):
-            with self.assert_database_query_count(4):
+            with self.assert_database_query_count(5):
                 self.common_subscribe_to_streams(
                     mit_user,
                     stream_names,
@@ -4698,7 +4775,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             with cache_tries_captured() as cache_tries:
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(
@@ -5611,7 +5688,7 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with self.assert_database_query_count(46):
+        with self.assert_database_query_count(47):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,

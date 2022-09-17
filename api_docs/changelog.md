@@ -25,6 +25,10 @@ format used by the Zulip server that they are interacting with.
 * [`PATCH /streams/{stream_id}`](/api/update-stream): Added
   `can_remove_subscribers_group_id` parameter to support
   changing `can_remove_subscribers_group` setting.
+* [`POST /users/me/subscriptions`](/api/subscribe): Added
+  `can_remove_subscribers_group_id` parameter to set
+  `can_remove_subscribers_group` setting while creating
+  streams.
 
 **Feature level 160**
 
