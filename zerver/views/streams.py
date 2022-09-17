@@ -857,7 +857,7 @@ def delete_in_topic(
     stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
     topic_name: str = REQ("topic_name"),
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
     messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
     if not stream.is_history_public_to_subscribers():
