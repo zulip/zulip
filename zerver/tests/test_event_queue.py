@@ -13,8 +13,8 @@ from zerver.lib.user_groups import create_user_group, remove_user_from_user_grou
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import (
     ClientDescriptor,
+    access_client_descriptor,
     allocate_client_descriptor,
-    get_client_descriptor,
     maybe_enqueue_notifications,
     missedmessage_hook,
     persistent_queue_filename,
@@ -173,7 +173,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             )
             self.assert_json_success(result)
             queue_id = orjson.loads(result.content)["queue_id"]
-            return get_client_descriptor(queue_id)
+            return access_client_descriptor(user.id, queue_id)
 
         def destroy_event_queue(user: UserProfile, queue_id: str) -> None:
             result = self.tornado_call(cleanup_event_queue, user, {"queue_id": queue_id})
