@@ -43,6 +43,7 @@ from zerver.tornado.event_queue import (
     process_message_event,
     send_restart_events,
 )
+from zerver.tornado.exceptions import BadEventQueueIdError
 from zerver.tornado.views import get_events, get_events_backend
 from zerver.views.events_register import (
     _default_all_public_streams,
@@ -452,6 +453,52 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
+
+    def test_bogus_queue_id(self) -> None:
+        user = self.example_user("hamlet")
+
+        with self.assertRaises(BadEventQueueIdError):
+            self.tornado_call(
+                get_events,
+                user,
+                {
+                    "queue_id": "hamster",
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+
+    def test_wrong_user_queue_id(self) -> None:
+        user = self.example_user("hamlet")
+        wrong_user = self.example_user("othello")
+
+        result = self.tornado_call(
+            get_events,
+            user,
+            {
+                "apply_markdown": orjson.dumps(True).decode(),
+                "client_gravatar": orjson.dumps(True).decode(),
+                "event_types": orjson.dumps(["message"]).decode(),
+                "user_client": "website",
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        with self.assertLogs(level="WARNING") as cm, self.assertRaises(BadEventQueueIdError):
+            self.tornado_call(
+                get_events,
+                wrong_user,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+        self.assertIn("not authorized for queue", cm.output[0])
 
 
 class FetchInitialStateDataTest(ZulipTestCase):

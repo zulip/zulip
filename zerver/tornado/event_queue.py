@@ -442,11 +442,19 @@ def add_client_gc_hook(hook: Callable[[int, ClientDescriptor, bool], None]) -> N
     gc_hooks.append(hook)
 
 
-def get_client_descriptor(queue_id: str) -> ClientDescriptor:
-    try:
-        return clients[queue_id]
-    except KeyError:
-        raise BadEventQueueIdError(queue_id)
+def access_client_descriptor(user_id: int, queue_id: str) -> ClientDescriptor:
+    client = clients.get(queue_id)
+    if client is not None:
+        if user_id == client.user_profile_id:
+            return client
+        logging.warning(
+            "User %d is not authorized for queue %s (%d via %s)",
+            user_id,
+            queue_id,
+            client.user_profile_id,
+            client.current_client_name,
+        )
+    raise BadEventQueueIdError(queue_id)
 
 
 def get_client_descriptors_for_user(user_profile_id: int) -> List[ClientDescriptor]:
@@ -644,9 +652,7 @@ def fetch_events(
         else:
             if last_event_id is None:
                 raise JsonableError(_("Missing 'last_event_id' argument"))
-            client = get_client_descriptor(queue_id)
-            if user_profile_id != client.user_profile_id:
-                raise JsonableError(_("You are not authorized to get events from this queue"))
+            client = access_client_descriptor(user_profile_id, queue_id)
             if (
                 client.event_queue.newest_pruned_id is not None
                 and last_event_id < client.event_queue.newest_pruned_id
