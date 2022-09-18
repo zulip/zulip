@@ -3797,6 +3797,9 @@ class RealmCreationTest(ZulipTestCase):
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_invalid_email_signup(self) -> None:
+        result = self.client_post("/new/", {"email": "<foo"})
+        self.assert_in_response("Please use your real email address.", result)
+
         result = self.client_post("/new/", {"email": "foo\x00bar"})
         self.assert_in_response("Please use your real email address.", result)
 
