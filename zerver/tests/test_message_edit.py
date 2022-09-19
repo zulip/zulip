@@ -2246,7 +2246,7 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(queries, 53)
+        self.assert_length(queries, 55)
         self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")

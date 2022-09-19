@@ -204,6 +204,7 @@ def get_recipient_info(
         # of this function for different message types.
         assert stream_topic is not None
         user_ids_muting_topic = stream_topic.user_ids_with_visibility_policy(UserTopic.MUTED)
+        user_ids_unmuting_topic = stream_topic.user_ids_with_visibility_policy(UserTopic.UNMUTED)
 
         subscription_rows = (
             get_subscriptions_for_send_message(
@@ -239,7 +240,8 @@ def get_recipient_info(
             # are defaults, which can be overridden by the stream-level settings (if those
             # values are not null).
             if row["is_muted"]:
-                return False
+                if row["user_profile_id"] not in user_ids_unmuting_topic:
+                    return False
             if row["user_profile_id"] in user_ids_muting_topic:
                 return False
             if row[setting] is not None:

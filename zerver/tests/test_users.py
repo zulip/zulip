@@ -47,7 +47,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.user_groups import get_system_user_group_for_user
-from zerver.lib.user_topics import add_topic_visibility_policy
+from zerver.lib.user_topics import add_topic_visibility_policy, remove_topic_visibility_policy
 from zerver.lib.users import Accounts, access_user_by_id, get_accounts_for_email, user_ids_to_users
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -818,7 +818,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 91)
+        self.assert_length(queries, 92)
 
         self.assert_length(cache_tries, 28)
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
@@ -1855,6 +1855,32 @@ class RecipientInfoTest(ZulipTestCase):
             stream_topic=stream_topic,
         )
         self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
+
+        # Now have Hamlet mute the stream and unmute the topic,
+        # which shouldn't omit him from stream_push_user_ids.
+        sub.is_muted = True
+        sub.save()
+
+        add_topic_visibility_policy(
+            user_profile=hamlet,
+            stream_id=stream.id,
+            recipient_id=recipient.id,
+            topic_name=topic_name,
+            visibility_policy=UserTopic.UNMUTED,
+        )
+
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=hamlet.id,
+            stream_topic=stream_topic,
+        )
+        self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
+
+        # Now unmute the stream and remove topic visibility_policy.
+        sub.is_muted = False
+        sub.save()
+        remove_topic_visibility_policy(hamlet, stream.id, topic_name)
 
         # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
         add_topic_visibility_policy(

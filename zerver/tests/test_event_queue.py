@@ -6,7 +6,7 @@ import orjson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.actions.streams import do_change_subscription_property
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_mute_topic, do_set_unmuted_visibility
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, mock_queue_publish
 from zerver.lib.user_groups import create_user_group, remove_user_from_user_group
@@ -544,6 +544,36 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 message_id=msg_id,
                 user_id=user_profile.id,
                 already_notified={"email_notified": False, "push_notified": False},
+            )
+        destroy_event_queue(user_profile, client_descriptor.event_queue.id)
+
+        # Test the hook with stream message in an unmuted topic with
+        # stream_push_notify on a muted stream, which we should push notify for
+        client_descriptor = allocate_event_queue(user_profile)
+        change_subscription_properties(
+            user_profile, stream, sub, {"push_notifications": True, "email_notifications": False}
+        )
+        self.assertTrue(client_descriptor.event_queue.empty())
+        change_subscription_properties(user_profile, stream, sub, {"is_muted": True})
+
+        do_set_unmuted_visibility(user_profile, stream, "unmutingtest")
+        msg_id = self.send_stream_message(
+            iago,
+            "Denmark",
+            content="what's up everyone?",
+            topic_name="unmutingtest",
+        )
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(user_profile.id, client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=user_profile.id,
+                stream_push_notify=True,
+                already_notified={"email_notified": False, "push_notified": True},
             )
         destroy_event_queue(user_profile, client_descriptor.event_queue.id)
 
