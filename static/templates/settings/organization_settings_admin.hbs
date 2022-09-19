@@ -69,7 +69,7 @@
 
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="id_realm_message_retention_setting" class="dropdown-title">{{t "Message retention period" }}
+                    <label for="id_realm_message_retention_setting" class="dropdown-title text_cursor">{{t "Message retention period" }}
                         <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Only owners can change message retention policy.' }}"></i>
                     </label>
@@ -102,7 +102,7 @@
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
-                    <label for="realm_video_chat_provider" class="dropdown-title">
+                    <label for="realm_video_chat_provider" class="dropdown-title text_cursor">
                         {{t 'Video call provider' }}
                     </label>
                     <select name="realm_video_chat_provider" class ="setting-widget prop-element" id="id_realm_video_chat_provider" data-setting-widget-type="number">
@@ -112,7 +112,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="realm_giphy_rating" class="dropdown-title">
+                    <label for="realm_giphy_rating" class="dropdown-title text_cursor">
                         {{t 'GIPHY integration' }}
                         {{> ../help_link_widget link=giphy_help_link }}
                     </label>

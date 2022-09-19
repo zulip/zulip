@@ -1,7 +1,7 @@
 <form class="form-horizontal admin-profile-field-form new-style" id="add-new-custom-profile-field-form">
     <div class="new-profile-field-form wrapper">
         <div class="input-group">
-            <label for="profile_field_type" >{{t "Type" }}</label>
+            <label for="profile_field_type" class="text_cursor">{{t "Type" }}</label>
             <select id="profile_field_type" name="field_type">
                 {{#each custom_profile_field_types}}
                     <option value='{{this.id}}'>{{this.name}}</option>
@@ -9,7 +9,7 @@
             </select>
         </div>
         <div class="input-group" id="profile_field_external_accounts">
-            <label for="profile_field_external_accounts_type" >{{t "External account type" }}</label>
+            <label for="profile_field_external_accounts_type" class="text_cursor">{{t "External account type" }}</label>
             <select id="profile_field_external_accounts_type" name="external_acc_field_type">
                 {{#each realm_default_external_accounts}}
                     <option value='{{@key}}'>{{this.text}}</option>
@@ -27,7 +27,7 @@
             <div class="alert" id="admin-profile-field-hint-status"></div>
         </div>
         <div class="input-group" id="profile_field_choices_row">
-            <label for="profile_field_choices" >{{t "Field choices" }}</label>
+            <label for="profile_field_choices" class="text_cursor">{{t "Field choices" }}</label>
             <table class="profile_field_choices_table">
                 <tbody id="profile_field_choices" class="profile-field-choices"></tbody>
             </table>

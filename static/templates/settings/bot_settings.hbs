@@ -37,7 +37,7 @@
               class="form-horizontal no-padding {{#unless can_create_new_bots}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
-                        <label for="bot_type">
+                        <label for="bot_type" class="text_cursor">
                             {{t "Bot type" }}
                             <i class="fa fa-question-circle settings-info-icon bot_type_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
                     <div class="input-group" id="service_name_list">
-                        <label for="select_service_name">{{t "Bot"}}</label>
+                        <label for="select_service_name" class="text_cursor">{{t "Bot"}}</label>
                         <select name="service_name" id="select_service_name">
                             {{#each page_params.realm_embedded_bots}}
                                 <option value="{{this.name}}">{{this.name}}</option>
@@ -80,7 +80,7 @@
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                         </div>
                         <div class="input-group">
-                            <label for="interface_type">{{t "Outgoing webhook message format" }}</label>
+                            <label for="interface_type" class="text_cursor">{{t "Outgoing webhook message format" }}</label>
                             <select name="interface_type" id="create_interface_type">
                                 <option value="1">Zulip</option>
                                 <option value="2">{{t "Slack compatible" }}</option>

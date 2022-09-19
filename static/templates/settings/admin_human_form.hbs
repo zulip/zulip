@@ -7,16 +7,16 @@
         </div>
         {{#if email}}
         <div class="input-group email_change_container">
-            <label for="email">{{t "Email" }}</label>
+            <label for="email" class="text_cursor">{{t "Email" }}</label>
             <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
         </div>
         {{/if}}
         <div class="input-group user_id_container">
-            <label for="user_id">{{t "User ID" }}</label>
+            <label for="user_id" class="text_cursor">{{t "User ID" }}</label>
             <input type="text" autocomplete="off" name="user_id" value="{{ user_id }}" readonly/>
         </div>
         <div class="input-group">
-            <label class="input-label" for="user-role-select">{{t 'User role' }}
+            <label class="input-label text_cursor" for="user-role-select">{{t 'User role' }}
                 {{> ../help_link_widget link="/help/roles-and-permissions" }}
             </label>
             <select name="user-role-select" id="user-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>

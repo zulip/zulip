@@ -67,9 +67,9 @@
               prefix=../prefix}}
         {{/each}}
 
-        <label for="notification_sound">
+        <div for="notification_sound">
             {{t "Notification sound" }}
-        </label>
+        </div>
 
         <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
             <select name="notification_sound" class="setting_notification_sound prop-element" data-setting-widget-type="string"
@@ -87,7 +87,7 @@
         </div>
 
         <div class="input-group">
-            <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="desktop_icon_count_display" class="dropdown-title text_cursor">{{ settings_label.desktop_icon_count_display }}</label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element"
               data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
@@ -121,7 +121,7 @@
 
         <div class="input-group form-horizontal">
 
-            <label for="email_notifications_batching_period">
+            <label for="email_notifications_batching_period" class="text_cursor">
                 {{t "Delay before sending message notification emails" }}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="number">

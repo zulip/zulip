@@ -18,7 +18,7 @@
         {{/unless}}
 
         <div class="input-group">
-            <label for="twenty_four_hour_time" class="dropdown-title">{{ settings_label.twenty_four_hour_time }}</label>
+            <label for="twenty_four_hour_time" class="dropdown-title text_cursor">{{ settings_label.twenty_four_hour_time }}</label>
             <select name="twenty_four_hour_time" class="setting_twenty_four_hour_time prop-element" data-setting-widget-type="string">
                 {{#each twenty_four_hour_time_values}}
                     <option value='{{ this.value }}'>{{ this.description }}</option>
@@ -36,14 +36,14 @@
         </div>
 
         <div class="input-group">
-            <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}</label>
+            <label for="color_scheme" class="dropdown-title text_cursor">{{t "Color scheme" }}</label>
             <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
                 {{> dropdown_options_widget option_values=color_scheme_values}}
             </select>
         </div>
 
         <div class="input-group">
-            <label class="emoji-theme title">{{t "Emoji theme" }}</label>
+            <label class="emoji-theme title text_cursor">{{t "Emoji theme" }}</label>
             <div class="emojiset_choices grey-box">
                 {{#each settings_object.emojiset_choices}}
                     <label>
@@ -79,7 +79,7 @@
         {{/if}}
 
         <div class="input-group">
-            <label class="title">{{t "User list style" }}</label>
+            <label class="title text_cursor">{{t "User list style" }}</label>
             <div class="user_list_style_values grey-box">
                 {{#each user_list_style_values}}
                     <label>
@@ -113,7 +113,7 @@
         </div>
 
         <div class="input-group thinner setting-next-is-related">
-            <label for="default_view" class="dropdown-title">{{t "Default view" }}
+            <label for="default_view" class="dropdown-title text_cursor">{{t "Default view" }}
                 {{> ../help_link_widget link="/help/configure-default-view" }}
             </label>
             <select name="default_view" class="setting_default_view prop-element" data-setting-widget-type="string">
@@ -128,7 +128,7 @@
           prefix=prefix}}
 
         <div class="input-group">
-            <label for="demote_inactive_streams" class="dropdown-title">{{t "Demote inactive streams" }}
+            <label for="demote_inactive_streams" class="dropdown-title text_cursor">{{t "Demote inactive streams" }}
                 {{> ../help_link_widget link="/help/manage-inactive-streams" }}
             </label>
             <select name="demote_inactive_streams" class="setting_demote_inactive_streams prop-element"  data-setting-widget-type="number">
