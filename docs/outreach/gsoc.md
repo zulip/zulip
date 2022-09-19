@@ -1,231 +1,30 @@
-# Google Summer of Code
+# GSoC project ideas
 
-## About us
+This page describes ideas you can use as a starting point for your project
+proposal. If you have not done so yet, you should **start by reading our [guide on
+how to apply](./apply.md)** to a Zulip outreach program. As noted in the guide:
 
-[Zulip](https://zulip.com) is the only modern team chat app that is ideal for both
-live and asynchronous conversations. Zulip has a web app, a cross-platform
-mobile app for iOS and Android, cross-platform desktop and terminal apps, and
-over 100 native integrations. The entire Zulip codebase is 100% open source.
+> Your first priority during the contribution period should be figuring out how
+> to become an effective Zulip contributor. Start developing your project proposal
+> only once you have experience with iterating on your PRs to get them ready for
+> integration. That way, you'll have a much better idea of what you want to work
+> on and how much you can accomplish.
 
-Zulip has been gaining in popularity since it was [released as open source
-software][oss-release] in late 2015, with code contributions from [over 1000
-people](https://zulip.com/team) from all around the world. Thousands of people
-use Zulip every day, and your work on Zulip will have meaningful impact
-on their experience.
+## Project size and difficulty
 
-[oss-release]: https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/
-
-As an organization, we value engaged, responsive mentorship and making sure our
-product quality is extremely high. You can expect to receive disciplined code
-reviews by highly experienced engineers. Since Zulip is a team chat product,
-your GSoC experience with the Zulip project will be highly interactive.
-
-> _“The experience of working with Zulip for the summer was really phenomenal and
-> taught me a lot about software development and working with a community. Zulip
-> has one of the best open source communities out there who are super friendly
-> and welcoming. You learn a lot just by watching others work and talk.”_ – Sai
-> Rohitth Chiluka, Zulip GSoC 2021 participant
-
-As part of our commitment to mentorship, Zulip has over 160,000 words of
-[documentation for
-developers](../index.md#welcome-to-the-zulip-documentation), much of it
-designed to explain not just how Zulip works, but why Zulip works the way that
-it does. To learn more about our mission and values, check out [this blog
-post](https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/)!
-
-## The Zulip GSoC experience
-
-Zulip has been a GSoC mentoring organization since 2016, and we accept 15-20
-GSoC participants each summer. We have also mentored several interns through the
-[Outreachy](https://www.outreachy.org/) program, and hundreds of Google Code-In
-participants.
-
-Zulip operates under a **group mentorship** model. While you will have an
-assigned mentor, you will also get lots of feedback from other members of the
-[Zulip development community](https://zulip.com/development-community/) by
-posting your questions and ideas in public streams. We encourage GSoC
-participants to help each other out as well!
-
-Many GSoC participants stay involved with the project past the official end of
-the program. A number of folks who get started with GSoC go on to mentor the
-next cohort of participants, and several have joined Zulip's team of core
-maintainers.
-
-To learn more about the experience of doing GSoC with Zulip, check out our
-[Zulip's Google Summer of Code 2021 blog
-post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/). Our [guide
-for having a great summer with Zulip](summer-with-zulip.md) will
-also give you a feel for what it's like to do GSoC with us.
-
-> _“It has been the best summer I've ever had! I'm thankful to my mentors, my
-> peers, Zulip, and Google for providing me an opportunity of getting involved
-> in the community! You have helped and supported me to become a better software
-> developer and a passionate open-source contributor.”_ – Sarthak Garg, Zulip
-> GSoC 2021 participant
-
-## Getting started
-
-We have an easy-to-set-up development environment, and a library of
-tasks that are great for first-time contributors. Use
-[our first-time Zulip developer guide](contributing.md#your-first-codebase-contribution)
-to get your Zulip development environment set up and to find your first issue. If you have any
-trouble, please speak up in the
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) stream on the
-[Zulip development community server](https://zulip.com/development-community/)
-(use your name as the topic).
-
-## Application tips, and how to become a strong candidate
-
-Zulip has some of the highest standards of any GSoC organization. The most
-important component of a strong application is to demonstrate your ability to
-contribute to a large codebase. Accepted applicants generally have five or more
-merged (or nearly merged) pull requests, including at least a couple of
-significant changes (on the order of 100+ lines).
-
-The quality of your best work is more important than the quantity, so be
-sure to follow our coding guidelines and test your work before submitting it for
-review. Don't worry if you make mistakes in your first few
-contributions! Everyone makes mistakes getting started — just make sure you don't
-make the same mistakes next time.
-
-It's best to get started with Zulip early, so that you have time to learn, make
-contributions, and put together a strong proposal. However, we recommend waiting
-until the last few weeks to formally write up and submit your application.
-
-The GSoC 2022 application deadline is April 19, 2022. Please follow [GSoC's application process
-instructions](https://google.github.io/gsocguides/student/). Your application should include the following:
-
-- Details on any experience you have related to the technologies used
-  by Zulip, or related to our product approach.
-- Links to materials which help us evaluate your level of experience and
-  how you work, such as personal projects of yours, including any
-  existing open source or open culture contributions you've made and
-  any bug reports you've submitted to open source projects.
-- Some notes on what you are hoping to get out of your project.
-- A description of the project you'd like to do, and why you're
-  excited about it.
-- Some notes on why you're excited about working on Zulip.
-- A link to your initial contribution(s).
-
-We expect applicants to either have experience with the technologies
-relevant to their project or have strong general programming
-experience. We also expect applicants to be excited about learning
-how to do disciplined, professional software engineering, where they
-can demonstrate through reasoning and automated tests that their code
-is correct.
-
-For all of our projects, an important skill to develop is a good
-command of Git; read [our Git guide](../git/overview.md) in full to
-learn how to use it well. Of particular importance is mastering using
-`git rebase` so that you can construct commits that are clearly correct
-and explain why they are correct. We highly recommend investing in
-learning a [graphical Git client](../git/setup.md) and learning to
-write good commit structures and messages; this is more important than
-any other single skill for contributing to a large open source
-project like Zulip.
-
-We are excited about candidates who submit good contributions to Zulip projects,
-help other applicants on [GitHub](https://github.com/zulip/zulip) and on
-[chat.zulip.org](https://zulip.com/development-community), learn from our
-suggestions, [try to solve their own obstacles and then ask well-formed
-questions](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/),
-and develop well thought out project proposals.
-
-For the first time in 2022, being a student is not required in order to apply to
-GSoC. We are happy to accept both student and non-student participants.
-
-Our documentation on [what makes a great Zulip
-contributor](contributing.md#what-makes-a-great-zulip-contributor)
-offers some additional helpful information. We also recommend reviewing the
-[official GSoC
-resources](https://developers.google.com/open-source/gsoc/resources/),
-especially the [Contributor/Student
-Guide](https://google.github.io/gsocguides/student/).
-
-## Questions are important
-
-A successful GSoC revolves around asking well-formed questions.
-A well-formed question helps you learn, respects the person answering,
-and reduces the time commitment and frustration level of everyone
-involved. Asking the right question, to the right person, in the right
-way, at the right time, is a skill which requires a lifetime of
-fine-tuning, but Zulip makes this a little bit easier by providing a
-general structure for asking questions in the Zulip community.
-
-This structure saves time answering common questions while still
-providing everyone the personal help they need, and maintains balance
-between stream discussion and documentation. Becoming familiar and
-comfortable with this rhythm will be helpful to you as you interact
-with other developers on
-[chat.zulip.org](https://zulip.com/development-community). It is always
-better (and Zulip’s strong preference) to ask questions and have
-conversation through a public stream rather than a private message or
-an email. This benefits you by giving you faster response times and
-the benefit of many minds, as well as benefiting the community as
-other contributors learn from reading the conversation.
-
-- Stick to the [community norms](https://zulip.com/development-community/).
-- Read these three blog posts
-  - [Try, Then Ask](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/)
-  - [We Aren’t Just Making Code, We’re Making History](https://www.harihareswara.net/sumana/2016/10/12/0)
-  - [How to Ask Good Questions](https://jvns.ca/blog/good-questions/)
-- Understand [what makes a great Zulip contributor](contributing.md#what-makes-a-great-zulip-contributor)
-
-This is a typical question/response sequence:
-
-1. You [try to solve your problem until you get stuck, including
-   looking through our code and our documentation, then start
-   formulating your request for
-   help](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/).
-1. You ask your question.
-1. Someone directs you to a document.
-1. You go read the document to find the answer to your question.
-1. You find you are confused about a new thing.
-1. You ask another question.
-1. Having demonstrated your the ability to read,
-   think, and learn new things, someone will have a longer talk with
-   you to answer your new, specific question.
-1. You and the other person collaborate to improve the document you
-   read in step 3. :-)
-
-As a final note on asking for help, please make use of [Zulip's
-Markdown](https://zulip.com/help/format-your-message-using-markdown)
-when posting questions; code blocks are nicer for reading terminal
-output than screenshots. And be sure to read the traceback before
-posting it; often the error message explains the problem or hints that
-you need more scrollback than just the last 20 lines.
-
-## Project ideas
-
-Once you have several PRs merged (or at least one significant PR merged), you
-can start developing a specific project plan. We recommend discussing your ideas
-in the [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) stream in the Zulip
-development community, in order to get quick feedback from whoever is online.
-
-This section contains the seeds of project ideas; you will need to do research
-on the Zulip codebase, read issues on GitHub, and talk with developers to put
-together a complete project proposal. It's also fine to come up with your own
-project ideas. As you'll see below, you can put together a great project around
-one of the [area labels](https://github.com/zulip/zulip/labels) on GitHub; each
-has a cluster of problems in one part of the Zulip project that we'd love to
-improve.
+GSoC offers two project size options: 175 hours and 350 hours. We have
+designed all our projects to have incremental milestones that can be
+completed throughout the program. Consequently, all Zulip projects
+described below are compatible with either project size. Of course,
+the amount of progress you will be expected to make depends on whether
+you are doing a 175-hour or 350-hour project.
 
 We don't believe in labeling projects by difficulty, because the level of
 difficulty is highly dependent on your particular skills. To help you find
 a great project, we list the skills needed, and try to emphasize where strong
 skills with particular tools are likely to be important for a given project.
 
-We will never reject a strong applicant because their project idea was
-not a top priority. On the flip side, we often reject applicants proposing
-valuable projects when we haven't seen compelling work from the applicant.
-
-More important to us than specific deliverables in a project proposal
-is a clear body of work to focus on. E.g., if we see a proposal with 8
-Markdown processor issues, we'll interpret this as an applicant excited
-to work on the Markdown processor for the summer, even if the specific
-set of 8 issues may not be the right ones to invest in.
-
-### Focus areas
+## Focus areas
 
 For 2022, we are particularly interested in GSoC contributors who have
 strong skills at visual design, HTML/CSS, mobile development, full
@@ -239,14 +38,19 @@ the project. Every area of Zulip could benefit from the work of a
 contributor with strong programming skills, so don't feel discouraged if
 the areas mentioned above are not your main strength.
 
-### Project size
+## Project ideas by area
 
-GSoC offers two project size options: 175 hours and 350 hours. We have
-designed all our projects to have incremental milestones that can be
-completed throughout the summer. Consequently, all Zulip projects
-described below are compatible with either project size. Of course,
-the amount of progress you will be expected to make depends on whether
-you are doing a 175-hour or 350-hour project.
+This section contains the seeds of project ideas; you will need to do research
+on the Zulip codebase, read issues on GitHub, and talk with developers to put
+together a complete project proposal. It's also fine to come up with your own
+project ideas. As you'll see below, you can put together a great project around
+one of the [area labels](https://github.com/zulip/zulip/labels) on GitHub; each
+has a cluster of problems in one part of the Zulip project that we'd love to
+improve.
+
+**Note: The project ideas on this page are from summer 2022.** In the future, we
+will update them with details for 2023. You can expect the updated list to look
+similar to what you'll find below.
 
 ### Full stack and web frontend focused projects
 
@@ -604,25 +408,3 @@ Experts: Rein Zustand, Steve Howell
   communities. 175 or 350 hours; medium difficulty.
   **Skills useful**: Python 3, reading feedback from users, CSS,
   GitHub Actions.
-
-## Circulating proposals (March to April)
-
-If you're applying to GSoC, we'd like you to publicly post a rough draft of
-a few sections of your proposal at least one week before the application
-deadline. That way, the whole development community has a chance to give you
-feedback and help you improve your proposal.
-
-- **What to post:** Please include (1) Links to your contributions
-  to Zulip (or other projects), and (2) a paragraph or two explaining
-  what you plan to work on.
-- **How to post:** We generally prefer Dropbox Paper or Google
-  Docs, since those platforms allow people to look at the text without
-  having to log in or download a particular app, and you can update the
-  draft as you improve your idea.
-- **How to ask for feedback:** Please post a link to your draft in the
-  [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) stream in the [Zulip
-  development community](https://zulip.com/development-community/).
-
-Thanks for being interested in Zulip! We're always happy to help volunteers get
-started contributing to our open-source project, whether or not they go through
-GSoC. We hope to hear from you soon!
