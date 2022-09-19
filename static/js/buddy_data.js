@@ -128,18 +128,6 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
 
-export function get_my_user_status(user_id) {
-    if (!people.is_my_user_id(user_id)) {
-        return undefined;
-    }
-
-    if (user_status.is_away(user_id)) {
-        return $t({defaultMessage: "(unavailable)"});
-    }
-
-    return $t({defaultMessage: "(you)"});
-}
-
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
@@ -176,7 +164,6 @@ export function user_last_seen_time_status(user_id) {
 export function info_for(user_id) {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
-    const my_user_status = get_my_user_status(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
     const user_circle_status = status_description(user_id);
@@ -192,7 +179,6 @@ export function info_for(user_id) {
         href: hash_util.pm_with_url(person.email),
         name: person.full_name,
         user_id,
-        my_user_status,
         status_emoji_info,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),

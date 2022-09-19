@@ -434,16 +434,6 @@ test("always show me", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 });
 
-test("user_status", () => {
-    user_status.initialize({user_status: []});
-    set_presence(me.user_id, "active");
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
-    user_status.set_away(me.user_id);
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (unavailable)");
-    user_status.revoke_away(me.user_id);
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
-});
-
 test("level", () => {
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -533,7 +523,6 @@ test("get_items_for_users", () => {
             faded: false,
             href: "#narrow/pm-with/1001-self",
             is_current_user: true,
-            my_user_status: "translated: (you)",
             name: "Human Myself",
             num_unread: 0,
             status_emoji_info,
@@ -547,7 +536,6 @@ test("get_items_for_users", () => {
             faded: false,
             href: "#narrow/pm-with/1002-alice",
             is_current_user: false,
-            my_user_status: undefined,
             name: "Alice Smith",
             num_unread: 0,
             status_emoji_info,
@@ -561,7 +549,6 @@ test("get_items_for_users", () => {
             faded: false,
             href: "#narrow/pm-with/1003-fred",
             is_current_user: false,
-            my_user_status: undefined,
             name: "Fred Flintstone",
             num_unread: 0,
             status_emoji_info,
