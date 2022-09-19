@@ -327,6 +327,7 @@ body.dark-theme {
         background-color: transparent;
     }
 
+    .create_user_group_plus_button,
     .create_stream_plus_button {
         color: hsl(0, 0%, 100%);
         background-color: hsla(0, 0%, 0%, 0.2);
