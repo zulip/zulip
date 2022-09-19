@@ -14,6 +14,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -32,11 +33,13 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
+import * as user_groups from "./user_groups";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
 
 export let toggler;
 export let select_tab = "personal_settings";
+export let can_remove_subscribers_group_widget = null;
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_url(sub);
@@ -201,6 +204,22 @@ export function show_settings_for(node) {
         return false;
     });
 
+    const opts = {
+        widget_name: "can_remove_subscribers_group_id",
+        data: user_groups.get_realm_user_groups_for_dropdown_list_widget(true, true),
+        default_text: $t({defaultMessage: "No user groups"}),
+        include_current_item: false,
+        value: sub.can_remove_subscribers_group_id,
+        on_update() {
+            settings_org.save_discard_widget_status_handler(
+                $("#stream_permission_settings"),
+                false,
+                slim_sub,
+            );
+        },
+    };
+    can_remove_subscribers_group_widget = new DropdownListWidget(opts);
+
     const html = render_stream_settings({
         sub,
         notification_settings,
@@ -231,6 +250,7 @@ export function show_settings_for(node) {
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
+    can_remove_subscribers_group_widget.setup();
 }
 
 export function setup_stream_settings(node) {
@@ -617,10 +637,18 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
+        if ($(e.target).hasClass("no-input-change-detection")) {
+            // This is to prevent input changes detection in elements
+            // within a subsection whose changes should not affect the
+            // visibility of the discard button
+            return false;
+        }
+
         const stream_id = get_stream_id(e.target);
         const sub = sub_store.get(stream_id);
         const $subsection = $(e.target).closest(".settings-subsection-parent");
         settings_org.save_discard_widget_status_handler($subsection, false, sub);
+        return true;
     });
 
     $("#manage_streams_container").on(
