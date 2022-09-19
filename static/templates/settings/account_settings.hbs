@@ -7,7 +7,7 @@
                 <div class="alert-notification" id="account-settings-status"></div>
                 <form class="email-change-form grid">
                     <div class="input-group">
-                        <label class="inline-block title">{{t "Email" }}</label>
+                        <label class="inline-block title" for="change_email">{{t "Email" }}</label>
                         <button id='change_email' type="button" class="button btn-link small rounded inline-block"
                           {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
                             {{page_params.delivery_email}}
@@ -27,7 +27,7 @@
                 <form class="password-change-form grid">
                     {{#if page_params.realm_email_auth_enabled}}
                     <div>
-                        <label class="inline-block title">{{t "Password" }}</label>
+                        <label class="inline-block title" for="change_password">{{t "Password" }}</label>
                         <div class="input-group inline-block" id="pw_change_link">
                             <button id="change_password" type="button" class="change_password_button btn-link small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i></button>
                         </div>
