@@ -1,5 +1,5 @@
 import datetime
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from django.conf import settings
 from django.db import transaction
@@ -8,6 +8,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
+from django_stubs_ext import StrPromise
 
 from zerver.actions.message_delete import DeleteMessagesEvent
 from zerver.actions.message_flags import do_update_mobile_push_notification
@@ -64,9 +65,6 @@ from zerver.models import (
     get_system_bot,
 )
 from zerver.tornado.django_api import send_event
-
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
 
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
@@ -200,10 +198,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
-    old_thread_notification_string: Optional["StrPromise"],
+    old_thread_notification_string: Optional[StrPromise],
     new_stream: Stream,
     new_topic: Optional[str],
-    new_thread_notification_string: Optional["StrPromise"],
+    new_thread_notification_string: Optional[StrPromise],
     changed_messages_count: int,
 ) -> None:
     # Since moving content between streams is highly disruptive,

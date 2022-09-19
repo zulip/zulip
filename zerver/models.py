@@ -50,6 +50,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
+from django_stubs_ext import StrPromise
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -119,7 +120,6 @@ if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
     from django.contrib.auth.backends import ModelBackend
     from django.db.models.query import _QuerySet as ValuesQuerySet
-    from django.utils.functional import _StrPromise as StrPromise
 
 
 class EmojiInfo(TypedDict):
@@ -2475,7 +2475,7 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: Dict[int, "StrPromise"] = {
+    POST_POLICIES: Dict[int, StrPromise] = {
         # These strings should match the strings in the
         # stream_post_policy_values object in stream_data.js.
         STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),
@@ -4564,7 +4564,7 @@ class CustomProfileField(models.Model):
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {
         item[0]: item[3] for item in ALL_FIELD_TYPES
     }
-    FIELD_TYPE_CHOICES: List[Tuple[int, "StrPromise"]] = [
+    FIELD_TYPE_CHOICES: List[Tuple[int, StrPromise]] = [
         (item[0], item[1]) for item in ALL_FIELD_TYPES
     ]
 
