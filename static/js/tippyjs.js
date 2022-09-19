@@ -219,6 +219,7 @@ export function initialize() {
             ".sidebar-title",
             "#user_filter_icon",
             "#scroll-to-bottom-button-clickable-area",
+            ".code_external_link",
         ],
         appendTo: () => document.body,
     });
