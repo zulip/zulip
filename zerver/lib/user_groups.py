@@ -1,15 +1,13 @@
-from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, TypedDict
+from typing import Dict, Iterable, List, Sequence, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.translation import gettext as _
 from django_cte import With
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import GroupGroupMembership, Realm, UserGroup, UserGroupMembership, UserProfile
-
-if TYPE_CHECKING:
-    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 class UserGroupDict(TypedDict):
@@ -128,7 +126,7 @@ def create_user_group(
 
 def get_user_group_direct_member_ids(
     user_group: UserGroup,
-) -> "ValuesQuerySet[UserGroupMembership, int]":
+) -> ValuesQuerySet[UserGroupMembership, int]:
     return UserGroupMembership.objects.filter(user_group=user_group).values_list(
         "user_profile_id", flat=True
     )

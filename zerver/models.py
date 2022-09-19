@@ -50,7 +50,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django_cte import CTEManager
-from django_stubs_ext import StrPromise
+from django_stubs_ext import StrPromise, ValuesQuerySet
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -119,7 +119,6 @@ STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
 if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
     from django.contrib.auth.backends import ModelBackend
-    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 class EmojiInfo(TypedDict):
@@ -160,10 +159,10 @@ RowT = TypeVar("RowT")
 
 
 def query_for_ids(
-    query: "ValuesQuerySet[ModelT, RowT]",
+    query: ValuesQuerySet[ModelT, RowT],
     user_ids: List[int],
     field: str,
-) -> "ValuesQuerySet[ModelT, RowT]":
+) -> ValuesQuerySet[ModelT, RowT]:
     """
     This function optimizes searches of the form
     `user_profile_id in (1, 2, 3, 4)` by quickly
@@ -2789,7 +2788,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     return huddle.recipient
 
 
-def get_huddle_user_ids(recipient: Recipient) -> "ValuesQuerySet[Subscription, int]":
+def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:
     assert recipient.type == Recipient.HUDDLE
 
     return (
