@@ -606,7 +606,7 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 
 def can_remove_subscribers_from_stream(
-    stream: Stream, user_profile: UserProfile, sub: Subscription
+    stream: Stream, user_profile: UserProfile, sub: Optional[Subscription]
 ) -> bool:
     if not check_basic_stream_access(user_profile, stream, sub, allow_realm_admin=True):
         return False
