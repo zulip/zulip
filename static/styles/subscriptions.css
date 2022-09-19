@@ -1,3 +1,5 @@
+$stream_settings_max_height: 1000px;
+
 #subs_page_loading_indicator {
     margin: 10px auto;
 }
@@ -137,8 +139,8 @@ h4.user_group_setting_subsection_title {
     .member_list_container,
     .subscriber_list_container {
         position: relative;
-        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) = 282px */
-        max-height: calc(95vh - 282px);
+        /* 2*45px (settings header) + 38px(tab-container row) + 20px (margin for .inner-box) + 134px (add user input and search widget area) + 10px extra = 292px */
+        max-height: calc(min($stream_settings_max_height, 95vh) - 292px);
         overflow: auto;
         text-align: left;
         -webkit-overflow-scrolling: touch;
@@ -301,7 +303,7 @@ h4.user_group_setting_subsection_title {
     width: 97%;
     overflow: hidden;
     max-width: 1200px;
-    max-height: 1000px;
+    max-height: $stream_settings_max_height;
 
     .search-container .tab-switcher .ind-tab {
         width: auto;
@@ -743,6 +745,7 @@ h4.user_group_setting_subsection_title {
 
     .inner-box {
         margin: 20px;
+        margin-bottom: 0;
     }
 
     .group_settings_header,
