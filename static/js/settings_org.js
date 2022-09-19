@@ -553,6 +553,8 @@ export function get_widget_for_dropdown_list_settings(property_name) {
             return signup_notifications_stream_widget;
         case "realm_default_code_block_language":
             return default_code_language_widget;
+        case "can_remove_subscribers_group_id":
+            return stream_edit.can_remove_subscribers_group_widget;
         default:
             blueslip.error("No dropdown list widget for property: " + property_name);
             return null;
@@ -592,6 +594,7 @@ export function discard_property_element_changes(elem, for_realm_default_setting
         case "realm_notifications_stream_id":
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
+        case "can_remove_subscribers_group_id":
             set_dropdown_list_widget_setting_value(property_name, property_value);
             break;
         case "realm_default_language":
@@ -875,6 +878,7 @@ export function check_property_changed(elem, for_realm_default_settings, sub) {
         case "realm_notifications_stream_id":
         case "realm_signup_notifications_stream_id":
         case "realm_default_code_block_language":
+        case "can_remove_subscribers_group_id":
             proposed_val = get_dropdown_list_widget_setting_value($elem, false);
             break;
         case "email_notifications_batching_period_seconds":
