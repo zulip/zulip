@@ -1,16 +1,14 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/hotspots.html
 # for documentation on this subsystem.
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
 from django.conf import settings
 from django.utils.translation import gettext_lazy
+from django_stubs_ext import StrPromise
 
 from zerver.models import UserHotspot, UserProfile
 
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
-
-INTRO_HOTSPOTS: Dict[str, Dict[str, "StrPromise"]] = {
+INTRO_HOTSPOTS: Dict[str, Dict[str, StrPromise]] = {
     "intro_streams": {
         "title": gettext_lazy("Catch up on a stream"),
         "description": gettext_lazy(
@@ -44,7 +42,7 @@ INTRO_HOTSPOTS: Dict[str, Dict[str, "StrPromise"]] = {
 # We would most likely implement new hotspots in the future that aren't
 # a part of the initial tutorial. To that end, classifying them into
 # categories which are aggregated in ALL_HOTSPOTS, seems like a good start.
-ALL_HOTSPOTS: Dict[str, Dict[str, "StrPromise"]] = {
+ALL_HOTSPOTS: Dict[str, Dict[str, StrPromise]] = {
     **INTRO_HOTSPOTS,
 }
 

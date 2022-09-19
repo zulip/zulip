@@ -2,11 +2,12 @@
     This module stores data for "external account" custom profile field.
 """
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict
+from typing import Dict
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
+from django_stubs_ext import StrPromise
 
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (
@@ -15,8 +16,6 @@ from zerver.lib.validator import (
     check_required_string,
 )
 
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
 
 # Default external account fields are by default available
 # to realm admins, where realm admin only need to select
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 @dataclass
 class ExternalAccount:
     text: str  # Field text for admins - custom profile field in org settings view
-    name: "StrPromise"  # Field label or name - user profile in user settings view
+    name: StrPromise  # Field label or name - user profile in user settings view
     hint: str  # Field hint for realm users
     url_pattern: str  # Field URL linkifier
 
