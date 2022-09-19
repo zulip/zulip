@@ -2,12 +2,10 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import TYPE_CHECKING, AbstractSet, Any, Collection, Dict, List, Optional, Set
+from typing import AbstractSet, Any, Collection, Dict, List, Optional, Set
 
 from django.db.models import Q, QuerySet
-
-if TYPE_CHECKING:
-    from django.db.models.query import _QuerySet as ValuesQuerySet
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
 
@@ -53,7 +51,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet[Su
 
 def get_subscribed_stream_ids_for_user(
     user_profile: UserProfile,
-) -> "ValuesQuerySet[Subscription, int]":
+) -> ValuesQuerySet[Subscription, int]:
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,
@@ -63,7 +61,7 @@ def get_subscribed_stream_ids_for_user(
 
 def get_subscribed_stream_recipient_ids_for_user(
     user_profile: UserProfile,
-) -> "ValuesQuerySet[Subscription, int]":
+) -> ValuesQuerySet[Subscription, int]:
     return Subscription.objects.filter(
         user_profile_id=user_profile,
         recipient__type=Recipient.STREAM,

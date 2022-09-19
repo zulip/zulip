@@ -3,7 +3,6 @@ import logging
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import (
-    TYPE_CHECKING,
     AbstractSet,
     Any,
     Callable,
@@ -27,6 +26,7 @@ from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
 from zerver.lib.addressee import Addressee
@@ -88,9 +88,6 @@ from zerver.models import (
     query_for_ids,
 )
 from zerver.tornado.django_api import send_event
-
-if TYPE_CHECKING:
-    from django.db.models.query import _QuerySet as ValuesQuerySet
 
 
 def compute_irc_user_fullname(email: str) -> str:
