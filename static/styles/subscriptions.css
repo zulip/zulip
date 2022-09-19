@@ -73,6 +73,7 @@
     margin-right: 10px;
 }
 
+.create_user_group_plus_button,
 .create_stream_plus_button {
     font-size: 24px;
     font-weight: 500;
@@ -93,6 +94,12 @@
         position: relative;
         top: -5px;
     }
+}
+
+.create_user_group_button {
+    position: relative;
+    top: 7px;
+    margin: 0 7px 0 0;
 }
 
 #create_user_group_description,
