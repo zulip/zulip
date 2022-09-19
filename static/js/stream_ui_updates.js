@@ -134,7 +134,7 @@ export function enable_or_disable_permission_settings_in_edit_panel(sub) {
 
     const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
     $general_settings_container
-        .find("input, select")
+        .find("input, select, button")
         .prop("disabled", !sub.can_change_stream_permissions);
 
     if (!sub.can_change_stream_permissions) {
