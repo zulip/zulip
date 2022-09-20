@@ -51,22 +51,6 @@ export function get_user_circle_class(user_id) {
     }
 }
 
-export function status_description(user_id) {
-    const status = buddy_status(user_id);
-
-    switch (status) {
-        case "active":
-            return $t({defaultMessage: "Active"});
-        case "idle":
-            return $t({defaultMessage: "Idle"});
-        case "away_them":
-        case "away_me":
-            return $t({defaultMessage: "Unavailable"});
-        default:
-            return $t({defaultMessage: "Offline"});
-    }
-}
-
 export function level(user_id) {
     if (people.is_my_user_id(user_id)) {
         // Always put current user at the top.
@@ -166,7 +150,6 @@ export function info_for(user_id) {
     const person = people.get_by_user_id(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
-    const user_circle_status = status_description(user_id);
     const status_text = user_status.get_status_text(user_id);
     const user_list_style_value = user_settings.user_list_style;
     const user_list_style = {
@@ -183,7 +166,6 @@ export function info_for(user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
-        user_circle_status,
         status_text,
         user_list_style,
     };
