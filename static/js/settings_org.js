@@ -727,7 +727,7 @@ export function get_input_element_value(input_elem, input_type) {
             }
             return undefined;
         case "time-limit":
-            return get_message_edit_or_delete_limit_setting_value($input_elem);
+            return get_time_limit_setting_value($input_elem);
         default:
             return undefined;
     }
@@ -776,7 +776,7 @@ function get_email_notification_batching_setting_element_value() {
     return setting_value_in_minutes * 60;
 }
 
-function get_message_edit_or_delete_limit_setting_value($input_elem, for_api_data = true) {
+function get_time_limit_setting_value($input_elem, for_api_data = true) {
     const select_elem_val = $input_elem.val();
 
     if (select_elem_val === "any_time") {
@@ -833,7 +833,7 @@ function check_property_changed(elem, for_realm_default_settings) {
         }
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
-            proposed_val = get_message_edit_or_delete_limit_setting_value($elem, false);
+            proposed_val = get_time_limit_setting_value($elem, false);
             break;
         case "realm_default_language":
             proposed_val = $(
