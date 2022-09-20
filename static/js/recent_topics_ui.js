@@ -3,9 +3,11 @@ import _ from "lodash";
 
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
+import render_recent_topics_stream_list from "../templates/recent_topics_stream_list.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
 import * as compose_closed_ui from "./compose_closed_ui";
+import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -32,6 +34,7 @@ import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
+let stream_widget;
 // Sets the number of avatars to display.
 // Rest of the avatars, if present, are displayed as {+x}
 const MAX_AVATAR = 4;
@@ -84,7 +87,7 @@ export function clear_for_tests() {
 }
 
 export function save_filters() {
-    ls.set(ls_key, Array.from(filters));
+    ls.set(ls_key, {filters: Array.from(filters), stream_filter_id: stream_widget.value()});
 }
 
 export function load_filters() {
@@ -92,7 +95,12 @@ export function load_filters() {
         // A user may have a stored filter and can log out
         // to see web public view. This ensures no filters are
         // selected for spectators.
-        filters = new Set(ls.get(ls_key));
+        const ls_data = ls.get(ls_key);
+        if (!ls_data) {
+            return;
+        }
+
+        filters = new Set(ls_data.filters);
     }
 }
 
@@ -207,6 +215,12 @@ export function revive_current_focus() {
         return true;
     }
 
+    // Stream select widget is focused.
+    if ($current_focus_elem[0].id === "rt_select_stream_widget") {
+        $("#rt_select_stream_widget button").trigger("focus");
+        return true;
+    }
+
     const filter_button = $current_focus_elem.data("filter");
     if (!filter_button) {
         set_default_focus();
@@ -257,6 +271,7 @@ function format_topic(topic_data) {
     const stream = last_msg.stream;
     const stream_id = last_msg.stream_id;
     const stream_info = sub_store.get(stream_id);
+
     if (stream_info === undefined) {
         // stream was deleted
         return {};
@@ -372,6 +387,13 @@ export function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
     const sub = sub_store.get(msg.stream_id);
 
+    if (stream_widget && stream_widget.value()) {
+        const filter_stream_id = Number.parseInt(stream_widget.value(), 10);
+        if (filter_stream_id !== msg.stream_id) {
+            return {};
+        }
+    }
+
     if (sub === undefined || !sub.subscribed) {
         // Never try to process deactivated & unsubscribed stream msgs.
         return true;
@@ -486,17 +508,61 @@ function show_selected_filters() {
 }
 
 export function update_filters_view() {
+    const stream_id = stream_widget ? stream_widget.value() : null;
     const rendered_filters = render_recent_topics_filters({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
         is_spectator: page_params.is_spectator,
+        ...sub_store.get(Number.parseInt(stream_id, 10)),
     });
     $("#recent_filters_group").html(rendered_filters);
     show_selected_filters();
+    init_stream_widget(stream_id);
 
     topics_widget.hard_redraw();
 }
+
+export function init_stream_widget(stream_id) {
+    const streams_list = stream_data.subscribed_subs().map((stream) => ({
+        name: stream.name,
+        value: stream.stream_id.toString(),
+        ...sub_store.get(stream.stream_id),
+    }));
+
+    const opts = {
+        widget_name: "rt_select_stream",
+        data: streams_list,
+        default_text: $t({defaultMessage: "Filter streams"}),
+        include_current_item: false,
+        value: stream_id || null,
+        render_item: render_recent_topics_stream_list,
+    };
+    stream_widget = new DropdownListWidget(opts);
+    stream_widget.setup();
+}
+
+$("body").on("click keypress", "#recent_topics_filter_buttons .list_item", (e) => {
+    // We want the dropdown to collapse once any of the list item is pressed
+    // and thus don't want to kill the natural bubbling of event.
+    e.preventDefault();
+
+    if (e.type === "keypress" && e.key !== "Enter") {
+        return;
+    }
+    update_filters_view();
+    revive_current_focus();
+    save_filters();
+});
+
+$("body").on("click", ".rt_select_stream_setting .fa-times", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    stream_widget.update(null);
+    save_filters();
+    update_filters_view();
+});
 
 function stream_sort(a, b) {
     const a_stream = message_store.get(a.last_msg_id).stream;
@@ -594,15 +660,18 @@ export function complete_rerender() {
 
     if (topics_widget) {
         topics_widget.replace_list_data(mapped_topic_values);
+        // Since filters have stream data, we need to update it as well.
+        update_filters_view();
         return;
     }
-
+    const stream_filter_id = ls.get(ls_key) ? ls.get(ls_key).stream_filter_id : null;
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
         filter_muted: filters.has("include_muted"),
         search_val: $("#recent_topics_search").val() || "",
         is_spectator: page_params.is_spectator,
+        ...sub_store.get(Number.parseInt(stream_filter_id, 10)),
     });
     $("#recent_topics_table").html(rendered_body);
     const $container = $("#recent_topics_table table tbody");
@@ -631,6 +700,7 @@ export function complete_rerender() {
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
         get_min_load_count,
     });
+    init_stream_widget(stream_filter_id);
 }
 
 export function show() {
@@ -831,7 +901,10 @@ export function change_focused_element($elt, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elt.hasClass("btn-recent-filters")) {
+    } else if ($elt.parents("#recent_filters_group").length) {
+        if ($elt.parents("#rt_select_stream_widget").length) {
+            $elt = $("#rt_select_stream_widget");
+        }
         switch (input_key) {
             case "click":
                 $current_focus_elem = $elt;
@@ -918,8 +991,13 @@ export function change_focused_element($elt, input_key) {
         return true;
     }
     if ($current_focus_elem && input_key !== "escape") {
-        $current_focus_elem.trigger("focus");
-        if ($current_focus_elem.hasClass("btn-recent-filters")) {
+        if ($current_focus_elem[0].id === "rt_select_stream_widget") {
+            $("#rt_select_stream_widget button").trigger("focus");
+        } else {
+            $current_focus_elem.trigger("focus");
+        }
+
+        if ($elt.parents("#recent_filters_group").length) {
             compose_closed_ui.set_standard_text_for_reply_button();
         }
         return true;

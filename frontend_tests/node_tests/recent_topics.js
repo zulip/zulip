@@ -75,6 +75,13 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     },
 });
 
+mock_esm("../../static/js/dropdown_list_widget", {
+    DropdownListWidget: class {
+        setup() {}
+        value() {}
+    },
+});
+
 mock_esm("../../static/js/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
     update_buttons_for_recent_topics: noop,
@@ -118,6 +125,7 @@ mock_esm("../../static/js/stream_data", {
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
         false,
+    subscribed_subs: () => [],
 });
 mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
@@ -340,11 +348,14 @@ test("test_recent_topics_show", ({mock_template, override}) => {
     // and are not to be tested here.
     page_params.is_spectator = false;
     const expected = {
+        color: "",
+        filter_muted: false,
         filter_participated: false,
         filter_unread: false,
-        filter_muted: false,
-        search_val: "",
+        invite_only: false,
         is_spectator: false,
+        is_web_public: true,
+        search_val: "",
     };
 
     mock_template("recent_topics_table.hbs", false, (data) => {
@@ -372,16 +383,24 @@ test("test_filter_all", ({mock_template}) => {
     // in All topics filter.
     page_params.is_spectator = true;
     const expected = {
+        color: "",
+        filter_muted: false,
         filter_participated: false,
         filter_unread: false,
-        filter_muted: false,
-        search_val: "",
+        invite_only: false,
         is_spectator: true,
+        is_web_public: true,
+        search_val: "",
     };
     let row_data;
     let i;
 
     mock_template("recent_topics_table.hbs", false, (data) => {
+        assert.deepEqual(data, expected);
+    });
+
+    mock_template("recent_topics_filters.hbs", false, (data) => {
+        delete expected.search_val;
         assert.deepEqual(data, expected);
     });
 
@@ -426,11 +445,14 @@ test("test_filter_unread", ({mock_template}) => {
 
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
+            color: "",
+            filter_muted: false,
             filter_participated: false,
             filter_unread: expected_filter_unread,
-            filter_muted: false,
-            search_val: "",
+            invite_only: false,
             is_spectator: false,
+            is_web_public: true,
+            search_val: "",
         });
     });
 
@@ -536,11 +558,14 @@ test("test_filter_participated", ({mock_template}) => {
     page_params.is_spectator = false;
     mock_template("recent_topics_table.hbs", false, (data) => {
         assert.deepEqual(data, {
+            color: "",
+            filter_muted: false,
             filter_participated: expected_filter_participated,
             filter_unread: false,
-            filter_muted: false,
-            search_val: "",
+            invite_only: false,
             is_spectator: false,
+            is_web_public: true,
+            search_val: "",
         });
     });
 
@@ -658,6 +683,7 @@ test("basic assertions", ({mock_template}) => {
     mock_template("recent_topic_row.hbs", true, (data, html) => {
         assert.ok(html.startsWith('<tr id="recent_topic'));
     });
+    mock_template("recent_topics_filters.hbs", false, () => {});
 
     stub_out_filter_buttons();
     recent_topics_util.set_visible(true);

@@ -1,0 +1,10 @@
+{{#with item}}
+<li class="list_item" role="presentation" data-value="{{value}}">
+    <a role="menuitem" tabindex="0">
+        <span id="stream_sidebar_privacy_swatch_{{stream_id}}" class="stream-privacy filter-icon" style="color: {{color}}">
+            {{> stream_privacy }}
+        </span>
+        {{name}}
+    </a>
+</li>
+{{/with}}

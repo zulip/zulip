@@ -116,8 +116,13 @@
             margin-top: -10px !important;
         }
 
-        .btn-recent-filters {
+        .btn-recent-filters,
+        .rt_select_stream_setting button {
+            background-color: hsl(0, 0%, 100%);
+            border-color: hsl(0, 0%, 80%);
             border-radius: 40px;
+            border-style: solid;
+            border-width: 1px;
             margin: 0 5px 10px 0;
 
             &:focus {
@@ -361,6 +366,31 @@
 
     .stream-privacy .zulip-icon.zulip-icon-globe {
         left: -1px;
+    }
+
+    #rt_select_stream_widget {
+        display: inline;
+        position: relative;
+
+        li > a:hover {
+            color: hsl(0, 0%, 100%);
+        }
+
+        .rt_select_stream_setting button {
+            padding-left: 10px;
+        }
+
+        #rt_select_stream_name {
+            color: hsl(0, 0%, 20%);
+        }
+
+        .fa-times {
+            color: hsl(0, 0%, 58%);
+        }
+
+        .tippy-content {
+            white-space: nowrap;
+        }
     }
 }
 

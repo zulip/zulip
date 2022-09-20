@@ -18,6 +18,7 @@ export class DropdownListWidget {
         include_current_item = true,
         value,
         on_update = () => {},
+        render_item = render_dropdown_list,
     }) {
         // Initializing values
         this.widget_name = widget_name;
@@ -28,6 +29,7 @@ export class DropdownListWidget {
         this.include_current_item = include_current_item;
         this.initial_value = value;
         this.on_update = on_update;
+        this.render_item = render_item;
 
         this.container_id = `${widget_name}_widget`;
         this.value_id = `id_${widget_name}`;
@@ -112,10 +114,11 @@ export class DropdownListWidget {
             return data.filter((x) => x.value !== this.value.toString());
         };
 
+        const render_item = this.render_item;
         ListWidget.create($dropdown_list_body, get_data(data), {
             name: `${CSS.escape(this.widget_name)}_list`,
             modifier(item) {
-                return render_dropdown_list({item});
+                return render_item({item});
             },
             filter: {
                 $element: $search_input,
