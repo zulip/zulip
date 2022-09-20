@@ -424,67 +424,20 @@ by emailing [support@zulip.com](mailto:support@zulip.com).
 
 ## Outreach programs
 
-Zulip participates in [Google Summer of Code
-(GSoC)](https://developers.google.com/open-source/gsoc/) every year.
-In the past, we've also participated in
-[Outreachy](https://www.outreachy.org/), [Google
-Code-In](https://developers.google.com/open-source/gci/), and hosted
-summer interns from Harvard, MIT, and Stanford.
+Zulip regularly participates in [Google Summer of Code
+(GSoC)](https://developers.google.com/open-source/gsoc/) and
+[Outreachy](https://www.outreachy.org/). We have been a GSoC mentoring
+organization since 2016, and we accept 15-20 GSoC participants each summer. In
+the past, we’ve also participated in [Google
+Code-In](https://developers.google.com/open-source/gci/), and hosted summer
+interns from Harvard, MIT, and Stanford.
 
-While each third-party program has its own rules and requirements, the
-Zulip community's approaches all of these programs with these ideas in
-mind:
-
-- We try to make the application process as valuable for the applicant as
-  possible. Expect high-quality code reviews, a supportive community, and
-  publicly viewable patches you can link to from your resume, regardless of
-  whether you are selected.
-- To apply, you'll have to submit at least one pull request to a Zulip
-  repository. Most students accepted to one of our programs have
-  several merged pull requests (including at least one larger PR) by
-  the time of the application deadline.
-- The main criteria we use is quality of your best contributions, and
-  the bullets listed at
-  [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
-  Because we focus on evaluating your best work, it doesn't hurt your
-  application to makes mistakes in your first few PRs as long as your
-  work improves.
-
-Most of our outreach program participants end up sticking around the
-project long-term, and many have become core team members, maintaining
-important parts of the project. We hope you apply!
-
-### Google Summer of Code
-
-The largest outreach program Zulip participates in is GSoC (14
-students in 2017; 11 in 2018; 17 in 2019; 18 in 2020; 18 in 2021). While we
-don't control how
-many slots Google allocates to Zulip, we hope to mentor a similar
-number of students in future summers. Check out our [blog
-post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/) to learn
-about the GSoC 2021 experience and our participants' accomplishments.
-
-If you're reading this well before the application deadline and want
-to make your application strong, we recommend getting involved in the
-community and fixing issues in Zulip now. Having good contributions
-and building a reputation for doing good work is the best way to have
-a strong application.
-
-Our [GSoC program page][gsoc-guide] has lots more details on how
-Zulip does GSoC, as well as project ideas. Note, however, that the project idea
-list is maintained only during the GSoC application period, so if
-you're looking at some other time of year, the project list is likely
-out-of-date.
-
-In some years, we have also run a Zulip Summer of Code (ZSoC)
-program for students who we wanted to accept into GSoC but did not have an
-official slot for. Student expectations are the
-same as with GSoC, and ZSoC has no separate application process; your
-GSoC application is your ZSoC application. If we'd like to select you
-for ZSoC, we'll contact you when the GSoC results are announced.
-
-[gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc.html
-[gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
+Check out our [outreach programs
+overview](https://zulip.readthedocs.io/en/latest/outreach/overview.md) to learn
+more about participating in an outreach program with Zulip. Most of our program
+participants end up sticking around the project long-term, and many have become
+core team members, maintaining important parts of the project. We hope you
+apply!
 
 ## Stay connected
 
