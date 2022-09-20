@@ -124,7 +124,7 @@
             <label for="email_notifications_batching_period">
                 {{t "Delay before sending message notification emails" }}
             </label>
-            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="number">
+            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="time-limit">
                 {{#each email_notifications_batching_period_values}}
                     <option value="{{ this.value }}">{{ this.description }}</option>
                 {{/each}}
@@ -135,8 +135,8 @@
                 </label>
                 <input type="text"
                   name="email_notification_batching_period_edit_minutes"
-                  class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input prop-element"
-                  data-setting-widget-type="number"
+                  class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input"
+                  data-setting-widget-type="time-limit"
                   autocomplete="off"
                   id="{{prefix}}email_notification_batching_period_edit_minutes"/>
             </div>
