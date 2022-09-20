@@ -121,7 +121,7 @@ function set_presence(user_id, status) {
     });
 }
 
-test("user_circle, level, status_description", () => {
+test("user_circle, level", () => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
@@ -132,12 +132,10 @@ test("user_circle, level, status_description", () => {
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty_line");
     user_status.revoke_away(selma.user_id);
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
-    assert.equal(buddy_data.status_description(selma.user_id), "translated: Active");
 
     set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     user_status.set_away(me.user_id);
-    assert.equal(buddy_data.status_description(me.user_id), "translated: Unavailable");
     assert.equal(buddy_data.level(me.user_id), 0);
 
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty_line");
@@ -147,10 +145,8 @@ test("user_circle, level, status_description", () => {
     set_presence(fred.user_id, "idle");
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
-    assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
 
     set_presence(fred.user_id, undefined);
-    assert.equal(buddy_data.status_description(fred.user_id), "translated: Offline");
 });
 
 test("compose fade interactions (streams)", () => {
@@ -528,7 +524,6 @@ test("get_items_for_users", () => {
             status_emoji_info,
             status_text: undefined,
             user_circle_class: "user_circle_green",
-            user_circle_status: "translated: Active",
             user_id: 1001,
             user_list_style,
         },
@@ -541,7 +536,6 @@ test("get_items_for_users", () => {
             status_emoji_info,
             status_text: undefined,
             user_circle_class: "user_circle_empty_line",
-            user_circle_status: "translated: Unavailable",
             user_id: 1002,
             user_list_style,
         },
@@ -554,7 +548,6 @@ test("get_items_for_users", () => {
             status_emoji_info,
             status_text: undefined,
             user_circle_class: "user_circle_empty",
-            user_circle_status: "translated: Offline",
             user_id: 1003,
             user_list_style,
         },
