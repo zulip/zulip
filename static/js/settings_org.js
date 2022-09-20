@@ -764,18 +764,6 @@ function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
-function get_email_notification_batching_setting_element_value() {
-    const select_elem_val = $("#realm-user-default-settings")
-        .find(".setting_email_notifications_batching_period_seconds")
-        .val();
-    if (select_elem_val !== "custom_period") {
-        return Number.parseInt(select_elem_val, 10);
-    }
-    const edit_elem_val = $("#realm_email_notification_batching_period_edit_minutes").val();
-    const setting_value_in_minutes = Number.parseInt(edit_elem_val, 10);
-    return setting_value_in_minutes * 60;
-}
-
 function get_time_limit_setting_value($input_elem, for_api_data = true) {
     const select_elem_val = $input_elem.val();
 
@@ -827,10 +815,8 @@ function check_property_changed(elem, for_realm_default_settings) {
             proposed_val = default_code_language_widget.value();
             break;
         case "email_notifications_batching_period_seconds":
-        case "email_notification_batching_period_edit_minutes": {
-            proposed_val = get_email_notification_batching_setting_element_value();
+            proposed_val = get_time_limit_setting_value($elem, false);
             break;
-        }
         case "realm_message_content_edit_limit_seconds":
         case "realm_message_content_delete_limit_seconds":
             proposed_val = get_time_limit_setting_value($elem, false);
@@ -1058,14 +1044,6 @@ export function register_save_discard_widget_handlers(
         for (const input_elem of properties_elements) {
             const $input_elem = $(input_elem);
             if (check_property_changed($input_elem, for_realm_default_settings)) {
-                if (
-                    $input_elem.hasClass("email_notification_batching_period_edit_minutes") ||
-                    $input_elem.hasClass("setting_email_notifications_batching_period_seconds")
-                ) {
-                    const setting_value = get_email_notification_batching_setting_element_value();
-                    data.email_notifications_batching_period_seconds = setting_value;
-                    continue;
-                }
                 const input_value = get_input_element_value($input_elem);
                 if (input_value !== undefined) {
                     let property_name;
