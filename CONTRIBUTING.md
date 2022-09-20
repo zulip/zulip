@@ -344,13 +344,11 @@ labels.
 Zulip has a lot of experience working with new contributors. In our
 experience, these are the best predictors of success:
 
-- Posting good questions. It's very hard to answer a general question like, "How
-  do I do this issue?" When asking for help, explain
-  your current understanding, including what you've done or tried so far and where
+- [Asking great questions][great-questions]. It's very hard to answer a general
+  question like, "How do I do this issue?" When asking for help, explain your
+  current understanding, including what you've done or tried so far and where
   you got stuck. Post tracebacks or other error messages if appropriate. For
-  more information, check out the ["Getting help" section of our community
-  guidelines](https://zulip.com/development-community/#getting-help) and
-  [this essay][good-questions-blog] for some good advice.
+  more advice, check out [our guide][great-questions]!
 - Learning and practicing
   [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
 - Submitting carefully tested code. See our [detailed guide on how to review
@@ -359,6 +357,8 @@ experience, these are the best predictors of success:
 - Posting
   [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
   for frontend changes.
+- Working to [make your pull requests easy to
+  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
 - Clearly describing what you have implemented and why. For example, if your
   implementation differs from the issue description in some way or is a partial
   step towards the requirements described in the issue, be sure to call
@@ -369,10 +369,7 @@ experience, these are the best predictors of success:
 - Being helpful and friendly on the [Zulip community
   server](https://zulip.com/development-community/).
 
-[good-questions-blog]: https://jvns.ca/blog/good-questions/
-
-These are also the main criteria we use to select candidates for all
-of our outreach programs.
+[great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
 ## Reporting issues
 
