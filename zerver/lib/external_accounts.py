@@ -1,8 +1,8 @@
 """
     This module stores data for "external account" custom profile field.
 """
-import copy
-from typing import Dict
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Dict
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -15,37 +15,47 @@ from zerver.lib.validator import (
     check_required_string,
 )
 
+if TYPE_CHECKING:
+    from django.utils.functional import _StrPromise as StrPromise
+
 # Default external account fields are by default available
 # to realm admins, where realm admin only need to select
 # the default field and other values(i.e. name, url) will be
 # fetch from this dictionary.
-# text: Field text for admins - custom profile field in org settings view
-# name: Field label or name - user profile in user settings view
-# hint: Field hint for realm users
-# url_pattern: Field URL linkifier
+@dataclass
+class ExternalAccount:
+    text: str  # Field text for admins - custom profile field in org settings view
+    name: "StrPromise"  # Field label or name - user profile in user settings view
+    hint: str  # Field hint for realm users
+    url_pattern: str  # Field URL linkifier
+
+
 DEFAULT_EXTERNAL_ACCOUNTS = {
-    "twitter": {
-        "text": "Twitter",
-        "url_pattern": "https://twitter.com/%(username)s",
-        "name": gettext_lazy("Twitter username"),
-        "hint": "",
-    },
-    "github": {
-        "text": "GitHub",
-        "url_pattern": "https://github.com/%(username)s",
-        "name": gettext_lazy("GitHub username"),
-        "hint": "",
-    },
+    "twitter": ExternalAccount(
+        text="Twitter",
+        url_pattern="https://twitter.com/%(username)s",
+        name=gettext_lazy("Twitter username"),
+        hint="",
+    ),
+    "github": ExternalAccount(
+        text="GitHub",
+        url_pattern="https://github.com/%(username)s",
+        name=gettext_lazy("GitHub username"),
+        hint="",
+    ),
 }
 
 
 def get_default_external_accounts() -> Dict[str, Dict[str, str]]:
-    translated_default_external_accounts = copy.deepcopy(DEFAULT_EXTERNAL_ACCOUNTS)
-
-    for external_account in translated_default_external_accounts.values():
-        external_account["name"] = str(external_account["name"])
-
-    return translated_default_external_accounts
+    return {
+        subtype: {
+            "text": external_account.text,
+            "url_pattern": external_account.url_pattern,
+            "name": str(external_account.name),
+            "hint": external_account.hint,
+        }
+        for subtype, external_account in DEFAULT_EXTERNAL_ACCOUNTS.items()
+    }
 
 
 def validate_external_account_field_data(field_data: ProfileFieldData) -> ProfileFieldData:

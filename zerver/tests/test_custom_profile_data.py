@@ -190,8 +190,8 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             field = CustomProfileField.objects.get(name=invalid_field_name, realm=realm)
         # The field is created with 'Twitter username' name as per values in default fields dict
         field = CustomProfileField.objects.get(name="Twitter username")
-        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"]["name"])
-        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"]["hint"])
+        self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].name)
+        self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["twitter"].hint)
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
