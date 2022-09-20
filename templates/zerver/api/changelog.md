@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 147**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  Messages now are deleted in batches, starting from the newest, so
+  that progress will be made even if the request times out because of
+  an extremely large topic.
+
 **Feature level 146**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),

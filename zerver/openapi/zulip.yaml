@@ -14232,6 +14232,12 @@ paths:
         Topics are a field on messages (not an independent
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
+
+        **Changes**: Before Zulip 6.0 (feature level 147), this
+        request did a single atomic operation, which could time out
+        for very large topics. It now deletes messages in batches,
+        starting with the newest messages, so that progress will be
+        made even if the request times out.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
