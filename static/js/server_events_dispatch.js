@@ -723,6 +723,16 @@ export function dispatch_normal_event(event) {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
                 activity.redraw_user(page_params.user_id);
+
+                // Temporary transition code to update the set of
+                // user_status.away_user_ids so that the user info
+                // popover will update when the user updates their
+                // presence_enabled privacy setting.
+                if (event.value) {
+                    user_status.revoke_away(page_params.user_id);
+                } else {
+                    user_status.set_away(page_params.user_id);
+                }
                 break;
             }
             settings_display.update_page(event.property);

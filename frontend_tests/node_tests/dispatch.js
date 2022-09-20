@@ -900,11 +900,19 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.enter_sends, true);
 
-    event = event_fixtures.user_settings__presence_enabled;
+    page_params.user_id = test_user.user_id;
+    event = event_fixtures.user_settings__presence_disabled;
     user_settings.presence_enabled = true;
     override(activity, "redraw_user", noop);
     dispatch(event);
     assert_same(user_settings.presence_enabled, false);
+    assert_same(user_status.is_away(test_user.user_id), true);
+
+    event = event_fixtures.user_settings__presence_enabled;
+    override(activity, "redraw_user", noop);
+    dispatch(event);
+    assert_same(user_settings.presence_enabled, true);
+    assert_same(user_status.is_away(test_user.user_id), false);
 
     {
         event = event_fixtures.user_settings__enable_stream_audible_notifications;

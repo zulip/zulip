@@ -905,11 +905,18 @@ exports.fixtures = {
         value: true,
     },
 
-    user_settings__presence_enabled: {
+    user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
         property: "presence_enabled",
         value: false,
+    },
+
+    user_settings__presence_enabled: {
+        type: "user_settings",
+        op: "update",
+        property: "presence_enabled",
+        value: true,
     },
 
     user_settings__starred_message_counts: {
