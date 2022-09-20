@@ -75,3 +75,12 @@ By default, anyone other than guests can [add a bot](/help/add-a-bot-or-integrat
 Zulip organization, but administrators can
 [restrict bot creation](/help/restrict-bot-creation). Any bot that is added
 is visible and available for anyone to use.
+
+## Related articles
+
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Edit a bot](/help/edit-a-bot)
+* [Request an integration](/help/request-an-integration)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Restrict bot creation](/help/restrict-bot-creation)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)
