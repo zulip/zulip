@@ -31,9 +31,9 @@ def try_add_realm_default_custom_profile_field(
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
         realm=realm,
-        name=field_data["name"],
+        name=str(field_data.name),
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
-        hint=field_data["hint"],
+        hint=field_data.hint,
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
     )
     custom_profile_field.save()
