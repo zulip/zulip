@@ -30,3 +30,11 @@ is visible and available for anyone to use.
 Depending on the type of bot you're creating, you may need to download its
 `.zuliprc` configuration file. For that, click the **download**
 (<i class="fa fa-download"></i>) icon under the bot's name.
+
+## Related articles
+
+* [Bots and integrations](/help/bots-and-integrations)
+* [Edit a bot](/help/edit-a-bot)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Restrict bot creation](/help/restrict-bot-creation)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)
