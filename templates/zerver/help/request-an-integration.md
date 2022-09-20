@@ -15,3 +15,8 @@ issues][integrations-issues], and if none exists, [open a new
 issue](https://github.com/zulip/zulip/issues/new).
 
 [integrations-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+label%3A%22area%3A+integrations%22+is%3Aissue
+
+## Related articles
+
+* [Bots and integrations](/help/bots-and-integrations)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
