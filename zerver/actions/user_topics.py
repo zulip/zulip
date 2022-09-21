@@ -6,7 +6,11 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_topics import add_topic_visibility_policy, get_topic_mutes, remove_topic_mute
+from zerver.lib.user_topics import (
+    add_topic_visibility_policy,
+    get_topic_mutes,
+    remove_topic_visibility_policy,
+)
 from zerver.models import Stream, UserProfile, UserTopic
 from zerver.tornado.django_api import send_event
 
@@ -52,10 +56,10 @@ def do_unmute_topic(
     user_profile: UserProfile, stream: Stream, topic: str, *, skip_muted_topics_event: bool = False
 ) -> None:
     # Note: If you add any new code to this function, the
-    # remove_topic_mute call in do_update_message will need to be
+    # remove_topic_visibility_policy call in do_update_message will need to be
     # updated for correctness.
     try:
-        remove_topic_mute(user_profile, stream.id, topic)
+        remove_topic_visibility_policy(user_profile, stream.id, topic)
     except UserTopic.DoesNotExist:
         raise JsonableError(_("Topic is not muted"))
 

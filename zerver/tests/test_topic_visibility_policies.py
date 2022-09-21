@@ -9,7 +9,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_topics import (
     add_topic_visibility_policy,
     get_topic_mutes,
-    remove_topic_mute,
+    remove_topic_visibility_policy,
     topic_is_muted,
 )
 from zerver.models import UserProfile, UserTopic, get_stream
@@ -109,7 +109,7 @@ class MutedTopicsTests(ZulipTestCase):
             self.assertIn((stream.name, "Verona3", mock_date_muted), get_topic_mutes(user))
             self.assertTrue(topic_is_muted(user, stream.id, "verona3"))
 
-            remove_topic_mute(
+            remove_topic_visibility_policy(
                 user_profile=user,
                 stream_id=stream.id,
                 topic_name="Verona3",

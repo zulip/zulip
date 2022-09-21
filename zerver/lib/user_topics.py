@@ -137,12 +137,13 @@ def add_topic_visibility_policy(
             row.save()
 
 
-def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:
+def remove_topic_visibility_policy(
+    user_profile: UserProfile, stream_id: int, topic_name: str
+) -> None:
     row = UserTopic.objects.get(
         user_profile=user_profile,
         stream_id=stream_id,
         topic_name__iexact=topic_name,
-        visibility_policy=UserTopic.MUTED,
     )
     row.delete()
 
