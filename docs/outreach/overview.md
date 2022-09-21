@@ -51,6 +51,11 @@ assigned mentor, you will also get lots of feedback from other members of the
 posting your questions and ideas in public streams. We encourage outreach
 program participants to help each other out as well!
 
+Program participants work on a variety of issues in their areas of interest,
+from major features to small bugs. You will see your work integrated into Zulip
+throughout the program, and even experience the impact of the changes yourself
+in the [development community chat](https://zulip.com/development-community/).
+
 Many program participants stay involved with the project past the
 official end of the program. A number of folks who get started as participants
 go on to mentor the next cohort, and several have joined Zulip's team of core
@@ -59,9 +64,8 @@ maintainers.
 To learn more about the experience of doing an outreach program with Zulip,
 check out our [Zulip's Google Summer of Code 2021 blog
 post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/). Our [guide
-for having an amazing internship experience with
-Zulip](experience.md) will also give you a feel for what it's like to
-do an internship with us.
+for having an amazing experience with Zulip](experience.md) will also give you a
+feel for what it's like to do an internship with us.
 
 > _“It has been the best summer I've ever had! I'm thankful to my mentors, my
 > peers, Zulip, and Google for providing me an opportunity of getting involved
