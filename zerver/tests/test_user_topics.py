@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from unittest import mock
 
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -184,9 +185,15 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.api_patch(user, url, data)
         self.assert_json_error(result, "Topic is not muted")
 
-        data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
-        result = self.api_patch(user, url, data)
-        self.assert_json_error(result, "Topic is not muted")
+        with transaction.atomic():
+            # This API call needs a new nested transaction with 'savepoint=True',
+            # because it calls 'set_user_topic_visibility_policy_in_database',
+            # which on failure rollbacks the test-transaction.
+            # If it is not used, the test-transaction will be rolled back during this API call,
+            # and the next API call will result in a "TransactionManagementError."
+            data = {"stream": stream.name, "topic": "BOGUS", "op": "remove"}
+            result = self.api_patch(user, url, data)
+            self.assert_json_error(result, "Nothing to be done")
 
         data = {"stream_id": 999999999, "topic": "BOGUS", "op": "remove"}
         result = self.api_patch(user, url, data)

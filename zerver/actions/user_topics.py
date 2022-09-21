@@ -8,7 +8,6 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_topics import (
     get_topic_mutes,
-    remove_topic_mute,
     set_user_topic_visibility_policy_in_database,
 )
 from zerver.models import Stream, UserProfile, UserTopic
@@ -30,9 +29,11 @@ def do_set_user_topic_visibility_policy(
 
     if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
         try:
-            remove_topic_mute(user_profile, stream.id, topic)
+            set_user_topic_visibility_policy_in_database(
+                user_profile, stream.id, topic, visibility_policy=visibility_policy
+            )
         except UserTopic.DoesNotExist:
-            raise JsonableError(_("Topic is not muted"))
+            raise JsonableError(_("Nothing to be done"))
     else:
         assert stream.recipient_id is not None
         set_user_topic_visibility_policy_in_database(
