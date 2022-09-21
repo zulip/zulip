@@ -232,6 +232,29 @@ Always keep the following order of priorities in mind:
 
 6. Finally, if all of the above are in good shape, **find a new issue** to pick up!
 
+### What about my proposal?
+
+We have a fluid approach to planning, which means you are very unlikely to end
+up working on the exact set of issues described in your proposal. Your proposal
+is not a strict commitment (on either side).
+
+In terms of managing your work:
+
+- Regardless of whether an issue was mentioned in your proposal, make sure you
+  bring it up in your check-ins when you plan to start working on something.
+  Project priorities shift over time, and we may have suggestions for
+  higher-priority work in your area of interest, or issues that will serve as
+  good preparation for other work you are excited about.
+
+- When asking for recommendations for what to work on next, it's helpful to
+  include a reminder of what areas you're most excited about, especially early
+  on in the program when we're still getting to know you. Do not expect program
+  administrators to remember what issues were listed in your proposal.
+
+While some program participants stick closely to the spirit of their proposal,
+others find new areas they are excited about in the course of their work. You
+can be highly successful in the program either way!
+
 ### Tips for finding issues to pick up
 
 - Look for, claim, and fix bugs to help keep Zulip polished. Bugs and polish

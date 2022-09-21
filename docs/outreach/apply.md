@@ -101,37 +101,82 @@ Our documentation on [what makes a great Zulip
 contributor](../contributing/contributing.md#what-makes-a-great-zulip-contributor)
 offers some additional advice.
 
-## What to include in your application
+## Putting together your application
 
-In addition to following all the instructions for the program you
-are applying to, your application should include the following:
+### What to include
 
-- Details on any experience you have related to the technologies used
-  by Zulip, or related to our product approach.
-- Links to materials which help us evaluate your level of experience and
-  how you work, such as personal projects of yours, including any
-  existing open source or open culture contributions you've made and
-  any bug reports you've submitted to open source projects.
-- Some notes on what you are hoping to get out of your project.
-- A description of the project you'd like to do, and why you're
-  excited about it.
-- Some notes on why you're excited about working on Zulip.
-- A link to your initial contribution(s).
+In addition to following all the instructions for the program you are applying
+to, your application should describe the following:
 
-## Circulating your proposal for feedback
+- Why you are applying:
+  - Why you're excited about working on Zulip.
+  - What you are hoping to get out of your participation in the program.
+  - How you selected your project.
+- Relevant experience:
+  - Summary of your **prior experience with the technologies** used by Zulip.
+  - Your **prior contributions to open-source projects** (including pull requests, bug
+    reports, etc.), with links.
+  - Any other **materials which will help us evaluate how you work**, such as
+    links to personal or school projects, along with brief descriptions.
+- Your **contributions to Zulip**, including pull requests, bug reports, and helping
+  others in the development community (with links to all materials).
+- A **project proposal** (see below).
 
-We highly recommend posting a rough draft of a few sections of your proposal at
-least one week before the application deadline. That way, the whole development
-community has a chance to give you feedback and help you improve your proposal.
+**A note for Outreachy applicants**: It is not practical for us to individually
+help you develop a specific timeline for your application. We expect you to
+submit a project proposal as described below, and will help you manage the
+timeline for your project if your application is selected.
 
-- **What to post:** Please include (1) Links to your contributions
-  to Zulip (or other projects), and (2) a paragraph or two explaining
-  what you plan to work on.
-- **How to post:** We generally prefer Dropbox Paper or Google
-  Docs, since those platforms allow people to look at the text without
-  having to log in or download a particular app, and you can update the
-  draft as you improve your idea.
-- **How to ask for feedback:** Please post a link to your draft in the program
-  stream (e.g., [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)) in the
-  [Zulip development community](https://zulip.com/development-community/).
+### Project proposals
+
+Your first priority during the contribution period should be figuring out how to
+become an effective Zulip contributor. Start developing your project proposal
+only once you have experience with iterating on your PRs to get them ready for
+integration. That way, you'll have a much better idea of what you want to work
+on and how much you can accomplish.
+
+As [discussed in the guide to having an amazing experience during the
+program](./experience.md#what-about-my-proposal):
+
+> We have a fluid approach to planning, which means you are very unlikely to end
+> up working on the exact set of issues described in your proposal. Your proposal
+> is not a strict commitment (on either side).
+
+Your proposal should demonstrate your thoughtfulness about what you want to work
+on, and consideration of project complexity. We will evaluate it based on the
+following criteria:
+
+- Does it give us a good idea of what areas of Zulip you are most excited to
+  work on?
+- Does it demonstrate some familiarity with the Zulip codebase, and reflection
+  on what makes for a coherent project that is well-aligned with your interests
+  and skill set?
+- Does it demonstrate your ability to put together a reasonable plan? Have you
+  thought carefully about the scope of various pieces of your project and their
+  dependencies? Are you taking into account the fact that there can be a lot of
+  time in software development between having an initial prototype and merging
+  the final, fully reviewed and tested, version of your code?
+- Are you proposing a project that would make a significant positive impact on the
+  areas you plan to focus on?
+
+Regardless of which program you are applying to, you can use the [GSoC project
+ideas list](./gsoc.md#project-ideas-by-area) as a source of inspiration for
+putting together your proposal.
+
+### Circulating your application for feedback
+
+We highly recommend posting a rough draft of your application at least one week
+before the deadline. That way, the whole development community has a chance to
+give you feedback and help you improve your proposal.
+
+- If you do not have a complete draft ready, at a minimum, we recommend posting
+  your **project proposal**, along with **your contributions to Zulip** for
+  context.
+
+- Please post a link to your draft in the Zulip development community stream
+  dedicated to your program (e.g.,
+  [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) or
+  [#Outreachy](https://chat.zulip.org/#narrow/stream/391-Outreachy)). Use `Your name - project proposal` as the topic.
+
+- We recommend linking to a draft in an app that works in the browser and allows
+  commenting, such as Dropbox Paper or Google Docs.

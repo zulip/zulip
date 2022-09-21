@@ -1,37 +1,28 @@
 # GSoC project ideas
 
-Once you have several PRs merged (or at least one significant PR merged), you
-can start developing a specific plan for your GSoC project. We recommend
-discussing your ideas in the
-[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) stream in the Zulip
-development community, in order to get quick feedback from whoever is online.
+This page describes ideas you can use as a starting point for your project
+proposal. If you have not done so yet, you should **start by reading our [guide on
+how to apply](./apply.md)** to a Zulip outreach program. As noted in the guide:
 
-This page contains the seeds of project ideas; you will need to do research
-on the Zulip codebase, read issues on GitHub, and talk with developers to put
-together a complete project proposal. It's also fine to come up with your own
-project ideas. As you'll see below, you can put together a great project around
-one of the [area labels](https://github.com/zulip/zulip/labels) on GitHub; each
-has a cluster of problems in one part of the Zulip project that we'd love to
-improve.
+> Your first priority during the contribution period should be figuring out how
+> to become an effective Zulip contributor. Start developing your project proposal
+> only once you have experience with iterating on your PRs to get them ready for
+> integration. That way, you'll have a much better idea of what you want to work
+> on and how much you can accomplish.
+
+## Project size and difficulty
+
+GSoC offers two project size options: 175 hours and 350 hours. We have
+designed all our projects to have incremental milestones that can be
+completed throughout the program. Consequently, all Zulip projects
+described below are compatible with either project size. Of course,
+the amount of progress you will be expected to make depends on whether
+you are doing a 175-hour or 350-hour project.
 
 We don't believe in labeling projects by difficulty, because the level of
 difficulty is highly dependent on your particular skills. To help you find
 a great project, we list the skills needed, and try to emphasize where strong
 skills with particular tools are likely to be important for a given project.
-
-We will never reject a strong applicant because their project idea was
-not a top priority. On the flip side, we often reject applicants proposing
-valuable projects when we haven't seen compelling work from the applicant.
-
-More important to us than specific deliverables in a project proposal
-is a clear body of work to focus on. E.g., if we see a proposal with eight
-Markdown processor issues, we'll interpret this as an applicant excited
-to work on the Markdown processor for the summer, even if the specific
-set of eight issues may not be the right ones to invest in.
-
-**Note: The project ideas on this page are from summer 2022.** In the future, we
-will update them with details for 2023. You can expect the updated list to look
-similar to what you'll find below.
 
 ## Focus areas
 
@@ -47,16 +38,21 @@ the project. Every area of Zulip could benefit from the work of a
 contributor with strong programming skills, so don't feel discouraged if
 the areas mentioned above are not your main strength.
 
-## Project size
+## Project ideas by area
 
-GSoC offers two project size options: 175 hours and 350 hours. We have
-designed all our projects to have incremental milestones that can be
-completed throughout the program. Consequently, all Zulip projects
-described below are compatible with either project size. Of course,
-the amount of progress you will be expected to make depends on whether
-you are doing a 175-hour or 350-hour project.
+This section contains the seeds of project ideas; you will need to do research
+on the Zulip codebase, read issues on GitHub, and talk with developers to put
+together a complete project proposal. It's also fine to come up with your own
+project ideas. As you'll see below, you can put together a great project around
+one of the [area labels](https://github.com/zulip/zulip/labels) on GitHub; each
+has a cluster of problems in one part of the Zulip project that we'd love to
+improve.
 
-## Full stack and web frontend focused projects
+**Note: The project ideas on this page are from summer 2022.** In the future, we
+will update them with details for 2023. You can expect the updated list to look
+similar to what you'll find below.
+
+### Full stack and web frontend focused projects
 
 Code: [github.com/zulip/zulip -- Python, Django, JavaScript, and
 CSS](https://github.com/zulip/zulip/).
@@ -320,7 +316,7 @@ CSS](https://github.com/zulip/zulip/).
   required**: Experience with the target language and API
   design. Expert: Depends on language.
 
-## React Native mobile app
+### React Native mobile app
 
 Code:
 [React Native mobile app](https://github.com/zulip/zulip-mobile).
@@ -352,7 +348,7 @@ as are iOS or Android development/design experience is useful as
 well. You'll need to learn React Native as part of getting
 involved. There's tons of good online tutorials, courses, etc.
 
-## Electron desktop app
+### Electron desktop app
 
 Code:
 [Our cross-platform desktop app written in JavaScript on Electron](https://github.com/zulip/zulip-desktop).
@@ -385,7 +381,7 @@ app or the Zulip web frontend (which is used by the electron app).
   viable platform for us to migrate the Zulip desktop app to. 350
   hours only; difficult. **Skill required**: Ability to learn quickly.
 
-## Terminal app
+### Terminal app
 
 Code: [Zulip Terminal](https://github.com/zulip/zulip-terminal)
 Experts: Aman Agrawal, Neil Pilgrim.
@@ -400,7 +396,7 @@ Experts: Aman Agrawal, Neil Pilgrim.
   communication and project management skills, good at reading code
   and testing.
 
-## Archive tool
+### Archive tool
 
 Code: [zulip-archive](https://github.com/zulip/zulip-archive)
 Experts: Rein Zustand, Steve Howell
