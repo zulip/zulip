@@ -94,7 +94,7 @@ page can be easily identified in it's respective JavaScript file -->
             {{ csrf_input }}
             <h2>Realm</h2>
             <select name="new_realm" onchange="this.form.submit()">
-                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All Realms</option>
+                <option value="all_realms" {% if not current_realm %}selected="selected"{% endif %}>All realms</option>
                 {% for realm in all_realms %}
                 <option value="{{realm.string_id}}" {% if current_realm == realm %}selected="selected"{% endif %}>{{realm.name}}</option>
                 {% endfor %}
@@ -103,10 +103,10 @@ page can be easily identified in it's respective JavaScript file -->
         <div id="devtools-wrapper">
             <div id="devtools-registration">
                 <form name="register_dev_user" action="{{ url('register_dev_user') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create New User" />
+                    <input type="submit" class="btn btn-admin" value="Create new user" />
                 </form>
                 <form name="register_dev_realm" action="{{ url('register_dev_realm') }}" method="POST">
-                    <input type="submit" class="btn btn-admin" value="Create New Realm" />
+                    <input type="submit" class="btn btn-admin" value="Create new realm" />
                 </form>
                 <form name="register_demo_dev_realm" action="{{ url('register_demo_dev_realm') }}" method="POST">
                     <input type="submit" class="btn btn-admin" value="Create demo organization" />
