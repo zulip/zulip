@@ -141,6 +141,13 @@ h3,
     margin-right: 10px;
 }
 
+#admin_profile_fields_table {
+    th.display,
+    td.display_in_profile_summary_cell {
+        text-align: center;
+    }
+}
+
 .user-details-title {
     display: inline-block;
     min-width: 80px;
