@@ -554,7 +554,9 @@ export const realm_user_settings_defaults_labels = {
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
 
-    realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
+    realm_presence_enabled: $t({
+        defaultMessage: "Display availability to other users (invisible mode off)",
+    }),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
 };

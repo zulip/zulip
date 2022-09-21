@@ -76,17 +76,16 @@
 
     {{#if is_me}}
         <hr />
-        {{#if can_set_away}}
+        {{#if invisible_mode}}
         <li>
-            <a tabindex="0" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as unavailable{{/tr}}
+            <a tabindex="0" class="invisible_mode_turn_off">
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
             </a>
         </li>
-        {{/if}}
-        {{#if can_revoke_away}}
+        {{else}}
         <li>
-            <a tabindex="0" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as available{{/tr}}
+            <a tabindex="0" class="invisible_mode_turn_on">
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
             </a>
         </li>
         {{/if}}

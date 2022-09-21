@@ -209,6 +209,7 @@ EXEMPT_FILES = make_set(
         "static/js/user_groups_settings_ui.js",
         "static/js/user_profile.js",
         "static/js/user_settings.ts",
+        "static/js/user_status.js",
         "static/js/user_status_ui.js",
         "static/js/webpack_public_path.js",
         "static/js/zcommand.js",

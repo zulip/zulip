@@ -38,7 +38,6 @@ const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
-const user_status = zrequire("user_status");
 const activity = zrequire("activity");
 
 const me = {
@@ -672,17 +671,6 @@ test("initialize", ({override, mock_template}) => {
     $("html").get_on_handler("mousemove")();
 
     clear();
-});
-
-test("away_status", ({override}) => {
-    override(pm_list, "update_private_messages", () => {});
-    override(buddy_list, "insert_or_move", () => {});
-
-    assert.ok(!user_status.is_away(alice.user_id));
-    activity.on_set_away(alice.user_id);
-    assert.ok(user_status.is_away(alice.user_id));
-    activity.on_revoke_away(alice.user_id);
-    assert.ok(!user_status.is_away(alice.user_id));
 });
 
 test("electron_bridge", ({override_rewire}) => {

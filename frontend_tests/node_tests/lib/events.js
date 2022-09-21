@@ -947,18 +947,6 @@ exports.fixtures = {
         value: 2,
     },
 
-    user_status__revoke_away: {
-        type: "user_status",
-        user_id: 63,
-        away: false,
-    },
-
-    user_status__set_away: {
-        type: "user_status",
-        user_id: 55,
-        away: true,
-    },
-
     user_status__set_status_emoji: {
         type: "user_status",
         user_id: test_user.user_id,
