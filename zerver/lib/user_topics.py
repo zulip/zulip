@@ -115,10 +115,20 @@ def set_user_topic_visibility_policy_in_database(
     topic_name: str,
     *,
     visibility_policy: int,
-    recipient_id: int,
+    recipient_id: Optional[int] = None,
     last_updated: Optional[datetime.datetime] = None,
     ignore_duplicate: bool = False,
 ) -> None:
+    if visibility_policy == UserTopic.VISIBILITY_POLICY_INHERIT:
+        # Will throw UserTopic.DoesNotExist if the user doesn't
+        # already have a visibility policy for this topic.
+        UserTopic.objects.get(
+            user_profile=user_profile,
+            stream_id=stream_id,
+            topic_name__iexact=topic_name,
+        ).delete()
+        return
+
     assert last_updated is not None
     (row, created) = UserTopic.objects.get_or_create(
         user_profile=user_profile,
@@ -153,16 +163,6 @@ def set_user_topic_visibility_policy_in_database(
     row.visibility_policy = visibility_policy
     row.last_updated = last_updated
     row.save(update_fields=["visibility_policy", "last_updated"])
-
-
-def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str) -> None:
-    row = UserTopic.objects.get(
-        user_profile=user_profile,
-        stream_id=stream_id,
-        topic_name__iexact=topic_name,
-        visibility_policy=UserTopic.MUTED,
-    )
-    row.delete()
 
 
 def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
