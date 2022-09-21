@@ -1,5 +1,21 @@
 # Marking messages as read
 
+## Configure whether messages are automatically marked as read
+
+{start_tabs}
+
+{tab|mobile}
+
+{!mobile-profile-menu.md!}
+
+1. Tap **Settings**.
+
+1. Tap **Mark messages as read on scroll**.
+
+1. Select **Always**, **Never** or **Only in conversation views**.
+
+{end_tabs}
+
 ## Move the blue box to mark messages as read
 In the Zulip desktop or web app, messages are marked as read when the
 **blue box** passes over them. You can move the blue box with the keyboard (see
@@ -28,6 +44,20 @@ stream or topic as read**.
    to the right.
 
 1. Click **Mark all messages as read**.
+
+{tab|mobile}
+
+1. Tap a stream, topic, or the all messages
+   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
+   tab.
+
+1. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**
+   near the top right corner of the app.
+
+!!! tip ""
+
+    You can also press and hold a topic until the long-press menu appears, and
+    select **Mark topic as read**.
 
 {end_tabs}
 
