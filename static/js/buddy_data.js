@@ -36,16 +36,13 @@ const fade_config = {
 };
 
 export function get_user_circle_class(user_id) {
-    const status = buddy_status(user_id);
+    const status = presence.get_status(user_id);
 
     switch (status) {
         case "active":
             return "user_circle_green";
         case "idle":
             return "user_circle_idle";
-        case "away_them":
-        case "away_me":
-            return "user_circle_empty_line";
         default:
             return "user_circle_empty";
     }
@@ -57,31 +54,16 @@ export function level(user_id) {
         return 0;
     }
 
-    const status = buddy_status(user_id);
+    const status = presence.get_status(user_id);
 
     switch (status) {
         case "active":
             return 1;
         case "idle":
             return 2;
-        case "away_them":
-            return 3;
         default:
             return 3;
     }
-}
-
-export function buddy_status(user_id) {
-    if (user_status.is_away(user_id)) {
-        if (people.is_my_user_id(user_id)) {
-            return "away_me";
-        }
-
-        return "away_them";
-    }
-
-    // get active/idle/etc.
-    return presence.get_status(user_id);
 }
 
 export function compare_function(a, b) {

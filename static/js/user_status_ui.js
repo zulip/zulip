@@ -62,7 +62,7 @@ export function submit_new_status() {
         return;
     }
 
-    user_status.server_update({
+    user_status.server_update_status({
         status_text: new_status_text,
         emoji_name: selected_emoji_info.emoji_name || "",
         emoji_code: selected_emoji_info.emoji_code || "",

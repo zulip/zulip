@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const unread = mock_esm("../../static/js/unread");
 
 mock_esm("../../static/js/user_status", {
-    is_away: () => false,
     get_status_emoji: () => ({
         emoji_code: 20,
     }),

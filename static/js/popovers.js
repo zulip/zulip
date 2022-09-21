@@ -51,6 +51,7 @@ import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
 import * as user_groups from "./user_groups";
 import * as user_profile from "./user_profile";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
@@ -197,15 +198,10 @@ function render_user_info_popover(
 ) {
     const is_me = people.is_my_user_id(user.user_id);
 
-    let can_set_away = false;
-    let can_revoke_away = false;
+    let invisible_mode = false;
 
     if (is_me) {
-        if (user_status.is_away(user.user_id)) {
-            can_revoke_away = true;
-        } else {
-            can_set_away = true;
-        }
+        invisible_mode = !user_settings.presence_enabled;
     }
 
     const muting_allowed = !is_me && !user.is_bot;
@@ -228,8 +224,7 @@ function render_user_info_popover(
         .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const args = {
-        can_revoke_away,
-        can_set_away,
+        invisible_mode,
         can_mute: muting_allowed && !is_muted,
         can_manage_user: page_params.is_admin && !is_me,
         can_send_private_message:
@@ -974,7 +969,7 @@ export function register_click_handlers() {
     $("body").on("click", ".info_popover_actions .clear_status", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
-        user_status.server_update({
+        user_status.server_update_status({
             user_id: me,
             status_text: "",
             emoji_name: "",
@@ -997,16 +992,16 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", ".set_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_on", (e) => {
         hide_all();
-        user_status.server_set_away();
+        user_status.server_invisible_mode_on();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("click", ".revoke_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_off", (e) => {
         hide_all();
-        user_status.server_revoke_away();
+        user_status.server_invisible_mode_off();
         e.stopPropagation();
         e.preventDefault();
     });

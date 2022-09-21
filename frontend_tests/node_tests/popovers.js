@@ -172,8 +172,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
 
     mock_template("user_info_popover_content.hbs", false, (opts) => {
         assert.deepEqual(opts, {
-            can_set_away: false,
-            can_revoke_away: false,
+            invisible_mode: false,
             can_mute: true,
             can_manage_user: false,
             can_send_private_message: true,

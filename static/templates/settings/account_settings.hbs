@@ -48,12 +48,6 @@
             <div class="alert-notification privacy-setting-status"></div>
             <div class="input-group">
                 {{> settings_checkbox
-                  setting_name="presence_enabled"
-                  is_checked=settings_object.presence_enabled
-                  label=settings_label.presence_enabled
-                  help_link="/help/status-and-availability"
-                  prefix="user_"}}
-                {{> settings_checkbox
                   setting_name="send_private_typing_notifications"
                   is_checked=settings_object.send_private_typing_notifications
                   label=settings_label.send_private_typing_notifications
@@ -73,6 +67,12 @@
                   hide_tooltip=page_params.realm_enable_read_receipts
                   help_link="/help/read-receipts"
                   }}
+                {{> settings_checkbox
+                  setting_name="presence_enabled"
+                  is_checked=settings_object.presence_enabled
+                  label=settings_label.presence_enabled
+                  help_link="/help/status-and-availability"
+                  prefix="user_"}}
             </div>
         </div>
 
