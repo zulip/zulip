@@ -374,6 +374,11 @@ export function redraw_bots_list() {
         return;
     }
 
+    // In order to properly redraw after a user may have been added,
+    // we need to update the bot_list_widget with the new set of bot
+    // user IDs to display.
+    const bot_user_ids = bot_data.all_user_ids();
+    bot_list_widget.replace_list_data(bot_user_ids);
     bot_list_widget.hard_redraw();
 }
 

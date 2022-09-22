@@ -509,14 +509,13 @@ run_test("realm_bot add", ({override}) => {
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "update_bot_data", admin_stub.f);
+    override(settings_users, "redraw_bots_list", admin_stub.f);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
     assert.equal(admin_stub.num_calls, 1);
     const args = bot_stub.get_args("bot");
     assert_same(args.bot, event.bot);
-    admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
 run_test("realm_bot remove", ({override}) => {

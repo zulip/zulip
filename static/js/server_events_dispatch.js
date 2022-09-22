@@ -328,7 +328,7 @@ export function dispatch_normal_event(event) {
                 case "add":
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
+                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
