@@ -66,8 +66,6 @@ puppet_env["FACTER_zulip_scripts_path"] = scripts_path
 # This is to suppress Puppet warnings with ruby 2.7.
 if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "20.04")]:
     puppet_env["RUBYOPT"] = "-W0"
-if (distro_info["ID"], distro_info["VERSION_ID"]) in [("ubuntu", "22.04")]:
-    puppet_env["RUBYOPT"] = "-r " + os.path.join(scripts_path, "lib", "ruby3hack.rb")
 
 
 def noop_would_change(puppet_cmd: List[str]) -> bool:
