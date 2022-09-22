@@ -6,11 +6,16 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import UserInfoDict, get_user_status_dict, update_user_status
 from zerver.models import UserProfile, UserStatus, get_client
 
+AWAY = 1
+
 
 def get_away_user_ids(realm_id: int) -> Set[int]:
-    user_dict = get_user_status_dict(realm_id)
-
-    return {int(user_id) for user_id in user_dict if user_dict[user_id].get("away")}
+    away_ids = set(
+        UserStatus.objects.filter(status=AWAY, user_profile__realm__id=realm_id).values_list(
+            "user_profile_id", flat=True
+        )
+    )
+    return away_ids
 
 
 def user_status_info(user: UserProfile) -> UserInfoDict:
@@ -61,10 +66,13 @@ class UserStatusTest(ZulipTestCase):
             client_id=client2.id,
         )
 
+        # The user's presence_enabled setting is not updated by
+        # update_user_status, so the away changes are no longer
+        # reflected in the object returned by get_user_status_dict.
+        # We test this below in test_endpoints.
         self.assertEqual(
             user_status_info(hamlet),
             dict(
-                away=True,
                 status_text="out to lunch",
                 emoji_name="car",
                 emoji_code="1f697",
