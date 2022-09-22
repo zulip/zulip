@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 150**
+
+* [`GET /events`](/api/get-events): Separate events are now sent on changing
+  `allow_message_editing`, `message_content_edit_limit_seconds` and
+  `edit_topic_policy` settings, whereas previously one event was sent including
+  all of these setting values irrespective of which of them were actually changed.
+* [`PATCH /realm`]: Only changed settings are included in the response data now
+  when changing `allow_message_editing`, `edit_topic_policy` and
+  `message_content_edit_limit_seconds` settings, instead of including all the
+  fields even if one of these settings was changed.
+
 **Feature level 149**
 
 * [`POST /register`](/api/register-queue): The `client_gravatar` and

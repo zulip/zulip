@@ -3782,6 +3782,12 @@ paths:
                                   type: object
                                   description: |
                                     An object containing the properties that have changed.
+
+                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    `allow_message_editing`, `message_content_edit_limit_seconds`, or
+                                    `edit_topic_policy` settings, this object included all the three settings
+                                    irrespective of which of these settings were changed. Now, a separate event
+                                    is sent for each changed setting.
                                   properties:
                                     add_custom_emoji_policy:
                                       type: integer
@@ -4222,11 +4228,7 @@ paths:
                                   "op": "update_dict",
                                   "property": "default",
                                   "data":
-                                    {
-                                      "allow_message_editing": false,
-                                      "message_content_edit_limit_seconds": 600,
-                                      "edit_topic_policy": 2,
-                                    },
+                                    {"message_content_edit_limit_seconds": 600},
                                   "id": 0,
                                 }
                             - type: object

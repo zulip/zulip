@@ -700,6 +700,7 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
+        allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
         create_private_stream_policy=int,
@@ -712,6 +713,7 @@ class Realm(models.Model):
         digest_emails_enabled=bool,
         digest_weekday=int,
         disallow_disposable_email_addresses=bool,
+        edit_topic_policy=int,
         email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
@@ -725,6 +727,7 @@ class Realm(models.Model):
         invite_to_stream_policy=int,
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
+        message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
