@@ -430,7 +430,7 @@ Code-In](https://developers.google.com/open-source/gci/), and hosted summer
 interns from Harvard, MIT, and Stanford.
 
 Check out our [outreach programs
-overview](https://zulip.readthedocs.io/en/latest/outreach/overview.md) to learn
+overview](https://zulip.readthedocs.io/en/latest/outreach/overview.html) to learn
 more about participating in an outreach program with Zulip. Most of our program
 participants end up sticking around the project long-term, and many have become
 core team members, maintaining important parts of the project. We hope you
