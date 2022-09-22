@@ -1069,13 +1069,13 @@ class RealmImportExportTest(ExportFile):
             return names
 
         @getter
-        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
+        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, str]]:
             cordelia = self.example_user("cordelia")
             tups = {
-                (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
+                (rec.user_profile.full_name, rec.emoji_name, rec.status_text)
                 for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
             }
-            assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
+            assert (cordelia.full_name, "hawaii", "in Hawaii") in tups
             return tups
 
         @getter
@@ -1744,7 +1744,6 @@ class SingleUserExportTest(ExportFile):
         def zerver_userstatus(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
-            self.assertEqual(rec["status"], UserStatus.NORMAL)
 
         do_mute_topic(cordelia, scotland, "bagpipe music")
         do_mute_topic(othello, scotland, "nessie")
