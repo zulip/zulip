@@ -32,13 +32,20 @@
     }
 }
 
-.user_full_name_overflow {
-    display: inline-block;
+.user_full_name {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    vertical-align: top;
-    margin-right: -3px;
+}
+
+.popover_user_name_row {
+    display: flex;
+    align-items: center;
+}
+
+.user_info_popover_action_buttons {
+    display: flex;
+    margin-left: auto;
 }
 
 .mention_user,
@@ -51,10 +58,6 @@
 
 .popover_action_icon {
     padding-left: 2px;
-}
-
-.user_info_popover_action_buttons {
-    float: right;
 }
 
 .info_popover_actions .custom_user_field {
@@ -238,7 +241,7 @@ ul {
     display: inline-block;
     float: initial;
     position: relative;
-    top: 1px;
+    top: 0;
 }
 
 .bot-owner-name {

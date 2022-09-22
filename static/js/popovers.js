@@ -232,33 +232,6 @@ function render_user_info_popover(
     });
     popover_element.popover("show");
 
-    // Adding text-overflow CSS and showing full name in tooltip if user full name can't
-    // fit in one horizontal line of user profile popover with present icons from the right side.
-    const $user_full_name_elem = $("#user_info_popover .user_full_name");
-    $user_full_name_elem.width("auto");
-    const user_info_popover_width = $("#user_info_popover").width();
-    let popover_action_buttons_width = $(
-        "#user_info_popover .user_info_popover_action_buttons",
-    ).width();
-    if (!popover_action_buttons_width) {
-        popover_action_buttons_width = 0;
-    }
-    let available_width_for_user_full_name = user_info_popover_width - popover_action_buttons_width;
-    if (is_active) {
-        // If user is active then we need to spare width for presence circle which is 20px.
-        // and in case of bot for bot icon width of that is 16px.
-        if (user.is_bot) {
-            available_width_for_user_full_name -= 16;
-        } else {
-            available_width_for_user_full_name -= 20;
-        }
-    }
-
-    if ($user_full_name_elem.width() >= available_width_for_user_full_name) {
-        $user_full_name_elem.width(available_width_for_user_full_name);
-        $user_full_name_elem.addClass("user_full_name_overflow tippy-zulip-tooltip");
-    }
-
     // Note: We pass the normal-size avatar in initial rendering, and
     // then query the server to replace it with the medium-size
     // avatar.  The purpose of this double-fetch approach is to take
