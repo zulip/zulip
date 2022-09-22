@@ -63,10 +63,14 @@ const ls = {
         localStorage.removeItem(key);
     },
 
-    // Remove keys which match a regex.
-    removeDataRegex(version, regex) {
+    // Remove keys which (1) map to a value that satisfies a
+    // property tested by `condition_checker` and (2) which match
+    // the pattern given by `name`.
+    removeDataRegexWithCondition(version, regex, condition_checker) {
         const key_regex = new RegExp(this.formGetter(version, regex));
-        const keys = Object.keys(localStorage).filter((key) => key_regex.test(key));
+        const keys = Object.keys(localStorage).filter(
+            (key) => key_regex.test(key) && condition_checker(localStorage.getItem(key)),
+        );
 
         for (const key of keys) {
             localStorage.removeItem(key);
@@ -141,9 +145,11 @@ export const localstorage = function () {
             ls.removeData(_data.VERSION, name);
         },
 
-        // Remove keys which match the pattern given by name.
-        removeRegex(name) {
-            ls.removeDataRegex(_data.VERSION, name);
+        // Remove keys which (1) map to a value that satisfies a
+        // property tested by `condition_checker` AND (2) which
+        // match the pattern given by `name`.
+        removeDataRegexWithCondition(name, condition_checker) {
+            ls.removeDataRegexWithCondition(_data.VERSION, name, condition_checker);
         },
 
         migrate(name, v1, v2, callback) {
