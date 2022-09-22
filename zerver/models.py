@@ -4155,10 +4155,7 @@ class UserStatus(AbstractEmoji):
     # default value.
     emoji_name: str = models.TextField(default="")
     emoji_code: str = models.TextField(default="")
-    NORMAL = 0
-    AWAY = 1
 
-    status: int = models.PositiveSmallIntegerField(default=NORMAL)
     status_text: str = models.CharField(max_length=255, default="")
 
 
