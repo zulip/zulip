@@ -1555,8 +1555,14 @@ paths:
                                         - user_status
                                 away:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user has marked themself "away" with this status.
+
+                                    **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                    starting with that feature level, `away` is a legacy way to
+                                    access the user's `presence_enabled` setting, with
+                                    `away = !presence_enabled`. To be removed in a future release.
                                 status_text:
                                   type: string
                                   description: |
@@ -7172,11 +7178,17 @@ paths:
           example: on vacation
           required: false
         - name: away
+          deprecated: true
           schema:
             type: boolean
           in: query
           description: |
             Whether the user should be marked as "away".
+
+            **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+            starting with that feature level, `away` is a legacy way to
+            access the user's `presence_enabled` setting, with
+            `away = !presence_enabled`. To be removed in a future release.
           example: true
           required: false
         - name: emoji_name
@@ -10373,8 +10385,14 @@ paths:
                           properties:
                             away:
                               type: boolean
+                              deprecated: true
                               description: |
                                 If present, the user has marked themself "away".
+
+                                **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                starting with that feature level, `away` is a legacy way to
+                                access the user's `presence_enabled` setting, with
+                                `away = !presence_enabled`. To be removed in a future release.
                             status_text:
                               type: string
                               description: |

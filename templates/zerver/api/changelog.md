@@ -20,6 +20,15 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 148**
+
+* [`POST /users/me/status`](/api/update-status):
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  The user status `away` field/parameter is deprecated, and as of this
+  feature level are a legacy way to access the user's `presence_enabled`
+  setting, with `away = !presence_enabled`. To be removed in a future
+  release.
+
 **Feature level 147**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
