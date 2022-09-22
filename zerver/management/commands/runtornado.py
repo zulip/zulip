@@ -19,6 +19,7 @@ if settings.PRODUCTION:
 from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, setup_tornado_rabbitmq
+from zerver.tornado.descriptors import set_current_port
 from zerver.tornado.event_queue import (
     add_client_gc_hook,
     dump_event_queues,
@@ -91,6 +92,7 @@ class Command(BaseCommand):
                 )
                 await sync_to_async(add_signal_handlers, thread_sensitive=True)()
 
+                set_current_port(port)
                 translation.activate(settings.LANGUAGE_CODE)
 
                 # We pass display_num_errors=False, since Django will

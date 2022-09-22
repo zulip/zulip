@@ -597,8 +597,9 @@ def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
     if config_file.has_section("tornado_sharding"):
         ports = sorted(
             {
-                int(key[: -len("_regex")] if key.endswith("_regex") else key)
+                int(port)
                 for key in config_file.options("tornado_sharding")
+                for port in (key[: -len("_regex")] if key.endswith("_regex") else key).split("_")
             }
         )
     if not ports:
