@@ -534,15 +534,15 @@
         doesn't scroll along with the code div in narrow windows */
         position: absolute;
         right: 2px;
-        margin-top: -6px;
+        margin-top: -4px;
     }
 
     .code_external_link {
         visibility: hidden;
         position: absolute;
         right: 23px;
-        margin-top: -4px;
-        font-size: 1.4em;
+        margin-top: -3px;
+        font-size: 17px;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
         color: hsl(0, 0%, 47%);
