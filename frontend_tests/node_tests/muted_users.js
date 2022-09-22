@@ -83,7 +83,7 @@ test("get_mutes", () => {
     ]);
 });
 
-test("unknown streams", () => {
+test("initialize", () => {
     page_params.muted_users = [
         {id: 3, timestamp: 1577836800},
         {id: 2, timestamp: 1577836800},
