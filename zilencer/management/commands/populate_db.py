@@ -764,7 +764,9 @@ class Command(BaseCommand):
             ]
 
         # Extract a list of all users
-        user_profiles: List[UserProfile] = list(UserProfile.objects.filter(is_bot=False))
+        user_profiles: List[UserProfile] = list(
+            UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
+        )
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
