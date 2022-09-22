@@ -1722,7 +1722,7 @@ class SingleUserExportTest(ExportFile):
 
         do_update_user_status(
             user_profile=cordelia,
-            away=True,
+            away=None,
             status_text="on vacation",
             client_id=client.id,
             emoji_name=None,
@@ -1744,7 +1744,7 @@ class SingleUserExportTest(ExportFile):
         def zerver_userstatus(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
-            self.assertEqual(rec["status"], UserStatus.AWAY)
+            self.assertEqual(rec["status"], UserStatus.NORMAL)
 
         do_mute_topic(cordelia, scotland, "bagpipe music")
         do_mute_topic(othello, scotland, "nessie")
