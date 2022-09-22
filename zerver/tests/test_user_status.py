@@ -174,10 +174,10 @@ class UserStatusTest(ZulipTestCase):
         self.assertEqual(away_user_ids, {cordelia.id})
 
     def update_status_and_assert_event(
-        self, payload: Dict[str, Any], expected_event: Dict[str, Any]
+        self, payload: Dict[str, Any], expected_event: Dict[str, Any], num_events: int = 1
     ) -> None:
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.tornado_redirected_to_list(events, expected_num_events=num_events):
             result = self.client_post("/json/users/me/status", payload)
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"], expected_event)
@@ -232,6 +232,7 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
+            num_events=4,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -252,6 +253,7 @@ class UserStatusTest(ZulipTestCase):
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
+            num_events=4,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -278,6 +280,7 @@ class UserStatusTest(ZulipTestCase):
                 emoji_code="",
                 reaction_type=UserStatus.UNICODE_EMOJI,
             ),
+            num_events=4,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -288,6 +291,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(False).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
+            num_events=4,
         )
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, set())
@@ -318,6 +322,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(True).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
+            num_events=4,
         )
         away_user_ids = get_away_user_ids(realm_id=realm_id)
         self.assertEqual(away_user_ids, {hamlet.id})

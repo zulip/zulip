@@ -1,5 +1,6 @@
 from typing import Optional
 
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.user_status import update_user_status
 from zerver.models import UserProfile, UserStatus, active_user_ids
 from zerver.tornado.django_api import send_event
@@ -14,6 +15,13 @@ def do_update_user_status(
     emoji_code: Optional[str],
     reaction_type: Optional[str],
 ) -> None:
+    # Deprecated way for clients to access the user's `presence_enabled`
+    # setting, with away != presence_enabled.
+    if away is not None:
+        user_setting = "presence_enabled"
+        value = not away
+        do_change_user_setting(user_profile, user_setting, value, acting_user=user_profile)
+
     if away is None:
         status = None
     elif away:
