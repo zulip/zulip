@@ -1,5 +1,12 @@
 # Marking messages as read
 
+Zulip automatically keeps track of which messages you have and haven't read.
+Unread messages have a line along the left side, which fades when the message
+gets marked as read.
+
+Zulip offers tools to manually mark one or more messages as read, and you can
+configure whether messages are marked as read automatically when you scroll.
+
 ## Configure whether messages are automatically marked as read
 
 {start_tabs}
@@ -16,18 +23,17 @@
 
 {end_tabs}
 
-## Move the blue box to mark messages as read
-In the Zulip desktop or web app, messages are marked as read when the
-**blue box** passes over them. You can move the blue box with the keyboard (see
-[keyboard shortcuts for navigation](/help/keyboard-shortcuts#navigation)),
-or by scrolling the message feed with your mouse.
+## Mark a message as read
 
-## Scroll to mark messages as read
+{start_tabs}
 
-Zulip automatically keeps track of which messages you have and haven't read.
-Unread messages have a dark line along their left side, which fades as
-the message gets marked as read. When you get to the bottom of a view, Zulip
-marks all messages in that view as read.
+{tab|desktop-web}
+
+1. Select the message using the **blue box** to mark it as read. You can scroll
+   the **blue box** using the mouse, or with [keyboard navigation
+   shortcuts](/help/keyboard-shortcuts#navigation).
+
+{end_tabs}
 
 ## Mark all messages as read
 
@@ -45,13 +51,19 @@ stream or topic as read**.
 
 1. Click **Mark all messages as read**.
 
+!!! tip ""
+
+    You can also mark all messages in your current view as read by
+    jumping to the bottom with the **Scroll to bottom**
+    (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
+
 {tab|mobile}
 
-1. Tap a stream, topic, or the all messages
+1. Tap a stream, topic, or the **All messages**
    (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
    tab.
 
-1. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**
+2. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**
    near the top right corner of the app.
 
 !!! tip ""
