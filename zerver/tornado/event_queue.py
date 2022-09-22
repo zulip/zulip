@@ -1293,6 +1293,16 @@ def process_notification(notice: Mapping[str, Any]) -> None:
         process_deletion_event(event, user_ids)
     elif event["type"] == "presence":
         process_presence_event(event, cast(List[int], users))
+    elif event["type"] == "cleanup_queue":
+        assert isinstance(users[0], int)
+        try:
+            client = access_client_descriptor(users[0], event["queue_id"])
+        except BadEventQueueIdError:
+            logging.info(
+                "Ignoring cleanup request for bad queue id %s (%d)", event["queue_id"], users[0]
+            )
+        else:
+            client.cleanup()
     else:
         process_event(event, cast(List[int], users))
     logging.debug(

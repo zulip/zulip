@@ -45,6 +45,13 @@ location /api/v1/events {
     include /etc/nginx/zulip-include/proxy_longpolling;
 }
 
+# Handle X-Accel-Redirect from Tornado to Tornado
+location ~ ^/tornado/(\d+)(/.*)$ {
+    internal;
+    proxy_pass http://tornado$1$2$is_args$args;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+}
+
 # Send everything else to Django via uWSGI
 location / {
     include uwsgi_params;

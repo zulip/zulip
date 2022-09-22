@@ -16,3 +16,15 @@ def set_descriptor_by_handler_id(handler_id: int, client_descriptor: "ClientDesc
 
 def clear_descriptor_by_handler_id(handler_id: int) -> None:
     del descriptors_by_handler_id[handler_id]
+
+
+current_port: Optional[int] = None
+
+
+def is_current_port(port: int) -> Optional[int]:
+    return current_port is None or current_port == port
+
+
+def set_current_port(port: int) -> None:
+    global current_port
+    current_port = port
