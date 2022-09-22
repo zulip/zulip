@@ -1133,11 +1133,30 @@ export function delete_message(msg_id) {
     });
 }
 
-export function delete_topic(stream_id, topic_name) {
+export function delete_topic(stream_id, topic_name, failures = 0) {
     channel.post({
         url: "/json/streams/" + stream_id + "/delete_topic",
         data: {
             topic_name,
+        },
+        success() {},
+        error(xhr) {
+            if (failures >= 9) {
+                // Don't keep retrying indefinitely to avoid DoSing the server.
+                return;
+            }
+            if (xhr.status === 502) {
+                /* When trying to delete a very large topic, it's
+                   possible for the request to the server to
+                   time out after making some progress. Retry the
+                   request, so that the user can just do nothing and
+                   watch the topic slowly be deleted.
+
+                   TODO: Show a nice loading indicator experience.
+                */
+                failures += 1;
+                delete_topic(stream_id, topic_name, failures);
+            }
         },
     });
 }
