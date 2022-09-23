@@ -7,7 +7,7 @@ import * as recent_topics_util from "./recent_topics_util";
 import * as rows from "./rows";
 
 /*
-This library implements two related, similar concepts:
+This library implements three related, similar concepts:
 
 - condensing, i.e. cutting off messages taller than about a half
   screen so that they aren't distractingly tall (and offering a button
@@ -15,6 +15,8 @@ This library implements two related, similar concepts:
 
 - Collapsing, i.e. taking a message and reducing its height to a
   single line, with a button to see the content.
+
+- show/hiding message previews.
 
 */
 
@@ -28,6 +30,58 @@ function show_more_link($row) {
 function show_condense_link($row) {
     $row.find(".message_expander").hide();
     $row.find(".message_condenser").show();
+}
+
+export function ensure_embed_button($row) {
+    // don't add if already present
+    if ($row.find(".hide_embed").length === 0) {
+        const message = message_lists.current.get(rows.id($row));
+        const $content = $row.find(".message_content");
+        const content_height = $content.find("p").height();
+
+        const $div = $(document.createElement("div"));
+        $div.addClass("hide_embed");
+        $div.css("margin-top", content_height + 10 + "px");
+        const $button = $(document.createElement("i"));
+        $button.addClass(["hide_embed_button", "fa", "fa-times", "tippy-zulip-tooltip"]);
+        $button.attr("role", "button");
+        $button.attr("data-tippy-content", "hide preview (!)");
+        $button.attr("tabindex", "0");
+        $button.on("click", function (e) {
+            const $row = $(this).closest(".message_row");
+            message_lists.current.get(rows.id($row)).embed_hidden = true;
+            hide_embed_animate($row);
+            message_flags.save_hide_embed(message);
+            e.stopPropagation();
+            e.preventDefault();
+        });
+        $div.append($button);
+        $content.before($div);
+    }
+}
+
+export function show_embed_animate($row) {
+    ensure_embed_button($row);
+    $row.find(".message_embed").slideDown(300, () => {
+        $row.find(".hide_embed").show();
+    });
+}
+
+export function show_embed($row) {
+    ensure_embed_button($row);
+    $row.find(".message_embed").show();
+    $row.find(".hide_embed").show();
+}
+
+export function hide_embed_animate($row) {
+    $row.find(".hide_embed").hide();
+    $row.find(".message_embed").slideUp(300);
+}
+
+// use this when you don't want to animate, e.g. screen reload
+export function hide_embed($row) {
+    $row.find(".hide_embed").hide();
+    $row.find(".message_embed").hide();
 }
 
 function condense_row($row) {
@@ -252,6 +306,16 @@ export function condense_and_collapse(elems) {
             $content.addClass("collapsed");
             $(elem).find(".message_expander").show();
         }
+
+        if (
+            message.embed_hidden !== true &&
+            // performance hack to avoid lots of unnecessary find(.hide_embed) calls
+            message.content.includes("message_embed")
+        ) {
+            show_embed($(elem));
+        } else {
+            hide_embed($(elem));
+        }
     }
 }
 
@@ -270,6 +334,7 @@ export function initialize() {
             message.condensed = false;
             $content.removeClass("condensed");
             $(this).hide();
+            message_flags.save_uncollapsed(message);
             $row.find(".message_condenser").show();
         }
         e.stopPropagation();
@@ -278,7 +343,6 @@ export function initialize() {
 
     $("#message_feed_container").on("click", ".message_condenser", function (e) {
         const $row = $(this).closest(".message_row");
-        message_lists.current.get(rows.id($row)).condensed = true;
         condense_row($row);
         e.stopPropagation();
         e.preventDefault();

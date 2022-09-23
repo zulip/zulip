@@ -3068,3 +3068,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 }
+
+.hide_embed_button {
+    opacity: 0.5;
+}

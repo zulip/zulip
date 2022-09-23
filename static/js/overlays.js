@@ -81,7 +81,12 @@ export function open_overlay(opts) {
     // attribute for them and then a data-overlay attribute for
     // them.  Make sure they match.
     if (opts.$overlay.attr("data-overlay") !== opts.name) {
-        blueslip.error("Bad overlay setup for " + opts.name);
+        blueslip.error(
+            "Bad overlay setup for " +
+                opts.name +
+                " expected " +
+                opts.$overlay.attr("data-overlay"),
+        );
         return;
     }
 

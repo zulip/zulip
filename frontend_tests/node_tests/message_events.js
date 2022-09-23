@@ -128,6 +128,7 @@ run_test("update_messages", () => {
             collapsed: false,
             content: "<b>new content</b>",
             display_recipient: denmark.name,
+            embed_hidden: false,
             historical: false,
             id: 111,
             is_stream: true,

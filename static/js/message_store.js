@@ -72,6 +72,7 @@ export function set_message_booleans(message) {
     message.mentioned_me_directly = convert_flag("mentioned");
     message.collapsed = convert_flag("collapsed");
     message.alerted = convert_flag("has_alert_word");
+    message.embed_hidden = convert_flag("embed_hidden");
 
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code

@@ -694,6 +694,10 @@ export class MessageListView {
         const id = rows.id($row);
         message_edit.maybe_show_edit($row, id);
 
+        if ($row.has(".message_embed_title").length) {
+            condense.ensure_embed_button($row);
+        }
+
         submessage.process_submessages({
             $row,
             message_id: id,

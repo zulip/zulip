@@ -74,6 +74,14 @@ export function save_uncollapsed(message) {
     send_flag_update_for_messages([message.id], "collapsed", "remove");
 }
 
+export function save_hide_embed(message) {
+    send_flag_update_for_messages([message.id], "embed_hidden", "add");
+}
+
+export function save_unhide_embed(message) {
+    send_flag_update_for_messages([message.id], "embed_hidden", "remove");
+}
+
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
 export function update_starred_flag(message_id, new_value) {

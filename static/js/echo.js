@@ -320,6 +320,9 @@ export function edit_locally(message, request) {
             if (request.collapsed !== undefined) {
                 message.collapsed = request.collapsed;
             }
+            if (request.embed_hidden !== undefined) {
+                message.embed_hidden = request.embed_hidden;
+            }
         }
     }
 

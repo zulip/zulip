@@ -28,6 +28,7 @@ import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muted_users from "./muted_users";
@@ -501,6 +502,9 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
+        const should_display_hide_embed = !message.embed_hidden;
+        const should_display_unhide_embed = !should_display_hide_embed;
+
         const should_display_edit_and_view_source =
             message.content !== "<p>(deleted)</p>" ||
             editability === message_edit.editability_types.FULL ||
@@ -523,6 +527,8 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item,
             should_display_collapse,
             should_display_uncollapse,
+            should_display_hide_embed,
+            should_display_unhide_embed,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option,
             should_display_hide_option,
@@ -647,6 +653,18 @@ export function open_message_menu(message) {
         focus_first_action_popover_item();
     }
     return true;
+}
+
+export function toggle_hide_embed(message) {
+    const $row = message_lists.current.get_row(message.id);
+    if (message.embed_hidden) {
+        condense.show_embed_animate($row);
+        message_flags.save_unhide_embed(message);
+    } else {
+        condense.hide_embed_animate($row);
+        message_flags.save_hide_embed(message);
+    }
+    message.embed_hidden = !message.embed_hidden;
 }
 
 export function actions_menu_handle_keyboard(key) {
@@ -1185,6 +1203,17 @@ export function register_click_handlers() {
         hide_all();
         if (overlays.settings_open()) {
             overlays.close_overlay("settings");
+        }
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("body").on("click", ".popover_toggle_embed", (e) => {
+        hide_actions_popover();
+        const message_id = $(e.currentTarget).data("message-id");
+        const $row = message_lists.current.get_row(message_id);
+        if ($row) {
+            const message = message_lists.current.get(rows.id($row));
+            toggle_hide_embed(message);
         }
         e.stopPropagation();
         e.preventDefault();

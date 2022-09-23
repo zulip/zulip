@@ -318,3 +318,37 @@ run_test("collapse_and_uncollapse", ({override}) => {
         },
     });
 });
+
+run_test("hide_embed", ({override}) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    const msg = {id: 5};
+
+    message_flags.save_hide_embed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "add",
+            flag: "embed_hidden",
+        },
+    });
+
+    message_flags.save_unhide_embed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "remove",
+            flag: "embed_hidden",
+        },
+    });
+});

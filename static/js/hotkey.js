@@ -70,6 +70,7 @@ const keydown_shift_mappings = {
     39: {name: "right_arrow", message_view_only: false}, // right arrow
     38: {name: "up_arrow", message_view_only: false}, // up arrow
     40: {name: "down_arrow", message_view_only: false}, // down arrow
+    49: {name: "toggle_hide_embed", message_view_only: true}, // '!'
 };
 
 const keydown_unshift_mappings = {
@@ -904,6 +905,9 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "message_actions":
             return popovers.open_message_menu(msg);
+        case "toggle_hide_embed":
+            popovers.toggle_hide_embed(msg);
+            return true;
         case "star_message":
             message_flags.toggle_starred_and_update_server(msg);
             return true;
