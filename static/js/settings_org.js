@@ -957,7 +957,7 @@ export function register_save_discard_widget_handlers(
     });
 
     parse_time_limit = function parse_time_limit($elem) {
-        return Math.floor(Number.parseFloat($elem.val(), 10).toFixed(1) * 60);
+        return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
     };
 
     function get_complete_data_for_subsection(subsection) {
