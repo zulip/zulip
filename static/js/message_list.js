@@ -203,10 +203,6 @@ export class MessageList {
         $(document).trigger(new $.Event("message_selected.zulip", opts));
     }
 
-    reselect_selected_id() {
-        this.select_id(this.data.selected_id(), {from_rendering: true});
-    }
-
     selected_message() {
         return this.get(this.data.selected_id());
     }
@@ -326,9 +322,17 @@ export class MessageList {
         $row.removeClass("unread");
     }
 
+    reselect_selected_id() {
+        const selected_id = this.data.selected_id();
+
+        if (selected_id !== -1) {
+            this.select_id(this.data.selected_id(), {from_rendering: true});
+        }
+    }
+
     rerender_view() {
         this.view.rerender_preserving_scrolltop();
-        this.redo_selection();
+        this.reselect_selected_id();
     }
 
     rerender() {
@@ -347,14 +351,6 @@ export class MessageList {
             }
         }
         this.rerender_view();
-    }
-
-    redo_selection() {
-        const selected_id = this.data.selected_id();
-
-        if (selected_id !== -1) {
-            this.select_id(selected_id);
-        }
     }
 
     update_muting_and_rerender() {
