@@ -896,7 +896,7 @@ function enable_or_disable_save_button($subsection_elem) {
     for (const setting_elem of time_limit_settings) {
         const dropdown_elem_val = $(setting_elem).find("select").val();
         const custom_input_elem_val = Number.parseInt(
-            $(setting_elem).find(".admin-realm-time-limit-input").val(),
+            Number($(setting_elem).find(".admin-realm-time-limit-input").val()),
             10,
         );
 
