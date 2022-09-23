@@ -37,6 +37,10 @@
         background-color: hsla(0, 0%, 83%, 0.5);
     }
 
+    .modal__content.simplebar-scrollable-y + .modal__footer {
+        border-top: 1px solid hsla(0, 0%, 100%, 0.2);
+    }
+
     .modal-bg,
     .modal__container {
         background-color: hsl(212, 28%, 18%);
