@@ -794,7 +794,8 @@ def get_messages_iterator(
         dir_path = os.path.join(slack_data_dir, dir_name)
         json_names = os.listdir(dir_path)
         for json_name in json_names:
-            all_json_names[json_name].append(dir_path)
+            if json_name.endswith(".json"):
+                all_json_names[json_name].append(dir_path)
 
     # Sort json_name by date
     for json_name in sorted(all_json_names.keys()):
