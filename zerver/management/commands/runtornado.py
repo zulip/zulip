@@ -13,6 +13,8 @@ from tornado import autoreload
 from tornado.platform.asyncio import AsyncIOMainLoop
 
 settings.RUNNING_INSIDE_TORNADO = True
+if settings.PRODUCTION:
+    settings.SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 from zerver.lib.async_utils import NoAutoCreateEventLoopPolicy
 from zerver.lib.debug import interactive_debug_listen
