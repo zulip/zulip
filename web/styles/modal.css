@@ -83,10 +83,15 @@
 }
 
 .modal__content {
+    display: flex;
     font-size: 1rem;
     overflow-y: auto;
     padding: 0 24px;
     line-height: 1.5;
+
+    &.simplebar-scrollable-y + .modal__footer {
+        border-top: 1px solid hsl(0, 0%, 87%);
+    }
 }
 
 .modal__btn {
