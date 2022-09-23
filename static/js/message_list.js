@@ -326,7 +326,7 @@ export class MessageList {
         const selected_id = this.data.selected_id();
 
         if (selected_id !== -1) {
-            this.select_id(this.data.selected_id(), {from_rendering: true});
+            this.select_id(this.data.selected_id(), {from_rendering: true, mark_read: false});
         }
     }
 
