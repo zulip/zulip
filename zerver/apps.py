@@ -16,6 +16,12 @@ class ZerverConfig(AppConfig):
     name: str = "zerver"
 
     def ready(self) -> None:
+        if settings.SENTRY_DSN:  # nocoverage
+            from zproject.config import get_config
+            from zproject.sentry import setup_sentry
+
+            setup_sentry(settings.SENTRY_DSN, get_config("machine", "deploy_type", "development"))
+
         # We import zerver.signals here for the side effect of
         # registering the user_logged_in signal receiver.  This import
         # needs to be here (rather than e.g. at top-of-file) to avoid

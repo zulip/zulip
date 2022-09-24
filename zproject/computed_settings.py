@@ -1224,10 +1224,6 @@ TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN
 SENTRY_DSN = os.environ.get("SENTRY_DSN", SENTRY_DSN)
-if SENTRY_DSN:
-    from .sentry import setup_sentry
-
-    setup_sentry(SENTRY_DSN, get_config("machine", "deploy_type", "development"))
 
 SCIM_SERVICE_PROVIDER = {
     "USER_ADAPTER": "zerver.lib.scim.ZulipSCIMUser",
