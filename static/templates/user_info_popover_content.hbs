@@ -68,10 +68,10 @@
         {{/each}}
 
         {{#if user_time}}
-            <li class="hidden-for-spectators">{{ user_time }} {{#tr}}Local time{{/tr}}</li>
+            <li class="hidden-for-spectators">{{#tr}}{user_time} local time{{/tr}}</li>
         {{/if}}
 
-        <li class="only-visible-for-spectators">Joined {{date_joined}}</li>
+        <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
     </div>
 
     {{#if is_me}}
