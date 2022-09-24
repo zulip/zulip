@@ -4793,26 +4793,3 @@ def flush_alert_word(*, instance: AlertWord, **kwargs: object) -> None:
 
 post_save.connect(flush_alert_word, sender=AlertWord)
 post_delete.connect(flush_alert_word, sender=AlertWord)
-
-
-class SCIMClient(models.Model):
-    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    name: str = models.TextField()
-
-    class Meta:
-        unique_together = ("realm", "name")
-
-    def __str__(self) -> str:
-        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
-
-    def format_requestor_for_logs(self) -> str:
-        return f"scim-client:{self.name}:realm:{self.realm_id}"
-
-    @property
-    def is_authenticated(self) -> bool:
-        """
-        The purpose of this is to make SCIMClient behave like a UserProfile
-        when an instance is assigned to request.user - we need it to pass
-        request.user.is_authenticated verifications.
-        """
-        return True

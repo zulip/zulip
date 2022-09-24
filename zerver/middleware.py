@@ -2,6 +2,7 @@ import cProfile
 import logging
 import time
 import traceback
+from dataclasses import dataclass
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -42,7 +43,7 @@ from zerver.lib.response import (
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
-from zerver.models import Realm, SCIMClient, flush_per_request_caches, get_realm
+from zerver.models import Realm, flush_per_request_caches, get_realm
 
 ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
@@ -696,6 +697,31 @@ class ZulipCommonMiddleware(CommonMiddleware):
         return super().should_redirect_with_slash(request)
 
 
+@dataclass
+class SCIMClient:
+    realm: Realm
+    name: str
+
+    def __str__(self) -> str:
+        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
+
+    def format_requestor_for_logs(self) -> str:
+        return f"scim-client:{self.name}:realm:{self.realm_id}"
+
+    @property
+    def realm_id(self) -> int:
+        return self.realm.id
+
+    @property
+    def is_authenticated(self) -> bool:
+        """
+        The purpose of this is to make SCIMClient behave like a UserProfile
+        when an instance is assigned to request.user - we need it to pass
+        request.user.is_authenticated verifications.
+        """
+        return True
+
+
 def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     """
     This function verifies the request is allowed to make SCIM requests on this subdomain,
@@ -725,7 +751,7 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
     # While API authentication code paths are sufficiently high
     # traffic that we prefer to use a cache, SCIM is much lower
     # traffic, and doing a database query is plenty fast.
-    return SCIMClient.objects.get(realm=request_notes.realm, name=scim_client_name)
+    return SCIMClient(realm=request_notes.realm, name=scim_client_name)
 
 
 class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):

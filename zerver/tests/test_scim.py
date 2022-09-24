@@ -8,7 +8,8 @@ from django.conf import settings
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import SCIMClient, UserProfile, get_realm
+from zerver.middleware import SCIMClient
+from zerver.models import UserProfile, get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -22,7 +23,7 @@ class SCIMTestCase(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")
-        self.scim_client = SCIMClient.objects.create(
+        self.scim_client = SCIMClient(
             realm=self.realm, name=settings.SCIM_CONFIG["zulip"]["scim_client_name"]
         )
 
