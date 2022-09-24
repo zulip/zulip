@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import time
@@ -5,7 +6,6 @@ from copy import deepcopy
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
-import zerver.lib.logging_util
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
 
@@ -735,6 +735,21 @@ DEFAULT_ZULIP_HANDLERS = [
     "errors_file",
 ]
 
+
+def skip_200_and_304(record: logging.LogRecord) -> bool:
+    # Apparently, `status_code` is added by Django and is not an actual
+    # attribute of LogRecord; as a result, mypy throws an error if we
+    # access the `status_code` attribute directly.
+    return getattr(record, "status_code", None) not in [200, 304]
+
+
+def skip_site_packages_logs(record: logging.LogRecord) -> bool:
+    # This skips the log records that are generated from libraries
+    # installed in site packages.
+    # Workaround for https://code.djangoproject.com/ticket/26886
+    return "site-packages" not in record.pathname
+
+
 LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -770,11 +785,11 @@ LOGGING: Dict[str, Any] = {
         },
         "skip_200_and_304": {
             "()": "django.utils.log.CallbackFilter",
-            "callback": zerver.lib.logging_util.skip_200_and_304,
+            "callback": skip_200_and_304,
         },
         "skip_site_packages_logs": {
             "()": "django.utils.log.CallbackFilter",
-            "callback": zerver.lib.logging_util.skip_site_packages_logs,
+            "callback": skip_site_packages_logs,
         },
     },
     "handlers": {
