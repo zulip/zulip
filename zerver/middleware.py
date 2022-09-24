@@ -786,5 +786,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
         # so we can assign the corresponding SCIMClient object to request.user - which
         # will allow this request to pass request.user.is_authenticated checks from now on,
         # to be served by the relevant views implemented in django-scim2.
-        request.user = scim_client
+        # Since request.user must be a UserProfile or AnonymousUser, setattr is a type-unsafe
+        # workaround to make this monkey-patching work.
+        setattr(request, "user", scim_client)
         return None
