@@ -859,7 +859,6 @@ export function show() {
     $("#message_feed_container").hide();
     $("#recent_topics_view").show();
     set_visible(true);
-    $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
     unread_ui.hide_mark_as_read_turned_off_banner();
@@ -892,12 +891,9 @@ export function hide() {
         $focused_element.trigger("blur");
     }
 
-    $("#message_view_header_underpadding").show();
     $("#message_feed_container").show();
     $("#recent_topics_view").hide();
     set_visible(false);
-
-    $(".header").css("padding-bottom", "10px");
 
     // This solves a bug with message_view_header
     // being broken sometimes when we narrow

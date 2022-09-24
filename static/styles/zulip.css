@@ -4,19 +4,11 @@ This is the header, aka the navbar.
 $header_height: 40px;
 
 /*
-We have a 10px gutter below the header,
-which often needs to be respected by both
-the elements above it and below it on
-the y-axis, due to absolute positioning.
-*/
-$header_padding_bottom: 10px;
-
-/*
 Our sidebars (and anything that top-align
 with them such as floating recipient bars)
 go beneath the header.
 */
-$sidebar_top: calc($header_height + $header_padding_bottom);
+$sidebar_top: calc($header_height + 10px);
 
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 270px;
@@ -36,15 +28,12 @@ html {
     display: none !important; /* We are now loaded, by definition. */
 }
 
+/* Common background color */
 body {
     font-size: 14px;
     line-height: calc(20 / 14);
     font-family: "Source Sans 3", sans-serif;
-}
-
-/* Common background color */
-body,
-#message_view_header_underpadding {
+    /* Common background color */
     background-color: hsl(0, 0%, 100%);
     transition: background-color 200ms linear;
 }
@@ -312,7 +301,6 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     height: $header_height;
-    padding-bottom: $header_padding_bottom;
     background-color: inherit;
 }
 
@@ -2083,14 +2071,6 @@ div.focused_table {
     }
 }
 
-#message_view_header_underpadding {
-    position: absolute;
-    width: 100%;
-    top: $header_height;
-    height: $header_padding_bottom;
-    z-index: 99;
-}
-
 #navbar-buttons {
     white-space: nowrap;
     margin-left: 15px;
@@ -2864,7 +2844,7 @@ textarea.invitee_emails {
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
                 margin-top: $header_height;
-                padding: $header_padding_bottom 15px 0 15px;
+                padding: 0 15px;
                 height: 100%;
                 right: 0;
             }
@@ -2939,7 +2919,6 @@ textarea.invitee_emails {
                    hide little artifacts from showing up in
                    the gutter below the navbar. */
                 margin-top: $header_height;
-                padding-top: $header_padding_bottom;
 
                 height: 100%;
                 padding-left: 10px;
@@ -3063,11 +3042,6 @@ textarea.invitee_emails {
         .search_button:disabled:hover {
             top: 0;
         }
-    }
-
-    #message_view_header_underpadding {
-        top: 30px;
-        height: 10px;
     }
 
     .messagebox-content {
