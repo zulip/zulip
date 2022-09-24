@@ -45,8 +45,9 @@ function setup_settings_label() {
     settings_label = {
         // settings_notification
         presence_enabled: $t({
-            defaultMessage: "Display my availability to other users (invisible mode off)",
+            defaultMessage: "Display my availability to other users",
         }),
+        presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
         send_stream_typing_notifications: $t({
             defaultMessage: "Let subscribers see when I'm typing messages in streams",
         }),
