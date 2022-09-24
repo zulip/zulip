@@ -2,10 +2,8 @@ import configparser
 import os
 from typing import Optional, overload
 
-from django.core.exceptions import ImproperlyConfigured
 
-
-class ZulipSettingsError(ImproperlyConfigured):
+class ZulipSettingsError(Exception):
     pass
 
 
