@@ -148,10 +148,7 @@ export function set_compose_box_top(set_top) {
         // using CSS. If that wasn't the case, we could have somehow
         // refactored the HTML so as to consider only the space below
         // below the `#navbar_alerts` as `height: 100%` of `#compose`.
-        const compose_top =
-            $("#navbar_alerts_wrapper").height() +
-            $(".header").height() +
-            Number.parseInt($(".header").css("paddingBottom"), 10);
+        const compose_top = $("#navbar_alerts_wrapper").height() + $(".header").height();
         $("#compose").css("top", compose_top + "px");
     } else {
         $("#compose").css("top", "");

@@ -136,7 +136,6 @@ body.dark-theme {
 
     .app-main,
     .header-main,
-    #message_view_header_underpadding,
     .floating_recipient .message-header-wrapper,
     .column-middle,
     #compose,
@@ -306,6 +305,56 @@ body.dark-theme {
 
     .deactivated-pill {
         background-color: hsl(0, 86%, 14%) !important;
+    }
+
+    .header {
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+    }
+
+    #searchbox_legacy .navbar-search:not(.expanded) #search_query {
+        color: hsla(0, 0%, 100%, 0.5);
+    }
+
+    #searchbox_legacy .navbar-search.expanded #search_query::placeholder {
+        color: hsl(0, 0%, 100%);
+    }
+
+    #searchbox #search_query,
+    /* with .expanded for specificity */
+    #searchbox_legacy .navbar-search.expanded #search_query,
+    #searchbox_legacy #search_query {
+        background: hsl(212, 32%, 14%);
+        caret-color: hsl(0, 0%, 100%);
+        color: hsl(0, 0%, 100%);
+    }
+
+    #searchbox_legacy .navbar-search .search_icon {
+        color: hsla(0, 0%, 100%, 0.5);
+    }
+
+    #searchbox_legacy .navbar-search .search_button {
+        color: hsla(0, 0%, 100%);
+    }
+
+    .typeahead.dropdown-menu.search_typeahead,
+    .dropdown-menu.search_typeahead {
+        color: hsl(0, 0%, 100%);
+        background: hsl(212, 32%, 14%);
+
+        .active > a {
+            background-color: hsl(200, 100%, 38%);
+            color: inherit;
+        }
+    }
+
+    #searchbox_legacy .navbar-search #search_arrows {
+        border-right-color: hsl(235, 18%, 7%);
+    }
+
+    @media (width < $md_min) {
+        .dropdown-menu.search_typeahead ul {
+            background: transparent;
+        }
     }
 
     #search_arrows .pill,

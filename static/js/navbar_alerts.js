@@ -27,10 +27,7 @@ export function resize_app() {
 
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).
-    const frb_top =
-        navbar_alerts_wrapper_height +
-        $(".header").height() +
-        Number.parseInt($(".header").css("paddingBottom"), 10);
+    const frb_top = navbar_alerts_wrapper_height + $(".header").height();
     $("#floating_recipient_bar").css("top", frb_top + "px");
 
     // If the compose-box is in expanded state,
