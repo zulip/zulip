@@ -2,11 +2,8 @@ import os
 import sys
 import time
 from copy import deepcopy
-from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
-
-from django.template.loaders import app_directories
 
 import zerver.lib.logging_util
 from scripts.lib.zulip_tools import get_tornado_ports
@@ -160,20 +157,6 @@ ALLOWED_HOSTS += ["127.0.0.1", "localhost"]
 ALLOWED_HOSTS += [EXTERNAL_HOST_WITHOUT_PORT, "." + EXTERNAL_HOST_WITHOUT_PORT]
 # ... and with the hosts in REALM_HOSTS.
 ALLOWED_HOSTS += REALM_HOSTS.values()
-
-
-class TwoFactorLoader(app_directories.Loader):
-    def get_dirs(self) -> List[Union[str, Path]]:
-        dirs = super().get_dirs()
-        # app_directories.Loader returns only a list of
-        # Path objects by calling get_app_template_dirs
-        two_factor_dirs: List[Union[str, Path]] = []
-        for d in dirs:
-            assert isinstance(d, Path)
-            if d.match("two_factor/*"):
-                two_factor_dirs.append(d)
-        return two_factor_dirs
-
 
 MIDDLEWARE = (
     "zerver.middleware.TagRequests",
@@ -675,7 +658,7 @@ non_html_template_engine_settings["OPTIONS"].update(
 two_factor_template_options = deepcopy(default_template_engine_settings["OPTIONS"])
 del two_factor_template_options["environment"]
 del two_factor_template_options["extensions"]
-two_factor_template_options["loaders"] = ["zproject.settings.TwoFactorLoader"]
+two_factor_template_options["loaders"] = ["zproject.template_loaders.TwoFactorLoader"]
 
 two_factor_template_engine_settings = {
     "NAME": "Two_Factor",
