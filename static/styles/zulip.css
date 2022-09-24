@@ -292,10 +292,7 @@ p.n-margin {
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     height: $header_height;
-    background-color: inherit;
-}
-
-#top_navbar {
+    background-color: hsl(0, 0%, 96%);
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
@@ -368,7 +365,6 @@ p.n-margin {
     margin: 0 auto;
     padding: 0;
     position: relative;
-    background-color: hsl(0, 0%, 100%);
 }
 
 .fixed-app {
@@ -2126,7 +2122,8 @@ div.focused_table {
 
 nav {
     .column-left {
-        text-align: center;
+        text-align: left;
+        padding-left: 10px;
 
         .nav-logo {
             display: inline-block;
@@ -2812,7 +2809,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     #top_navbar:not(.rightside-userlist) {
-
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
