@@ -76,34 +76,6 @@ class LinkifierDict(TypedDict):
     id: int
 
 
-class SAMLIdPConfigDict(TypedDict, total=False):
-    entity_id: str
-    url: str
-    slo_url: str
-    attr_user_permanent_id: str
-    attr_first_name: str
-    attr_last_name: str
-    attr_username: str
-    attr_email: str
-    attr_org_membership: str
-    auto_signup: bool
-    display_name: str
-    display_icon: str
-    limit_to_subdomains: List[str]
-    extra_attrs: List[str]
-    x509cert: str
-    x509cert_path: str
-
-
-class OIDCIdPConfigDict(TypedDict, total=False):
-    oidc_url: str
-    display_name: str
-    display_icon: Optional[str]
-    client_id: str
-    secret: Optional[str]
-    auto_signup: bool
-
-
 class UnspecifiedValue:
     """In most API endpoints, we use a default value of `None"` to encode
     parameters that the client did not pass, which is nicely Pythonic.
@@ -317,9 +289,3 @@ class RealmPlaygroundDict(TypedDict):
     name: str
     pygments_language: str
     url_prefix: str
-
-
-class SCIMConfigDict(TypedDict):
-    bearer_token: str
-    scim_client_name: str
-    name_formatted_included: bool
