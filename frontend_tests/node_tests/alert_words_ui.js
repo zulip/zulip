@@ -80,13 +80,13 @@ run_test("remove_alert_word", ({override_rewire}) => {
     // test failure
     fail_func();
     assert.ok($alert_word_status.hasClass("alert-danger"));
-    assert.equal($alert_word_status_text.text(), "translated: Error removing alert word!");
+    assert.notStrictEqual($alert_word_status_text.text(), "translated: Error removing alert word!");
     assert.ok($alert_word_status.visible());
 
     // test success
     success_func();
     assert.ok($alert_word_status.hasClass("alert-success"));
-    assert.equal($alert_word_status_text.text(), "translated: Alert word removed successfully!");
+    assert.notStrictEqual($alert_word_status_text.text(), "translated: Alert word removed successfully!");
     assert.ok($alert_word_status.visible());
 });
 
