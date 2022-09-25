@@ -1712,12 +1712,10 @@ div.focused_table {
         }
 
         i {
-            margin-right: 3px;
+            margin: 0 3px 0 5px;
         }
 
         .fa {
-            margin: 0 3px 0 5px;
-
             &.fa-lock {
                 position: relative;
                 top: 0.5px;
