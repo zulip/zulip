@@ -225,36 +225,44 @@ def maybe_send_to_registration(
         # creation or confirm-continue-registration depending on
         # is_signup.
         try:
-            prereg_user = filter_to_valid_prereg_users(
+            # If there's an existing, valid PreregistrationUser for this
+            # user, we want to fetch it since some values from it will be used
+            # as defaults for creating the signed up user.
+            existing_prereg_user = filter_to_valid_prereg_users(
                 PreregistrationUser.objects.filter(email__iexact=email, realm=realm)
             ).latest("invited_at")
-
-            # password_required and full_name data passed here as argument should take precedence
-            # over the defaults with which the existing PreregistrationUser that we've just fetched
-            # was created.
-            prereg_user.password_required = password_required
-            update_fields = ["password_required"]
-            if full_name:
-                prereg_user.full_name = full_name
-                prereg_user.full_name_validated = full_name_validated
-                update_fields.extend(["full_name", "full_name_validated"])
-            prereg_user.save(update_fields=update_fields)
         except PreregistrationUser.DoesNotExist:
-            prereg_user = create_preregistration_user(
-                email,
-                realm,
-                password_required=password_required,
-                full_name=full_name,
-                full_name_validated=full_name_validated,
-                multiuse_invite=multiuse_obj,
-            )
+            existing_prereg_user = None
 
+        # password_required and full_name data passed here as argument should take precedence
+        # over the defaults with which the existing PreregistrationUser that we've just fetched
+        # was created.
+        prereg_user = create_preregistration_user(
+            email,
+            realm,
+            password_required=password_required,
+            full_name=full_name,
+            full_name_validated=full_name_validated,
+            multiuse_invite=multiuse_obj,
+        )
+
+        streams_to_subscribe = None
         if multiuse_obj is not None:
+            # If the user came here explicitly via a multiuse invite link, then
+            # we use the defaults implied by the invite.
             streams_to_subscribe = list(multiuse_obj.streams.all())
+        elif existing_prereg_user:
+            # Otherwise, the user is doing this signup not via any invite link,
+            # but we can use the pre-existing PreregistrationUser for these values
+            # since it tells how they were intended to be, when the user was invited.
+            streams_to_subscribe = list(existing_prereg_user.streams.all())
+            invited_as = existing_prereg_user.invited_as
+
+        if streams_to_subscribe:
             prereg_user.streams.set(streams_to_subscribe)
-            prereg_user.invited_as = invited_as
-            prereg_user.multiuse_invite = multiuse_obj
-            prereg_user.save()
+        prereg_user.invited_as = invited_as
+        prereg_user.multiuse_invite = multiuse_obj
+        prereg_user.save()
 
         confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
         if is_signup:
