@@ -1,33 +1,71 @@
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
-async function click_mute_and_return_last_topic_id(page: Page): Promise<string | undefined> {
-    return await page.evaluate(() => {
-        const $topic = $('#recent_topics_table tr[id^="recent_topic"]').last();
-        const $mute_icon = $topic.find(".on_hover_topic_mute");
-        $mute_icon.trigger("click");
-        return $topic.attr("id");
-    });
+const include_mute_button_selector = 'button[data-filter="include_muted"]';
+
+async function switch_include_muted_button(page: Page, checked: "true" | "false"): Promise<void> {
+    const checkedAttrIncludeMuteButton = $(include_mute_button_selector).attr("aria-checked");
+    if (checkedAttrIncludeMuteButton !== checked) {
+        await page.click(include_mute_button_selector);
+    }
+    await page.waitForFunction((include_mute_button_selector: string) => $(include_mute_button_selector).attr("aria-checked") === checked, {}, include_mute_button_selector);
 }
 
-async function mute_topic_test(page: Page): Promise<void> {
-    await common.log_in(page);
-    await page.click(".top_left_recent_topics");
+
+async function click_mute_icon(page: Page): Promise<void> {
+    await page.click('#recent_topics_table tr[id^="recent_topic"] > .on_hover_topic_mute');
+}
+
+async function click_unmute_icon(page: Page): Promise<void> {
+    await page.click('#recent_topics_table tr[id^="recent_topic"] > .on_hover_topic_unmute');
+}
+
+async function test_mute_topic(page: Page): Promise<void> {
+    await page.waitForSelector('#recent_filters_group', {visible: true});
+
+    await switch_include_muted_button(page, "false");
+    
     await page.waitForSelector('#recent_topics_table tr[id^="recent_topic"]', {visible: true});
-    const topics_quantitiy = await page.evaluate(
-        () => $('#recent_topics_table tr[id^="recent_topic"]').length,
-    );
-    const last_topic_id = await click_mute_and_return_last_topic_id(page);
+    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length;
+    if (!unmuted_topics_quantity) {
+        throw new Error("cannot find topics");
+    }
+    
+    await click_mute_icon(page);
 
     await page.waitForFunction(
         (expected_length: number) =>
             $('#recent_topics_table tr[id^="recent_topic"]').length === expected_length,
         {},
-        topics_quantitiy - 1,
+        unmuted_topics_quantity - 1,
     );
-
-    await page.waitForSelector(`#${CSS.escape(last_topic_id!)}`, {hidden: true});
 }
 
-common.run_test(mute_topic_test);
+async function test_unmute_topic(page: Page): Promise<void> {
+    await page.waitForSelector('#recent_filters_group', {visible: true});
+
+    await page.waitForSelector('#recent_topics_table tr[id^="recent_topic"]', {visible: true});
+    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length;
+
+    await switch_include_muted_button(page, "true");    
+    await click_unmute_icon(page);
+    await switch_include_muted_button(page, "false");
+
+    await page.waitForFunction(
+        (expected_length: number) =>
+            $('#recent_topics_table tr[id^="recent_topic"]').length === expected_length,
+        {},
+        unmuted_topics_quantity + 1,
+    );
+}
+
+async function test_recent_topics(page: Page): Promise<void> {
+    await common.log_in(page);
+    await page.click(".top_left_recent_topics");
+
+    await test_mute_topic(page);
+    await test_unmute_topic(page);
+}
+
+common.run_test(test_recent_topics);
