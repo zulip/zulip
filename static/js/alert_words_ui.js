@@ -82,7 +82,7 @@ function remove_alert_word(alert_word) {
             );
         },
         error() {
-            update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
+            update_alert_word_status({defaultMessage: "Error removing alert word!"}, true);
         },
     });
 }

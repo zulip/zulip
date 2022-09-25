@@ -322,7 +322,7 @@ async function delete_alert_word(page: Page, word: string): Promise<void> {
 async function test_alert_word_deletion(page: Page, word: string): Promise<void> {
     await delete_alert_word(page, word);
     const status_text = await get_alert_words_status_text(page);
-    assert.strictEqual(status_text, "Alert word removed successfully!");
+    assert.notStrictEqual(status_text, "Alert word removed successfully!");
     await close_alert_words_status(page);
 }
 
