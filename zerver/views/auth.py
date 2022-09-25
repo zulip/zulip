@@ -250,7 +250,6 @@ def maybe_send_to_registration(
             )
 
         if multiuse_obj is not None:
-            request.session.modified = True
             streams_to_subscribe = list(multiuse_obj.streams.all())
             prereg_user.streams.set(streams_to_subscribe)
             prereg_user.invited_as = invited_as
