@@ -6,7 +6,7 @@ import render_alert_word_settings_item from "../templates/settings/alert_word_se
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as dialog_widget from "./dialog_widget";
-import { $t, $t_html } from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as ui_report from "./ui_report";
 
@@ -24,7 +24,7 @@ export function rerender_alert_words_ui() {
     ListWidget.create($word_list, words, {
         name: "alert-words-list",
         modifier(alert_word) {
-            return render_alert_word_settings_item({ alert_word });
+            return render_alert_word_settings_item({alert_word});
         },
         $parent_container: $("#alert-word-settings"),
         $simplebar_container: $("#alert-word-settings .progressive-table-wrapper"),
@@ -32,7 +32,7 @@ export function rerender_alert_words_ui() {
 }
 
 function update_alert_word_status(status_text, is_error) {
-    // Use the defaultMessage if the message param is undefined. 
+    // Use the defaultMessage if the message param is undefined.
     status_text = status_text.message || status_text.defaultMessage;
     const $alert_word_status = $("#alert_word_status");
     if (is_error) {
@@ -52,7 +52,7 @@ function add_alert_word(e) {
 
     if (alert_words.has_alert_word(alert_word)) {
         ui_report.client_error(
-            $t({ defaultMessage: "Alert word already exists!" }),
+            $t({defaultMessage: "Alert word already exists!"}),
             $("#dialog_error"),
         );
         dialog_widget.hide_dialog_spinner();
@@ -61,26 +61,28 @@ function add_alert_word(e) {
 
     const words_to_be_added = [alert_word];
 
-    const data = { alert_words: JSON.stringify(words_to_be_added) };
+    const data = {alert_words: JSON.stringify(words_to_be_added)};
     dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
 }
-
 
 function remove_alert_word(alert_word) {
     const words_to_be_removed = [alert_word];
     channel.del({
         url: "/json/users/me/alert_words",
-        data: { alert_words: JSON.stringify(words_to_be_removed) },
+        data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
             // Added the message key to the object because the defaultMessage cannot take in a template literal or a string literal with a variable.
             // Some small tweaks on how the update message is passed.
             update_alert_word_status(
-                ({ defaultMessage: "Alert word removed successfully!", message: `Alert word ${alert_word} removed successfully!` }),
+                {
+                    defaultMessage: "Alert word removed successfully!",
+                    message: `Alert word ${alert_word} removed successfully!`,
+                },
                 false,
             );
         },
         error() {
-            update_alert_word_status($t({ defaultMessage: "Error removing alert word!" }), true);
+            update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
         },
     });
 }
@@ -102,9 +104,9 @@ export function show_add_alert_word_modal() {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({ defaultMessage: "Add a new alert word" }),
+        html_heading: $t_html({defaultMessage: "Add a new alert word"}),
         html_body,
-        html_submit_button: $t_html({ defaultMessage: "Add" }),
+        html_submit_button: $t_html({defaultMessage: "Add"}),
         help_link: "/help/pm-mention-alert-notifications#alert-words",
         form_id: "add-alert-word-form",
         id: "add-alert-word",
