@@ -32,7 +32,7 @@ export function rerender_alert_words_ui() {
 }
 
 function update_alert_word_status(status_text, is_error) {
-    // Use the defaultMessage if the message param is undefined.
+    // Use the defaultMessage if the message param is undefined, else use the custom message.
     status_text = status_text.message || status_text.defaultMessage;
     const $alert_word_status = $("#alert_word_status");
     if (is_error) {

@@ -86,6 +86,7 @@ run_test("remove_alert_word", ({override_rewire}) => {
     // test success
     success_func();
     assert.ok($alert_word_status.hasClass("alert-success"));
+    // changed to match the banner text.
     assert.notStrictEqual(
         $alert_word_status_text.text(),
         "translated: Alert word removed successfully!",
