@@ -20,6 +20,58 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 148**
+
+* [`POST /users/me/status`](/api/update-status):
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  The user status `away` field/parameter is deprecated, and as of this
+  feature level are a legacy way to access the user's `presence_enabled`
+  setting, with `away = !presence_enabled`. To be removed in a future
+  release.
+
+**Feature level 147**
+
+* [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic):
+  Messages now are deleted in batches, starting from the newest, so
+  that progress will be made even if the request times out because of
+  an extremely large topic.
+
+**Feature level 146**
+
+* [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+[`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a
+new parameter `display_in_profile_summary`, which clients use to
+decide whether to display the field in a small/summary section of the
+user's profile.
+
+**Feature level 145**
+
+* [`DELETE users/me/subscriptions`](/api/unsubscribe): Normal users can
+  now remove bots that they own from streams.
+
+**Feature level 144**
+
+* [`GET /messages/{message_id}/read_receipts`](/api/get-read-receipts):
+  The `user_ids` array returned by the server no longer includes IDs
+  of users who have been muted by or have muted the current user.
+
+**Feature level 143**
+
+* `PATCH /realm`: The `disallow_disposable_email_addresses`,
+  `emails_restricted_to_domains`, `invite_required`, and
+  `waiting_period_threshold` settings can no longer be changed by
+  organization administrators who are not owners.
+* `PATCH /realm/domains`, `POST /realm/domains`, `DELETE
+  /realm/domains`: Organization administrators who are not owners can
+  no longer access these endpoints.
+
+**Feature level 142**
+
+* [`GET users/me/subscriptions`](/api/get-subscriptions), [`GET
+  /streams`](/api/get-streams), [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_remove_subscribers_group_id`
+  field to Stream and Subscription objects.
+
 **Feature level 141**
 
 * [`POST /register`](/api/register-queue), [`PATCH

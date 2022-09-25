@@ -40,6 +40,23 @@ function process_newly_read_message(message, options) {
     recent_topics_ui.update_topic_unread_count(message);
 }
 
+export function mark_as_unread_from_here(message_id) {
+    /* TODO: This algorithm is not correct if we don't have full data for
+       the current narrow loaded from the server.
+
+       Currently, we turn off the feature when fetch_status suggests
+       we are in that that situation, but we plan to replace this
+       logic with asking the server to do the marking as unread.
+     */
+    const message_ids = message_lists.current.ids_greater_or_equal_than(message_id);
+    message_lists.current.prevent_reading();
+    message_flags.mark_as_unread(message_ids);
+}
+
+export function resume_reading() {
+    message_lists.current.resume_reading();
+}
+
 export function process_read_messages_event(message_ids) {
     /*
         This code has a lot in common with notify_server_messages_read,
@@ -79,6 +96,10 @@ export function process_unread_messages_event({message_ids, message_details}) {
     message_ids = unread.get_read_message_ids(message_ids);
     if (message_ids.length === 0) {
         return;
+    }
+
+    if (message_lists.current === message_list.narrowed) {
+        unread.set_messages_read_in_narrow(false);
     }
 
     for (const message_id of message_ids) {

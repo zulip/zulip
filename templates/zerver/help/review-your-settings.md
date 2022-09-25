@@ -23,3 +23,7 @@ you use Zulip.
 1. Click on the **Display settings** tab on the left.
 
 {end_tabs}
+
+## Related articles
+
+* [Import your settings](/help/import-your-settings)

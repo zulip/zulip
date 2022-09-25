@@ -226,18 +226,19 @@ and used liberally.
 
 ### Keyboard shortcuts
 
-Use backticks for each keyboard key in the shortcut (e.g. `Enter` or `R`).
-For shortcuts with more than one key, add a plus sign (+) surrounded by
-spaces in between the keys (e.g. `Ctrl` + `K`, instead of `Ctrl + K` or
-`Ctrl`+`K` or `Ctrl` `K`).
+Surround each keyboard key in the shortcut with `<kbd>` HTML element start and
+end tags (e.g., `<kbd>Enter</kbd>` or `<kbd>R</kbd>`).
+
+For shortcuts with more than one key, add a plus sign (+) surrounded by spaces
+in between the keys (e.g., `<kbd>Ctrl</kbd> + <kbd>K</kbd>`). Any shortcut for
+an arrow key (↑, ↓, ←, →) will also need the `"arrow-key"` CSS class included
+in the `<kbd>` start tag (e.g., ` <kbd class="arrow-key">↑</kbd>`).
 
 Use the labels one sees on the actual keyboard rather than the letter they
 produce when pressed (e.g. `R` and `Shift` + `R` rather than `r` and `R`).
-**Note**: The existing help center documentation is inconsistent about this
-([see this UI redesign issue](https://github.com/zulip/zulip/issues/21753)).
-Therefore, if there are already some keyboard shortcuts in the existing help
-center article, then it is more important to be consistent with those than
-with the global style.
+For symbols, such as `?` or `@`, that are produced through key combinations that
+change depending on the user's keyboard layout, you should use the symbol as it
+appears on a keyboard instead of any specific combination of keys.
 
 Use non-Mac keyboard keys; for example `Enter`, instead of `Return`. Zulip will
 automatically translate non-Mac keys to the Mac versions for users with a Mac
@@ -246,6 +247,13 @@ correctly when writing documentation in Windows or Linux, you can temporarily
 change `has_mac_keyboard` in `/static/js/common.ts` to always return `True`.
 Then when you view your documentation changes in the development environment,
 the keyboard shortcuts should be rendered with Mac keys where appropriate.
+
+If you're adding a tip to an article about a keyboard shortcut, you
+should use the more specific keyboard [tip macro](#tips-and-warnings),
+`!!! keyboard_tip ""`. In general, all keyboard shortcuts should be
+documented on the [keyboard
+shortcuts](https://zulip.com/help/keyboard-shortcuts) help center
+article.
 
 ## Markdown features
 
@@ -378,6 +386,15 @@ users.
     If you've forgotten your password, see the
     [Change your password](/help/change-your-password) page for
     instructions on how to reset it.
+```
+
+A **keyboard tip** is a note for users to let them know that the same action
+can also be accomplished via a [keyboard shortcut](#keyboard-shortcuts).
+
+```md
+!!! keyboard_tip ""
+
+    Use <kbd>D</kbd> to bring up your list of drafts.
 ```
 
 A **warning** is a note on what happens when there is some kind of problem.

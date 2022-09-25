@@ -25,7 +25,9 @@ To add a new webhook integration, declare a WebhookIntegration in the
 WEBHOOK_INTEGRATIONS list below (it will be automatically added to
 INTEGRATIONS).
 
-To add a new integration category, add to the CATEGORIES dict.
+To add a new integration category, add to either the CATEGORIES or
+META_CATEGORY dicts below. The META_CATEGORY dict is for categories
+that do not describe types of tools (e.g., bots or frameworks).
 
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
@@ -33,22 +35,26 @@ features for writing and configuring integrations efficiently.
 
 OptionValidator = Callable[[str, str], Optional[str]]
 
-CATEGORIES: Dict[str, "StrPromise"] = {
+META_CATEGORY: Dict[str, "StrPromise"] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
+    "bots": gettext_lazy("Interactive bots"),
+}
+
+CATEGORIES: Dict[str, "StrPromise"] = {
+    **META_CATEGORY,
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
     "deployment": gettext_lazy("Deployment"),
     "entertainment": gettext_lazy("Entertainment"),
     "communication": gettext_lazy("Communication"),
     "financial": gettext_lazy("Financial"),
-    "hr": gettext_lazy("HR"),
+    "hr": gettext_lazy("Human resources"),
     "marketing": gettext_lazy("Marketing"),
     "misc": gettext_lazy("Miscellaneous"),
-    "monitoring": gettext_lazy("Monitoring tools"),
+    "monitoring": gettext_lazy("Monitoring"),
     "project-management": gettext_lazy("Project management"),
     "productivity": gettext_lazy("Productivity"),
     "version-control": gettext_lazy("Version control"),
-    "bots": gettext_lazy("Interactive bots"),
 }
 
 

@@ -1,0 +1,73 @@
+<form id="create_bot_form" class="form-horizontal new-style">
+    <div class="new-bot-form">
+        <div class="input-group">
+            <label for="bot_type">
+                {{t "Bot type" }}
+                <i class="fa fa-question-circle settings-info-icon bot_type_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content='{{t "Incoming webhooks can only send messages." }}'></i>
+            </label>
+            <select name="bot_type" id="create_bot_type">
+                {{#each bot_types}}
+                    {{#if this.allowed}}
+                    <option value="{{this.type_id}}">{{this.name}}</option>
+                    {{/if}}
+                {{/each}}
+            </select>
+        </div>
+        <div class="input-group" id="service_name_list">
+            <label for="select_service_name">{{t "Bot"}}</label>
+            <select name="service_name" id="select_service_name">
+                {{#each realm_embedded_bots}}
+                    <option value="{{this.name}}">{{this.name}}</option>
+                {{/each}}
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="create_bot_name">{{t "Full name" }}</label>
+            <input type="text" name="bot_name" id="create_bot_name" class="required"
+              maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
+            <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
+        </div>
+        <div class="input-group">
+            <label for="bot_short_name">{{t "Bot email (a-z, 0-9, and dashes only)" }}</label>
+            <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
+              placeholder="{{t 'cookie' }}" value="" />
+            -bot@{{ realm_bot_domain }}
+            <div>
+                <label for="create_bot_short_name" generated="true" class="text-error"></label>
+            </div>
+        </div>
+        <div id="payload_url_inputbox">
+            <div class="input-group">
+                <label for="create_payload_url">{{t "Endpoint URL" }}</label>
+                <input type="text" name="payload_url" id="create_payload_url"
+                  maxlength=2083 placeholder="https://hostname.example.com" value="" />
+                <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
+            </div>
+            <div class="input-group">
+                <label for="interface_type">{{t "Outgoing webhook message format" }}</label>
+                <select name="interface_type" id="create_interface_type">
+                    <option value="1">Zulip</option>
+                    <option value="2">{{t "Slack compatible" }}</option>
+                </select>
+                <div><label for="create_interface_type" generated="true" class="text-error"></label></div>
+            </div>
+        </div>
+        <div id="config_inputbox">
+            {{#each realm_embedded_bots as |bot index|}}
+                {{#each bot.config as |config_value config_key|}}
+                    {{> ../embedded_bot_config_item botname=bot.name key=config_key value=config_value}}
+                {{/each}}
+            {{/each}}
+        </div>
+        <div class="input-group">
+            <label for="bot_avatar_file_input">Avatar</label>
+            <div id="bot_avatar_file"></div>
+            <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
+            <button class="button white rounded small btn-danger" style="display: none;" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+            <button class="button white rounded" id="bot_avatar_upload_button">{{t "Choose avatar" }}</button> ({{t "Optional" }})
+        </div>
+        <p>
+            <div id="bot_avatar_file_input_error" class="text-error"></div>
+        </p>
+    </div>
+</form>

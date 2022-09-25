@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 // This will be the row of the the custom profile field we add.
 const profile_field_row = "#admin_profile_fields_table tr:nth-last-child(1)";
@@ -63,6 +63,18 @@ async function test_edit_profile_field(page: Page): Promise<void> {
 
 async function test_delete_custom_profile_field(page: Page): Promise<void> {
     await page.click(`${profile_field_row} button.delete`);
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Delete custom profile field?",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Confirm",
+    );
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
+
     await page.waitForSelector("#admin-profile-field-status img", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div#admin-profile-field-status"),

@@ -2,9 +2,10 @@
 
 {!recent-topics.md!}
 
-!!! tip ""
-    The arrows keys and vim navigation keys (`j`, `k`, `l`, `h`) can be
-    used to move between elements.
+!!! keyboard_tip ""
+
+    The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
+    <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
 
 ## Related articles
 * [Finding a topic to read](/help/finding-a-topic-to-read)

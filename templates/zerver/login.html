@@ -1,5 +1,10 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "signup" %}
+
+{% block title %}
+<title>{{ _("Log in") }} | Zulip</title>
+{% endblock %}
+
 {# Login page. #}
 
 {% block portico_content %}

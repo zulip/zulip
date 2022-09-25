@@ -133,6 +133,16 @@ maxdepth: 3
 ---
 
 translating/index
+```
+
+(outreach)=
+
+```{toctree}
+---
+maxdepth: 3
+---
+
+outreach/index
 
 Index <https://zulip.readthedocs.io/en/latest/>
 ```

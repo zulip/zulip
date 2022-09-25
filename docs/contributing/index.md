@@ -7,12 +7,12 @@ maxdepth: 3
 
 contributing
 ../code-of-conduct
+asking-great-questions
 version-control
 code-style
+reviewable-prs
 code-reviewing
 zulipbot-usage
 bug-reports
-gsoc
-summer-with-zulip
 licensing
 ```

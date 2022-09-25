@@ -1,12 +1,14 @@
 import $ from "jquery";
 
 import emoji_codes from "../generated/emoji/emoji_codes.json";
+import render_confirm_deactivate_custom_emoji from "../templates/confirm_dialog/confirm_deactivate_custom_emoji.hbs";
 import emoji_settings_warning_modal from "../templates/confirm_dialog/confirm_emoji_settings_warning.hbs";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import * as dialog_widget from "./dialog_widget";
 import * as emoji from "./emoji";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
@@ -169,16 +171,22 @@ export function set_up() {
         e.preventDefault();
         e.stopPropagation();
         const $btn = $(this);
+        const url = "/json/realm/emoji/" + encodeURIComponent($btn.attr("data-emoji-name"));
+        const html_body = render_confirm_deactivate_custom_emoji();
 
-        channel.del({
-            url: "/json/realm/emoji/" + encodeURIComponent($btn.attr("data-emoji-name")),
-            error(xhr) {
-                ui_report.generic_row_button_error(xhr, $btn);
-            },
-            success() {
+        const opts = {
+            success_continuation() {
                 const $row = $btn.parents("tr");
                 $row.remove();
             },
+        };
+
+        confirm_dialog.launch({
+            html_heading: $t_html({defaultMessage: "Deactivate custom emoji?"}),
+            html_body,
+            id: "confirm_deactivate_custom_emoji_modal",
+            on_click: () => dialog_widget.submit_api_request(channel.del, url, {}, opts),
+            loading_spinner: true,
         });
     });
 

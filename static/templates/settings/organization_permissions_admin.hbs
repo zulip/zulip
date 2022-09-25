@@ -1,24 +1,24 @@
 <div id="organization-permissions" data-name="organization-permissions" class="settings-section">
     <form class="form-horizontal admin-realm-form org-permissions-form">
 
-        <div id="org-org-join" class="org-subsection-parent">
+        <div id="org-join" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
+                <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change these settings.' }}"></i>
                 {{> settings_save_discard_widget section_name="org-join" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
-                        <i class="fa fa-info-circle settings-info-icon realm_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change this setting.' }}"></i>
-                    </label>
-                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
-                    </select>
                     {{> settings_checkbox
                       setting_name="realm_invite_required"
                       prefix="id_"
                       is_checked=realm_invite_required
                       label=admin_settings_label.realm_invite_required}}
+                    <label for="realm_invite_to_realm_policy" class="dropdown-title">{{t "Who can invite users to this organization" }}
+                    </label>
+                    <select name="realm_invite_to_realm_policy" id="id_realm_invite_to_realm_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=invite_to_realm_policy_values}}
+                    </select>
                 </div>
 
                 <div class="input-group">
@@ -30,7 +30,7 @@
                     </select>
                     <div class="dependent-block">
                         <p id="allowed_domains_label" class="inline-block"></p>
-                        {{#if is_admin }}
+                        {{#if is_owner }}
                         <a id="show_realm_domains_modal" role="button">{{t "[Configure]" }}</a>
                         {{/if}}
                     </div>
@@ -154,11 +154,11 @@
                   is_checked=realm_allow_message_editing
                   label=admin_settings_label.realm_allow_message_editing}}
 
-                <div class="input-group">
-                    <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
-                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}}>
+                <div class="input-group time-limit-setting">
+                    <label for="realm_message_content_edit_limit_seconds" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
+                    <select name="realm_message_content_edit_limit_seconds" id="id_realm_message_content_edit_limit_seconds" class="prop-element" {{#unless realm_allow_message_editing}}disabled{{/unless}} data-setting-widget-type="time-limit">
                         {{#each msg_edit_limit_dropdown_values}}
-                            <option value="{{0}}">{{1.text}}</option>
+                            <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-block">
@@ -167,7 +167,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_edit_limit_minutes"
                           name="realm_message_content_edit_limit_minutes"
-                          class="admin-realm-time-limit-input prop-element"
+                          class="admin-realm-time-limit-input"
                           autocomplete="off"
                           value="{{ realm_message_content_edit_limit_minutes }}"
                           {{#unless realm_allow_message_editing}}disabled{{/unless}}/>
@@ -197,15 +197,15 @@
                     </select>
                 </div>
 
-                <div class="input-group">
-                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                <div class="input-group time-limit-setting">
+                    <label for="realm_message_content_delete_limit_seconds" class="dropdown-title">
                         {{t "Time limit for deleting messages" }}
                         <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
                           aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
-                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
+                    <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element" data-setting-widget-type="time-limit">
                         {{#each msg_delete_limit_dropdown_values}}
-                            <option value="{{0}}">{{1.text}}</option>
+                            <option value="{{value}}">{{text}}</option>
                         {{/each}}
                     </select>
                     <div class="dependent-block">
@@ -214,7 +214,7 @@
                         </label>
                         <input type="text" id="id_realm_message_content_delete_limit_minutes"
                           name="realm_message_content_delete_limit_minutes"
-                          class="admin-realm-time-limit-input prop-element"
+                          class="admin-realm-time-limit-input"
                           autocomplete="off"
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>

@@ -24,7 +24,7 @@ case "$os" in
         if [ -e /home/vagrant ]; then
             # shellcheck disable=SC2016
             echo 'To upgrade, run `vagrant destroy`, and then recreate the Vagrant guest.' >&2
-            echo 'See: https://zulip.readthedocs.io/en/latest/development/setup-vagrant.html' >&2
+            echo 'See: https://zulip.readthedocs.io/en/latest/development/setup-recommended.html' >&2
         fi
         exit 1
         ;;

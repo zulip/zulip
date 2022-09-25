@@ -2,18 +2,14 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
-    await page.waitForFunction(
-        () => $("#draft_overlay").length === 0 || $("#draft_overlay").css("opacity") === "0",
-    );
+    await page.waitForSelector("#draft_overlay.show", {hidden: true});
 }
 
 async function wait_for_drafts_to_appear(page: Page): Promise<void> {
-    await page.waitForFunction(
-        () => $("#draft_overlay").length === 1 && $("#draft_overlay").css("opacity") === "1",
-    );
+    await page.waitForSelector("#draft_overlay.show");
 }
 
 async function get_drafts_count(page: Page): Promise<number> {

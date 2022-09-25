@@ -77,11 +77,11 @@ machine, take a look at our tips for
 
 [dev-remote]: remote.md
 [install-direct]: setup-advanced.md#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-vagrant]: setup-vagrant.md
+[install-vagrant]: setup-recommended.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
-[configure-proxy]: setup-vagrant.md#specifying-a-proxy
+[configure-proxy]: setup-recommended.md#specifying-a-proxy
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
 [ci]: ../git/cloning.md#step-3-configure-continuous-integration-for-your-fork
-[install-via-wsl]: setup-advanced.md#installing-directly-on-windows-10-with-wsl-2
+[install-via-wsl]: setup-recommended.md#windows-10

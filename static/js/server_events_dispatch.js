@@ -328,7 +328,7 @@ export function dispatch_normal_event(event) {
                 case "add":
                     bot_data.add(event.bot);
                     settings_bots.render_bots();
-                    settings_users.update_bot_data(event.bot.user_id);
+                    settings_users.redraw_bots_list();
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
@@ -788,14 +788,6 @@ export function dispatch_normal_event(event) {
             break;
 
         case "user_status":
-            if (event.away !== undefined) {
-                if (event.away) {
-                    activity.on_set_away(event.user_id);
-                } else {
-                    activity.on_revoke_away(event.user_id);
-                }
-            }
-
             if (event.status_text !== undefined) {
                 user_status.set_status_text({
                     user_id: event.user_id,

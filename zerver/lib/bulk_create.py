@@ -175,6 +175,9 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     existing_streams = {
         name.lower() for name in Stream.objects.filter(realm=realm).values_list("name", flat=True)
     }
+    administrators_user_group = UserGroup.objects.get(
+        name=UserGroup.ADMINISTRATORS_GROUP_NAME, is_system_group=True, realm=realm
+    )
     streams_to_create: List[Stream] = []
     for name, options in stream_dict.items():
         if "history_public_to_subscribers" not in options:
@@ -195,6 +198,7 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
                     history_public_to_subscribers=options["history_public_to_subscribers"],
                     is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
+                    can_remove_subscribers_group=administrators_user_group,
                 ),
             )
     # Sort streams by name before creating them so that we can have a

@@ -141,6 +141,13 @@ h3,
     margin-right: 10px;
 }
 
+#admin_profile_fields_table {
+    th.display,
+    td.display_in_profile_summary_cell {
+        text-align: center;
+    }
+}
+
 .user-details-title {
     display: inline-block;
     min-width: 80px;
@@ -213,8 +220,9 @@ h3,
         width: 20%;
     }
 
-    .admin-table-wrapper table.admin_profile_fields_table tr td {
-        width: 28%;
+    /* Limit the actions column to not using excessive width */
+    .admin-table-wrapper table.admin_profile_fields_table tr .actions {
+        width: 11%;
     }
 }
 
@@ -640,6 +648,10 @@ input[type="checkbox"] {
         margin-left: calc(10em + 20px) !important;
     }
     margin-bottom: 15px;
+
+    .checkbox {
+        margin-top: 5px;
+    }
 }
 
 .grey-box .wrapper {
@@ -678,6 +690,10 @@ input[type="checkbox"] {
 
 #admin-default-streams-list .progressive-table-wrapper {
     max-height: calc(95vh - 280px);
+}
+
+#bot-settings .add-a-new-bot {
+    margin-bottom: 2px;
 }
 
 .bots_list {
@@ -736,6 +752,10 @@ input[type="checkbox"] {
 
         .copy-gold {
             color: hsl(51, 90%, 50%);
+        }
+
+        .purple {
+            color: hsl(278, 62%, 68%);
         }
     }
 
@@ -808,13 +828,6 @@ input[type="checkbox"] {
 
 #inactive_bots_list .bot_info .reactivate_bot {
     margin-top: 5px;
-}
-
-#edit_bot_modal {
-    /* Ensure that the dropdown can overflow the modal. */
-    .modal__content {
-        overflow: visible;
-    }
 }
 
 .edit_bot_form {
@@ -1481,9 +1494,9 @@ $option_title_width: 180px;
 #id_realm_move_messages_between_streams_policy,
 #id_realm_invite_to_realm_policy,
 #id_realm_edit_topic_policy,
-#id_realm_msg_edit_limit_setting,
+#id_realm_message_content_edit_limit_seconds,
 #id_realm_delete_own_message_policy,
-#id_realm_msg_delete_limit_setting {
+#id_realm_message_content_delete_limit_seconds {
     width: 325px;
 }
 
@@ -1670,19 +1683,22 @@ $option_title_width: 180px;
     }
 }
 
-.custom_user_field .pill-container {
-    padding: 2px 6px;
-    min-height: 24px;
-    max-width: 206px;
-    background-color: hsl(0, 0%, 100%);
+.custom_user_field,
+.bot_owner_user_field {
+    .pill-container {
+        padding: 2px 6px;
+        min-height: 24px;
+        max-width: 206px;
+        background-color: hsl(0, 0%, 100%);
 
-    &:focus-within {
-        border-color: hsla(206, 80%, 62%, 0.8);
-        outline: 0;
-        outline: 1px dotted \9;
+        &:focus-within {
+            border-color: hsla(206, 80%, 62%, 0.8);
+            outline: 0;
+            outline: 1px dotted \9;
 
-        box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
-            0 0 8px hsla(206, 80%, 62%, 0.6);
+            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+                0 0 8px hsla(206, 80%, 62%, 0.6);
+        }
     }
 }
 
@@ -1868,5 +1884,13 @@ $option_title_width: 180px;
         font-size: 1em;
         max-width: 160px;
         margin-top: 12px;
+    }
+}
+
+#add-new-custom-profile-field-form,
+#edit-custom-profile-field-form-modal {
+    .disabled_label {
+        cursor: default;
+        opacity: 0.7;
     }
 }

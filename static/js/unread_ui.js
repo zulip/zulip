@@ -125,6 +125,8 @@ export function initialize() {
             .all_messages()
             .filter((message) => unread.message_unread(message));
         notify_server_messages_read(unread_messages);
+        // New messages received may be marked as read based on narrow type.
+        message_lists.current.resume_reading();
 
         hide_mark_as_read_turned_off_banner();
     });

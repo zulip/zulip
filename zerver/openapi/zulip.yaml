@@ -644,6 +644,7 @@ paths:
                                         "in_home_view": true,
                                         "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
+                                        "can_remove_subscribers_group_id": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1143,6 +1144,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1188,6 +1190,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1552,8 +1555,14 @@ paths:
                                         - user_status
                                 away:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user has marked themself "away" with this status.
+
+                                    **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                    starting with that feature level, `away` is a legacy way to
+                                    access the user's `presence_enabled` setting, with
+                                    `away = !presence_enabled`. To be removed in a future release.
                                 status_text:
                                   type: string
                                   description: |
@@ -1663,6 +1672,7 @@ paths:
                                         "hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 5,
@@ -1679,6 +1689,7 @@ paths:
                                         "hint": "Or your personal blog's URL",
                                         "field_data": "",
                                         "order": 6,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 7,
@@ -1745,6 +1756,7 @@ paths:
                                               "first_message_id": 1,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Denmark",
@@ -1758,6 +1770,7 @@ paths:
                                               "first_message_id": 4,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Verona",
@@ -1771,6 +1784,7 @@ paths:
                                               "first_message_id": 6,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                           ],
                                       },
@@ -1815,6 +1829,7 @@ paths:
                                         "first_message_id": 1,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -5073,7 +5088,29 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
                 default: []
               example: [{"operand": "Denmark", "operator": "stream"}]
         - $ref: "#/components/parameters/ClientGravatar"
@@ -5310,9 +5347,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: array
+                    items:
+                      type: string
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
@@ -5867,8 +5911,16 @@ paths:
 
                           The IDs of users who have disabled sending read receipts
                           (`send_read_receipts=false`) will never appear in the response,
-                          nor will the message's sender. The current user's ID will, if
-                          they have marked the read target message as read.
+                          nor will the message's sender. Additionally, the IDs of any users
+                          who have been muted by the current user or who have muted the
+                          current user will not be included in the response.
+
+                          The current user's ID will appear if they have marked the target
+                          message as read.
+
+                          **Changes**: Prior to Zulip 6.0 (feature level 143), the IDs of
+                          users who have been muted by or have muted the current user were
+                          included in the response.
                         items:
                           type: integer
                     example:
@@ -7126,11 +7178,17 @@ paths:
           example: on vacation
           required: false
         - name: away
+          deprecated: true
           schema:
             type: boolean
           in: query
           description: |
             Whether the user should be marked as "away".
+
+            **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+            starting with that feature level, `away` is a legacy way to
+            access the user's `presence_enabled` setting, with
+            `away = !presence_enabled`. To be removed in a future release.
           example: true
           required: false
         - name: emoji_name
@@ -7692,6 +7750,16 @@ paths:
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
+
+        In addition to managing the current user's subscriptions, this
+        endpoint can be used by organization administrators to remove
+        other users from streams, or to remove a bot that the current
+        user is the `bot_owner` for from any stream that the current
+        user can access.
+
+        **Changes**: Before Zulip 6.0 (feature level 145), only
+        organization administrators could remove other users from
+        streams.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8196,6 +8264,7 @@ paths:
                               "hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 5,
@@ -8212,6 +8281,7 @@ paths:
                               "hint": "Or your personal blog's URL",
                               "field_data": "",
                               "order": 6,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 7,
@@ -8324,6 +8394,25 @@ paths:
                   "python": {"text": "Python", "order": "1"},
                   "java": {"text": "Java", "order": "2"},
                 }
+        - name: display_in_profile_summary
+          in: query
+          description: |
+            Whether clients should display this profile field in a summary section of a
+            user's profile (or in a more easily accessible "small profile").
+
+            At most 2 profile fields may have this property be true in a given
+            organization. The "Long text" [profile field types][profile-field-types]
+            profile field types cannot be selected to be displayed in profile summaries.
+
+            The "Person picker" profile field is also not supported, but that is likely to
+            be temporary.
+
+            [profile-field-types]: /help/add-custom-profile-fields#profile-field-types
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success.
@@ -10060,6 +10149,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -10295,8 +10385,14 @@ paths:
                           properties:
                             away:
                               type: boolean
+                              deprecated: true
                               description: |
                                 If present, the user has marked themself "away".
+
+                                **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                starting with that feature level, `away` is a legacy way to
+                                access the user's `presence_enabled` setting, with
+                                `away = !presence_enabled`. To be removed in a future release.
                             status_text:
                               type: string
                               description: |
@@ -10468,7 +10564,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12469,7 +12565,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12699,7 +12795,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                           in the compose box is enabled.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
@@ -13850,6 +13946,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -13960,6 +14057,7 @@ paths:
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
                             "stream_post_policy": 1,
+                            "can_remove_subscribers_group_id": 2,
                           },
                       }
         "400":
@@ -14152,6 +14250,12 @@ paths:
         Topics are a field on messages (not an independent
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
+
+        **Changes**: Before Zulip 6.0 (feature level 147), this
+        request did a single atomic operation, which could time out
+        for very large topics. It now deletes messages in batches,
+        starting with the newest messages, so that progress will be
+        made even if the request times out.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
@@ -15046,6 +15150,7 @@ components:
             first_message_id:
               nullable: true
             is_announcement_only: {}
+            can_remove_subscribers_group_id: {}
     BasicStreamBase:
       type: object
       description: |
@@ -15147,6 +15252,13 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -15353,6 +15465,15 @@ components:
             dropdown UI for individual users to select an option.
 
             The interface for field type 7 is not yet stabilized.
+        display_in_profile_summary:
+          type: boolean
+          description: |
+            Whether the custom profile field, display or not in the user profile summary.
+
+            Currently it's value not allowed to be `true` of `Long text` and `Person picker`
+            [profile field types](/help/add-custom-profile-fields#profile-field-types).
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
     Hotspot:
       type: object
       additionalProperties: false
@@ -15763,6 +15884,13 @@ components:
 
             Null means the stream was recently created and there is
             insufficient data to estimate the average traffic.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     DefaultStreamGroup:
       type: object
       description: |

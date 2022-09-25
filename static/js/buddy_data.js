@@ -36,34 +36,15 @@ const fade_config = {
 };
 
 export function get_user_circle_class(user_id) {
-    const status = buddy_status(user_id);
+    const status = presence.get_status(user_id);
 
     switch (status) {
         case "active":
             return "user_circle_green";
         case "idle":
             return "user_circle_idle";
-        case "away_them":
-        case "away_me":
-            return "user_circle_empty_line";
         default:
             return "user_circle_empty";
-    }
-}
-
-export function status_description(user_id) {
-    const status = buddy_status(user_id);
-
-    switch (status) {
-        case "active":
-            return $t({defaultMessage: "Active"});
-        case "idle":
-            return $t({defaultMessage: "Idle"});
-        case "away_them":
-        case "away_me":
-            return $t({defaultMessage: "Unavailable"});
-        default:
-            return $t({defaultMessage: "Offline"});
     }
 }
 
@@ -73,31 +54,16 @@ export function level(user_id) {
         return 0;
     }
 
-    const status = buddy_status(user_id);
+    const status = presence.get_status(user_id);
 
     switch (status) {
         case "active":
             return 1;
         case "idle":
             return 2;
-        case "away_them":
-            return 3;
         default:
             return 3;
     }
-}
-
-export function buddy_status(user_id) {
-    if (user_status.is_away(user_id)) {
-        if (people.is_my_user_id(user_id)) {
-            return "away_me";
-        }
-
-        return "away_them";
-    }
-
-    // get active/idle/etc.
-    return presence.get_status(user_id);
 }
 
 export function compare_function(a, b) {
@@ -126,18 +92,6 @@ export function sort_users(user_ids) {
 
 function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
-}
-
-export function get_my_user_status(user_id) {
-    if (!people.is_my_user_id(user_id)) {
-        return undefined;
-    }
-
-    if (user_status.is_away(user_id)) {
-        return $t({defaultMessage: "(unavailable)"});
-    }
-
-    return $t({defaultMessage: "(you)"});
 }
 
 export function user_last_seen_time_status(user_id) {
@@ -176,10 +130,8 @@ export function user_last_seen_time_status(user_id) {
 export function info_for(user_id) {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
-    const my_user_status = get_my_user_status(user_id);
 
     const status_emoji_info = user_status.get_status_emoji(user_id);
-    const user_circle_status = status_description(user_id);
     const status_text = user_status.get_status_text(user_id);
     const user_list_style_value = user_settings.user_list_style;
     const user_list_style = {
@@ -192,12 +144,10 @@ export function info_for(user_id) {
         href: hash_util.pm_with_url(person.email),
         name: person.full_name,
         user_id,
-        my_user_status,
         status_emoji_info,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,
-        user_circle_status,
         status_text,
         user_list_style,
     };

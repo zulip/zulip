@@ -36,6 +36,23 @@
     text-align: center;
 }
 
+.popover_info .custom_user_field {
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    a i {
+        /* Hack: This overrides the 3px margin-right for all <i> elements in
+           this component. Ideally, that other logic would restrict
+           the behavior elements with the right CSS class, and we'd
+           delete this. */
+        margin-right: 0;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+}
+
 .sp-container {
     z-index: 106;
 }
@@ -101,7 +118,14 @@ ul {
         width: 14px;
         text-align: center;
         margin-right: 3px;
-        vertical-align: middle;
+
+        &.zulip-icon {
+            /* These icons are different from font awesome icons,
+                so they need to be aligned separately. */
+            line-height: 14px;
+            position: relative;
+            top: 2px;
+        }
     }
 
     &.topics_popover {
@@ -118,6 +142,28 @@ ul {
 
     &.info_popover_actions i.fa-edit {
         vertical-align: middle;
+    }
+}
+
+.actions_popover {
+    .mark_as_unread {
+        .unread_count {
+            /* The icon for this menu item is in the form of an unread count from
+               the left sidebar. We reuse much of the shared styling,
+               but need to override some of the defaults set in app_components.css. */
+            display: inline;
+            float: unset;
+            line-height: 14px;
+            font-size: 11px;
+            font-weight: 550;
+            margin-right: 2px;
+            background-color: hsl(200, 100%, 40%);
+            /* Override random undesired bootstrap style */
+            text-shadow: none;
+            /* Not center aligned but looks better. */
+            position: relative;
+            top: -1px;
+        }
     }
 }
 
@@ -274,7 +320,7 @@ ul {
         background-size: cover;
         background-position: center;
         border-radius: 5px;
-        border: 1px solid hsla(0, 0%, 0%, 0.2);
+        box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.2);
 
         &.guest-avatar::after {
             outline: 9px solid hsl(0, 0%, 100%);

@@ -49,7 +49,7 @@ from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
-from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import do_add_reaction, do_remove_reaction
 from zerver.actions.realm_domains import (
     do_add_realm_domain,
@@ -79,6 +79,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_description,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
@@ -106,6 +107,7 @@ from zerver.actions.user_settings import (
     do_change_user_setting,
     do_regenerate_api_key,
 )
+from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_mute_topic, do_unmute_topic
 from zerver.actions.users import (
     do_change_user_role,
@@ -984,9 +986,12 @@ class NormalActionsTest(BaseAction):
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
+        display_in_profile_summary = False
 
         events = self.verify_action(
-            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint)
+            lambda: try_update_realm_custom_profile_field(
+                realm, field, name, hint=hint, display_in_profile_summary=display_in_profile_summary
+            )
         )
         check_custom_profile_fields("events[0]", events[0])
 
@@ -1138,16 +1143,20 @@ class NormalActionsTest(BaseAction):
 
     def test_away_events(self) -> None:
         client = get_client("website")
+
+        # Set all
+        away_val = True
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=True,
+                away=away_val,
                 status_text="out to lunch",
                 emoji_name="car",
                 emoji_code="1f697",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status(
@@ -1155,16 +1164,29 @@ class NormalActionsTest(BaseAction):
             events[0],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
+
+        # Remove all
+        away_val = False
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=False,
+                away=away_val,
                 status_text="",
                 emoji_name="",
                 emoji_code="",
                 reaction_type=UserStatus.UNICODE_EMOJI,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status(
@@ -1172,21 +1194,43 @@ class NormalActionsTest(BaseAction):
             events[0],
             {"away", "status_text", "emoji_name", "emoji_code", "reaction_type"},
         )
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
 
+        # Only set away
+        away_val = True
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
-                away=True,
+                away=away_val,
                 status_text=None,
                 emoji_name=None,
                 emoji_code=None,
                 reaction_type=None,
                 client_id=client.id,
-            )
+            ),
+            num_events=4,
         )
 
         check_user_status("events[0]", events[0], {"away"})
+        check_user_settings_update("events[1]", events[1])
+        check_update_global_notifications("events[2]", events[2], not away_val)
+        check_presence(
+            "events[3]",
+            events[3],
+            has_email=True,
+            presence_key="website",
+            status="active" if not away_val else "idle",
+        )
 
+        # Only set status_text
         events = self.verify_action(
             lambda: do_update_user_status(
                 user_profile=self.user_profile,
@@ -2883,6 +2927,17 @@ class SubscribeActionTest(BaseAction):
             stream, self.example_user("hamlet"), -1
         )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
+        check_stream_update("events[0]", events[0])
+
+        moderators_group = UserGroup.objects.get(
+            name=UserGroup.MODERATORS_GROUP_NAME,
+            is_system_group=True,
+            realm=self.user_profile.realm,
+        )
+        action = lambda: do_change_can_remove_subscribers_group(
+            stream, moderators_group, acting_user=self.example_user("hamlet")
+        )
+        events = self.verify_action(action, include_subscribers=include_subscribers, num_events=1)
         check_stream_update("events[0]", events[0])
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it

@@ -1,9 +1,9 @@
 import {strict as assert} from "assert";
 
-import type {Page} from "puppeteer";
+import type {ElementHandle, Page} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
@@ -12,10 +12,8 @@ const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
-    return await page.evaluate(
-        (selector: string) => decodeURIComponent($(selector).attr("href")!),
-        selector,
-    );
+    const a = (await page.$(selector)) as ElementHandle<HTMLAnchorElement>;
+    return decodeURIComponent(await (await a.getProperty("href")).jsonValue());
 }
 
 async function open_settings(page: Page): Promise<void> {
@@ -43,7 +41,9 @@ async function test_change_full_name(page: Page): Promise<void> {
 
     await page.click("#settings_content .profile-settings-form");
     await page.waitForSelector(".full-name-change-form .alert-success", {visible: true});
-    await page.waitForFunction(() => $("#full_name").val() === "New name");
+    await page.waitForFunction(
+        () => document.querySelector<HTMLInputElement>("#full_name")?.value === "New name",
+    );
 }
 
 async function test_change_password(page: Page): Promise<void> {
@@ -94,15 +94,26 @@ async function test_get_api_key(page: Page): Promise<void> {
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
+    await page.click("#bot-settings .add-a-new-bot");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new bot",
+        "Unexpected title for deactivate user modal",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+        "Deactivate button has incorrect text.",
+    );
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 1",
         bot_short_name: "1",
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
         payload_url: "http://hostname.example.com/bots/followup",
     });
-
-    await page.waitForSelector("#create_bot_button", {visible: true});
-    await page.click("#create_bot_button");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "1-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
@@ -123,16 +134,25 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
 }
 
 async function test_normal_bot_creation(page: Page): Promise<void> {
-    await page.click(".add-a-new-bot-tab");
-    await page.waitForSelector("#create_bot_button", {visible: true});
-
+    await page.click("#bot-settings .add-a-new-bot");
+    await common.wait_for_micromodal_to_open(page);
+    assert.strictEqual(
+        await common.get_text_from_selector(page, ".dialog_heading"),
+        "Add a new bot",
+        "Unexpected title for deactivate user modal",
+    );
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "#dialog_widget_modal .dialog_submit_button"),
+        "Add",
+        "Deactivate button has incorrect text.",
+    );
     await common.fill_form(page, "#create_bot_form", {
         bot_name: "Bot 2",
         bot_short_name: "2",
         bot_type: GENERIC_BOT_TYPE,
     });
-
-    await page.click("#create_bot_button");
+    await page.click("#dialog_widget_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 
     const bot_email = "2-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
@@ -178,7 +198,11 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     await page.waitForSelector(
-        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+        `xpath///*[${common.has_class_x(
+            "open_edit_bot_form",
+        )} and @data-email="${bot1_email}"]/ancestor::*[${common.has_class_x(
+            "details",
+        )}]/*[${common.has_class_x("name")} and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);
@@ -222,7 +246,11 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
     await page.click(cancel_button_selector);
     await page.waitForSelector(
-        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+        `xpath///*[${common.has_class_x(
+            "open_edit_bot_form",
+        )} and @data-email="${bot1_email}"]/ancestor::*[${common.has_class_x(
+            "details",
+        )}]/*[${common.has_class_x("name")} and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);
@@ -230,7 +258,6 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
 
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
-    await page.click(".add-a-new-bot-tab");
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);

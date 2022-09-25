@@ -1,6 +1,10 @@
 {% extends "zerver/portico_signup.html" %}
 {% set entrypoint = "register" %}
 
+{% block title %}
+<title>{{ _("Set a new password") }} | Zulip</title>
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="password-container flex full-page new-style">

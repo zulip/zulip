@@ -1,6 +1,6 @@
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function open_set_user_status_modal(page: Page): Promise<void> {
     const menu_icon_selector = ".user_sidebar_entry:first-child .user-list-sidebar-menu-icon";

@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.default_streams import (
     do_add_default_stream,
@@ -28,9 +29,11 @@ from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_real
 from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
+    do_change_can_remove_subscribers_group,
     do_change_stream_post_policy,
     do_deactivate_stream,
 )
+from zerver.actions.user_groups import add_subgroups_to_user_group
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -80,6 +83,7 @@ from zerver.lib.types import (
     NeverSubscribedStreamDict,
     SubscriptionInfo,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     Attachment,
     DefaultStream,
@@ -90,6 +94,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserMessage,
     UserProfile,
     active_non_guest_user_ids,
@@ -2232,19 +2237,19 @@ class StreamAdminTest(ZulipTestCase):
 
         return result
 
-    def test_cant_remove_others_from_stream(self) -> None:
+    def test_cant_remove_other_users_from_stream(self) -> None:
         """
-        If you're not an admin, you can't remove other people from streams.
+        If you're not an admin, you can't remove other people from streams except your own bots.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=5,
+            query_count=7,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
             target_users_subbed=True,
         )
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_realm_admin_remove_others_from_public_stream(self) -> None:
         """
@@ -2252,7 +2257,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2275,10 +2280,11 @@ class StreamAdminTest(ZulipTestCase):
               using a queue.
         """
         target_users = [
-            self.example_user(name) for name in ["cordelia", "prospero", "iago", "hamlet", "ZOE"]
+            self.example_user(name)
+            for name in ["cordelia", "prospero", "iago", "hamlet", "outgoing_webhook_bot"]
         ]
         result = self.attempt_unsubscribe_of_principal(
-            query_count=25,
+            query_count=27,
             cache_count=9,
             target_users=target_users,
             is_realm_admin=True,
@@ -2296,7 +2302,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2313,7 +2319,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=15,
+            query_count=16,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2327,7 +2333,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_cant_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=5,
+            query_count=7,
             is_realm_admin=False,
             is_subbed=True,
             invite_only=False,
@@ -2335,11 +2341,11 @@ class StreamAdminTest(ZulipTestCase):
             target_users_subbed=True,
             using_legacy_emails=True,
         )
-        self.assert_json_error(result, "Must be an organization administrator")
+        self.assert_json_error(result, "Insufficient permission")
 
     def test_admin_remove_others_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=14,
+            query_count=15,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2353,7 +2359,7 @@ class StreamAdminTest(ZulipTestCase):
 
     def test_admin_remove_multiple_users_from_stream_legacy_emails(self) -> None:
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=18,
             target_users=[self.example_user("cordelia"), self.example_user("prospero")],
             is_realm_admin=True,
             is_subbed=True,
@@ -2371,7 +2377,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=9,
+            query_count=10,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -2381,6 +2387,86 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["removed"], 0)
         self.assert_length(json["not_removed"], 1)
+
+    def test_bot_owner_can_remove_bot_from_stream(self) -> None:
+        user_profile = self.example_user("hamlet")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=user_profile, acting_user=user_profile)
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=14,
+            target_users=[webhook_bot],
+            is_realm_admin=False,
+            is_subbed=True,
+            invite_only=False,
+            target_users_subbed=True,
+        )
+        self.assert_json_success(result)
+
+    def test_non_bot_owner_cannot_remove_bot_from_stream(self) -> None:
+        other_user = self.example_user("cordelia")
+        webhook_bot = self.example_user("webhook_bot")
+        do_change_bot_owner(webhook_bot, bot_owner=other_user, acting_user=other_user)
+        result = self.attempt_unsubscribe_of_principal(
+            query_count=8,
+            target_users=[webhook_bot],
+            is_realm_admin=False,
+            is_subbed=True,
+            invite_only=False,
+            target_users_subbed=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_can_remove_subscribers_group(self) -> None:
+        realm = get_realm("zulip")
+        leadership_group = create_user_group(
+            "leadership", [self.example_user("iago"), self.example_user("shiva")], realm
+        )
+        managers_group = create_user_group("managers", [self.example_user("hamlet")], realm=realm)
+        add_subgroups_to_user_group(managers_group, [leadership_group])
+        cordelia = self.example_user("cordelia")
+
+        stream = self.make_stream("public_stream")
+
+        def check_unsubscribing_user(
+            user: UserProfile, can_remove_subscribers_group: UserGroup, expect_fail: bool = False
+        ) -> None:
+            self.login_user(user)
+            self.subscribe(cordelia, stream.name)
+            do_change_can_remove_subscribers_group(
+                stream, can_remove_subscribers_group, acting_user=None
+            )
+            result = self.client_delete(
+                "/json/users/me/subscriptions",
+                {
+                    "subscriptions": orjson.dumps([stream.name]).decode(),
+                    "principals": orjson.dumps([cordelia.id]).decode(),
+                },
+            )
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            json = self.assert_json_success(result)
+            self.assert_length(json["removed"], 1)
+            self.assert_length(json["not_removed"], 0)
+
+        check_unsubscribing_user(self.example_user("hamlet"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("desdemona"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("iago"), leadership_group)
+
+        check_unsubscribing_user(self.example_user("othello"), managers_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("shiva"), managers_group)
+        check_unsubscribing_user(self.example_user("hamlet"), managers_group)
+
+        stream = self.make_stream("private_stream", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), stream.name)
+        # Non-admins are not allowed to unsubscribe others from private streams that they
+        # are not subscribed to even if they are member of the allowed group.
+        check_unsubscribing_user(self.example_user("shiva"), leadership_group, expect_fail=True)
+        check_unsubscribing_user(self.example_user("iago"), leadership_group)
+
+        self.subscribe(self.example_user("shiva"), stream.name)
+        check_unsubscribing_user(self.example_user("shiva"), leadership_group)
 
     def test_remove_invalid_user(self) -> None:
         """
@@ -4145,7 +4231,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 )
-        self.assert_length(queries, 36)
+        self.assert_length(queries, 37)
 
         for ev in [x for x in events if x["event"]["type"] not in ("message", "stream")]:
             if ev["event"]["op"] == "add":
@@ -5022,7 +5108,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 [new_streams[0]],
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
             )
-        self.assert_length(queries, 36)
+        self.assert_length(queries, 37)
 
         # Test creating private stream.
         with queries_captured() as queries:
@@ -5032,7 +5118,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 invite_only=True,
             )
-        self.assert_length(queries, 35)
+        self.assert_length(queries, 36)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
@@ -5047,7 +5133,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=orjson.dumps([user1.id, user2.id]).decode(),
                 ),
             )
-        self.assert_length(queries, 44)
+        self.assert_length(queries, 45)
 
 
 class GetStreamsTest(ZulipTestCase):

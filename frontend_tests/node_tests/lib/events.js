@@ -50,6 +50,7 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        can_remove_subscribers_group_id: 2,
     },
     test: {
         name: "test",
@@ -64,6 +65,7 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        can_remove_subscribers_group_id: 2,
     },
 };
 
@@ -126,8 +128,24 @@ exports.fixtures = {
     custom_profile_fields: {
         type: "custom_profile_fields",
         fields: [
-            {id: 1, name: "teams", type: 1, hint: "", field_data: "", order: 1},
-            {id: 2, name: "hobbies", type: 1, hint: "", field_data: "", order: 2},
+            {
+                id: 1,
+                name: "teams",
+                type: 1,
+                hint: "",
+                field_data: "",
+                order: 1,
+                display_in_profile_summary: false,
+            },
+            {
+                id: 2,
+                name: "hobbies",
+                type: 1,
+                hint: "",
+                field_data: "",
+                order: 2,
+                display_in_profile_summary: false,
+            },
         ],
     },
 
@@ -887,11 +905,18 @@ exports.fixtures = {
         value: true,
     },
 
-    user_settings__presence_enabled: {
+    user_settings__presence_disabled: {
         type: "user_settings",
         op: "update",
         property: "presence_enabled",
         value: false,
+    },
+
+    user_settings__presence_enabled: {
+        type: "user_settings",
+        op: "update",
+        property: "presence_enabled",
+        value: true,
     },
 
     user_settings__starred_message_counts: {
@@ -920,18 +945,6 @@ exports.fixtures = {
         op: "update",
         property: "user_list_style",
         value: 2,
-    },
-
-    user_status__revoke_away: {
-        type: "user_status",
-        user_id: 63,
-        away: false,
-    },
-
-    user_status__set_away: {
-        type: "user_status",
-        user_id: 55,
-        away: true,
     },
 
     user_status__set_status_emoji: {

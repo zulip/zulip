@@ -68,6 +68,7 @@ from zerver.models import (
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
     UserProfile,
     active_non_guest_user_ids,
     get_system_bot,
@@ -289,6 +290,7 @@ def send_subscription_add_events(
                 stream_weekly_traffic=stream_info.stream_weekly_traffic,
                 subscribers=stream_info.subscribers,
                 # Fields from Stream.API_FIELDS
+                can_remove_subscribers_group_id=stream_dict["can_remove_subscribers_group_id"],
                 date_created=stream_dict["date_created"],
                 description=stream_dict["description"],
                 first_message_id=stream_dict["first_message_id"],
@@ -1316,4 +1318,40 @@ def do_change_stream_message_retention_days(
         stream=stream,
         old_value=old_message_retention_days_value,
         new_value=message_retention_days,
+    )
+
+
+def do_change_can_remove_subscribers_group(
+    stream: Stream, user_group: UserGroup, *, acting_user: Optional[UserProfile] = None
+) -> None:
+    old_user_group = stream.can_remove_subscribers_group
+    old_user_group_id = None
+    if old_user_group is not None:
+        old_user_group_id = old_user_group.id
+
+    stream.can_remove_subscribers_group = user_group
+    stream.save()
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        modified_stream=stream,
+        event_type=RealmAuditLog.STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps(
+            {
+                RealmAuditLog.OLD_VALUE: old_user_group_id,
+                RealmAuditLog.NEW_VALUE: user_group.id,
+            }
+        ).decode(),
+    )
+    event = dict(
+        op="update",
+        type="stream",
+        property="can_remove_subscribers_group_id",
+        value=user_group.id,
+        stream_id=stream.id,
+        name=stream.name,
+    )
+    transaction.on_commit(
+        lambda: send_event(stream.realm, event, can_access_stream_user_ids(stream))
     )

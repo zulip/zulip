@@ -49,7 +49,10 @@ import * as settings_data from "./settings_data";
 import * as settings_users from "./settings_users";
 import * as stream_popover from "./stream_popover";
 import * as ui_report from "./ui_report";
+import * as unread_ops from "./unread_ops";
 import * as user_groups from "./user_groups";
+import * as user_profile from "./user_profile";
+import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
@@ -196,15 +199,10 @@ function render_user_info_popover(
 ) {
     const is_me = people.is_my_user_id(user.user_id);
 
-    let can_set_away = false;
-    let can_revoke_away = false;
+    let invisible_mode = false;
 
     if (is_me) {
-        if (user_status.is_away(user.user_id)) {
-            can_revoke_away = true;
-        } else {
-            can_set_away = true;
-        }
+        invisible_mode = !user_settings.presence_enabled;
     }
 
     const muting_allowed = !is_me && !user.is_bot;
@@ -219,10 +217,15 @@ function render_user_info_popover(
         const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
         date_joined = dateFormat.format(parseISO(user.date_joined));
     }
+    // Filtering out only those profile fields that can be display in the popover and are not empty.
+    const dateFormat = new Intl.DateTimeFormat("default", {dateStyle: "long"});
+    const field_types = page_params.custom_profile_field_types;
+    const display_profile_fields = page_params.custom_profile_fields
+        .map((f) => user_profile.get_custom_profile_field_data(user, f, field_types, dateFormat))
+        .filter((f) => f.display_in_profile_summary && f.value !== undefined && f.value !== null);
 
     const args = {
-        can_revoke_away,
-        can_set_away,
+        invisible_mode,
         can_mute: muting_allowed && !is_muted,
         can_manage_user: page_params.is_admin && !is_me,
         can_send_private_message:
@@ -231,6 +234,7 @@ function render_user_info_popover(
             page_params.realm_private_message_policy !==
                 settings_config.private_message_policy_values.disabled.code,
         can_unmute: muting_allowed && is_muted,
+        display_profile_fields,
         has_message_context,
         is_active,
         is_bot: user.is_bot,
@@ -241,7 +245,6 @@ function render_user_info_popover(
         private_message_class: private_msg_class,
         sent_by_uri: hash_util.by_sender_url(user.email),
         show_email: settings_data.show_email(),
-        show_user_profile: !user.is_bot,
         user_email: people.get_visible_email(user),
         user_full_name: user.full_name,
         user_id: user.user_id,
@@ -477,6 +480,17 @@ export function toggle_actions_popover(element, id) {
             editability_menu_item = $t({defaultMessage: "View source"});
         }
 
+        // Theoretically, it could be useful to offer this even for a
+        // message that is already unread, so you can mark those below
+        // it as unread; but that's an unlikely situation, and showing
+        // it can be a confusing source of clutter.
+        //
+        // To work around #22893, we also only offer the option if the
+        // fetch_status data structure means we'll be able to mark
+        // everything below the current message as read correctly.
+        const should_display_mark_as_unread =
+            message_lists.current.data.fetch_status.has_found_newest() && !message.unread;
+
         const should_display_edit_history_option =
             message.edit_history &&
             message.edit_history.some(
@@ -519,6 +533,7 @@ export function toggle_actions_popover(element, id) {
             stream_id: message.stream_id,
             use_edit_icon,
             editability_menu_item,
+            should_display_mark_as_unread,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -967,7 +982,7 @@ export function register_click_handlers() {
     $("body").on("click", ".info_popover_actions .clear_status", (e) => {
         e.preventDefault();
         const me = elem_to_user_id($(e.target).parents("ul"));
-        user_status.server_update({
+        user_status.server_update_status({
             user_id: me,
             status_text: "",
             emoji_name: "",
@@ -990,16 +1005,16 @@ export function register_click_handlers() {
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
 
-    $("body").on("click", ".set_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_on", (e) => {
         hide_all();
-        user_status.server_set_away();
+        user_status.server_invisible_mode_on();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("click", ".revoke_away_status", (e) => {
+    $("body").on("click", ".invisible_mode_turn_off", (e) => {
         hide_all();
-        user_status.server_revoke_away();
+        user_status.server_invisible_mode_off();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1097,6 +1112,16 @@ export function register_click_handlers() {
 
         current_user_sidebar_user_id = user.user_id;
         current_user_sidebar_popover = $target.data("popover");
+    });
+
+    $("body").on("click", ".mark_as_unread", (e) => {
+        hide_actions_popover();
+        const message_id = $(e.currentTarget).data("message-id");
+
+        unread_ops.mark_as_unread_from_here(message_id);
+
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $("body").on("click", ".respond_button", (e) => {

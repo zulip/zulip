@@ -385,7 +385,7 @@ class TestMissedMessages(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": hamlet.email,
+                "to": orjson.dumps([hamlet.email]).decode(),
             },
         )
         self.assert_json_success(result)

@@ -400,6 +400,14 @@ test("content_typeahead_selected", ({override}) => {
         caret_called2 = true;
         return this;
     };
+    let range_called = false;
+    fake_this.$element.range = function (...args) {
+        const [arg1, arg2] = args;
+        // .range() used in setTimeout
+        assert.ok(arg2 > arg1);
+        range_called = true;
+        return this;
+    };
     autosize_called = false;
     set_timeout_called = false;
 
@@ -621,6 +629,12 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "```python\n\n```";
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = "```spo";
+    fake_this.token = "spo";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "spoiler");
+    expected_value = "```spoiler translated: Header\n\n```";
+    assert.equal(actual_value, expected_value);
+
     // Test special case to not close code blocks if there is text afterward
     fake_this.query = "```p\nsome existing code";
     fake_this.token = "p";
@@ -638,6 +652,7 @@ test("content_typeahead_selected", ({override}) => {
 
     assert.ok(caret_called1);
     assert.ok(caret_called2);
+    assert.ok(range_called);
     assert.ok(autosize_called);
     assert.ok(set_timeout_called);
     assert.ok(warned_for_stream_link);

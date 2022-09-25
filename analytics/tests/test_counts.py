@@ -66,6 +66,7 @@ from zerver.models import (
     Recipient,
     Stream,
     UserActivityInterval,
+    UserGroup,
     UserProfile,
     get_client,
     get_user,
@@ -83,6 +84,9 @@ class AnalyticsTestCase(ZulipTestCase):
         super().setUp()
         self.default_realm = do_create_realm(
             string_id="realmtest", name="Realm Test", date_created=self.TIME_ZERO - 2 * self.DAY
+        )
+        self.administrators_user_group = UserGroup.objects.get(
+            name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=self.default_realm, is_system_group=True
         )
 
         # used to generate unique names in self.create_*
@@ -125,6 +129,7 @@ class AnalyticsTestCase(ZulipTestCase):
             "name": f"stream name {self.name_counter}",
             "realm": self.default_realm,
             "date_created": self.TIME_LAST_HOUR,
+            "can_remove_subscribers_group": self.administrators_user_group,
         }
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)

@@ -49,7 +49,10 @@ providers.
 1. {!send-us-info.md!}
 
      1. Your organization's URL
-     1. The **Identity Provider metadata** provided by Okta for the application
+     1. The **Identity Provider metadata** provided by Okta for the application.
+        To get the data, click the **View SAML setup instructions button** in
+        the right sidebar in the **Sign on** tab.
+        Copy the IdP metadata shown at the bottom of the page.
      {!saml-login-button.md!}
 
 {tab|onelogin}
@@ -127,8 +130,8 @@ providers.
 
      1. Your organization's URL
      1. From the **SAML Signing Certificate** section:
-       * **App Federation Metadata Url**
-       * Certificate downloaded from **Certificate (Base64)**
+        * **App Federation Metadata Url**
+        * Certificate downloaded from **Certificate (Base64)**
      1. From the **Set up** section
         * **Login URL**
         * **Azure AD Identifier**

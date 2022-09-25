@@ -418,7 +418,7 @@ class UserGroupAPITestCase(UserGroupTestCase):
 
         payload = dict(
             type="stream",
-            to=stream_name,
+            to=orjson.dumps(stream_name).decode(),
             topic="whatever",
             content=content_with_group_mention,
         )

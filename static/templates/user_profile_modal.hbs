@@ -5,6 +5,9 @@
                 <button class="modal__close" aria-label="{{t 'Close modal' }}" data-micromodal-close></button>
                 <div id="name">
                     {{full_name}}
+                    {{#if is_bot}}
+                    <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
+                    {{/if}}
                     {{#if is_me}}
                     <a href="/#settings/profile">
                         <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
@@ -29,7 +32,15 @@
                                     </div>
                                     <div id="user-type" class="default-field">
                                         <div class="name">{{#tr}}Role{{/tr}}</div>
-                                        <div class="value">{{user_type}}</div>
+                                        {{#if is_bot}}
+                                            {{#if is_system_bot}}
+                                            <div class="value">{{#tr}}System bot{{/tr}}</div>
+                                            {{else}}
+                                            <div class="value">{{#tr}}Bot{{/tr}}</div>
+                                            {{/if}}
+                                        {{else}}
+                                            <div class="value">{{user_type}}</div>
+                                        {{/if}}
                                     </div>
                                     <div id="date-joined" class="default-field">
                                         <div class="name">{{#tr}}Joined{{/tr}}</div>
@@ -55,26 +66,41 @@
                         </div>
                         <div class="bottom">
                             <div id="content">
-                                {{#each profile_data}}
-                                    <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
-                                        <div class="name">{{this.name}}</div>
-                                        {{#if this.is_user_field}}
-                                            <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                                                <div class="input" contenteditable="false" style="display: none;"></div>
-                                            </div>
-                                        {{else if this.is_link}}
-                                            <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                        {{else if this.is_external_account}}
-                                            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                                        {{else}}
-                                            {{#if this.rendered_value}}
-                                            <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
-                                            {{else}}
-                                            <div class="value">{{this.value}}</div>
-                                            {{/if}}
-                                        {{/if}}
+                                {{#if is_bot}}
+                                    <div class="field-section">
+                                        <div class="name">{{#tr}}Bot type{{/tr}}</div>
+                                        <div class="bot_info_value">{{bot_type}}</div>
                                     </div>
-                                {{/each}}
+                                    {{#if bot_owner}}
+                                    <div class="field-section bot_owner_user_field" data-field-id="{{bot_owner.user_id}}">
+                                        <div class="name">{{#tr}}Owner{{/tr}}</div>
+                                        <div class="pill-container not-editable">
+                                            <div class="input" contenteditable="false" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    {{/if}}
+                                {{else}}
+                                    {{#each profile_data}}
+                                        <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+                                            <div class="name">{{this.name}}</div>
+                                            {{#if this.is_user_field}}
+                                                <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                                                    <div class="input" contenteditable="false" style="display: none;"></div>
+                                                </div>
+                                            {{else if this.is_link}}
+                                                <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                                            {{else if this.is_external_account}}
+                                                <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                                            {{else}}
+                                                {{#if this.rendered_value}}
+                                                <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
+                                                {{else}}
+                                                <div class="value">{{this.value}}</div>
+                                                {{/if}}
+                                            {{/if}}
+                                        </div>
+                                    {{/each}}
+                                {{/if}}
                             </div>
                         </div>
                     </div>

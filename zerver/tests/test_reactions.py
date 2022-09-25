@@ -281,7 +281,11 @@ class ReactionMessageIDTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         pm_id = self.assert_json_success(result)["id"]
         reaction_info = {
@@ -306,7 +310,11 @@ class ReactionTest(ZulipTestCase):
         pm = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         self.assert_json_success(pm)
         content = orjson.loads(pm.content)
@@ -336,7 +344,11 @@ class ReactionTest(ZulipTestCase):
         pm = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         self.assert_json_success(pm)
 
@@ -417,7 +429,11 @@ class ReactionEventTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         pm_id = self.assert_json_success(result)["id"]
 
@@ -456,7 +472,11 @@ class ReactionEventTest(ZulipTestCase):
         result = self.api_post(
             pm_sender,
             "/api/v1/messages",
-            {"type": "private", "content": "Test message", "to": pm_recipient.email},
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([pm_recipient.email]).decode(),
+            },
         )
         content = self.assert_json_success(result)
         pm_id = content["id"]

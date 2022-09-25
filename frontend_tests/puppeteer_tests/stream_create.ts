@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function user_row_selector(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
@@ -84,7 +84,9 @@ async function create_stream(page: Page): Promise<void> {
         stream_description: "Everything Puppeteer",
     });
     await page.click("form#stream_creation_form .finalize_create_stream");
-    await page.waitForFunction(() => $(".stream-name").is(':contains("Puppeteer")'));
+    await page.waitForSelector(
+        `xpath///*[${common.has_class_x("stream-name")} and text()="Puppeteer"]`,
+    );
     const stream_name = await common.get_text_from_selector(
         page,
         ".stream-header .stream-name .sub-stream-name",
@@ -93,15 +95,14 @@ async function create_stream(page: Page): Promise<void> {
         page,
         ".stream-description .sub-stream-description",
     );
-    const subscriber_count_selector = "[data-stream-name='Puppeteer'] .subscriber-count";
     assert.strictEqual(stream_name, "Puppeteer");
     assert.strictEqual(stream_description, "Everything Puppeteer");
 
     // Assert subscriber count becomes 3 (cordelia, desdemona, othello)
-    await page.waitForFunction(
-        (subscriber_count_selector: string) => $(subscriber_count_selector).text().trim() === "3",
-        {},
-        subscriber_count_selector,
+    await page.waitForSelector(
+        `xpath///*[@data-stream-name="Puppeteer"]//*[${common.has_class_x(
+            "subscriber-count",
+        )} and normalize-space()="3"]`,
     );
 }
 

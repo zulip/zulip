@@ -107,6 +107,7 @@ export function build_page() {
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
         realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
+        can_create_new_bots: settings_bots.can_create_new_bots(),
         realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
             "realm_message_content_edit_limit_seconds",
         ),

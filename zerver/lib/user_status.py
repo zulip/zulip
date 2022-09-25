@@ -17,7 +17,7 @@ class UserInfoDict(TypedDict, total=False):
 
 class RawUserInfoDict(TypedDict):
     user_profile_id: int
-    status: int
+    user_profile__presence_enabled: bool
     status_text: str
     emoji_name: str
     emoji_code: str
@@ -25,7 +25,12 @@ class RawUserInfoDict(TypedDict):
 
 
 def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
-    away = row["status"] == UserStatus.AWAY
+    # Deprecated way for clients to access the user's `presence_enabled`
+    # setting, with away != presence_enabled. Can be removed when clients
+    # migrate "away" (also referred to as "unavailable") feature to directly
+    # use and update the user's presence_enabled setting.
+    presence_enabled = row["user_profile__presence_enabled"]
+    away = not presence_enabled
     status_text = row["status_text"]
     emoji_name = row["emoji_name"]
     emoji_code = row["emoji_code"]
@@ -44,14 +49,14 @@ def format_user_status(row: RawUserInfoDict) -> UserInfoDict:
     return dct
 
 
-def get_user_info_dict(realm_id: int) -> Dict[str, UserInfoDict]:
+def get_user_status_dict(realm_id: int) -> Dict[str, UserInfoDict]:
     rows = (
         UserStatus.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
         )
         .exclude(
-            Q(status=UserStatus.NORMAL)
+            Q(user_profile__presence_enabled=True)
             & Q(status_text="")
             & Q(emoji_name="")
             & Q(emoji_code="")
@@ -59,7 +64,7 @@ def get_user_info_dict(realm_id: int) -> Dict[str, UserInfoDict]:
         )
         .values(
             "user_profile_id",
-            "status",
+            "user_profile__presence_enabled",
             "status_text",
             "emoji_name",
             "emoji_code",
@@ -77,7 +82,6 @@ def get_user_info_dict(realm_id: int) -> Dict[str, UserInfoDict]:
 
 def update_user_status(
     user_profile_id: int,
-    status: Optional[int],
     status_text: Optional[str],
     client_id: int,
     emoji_name: Optional[str],
@@ -91,9 +95,6 @@ def update_user_status(
         client_id=client_id,
         timestamp=timestamp,
     )
-
-    if status is not None:
-        defaults["status"] = status
 
     if status_text is not None:
         defaults["status_text"] = status_text

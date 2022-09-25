@@ -155,7 +155,15 @@ class AndNonZero(models.Lookup):
         return f"{lhs} & {rhs} != 0", lhs_params + rhs_params
 
 
-def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
+ModelT = TypeVar("ModelT", bound=models.Model)
+RowT = TypeVar("RowT")
+
+
+def query_for_ids(
+    query: "ValuesQuerySet[ModelT, RowT]",
+    user_ids: List[int],
+    field: str,
+) -> "ValuesQuerySet[ModelT, RowT]":
     """
     This function optimizes searches of the form
     `user_profile_id in (1, 2, 3, 4)` by quickly
@@ -1423,20 +1431,42 @@ def get_realm_playgrounds(realm: Realm) -> List[RealmPlaygroundDict]:
     return playgrounds
 
 
-# The Recipient table is used to map Messages to the set of users who
-# received the message.  It is implemented as a set of triples (id,
-# type_id, type). We have 3 types of recipients: Huddles (for group
-# private messages), UserProfiles (for 1:1 private messages), and
-# Streams. The recipient table maps a globally unique recipient id
-# (used by the Message table) to the type-specific unique id (the
-# stream id, user_profile id, or huddle id).
 class Recipient(models.Model):
+    """Represents an audience that can potentially receive messages in Zulip.
+
+    This table essentially functions as a generic foreign key that
+    allows Message.recipient_id to be a simple ForeignKey representing
+    the audience for a message, while supporting the different types
+    of audiences Zulip supports for a message.
+
+    Recipient has just two attributes: The enum type, and a type_id,
+    which is the ID of the UserProfile/Stream/Huddle object containing
+    all the metadata for the audience. There are 3 recipient types:
+
+    1. 1:1 private message: The type_id is the ID of the UserProfile
+       who will receive any message to this Recipient. The sender
+       of such a message is represented separately.
+    2. Stream message: The type_id is the ID of the associated Stream.
+    3. Group private message: In Zulip, group private messages are
+       represented by Huddle objects, which encode the set of users
+       in the conversation. The type_id is the ID of the associated Huddle
+       object; the set of users is usually retrieved via the Subscription
+       table. See the Huddle model for details.
+
+    See also the Subscription model, which stores which UserProfile
+    objects are subscribed to which Recipient objects.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     type_id: int = models.IntegerField(db_index=True)
     type: int = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
+
+    # The type for 1:1 private messages.
     PERSONAL = 1
+    # The type for stream messages.
     STREAM = 2
+    # The type group private messages.
     HUDDLE = 3
 
     class Meta:
@@ -2507,6 +2537,14 @@ class Stream(models.Model):
     }
     message_retention_days: Optional[int] = models.IntegerField(null=True, default=None)
 
+    # on_delete field here is set to RESTRICT because we don't want to allow
+    # deleting a user group in case it is referenced by this settig.
+    # We are not using PROTECT since we want to allow deletion of user groups
+    # when realm itself is deleted.
+    can_remove_subscribers_group: UserGroup = models.ForeignKey(
+        UserGroup, on_delete=models.RESTRICT
+    )
+
     # The very first message ID in the stream.  Used to help clients
     # determine whether they might need to display "more topics" for a
     # stream based on what messages they have cached.
@@ -2544,6 +2582,7 @@ class Stream(models.Model):
         "name",
         "rendered_description",
         "stream_post_policy",
+        "can_remove_subscribers_group_id",
     ]
 
     @staticmethod
@@ -2553,6 +2592,7 @@ class Stream(models.Model):
 
     def to_dict(self) -> APIStreamDict:
         return APIStreamDict(
+            can_remove_subscribers_group_id=self.can_remove_subscribers_group_id,
             date_created=datetime_to_timestamp(self.date_created),
             description=self.description,
             first_message_id=self.first_message_id,
@@ -2642,8 +2682,12 @@ class UserTopic(models.Model):
 
 
 class MutedUser(models.Model):
-    user_profile: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
-    muted_user: UserProfile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    user_profile: UserProfile = models.ForeignKey(
+        UserProfile, related_name="muter", on_delete=CASCADE
+    )
+    muted_user: UserProfile = models.ForeignKey(
+        UserProfile, related_name="muted", on_delete=CASCADE
+    )
     date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
 
     class Meta:
@@ -2810,7 +2854,11 @@ def bulk_get_huddle_user_ids(recipients: List[Recipient]) -> Dict[int, List[int]
 
 class AbstractMessage(models.Model):
     sender: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
+
+    # The target of the message is signified by the Recipient object.
+    # See the Recipient class for details.
     recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email
@@ -3616,6 +3664,17 @@ def get_old_unclaimed_attachments(
 
 
 class Subscription(models.Model):
+    """Keeps track of which users are part of the
+    audience for a given Recipient object.
+
+    For private and group private message Recipient objects, only the
+    user_profile and recipient fields have any meaning, defining the
+    immutable set of users who are in the audience for that Recipient.
+
+    For Recipient objects associated with a Stream, the remaining
+    fields in this model describe the user's subscription to that stream.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient: Recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -3821,8 +3880,8 @@ def get_user_by_id_in_realm_including_cross_realm(
         return user_profile
 
     # Note: This doesn't validate whether the `realm` passed in is
-    # None/invalid for the CROSS_REALM_BOT_EMAILS case.
-    if user_profile.delivery_email in settings.CROSS_REALM_BOT_EMAILS:
+    # None/invalid for the is_cross_realm_bot_email case.
+    if is_cross_realm_bot_email(user_profile.delivery_email):
         return user_profile
 
     raise UserProfile.DoesNotExist()
@@ -3891,13 +3950,20 @@ def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
 
-# The Huddle class represents a group of individuals who have had a
-# group private message conversation together.  The actual membership
-# of the Huddle is stored in the Subscription table just like with
-# Streams, and a hash of that list is stored in the huddle_hash field
-# below, to support efficiently mapping from a set of users to the
-# corresponding Huddle object.
 class Huddle(models.Model):
+    """
+    Represents a group of individuals who may have a
+    group private message conversation together.
+
+    The membership of the Huddle is stored in the Subscription table just like with
+    Streams - for each user in the Huddle, there is a Subscription object
+    tied to the UserProfile and the Huddle's recipient object.
+
+    A hash of the list of user IDs is stored in the huddle_hash field
+    below, to support efficiently mapping from a set of users to the
+    corresponding Huddle object.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
@@ -3917,6 +3983,11 @@ def huddle_hash_cache_key(huddle_hash: str) -> str:
 
 
 def get_huddle(id_list: List[int]) -> Huddle:
+    """
+    Takes a list of user IDs and returns the Huddle object for the
+    group consisting of these users. If the Huddle object does not
+    yet exist, it will be transparently created.
+    """
     huddle_hash = get_huddle_hash(id_list)
     return get_huddle_backend(huddle_hash, id_list)
 
@@ -4084,10 +4155,7 @@ class UserStatus(AbstractEmoji):
     # default value.
     emoji_name: str = models.TextField(default="")
     emoji_code: str = models.TextField(default="")
-    NORMAL = 0
-    AWAY = 1
 
-    status: int = models.PositiveSmallIntegerField(default=NORMAL)
     status_text: str = models.CharField(max_length=255, default="")
 
 
@@ -4157,26 +4225,18 @@ class ScheduledEmail(AbstractScheduledJob):
 
 
 class MissedMessageEmailAddress(models.Model):
-    EXPIRY_SECONDS = 60 * 60 * 24 * 5
-    ALLOWED_USES = 1
-
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message: Message = models.ForeignKey(Message, on_delete=CASCADE)
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     email_token: str = models.CharField(max_length=34, unique=True, db_index=True)
 
     # Timestamp of when the missed message address generated.
-    # The address is valid until timestamp + EXPIRY_SECONDS.
     timestamp: datetime.datetime = models.DateTimeField(db_index=True, default=timezone_now)
+    # Number of times the missed message address has been used.
     times_used: int = models.PositiveIntegerField(default=0, db_index=True)
 
     def __str__(self) -> str:
         return settings.EMAIL_GATEWAY_PATTERN % (self.email_token,)
-
-    def is_usable(self) -> bool:
-        not_expired = timezone_now() <= self.timestamp + timedelta(seconds=self.EXPIRY_SECONDS)
-        has_uses_left = self.times_used < self.ALLOWED_USES
-        return has_uses_left and not_expired
 
     def increment_times_used(self) -> None:
         self.times_used += 1
@@ -4356,6 +4416,7 @@ class AbstractRealmAuditLog(models.Model):
     STREAM_REACTIVATED = 604
     STREAM_MESSAGE_RETENTION_DAYS_CHANGED = 605
     STREAM_PROPERTY_CHANGED = 607
+    STREAM_CAN_REMOVE_SUBSCRIBERS_GROUP_CHANGED = 608
 
     # The following values are only for RemoteZulipServerAuditLog
     # Values should be exactly 10000 greater than the corresponding
@@ -4476,12 +4537,19 @@ class CustomProfileField(models.Model):
 
     HINT_MAX_LENGTH = 80
     NAME_MAX_LENGTH = 40
+    MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS = 2
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name: str = models.CharField(max_length=NAME_MAX_LENGTH)
     hint: str = models.CharField(max_length=HINT_MAX_LENGTH, default="")
+
+    # Sort order for display of custom profile fields.
     order: int = models.IntegerField(default=0)
+
+    # Whether the field should be displayed in smaller summary
+    # sections of a page displaying custom profile fields.
+    display_in_profile_summary: bool = models.BooleanField(default=False)
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
@@ -4555,7 +4623,7 @@ class CustomProfileField(models.Model):
         unique_together = ("realm", "name")
 
     def as_dict(self) -> ProfileDataElementBase:
-        return {
+        data_as_dict: ProfileDataElementBase = {
             "id": self.id,
             "name": self.name,
             "type": self.field_type,
@@ -4563,6 +4631,10 @@ class CustomProfileField(models.Model):
             "field_data": self.field_data,
             "order": self.order,
         }
+        if self.display_in_profile_summary:
+            data_as_dict["display_in_profile_summary"] = True
+
+        return data_as_dict
 
     def is_renderable(self) -> bool:
         if self.field_type in [CustomProfileField.SHORT_TEXT, CustomProfileField.LONG_TEXT]:

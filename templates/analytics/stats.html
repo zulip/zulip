@@ -1,6 +1,14 @@
 {% extends "zerver/base.html" %}
 {% set entrypoint = "stats" %}
 
+{% block title %}
+<title>
+    {% trans %}
+    Analytics for {{ target_name }} | Zulip
+    {% endtrans %}
+</title>
+{% endblock %}
+
 {% block content %}
 <div class="app portico-page stats-page">
 
