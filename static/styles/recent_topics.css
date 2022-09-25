@@ -130,8 +130,13 @@
                 opacity: 0.5;
 
                 &:hover {
-                    background-color: hsl(0, 0%, 100%);
+                    background-color: hsl(0, 0%, 80%);
                     border-color: hsl(0, 0%, 80%);
+                }
+
+                &:focus {
+                    background-color: hsl(0, 0%, 80%) !important;
+                    outline: 0;
                 }
             }
         }
