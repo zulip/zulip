@@ -84,7 +84,6 @@
     border-radius: 0.25rem;
     border-width: 0;
     cursor: pointer;
-    appearance: button;
     text-transform: none;
     overflow: visible;
     line-height: 1.15;
@@ -93,6 +92,10 @@
     backface-visibility: hidden;
     transform: translateZ(0);
     transition: transform 0.25s ease-out;
+
+    &:hover {
+        text-decoration: none;
+    }
 
     &:disabled {
         cursor: not-allowed;
