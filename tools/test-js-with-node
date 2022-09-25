@@ -399,7 +399,7 @@ def enforce_proper_coverage(coverage_json: Any) -> bool:
     coverage_lost = False
     for relative_path in enforce_fully_covered:
         path = ROOT_DIR + "/" + relative_path
-        if not (path in coverage_json):
+        if path not in coverage_json:
             coverage_lost = True
             print_error(f"{relative_path} has no node test coverage")
             continue
