@@ -6666,7 +6666,10 @@ class TestMaybeSendToRegistration(ZulipTestCase):
 
         email = self.example_email("hamlet")
         user = PreregistrationUser(email=email, realm=realm)
+        streams = Stream.objects.filter(realm=realm)
         user.save()
+        user.streams.set(streams)
+
         create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 
         with mock.patch("zerver.views.auth.HomepageForm", return_value=Form()):
@@ -6677,7 +6680,12 @@ class TestMaybeSendToRegistration(ZulipTestCase):
             assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result["Location"])
-            self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+            prereg_users = list(PreregistrationUser.objects.all())
+            self.assert_length(prereg_users, 2)
+            self.assertEqual(
+                list(prereg_users[0].streams.all().order_by("id")),
+                list(prereg_users[1].streams.all().order_by("id")),
+            )
 
 
 class TestAdminSetBackends(ZulipTestCase):
