@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+import argparse
+import os
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(ZULIP_PATH)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from scripts.lib.zulip_tools import ENDC, WARNING, run
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--clean", action="store_true")
+    args = parser.parse_args()
+
+    path = os.path.join(ZULIP_PATH, "docs")
+    if not args.clean:
+        run(["make", "html", "-C", path])
+        print(
+            WARNING
+            + "tools/build-docs --clean is necessary for the navigation/left sidebar to update."
+            + ENDC
+        )
+        return
+
+    run(["make", "clean", "html", "-C", path])
+
+
+if __name__ == "__main__":
+    main()

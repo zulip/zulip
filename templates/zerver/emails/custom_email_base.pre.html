@@ -1,0 +1,20 @@
+{% extends "zerver/emails/compiled/email_base_marketing.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_uri }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+
+{# Note: The below code is substituted by `manage.py send_custom_email` #}
+{{ rendered_input }}
+
+{% endblock %}
+
+{% block manage_preferences %}
+    {% if remote_server_email %}
+    <p>You are receiving this email to update you about important changes to Zulip's Terms of Service.</p>
+    {% else %}
+    <p><a href="{{ realm_uri }}/#settings/notifications">{{ _("Manage email preferences") }}</a> | <a href="{{ unsubscribe_link }}">{{ _("Unsubscribe from marketing emails") }}</a></p>
+    {% endif %}
+{% endblock %}

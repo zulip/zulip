@@ -1,0 +1,46 @@
+<div id="bot-edit-form" data-user-id="{{user_id}}" data-email="{{email}}">
+    <form class="new-style edit_bot_form form-horizontal name-setting">
+        <div class="input-group name_change_container">
+            <label for="edit_bot_full_name">{{t "Full name" }}</label>
+            <input type="text" autocomplete="off" name="full_name" id="edit_bot_full_name" value="{{ full_name }}" />
+        </div>
+        <input type="hidden" name="is_full_name" value="true" />
+        <div class="input-group email_change_container">
+            <label for="email">{{t "Email" }}</label>
+            <input type="text" autocomplete="off" name="email" value="{{ email }}" readonly/>
+        </div>
+        <div class="input-group user_id_container">
+            <label for="user_id">{{t "User ID" }}</label>
+            <input type="text" autocomplete="off" name="user_id" value="{{ user_id }}" readonly/>
+        </div>
+        <div class="input-group">
+            <label class="input-label" for="bot-role-select">{{t 'Role' }}
+                {{> ../help_link_widget link="/help/roles-and-permissions" }}
+            </label>
+            <select name="bot-role-select" id="bot-role-select" data-setting-widget-type="number" {{#if disable_role_dropdown}}disabled{{/if}}>
+                {{> dropdown_options_widget option_values=user_role_values}}
+            </select>
+        </div>
+        <div class="input-group edit_bot_owner_container">
+            <label for="bot_owner_select">{{t "Owner" }}</label>
+            {{> dropdown_list_widget
+              widget_name="edit_bot_owner"
+              list_placeholder=(t 'Filter users')}}
+        </div>
+        <div id="service_data">
+        </div>
+        <div class="input-group edit-avatar-section">
+            <label>Avatar</label>
+            <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />
+            <div class="edit_bot_avatar_file"></div>
+            <button type="button" class="button white rounded edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
+            <button type="button" class="button white rounded edit_bot_avatar_clear_button" style="display: none;">{{t "Clear profile picture" }}</button>
+            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+        </div>
+    </form>
+    <div class="input-group new-style">
+        <button class="button rounded btn-danger deactivate_bot_button">
+            {{t 'Deactivate bot' }}
+        </button>
+    </div>
+</div>

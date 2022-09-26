@@ -1,0 +1,40 @@
+{
+  "id": "69316a96-cce1-4322-9bdc-d94e8298f0d2",
+  "timestamp": "2018-01-12T12:22:31.283Z",
+  "lang": "en",
+  "result": {
+    "source": "agent",
+    "resolvedQuery": "what's the weather in New Delhi",
+    "action": "yahooWeatherForecast",
+    "actionIncomplete": false,
+    "parameters": {
+      "geo-city": "New Delhi"
+    },
+    "contexts": [],
+    "metadata": {
+      "intentId": "a61266c2-b6af-4dc8-a7b9-72dfb11b72d8",
+      "webhookUsed": "true",
+      "webhookForSlotFillingUsed": "false",
+      "webhookResponseTime": 115,
+      "intentName": "weather-intent"
+    },
+    "fulfillment": {
+      "speech": "Today the weather in Delhi: Sunny, And the temperature is 65 F",
+      "source": "apiai-weather-webhook-sample",
+      "displayText": "Today the weather in Delhi: Sunny, And the temperature is 65 F",
+      "messages": [
+        {
+          "type": 0,
+          "speech": "Today the weather in Delhi: Sunny, And the temperature is 65 F"
+        }
+      ]
+    },
+    "score": 0.7099999785423279
+  },
+  "status": {
+    "code": 200,
+    "errorType": "success",
+    "webhookTimedOut": false
+  },
+  "sessionId": "2507496e-8028-4be5-ac52-1624f752b188"
+}

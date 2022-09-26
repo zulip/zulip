@@ -1,0 +1,12 @@
+{
+    "author_is_student": true,
+    "task_definition_name": "Sails unspread it stopped at kearney",
+    "event_type": "submit",
+    "task_instance": 6296903092273152,
+    "task_claimed_by": "student-yqqtag",
+    "time": 1506475323.256627,
+    "id": "1f4bab4d1820400f9b50ed8bf2bb03b3",
+    "author": "student-yqqtag",
+    "task_instance_url": "https://0.0.0.0:8000/dashboard/task-instances/6694926301528064/",
+    "task_definition_url": "https://0.0.0.0:8000/dashboard/tasks/6694926301528064/"
+}

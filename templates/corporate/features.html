@@ -1,0 +1,355 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Features | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "From highly configurable notifications, to powerful
+  formatting and flexible administration, Zulip has you covered." %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing features-app">
+    {% include 'zerver/gradients.html' %}
+    <section class="hero">
+        <div class="copy">
+            <h1>Powerful group chat.</h1>
+            <h2>First class threading on top of everything you could want from real-time chat.</h2>
+        </div>
+    </section>
+
+    <section class="messages">
+        <div class="features">
+            <h2>Beautiful messaging.</h2>
+
+            <div class="feature-block">
+                <h3>MARKDOWN OPTIMIZED FOR CHAT</h3>
+                <p>
+                    Express your ideas clearly with
+                    <a href="/help/format-your-message-using-markdown#quotes">quote blocks</a>,
+                    <a href="/help/format-your-message-using-markdown#spoilers">spoilers</a>,
+                    <a href="/help/format-your-message-using-markdown#latex">LaTeX/math blocks</a>,
+                    <a href="/help/create-a-poll">polls</a>,
+                    <a href="/help/format-your-message-using-markdown#global-times">global times</a>,
+                    and <a  href="/help/format-your-message-using-markdown">much more</a>.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>EMOJI AND EMOJI REACTIONS</h3>
+                <p>Have fun expressing yourself with emoji!</p>
+            </div>
+            <div class="feature-block">
+                <h3>INLINE IMAGE, VIDEO, AND TWEET PREVIEWS</h3>
+                <p>Send a link and we’ll automatically generate a
+                preview; click the preview to see it at full scale.</p>
+            </div>
+            <div class="feature-block">
+                <h3>DRAG-AND-DROP FILE UPLOADS</h3>
+                <p>
+                    Drag a file into the compose box and we’ll upload
+                    and preview it for you. Sharing and discussing
+                    work with team mates has never been easier.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>CODE BLOCKS</h3>
+                <p>
+                    Discuss code with ease using Markdown code blocks,
+                    syntax highlighting, and
+                    <a href="/help/code-blocks#code-playgrounds">code playgrounds</a>.
+                </p>
+            </div>
+            <div class="feature-block">
+                <h3>CUSTOMIZABLE AUTOMATIC LINKIFICATION</h3>
+                <p>
+                    Customize Zulip’s markup to automatically link back
+                    to your issue tracker or GitHub when you type
+                    “#1235” or a commit ID.
+                </p>
+            </div>
+        </div>
+        <img class="image" src="/static/images/landing-page/features/message-formatting.png" alt="" />
+    </section>
+
+    <section class="notifications">
+        <svg class="envelope" height="500" width="100" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <polygon points="0,0 100,0 50,50" style="fill: #fafafa;" />
+        </svg>
+        <h2>Highly configurable notifications.</h2>
+
+        <div class="center">
+            <div class="image-block"></div>
+            <div class="feature-list">
+                <h3>@-mentions</h3>
+                <h3>Stream-wide announcements</h3>
+                <h3>Desktop notifications</h3>
+                <h3>Audible notifications</h3>
+                <h3>Emails for important missed messages</h3>
+                <h3>Alert words</h3>
+                <h3>Optional weekly digest emails</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="keyboard-shortcuts">
+        <img class="overflow-wave" src="/static/images/landing-page/features/wave.png" alt="" />
+        <div class="feature-block">
+            <h3>Keyboard shortcuts.</h3>
+            <p>Communicate as efficiently as you use your favorite
+                text editor.  Anything you can do with a mouse, you
+                can do even faster from the keyboard.
+                <a class="cta" href="/help/keyboard-shortcuts" target="_blank" rel="noopener noreferrer">
+                    Learn more about keyboard shortcuts.</a>
+            </p>
+        </div>
+        <img class="image" src="/static/images/landing-page/features/love-keyboard-shortcuts.svg" alt="" />
+    </section>
+
+    <section>
+        <h2>Apps, integrations, and API.</h2>
+
+        <a class="feature-block" href="/integrations" target="_blank" rel="noopener noreferrer">
+            <h3>INTEGRATIONS</h3>
+            <p>
+                Get alerts and updates from your favorite services with
+                off-the-shelf integrations for Trac, Nagios, GitHub,
+                Jenkins, and more.
+            </p>
+        </a>
+        <a class="feature-block" href="/api" target="_blank" rel="noopener noreferrer">
+            <h3>API</h3>
+            <p>
+                Rolling your own integrations—both sending and receiving—is a
+                snap with our simple RESTful API and Python bindings.
+            </p>
+        </a>
+        <a class="feature-block" href="/apps" target="_blank" rel="noopener noreferrer">
+            <h3>MOBILE APPS</h3>
+            <p>Keep up while on the go with Zulip's iOS and Android apps.</p>
+        </a>
+        <a class="feature-block" href="/apps" target="_blank" rel="noopener noreferrer">
+            <h3>DESKTOP APPS</h3>
+            <p>Even better than Zulip on the web, our desktop apps offer native
+                notifications and support for multiple Zulip accounts.</p>
+        </a>
+        <a class="feature-block" href="https://github.com/zulip/zulip-terminal#readme" target="_blank" rel="noopener noreferrer">
+            <h3>TERMINAL APP</h3>
+            <p>Terminal fans will love Zulip's official terminal client.</p>
+        </a>
+        <!--Hack: These 3 pseudo elements are here to ensure the flex
+        arrangement uses the proper cell size with 5 elements in 2 rows.-->
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+    </section>
+
+    <section>
+        <h2>And everything else you need…</h2>
+
+        <a class="feature-block" href="/security" target="_blank" rel="noopener noreferrer">
+            <h3>ENTERPRISE-GRADE SECURITY</h3>
+            <p>
+                Zulip is used by some of the most security-conscious
+                organizations in the world.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/search-for-messages" target="_blank" rel="noopener noreferrer">
+            <h3>POWERFUL FULL-TEXT SEARCH</h3>
+            <p>
+                Search is both snappy and smart, helping you look for
+                text, people, and threads of conversation, with advanced
+                search operators for fine-grained control.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/stream-permissions" target="_blank" rel="noopener noreferrer">
+            <h3>COMPLETE HISTORY</h3>
+            <p>Join a stream and see its history, so even new team
+            members are never out of the loop.</p>
+        </a>
+        <a class="feature-block" href="/help/star-a-message" target="_blank" rel="noopener noreferrer">
+            <h3>STARRED MESSAGES</h3>
+            <p>Keep a todo list of messages to come back to, or keep
+            track of interesting conversations.</p>
+        </a>
+
+        <a class="feature-block" href="/help/analytics" target="_blank" rel="noopener noreferrer">
+            <h3>STATISTICS</h3>
+            <p>Zulip has a powerful set of analytics available to
+            help you see how your organization communicates.</p>
+        </a>
+        <a class="feature-block" href="/help/private-messages" target="_blank" rel="noopener noreferrer">
+            <h3>ONE-ON-ONE AND GROUP PRIVATE CONVERSATIONS</h3>
+            <p>Lightweight private conversations with one or as many people as you need.</p>
+        </a>
+        <a class="feature-block" href="/help/status-and-availability" target="_blank" rel="noopener noreferrer">
+            <h3>TEAM AVAILABILITY</h3>
+            <p>Let others know whether you're around with emoji statuses and availability.</p>
+        </a>
+        <a class="feature-block" href="/help/stream-permissions" target="_blank" rel="noopener noreferrer">
+            <h3>PRIVATE STREAMS</h3>
+            <p>Enjoy the benefits of threaded conversations while
+            controlling your audience and privacy.</p>
+        </a>
+        <a class="feature-block" href="/help/mute-a-user" target="_blank" rel="noopener noreferrer">
+            <h3>MUTE USER</h3>
+            <p>Users can mute anyone they'd rather not interact with.</p>
+        </a>
+        <a class="feature-block" href="/help/edit-or-delete-a-message" target="_blank" rel="noopener noreferrer">
+            <h3>MESSAGE EDITING</h3>
+            <p>Don’t worry, you can always fix that typo, either in
+            the body of message or its topic.</p>
+        </a>
+        <a class="feature-block" href="/help/move-content-to-another-stream" target="_blank" rel="noopener noreferrer">
+            <h3>MOVING MESSAGES</h3>
+            <p>
+                Organize conversations by easily moving messages to the
+                right stream and topic.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/typing-notifications" target="_blank" rel="noopener noreferrer">
+            <h3>TYPING NOTIFICATIONS</h3>
+            <p>Know when other users are composing messages to you.</p>
+        </a>
+        <a class="feature-block" href="/help/view-and-edit-your-message-drafts" target="_blank" rel="noopener noreferrer">
+            <h3>SAVED DRAFTS</h3>
+            <p>Zulip’s drafts make it easy to write longer messages
+            without worrying about losing your work.</p>
+        </a>
+        <a class="feature-block" href="/help/streams-and-topics" target="_blank" rel="noopener noreferrer">
+            <h3>CONVERSATIONS THREADED BY TOPIC</h3>
+            <p>Participate in several conversations with the same
+            group at once, without getting lost or overwhelmed.</p>
+        </a>
+        <a class="feature-block" href="/help/resolve-a-topic" target="_blank" rel="noopener noreferrer">
+            <h3>RESOLVE TOPIC</h3>
+            <p>Mark topics as ✔ completed. A lightweight way to manage support
+                interactions, investigating issues, and more.</p>
+        </a>
+        <a class="feature-block" href="/help/reading-strategies" target="_blank" rel="noopener noreferrer">
+            <h3>CATCH UP IN NO TIME</h3>
+            <p>With topics, hotkeys and snappy performance, usefully
+            reviewing hundreds of messages takes just minutes.</p>
+        </a>
+        <a class="feature-block"
+          href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere"
+          target="_blank" rel="noopener noreferrer">
+            <h3>PERMANENT LINKS</h3>
+            <p>Permanently link to a Zulip conversation or a message in context
+            from your issue tracker, emails, documents, or anywhere else.</p>
+        </a>
+        <a class="feature-block" href="/help/change-your-language" target="_blank" rel="noopener noreferrer">
+            <h3>FULLY INTERNATIONALIZED</h3>
+            <p>The Zulip UI is fully internationalized and has been
+            translated into 23 languages.</p>
+        </a>
+        <a class="feature-block" href="/help/start-a-call" target="_blank" rel="noopener noreferrer">
+            <h3>VIDEO CALLS</h3>
+            <p>
+                Create and join video calls with a single click. Powered
+                by your choice of Zoom, Jitsi Meet, or BigBlueButton.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/configure-authentication-methods" target="_blank" rel="noopener noreferrer">
+            <h3>FLEXIBLE AUTHENTICATION</h3>
+            <p>
+                Supported authentication providers include LDAP, SAML,
+                OIDC, Google, GitHub, GitLab, Apple, and more.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
+            <h3>FLEXIBLE PERMISSIONS</h3>
+            <p>
+                Fine-grained permission settings for administrators and
+                moderators, and custom viewing and posting permissions for
+                streams.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/add-or-remove-users-from-a-stream" target="_blank" rel="noopener noreferrer">
+            <h3>CONVENIENT SUBSCRIPTION MANAGEMENT</h3>
+            <p>
+                Subscribe a group of users to a stream, or copy membership from another stream.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/invite-new-users" target="_blank" rel="noopener noreferrer">
+            <h3>CUSTOMIZABLE INVITATIONS</h3>
+            <p>
+                Configure user role, stream subscriptions and invite expiration
+                time when inviting new users.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/import-from-slack" target="_blank" rel="noopener noreferrer">
+            <h3>DATA IMPORT</h3>
+            <p>
+                Import an existing Slack, Mattermost, Gitter or Rocket.Chat workspace into Zulip.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/add-custom-profile-fields" target="_blank" rel="noopener noreferrer">
+            <h3>CUSTOM PROFILE FIELDS</h3>
+            <p>
+                Use Zulip to store directory information, links to social
+                media profiles, food preferences, or anything else.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
+            <h3>GUESTS</h3>
+            <p>
+                Guests cannot access streams unless they are
+                explicitly added. Perfect for partners, vendors, and
+                temporary contractors.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/create-your-organization-profile" target="_blank" rel="noopener noreferrer">
+            <h3>CUSTOM BRANDING</h3>
+            <p>
+                Use your logo instead of Zulip’s in the desktop and web app.
+            </p>
+        </a>
+        <a class="feature-block" href="https://github.com/42wim/matterbridge#readme" target="_blank" rel="noopener noreferrer">
+            <h3>CHAT BRIDGES</h3>
+            <p>
+                Mirror messages between Zulip and Slack, Microsoft
+                Teams, Discord, Matrix, and other tools.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/moderating-open-organizations" target="_blank" rel="noopener noreferrer">
+            <h3>MODERATION</h3>
+            <p>
+                A full suite of tools for moderating open communities.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/public-access-option" target="_blank" rel="noopener noreferrer">
+            <h3>PUBLIC ACCESS OPTION</h3>
+            <p>
+                Enable transparency by setting streams to be viewable
+                and searchable by anyone on the Internet, without
+                creating an account.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/export-your-organization" target="_blank" rel="noopener noreferrer">
+            <h3>DATA EXPORTS</h3>
+            <p>
+                No vendor lock-in. Export your hosted Zulip to an
+                on-premises installation at any time.
+            </p>
+        </a>
+        <a class="feature-block" href="/help/animated-gifs-from-giphy" target="_blank" rel="noopener noreferrer">
+            <h3>GIPHY INTEGRATION</h3>
+            <p>
+                Enjoy animated GIFs with Zulip's native GIPHY
+                integration.
+            </p>
+        </a>
+        <a class="feature-block" href="https://github.com/zulip/zulip/" target="_blank" rel="noopener noreferrer">
+            <h3>YOUR FEATURE HERE</h3>
+            <p>Zulip is open source, so if something important for
+            your use case is missing, you can make it happen!</p>
+        </a>
+        <!--Hack: These two pseudo elements are here to ensure the flex
+        arrangement uses the proper cell size with 4 elements in 2 rows.-->
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+        <div class="feature-block"></div>
+    </section>
+</div>
+{% endblock %}

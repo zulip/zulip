@@ -1,0 +1,24 @@
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+binary_next_line = true  # for shfmt
+switch_case_indent = true  # for shfmt
+
+[{*.{js,json,ts},check-openapi}]
+max_line_length = 100
+
+[*.{py,pyi}]
+max_line_length = 110
+
+[*.{md,svg,rb,pp,yaml,yml}]
+indent_size = 2
+
+[package.json]
+indent_size = 2

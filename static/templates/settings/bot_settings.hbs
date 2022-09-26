@@ -1,0 +1,36 @@
+<div id="bot-settings" class="settings-section" data-name="your-bots">
+    <div class="bot-settings-form">
+        {{#unless page_params.is_guest}}
+        <div class="tip">
+            {{#tr}}
+                Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?
+                {{#*inline "z-integrations"}}<a href="/integrations" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-api"}}<a href="/api" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </div>
+        <div class="tip bot-settings-tip"></div>
+        <div>
+            <button class="button rounded sea-green add-a-new-bot {{#unless can_create_new_bots}}hide{{/unless}}">{{t "Add a new bot" }}</button>
+        </div>
+        <div>
+            <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+            <a type="submit" download="{{botserverrc}}" id= "download_botserverrc" class="btn" title="{{t 'Download botserverrc' }}">
+                <i class="fa fa-download sea-green" aria-hidden="true"></i>
+            </a>
+        </div>
+        {{/unless}}
+
+        <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
+            <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
+            <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
+        </ul>
+
+        <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
+        </ol>
+
+        <ol class="bots_list required-text" id="inactive_bots_list" data-empty="{{t 'You have no inactive bots.' }}">
+        </ol>
+
+        <div id="bot_table_error" class="alert alert-error hide"></div>
+    </div>
+</div>

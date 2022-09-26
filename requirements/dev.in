@@ -1,0 +1,80 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt.
+# See requirements/README.md for more detail.
+-r pip.in
+-r prod.in
+-r docs.in
+
+# moto s3 mock
+moto[s3]
+
+# Needed for running tools/run-dev.py
+Twisted
+
+# Needed for documentation links test
+Scrapy
+
+# Needed to compute test coverage
+coverage<6.4.3  # undiagnosed bug
+
+# fake for LDAP testing
+fakeldap
+
+# For testing mock http requests
+responses
+
+# For sorting imports
+isort
+
+# For doing highly usable Python profiling
+line-profiler
+
+# for pep8 linter
+pycodestyle
+
+# Python reformatter
+black
+
+# Needed to run pyflakes linter
+pyflakes
+
+# Needed for watching file changes
+pyinotify
+
+# Needed to run tests in parallel
+tblib
+
+# For linting Git commit messages
+gitlint-core
+
+# Needed for visualising cProfile reports
+snakeviz
+
+# Needed for creating DigitalOcean droplets
+python-digitalocean
+
+# Needed for updating the locked pip dependencies
+pip-tools<6.3.0  # https://github.com/jazzband/pip-tools/pull/1455 breaks our hack for installing specific commits from Git
+
+# zulip's linting framework - zulint
+https://github.com/zulip/zulint/archive/34adbc13d54ebeb4291c8f91483f946fce18a160.zip#egg=zulint==0.0.1
+
+-r mypy.in
+
+# Needed for using integration logo svg files as bot avatars
+cairosvg
+
+# Needed for tools/check-thirdparty
+python-debian<0.1.45  # https://salsa.debian.org/python-debian-team/python-debian/-/merge_requests/106
+
+# Pattern-based lint tool
+semgrep
+
+# Contains Pysa, a security-focused static analyzer
+pyre-check
+
+# For sorting versions when uploading releases
+natsort
+
+# For spell check linter
+codespell

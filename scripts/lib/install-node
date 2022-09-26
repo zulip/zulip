@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+version=16.17.0
+arch="$(uname -m)"
+
+case $arch in
+    x86_64)
+        tarball="node-v$version-linux-x64.tar.xz"
+        sha256=f0867d7a17a4d0df7dbb7df9ac3f9126c2b58f75450647146749ef296b31b49b
+        ;;
+
+    aarch64)
+        tarball="node-v$version-linux-arm64.tar.xz"
+        sha256=a43100595e7960b9e8364bff5641e0956a9929feee2759e70cbb396a1d827b7c
+        ;;
+esac
+
+check_version() {
+    out="$(node --version)" && [ "$out" = "v$version" ]
+}
+
+if ! check_version; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl_opts=(-fLO)
+    if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
+        curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
+    fi
+    curl "${curl_opts[@]}" "https://nodejs.org/dist/v$version/$tarball"
+    sha256sum -c <<<"$sha256 $tarball"
+    rm -rf /srv/zulip-node
+    mkdir -p /srv/zulip-node
+    tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
+    ln -sf /srv/zulip-node/bin/{node,npm,npx} /usr/local/bin
+    rm -rf /usr/local/nvm
+    check_version
+fi

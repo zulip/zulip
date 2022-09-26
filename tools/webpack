@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import subprocess
+from typing import NoReturn
+
+os.chdir(os.path.join(os.path.dirname(__file__), ".."))
+
+
+def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
+    """Builds for production, writing the output to disk"""
+
+    webpack_args = ["node"]
+    with open("/proc/meminfo") as meminfo:
+        if int(next(meminfo).split()[1]) < 3 * 1024 * 1024:
+            webpack_args += ["--max-old-space-size=1536"]
+    webpack_args += ["node_modules/.bin/webpack-cli", "--mode=production"]
+    if quiet:
+        webpack_args += ["--stats=errors-only"]
+    os.execvp(webpack_args[0], webpack_args)
+
+
+def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check: bool) -> None:
+    """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
+
+    # This is our most dynamic configuration, which we use for our
+    # dev server.  The key piece here is that we identify changes to
+    # files as devs make edits and serve new assets on the fly.
+    webpack_args = ["node", "node_modules/.bin/webpack-cli", "serve"]
+    webpack_args += [
+        # webpack-cli has a bug where it ignores --watch-poll with
+        # multi-config, and we don't need the katex-cli part anyway.
+        "--config-name=frontend",
+        f"--host={host}",
+        f"--port={port}",
+        # We add the hot flag using the cli because it takes care
+        # of addition to entry points and adding the plugin
+        # automatically
+        "--hot",
+    ]
+    if minify:
+        webpack_args.append("--env=minimize")
+    if disable_host_check:
+        webpack_args.append("--allowed-hosts=all")
+    else:
+        webpack_args.append("--allowed-hosts=" + ",".join([host, ".zulipdev.com", ".zulipdev.org"]))
+
+    # Tell webpack-dev-server to fall back to periodic polling on
+    # filesystems where inotify is known to be broken.
+    cwd = os.getcwd()
+    inotify_broken = False
+    with open("/proc/self/mounts") as mounts:
+        for line in mounts:
+            fields = line.split()
+            if fields[1] == cwd:
+                inotify_broken = fields[2] in ["nfs", "vboxsf", "prl_fs"]
+    if inotify_broken:
+        os.environ["CHOKIDAR_USEPOLLING"] = "1"
+        os.environ["CHOKIDAR_INTERVAL"] = "1000"
+
+    # TODO: This process should also fall back to periodic polling if
+    # inotify_broken.
+    import pyinotify
+
+    try:
+        webpack_process = subprocess.Popen(webpack_args)
+
+        class WebpackConfigFileChangeHandler(pyinotify.ProcessEvent):
+            def process_default(self, event: pyinotify.Event) -> None:
+                nonlocal webpack_process
+                print("Restarting webpack-dev-server due to config changes...")
+                webpack_process.terminate()
+                webpack_process.wait()
+                webpack_process = subprocess.Popen(webpack_args)
+
+        watch_manager = pyinotify.WatchManager()
+        event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
+        # We did a chdir to the root of the Zulip checkout above.
+        for filepath in [
+            "webpack.config.ts",
+            "tools/webpack.assets.json",
+            "tools/webpack.dev-assets.json",
+        ]:
+            watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
+        event_notifier.loop()
+    finally:
+        webpack_process.terminate()
+        webpack_process.wait()
+
+
+def build_for_most_tests() -> None:
+    """Generates a stub asset stat file for django so backend test can render a page"""
+
+    # Tests like test-backend, test-api, and test-home-documentation use
+    # our "test" configuration.  The one exception is Puppeteer, which uses
+    # our production configuration.
+    #
+    # It's not completely clear why we don't also use the same
+    # configuration for ALL tests, but figuring out the full history here
+    # was out of the scope of the effort here to add some comments and
+    # clean up names.
+    with open("tools/webpack.assets.json") as json_data:
+        entries = json.load(json_data)
+
+    with open("tools/webpack.dev-assets.json") as json_data:
+        entries.update(json.load(json_data))
+
+    stat_data = {
+        "status": "done",
+        "chunks": {entry: [f"{entry}-stubentry.js"] for entry in entries},
+    }
+    directory = "var"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(os.path.join(directory, "webpack-stats-test.json"), "w") as outfile:
+        json.dump(stat_data, outfile)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--test",
+    action="store_true",
+    help="generate a stub webpack-stats.json file (for backend testing)",
+)
+parser.add_argument("--quiet", action="store_true", help="Minimizes webpack output while running")
+parser.add_argument(
+    "--watch", action="store_true", help="watch for changes to source files (for development)"
+)
+parser.add_argument(
+    "--host", default="127.0.0.1", help="set the host for the webpack server to run on"
+)
+parser.add_argument("--port", default="9994", help="set the port for the webpack server to run on")
+parser.add_argument(
+    "--minify", action="store_true", help="Minify and optimize the assets (for development)"
+)
+parser.add_argument(
+    "--disable-host-check", action="store_true", help="Disable host check for webpack-dev-server"
+)
+
+args = parser.parse_args()
+if "PUPPETEER_TESTS" in os.environ:
+    build_for_prod_or_puppeteer(args.quiet)
+elif args.test:
+    build_for_most_tests()
+elif args.watch:
+    build_for_dev_server(args.host, args.port, args.minify, args.disable_host_check)
+else:
+    build_for_prod_or_puppeteer(args.quiet)

@@ -1,0 +1,16 @@
+{
+    "id":"5c182454-1f6d-4c08-8d41-dfa5409386a2",
+    "changed_at":"2018-12-17T22:33:56.768Z",
+    "primary_id":25,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":25,
+            "entity_type":"story",
+            "action":"delete",
+            "story_type":"feature",
+            "name":"New random story"
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+access_log /var/log/nginx/access.log combined_with_host_and_time;
+error_log /var/log/nginx/error.log;
+
+include /etc/nginx/zulip-include/headers;
+
+# Serve a custom error page when the app is down
+error_page 502 503 504 /static/webpack-bundles/5xx.html;
+
+# Serve static files directly
+location /static/ {
+    alias /home/zulip/prod-static/;
+    include /etc/nginx/zulip-include/headers;
+    add_header Access-Control-Allow-Origin *;
+
+    # Set a nonexistent path, so we just serve the nice Django 404 page.
+    error_page 404 /django_static_404.html;
+
+    # These files are hashed and thus immutable; cache them aggressively.
+    # Django adds 12 hex digits; Webpack adds 20.
+    location ~ '\.[0-9a-f]{12}\.|[./][0-9a-f]{20}\.' {
+        include /etc/nginx/zulip-include/headers;
+        add_header Access-Control-Allow-Origin *;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+}
+
+# Send longpoll requests to Tornado
+location /json/events {
+    proxy_pass $tornado_server;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+}
+
+# Send longpoll requests to Tornado
+location /api/v1/events {
+    include /etc/nginx/zulip-include/api_headers;
+
+    if ($request_method = 'OPTIONS') {
+        return 204;
+    }
+
+    proxy_pass $tornado_server;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+}
+
+# Send everything else to Django via uWSGI
+location / {
+    include uwsgi_params;
+}
+
+# These Django routes not under /api are shared between mobile and
+# web, and thus need API headers added.  We can't easily collapse
+# these blocks with the /api block, because regular expressions take
+# priority over paths in nginx's order-of-operations, and we don't
+# want to override the tornado configuration for /api/v1/events.
+location /thumbnail {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+}
+location /avatar {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+}
+location /user_uploads {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+}
+
+# Send all API routes not covered above to Django via uWSGI
+location /api/ {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+}
+
+include /etc/nginx/zulip-include/app.d/*.conf;

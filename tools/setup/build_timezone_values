@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+
+if sys.version_info < (3, 9):
+    from backports import zoneinfo
+else:
+    import zoneinfo
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+sys.path.insert(0, ZULIP_PATH)
+
+from zerver.lib.timezone import get_canonical_timezone_map
+
+OUT_PATH = os.path.join(ZULIP_PATH, "static", "generated", "timezones.json")
+
+with open(OUT_PATH, "w") as f:
+    json.dump(
+        {
+            "timezones": sorted(
+                zoneinfo.available_timezones()
+                - {"Factory", "localtime"}
+                - set(get_canonical_timezone_map())
+            )
+        },
+        f,
+    )

@@ -1,0 +1,722 @@
+/* Reusable, object-oriented CSS base components for the Zulip web app
+   (not included in the portico CSS) */
+
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide {
+    display: none;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid hsl(0, 0%, 80%);
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: hsl(0, 0%, 98%);
+    color: hsl(0, 0%, 20%);
+    margin: 0.25em 0.1em;
+    padding: 0.1em 0.4em;
+    text-shadow: 0 1px 0 hsl(0, 0%, 100%);
+    /* Prevent selection */
+    user-select: none;
+}
+
+@media (width < $sm_min) {
+    .hide-sm {
+        display: none !important;
+    }
+
+    .show-sm {
+        display: block !important;
+    }
+}
+
+@media (width < $lg_min) {
+    .hide-lg {
+        display: none !important;
+    }
+
+    .show-lg {
+        display: block !important;
+    }
+}
+
+.light {
+    font-weight: 300;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.display-block {
+    display: block !important;
+}
+
+.box-shadow {
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+}
+
+.clear-float {
+    clear: both;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.order-1 {
+    order: 1;
+}
+
+.order-2 {
+    order: 2;
+}
+
+.order-3 {
+    order: 3;
+}
+
+/*
+Consistent placeholder styling, introduced to allow us to style the
+Reply box like a placeholder.  Chrome uses color to set placeholder,
+while Firefox uses opacity, so we need to set both properties to avoid
+mixed styling.
+
+While we usually prefer opacity for text color in Zulip, there's some
+evidence Edge may have bugs in its handling of placeholder opacity
+CSS: https://github.com/necolas/normalize.css/issues/741
+*/
+.placeholder {
+    color: hsl(0, 0%, 45%);
+    opacity: 1;
+}
+
+textarea::placeholder,
+input::placeholder {
+    @extend .placeholder;
+}
+
+.new-style {
+    /* -- base button styling -- */
+    .button {
+        padding: 7px 14px;
+        margin: 0;
+        min-width: 130px;
+
+        font-weight: 400;
+        line-height: normal;
+        text-align: center;
+
+        background-color: hsl(0, 0%, 100%);
+        color: inherit;
+        outline: none;
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 2px;
+
+        box-shadow: none;
+
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        /* -- button style variations -- */
+        &.no-style {
+            padding: 0;
+            background-color: transparent;
+            border: none;
+            min-width: 0;
+            width: auto;
+            outline: none;
+            box-shadow: none !important;
+        }
+
+        &.rounded {
+            border-radius: 4px;
+        }
+
+        &.green {
+            background-color: hsl(150, 31%, 53%);
+        }
+
+        &.grey {
+            background-color: hsl(0, 0%, 67%);
+        }
+
+        &.small {
+            font-size: 0.8rem;
+            min-width: inherit;
+            padding: 6px 10px;
+        }
+
+        &:hover,
+        &:focus {
+            border-color: hsl(0, 0%, 60%);
+        }
+
+        &:active {
+            border-color: hsl(0, 0%, 60%);
+            color: inherit;
+            background-color: hsl(0, 0%, 95%);
+        }
+
+        &.sea-green {
+            color: hsl(156, 41%, 40%);
+            border-color: hsl(156, 28%, 70%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(156, 30%, 50%);
+            }
+
+            &:active {
+                border-color: hsl(156, 30%, 40%);
+                color: hsl(156, 44%, 43%);
+                background-color: hsl(154, 33%, 96%);
+            }
+        }
+
+        &.btn-warning {
+            color: hsl(35, 70%, 56%);
+            border-color: hsl(35, 98%, 84%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(35, 55%, 70%);
+            }
+
+            &:active {
+                color: hsl(35, 82%, 40%);
+                border-color: hsl(35, 55%, 70%);
+                background-color: hsl(33, 48%, 96%);
+            }
+        }
+
+        &.btn-danger {
+            color: hsl(357, 64%, 72%);
+            border-color: hsl(4, 56%, 82%);
+
+            &:hover,
+            &:focus {
+                border-color: hsl(2, 46%, 68%);
+            }
+
+            &:active {
+                color: hsl(357, 55%, 63%);
+                border-color: hsl(2, 46%, 68%);
+                background-color: hsl(7, 82%, 98%);
+            }
+        }
+
+        &.btn-link {
+            color: hsl(208, 56%, 53%);
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                color: hsl(208, 56%, 38%);
+            }
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            filter: saturate(0);
+            background-color: hsl(0, 0%, 93%);
+            color: hsl(0, 3%, 52%);
+
+            &:hover {
+                background-color: hsl(0, 0%, 93%);
+                color: hsl(156, 39%, 54%);
+                border-color: hsl(156, 39%, 77%);
+            }
+        }
+    }
+
+    /* -- tab switcher -- */
+
+    .tab-switcher {
+        font-weight: initial;
+        margin: 2px 4px;
+        display: inline-block;
+
+        .ind-tab {
+            display: inline-block;
+            width: 90px;
+            margin: 0 -0.5px;
+            text-align: center;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
+            padding: 3px 10px;
+            background-color: hsl(0, 0%, 100%);
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+
+            &:focus {
+                outline: none;
+            }
+
+            &:not(.selected) {
+                border: 1px solid hsl(0, 0%, 80%);
+            }
+
+            &.first {
+                border-radius: 5px 0 0 5px;
+                border-right: 1px solid transparent;
+            }
+
+            &.middle {
+                border-right: 1px solid transparent;
+            }
+
+            &.last {
+                border-radius: 0 5px 5px 0;
+            }
+
+            &.selected {
+                position: relative;
+                background-color: hsl(0, 0%, 53%);
+                color: hsl(0, 0%, 100%);
+                border: 1px solid hsl(0, 0%, 47%);
+                z-index: 2;
+            }
+
+            &.disabled {
+                pointer-events: none;
+                color: hsl(0, 0%, 80%);
+                border-color: hsl(0, 0%, 87%);
+            }
+        }
+
+        &.large .ind-tab {
+            width: 100%;
+        }
+
+        &.allow-overflow {
+            display: flex;
+
+            .ind-tab {
+                display: flex;
+                text-overflow: initial;
+                white-space: initial;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    .stream_sorter_toggle {
+        margin-left: auto;
+    }
+}
+
+/* -- unified overlay design component -- */
+div.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: hsla(0, 0%, 13%, 0.8);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+
+    transition: all 0.2s ease-in;
+    overflow: hidden;
+
+    .overlay-content {
+        transform: translateY(20px);
+        transition: transform 0.2s ease-in;
+        z-index: 102;
+    }
+
+    &.show {
+        opacity: 1;
+        pointer-events: all;
+        visibility: visible;
+        transition: opacity 0.2s ease-out;
+
+        .overlay-content {
+            transform: translateY(0);
+            transition-timing-function: ease-out;
+        }
+    }
+}
+
+.input-append {
+    font-size: 90%;
+    letter-spacing: -0.3em;
+    display: block;
+}
+
+.input-append input[type="text"],
+.new-style input[type="text"] {
+    border-radius: 5px;
+    box-shadow: none;
+    margin: 0;
+}
+
+.clear_search_button {
+    &:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    &:disabled {
+        visibility: hidden;
+    }
+
+    &,
+    &:focus,
+    &:active,
+    &:disabled:hover {
+        position: relative;
+        right: 20px;
+        background: none;
+        border: none;
+        text-align: center;
+        padding-top: 8px;
+        padding-left: 4px;
+        color: hsl(0, 0%, 80%);
+        text-shadow: none;
+        outline: none !important;
+        box-shadow: none;
+        z-index: 5;
+
+        #set_user_status_modal & {
+            margin-left: -26px;
+            right: 0;
+            padding-top: 6px;
+        }
+    }
+}
+
+.grey-box {
+    margin: 0;
+    padding: 5px 10px;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 87%);
+    border-radius: 4px;
+
+    list-style-type: none;
+}
+
+.white-box {
+    background-color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 87%);
+}
+
+.guest-avatar {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: " ";
+        background-color: hsl(0, 0%, 47%);
+        position: absolute;
+        bottom: -30%;
+        right: -30%;
+        width: 50%;
+        height: 50%;
+        transform: rotate(45deg);
+    }
+}
+
+@media (width < $md_min) {
+    /* Override Bootstrap's responsive grid to display input at full width */
+    .input-append .stream-list-filter {
+        /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 34px);
+        margin-left: 10px;
+    }
+
+    .input-append .topic-list-filter {
+        /* Input width = 100% - 11px margin x2 - 6px padding x2 - 1px border x2. */
+        width: calc(100% - 36px);
+        margin-left: 11px;
+        margin-bottom: 5px;
+    }
+}
+
+.topic-list-filter {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+
+    input {
+        padding-right: 20px;
+    }
+}
+
+.stream-selection-header-colorblock {
+    /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
+    box-shadow: inset 0 2px 1px -2px hsl(0, 0%, 20%),
+        inset 2px 0 1px -2px hsl(0, 0%, 20%),
+        inset 0 -2px 1px -2px hsl(0, 0%, 20%);
+    width: 10px;
+    border-radius: 3px 0 0 3px;
+    border-bottom: 0;
+}
+
+.stream_header_colorblock {
+    @extend .stream-selection-header-colorblock;
+    margin-bottom: 5px;
+    z-index: 1;
+}
+
+.edit-controls .fa-angle-right,
+.topic_stream_edit_header .fa-angle-right {
+    font-size: 0.9em;
+    -webkit-text-stroke: 0.05em;
+    position: relative;
+    margin: 0 5px;
+    top: 9px;
+}
+
+/* Standard loading indicators generated by the loading.ts API */
+.loading_indicator_spinner {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    height: 38px;
+    width: 38px;
+    float: left;
+}
+
+.loading_indicator_text {
+    /* If you change these, make sure to adjust the constants in
+       loading.make_indicator as well */
+    margin-left: 5px;
+    font-size: 1.2em;
+    font-weight: 300;
+    line-height: 38px;
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip {
+    width: max-content;
+
+    &::before {
+        content: "\f135";
+    }
+}
+
+.upgrade-tip:hover {
+    color: hsl(0, 0%, 20%);
+    border: 1px solid hsl(49, 20%, 60%);
+    box-shadow: 0 0 4px hsla(199, 79%, 56%, 0.2);
+
+    text-decoration: none;
+}
+
+.upgrade-tip,
+.upgrade-or-sponsorship-tip,
+.tip {
+    position: relative;
+    display: block;
+    background-color: hsl(46, 63%, 95%);
+    border: 1px solid hsl(49, 20%, 84%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(0, 0%, 40%);
+
+    &::before {
+        display: inline;
+        margin-right: 8px;
+
+        font-family: FontAwesome;
+        font-weight: 600;
+    }
+}
+
+.tip::before {
+    content: "\f0a2";
+}
+
+/* We are mostly consistent in how we style
+   unread counts, except for starred messages.
+   This is the common section.
+*/
+.unread_count {
+    float: right;
+    padding: 0 4px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+    border-radius: 4px;
+    background-color: hsl(105, 2%, 50%);
+    color: hsl(0, 0%, 100%);
+}
+
+.unread_mention_info:not(:empty) {
+    margin-right: 5px;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
+/* Implement the web app's default-hidden convention for alert
+   elements.  Portico pages lack this CSS and thus show them by
+   default. */
+.alert {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+
+    &#organization-status {
+        margin: 20px;
+    }
+
+    &.stream_create_info {
+        margin: 10px 10px 0;
+    }
+
+    .bankruptcy_unread_count {
+        font-weight: 600;
+    }
+}
+
+.white_zulip_icon_without_text {
+    display: inline-block;
+    background-image: url("../../static/images/logo/white-zulip-logo-without-text.svg");
+    background-size: cover;
+}
+
+.only-visible-for-spectators {
+    display: none;
+}
+
+.spectator-view {
+    /* Add this class to elements which a
+     * spectator cannot use. */
+    .hidden-for-spectators {
+        display: none !important;
+    }
+
+    .only-visible-for-spectators {
+        display: revert;
+    }
+}
+
+.animated-purple-button {
+    color: hsl(0, 0%, 100%);
+    transition: all 80ms linear;
+    box-shadow: none;
+    /* This color just passes WCAG AA */
+    background-color: hsl(240, 96%, 68%);
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    text-align: center;
+    white-space: nowrap;
+
+    &:hover {
+        /* This color passes WCAG AAA */
+        background-color: hsl(240, 41%, 50%);
+        box-shadow: 0 1px 4px hsl(0, 0%, 0%, 0.3);
+    }
+
+    &:focus {
+        background-color: hsl(240, 41%, 50%);
+        box-shadow: 0 1px 4px 0 hsl(235, 18%, 7%);
+        outline: none;
+    }
+}
+
+.color_animated_button {
+    display: flex;
+    justify-content: center;
+    background-color: hsl(0, 0%, 90%);
+    color: hsl(0, 0%, 0%);
+    border-radius: 4px;
+
+    span {
+        color: hsl(0, 0%, 0%);
+    }
+
+    &:hover {
+        cursor: pointer;
+        background-color: hsl(240, 96%, 68%);
+        color: hsl(0, 0%, 100%);
+
+        span {
+            color: hsl(0, 0%, 100%);
+            transition: all 0.2s ease;
+        }
+
+        transition: all 0.2s ease;
+    }
+
+    * {
+        padding: 6px 3px;
+    }
+
+    .fa {
+        position: relative;
+        top: 3px;
+    }
+}
+
+.table-striped {
+    table-layout: auto;
+    border-collapse: separate;
+
+    thead th {
+        color: inherit;
+        background-color: hsl(0, 0%, 100%);
+        border-top: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2) !important;
+
+        &.active::after,
+        &[data-sort]:hover::after {
+            content: " \f0d8";
+            white-space: pre;
+            display: inline-block;
+            position: absolute;
+            padding-top: 3px;
+            font: normal normal normal 12px/1 FontAwesome;
+            font-size: inherit;
+        }
+
+        &.active {
+            opacity: 1;
+            transition: opacity 100ms ease-out;
+
+            &.descend::after {
+                content: " \f0d7";
+            }
+        }
+
+        &[data-sort]:hover {
+            cursor: pointer;
+            background-color: hsla(0, 0%, 95%) !important;
+            transition: background-color 100ms ease-in-out;
+
+            &:not(.active)::after {
+                opacity: 0.3;
+            }
+        }
+    }
+
+    /* Force the actions column to use the minimum space necessary */
+    .actions {
+        width: 1%;
+        white-space: nowrap;
+    }
+}

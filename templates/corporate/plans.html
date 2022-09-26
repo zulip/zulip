@@ -1,0 +1,60 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Plans and pricing | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Choose between Zulip Cloud Free and Zulip Cloud
+  Standard, or self-host our open-source software for free. Support contracts
+  available." %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/gradients.html' %}
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing plans">
+    <div class="main">
+        {% include "corporate/pricing_model.html" %}
+        <div class="plans_top_faq plans_faq_questions">
+            <p>
+                You can <a href="https://zulip.com/help/zulip-cloud-or-self-hosting">move
+                    freely</a> between <a href="/plans/">Zulip Cloud</a>
+                hosting and your own servers with our high quality <a
+                    href="/help/export-your-organization">export</a> and
+                <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html">import
+                </a> tools.
+            </p>
+            <p>
+                Questions? See our <a href="/help/zulip-cloud-billing">billing help page</a> for
+                additional details, or contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>.
+            </p>
+        </div>
+    </div>
+
+    <div class="discounts-section">
+        <header>
+            <h1>Special Zulip Cloud Standard pricing</h1>
+        </header>
+        <div class="register-buttons">
+            <a href="/for/open-source" class="register-now button">Open source <p>Free</p></a>
+            <a href="/for/education" class="register-now button">Education <p>85%+ OFF</p></a>
+            <a href="/for/research" class="register-now button">Research <p>Free</p></a>
+            <a href="/for/events" class="register-now button">Academic conferences<p>Free</p></a>
+            <a href="/for/communities" class="register-now button">Non-profits and communities <p>85%+ OFF</p></a>
+        </div>
+    </div>
+    <div class="plans_faq_questions">
+        <p>
+            Zulip sponsors free Zulip Cloud Standard for hundreds of worthy
+            organizations. Request sponsorship from your organization's
+            <a href="{{ sponsorship_url }}">billing page</a>.
+        </p>
+    </div>
+    <br />
+    {% include "corporate/compare.html" %}
+</div>
+{% endblock %}

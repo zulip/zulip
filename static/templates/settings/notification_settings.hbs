@@ -1,0 +1,168 @@
+<form class="notification-settings-form">
+    <div class="general_notifications {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header inline-block">
+            <h3>{{t "Notification triggers" }}</h3>
+            {{> settings_save_discard_widget section_name="general-notifiy-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+        <p>{{t "Configure how Zulip notifies you about new messages." }}</p>
+        <table class="notification-table table table-condensed table-bordered wrapped-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" width="30%"></th>
+                    <th colspan="2" width="28%">{{t "Desktop"}}</th>
+                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
+                        {{t "Mobile"}}
+                        {{#if (not realm_push_notifications_enabled) }}
+                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
+                        {{/if}}
+                    </th>
+                    <th rowspan="2" width="14%">{{t "Email"}}</th>
+                    <th rowspan="2" width="14%">@all
+                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                    </th>
+                </tr>
+                <tr>
+                    <th>{{t "Visual"}}</th>
+                    <th>{{t "Audio"}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each general_settings}}
+                    <tr>
+                        <td>{{ this.label }}</td>
+                        {{#each this.notification_settings}}
+                            {{> notification_settings_checkboxes
+                              setting_name=this.setting_name
+                              is_checked=this.is_checked
+                              is_disabled=this.is_disabled
+                              prefix=../../prefix }}
+                        {{/each}}
+                    </tr>
+                {{/each}}
+            </tbody>
+            {{#unless for_realm_settings}}
+            <tbody id="stream-specific-notify-table">
+                {{> ../settings/stream_specific_notification_row }}
+            </tbody>
+            {{/unless}}
+        </table>
+    </div>
+
+    <div class="desktop_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+
+        <div class="subsection-header inline-block">
+            <h3>{{t "Desktop message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        {{#unless for_realm_settings}}
+        <p><a class="send_test_notification">{{t "Test desktop notification" }}</a></p>
+        {{/unless}}
+
+        {{#each notification_settings.desktop_notification_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              prefix=../prefix}}
+        {{/each}}
+
+        <label for="notification_sound">
+            {{t "Notification sound" }}
+        </label>
+
+        <div class="input-group {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+            <select name="notification_sound" class="setting_notification_sound prop-element" data-setting-widget-type="string"
+              {{#unless enable_sound_select}}
+              disabled
+              {{/unless}}>
+                <option value="none">{{t "None" }}</option>
+                {{#each settings_object.available_notification_sounds}}
+                    <option value="{{ this }}">{{ this }}</option>
+                {{/each}}
+            </select>
+            <span class="play_notification_sound">
+                <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
+            </span>
+        </div>
+
+        <div class="input-group">
+            <label for="desktop_icon_count_display" class="dropdown-title">{{ settings_label.desktop_icon_count_display }}</label>
+            <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element"
+              data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
+            </select>
+        </div>
+    </div>
+
+    <div class="mobile_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+
+        <div class="subsection-header inline-block">
+            <h3>{{t "Mobile message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        {{#each notification_settings.mobile_notification_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              show_push_notifications_tooltip=(lookup ../show_push_notifications_tooltip this)
+              prefix=../prefix}}
+        {{/each}}
+    </div>
+
+    <div class="email_message_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+
+        <div class="subsection-header inline-block">
+            <h3>{{t "Email message notifications" }}</h3>
+            {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
+        <div class="input-group form-horizontal time-limit-setting">
+
+            <label for="email_notifications_batching_period">
+                {{t "Delay before sending message notification emails" }}
+            </label>
+            <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element" data-setting-widget-type="time-limit">
+                {{#each email_notifications_batching_period_values}}
+                    <option value="{{ this.value }}">{{ this.description }}</option>
+                {{/each}}
+            </select>
+            <div class="dependent-block">
+                <label for="email_notification_batching_period_edit_minutes" class="inline-block">
+                    {{t 'Delay period (minutes)' }}:
+                </label>
+                <input type="text"
+                  name="email_notification_batching_period_edit_minutes"
+                  class="email_notification_batching_period_edit_minutes admin-realm-time-limit-input"
+                  data-setting-widget-type="time-limit"
+                  autocomplete="off"
+                  id="{{prefix}}email_notification_batching_period_edit_minutes"/>
+            </div>
+        </div>
+
+        {{#each notification_settings.email_message_notification_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              prefix=../prefix}}
+        {{/each}}
+    </div>
+
+    <div class="other_email_notifications m-10 {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+
+        <div class="subsection-header inline-block">
+            <h3>{{t "Other emails" }}</h3>
+            {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+        {{#each notification_settings.other_email_settings}}
+            {{> settings_checkbox
+              setting_name=this
+              is_checked=(lookup ../settings_object this)
+              label=(lookup ../settings_label this)
+              prefix=../prefix}}
+        {{/each}}
+    </div>
+</form>

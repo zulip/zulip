@@ -1,0 +1,32 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Error") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_class_name %}error{% endblock %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/errors/400art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    {% if status_code == 405 %}
+                    <h1 class="lead">{{ _("Method not allowed (405)") }}</h1>
+                    {% else %}
+                    <h1 class="lead">{{ _("Page not found (404)") }}</h1>
+                    {% endif %}
+                    <p>
+                        {% trans %}
+                        If this error is unexpected, you can
+                        <a href="mailto:{{ support_email }}">contact support</a>.
+                        {% endtrans %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+# After editing this file, you MUST afterward run
+# /tools/update-locked-requirements to update requirements/dev.txt.
+# See requirements/README.md for more detail.
+mypy
+
+boto3-stubs[s3,ses,sns,sqs]
+lxml-stubs
+SQLAlchemy[mypy]
+types-beautifulsoup4
+types-boto
+types-certifi
+types-chardet
+types-commonmark
+types-dataclasses
+types-decorator
+types-jsonschema
+types-Markdown
+types-oauthlib
+types-polib
+types-pika
+types-Pillow
+types-psycopg2
+types-Pygments
+types-python-dateutil
+types-PyYAML
+types-redis
+types-requests
+types-six
+types-stripe
+types-zxcvbn
+
+importlib-metadata ; python_version < "3.10"  # for SQLAlchemy

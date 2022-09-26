@@ -1,0 +1,42 @@
+<div class="hide" id="stream-creation" tabindex="-1" role="dialog"
+  aria-label="{{t 'Stream creation' }}">
+    <form id="stream_creation_form">
+        <div class="alert stream_create_info"></div>
+        <div id="stream_creating_indicator"></div>
+        <div class="stream-creation-body">
+            <section class="block">
+                <label for="create_stream_name">
+                    {{t "Stream name" }}
+                </label>
+                <input type="text" name="stream_name" id="create_stream_name"
+                  placeholder="{{t 'Stream name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
+                <div id="stream_name_error" class="stream_creation_error"></div>
+            </section>
+            <section class="block">
+                <label for="create_stream_description">
+                    {{t "Stream description" }}
+                </label>
+                <input type="text" name="stream_description" id="create_stream_description"
+                  placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
+            </section>
+            <section class="block" id="make-invite-only">
+                <div class="stream-types">
+                    {{> stream_types
+                      stream_post_policy=stream_post_policy_values.everyone.code
+                      is_stream_edit=false }}
+                </div>
+            </section>
+            <section class="block">
+                <label for="people_to_add">
+                    <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
+                </label>
+                <div id="stream_subscription_error" class="stream_creation_error"></div>
+                <div class="controls" id="people_to_add"></div>
+            </section>
+        </div>
+        <div class="modal-footer">
+            <button class="button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+            <button class="finalize_create_stream button small sea-green rounded" type="submit">{{t "Create" }}</button>
+        </div>
+    </form>
+</div>

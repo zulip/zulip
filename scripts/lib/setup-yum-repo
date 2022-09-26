@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+is_prod=false
+args="$(getopt -o '' --long prod -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --prod)
+            is_prod=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+is_centos=false
+is_rhel=false
+if [ -e /etc/centos-release ]; then
+    is_centos=true
+    yum install -y epel-release
+
+    if [ "$is_prod" = true ]; then
+        # IUS is needed for installing python36u-mod_wsgi on prod env
+        yum localinstall -y https://centos7.iuscommunity.org/ius-release.rpm
+    fi
+
+elif grep -q "Red Hat" /etc/redhat-release; then
+    is_rhel=true
+    yum localinstall -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+fi
+
+yum update -y
+
+# "Development Tools" is the equivalent of build-essential
+yum groupinstall -y "Development Tools"
+
+RHVER="$(rpm -qf --queryformat="%{VERSION}" /etc/redhat-release)"
+RHARCH="$(rpm -qf --queryformat="%{ARCH}" /etc/redhat-release)"
+PGVER=10
+if [ "$is_centos" = true ]; then
+    # PostgreSQL $PGVER
+    yum localinstall -y "https://yum.postgresql.org/$PGVER/redhat/rhel-$RHVER-$RHARCH/pgdg-redhat-repo-latest.noarch.rpm"
+
+    # PGroonga
+    # https://pgroonga.github.io/install/centos.html
+    yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
+elif [ "$is_rhel" = true ]; then
+    yum localinstall -y https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-latest-x86_64/pgdg-redhat10-10-2.noarch.rpm
+    yum localinstall -y https://packages.groonga.org/centos/groonga-release-latest.noarch.rpm
+else
+    # TODO make the postgres version a variable.
+    PGVER=13
+    dnf install -y "https://download.postgresql.org/pub/repos/yum/reporpms/F-$RHVER-x86_64/pgdg-fedora-repo-latest.noarch.rpm"
+fi

@@ -1,0 +1,169 @@
+.widget-choices {
+    ul {
+        padding: 3px;
+    }
+
+    li {
+        padding: 2px;
+        list-style: none;
+    }
+
+    button {
+        font-weight: 700;
+        color: hsl(240, 100%, 50%);
+    }
+
+    .widget-choices-heading {
+        font-weight: 600;
+    }
+}
+
+.todo-widget {
+    /* For the box-shadow to be visible on the left */
+    input.add-task,
+    input.add-desc {
+        margin-left: 2px;
+    }
+
+    /* Arrange that a multi-line description line wraps properly. */
+    label.checkbox {
+        display: flex;
+    }
+}
+
+.todo-widget,
+.poll-widget {
+    h4 {
+        font-size: 18px;
+        font-weight: 600;
+
+        /* for example in help `?` widget */
+        &.reduced-font-size {
+            font-size: 16px;
+        }
+    }
+
+    li {
+        list-style: none;
+        margin: 2px 2px 6px 0;
+    }
+
+    ul {
+        margin: 0 0 5px;
+        padding: 0;
+    }
+}
+
+.poll-widget {
+    /* For the box-shadow to be visible on the left */
+    input.poll-option {
+        margin-left: 2px;
+    }
+
+    .poll-option {
+        font-weight: 600;
+        font-size: 12pt;
+    }
+
+    .poll-vote {
+        color: hsl(156, 41%, 40%);
+        border-color: hsl(156, 28%, 70%);
+        border-style: solid;
+        border-radius: 3px;
+        margin-right: 4px;
+        padding-left: 2px; /* padding for Chromium browsers */
+        padding-right: 2px;
+        min-width: 28px;
+        background-color: hsl(0, 0%, 100%);
+
+        &:hover {
+            border-color: hsl(156, 30%, 50%);
+        }
+
+        &:focus {
+            outline: 0;
+            background-color: hsl(156, 41%, 90%);
+        }
+    }
+
+    .poll-names {
+        color: hsl(0, 0%, 45%);
+        padding-left: 4px;
+        font-size: 10pt;
+    }
+}
+
+button {
+    &.task {
+        height: 20px;
+        width: 20px;
+        background-color: transparent;
+        border-color: hsl(156, 28%, 70%);
+        margin-right: 4px;
+        border-radius: 3px;
+
+        &:hover {
+            border: 1px solid hsl(194, 60%, 40%);
+        }
+    }
+
+    &.add-task,
+    &.add-desc,
+    &.poll-option,
+    &.poll-question {
+        border-radius: 3px;
+        border: 1px solid hsl(0, 0%, 80%);
+        background-color: hsl(0, 0%, 100%);
+
+        &:hover {
+            border-color: hsl(0, 0%, 60%);
+        }
+    }
+}
+
+input,
+button {
+    &.add-task,
+    &.add-desc,
+    &.poll-option,
+    &.poll-question {
+        padding: 4px 6px;
+        margin: 2px 0;
+    }
+}
+
+.widget-error {
+    color: hsl(1, 45%, 50%);
+    font-size: 12px;
+}
+
+.poll-question-check,
+.poll-question-remove {
+    width: 28px !important;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid hsl(0, 0%, 80%);
+    background-color: hsl(0, 0%, 100%);
+
+    &:hover {
+        border-color: hsl(0, 0%, 60%);
+    }
+}
+
+.poll-edit-question {
+    opacity: 0.4;
+    display: inline-block;
+    margin-left: 5px;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.poll-question-header {
+    display: inline;
+}
+
+.current-user-vote {
+    background-color: hsla(156, 10%, 90%, 0.9);
+}

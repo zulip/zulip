@@ -1,0 +1,8 @@
+<div class="method_row" data-method="{{method}}">
+    {{> settings_checkbox
+      setting_name="realm_authentication_methods"
+      prefix=prefix
+      is_checked=enabled
+      label=method
+      is_disabled=(not is_owner) }}
+</div>

@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "*": ["static/js/types/*"],
+        },
+        "types": [],
+
+        /* TypeScript 3.4 added the --incremental flag but its API is not
+         * currently public so ts-loader cannot use it yet.
+         * Tracking issue: https://github.com/microsoft/TypeScript/issues/29978
+         */
+        // "incremental": true,
+
+        /* Basic options */
+        "noEmit": true,
+        "target": "ES2020",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "sourceMap": true,
+
+        /* Strict type-checking */
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "noImplicitOverride": true,
+
+        /* Additional checks */
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+    },
+    "exclude": [
+        /* Type stubs are not part of the top-level project. */
+        "static/js/types",
+
+        /* Skip walking large generated directories. */
+        "docs/_build",
+        "static/webpack-bundles",
+        "var",
+        "zulip-py3-venv",
+
+        /* Even though allowJs defaults to false, typescript-eslint forces it to true. */
+        "**/*.js",
+    ],
+}

@@ -1,0 +1,88 @@
+<div id="invite-user" class="overlay flex new-style" tabindex="-1" role="dialog" data-overlay="invite"
+  aria-labelledby="invite-user-label" aria-hidden="true">
+    <div class="overlay-content modal-bg">
+        <div class="modal-header">
+            <button type="button" class="exit" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
+            <h3 id="invite-user-label">{{t "Invite users to Zulip" }}</h3>
+        </div>
+        <form id="invite_user_form" class="form-horizontal">{{ csrf_input }}
+            <div class="modal-body" data-simplebar data-simplebar-auto-hide="false">
+                <div class="alert" id="invite_status"></div>
+                {{#if development_environment}}
+                <div class="alert" id="dev_env_msg"></div>
+                {{/if}}
+                <div class="input-group">
+                    <label for="invitee_emails">{{t "Emails (one on each line or comma-separated)" }}</label>
+                    <div>
+                        <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{t 'One or more email addresses...' }}"></textarea>
+                        {{#if is_admin}}
+                        <div id="invite-method-choice">
+                            {{t "or" }} <a role="button" tabindex="0" id="generate_multiuse_invite_button">{{t "Generate invite link" }}</a>
+                        </div>
+                        <div id="multiuse_radio_section">
+                            <label class="checkbox display-block" for="generate_multiuse_invite_radio">
+                                <input type="checkbox" name="generate_multiuse_invite_radio" id="generate_multiuse_invite_radio"/>
+                                <span></span>
+                                {{t "Generate invite link" }}
+                            </label>
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="expires_in">{{t "Invitation expires after" }}</label>
+                    <div>
+                        <select id="expires_in">
+                            {{#each expires_in_options}}
+                                <option {{#if this.default }}selected{{/if}} name="expires_in" value="{{this.value}}">{{this.description}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <p id="expires_on"></p>
+                    <div id="custom-invite-expiration-time" class="dependent-block">
+                        <label for="expires_in">{{t "Custom time" }}</label>
+                        <input type="text" autocomplete="off" name="custom-expiration-time" id="custom-expiration-time-input" class="custom-expiration-time inline-block" value="{{time_input}}" maxlength="3"/>
+                        <select class="custom-expiration-time" id="custom-expiration-time-unit">
+                            {{#each time_choices}}
+                                <option name="custom_time_choice" class="custom_time_choice" value="{{this}}">{{this}}</option>
+                            {{/each}}
+                        </select>
+                        <p id="custom_expires_on"></p>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="invite_as">{{t "User(s) join as" }}
+                        <a href="/help/roles-and-permissions" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-question-circle-o" aria-hidden="true"></i>
+                        </a>
+                    </label>
+                    <div>
+                        <select id="invite_as">
+                            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+                            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+                            {{#if is_admin}}
+                            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
+                            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
+                            {{/if}}
+                            {{#if is_owner}}
+                            <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Organization owners" }}</option>
+                            {{/if}}
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label>{{t "Streams they should join" }}</label>
+                    <div id="streams_to_add"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="button exit small rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+                <button id="submit-invitation" class="button small rounded sea-green" type="button"
+                  data-loading-text="{{t 'Inviting...' }}">
+                    {{t "Invite" }}
+                </button>
+                <div class="alert" id="multiuse_invite_status"></div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,14 @@
+.gitignore
+.gitattributes
+static/assets
+corporate/
+static/
+tools/
+zilencer/
+templates/corporate
+templates/zilencer
+puppet/zulip_ops
+zproject/dev_settings.py
+zproject/test_settings.py
+zerver/tests
+frontend_tests

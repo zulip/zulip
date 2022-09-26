@@ -1,0 +1,15 @@
+{% extends "zerver/portico.html" %}
+
+{% block content %}
+<div class="portico-container help">
+    <div class="portico-wrap">
+        {% include 'zerver/portico-header.html' %}
+        <div class="app portico-page">
+            <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+                {% block portico_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

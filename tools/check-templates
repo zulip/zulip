@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+import argparse
+import logging
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from typing import Dict, Iterable, List
+
+from zulint import lister
+
+from tools.lib.html_branches import build_id_dict
+from tools.lib.pretty_print import validate_indent_html
+from tools.lib.template_parser import validate
+
+EXCLUDED_FILES = [
+    ## Test data Files for testing modules in tests
+    "tools/tests/test_template_data",
+    # Our parser doesn't handle the way its conditionals are layered
+    "templates/zerver/emails/missed_message.source.html",
+    # Previously unchecked and our parser doesn't like its indentation
+    "static/assets/icons/template.hbs",
+    # Template checker recommends very hard to read indentation.
+    "static/templates/bookend.hbs",
+    # The parser does not like the indentation of custom ReadTheDocs templates
+    "docs/_templates/layout.html",
+]
+
+
+def check_our_files(modified_only: bool, all_dups: bool, fix: bool, targets: List[str]) -> None:
+    by_lang = lister.list_files(
+        targets=targets,
+        modified_only=modified_only,
+        ftypes=["hbs", "html"],
+        group_by_ftype=True,
+        exclude=EXCLUDED_FILES,
+    )
+
+    check_handlebars_templates(by_lang["hbs"], fix)
+    check_html_templates(by_lang["html"], all_dups, fix)
+
+
+def check_html_templates(templates: Iterable[str], all_dups: bool, fix: bool) -> None:
+    # Our files with .html extensions are usually for Django, but we also
+    # have a few static .html files.
+    logging.basicConfig(format="%(levelname)s:%(message)s")
+    templates = sorted(fn for fn in templates)
+    # Use of lodash templates <%= %>.
+    if "templates/corporate/team.html" in templates:
+        templates.remove("templates/corporate/team.html")
+
+    def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
+        template_id_dict = build_id_dict(templates)
+        # TODO: Clean up these cases of duplicate ids in the code
+        IGNORE_IDS = [
+            "errors",
+            "email",
+            "registration",
+            "pw_strength",
+            "id_password",
+            "top_navbar",
+            "id_email",
+            "id_terms",
+            "logout_form",
+            "send_confirm",
+            "charged_amount",
+            "change-plan-status",
+        ]
+        bad_ids_dict = {
+            ids: fns
+            for ids, fns in template_id_dict.items()
+            if (ids not in IGNORE_IDS) and len(fns) > 1
+        }
+
+        if all_dups:
+            ignorable_ids_dict = {
+                ids: fns
+                for ids, fns in template_id_dict.items()
+                if ids in IGNORE_IDS and len(fns) > 1
+            }
+
+            for ids, fns in ignorable_ids_dict.items():
+                logging.warning("Duplicate ID(s) detected: ID %r present at following files:", ids)
+                for fn in fns:
+                    print(fn)
+
+        for ids, fns in bad_ids_dict.items():
+            logging.error("Duplicate ID(s) detected: ID %r present at following files:", ids)
+            for fn in fns:
+                print(fn)
+        return bad_ids_dict
+
+    bad_ids_list = list(check_for_duplicate_ids(templates).keys())
+
+    if bad_ids_list:
+        print("Exiting--please clean up all duplicates before running this again.")
+        sys.exit(1)
+
+    for fn in templates:
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
+            sys.exit(1)
+
+
+def check_handlebars_templates(templates: Iterable[str], fix: bool) -> None:
+    # Check all our Handlebars templates.
+    templates = [fn for fn in templates if fn.endswith(".hbs")]
+
+    for fn in templates:
+        tokens = validate(fn)
+        if not validate_indent_html(fn, tokens, fix):
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--modified", action="store_true", help="only check modified files")
+    parser.add_argument(
+        "--all-dups",
+        action="store_true",
+        help="Run lint tool to detect duplicate ids on ignored files as well",
+    )
+    parser.add_argument(
+        "--fix", action="store_true", help="Automatically fix indentation problems."
+    )
+    parser.add_argument("targets", nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+    check_our_files(args.modified, args.all_dups, args.fix, args.targets)

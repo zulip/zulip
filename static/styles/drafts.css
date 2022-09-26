@@ -1,0 +1,155 @@
+.drafts-container {
+    position: relative;
+    height: 95%;
+    background-color: hsl(0, 0%, 100%);
+    border-radius: 4px;
+    padding: 0;
+    width: 58%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
+    display: flex;
+    flex-direction: column;
+
+    @media (width < $md_min) {
+        height: 95%;
+        max-width: none;
+        width: 90%;
+    }
+
+    .drafts-header {
+        padding-top: 4px;
+        padding-bottom: 8px;
+        text-align: center;
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+
+        h1 {
+            margin: 0;
+            font-size: 1.1em;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 400;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+
+            .exit-sign {
+                position: relative;
+                top: 1px;
+                margin-left: 3px;
+                font-size: 1.5rem;
+                line-height: 1;
+                font-weight: 600;
+                cursor: pointer;
+            }
+        }
+    }
+
+    .drafts-list {
+        padding: 10px 25px;
+        overflow: auto;
+
+        .no-drafts {
+            display: block;
+            margin-top: calc(45vh - 30px - 1.5em);
+            text-align: center;
+            font-size: 1.5em;
+            color: hsl(0, 0%, 67%);
+            pointer-events: none;
+        }
+
+        .removed-drafts {
+            display: block;
+            text-align: center;
+            font-size: 1em;
+            color: hsl(0, 0%, 67%);
+            pointer-events: none;
+        }
+
+        h2 {
+            font-size: 1.1em;
+            line-height: normal;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+.draft-row {
+    padding: 5px 0;
+
+    > div {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .draft-info-box {
+        width: 100%;
+        border: 1px solid hsl(0, 0%, 88%);
+        margin-bottom: 10px;
+
+        &.active {
+            outline: 2px solid hsl(215, 47%, 50%);
+            /* this offset ensures no gap between the blue box and the draft in active state */
+            outline-offset: -1px;
+        }
+
+        .message_row {
+            border: 0;
+        }
+
+        .messagebox-content {
+            padding: 4px 10px 1px;
+        }
+
+        .messagebox {
+            cursor: auto;
+            box-shadow: none;
+        }
+
+        .message_content {
+            line-height: 1;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-right: 10px;
+            margin-left: 0;
+        }
+
+        .draft_controls {
+            display: inline-block;
+            padding-top: 10px;
+            float: right;
+            font-size: 0.9em;
+
+            [data-tippy-root] {
+                width: max-content;
+                word-wrap: unset;
+            }
+
+            .restore-draft {
+                cursor: pointer;
+                margin-right: 5px;
+                color: hsl(170, 48%, 54%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
+            .delete-draft {
+                cursor: pointer;
+                margin-left: 5px;
+                color: hsl(357, 52%, 57%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+<% if @nginx_http_only -%>
+<% else -%>
+server {
+    listen 80;
+    listen [::]:80;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+<% end -%>
+
+include /etc/nginx/zulip-include/upstreams;
+include /etc/zulip/nginx_sharding_map.conf;
+
+server {
+<% if @nginx_http_only -%>
+    listen <%= @nginx_listen_port %>;
+    listen [::]:<%= @nginx_listen_port %>;
+<% else -%>
+    listen <%= @nginx_listen_port %> ssl http2;
+    listen [::]:<%= @nginx_listen_port %> ssl http2;
+
+    ssl_certificate <%= @ssl_dir %>/certs/zulip.combined-chain.crt;
+    ssl_certificate_key <%= @ssl_dir %>/private/zulip.key;
+<% end -%>
+
+    location /local-static {
+        alias /home/zulip/local-static;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+    include /etc/nginx/zulip-include/app;
+}

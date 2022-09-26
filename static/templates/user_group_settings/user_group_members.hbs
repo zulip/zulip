@@ -1,0 +1,34 @@
+<div class="member_list_settings_container">
+    <h4 class="user_group_setting_subsection_title">
+        {{t "Add members" }}
+    </h4>
+    <div class="member_list_settings">
+        <div class="member_list_add float-left">
+            {{> ../stream_settings/add_subscribers_form}}
+            <div class="user_group_subscription_request_result"></div>
+        </div>
+        <div class="clear-float"></div>
+    </div>
+    <div>
+        <h4 class="inline-block user_group_setting_subsection_title">{{t "Members"}}</h4>
+        <span class="member-search float-right">
+            <input type="text" class="search" placeholder="{{t 'Filter subscribers' }}" />
+        </span>
+    </div>
+    <div class="member-list-box">
+        <div class="member_list_container" data-simplebar>
+            <div class="member_list_loading_indicator"></div>
+            <table class="member-list table table-striped">
+                <thead class="table-sticky-headers">
+                    <th>{{t "Name" }}</th>
+                    <th>{{t "Email" }}</th>
+                    <th>{{t "User ID" }}</th>
+                    {{#if can_edit}}
+                    <th class="actions">{{t "Actions" }}</th>
+                    {{/if}}
+                </thead>
+                <tbody class="member_table"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

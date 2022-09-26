@@ -1,0 +1,280 @@
+{
+    "env": {
+        "es2020": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:no-jquery/recommended",
+        "plugin:no-jquery/deprecated",
+        "plugin:unicorn/recommended",
+        "prettier"
+    ],
+    "parser": "@babel/eslint-parser",
+    "parserOptions": {
+        "warnOnUnsupportedTypeScriptVersion": false,
+        "sourceType": "unambiguous"
+    },
+    "plugins": ["formatjs", "no-jquery"],
+    "settings": {
+        "formatjs": {
+            "additionalFunctionNames": ["$t", "$t_html"]
+        },
+        "no-jquery": {
+            "collectionReturningPlugins": {
+                "expectOne": "always"
+            },
+            "variablePattern": "^\\$(?!t$|t_html$)."
+        }
+    },
+    "reportUnusedDisableDirectives": true,
+    "rules": {
+        "array-callback-return": "error",
+        "arrow-body-style": "error",
+        "block-scoped-var": "error",
+        "consistent-return": "error",
+        "curly": "error",
+        "dot-notation": "error",
+        "eqeqeq": "error",
+        "formatjs/enforce-default-message": ["error", "literal"],
+        "formatjs/enforce-placeholders": [
+            "error",
+            {"ignoreList": ["b", "code", "em", "i", "kbd", "p", "strong"]}
+        ],
+        "formatjs/no-id": "error",
+        "guard-for-in": "error",
+        "import/extensions": "error",
+        "import/first": "error",
+        "import/newline-after-import": "error",
+        "import/no-self-import": "error",
+        "import/no-useless-path-segments": "error",
+        "import/order": [
+            "error",
+            {
+                "alphabetize": {"order": "asc"},
+                "newlines-between": "always"
+            }
+        ],
+        "import/unambiguous": "error",
+        "lines-around-directive": "error",
+        "new-cap": "error",
+        "no-alert": "error",
+        "no-array-constructor": "error",
+        "no-bitwise": "error",
+        "no-caller": "error",
+        "no-catch-shadow": "error",
+        "no-constant-condition": ["error", {"checkLoops": false}],
+        "no-div-regex": "error",
+        "no-duplicate-imports": "error",
+        "no-else-return": "error",
+        "no-eq-null": "error",
+        "no-eval": "error",
+        "no-implicit-coercion": "error",
+        "no-implied-eval": "error",
+        "no-inner-declarations": "off",
+        "no-iterator": "error",
+        "no-jquery/no-constructor-attributes": "error",
+        "no-jquery/no-parse-html-literal": "error",
+        "no-label-var": "error",
+        "no-labels": "error",
+        "no-loop-func": "error",
+        "no-multi-str": "error",
+        "no-native-reassign": "error",
+        "no-new-func": "error",
+        "no-new-object": "error",
+        "no-new-wrappers": "error",
+        "no-octal-escape": "error",
+        "no-plusplus": "error",
+        "no-proto": "error",
+        "no-return-assign": "error",
+        "no-script-url": "error",
+        "no-self-compare": "error",
+        "no-sync": "error",
+        "no-throw-literal": "error",
+        "no-undef-init": "error",
+        "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
+        "no-unused-expressions": "error",
+        "no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+        "no-use-before-define": ["error", {"functions": false}],
+        "no-useless-concat": "error",
+        "no-useless-constructor": "error",
+        "no-var": "error",
+        "object-shorthand": "error",
+        "one-var": ["error", "never"],
+        "prefer-arrow-callback": "error",
+        "prefer-const": [
+            "error",
+            {
+                "ignoreReadBeforeAssign": true
+            }
+        ],
+        "radix": "error",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
+        "spaced-comment": ["error", "always", {"markers": ["/"]}],
+        "strict": "error",
+        "unicorn/consistent-function-scoping": "off",
+        "unicorn/explicit-length-check": "off",
+        "unicorn/filename-case": "off",
+        "unicorn/no-await-expression-member": "off",
+        "unicorn/no-nested-ternary": "off",
+        "unicorn/no-null": "off",
+        "unicorn/no-process-exit": "off",
+        "unicorn/no-useless-undefined": "off",
+        "unicorn/number-literal-case": "off",
+        "unicorn/numeric-separators-style": "off",
+        "unicorn/prefer-module": "off",
+        "unicorn/prefer-node-protocol": "off",
+        "unicorn/prefer-spread": "off",
+        "unicorn/prefer-ternary": "off",
+        "unicorn/prefer-top-level-await": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "valid-typeof": ["error", {"requireStringLiterals": true}],
+        "yoda": "error"
+    },
+    "overrides": [
+        {
+            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**"],
+            "rules": {
+                "no-jquery/no-selector-prop": "off"
+            }
+        },
+        {
+            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "globals": {
+                "zulip_test": false
+            }
+        },
+        {
+            "files": ["static/js/**"],
+            "globals": {
+                "StripeCheckout": false
+            }
+        },
+        {
+            "files": ["**/*.ts"],
+            "extends": [
+                "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "plugin:import/typescript"
+            ],
+            "parserOptions": {
+                "project": "tsconfig.json"
+            },
+            "settings": {
+                "import/resolver": {
+                    "node": {
+                        "extensions": [".ts", ".d.ts", ".js"] // https://github.com/import-js/eslint-plugin-import/issues/2267
+                    }
+                }
+            },
+            "globals": {
+                "JQuery": false
+            },
+            "rules": {
+                // Disable base rule to avoid conflict
+                "no-duplicate-imports": "off",
+                "no-unused-vars": "off",
+                "no-useless-constructor": "off",
+                "no-use-before-define": "off",
+
+                "@typescript-eslint/array-type": "error",
+                "@typescript-eslint/consistent-type-assertions": "error",
+                "@typescript-eslint/consistent-type-imports": "error",
+                "@typescript-eslint/explicit-function-return-type": [
+                    "error",
+                    {"allowExpressions": true}
+                ],
+                "@typescript-eslint/member-ordering": "error",
+                "@typescript-eslint/no-duplicate-imports": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "@typescript-eslint/no-extraneous-class": "error",
+                "@typescript-eslint/no-non-null-assertion": "off",
+                "@typescript-eslint/no-parameter-properties": "error",
+                "@typescript-eslint/no-unnecessary-qualifier": "error",
+                "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+                "@typescript-eslint/no-unsafe-argument": "off",
+                "@typescript-eslint/no-unsafe-assignment": "off",
+                "@typescript-eslint/no-unsafe-call": "off",
+                "@typescript-eslint/no-unsafe-member-access": "off",
+                "@typescript-eslint/no-unsafe-return": "off",
+                "@typescript-eslint/no-use-before-define": "error",
+                "@typescript-eslint/no-useless-constructor": "error",
+                "@typescript-eslint/prefer-includes": "error",
+                "@typescript-eslint/prefer-string-starts-ends-with": "error",
+                "@typescript-eslint/promise-function-async": "error",
+                "@typescript-eslint/unified-signatures": "error",
+                "no-undef": "error"
+            }
+        },
+        {
+            "files": ["**/*.d.ts"],
+            "rules": {
+                "import/unambiguous": "off"
+            }
+        },
+        {
+            "files": ["frontend_tests/**"],
+            "globals": {
+                "CSS": false,
+                "document": false,
+                "navigator": false,
+                "window": false
+            },
+            "rules": {
+                "formatjs/no-id": "off",
+                "new-cap": "off",
+                "no-sync": "off",
+                "unicorn/prefer-prototype-methods": "off"
+            }
+        },
+        {
+            "files": ["tools/debug-require.js"],
+            "env": {
+                "browser": true,
+                "es2020": false
+            },
+            "rules": {
+                // Don’t require ES features that PhantomJS doesn’t support
+                // TODO: Toggle these settings now that we don't use PhantomJS
+                "no-var": "off",
+                "object-shorthand": "off",
+                "prefer-arrow-callback": "off"
+            }
+        },
+        {
+            "files": ["static/**"],
+            "env": {
+                "browser": true,
+                "node": false
+            },
+            "rules": {
+                "no-console": "error"
+            },
+            "settings": {
+                "import/resolver": "webpack"
+            }
+        },
+        {
+            "files": ["static/shared/**"],
+            "env": {
+                "browser": false,
+                "shared-node-browser": true
+            },
+            "rules": {
+                "import/no-restricted-paths": [
+                    "error",
+                    {
+                        "zones": [
+                            {
+                                "target": "./static/shared",
+                                "from": ".",
+                                "except": ["./node_modules", "./static/shared"]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

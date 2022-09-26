@@ -1,0 +1,278 @@
+{
+    "messages":[
+        {
+            "event":"incident.assign",
+            "log_entries":[
+                {
+                    "id":"R6XNGC35VF6U1TUSVIE2DWXD4Z",
+                    "type":"assign_log_entry",
+                    "summary":"Assigned to Wiley Jacobson by Laura Haley",
+                    "self":"https://api.pagerduty.com/log_entries/R6XNGC35VF6U1TUSVIE2DWXD4Z",
+                    "html_url":null,
+                    "created_at":"2017-09-26T15:16:05Z",
+                    "agent":{
+                        "id":"P553OPV",
+                        "type":"user_reference",
+                        "summary":"Laura Haley",
+                        "self":"https://api.pagerduty.com/users/P553OPV",
+                        "html_url":"https://webdemo.pagerduty.com/users/P553OPV"
+                    },
+                    "channel":{
+                        "type":"website"
+                    },
+                    "service":{
+                        "id":"PN49J75",
+                        "type":"service_reference",
+                        "summary":"Production XDB Cluster",
+                        "self":"https://api.pagerduty.com/services/PN49J75",
+                        "html_url":"https://webdemo.pagerduty.com/services/PN49J75"
+                    },
+                    "incident":{
+                        "id":"PRORDTY",
+                        "type":"incident_reference",
+                        "summary":"[#33] My new incident",
+                        "self":"https://api.pagerduty.com/incidents/PRORDTY",
+                        "html_url":"https://webdemo.pagerduty.com/incidents/PRORDTY"
+                    },
+                    "teams":[
+                        {
+                            "id":"P4SI59S",
+                            "type":"team_reference",
+                            "summary":"Engineering",
+                            "self":"https://api.pagerduty.com/teams/P4SI59S",
+                            "html_url":"https://webdemo.pagerduty.com/teams/P4SI59S"
+                        }
+                    ],
+                    "contexts":[
+
+                    ],
+                    "assignees":[
+                        {
+                            "id":"PFBSJ2Z",
+                            "type":"user_reference",
+                            "summary":"Wiley Jacobson",
+                            "self":"https://api.pagerduty.com/users/PFBSJ2Z",
+                            "html_url":"https://webdemo.pagerduty.com/users/PFBSJ2Z"
+                        }
+                    ]
+                }
+            ],
+            "webhook":{
+                "endpoint_url":"https://requestb.in/18ao6fs1",
+                "name":"V2 wabhook",
+                "description":null,
+                "webhook_object":{
+                    "id":"PN49J75",
+                    "type":"service_reference",
+                    "summary":"Production XDB Cluster",
+                    "self":"https://api.pagerduty.com/services/PN49J75",
+                    "html_url":"https://webdemo.pagerduty.com/services/PN49J75"
+                },
+                "config":{
+
+                },
+                "outbound_integration":{
+                    "id":"PJFWPEP",
+                    "type":"outbound_integration_reference",
+                    "summary":"Generic V2 Webhook",
+                    "self":"https://api.pagerduty.com/outbound_integrations/PJFWPEP",
+                    "html_url":null
+                },
+                "accounts_addon":null,
+                "id":"PKT9NNX",
+                "type":"webhook",
+                "summary":"V2 wabhook",
+                "self":"https://api.pagerduty.com/webhooks/PKT9NNX",
+                "html_url":null
+            },
+            "incident":{
+                "incident_number":33,
+                "title":"My new incident",
+                "description":"My new incident",
+                "created_at":"2017-09-26T15:14:36Z",
+                "status":"triggered",
+                "pending_actions":[
+                    {
+                        "type":"resolve",
+                        "at":"2017-09-26T19:14:36Z"
+                    }
+                ],
+                "incident_key":null,
+                "service":{
+                    "id":"PN49J75",
+                    "name":"Production XDB Cluster",
+                    "description":"This service was created during onboarding on July 5, 2017.",
+                    "auto_resolve_timeout":14400,
+                    "acknowledgement_timeout":1800,
+                    "created_at":"2017-07-05T17:33:09Z",
+                    "status":"critical",
+                    "last_incident_timestamp":"2017-09-26T15:14:36Z",
+                    "teams":[
+                        {
+                            "id":"P4SI59S",
+                            "type":"team_reference",
+                            "summary":"Engineering",
+                            "self":"https://api.pagerduty.com/teams/P4SI59S",
+                            "html_url":"https://webdemo.pagerduty.com/teams/P4SI59S"
+                        }
+                    ],
+                    "incident_urgency_rule":{
+                        "type":"constant",
+                        "urgency":"high"
+                    },
+                    "scheduled_actions":[
+
+                    ],
+                    "support_hours":null,
+                    "escalation_policy":{
+                        "id":"PINYWEF",
+                        "type":"escalation_policy_reference",
+                        "summary":"Default",
+                        "self":"https://api.pagerduty.com/escalation_policies/PINYWEF",
+                        "html_url":"https://webdemo.pagerduty.com/escalation_policies/PINYWEF"
+                    },
+                    "addons":[
+
+                    ],
+                    "privilege":null,
+                    "alert_creation":"create_alerts_and_incidents",
+                    "integrations":[
+                        {
+                            "id":"PUAYF96",
+                            "type":"generic_events_api_inbound_integration_reference",
+                            "summary":"API",
+                            "self":"https://api.pagerduty.com/services/PN49J75/integrations/PUAYF96",
+                            "html_url":"https://webdemo.pagerduty.com/services/PN49J75/integrations/PUAYF96"
+                        },
+                        {
+                            "id":"P90GZUH",
+                            "type":"generic_email_inbound_integration_reference",
+                            "summary":"Email",
+                            "self":"https://api.pagerduty.com/services/PN49J75/integrations/P90GZUH",
+                            "html_url":"https://webdemo.pagerduty.com/services/PN49J75/integrations/P90GZUH"
+                        }
+                    ],
+                    "metadata":{
+
+                    },
+                    "type":"service",
+                    "summary":"Production XDB Cluster",
+                    "self":"https://api.pagerduty.com/services/PN49J75",
+                    "html_url":"https://webdemo.pagerduty.com/services/PN49J75"
+                },
+                "assignments":[
+                    {
+                        "at":"2017-09-26T15:16:05Z",
+                        "assignee":{
+                            "id":"PFBSJ2Z",
+                            "type":"user_reference",
+                            "summary":"Wiley Jacobson",
+                            "self":"https://api.pagerduty.com/users/PFBSJ2Z",
+                            "html_url":"https://webdemo.pagerduty.com/users/PFBSJ2Z"
+                        }
+                    }
+                ],
+                "acknowledgements":[
+
+                ],
+                "last_status_change_at":"2017-09-26T15:16:05Z",
+                "last_status_change_by":{
+                    "id":"PN49J75",
+                    "type":"service_reference",
+                    "summary":"Production XDB Cluster",
+                    "self":"https://api.pagerduty.com/services/PN49J75",
+                    "html_url":"https://webdemo.pagerduty.com/services/PN49J75"
+                },
+                "first_trigger_log_entry":{
+                    "id":"R2XGXEI3W0FHMSDXHDIBQGBQ5E",
+                    "type":"trigger_log_entry_reference",
+                    "summary":"Triggered through the website",
+                    "self":"https://api.pagerduty.com/log_entries/R2XGXEI3W0FHMSDXHDIBQGBQ5E",
+                    "html_url":"https://webdemo.pagerduty.com/incidents/PRORDTY/log_entries/R2XGXEI3W0FHMSDXHDIBQGBQ5E"
+                },
+                "escalation_policy":{
+                    "id":"PINYWEF",
+                    "type":"escalation_policy_reference",
+                    "summary":"Default",
+                    "self":"https://api.pagerduty.com/escalation_policies/PINYWEF",
+                    "html_url":"https://webdemo.pagerduty.com/escalation_policies/PINYWEF"
+                },
+                "privilege":null,
+                "teams":[
+                    {
+                        "id":"P4SI59S",
+                        "type":"team_reference",
+                        "summary":"Engineering",
+                        "self":"https://api.pagerduty.com/teams/P4SI59S",
+                        "html_url":"https://webdemo.pagerduty.com/teams/P4SI59S"
+                    }
+                ],
+                "alert_counts":{
+                    "all":0,
+                    "triggered":0,
+                    "resolved":0
+                },
+                "impacted_services":[
+                    {
+                        "id":"PN49J75",
+                        "type":"service_reference",
+                        "summary":"Production XDB Cluster",
+                        "self":"https://api.pagerduty.com/services/PN49J75",
+                        "html_url":"https://webdemo.pagerduty.com/services/PN49J75"
+                    }
+                ],
+                "is_mergeable":true,
+                "basic_alert_grouping":null,
+                "alert_grouping":null,
+                "metadata":{
+
+                },
+                "external_references":[
+                    {
+                        "id":"PLF5V5G",
+                        "type":"incident_external_reference",
+                        "summary":"Slack",
+                        "self":null,
+                        "html_url":null,
+                        "external_id":"1506438878.000302",
+                        "external_url":"http://webdemo.slack.com/archives/C6975FLAZ/p1506438878.000302",
+                        "sync":false,
+                        "webhook":{
+                            "id":"PRXV5AH",
+                            "type":"webhook_reference",
+                            "summary":"Slack M2M",
+                            "self":"https://api.pagerduty.com/webhooks/PRXV5AH",
+                            "html_url":null
+                        }
+                    }
+                ],
+                "importance":null,
+                "incidents_responders":[
+
+                ],
+                "responder_requests":[
+
+                ],
+                "subscriber_requests":[
+
+                ],
+                "urgency":"high",
+                "id":"PRORDTY",
+                "type":"incident",
+                "summary":"[#33] My new incident",
+                "self":"https://api.pagerduty.com/incidents/PRORDTY",
+                "html_url":"https://webdemo.pagerduty.com/incidents/PRORDTY",
+                "alerts":[
+                    {
+                        "alert_key":"c24117fc42e44b44b4d6876190583378"
+                    },
+                    {
+                        "alert_key":"2d6ee0a6b58040f7996a4047ae5edcd7"
+                    }
+                ]
+            },
+            "id":"9e7850d0-a2cd-11e7-8f69-22000affca53",
+            "created_on":"2017-09-26T15:16:05Z"
+        }
+    ]
+}

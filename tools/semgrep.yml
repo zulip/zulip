@@ -1,0 +1,188 @@
+# See https://semgrep.dev/docs/writing-rules/rule-syntax/ for documentation on YAML rule syntax
+
+rules:
+  ####################### PYTHON RULES #######################
+  - id: deprecated-render-usage
+    pattern: django.shortcuts.render_to_response(...)
+    message: "Use render() (from django.shortcuts) instead of render_to_response()"
+    languages: [python]
+    severity: ERROR
+
+  - id: dont-use-stream-objects-filter
+    pattern: Stream.objects.filter(...)
+    message: "Please use access_stream_by_*() to fetch Stream objects"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - zerver/views/
+
+  - id: dont-import-models-in-migrations
+    patterns:
+      - pattern-not: from zerver.lib.redis_utils import get_redis_client
+      - pattern-not: from zerver.models import filter_pattern_validator
+      - pattern-not: from zerver.models import filter_format_validator
+      - pattern-not: from zerver.models import generate_email_token_for_stream
+      - pattern-either:
+          - pattern: from zerver import $X
+          - pattern: from analytics import $X
+          - pattern: from confirmation import $X
+    message: "Don't import models or other code in migrations; see https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html"
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+      exclude:
+        - zerver/migrations/0032_verify_all_medium_avatar_images.py
+        - zerver/migrations/0104_fix_unreads.py
+        - zerver/migrations/0206_stream_rendered_description.py
+        - zerver/migrations/0209_user_profile_no_empty_password.py
+        - zerver/migrations/0260_missed_message_addresses_from_redis_to_db.py
+        - zerver/migrations/0387_reupload_realmemoji_again.py
+        - pgroonga/migrations/0002_html_escape_subject.py
+
+  - id: logging-format
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: $LOGGER.debug($FORMATTED, ...)
+          - pattern: $LOGGER.info($FORMATTED, ...)
+          - pattern: $LOGGER.warning($FORMATTED, ...)
+          - pattern: $LOGGER.error($FORMATTED, ...)
+          - pattern: $LOGGER.critical($FORMATTED, ...)
+          - pattern: $LOGGER.exception($FORMATTED, ...)
+          - pattern: $LOGGER.log($LEVEL, $FORMATTED, ...)
+      - metavariable-pattern:
+          metavariable: $LOGGER
+          patterns:
+            - pattern-either:
+                - pattern: logging
+                - pattern: logger
+      - metavariable-pattern:
+          metavariable: $FORMATTED
+          patterns:
+            - pattern-either:
+                - pattern: ... .format(...)
+                - pattern: f"..."
+    severity: ERROR
+    message: "Pass format arguments to logging (https://docs.python.org/3/howto/logging.html#optimization)"
+
+  - id: sql-format
+    languages: [python]
+    pattern-either:
+      - pattern: ... .execute("...".format(...))
+      - pattern: ... .execute(f"...")
+      - pattern: psycopg2.sql.SQL(... .format(...))
+      - pattern: psycopg2.sql.SQL(f"...")
+      - pattern: django.db.migrations.RunSQL(..., "..." .format(...), ...)
+      - pattern: django.db.migrations.RunSQL(..., f"...", ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., "..." .format(...), ...], ...)
+      - pattern: django.db.migrations.RunSQL(..., [..., f"...", ...], ...)
+    severity: ERROR
+    message: "Do not write a SQL injection vulnerability please"
+
+  - id: translated-format
+    languages: [python]
+    pattern-either:
+      - pattern: django.utils.translation.gettext(... .format(...))
+      - pattern: django.utils.translation.gettext(f"...")
+      - pattern: django.utils.translation.gettext_lazy(... .format(...))
+      - pattern: django.utils.translation.gettext_lazy(f"...")
+    severity: ERROR
+    message: "Format strings after translation, not before"
+
+  - id: translated-format-lazy
+    languages: [python]
+    pattern: django.utils.translation.gettext_lazy(...).format(...)
+    severity: ERROR
+    message: "Immediately formatting a lazily translated string destroys its laziness"
+
+  - id: mutable-default-type
+    languages: [python]
+    pattern-either:
+      - pattern: |
+          def $F(..., $A: typing.List[...] = [...], ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.List[...]] = [...], ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.List[...] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.List[...]] = zerver.lib.request.REQ(..., default=[...], ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Dict[...] = {}, ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Dict[...]] = {}, ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Dict[...] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Dict[...]] = zerver.lib.request.REQ(..., default={}, ...), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Set[...] = set(), ...) -> ...:
+              ...
+      - pattern: |
+          def $F(..., $A: typing.Optional[typing.Set[...]] = set(), ...) -> ...:
+              ...
+    severity: ERROR
+    message: "Guard mutable default with read-only type (Sequence, Mapping, AbstractSet)"
+
+  - id: percent-formatting
+    languages: [python]
+    pattern-either:
+      - pattern: '"..." % ...'
+      - pattern: django.utils.translation.gettext(...) % ...
+      - pattern: django.utils.translation.gettext_lazy(...) % ...
+    severity: ERROR
+    message: "Prefer f-strings or .format for string formatting"
+
+  - id: eval
+    languages: [python]
+    pattern: eval
+    severity: ERROR
+    message: "Do not use eval under any circumstances; consider json.loads instead"
+
+  - id: typing-text
+    languages: [python]
+    pattern: typing.Text
+    severity: ERROR
+    message: "Use str instead of typing.Text"
+
+  - id: change-user-is-active
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $X.is_active = ...
+          - pattern: |
+              setattr($X, 'is_active', ...)
+      - pattern-not-inside: |
+          def change_user_is_active(...):
+            ...
+    message: "Use change_user_is_active to mutate user_profile.is_active"
+    severity: ERROR
+    paths:
+      exclude:
+        - zerver/migrations/0373_fix_deleteduser_dummies.py
+
+  - id: confirmation-object-get
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: Confirmation.objects.get(...)
+          - pattern: Confirmation.objects.filter(..., confirmation_key=..., ...)
+      - pattern-not-inside: |
+          def get_object_from_key(...):
+            ...
+    paths:
+      exclude:
+        - zerver/tests/
+    message: "Do not fetch a Confirmation object directly, use get_object_from_key instead"
+    severity: ERROR
