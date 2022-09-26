@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 149**
+
+* [`POST /register`](/api/register-queue): The `client_gravatar` and
+  `include_subscribers` parameters now return an error for
+  [unauthenticated requests](/help/public-access-option) if an
+  unsupported value is requested by the client.
+
 **Feature level 148**
 
 * [`POST /users/me/status`](/api/update-status):

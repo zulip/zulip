@@ -1396,27 +1396,25 @@ def do_events_register(
         event_types_set = None
 
     if user_profile is None:
-        # TODO: Unify this with the below code path once if/when we
-        # support requesting an event queue for spectators.
-        #
-        # Doing so likely has a prerequisite of making this function's
-        # caller enforce client_gravatar=False,
-        # include_subscribers=False and include_streams=False.
+        # TODO: Unify the two fetch_initial_state_data code paths.
+        assert client_gravatar is False
+        assert include_subscribers is False
+        assert include_streams is False
         ret = fetch_initial_state_data(
             user_profile,
             realm=realm,
             event_types=event_types_set,
             queue_id=None,
             # Force client_gravatar=False for security reasons.
-            client_gravatar=False,
+            client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
-            include_subscribers=False,
+            include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
-            include_streams=False,
+            include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
         )
 
