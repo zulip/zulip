@@ -1,0 +1,456 @@
+#!/usr/bin/env python3
+import argparse
+import glob
+import os
+import pwd
+import subprocess
+import sys
+from typing import Any, Dict, List, Set
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+# Import this after we do the sanity_check so it doesn't crash.
+import orjson
+from zulint.printer import BOLDRED, CYAN, ENDC, GREEN
+
+INDEX_JS = os.path.join(ROOT_DIR, "frontend_tests/zjsunit/index.js")
+NODE_COVERAGE_PATH = os.path.join(ROOT_DIR, "var/node-coverage/coverage-final.json")
+
+# Ideally, we wouldn't need this line, but it seems to be required to
+# avoid problems finding node_modules when running `cd tools; ./test-js-with-node`.
+os.chdir(ROOT_DIR)
+
+USAGE = """
+    tools/test-js-with-node                      - to run all tests
+    tools/test-js-with-node util.js activity.js  - to run just a couple tests
+    tools/test-js-with-node --coverage           - to generate coverage report
+    """
+
+
+def make_set(files: List[str]) -> Set[str]:
+    for i in range(1, len(files)):
+        if files[i - 1] > files[i]:
+            raise Exception(f"Please move {files[i]} so that names are sorted.")
+    return set(files)
+
+
+# We do not yet require 100% line coverage for these files:
+EXEMPT_FILES = make_set(
+    [
+        "frontend_tests/zjsunit/mdiff.js",
+        "static/js/about_zulip.js",
+        "static/js/add_subscribers_pill.js",
+        "static/js/admin.js",
+        "static/js/alert_popup.ts",
+        "static/js/alert_words_ui.js",
+        "static/js/archive.js",
+        "static/js/attachments_ui.js",
+        "static/js/avatar.js",
+        "static/js/billing/event_status.js",
+        "static/js/billing/helpers.js",
+        "static/js/billing/upgrade.js",
+        "static/js/blueslip.ts",
+        "static/js/blueslip_stacktrace.ts",
+        "static/js/click_handlers.js",
+        "static/js/compose.js",
+        "static/js/compose_actions.js",
+        "static/js/compose_closed_ui.js",
+        "static/js/compose_fade.js",
+        "static/js/compose_state.js",
+        "static/js/compose_ui.js",
+        "static/js/compose_validate.js",
+        "static/js/composebox_typeahead.js",
+        "static/js/condense.js",
+        "static/js/confirm_dialog.js",
+        "static/js/copy_and_paste.js",
+        "static/js/csrf.ts",
+        "static/js/css_variables.js",
+        "static/js/dark_theme.js",
+        "static/js/debug.js",
+        "static/js/deprecated_feature_notice.js",
+        "static/js/desktop_integration.js",
+        "static/js/dialog_widget.js",
+        "static/js/drafts.js",
+        "static/js/dropdown_list_widget.js",
+        "static/js/echo.js",
+        "static/js/emoji_picker.js",
+        "static/js/emojisets.js",
+        "static/js/favicon.js",
+        "static/js/feedback_widget.js",
+        "static/js/flatpickr.js",
+        "static/js/floating_recipient_bar.js",
+        "static/js/gear_menu.js",
+        "static/js/giphy.js",
+        "static/js/global.d.ts",
+        "static/js/hash_util.js",
+        "static/js/hashchange.js",
+        "static/js/hbs.d.ts",
+        "static/js/hotkey.js",
+        "static/js/hotspots.js",
+        "static/js/info_overlay.js",
+        "static/js/invite.js",
+        "static/js/lightbox.js",
+        "static/js/list_util.ts",
+        "static/js/loading.ts",
+        "static/js/local_message.js",
+        "static/js/localstorage.js",
+        "static/js/message_edit.js",
+        "static/js/message_edit_history.js",
+        "static/js/message_events.js",
+        "static/js/message_fetch.js",
+        "static/js/message_list.js",
+        "static/js/message_list_data.js",
+        "static/js/message_list_view.js",
+        "static/js/message_lists.js",
+        "static/js/message_live_update.js",
+        "static/js/message_scroll.js",
+        "static/js/message_util.js",
+        "static/js/message_view_header.js",
+        "static/js/message_viewport.js",
+        "static/js/muted_topics_ui.js",
+        "static/js/muted_users_ui.js",
+        "static/js/narrow.js",
+        "static/js/navbar_alerts.js",
+        "static/js/navigate.js",
+        "static/js/notifications.js",
+        "static/js/overlays.js",
+        "static/js/padded_widget.ts",
+        "static/js/page_params.ts",
+        "static/js/pm_list.js",
+        "static/js/pm_list_dom.js",
+        "static/js/poll_widget.js",
+        "static/js/popover_menus.js",
+        "static/js/popovers.js",
+        "static/js/read_receipts.js",
+        "static/js/ready.ts",
+        "static/js/realm_icon.js",
+        "static/js/realm_logo.js",
+        "static/js/realm_playground.js",
+        "static/js/realm_user_settings_defaults.ts",
+        "static/js/recent_topics_ui.js",
+        "static/js/reload.js",
+        "static/js/reminder.js",
+        "static/js/resize.js",
+        "static/js/rows.js",
+        "static/js/scroll_bar.js",
+        "static/js/search_pill_widget.js",
+        "static/js/sent_messages.js",
+        "static/js/server_events.js",
+        "static/js/settings.js",
+        "static/js/settings_account.js",
+        "static/js/settings_bots.js",
+        "static/js/settings_display.js",
+        "static/js/settings_emoji.js",
+        "static/js/settings_exports.js",
+        "static/js/settings_invites.js",
+        "static/js/settings_linkifiers.js",
+        "static/js/settings_muted_topics.js",
+        "static/js/settings_muted_users.js",
+        "static/js/settings_notifications.js",
+        "static/js/settings_org.js",
+        "static/js/settings_panel_menu.js",
+        "static/js/settings_playgrounds.js",
+        "static/js/settings_profile_fields.js",
+        "static/js/settings_realm_domains.js",
+        "static/js/settings_realm_user_settings_defaults.js",
+        "static/js/settings_sections.js",
+        "static/js/settings_streams.js",
+        "static/js/settings_toggle.js",
+        "static/js/settings_ui.js",
+        "static/js/settings_user_groups_legacy.js",
+        "static/js/settings_users.js",
+        "static/js/setup.js",
+        "static/js/spectators.js",
+        "static/js/spoilers.ts",
+        "static/js/starred_messages_ui.js",
+        "static/js/stream_bar.js",
+        "static/js/stream_color.js",
+        "static/js/stream_create.js",
+        "static/js/stream_create_subscribers.js",
+        "static/js/stream_edit.js",
+        "static/js/stream_edit_subscribers.js",
+        "static/js/stream_list.js",
+        "static/js/stream_muting.js",
+        "static/js/stream_popover.js",
+        "static/js/stream_settings_containers.js",
+        "static/js/stream_settings_ui.js",
+        "static/js/stream_ui_updates.js",
+        "static/js/submessage.js",
+        "static/js/subscriber_api.js",
+        "static/js/timerender.ts",
+        "static/js/tippyjs.js",
+        "static/js/todo_widget.js",
+        "static/js/topic_list.js",
+        "static/js/topic_zoom.js",
+        "static/js/tutorial.js",
+        "static/js/types.ts",
+        "static/js/typing.js",
+        "static/js/typing_events.js",
+        "static/js/ui.js",
+        "static/js/ui_init.js",
+        "static/js/ui_report.ts",
+        "static/js/ui_util.ts",
+        "static/js/unread_ops.js",
+        "static/js/unread_ui.js",
+        "static/js/upload_widget.ts",
+        "static/js/user_group_create.js",
+        "static/js/user_group_create_members.js",
+        "static/js/user_group_create_members_data.js",
+        "static/js/user_group_edit.js",
+        "static/js/user_group_edit_members.js",
+        "static/js/user_group_ui_updates.js",
+        "static/js/user_groups_settings_ui.js",
+        "static/js/user_profile.js",
+        "static/js/user_settings.ts",
+        "static/js/user_status.js",
+        "static/js/user_status_ui.js",
+        "static/js/webpack_public_path.js",
+        "static/js/zcommand.js",
+        "static/js/zform.js",
+        "static/js/zulip.js",
+        "static/js/zulip_test.js",
+        "static/shared/js/poll_data.js",
+    ]
+)
+
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+
+parser = argparse.ArgumentParser(USAGE)
+parser.add_argument("--coverage", action="store_true", help="Get coverage report")
+add_provision_check_override_param(parser)
+parser.add_argument("args", nargs=argparse.REMAINDER)
+parser.add_argument(
+    "--parallel",
+    dest="parallel",
+    action="store",
+    type=int,
+    # Since process startup time is a significant portion of total
+    # runtime, so rather than doing os.cpu_count, we just do a fixed 4
+    # processes by default.
+    default=4,
+    help="Specify the number of processes to run the "
+    "tests in. Default is the number of logical CPUs",
+)
+options = parser.parse_args()
+individual_files = options.args
+parallel = options.parallel
+
+if options.coverage and parallel > 1:
+    parallel = 1
+    print(
+        BOLDRED + "You cannot use --coverage with parallel tests. Running in serial mode.\n" + ENDC
+    )
+
+assert_provisioning_status_ok(options.skip_provision_check)
+
+
+def get_dev_host() -> str:
+    # See similar code in dev_settings.py.  We only use
+    # this to report where you can find coverage reports.
+    # We duplicate the code here to avoid depending on
+    # Django.
+
+    host = os.getenv("EXTERNAL_HOST")
+    if host is not None:
+        return host
+
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    if user_name == "zulipdev":
+        hostname = os.uname()[1].lower()
+        if ".zulipdev.org" not in hostname:
+            hostname += ".zulipdev.org"
+        return hostname + ":9991"
+    else:
+        # For local development environments, we use localhost by
+        # default, via the "zulipdev.com" hostname.
+        return "zulipdev.com:9991"
+
+
+def print_error(msg: str) -> None:
+    print(BOLDRED + "ERROR:" + ENDC + " " + msg)
+
+
+def clean_file(orig_fn: str) -> str:
+    fn = orig_fn
+    if not fn.endswith(".js"):
+        fn += ".js"
+    if "frontend_tests/" not in fn:
+        fn = os.path.join(ROOT_DIR, "frontend_tests", "node_tests", fn)
+    fn = os.path.abspath(fn)
+    if not os.path.exists(fn):
+        print(f"Cannot find {orig_fn} ({fn})")
+        sys.exit(1)
+    return fn
+
+
+def clean_files(fns: List[str]) -> List[str]:
+    cleaned_files = [clean_file(fn) for fn in fns]
+    return cleaned_files
+
+
+def run_tests_via_node_js() -> int:
+    os.environ["TZ"] = "UTC"
+
+    # The index.js test runner is the real "driver" here, and we launch
+    # with either nyc or node, depending on whether we want coverage
+    # reports.  Running under nyc is slower and creates funny
+    # tracebacks, so you generally want to get coverage reports only
+    # after making sure tests will pass.
+    node_tests_cmd = ["node", "--stack-trace-limit=100", INDEX_JS]
+    if individual_files:
+        # If we passed a specific set of tests, run in serial mode.
+        global parallel
+        parallel = 1
+        files = individual_files
+    else:
+        files = sorted(glob.glob(os.path.join(ROOT_DIR, "frontend_tests/node_tests/*.js")))
+
+    test_files = clean_files(files)
+
+    print("Starting node tests...")
+
+    # If we got this far, we can run the tests!
+    ret = 0
+    if parallel > 1:
+        sub_tests = [test_files[i::parallel] for i in range(parallel)]
+        parallel_processes = [subprocess.Popen(node_tests_cmd + sub_test) for sub_test in sub_tests]
+
+        for process in parallel_processes:
+            status_code = process.wait()
+            if status_code != 0:
+                ret = status_code
+        return ret
+
+    node_tests_cmd += test_files
+    if options.coverage:
+        os.environ["USING_INSTRUMENTED_CODE"] = "TRUE"
+        coverage_dir = os.path.join(ROOT_DIR, "var/node-coverage")
+
+        nyc = os.path.join(ROOT_DIR, "node_modules/.bin/nyc")
+        command = [nyc, "--extension", ".hbs", "--extension", ".ts"]
+        command += ["--report-dir", coverage_dir]
+        command += ["--temp-directory", coverage_dir]
+        command += ["-r=lcov", "-r=json", "-r=text-summary"]
+        command += node_tests_cmd
+    else:
+        # Normal testing, no coverage analysis.
+        # Run the index.js test runner, which runs all the other tests.
+        command = node_tests_cmd
+
+    try:
+        ret = subprocess.check_call(command)
+    except OSError:
+        print(f"Bad command: {command}")
+        raise
+    except subprocess.CalledProcessError:
+        print("\n** Tests failed, PLEASE FIX! **\n")
+        sys.exit(1)
+    return ret
+
+
+def check_line_coverage(
+    fn: str, line_coverage: Dict[Any, Any], line_mapping: Dict[Any, Any], log: bool = True
+) -> bool:
+    missing_lines = []
+    for line in line_coverage:
+        if line_coverage[line] == 0:
+            actual_line = line_mapping[line]
+            missing_lines.append(str(actual_line["start"]["line"]))
+    if missing_lines:
+        if log:
+            print_error(f"{fn} no longer has complete node test coverage")
+            print("  Lines missing coverage: {}".format(", ".join(sorted(missing_lines, key=int))))
+            print()
+        return False
+    return True
+
+
+def read_coverage() -> Any:
+    coverage_json = None
+    try:
+        with open(NODE_COVERAGE_PATH, "rb") as f:
+            coverage_json = orjson.loads(f.read())
+    except OSError:
+        print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
+        raise
+    return coverage_json
+
+
+def enforce_proper_coverage(coverage_json: Any) -> bool:
+    all_js_files = {
+        *glob.glob("frontend_tests/node_tests/*.js"),
+        *glob.glob("frontend_tests/zjsunit/*.js"),
+        *glob.glob("static/js/*.js"),
+        *glob.glob("static/js/*.ts"),
+        *glob.glob("static/shared/js/*.js"),
+        *glob.glob("static/shared/js/*.ts"),
+        *glob.glob("static/js/billing/*.js"),
+    }
+    enforce_fully_covered = sorted(all_js_files - EXEMPT_FILES)
+
+    coverage_lost = False
+    for relative_path in enforce_fully_covered:
+        path = ROOT_DIR + "/" + relative_path
+        if not (path in coverage_json):
+            coverage_lost = True
+            print_error(f"{relative_path} has no node test coverage")
+            continue
+        line_coverage = coverage_json[path]["s"]
+        line_mapping = coverage_json[path]["statementMap"]
+        if not check_line_coverage(relative_path, line_coverage, line_mapping):
+            coverage_lost = True
+    if coverage_lost:
+        print()
+        print("It looks like your changes lost 100% test coverage in one or more files.")
+        print("Ideally, you should add some tests to restore coverage.")
+        print("A worse option is to update EXEMPT_FILES in `tools/test-js-with-node`.")
+        print("To run this check locally, use `test-js-with-node --coverage`.")
+        print()
+
+    coverage_not_enforced = False
+    for path in coverage_json:
+        relative_path = os.path.relpath(path, ROOT_DIR)
+        if relative_path in EXEMPT_FILES:
+            line_coverage = coverage_json[path]["s"]
+            line_mapping = coverage_json[path]["statementMap"]
+            if check_line_coverage(relative_path, line_coverage, line_mapping, log=False):
+                coverage_not_enforced = True
+                print_error(f"{relative_path} unexpectedly has 100% line coverage.")
+
+    if coverage_not_enforced:
+        print()
+        print("One or more fully covered files are miscategorized.")
+        print("Remove the file(s) from EXEMPT_FILES in `tools/test-js-with-node`.")
+
+    problems_encountered = coverage_lost or coverage_not_enforced
+    return problems_encountered
+
+
+ret = run_tests_via_node_js()
+
+if options.coverage and ret == 0:
+    if not individual_files:
+        coverage_json = read_coverage()
+        problems_encountered = enforce_proper_coverage(coverage_json)
+        if problems_encountered:
+            ret = 1
+
+    reports_location = f"http://{get_dev_host()}/node-coverage/index.html"
+    print()
+    print("View coverage reports at " + CYAN + reports_location + ENDC)
+
+print()
+if ret == 0:
+    print(GREEN + "Test(s) passed. SUCCESS!" + ENDC)
+else:
+    print(BOLDRED + "FAIL - Test(s) failed" + ENDC)
+
+sys.exit(ret)

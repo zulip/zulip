@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+sys.path.append(BASE_DIR)
+
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+import bmemcached
+
+from zproject import settings
+
+cache = settings.CACHES["default"]
+assert isinstance(cache, dict)  # for mypy
+bmemcached.Client((cache["LOCATION"],), **cache["OPTIONS"]).flush_all()

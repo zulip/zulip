@@ -1,0 +1,1896 @@
+/* The height of the settings header (including tab switcher). */
+$settings_header_height: 45px;
+/* The width of the settings sidebar. */
+$settings_sidebar_width: 250px;
+
+label {
+    margin: 0;
+
+    .fa-question-circle-o {
+        left: 2px;
+    }
+}
+
+label,
+h4,
+h3,
+/* We need settings-section-title here because some legacy settings
+   widgets use a <div> with this class for their heading. */
+.settings-section-title {
+    a {
+        color: inherit;
+    }
+
+    .fa-question-circle-o {
+        top: 1px;
+        /* This should match .settings-info-icon. */
+        opacity: 0.6;
+        position: relative;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .fa-info-circle {
+        top: 1px;
+        position: relative;
+    }
+}
+
+/* TODO: This should ideally be added to help_link_widget.hbs,
+   allowing us to deduplicate at least the opacity CSS with the
+   fa-question-circle-o logic above. */
+.settings-info-icon {
+    padding-left: 3px;
+    opacity: 0.6;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.email-change-form,
+.user-name-section {
+    .settings-info-icon {
+        position: relative;
+        top: 2px;
+        left: 1px;
+    }
+}
+
+h3,
+.settings-section-title {
+    .fa-question-circle-o {
+        left: 5px;
+    }
+}
+
+.new-style {
+    .block {
+        display: block;
+    }
+
+    .center-block {
+        margin: 0 auto;
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    .w-200 {
+        width: 200px;
+    }
+
+    .grid {
+        label {
+            min-width: 200px;
+        }
+
+        .warning {
+            display: inline-block;
+            vertical-align: top;
+            width: 150px;
+            padding: 5px 10px;
+            text-align: left;
+        }
+    }
+
+    #account-settings,
+    #profile-field-settings {
+        .grid {
+            label {
+                min-width: 120px;
+            }
+
+            .warning {
+                display: block;
+                width: calc(100% - 20px - 5px);
+                text-align: right;
+            }
+        }
+    }
+
+    .warning {
+        #pw_strength {
+            width: 140px;
+            height: 8px;
+            margin: 6px 0 0;
+        }
+    }
+
+    .button {
+        ul {
+            text-align: left;
+        }
+    }
+}
+
+.profile-settings-form {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap-reverse;
+}
+
+.profile-main-panel {
+    margin-right: 20px;
+}
+
+.profile-side-panel {
+    margin-right: 10px;
+}
+
+#admin_profile_fields_table {
+    th.display,
+    td.display_in_profile_summary_cell {
+        text-align: center;
+    }
+}
+
+.user-details-title {
+    display: inline-block;
+    min-width: 80px;
+    font-weight: 600;
+    padding-right: 5px;
+}
+
+.user-avatar-section {
+    .inline-block {
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+    }
+}
+
+#change_password_modal,
+#change_email_modal {
+    max-width: 480px;
+}
+
+#change_email_modal {
+    #change_email_container {
+        margin: 0;
+    }
+}
+
+.admin-realm-description {
+    height: 16em;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.side-padded-container {
+    padding: 0 20px;
+}
+
+.setting_notification_sound,
+.play_notification_sound {
+    display: inline;
+    margin-right: 4px;
+
+    i {
+        font-size: 22px;
+        cursor: pointer;
+    }
+}
+
+.setting_notification_sound {
+    text-transform: capitalize;
+}
+
+.table {
+    tbody {
+        border-bottom: 1px solid hsl(0, 0%, 87%);
+    }
+}
+
+.wrapped-table {
+    word-break: break-word;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    white-space: normal;
+}
+
+.table-condensed td {
+    vertical-align: middle;
+}
+
+#settings_content {
+    table + .progressive-table-wrapper table tr.user_row td:first-of-type {
+        width: 20%;
+    }
+
+    /* Limit the actions column to not using excessive width */
+    .admin-table-wrapper table.admin_profile_fields_table tr .actions {
+        width: 11%;
+    }
+}
+
+#uploaded_files_table > tr > td:nth-of-type(1),
+.upload-file-name {
+    width: 30%;
+    word-break: break-all;
+}
+
+#linkifier-settings {
+    #linkifier_pattern,
+    #linkifier_format_string {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
+#playground-settings {
+    #playground_pygments_language,
+    #playground_name,
+    #playground_url_prefix {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
+td .button {
+    margin: 2px 0;
+    box-shadow: none;
+}
+
+#language_selection_modal {
+    table {
+        width: 90%;
+        margin-top: 20px;
+        border-collapse: separate;
+    }
+
+    td {
+        padding-top: 1px;
+    }
+}
+
+.settings-section {
+    display: none;
+    width: calc(100% - 40px);
+    margin: 20px;
+
+    &.show {
+        display: block;
+    }
+
+    form {
+        margin: 0;
+    }
+
+    .no-padding {
+        padding: 0;
+    }
+
+    .settings-section-title {
+        font-size: 1.4em;
+        font-weight: 500;
+        margin: 10px 0;
+
+        &.transparent {
+            background-color: transparent;
+            color: inherit;
+        }
+    }
+
+    .table-sticky-headers th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    #admin_page_users_loading_indicator,
+    #attachments_loading_indicator,
+    #admin_page_deactivated_users_loading_indicator,
+    #admin_page_bots_loading_indicator {
+        margin: 0 auto;
+    }
+
+    .loading_indicator_text {
+        font-size: 12px;
+        font-weight: 400;
+        vertical-align: middle;
+        line-height: 20px;
+        display: inline-block;
+        float: none;
+        margin-top: 9px;
+    }
+
+    .loading_indicator_spinner {
+        width: 30%;
+        height: 30px;
+        margin-top: 7px;
+        vertical-align: middle;
+        display: inline-block;
+    }
+
+    .inline {
+        display: inline !important;
+    }
+
+    /* Messy implementation of buttons with text and a pencil icon in them
+       having spacing before the pencil icon. */
+    button.btn-link i.fa-pencil,
+    button[data-dismiss="modal"] i.fa-pencil,
+    .dropdown-toggle i.fa-pencil {
+        margin-left: 3px;
+    }
+
+    .hidden-email {
+        font-style: italic;
+    }
+
+    /* Originally the icon inherits the color of label, but when the setting
+    is disabled, the color of the label is changed and thus the icon becomes
+    too light. So, we set the color explicitly to original color of label to
+    keep the color of the icon same even when the setting is disabled. */
+    #id_realm_enable_spectator_access_label a {
+        color: hsl(0, 0%, 20%);
+    }
+}
+
+#admin-user-list,
+#admin-bot-list {
+    .table tr:first-of-type td {
+        border-top: none;
+    }
+}
+
+.button,
+.input-group {
+    margin: 0 0 20px;
+}
+
+.input-group {
+    /* Class to use when the following input-group is related and should
+       appear just after this element. */
+    &.thinner {
+        margin: 0;
+    }
+
+    label.checkbox + label {
+        cursor: pointer;
+    }
+}
+
+.dependent-inline-block {
+    display: inline-block;
+    margin: 0 0 0 10px !important;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+input[type="checkbox"] {
+    + .inline-block {
+        margin-left: 10px;
+    }
+
+    .inline-block {
+        margin: -2px 0 0;
+    }
+}
+
+.allow-subdomains,
+.new-realm-domain-allow-subdomains {
+    margin: 0 !important;
+}
+
+.realm_domains_info {
+    margin-bottom: 0;
+}
+
+.admin-realm-form {
+    h3 {
+        margin-bottom: 10px;
+    }
+
+    .subsection-header h3 {
+        display: inline;
+    }
+}
+
+.display-settings-form,
+.notification-settings-form {
+    .subsection-header h3 {
+        display: inline-block;
+    }
+}
+
+#stream-specific-notify-table .unmute_stream {
+    position: relative;
+    left: 3px;
+    top: 2px;
+
+    &:hover {
+        color: hsl(0, 0%, 20%);
+        cursor: pointer;
+    }
+}
+
+.organization-settings-parent > div:first-of-type {
+    margin-top: 10px;
+}
+
+.org-settings-form .organization-submission {
+    margin-top: 0;
+}
+
+#id_org_profile_preview {
+    margin-bottom: 20px;
+    display: inline-flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.inline-block.organization-permissions-parent div:first-of-type {
+    margin-top: 10px;
+}
+
+.language_selection_widget {
+    .title {
+        margin-bottom: 3px;
+    }
+
+    .language_selection_button {
+        text-decoration: none;
+        color: hsl(0, 0%, 20%);
+
+        .fa.fa-pencil {
+            margin-left: 5px;
+        }
+    }
+}
+
+.remove-attachment {
+    margin-right: 5px !important;
+    font-size: 1.1em !important;
+    padding-left: 0 !important;
+}
+
+#download_attachment {
+    padding-left: 0;
+    border-left: 0;
+}
+
+.remove-alert-word {
+    margin-top: 1px;
+}
+
+.alert_word_status_text {
+    word-break: break-word;
+}
+
+.alert-notification {
+    display: inline-block;
+    vertical-align: top;
+    height: auto !important;
+    width: auto !important;
+
+    background-color: transparent;
+    border-radius: 4px;
+    margin-top: 14px;
+    margin-left: 10px;
+    color: hsl(156, 30%, 50%);
+    padding: 3px 10px;
+
+    &:not(:empty) {
+        border: 1px solid hsl(156, 30%, 50%);
+    }
+
+    &.alert-error {
+        color: hsl(2, 46%, 68%);
+        border-color: hsl(2, 46%, 68%);
+    }
+
+    .loading_indicator_spinner {
+        width: 13px;
+        height: 20px;
+        margin: 0;
+    }
+
+    /* make the spinner green like the text and box. */
+    .loading_indicator_spinner svg path {
+        fill: hsl(178, 100%, 40%);
+    }
+
+    .loading_indicator_text {
+        margin-top: 0;
+        font-size: inherit;
+        vertical-align: top;
+    }
+
+    img {
+        margin-right: 6px;
+        vertical-align: middle;
+        margin-top: -2px;
+    }
+}
+
+#profile-field-settings #admin-add-profile-field-status {
+    margin-top: 4px;
+}
+
+#add-custom-profile-field-btn {
+    float: right;
+    margin-top: 4px;
+}
+
+#user-notification-settings {
+    .notification-table {
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            cursor: default;
+
+            .stream-privacy span.hashtag,
+            .filter-icon i {
+                padding-right: 0;
+            }
+
+            label {
+                cursor: default;
+            }
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    }
+}
+
+#profile-settings {
+    .custom-profile-fields-form .custom_user_field label,
+    .full-name-change-form label,
+    .timezone-setting-form label {
+        min-width: fit-content;
+    }
+
+    .alert-notification.custom-field-status,
+    .alert-notification.full-name-status,
+    .alert-notification.timezone-setting-status {
+        padding-top: 0;
+        padding-bottom: 0;
+        margin-top: 0;
+        padding-left: 0;
+        margin-left: 5px;
+        border: none;
+    }
+}
+
+.control-label-disabled {
+    color: hsl(0, 0%, 82%);
+
+    &.enabled {
+        color: hsl(0, 0%, 20%);
+    }
+}
+
+.admin-realm-message-retention-days {
+    width: 5ch;
+    text-align: right;
+}
+
+#show-add-user-group-modal {
+    margin-bottom: 10px;
+}
+
+#add-user-group-form {
+    margin: 0;
+
+    /* This 14px is the border and padding of the input element */
+    #user_group_description {
+        width: calc(100% - 14px);
+    }
+}
+
+.add-new-emoji-box,
+.add-new-export-box {
+    margin-bottom: 20px;
+}
+
+.add-new-emoji-box .new-emoji-form,
+.add-new-export-box {
+    margin: 10px 0;
+}
+
+.add-new-emoji-box,
+.add-new-default-stream-box {
+    input[type="text"] {
+        padding: 6px;
+    }
+    margin-bottom: 15px;
+}
+
+.add-new-emoji-box #emoji-file-name {
+    width: 0;
+    top: -19px;
+    left: 3px;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+
+    white-space: nowrap;
+    font-style: italic;
+    color: hsl(0, 0%, 67%);
+}
+
+#emoji_file_input_error {
+    vertical-align: middle;
+}
+
+.add-new-linkifier-box,
+.add-new-playground-box {
+    button {
+        margin-left: calc(10em + 20px) !important;
+    }
+    margin-bottom: 15px;
+
+    .checkbox {
+        margin-top: 5px;
+    }
+}
+
+.grey-box .wrapper {
+    margin: 10px 0;
+}
+
+.admin_profile_fields_table,
+.edit_profile_field_choices_container,
+.profile_field_choices_table {
+    .movable-profile-field-row {
+        cursor: move;
+
+        .fa-ellipsis-v {
+            color: hsl(0, 0%, 75%);
+            position: relative;
+            top: 1px;
+
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
+#admin-linkifier-pattern-status,
+#admin-linkifier-format-status {
+    margin: 20px 0 0;
+}
+
+.progressive-table-wrapper {
+    position: relative;
+    max-height: calc(95vh - 220px);
+    overflow: auto;
+    width: 100%;
+}
+
+#admin-default-streams-list .progressive-table-wrapper {
+    max-height: calc(95vh - 280px);
+}
+
+#bot-settings .add-a-new-bot {
+    margin-bottom: 2px;
+}
+
+.bots_list {
+    display: none;
+    list-style-type: none;
+    margin-left: 0;
+
+    .image {
+        vertical-align: top;
+    }
+
+    .name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 7px 5px;
+
+        overflow: hidden;
+        line-height: 1.3em;
+        text-overflow: ellipsis;
+        white-space: pre;
+    }
+
+    .regenerate_bot_api_key {
+        position: relative;
+        margin-left: 5px;
+        color: hsl(0, 0%, 67%);
+        transition: all 0.3s ease;
+
+        &:hover {
+            color: hsl(0, 0%, 27%);
+        }
+    }
+
+    .edit-bot-buttons {
+        padding-top: 5px;
+
+        button {
+            background-color: transparent;
+        }
+
+        .btn {
+            padding: 4px;
+        }
+
+        .sea-green {
+            color: hsl(177, 70%, 46%);
+        }
+
+        .blue {
+            color: hsl(203, 77%, 56%);
+        }
+
+        .danger-red {
+            color: hsl(0, 56%, 73%);
+        }
+
+        .copy-gold {
+            color: hsl(51, 90%, 50%);
+        }
+
+        .purple {
+            color: hsl(278, 62%, 68%);
+        }
+    }
+
+    .bot-information-box {
+        position: relative;
+        display: inline-block;
+        width: calc(50% - 10px);
+        max-height: 220px;
+        margin: 5px;
+
+        border-radius: 4px;
+        box-sizing: border-box;
+
+        overflow: auto;
+
+        .details {
+            display: inline-block;
+            width: calc(100% - 75px);
+        }
+    }
+
+    img.avatar {
+        margin: 10px 5px 0 10px;
+        height: 50px;
+        width: 50px;
+        border-radius: 4px;
+        vertical-align: top;
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.1);
+    }
+
+    .email,
+    .type {
+        margin-bottom: 5px;
+    }
+
+    .email .value,
+    .api_key .api-key-value-and-button {
+        display: block;
+        margin-left: 0;
+        word-wrap: break-word;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .api_key .api-key-value-and-button {
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.85em;
+        display: flex;
+    }
+
+    .bot_info {
+        padding: 10px;
+    }
+
+    .field {
+        text-transform: uppercase;
+        font-weight: 600;
+        color: hsl(0, 0%, 67%);
+    }
+}
+
+.bot_error {
+    margin-top: 10px;
+    margin-bottom: 0 !important;
+}
+
+#bots_lists_navbar .active a {
+    background-color: hsl(0, 0%, 98%);
+}
+
+#inactive_bots_list .bot_info .reactivate_bot {
+    margin-top: 5px;
+}
+
+.edit_bot_form {
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+
+    .buttons {
+        margin: 10px 0 5px;
+    }
+
+    #bot-role-select:disabled {
+        opacity: 1;
+    }
+}
+
+#add-alert-word {
+    form {
+        margin-bottom: 4px;
+    }
+}
+
+.admin-linkifier-form,
+.admin-playground-form {
+    label {
+        float: left;
+        padding-top: 5px;
+        width: 10em;
+        text-align: right;
+        margin-right: 20px;
+    }
+}
+
+.admin-profile-field-form #custom_external_account_url_pattern input {
+    width: 70%;
+}
+
+#alert-words-table {
+    margin: 0;
+
+    li {
+        list-style-type: none;
+
+        &.alert-word-item:first-child {
+            background: none;
+            margin-top: 8px;
+        }
+    }
+
+    .alert_word_listing .value {
+        word-wrap: break-word;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .edit-attachment-buttons {
+        position: absolute;
+        right: 20px;
+        top: 0;
+    }
+}
+
+#change_password_modal {
+    #change_password_container {
+        margin: 0;
+    }
+}
+
+#api_key_status {
+    margin: 0 0 10px;
+}
+
+#download_zuliprc {
+    color: hsl(0, 0%, 100%);
+    text-decoration: none;
+}
+
+#realm_domains_table {
+    margin: 0;
+}
+
+#api_key_form,
+#change_password_modal {
+    .password-div {
+        position: relative;
+
+        input[type="text"] {
+            margin-bottom: 10px;
+        }
+
+        .password_visibility_toggle {
+            position: absolute;
+            left: 194px;
+            top: 32px;
+            width: 14px;
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+}
+
+.emojiset_choices,
+.user_list_style_values {
+    padding: 0 10px;
+
+    label {
+        border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+        padding: 8px 0 10px;
+
+        &:last-of-type {
+            border-bottom: none;
+        }
+
+        input[type="radio"] {
+            position: relative;
+            top: -2px;
+            margin: 0 5px 0 0;
+
+            &:checked + span {
+                font-weight: 600;
+            }
+        }
+
+        .right {
+            float: right;
+        }
+    }
+}
+
+.emojiset_choices {
+    width: 250px;
+
+    .emoji {
+        height: 22px;
+        width: 22px;
+    }
+}
+
+$right_sidebar_width: 170px;
+$option_title_width: 180px;
+
+.user_list_style_values {
+    max-width: calc($right_sidebar_width + $option_title_width);
+
+    .preview {
+        background-color: inherit !important;
+        /* Match the 170px width of the right sidebar region for the name/status,
+           doing something reasonable if the window shrinks. */
+        width: calc(100% - $option_title_width);
+        text-align: left;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow-x: hidden;
+        overflow-y: visible;
+        position: relative;
+        height: 36px;
+
+        .user-name-and-status-text {
+            margin-top: -4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-text {
+            display: inline-block;
+            opacity: 0.75;
+            font-size: 90%;
+
+            &:not(:empty) {
+                margin-top: -3px;
+            }
+        }
+    }
+}
+
+.open-user-form {
+    min-width: initial !important;
+}
+
+#api_key_buttons {
+    display: inline-flex;
+
+    .regenerate_api_key {
+        margin-right: 5px;
+    }
+}
+
+.right.show .emoji_alt_code {
+    font-size: 1.2em;
+}
+
+.invite-user-link i {
+    text-decoration: none;
+    margin-right: 5px;
+}
+
+#user-groups {
+    .user-group {
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 5px;
+
+        h4 {
+            font-weight: normal;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+        }
+
+        span[contenteditable] {
+            display: inline-block;
+            word-break: break-all;
+
+            &:empty::before {
+                opacity: 0.5;
+                display: inline-block;
+                content: attr(data-placeholder);
+            }
+        }
+
+        span[contenteditable]:focus,
+        span[contenteditable="true"]:hover {
+            border-bottom: 1px solid hsl(0, 0%, 80%);
+            margin-bottom: -1px;
+            outline: none;
+        }
+
+        .pill-container .input[contenteditable]:empty::after {
+            content: attr(data-placeholder);
+            opacity: 0.5;
+        }
+    }
+
+    .user-group-status {
+        margin-bottom: 10px;
+    }
+
+    p {
+        line-height: 2;
+        margin: 0;
+    }
+
+    .spacer {
+        margin: 0 2px;
+    }
+
+    .subscribers,
+    .user-group h4 > .name {
+        font-weight: bold;
+    }
+
+    .ntm {
+        cursor: not-allowed;
+
+        h4 > .button {
+            cursor: not-allowed;
+            display: none;
+
+            &:hover {
+                border-color: hsl(4, 56%, 82%);
+            }
+        }
+    }
+
+    .save-status {
+        background-color: transparent;
+        padding: 2px 5px;
+        border-radius: 4px;
+        margin-left: 10px;
+        border-style: solid;
+        border-width: 1px;
+        display: none;
+        opacity: 0;
+    }
+
+    .checkmark {
+        height: 12px;
+    }
+
+    .delete {
+        margin-left: auto;
+    }
+
+    .save-instructions {
+        display: none;
+        opacity: 0;
+        color: hsl(0, 0%, 20%);
+        font-size: 0.9em;
+    }
+}
+
+/* -- new settings overlay -- */
+#settings_page {
+    height: 95vh;
+    width: 97vw;
+    max-width: 1024px;
+    margin: 2.5vh auto;
+    overflow: hidden;
+    border-radius: 4px;
+
+    .save-discard-widget-button {
+        border-radius: 5px;
+        border: 1px solid hsl(0, 0%, 80%);
+        padding: 3px 14px 4px 11px;
+        text-decoration: none;
+        color: hsl(0, 0%, 47%);
+        min-width: 80px;
+        /* Limit the height of the button */
+        line-height: 1.2;
+        vertical-align: text-bottom;
+
+        &:hover,
+        &:focus {
+            background-color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(0, 0%, 61%);
+            color: hsl(0, 0%, 18%);
+
+            .save-discard-widget-button-icon {
+                color: hsl(0, 0%, 47%);
+            }
+        }
+
+        &.primary {
+            background-color: hsl(156, 30%, 50%);
+            color: hsl(0, 0%, 100%);
+            border: 1px solid hsl(155, 30%, 50%);
+
+            &:hover,
+            &:focus {
+                background-color: hsl(166, 35%, 57%);
+                border: 1px solid hsl(166, 35%, 57%);
+            }
+
+            .save-discard-widget-button-icon {
+                font-weight: lighter;
+                color: hsl(0, 0%, 100%);
+            }
+
+            &.saving {
+                background-color: hsl(156, 14%, 40%);
+                border-color: hsl(156, 14%, 40%);
+            }
+        }
+
+        .save-discard-widget-button-icon {
+            vertical-align: middle;
+            margin-right: 3px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .save-discard-widget-button-text {
+            vertical-align: middle;
+            line-height: 1;
+        }
+    }
+
+    .save-button-controls {
+        display: inline;
+        margin-left: 15px;
+
+        &.hide {
+            display: none;
+        }
+    }
+
+    .save-button {
+        margin-right: 5px;
+
+        .save-discard-widget-button-loading {
+            display: none;
+        }
+
+        &.saving {
+            .save-discard-widget-button-icon {
+                display: none;
+            }
+
+            .save-discard-widget-button-loading {
+                display: inline-block;
+                margin-right: 2px;
+            }
+        }
+    }
+
+    .admin-realm-time-limit-input {
+        width: 5ch;
+        text-align: right;
+    }
+
+    .realm-time-limit-label {
+        vertical-align: middle;
+    }
+
+    h3 {
+        font-size: 1.5em;
+        font-weight: normal;
+        line-height: 1.5;
+    }
+
+    h5 {
+        font-size: 1.2em;
+        font-weight: normal;
+        line-height: 1.2;
+    }
+
+    .sidebar-wrapper {
+        float: left;
+        position: relative;
+        width: $settings_sidebar_width;
+        height: 100%;
+
+        .tab-container {
+            box-sizing: border-box;
+            height: $settings_header_height;
+            padding: 6px;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
+    }
+
+    .sidebar {
+        height: calc(100% - $settings_header_height);
+        overflow-y: auto;
+        border-right: 1px solid hsl(0, 0%, 93%);
+
+        .header {
+            height: auto;
+            position: relative;
+            width: calc(100% - 20px);
+            padding: 10px;
+            text-align: center;
+            text-transform: uppercase;
+
+            background-color: hsl(180, 6%, 93%);
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            padding: 5px 0;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid hsl(0, 0%, 93%);
+
+            &:last-of-type .text {
+                border-bottom: none;
+            }
+
+            &.active {
+                background-color: hsl(0, 0%, 93%);
+                border-bottom: 1px solid transparent;
+            }
+
+            .text,
+            .icon,
+            .locked {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .text {
+                width: calc(100% - 90px);
+                padding: 10px 12px 10px 0;
+            }
+
+            .icon {
+                width: 18px;
+                height: 18px;
+                margin: 10px;
+                text-align: center;
+
+                font-size: 1.4em;
+                color: hsl(0, 0%, 53%);
+
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+
+            .locked {
+                width: 18px;
+                height: 18px;
+                margin: 14px 8px 6px;
+
+                font-size: 1em;
+                color: hsl(0, 0%, 62%);
+
+                background-size: cover;
+                background-repeat: no-repeat;
+            }
+        }
+
+        .org-settings-list {
+            display: none;
+        }
+
+        .normal-settings-list,
+        .org-settings-list {
+            position: relative;
+        }
+
+        .settings-sticky-bar {
+            position: sticky;
+            z-index: 1;
+            background-color: hsl(0, 0%, 100%);
+            top: 0;
+        }
+    }
+
+    .settings-header {
+        padding-top: 1px;
+
+        &.mobile {
+            display: none;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+
+            .fa-chevron-left {
+                float: left;
+                position: relative;
+                top: 14px;
+                left: 10px;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1;
+            margin: 15px;
+            text-transform: uppercase;
+        }
+
+        .exit {
+            font-weight: 600;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: hsl(0, 0%, 67%);
+            cursor: pointer;
+        }
+
+        .exit-sign {
+            float: right;
+            position: relative;
+            top: 1px;
+            margin-left: 3px;
+            font-size: 1.5rem;
+            line-height: 1;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    }
+
+    .content-wrapper {
+        position: absolute;
+        left: $settings_sidebar_width;
+        width: calc(100% - $settings_sidebar_width);
+        height: 100%;
+        overflow: hidden;
+
+        .settings-header {
+            width: 100%;
+            height: $settings_header_height;
+            box-sizing: border-box;
+            border-bottom: 1px solid hsl(0, 0%, 87%);
+
+            h1 .section {
+                font-weight: 400;
+                color: inherit;
+                opacity: 0.6;
+            }
+        }
+
+        #settings_content {
+            position: relative;
+            width: 100%;
+            height: calc(100% - $settings_header_height);
+
+            float: left;
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            background-color: hsla(0, 0%, 0%, 0.02);
+        }
+    }
+
+    .display-settings-form select {
+        width: 245px;
+    }
+}
+
+#profile-settings,
+#edit-user-form {
+    .custom_user_field {
+        padding-bottom: 20px;
+
+        .field_hint {
+            color: hsl(0, 0%, 67%);
+        }
+
+        textarea {
+            width: max(206px, 25vw);
+            max-width: 320px;
+            height: 80px;
+        }
+
+        &:hover .remove_date {
+            display: inline-flex;
+        }
+
+        .remove_date {
+            opacity: 0.5;
+            display: none;
+            cursor: pointer;
+            position: relative;
+            top: 2px;
+            left: -20px;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .datepicker {
+            cursor: default;
+        }
+
+        .person_picker {
+            min-width: 206px;
+        }
+    }
+
+    #show_my_user_profile_modal {
+        width: 150px;
+        margin-top: 20px;
+    }
+
+    #show_my_user_profile_modal i {
+        padding-left: 2px;
+        vertical-align: middle;
+    }
+}
+
+/* These have enough space for all the options in German. */
+.setting_desktop_icon_count_display,
+#id_realm_waiting_period_setting,
+#id_realm_create_public_stream_policy,
+#id_realm_create_private_stream_policy,
+#id_realm_invite_to_stream_policy,
+#id_realm_private_message_policy,
+#id_realm_add_custom_emoji_policy,
+#id_realm_user_group_edit_policy,
+#id_realm_email_address_visibility,
+#id_realm_wildcard_mention_policy,
+#id_realm_move_messages_between_streams_policy,
+#id_realm_invite_to_realm_policy,
+#id_realm_edit_topic_policy,
+#id_realm_message_content_edit_limit_seconds,
+#id_realm_delete_own_message_policy,
+#id_realm_message_content_delete_limit_seconds {
+    width: 325px;
+}
+
+#id_realm_bot_creation_policy,
+#id_realm_giphy_rating,
+#id_realm_org_join_restrictions {
+    width: 100%;
+}
+
+.dropdown-list-widget {
+    button.dropdown-toggle {
+        text-align: left;
+
+        .fa-chevron-down {
+            float: right;
+            position: relative;
+            top: 2px;
+            padding-left: 5px;
+            color: hsl(0, 0%, 58%);
+            font-weight: lighter;
+        }
+
+        &.dropdown-toggle {
+            /* Match settings for select elements. */
+            padding: 4px 6px;
+
+            span {
+                line-height: 20px;
+                height: 1.4em;
+            }
+        }
+
+        &:disabled i {
+            display: none;
+        }
+    }
+
+    button.multiselect_btn {
+        /* Matches the dropdown input margin so as to keep it aligned */
+        margin-left: 9px;
+        margin-top: 4px;
+    }
+
+    a.dropdown_list_reset_button {
+        /* Prevent dark theme from overriding background. */
+        background: unset !important;
+        border: none;
+        margin-left: 10px;
+
+        &:disabled {
+            display: none;
+        }
+    }
+
+    .dropdown-search > input[type="text"] {
+        margin: 9px;
+    }
+
+    .dropdown-menu {
+        top: -7px; /* -(margin+padding), both are set by bootstrap. */
+        bottom: auto;
+    }
+
+    .dropdown-list-wrapper {
+        position: relative;
+        height: auto;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 0;
+        display: block;
+    }
+
+    .dropdown-list-body {
+        position: relative;
+        margin-top: 0;
+        display: block;
+
+        /* In bootstrap v2.3.2, we strictly need
+        .dropdown-menu > li > a as the order of the elements
+        for the bootstrap style to be applied.
+        Since we use a combination of dropdown + simplebar here,
+        the structure cannot be possible since simplebar inserts
+        elements of its own, so we copy over that style
+        from bootstrap to here. */
+        li a {
+            display: block;
+            padding: 3px 20px;
+            clear: both;
+            font-weight: normal;
+            line-height: 20px;
+            color: hsl(0, 0%, 20%);
+            white-space: nowrap;
+
+            &:hover {
+                color: hsl(0, 0%, 100%);
+                text-decoration: none;
+                background-color: hsl(200, 100%, 38%);
+                background-image: linear-gradient(
+                    to bottom,
+                    hsl(200, 100%, 40%),
+                    hsl(200, 100%, 35%)
+                );
+            }
+        }
+    }
+}
+
+.subsection-failed-status p {
+    background-color: hsl(0, 43%, 91%);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+}
+
+#muted_topics_table {
+    width: 90%;
+    margin: 0 auto;
+
+    tbody {
+        border-bottom: none;
+    }
+}
+
+#admin-user-list .last_active {
+    width: 100px;
+}
+
+.required-text {
+    &:empty::after {
+        content: attr(data-empty);
+        display: block;
+
+        font-style: italic;
+        color: hsl(0, 0%, 67%);
+    }
+
+    &.thick:empty::after {
+        width: 100%;
+    }
+}
+
+#payload_url_inputbox,
+#service_name_list {
+    input[type="text"] {
+        width: 340px;
+    }
+}
+
+.dropdown-title {
+    margin-bottom: 3px;
+}
+
+@supports (-moz-appearance: none) {
+    #settings_page select {
+        appearance: none;
+        background: hsl(0, 0%, 100%) url("../images/dropdown.png") right / 20px
+            no-repeat;
+        padding-right: 20px;
+    }
+}
+
+.profile-field-choices {
+    display: inline-block;
+
+    hr {
+        margin-top: 0;
+        margin-bottom: 5px;
+    }
+
+    .choice-row {
+        margin-top: 8px;
+
+        input {
+            width: 190px;
+        }
+
+        button {
+            margin-left: 2px;
+        }
+    }
+
+    > .choice-row:first-of-type {
+        margin-top: 0;
+    }
+}
+
+.custom_user_field,
+.bot_owner_user_field {
+    .pill-container {
+        padding: 2px 6px;
+        min-height: 24px;
+        max-width: 206px;
+        background-color: hsl(0, 0%, 100%);
+
+        &:focus-within {
+            border-color: hsla(206, 80%, 62%, 0.8);
+            outline: 0;
+            outline: 1px dotted \9;
+
+            box-shadow: inset 0 1px 1px hsla(0, 0%, 0%, 0.075),
+                0 0 8px hsla(206, 80%, 62%, 0.6);
+        }
+    }
+}
+
+#get_api_key_button {
+    display: block;
+}
+
+#attachment-stats-holder {
+    position: relative;
+    margin-top: 13px;
+    display: inline-block;
+}
+
+.hide-org-settings {
+    display: none;
+}
+
+.collapse-settings-btn {
+    margin: 10px 0 0 10px;
+    color: hsl(200, 100%, 40%);
+
+    &:hover {
+        cursor: pointer;
+        color: hsl(208, 56%, 38%);
+    }
+}
+
+#toggle_collapse {
+    margin-left: 2px;
+    display: inline-block;
+}
+
+.admin_exports_table {
+    margin-bottom: 20px;
+}
+
+@media (width < $lg_min) {
+    .user-avatar-section,
+    .realm-icon-section {
+        display: block;
+    }
+
+    #settings_content .warning {
+        display: none;
+    }
+
+    .subsection-failed-status p {
+        margin: 5px 0 0;
+    }
+}
+
+/* This value needs to match with the same in subscriptions.css, as
+   we have some shared styles declared there */
+@media (width < $md_min) {
+    .profile-settings-form {
+        .user-avatar-section {
+            flex: 100%;
+        }
+    }
+
+    #settings_overlay_container {
+        /* this variable allows JavaScript to detect this media query */
+        --single-column: yes;
+    }
+
+    #settings_page {
+        .settings-header.mobile {
+            display: block;
+
+            &:not(.slide-left) .section {
+                /* When viewing the settings list we hide the active section. */
+                display: none;
+            }
+        }
+
+        .content-wrapper {
+            .settings-header {
+                display: none;
+            }
+
+            #settings_content {
+                height: 100%;
+            }
+
+            &.right {
+                top: 47px;
+            }
+        }
+
+        .sidebar-wrapper {
+            width: 100%;
+        }
+
+        .sidebar {
+            li.active {
+                /* Don't highlight the active section in the settings list. */
+                background: inherit;
+                border-bottom: 1px solid hsl(0, 0%, 93%);
+            }
+        }
+    }
+}
+
+@media (width < $sm_min) {
+    #pw_strength {
+        margin: auto;
+    }
+
+    #linkifier-settings .new-linkifier-form input,
+    #playground-settings .new-playground-form input,
+    #profile-field-settings .new-profile-field-form input {
+        width: calc(100% - 20px) !important;
+    }
+
+    #linkifier-settings .new-linkifier-form label,
+    #playground-settings .new-playground-form label,
+    #profile-field-settings .new-profile-field-form label {
+        display: block;
+        width: 120px;
+        padding: 0;
+        padding-top: 0;
+        text-align: center;
+        margin: auto;
+        float: none;
+    }
+
+    #settings_page .save-button-controls {
+        display: block;
+        margin: 10px 0 0;
+    }
+}
+
+@media (width < $ml_min) {
+    #api_key_buttons,
+    #download_zuliprc {
+        flex-direction: column;
+        margin-top: 5px;
+    }
+
+    #settings_page,
+    #edit-user-form {
+        .custom_user_field textarea {
+            width: calc(100% - 25px);
+        }
+    }
+}
+
+@media only screen and (width < $lg_min) {
+    /* Show bot-information-box at full width on small
+       screen sizes. Not having this media query breaks the
+       information box */
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
+    }
+}
+
+#edit-linkifier-form {
+    #edit-linkifier-pattern,
+    #edit-linkifier-url-format-string {
+        width: 400px;
+    }
+
+    label {
+        margin-bottom: 4px;
+    }
+
+    #edit-linkifier-pattern-status,
+    #edit-linkifier-format-status {
+        margin-top: 10px;
+    }
+}
+
+.settings_panel_list_header {
+    position: relative;
+
+    h3 {
+        display: inline-block;
+    }
+
+    input.search {
+        float: right;
+        font-size: 1em;
+        max-width: 160px;
+        margin-top: 12px;
+    }
+}
+
+#add-new-custom-profile-field-form,
+#edit-custom-profile-field-form-modal {
+    .disabled_label {
+        cursor: default;
+        opacity: 0.7;
+    }
+}

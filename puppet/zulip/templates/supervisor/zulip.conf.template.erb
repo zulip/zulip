@@ -1,0 +1,120 @@
+; Supervisor config file.
+; on Debian squeeze, place me in /etc/supervisor/conf.d/zulip.conf
+;
+; For more information on the config file, please see:
+; http://supervisord.org/configuration.html
+;
+; Note: shell expansion ("~" or "$HOME") is not supported.  Environment
+; variables can be expanded using this syntax: "%(ENV_HOME)s".
+
+[program:zulip-django]
+command=nice -n5 /home/zulip/deployments/current/zulip-current-venv/bin/uwsgi --ini /etc/zulip/uwsgi.ini
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=100                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=INT                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/django.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+stopasgroup=true              ; Without this, we leak processes every restart
+killasgroup=true              ; Without this, we leak processes every restart
+directory=/home/zulip/deployments/current/
+
+<% if @tornado_ports.length > 1 -%>
+[program:zulip-tornado]
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:98%(process_num)02d
+process_name=zulip-tornado-port-98%(process_num)02d
+environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=200                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/tornado-98%(process_num)02d.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+numprocs=<%= @tornado_ports.length %>
+<% else -%>
+[program:zulip-tornado]
+command=/home/zulip/deployments/current/manage.py runtornado 127.0.0.1:9800
+environment=PYTHONUNBUFFERED=1,HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=200                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+<% end -%>
+
+<% if @queues_multiprocess %>
+<% @queues.each do |queue| -%>
+[program:zulip_events_<%= queue %>]
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %>
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=300                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/events_<%= queue %>.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+<% end -%>
+<% else %>
+[program:zulip_events]
+command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --multi_threaded <%= @queues.join(' ') %>
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
+priority=300                   ; the relative start priority (default 999)
+autostart=true                 ; start at supervisord start (default: true)
+autorestart=true               ; whether/when to restart (default: unexpected)
+stopsignal=TERM                 ; signal used to kill process (default TERM)
+stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
+user=zulip                    ; setuid to this UNIX account to run the program
+redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+stdout_logfile=/var/log/zulip/events.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+directory=/home/zulip/deployments/current/
+stopasgroup=true              ; Without this, we leak processes every restart
+killasgroup=true              ; Without this, we leak processes every restart
+<% end %>
+
+; The below sample group section shows all possible group values,
+; create one or more 'real' group: sections to create "heterogeneous"
+; process groups.
+
+[group:zulip-workers]
+<% if @queues_multiprocess %>
+; each refers to 'x' in [program:x] definitions
+programs=<% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
+<% else %>
+programs=zulip_events
+<% end %>
+
+; The [include] section can just contain the "files" setting.  This
+; setting can list multiple files (separated by whitespace or
+; newlines).  It can also contain wildcards.  The filenames are
+; interpreted as relative to this file.  Included files *cannot*
+; include files themselves.
+
+;[include]
+;files = relative/directory/*.ini
+
+;enable server restarts without requiring superuser access. This assumes that this is the only service being controlled by supervisord on this machine.
+[unix_http_server]
+chown=zulip:zulip

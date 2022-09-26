@@ -1,0 +1,34 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Internal server error") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'" />
+{% endblock %}
+
+{% block portico_class_name %}error{% endblock %}
+
+{% block portico_content %}
+<div class="error_page">
+    <div class="container">
+        <div class="row-fluid">
+            <img src="/static/images/errors/500art.svg" alt=""/>
+            <div class="errorbox">
+                <div class="errorcontent">
+                    <h1 class="lead">{{ _("Internal server error") }}</h1>
+                    {% trans %}
+                    <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>
+                    <p>The page will reload automatically soon after service is restored.</p>
+                    <p>If you'd like, you can <a href="mailto:{{ support_email }}">drop us a line</a> to let us know what happened.</p>
+                    {% endtrans %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

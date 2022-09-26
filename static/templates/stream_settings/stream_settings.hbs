@@ -1,0 +1,133 @@
+<div class="stream_settings_header" data-stream-id="{{sub.stream_id}}">
+    <div class="tab-container"></div>
+    {{#with sub}}
+    <div class="button-group">
+        <div class="sub_unsub_button_wrapper inline-block">
+            <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}tippy-zulip-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" {{#if should_display_subscription_button}}data-tippy-content="{{t 'Toggle subscription'}} (S)" {{else}}disabled="disabled"{{/if}}>
+                {{#if subscribed }}
+                    {{#tr}}Unsubscribe{{/tr}}
+                {{else}}
+                    {{#tr}}Subscribe{{/tr}}
+                {{/if}}
+            </button>
+        </div>
+        <a href="{{preview_url}}" class="button small rounded tippy-zulip-tooltip" id="preview-stream-button" role="button" data-tippy-content="{{t 'View stream'}} (V)" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
+        {{#if is_realm_admin}}
+        <button class="button small rounded btn-danger deactivate tippy-zulip-tooltip" type="button" name="delete_button" data-tippy-content="{{t 'Archive stream'}}"> <i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        {{/if}}
+    </div>
+    {{/with}}
+</div>
+<div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
+    <div class="inner-box">
+
+        <div class="general_settings stream_section">
+            {{#with sub}}
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip}}
+            </div>
+            <div class="stream-header">
+                {{> stream_privacy_icon
+                  invite_only=invite_only
+                  is_web_public=is_web_public }}
+                <div class="stream-name">
+                    <span class="sub-stream-name" title="{{name}}">{{name}}</span>
+                </div>
+                <div class="stream_change_property_info alert-notification"></div>
+                <div class="button-group" {{#unless can_change_name_description}}style="display:none"{{/unless}}>
+                    <button id="open_stream_info_modal" class="button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream info' }}">
+                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="stream-description">
+                {{> stream_description
+                  rendered_description=rendered_description
+                  }}
+            </div>
+            <div class="stream_setting_subsection_header">
+                <h3 class="stream_setting_subsection_title">
+                    {{t "Stream permissions" }}
+                </h3>
+                <div class="stream_permission_change_info alert-notification"></div>
+                <div class="button-group">
+                    <button class="change-stream-privacy button rounded small btn-warning tippy-zulip-tooltip" data-tippy-content="{{t 'Change stream permissions' }}" {{#unless can_change_stream_permissions}}style="display:none"{{/unless}}>
+                        <i class="fa fa-pencil" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="subscription-type">
+                <div class="subscription-type-text">
+                    {{> stream_permission_description
+                      stream_post_policy_values=../stream_post_policy_values
+                      message_retention_text=../message_retention_text}}
+                </div>
+            </div>
+            {{/with}}
+            <div class="stream-email-box" {{#unless sub.email_address}}style="display: none;"{{/unless}}>
+                <h3 class="stream_setting_subsection_title">
+                    {{t "Email address" }}
+                    {{> ../help_link_widget link="/help/message-a-stream-by-email" }}
+                </h3>
+                <div class="stream-email">
+                    <span class="email-address">{{sub.email_address}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="personal-stream-settings" class="personal_settings stream_section">
+            <div class="subsection-header">
+                <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
+                <div id="stream_change_property_status{{sub.stream_id}}" class="stream_change_property_status alert-notification"></div>
+            </div>
+            <div class="subscription-config">
+                <div class="subsection-parent">
+                    {{#each other_settings}}
+                        <div class="input-group">
+                            {{> stream_settings_checkbox
+                              setting_name=name
+                              is_checked=is_checked
+                              is_muted=(lookup ../sub "is_muted")
+                              stream_id=(lookup ../sub "stream_id")
+                              notification_setting=false
+                              disabled_realm_setting=disabled_realm_setting
+                              is_disabled=is_disabled
+                              label=label}}
+                        </div>
+                    {{/each}}
+
+                    <div class="input-group">
+                        <label for="streamcolor">{{t "Stream color" }}</label>
+                        <span class="sub_setting_control">
+                            <input stream_id="{{sub.stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{sub.color}}" tabindex="-1" />
+                        </span>
+                    </div>
+                </div>
+                <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+                <div class="subsection-parent">
+                    {{#each notification_settings}}
+                        <div class="input-group">
+                            {{> stream_settings_checkbox
+                              setting_name=name
+                              is_checked=is_checked
+                              is_muted=(lookup ../sub "is_muted")
+                              stream_id=(lookup ../sub "stream_id")
+                              notification_setting=true
+                              disabled_realm_setting=disabled_realm_setting
+                              is_disabled=is_disabled
+                              label=label}}
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <div class="subscriber_settings stream_section">
+            {{#with sub}}
+            <div class="edit_subscribers_for_stream">
+                {{> stream_members}}
+            </div>
+            {{/with}}
+        </div>
+    </div>
+</div>

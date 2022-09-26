@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+UPGRADE_TO=${1:-14}
+UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
+ZULIP_PATH="$(dirname "$0")/../.."
+
+if [ "$UPGRADE_TO" = "$UPGRADE_FROM" ]; then
+    echo "Already running PostgreSQL $UPGRADE_TO!"
+    exit 1
+fi
+
+set -x
+
+"$ZULIP_PATH"/scripts/lib/setup-apt-repo
+apt-get install -y "postgresql-$UPGRADE_TO"
+if pg_lsclusters -h | grep -qE "^$UPGRADE_TO\s+main\b"; then
+    pg_dropcluster "$UPGRADE_TO" main --stop
+fi
+
+(
+    # Two-stage application of Puppet; we apply the bare-bones
+    # PostgreSQL configuration first, so that FTS will be configured
+    # prior to the pg_upgradecluster.
+    TEMP_CONF_DIR=$(mktemp -d)
+    cp /etc/zulip/zulip.conf "$TEMP_CONF_DIR"
+    ZULIP_CONF="${TEMP_CONF_DIR}/zulip.conf"
+    crudini --set "$ZULIP_CONF" postgresql version "$UPGRADE_TO"
+    crudini --set "$ZULIP_CONF" machine puppet_classes zulip::profile::base,zulip::postgresql_base
+    touch "/usr/share/postgresql/$UPGRADE_TO/pgroonga_setup.sql.applied"
+
+    FACTER_LEAVE_SUPERVISOR=true "$ZULIP_PATH"/scripts/zulip-puppet-apply -f --config "$ZULIP_CONF"
+    rm -rf "$TEMP_CONF_DIR"
+)
+
+# Capture the output so we know where the path to the post-upgrade scripts is
+UPGRADE_LOG=$(mktemp "/var/log/zulip/upgrade-postgresql-$UPGRADE_FROM-$UPGRADE_TO.XXXXXXXXX.log")
+pg_upgradecluster -v "$UPGRADE_TO" "$UPGRADE_FROM" main --method=upgrade --link | tee "$UPGRADE_LOG"
+SCRIPTS_PATH=$(grep -o "/var/log/postgresql/pg_upgradecluster-$UPGRADE_FROM-$UPGRADE_TO-main.*" "$UPGRADE_LOG" || true)
+
+# If the upgrade completed successfully, lock in the new version in
+# our configuration immediately
+crudini --set /etc/zulip/zulip.conf postgresql version "$UPGRADE_TO"
+
+# Update the statistics
+su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-only --jobs 10"
+
+# Start the database up cleanly
+"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
+
+# Drop the old data, binaries, and scripts
+pg_dropcluster "$UPGRADE_FROM" main
+apt remove -y "postgresql-$UPGRADE_FROM"
+if [ -n "$SCRIPTS_PATH" ]; then
+    if [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
+        su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    fi
+    su postgres -c "$SCRIPTS_PATH/delete_old_cluster.sh"
+    rm -rf "$SCRIPTS_PATH"
+else
+    set +x
+    echo
+    echo
+    echo ">>>>> pg_upgradecluster succeeded, but post-upgrade scripts path could not"
+    echo "      be parsed out!  Please read the pg_upgradecluster output to understand"
+    echo "      the current status of your cluster:"
+    echo "          $UPGRADE_LOG"
+    echo "      and report this bug with the PostgreSQL $UPGRADE_FROM -> $UPGRADE_TO upgrade to:"
+    echo "          https://github.com/zulip/zulip/issues"
+    echo
+    echo
+fi

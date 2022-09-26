@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activity>
+    <id type="integer">346176787</id>
+    <version type="integer">21</version>
+    <event_type>story_update</event_type>
+    <occurred_at type="datetime">2013/04/17 20:32:31 UTC</occurred_at>
+    <author>Leo Franchi</author>
+    <project_id type="integer">807213</project_id>
+    <description>Leo Franchi finished &quot;Another new story&quot;</description>
+    <stories type="array">
+        <story>
+            <id type="integer">48278289</id>
+            <url>http://www.pivotaltracker.com/services/v3/projects/807213/stories/48278289</url>
+            <current_state>finished</current_state>
+        </story>
+    </stories>
+</activity>

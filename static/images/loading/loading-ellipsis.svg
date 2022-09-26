@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 150 100" preserveAspectRatio="xMidYMid" style="background: none;"><g transform="translate(25 50)">
+<circle cx="0" cy="0" r="15" fill="#333" transform="scale(0.381813 0.381813)">
+  <animateTransform attributeName="transform" type="scale" begin="-0.6666666666666666s" calcMode="spline" keySplines="0.3 0 0.7 1;0.3 0 0.7 1" values="0.2;1;0.2" keyTimes="0;0.5;1" dur="1.5s" repeatCount="indefinite"></animateTransform>
+</circle>
+</g><g transform="translate(75 50)">
+<circle cx="0" cy="0" r="15" fill="#333" transform="scale(0.833206 0.833206)">
+  <animateTransform attributeName="transform" type="scale" begin="-0.3333333333333333s" calcMode="spline" keySplines="0.3 0 0.7 1;0.3 0 0.7 1" values="0.2;1;0.2" keyTimes="0;0.5;1" dur="1.5s" repeatCount="indefinite"></animateTransform>
+</circle>
+</g><g transform="translate(124 50)">
+<circle cx="0" cy="0" r="15" fill="#333" transform="scale(0.977127 0.977127)">
+  <animateTransform attributeName="transform" type="scale" begin="0s" calcMode="spline" keySplines="0.3 0 0.7 1;0.3 0 0.7 1" values="0.2;1;0.2" keyTimes="0;0.5;1" dur="1.5s" repeatCount="indefinite"></animateTransform>
+</circle>
+</g></svg>

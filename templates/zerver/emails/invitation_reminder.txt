@@ -1,0 +1,10 @@
+{{ _("Hi again,") }}
+
+{% trans %}This is a friendly reminder that {{ referrer_name }} ({{ referrer_email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.{% endtrans %}
+
+{{ _("To get started, click the link below.") }}
+    <{{ activate_url }}>
+
+{{ _("This is the last reminder you'll receive for this invitation.") }}
+
+{% trans %}This invitation expires in two days. If the invitation expires, you'll need to ask {{ referrer_name }} for another one.{% endtrans %}

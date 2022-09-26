@@ -1,0 +1,10 @@
+Support URL: {{ support_url }}
+
+Website: {{ website }}
+
+Organization type: {{ organization_type }}
+
+Description:
+{{ description }}
+
+Requested by: {{ requested_by }} ({{ user_role }})

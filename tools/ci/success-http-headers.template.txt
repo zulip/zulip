@@ -1,0 +1,13 @@
+HTTP/2 200 
+server: {nginx_version_string}
+content-type: application/json
+vary: Accept-Encoding
+vary: Accept-Language, Cookie
+content-language: en
+strict-transport-security: max-age=15768000
+x-frame-options: DENY
+x-content-type-options: nosniff
+access-control-allow-origin: *
+access-control-allow-headers: Authorization
+access-control-allow-methods: GET, POST, DELETE, PUT, PATCH, HEAD
+

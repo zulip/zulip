@@ -1,0 +1,23 @@
+#
+# This file is GENERATED.  Don't edit directly.
+#
+# To update, edit the non-"lock" files in requirements/*.in, then:
+#
+#    tools/update-locked-requirements
+#
+# For details, see requirements/README.md .
+#
+wheel==0.37.1 \
+    --hash=sha256:4bdcd7d840138086126cd09254dc6195fb4fc6f01c050a1d7236f2630db1d22a \
+    --hash=sha256:e9a504e793efbca1b8e0e9cb979a249cf4a0a7b5b8c9e8b65a5e39d49529c1c4
+    # via -r requirements/pip.in
+
+# The following packages are considered to be unsafe in a requirements file:
+pip==20.3.4 \
+    --hash=sha256:217ae5161a0e08c0fb873858806e3478c9775caffce5168b50ec885e358c199d \
+    --hash=sha256:6773934e5f5fc3eaa8c5a44949b5b924fc122daa0a8aa9f80c835b4ca2a543fc
+    # via -r requirements/pip.in
+setuptools==65.3.0 \
+    --hash=sha256:2e24e0bec025f035a2e72cdd1961119f557d78ad331bb00ff82efb2ab8da8e82 \
+    --hash=sha256:7732871f4f7fa58fb6bdcaeadb0161b2bd046c85905dbaa066bdcbcc81953b57
+    # via -r requirements/pip.in

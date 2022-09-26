@@ -1,0 +1,76 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "landing-page" %}
+
+{% set PAGE_TITLE = "Zulip for communities" %}
+
+{% set PAGE_DESCRIPTION = "Zulip is designed with communities in mind, including
+  open-source projects, research collaborations, and volunteer organizations.
+  Reach out for a sponsorship!" %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page solutions-page">
+    <div class="hero bg-education">
+        <div class="bg-dimmer"></div>
+        <h1 class="center">Zulip for communities</h1>
+        <p>
+            Open-source projects, research collaborations, volunteer
+            organizations. <br />Most communities get an 85%+ discount
+            on <a href="/plans">Zulip Cloud Standard</a>!
+        </p>
+        <div class="hero-text">
+            Learn how the <a href="/case-studies/recurse-center/">Recurse
+            Center</a>, <a href="/case-studies/rust/">Rust language</a>,
+            <br />and <a href="/case-studies/asciidoctor/">Asciidoctor</a> communities are using Zulip.
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/for/communities.md') }}
+            </div>
+        </div>
+    </div>
+    <div class="bottom-register-buttons">
+        <h1>
+            Most communities get an 85%+ discount on <a href="/plans">Zulip Cloud Standard</a>!
+        </h1>
+        <div class="bottom-text-large">
+            <p> Join the hundreds of communities we sponsor. Contact <a href="mailto:sales@zulip.com">
+                sales@zulip.com</a> to check whether your organization
+                qualifies, or <a href="/accounts/go/?next=/upgrade%23sponsorship">request
+                sponsorship</a> today.
+            </p>
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                {{ _('Request sponsorship') }}
+            </a>
+            <a href="/self-hosting/" class="button">
+                {{ _('Self-host Zulip') }}
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

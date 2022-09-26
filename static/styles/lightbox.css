@@ -1,0 +1,248 @@
+#lightbox_overlay {
+    background-color: hsl(227, 40%, 16%);
+
+    .image-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        height: calc(100% - 65px - 95px);
+        margin: 0;
+        overflow: hidden;
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center center;
+
+        img {
+            cursor: move;
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        .zoom-element {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .exit {
+        flex-shrink: 0;
+
+        color: hsla(0, 0%, 100%, 0.8);
+        font-size: 2rem;
+        margin: 6px 20px 0 0;
+
+        transform: scaleY(0.75);
+        font-weight: 300;
+
+        opacity: 0;
+        pointer-events: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    &.show .exit {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .image-info-wrapper {
+        background-color: transparent;
+        display: flex;
+        flex-flow: row wrap;
+    }
+
+    .image-description,
+    .image-actions {
+        margin: 20px;
+    }
+
+    .image-actions {
+        flex-shrink: 0;
+        margin-left: auto;
+
+        .button {
+            font-size: 0.9rem;
+            min-width: inherit;
+            padding: 4px 10px;
+            border: 1px solid hsla(0, 0%, 100%, 0.6);
+            background-color: transparent;
+            color: hsl(0, 0%, 100%);
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 5px;
+
+            &:hover {
+                background-color: hsl(0, 0%, 100%);
+                border-color: hsl(0, 0%, 100%);
+                color: hsl(227, 40%, 16%);
+            }
+        }
+
+        .disabled {
+            opacity: 0.7;
+            cursor: default;
+
+            &:hover {
+                background-color: transparent;
+                color: hsl(0, 0%, 100%);
+                border: 1px solid hsla(0, 0%, 100%, 0.6);
+            }
+        }
+    }
+
+    .image-description {
+        display: flex;
+        flex-direction: column;
+        max-width: calc(100% - 400px);
+        /* add some extra margin top and remove some bottom to keep the
+        height the same. and vertically center the text with the buttons. */
+        margin-top: 25px;
+        margin-bottom: 15px;
+
+        font-size: 1.1rem;
+        color: hsl(0, 0%, 100%);
+
+        .title {
+            vertical-align: top;
+            font-weight: 400;
+            line-height: normal;
+
+            /* Required for text-overflow */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user {
+            font-weight: 300;
+            line-height: normal;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: pre;
+
+            &::before {
+                margin-right: 5px;
+                content: "\2014";
+            }
+        }
+    }
+
+    .player-container {
+        height: calc(100% - 65px - 95px);
+        display: flex;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+
+        iframe {
+            /* maintain 16:9 ratio. */
+            width: calc((100vh - 65px - 95px) * 16 / 9);
+            height: 100%;
+            margin: auto;
+        }
+    }
+
+    .center {
+        .arrow {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 25px;
+            padding: 5px 10px;
+
+            color: hsl(0, 0%, 100%);
+            font-size: 1.8em;
+            font-weight: 100;
+
+            transform: scaleY(2);
+            cursor: pointer;
+
+            opacity: 0.5;
+            transition: all 0.3s ease;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        .image-list {
+            position: relative;
+            display: inline-block;
+            padding: 15px 0 12px;
+            height: 50px;
+            font-size: 0;
+
+            max-width: 40vw;
+            overflow: hidden;
+            white-space: nowrap;
+
+            .image {
+                display: inline-block;
+                vertical-align: top;
+                width: 50px;
+                height: 50px;
+                margin: 0 2px;
+
+                background-color: hsla(0, 0%, 94%, 0.2);
+                opacity: 0.5;
+
+                background-size: cover;
+                background-position: center;
+                cursor: pointer;
+
+                &.selected {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+}
+
+@media only screen and ($ms_min <= width < $md_min) {
+    #lightbox_overlay {
+        .image-actions {
+            width: 100%;
+            padding-left: 15px;
+            margin-top: 0;
+        }
+
+        .image-description {
+            max-width: calc(100% - 100px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 5px;
+        }
+
+        .center .image-list {
+            max-width: 80vw;
+        }
+
+        .player-container iframe {
+            /* maintain 16:9 ratio. */
+            width: 100%;
+            height: calc((100vw) * 9 / 16);
+            margin: auto;
+        }
+
+        .image-preview {
+            height: calc(100% - 101px - 104px);
+        }
+
+        .image-info-wrapper {
+            align-items: flex-end;
+        }
+
+        .exit {
+            position: absolute;
+            right: 5px;
+            top: 6px;
+        }
+    }
+}

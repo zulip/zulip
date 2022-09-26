@@ -1,0 +1,101 @@
+<div id="account-settings" class="settings-section show" data-name="account-and-privacy">
+    <div class="alert" id="dev-account-settings-status"></div>
+    <div class="account-settings-form">
+        <div class="inline-block">
+            <div id="user_details_section">
+                <h3 class="inline-block">{{t "Account" }}</h3>
+                <div class="alert-notification" id="account-settings-status"></div>
+                <form class="email-change-form grid">
+                    <div class="input-group">
+                        <label class="inline-block title">{{t "Email" }}</label>
+                        <button id='change_email' type="button" class="button btn-link small rounded inline-block"
+                          {{#if (and page_params.realm_email_changes_disabled (not page_params.is_admin))}}disabled="disabled"{{/if}}>
+                            {{page_params.delivery_email}}
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <i class="tippy-zulip-tooltip fa fa-question-circle change_email_tooltip settings-info-icon" {{#if (or (not page_params.realm_email_changes_disabled) page_params.is_admin)}}style="display: none;"{{/if}} data-tippy-content="{{t 'Email address changes are disabled in this organization.' }}"></i>
+                    </div>
+                </form>
+
+                {{#if page_params.two_fa_enabled }}
+                <p for="two_factor_auth" class="inline-block title">
+                    {{t "Two factor authentication" }}: {{#if page_params.two_fa_enabled_user }}{{t "Enabled" }}{{else}}{{t "Disabled" }}{{/if}}
+                    <a target="_blank" rel="noopener noreferrer" id="two_factor_auth" href="/account/two_factor/" title="{{t 'Set up two factor authentication' }}">[{{t "Setup" }}]</a>
+                </p>
+                {{/if}}
+
+                <form class="password-change-form grid">
+                    {{#if page_params.realm_email_auth_enabled}}
+                    <div>
+                        <label class="inline-block title">{{t "Password" }}</label>
+                        <div class="input-group inline-block" id="pw_change_link">
+                            <button id="change_password" type="button" class="change_password_button btn-link small button rounded inline-block" data-dismiss="modal">********<i class="fa fa-pencil"></i></button>
+                        </div>
+                    </div>
+                    {{/if}}
+                </form>
+
+                <div class="input-group">
+                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal" id="privacy_settings_box">
+            <h3 class="inline-block">{{t "Privacy" }}</h3>
+            <div class="alert-notification privacy-setting-status"></div>
+            <div class="input-group">
+                {{> settings_checkbox
+                  setting_name="send_private_typing_notifications"
+                  is_checked=settings_object.send_private_typing_notifications
+                  label=settings_label.send_private_typing_notifications
+                  }}
+                {{#if page_params.development_environment }}
+                {{> settings_checkbox
+                  setting_name="send_stream_typing_notifications"
+                  is_checked=settings_object.send_stream_typing_notifications
+                  label=settings_label.send_stream_typing_notifications
+                  }}
+                {{/if}}
+                {{> settings_checkbox
+                  setting_name="send_read_receipts"
+                  is_checked=settings_object.send_read_receipts
+                  label=settings_label.send_read_receipts
+                  tooltip_text=send_read_receipts_tooltip
+                  hide_tooltip=page_params.realm_enable_read_receipts
+                  help_link="/help/read-receipts"
+                  }}
+                {{> settings_checkbox
+                  setting_name="presence_enabled"
+                  is_checked=settings_object.presence_enabled
+                  label=settings_label.presence_enabled
+                  help_link="/help/status-and-availability"
+                  prefix="user_"}}
+            </div>
+        </div>
+
+        <hr class="settings_separator" />
+
+        <div class="form-horizontal" id="api_key_button_box">
+            <h3>{{t "API key" }}</h3>
+
+            <div class="input-group">
+                <p class="api-key-note">
+                    {{#tr}}
+                    An API key can be used to programmatically access a Zulip account.
+                    Anyone with access to your API key has the ability to read your messages, send
+                    messages on your behalf, and otherwise impersonate you on Zulip, so you should
+                    guard your API key as carefully as you guard your password. <br />
+                    We recommend creating bots and using the bots' accounts and API keys to access
+                    the Zulip API, unless the task requires access to your account.
+                    {{/tr}}
+                </p>
+                <button class="button rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
+            </div>
+        </div>
+        <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
+        to avoid password being inserted by password manager too aggressively. -->
+    </div>
+</div>

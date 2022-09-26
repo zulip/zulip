@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    echo "usage: install -r RELEASE {TARBALL|DIR} [...installer opts..]" >&2
+    exit 1
+}
+
+args="$(getopt -o +r: --long help,release: -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help) usage ;;
+        -r | --release)
+            RELEASE="$2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *) usage ;;
+    esac
+done
+INSTALLER="$1"
+shift || usage
+INSTALLER_ARGS=("$@")
+set --
+
+if [ -z "$RELEASE" ] || [ -z "$INSTALLER" ]; then
+    usage
+fi
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: this script must be run as root" >&2
+    exit 1
+fi
+
+set -x
+
+THIS_DIR="$(dirname "$(readlink -f "$0")")"
+
+BASE_CONTAINER_NAME=zulip-install-"$RELEASE"-base
+if ! lxc-info -n "$BASE_CONTAINER_NAME" >/dev/null 2>&1; then
+    "$THIS_DIR"/prepare-base "$RELEASE"
+fi
+
+while [ -z "$CONTAINER_NAME" ] || lxc-info -n "$CONTAINER_NAME" >/dev/null 2>&1; do
+    shared_dir="$(mktemp -d --tmpdir "$RELEASE"-XXXXX)"
+    CONTAINER_NAME=zulip-install-"$(basename "$shared_dir")"
+done
+
+message="$(
+    cat <<EOF
+
+Container:
+  sudo lxc-attach --clear-env -n $CONTAINER_NAME
+
+Unpacked tree:
+  sudo ls $shared_dir/mnt/zulip-server
+EOF
+)"
+trap 'set +x; echo "$message"' EXIT
+
+if [ -d "$INSTALLER" ]; then
+    installer_dir="$(readlink -f "$INSTALLER")"
+else
+    installer_dir="$(mktemp -d --tmpdir zulip-server-XXXXX)"
+    tar -xf "$INSTALLER" -C "$installer_dir" --transform='s,^[^/]*,zulip-server,'
+fi
+
+mkdir -p /srv/zulip/test-install/pip-cache
+
+mkdir "$shared_dir"/upper "$shared_dir"/work "$shared_dir"/mnt
+mount -t overlay overlay \
+    -o lowerdir="$installer_dir",upperdir="$shared_dir"/upper,workdir="$shared_dir"/work \
+    "$shared_dir"/mnt
+
+lxc-copy --ephemeral --keepdata -n "$BASE_CONTAINER_NAME" -N "$CONTAINER_NAME" \
+    -m bind="$shared_dir"/mnt:/mnt/src/,bind=/srv/zulip/test-install/pip-cache:/root/.cache/pip
+
+"$THIS_DIR"/lxc-wait -n "$CONTAINER_NAME"
+
+run() {
+    lxc-attach --clear-env -n "$CONTAINER_NAME" -- "$@"
+}
+
+run eatmydata -- /mnt/src/zulip-server/scripts/setup/install --self-signed-cert "${INSTALLER_ARGS[@]}"
+
+# TODO settings.py, initialize-database, create realm

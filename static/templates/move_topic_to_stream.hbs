@@ -1,0 +1,28 @@
+<p>{{#tr}}Move all messages in <strong>{topic_name}</strong>{{/tr}} to:</p>
+<form class="new-style" id="move_topic_form">
+    <p>{{t "Select a stream below or change topic name." }}</p>
+    <div class="topic_stream_edit_header">
+        <div class="stream_header_colorblock"></div>
+        <div class="move-topic-dropdown">
+            {{> settings/dropdown_list_widget
+              widget_name="select_stream"
+              list_placeholder=(t 'Filter streams')}}
+        </div>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <input name="new_topic_name" type="text" class="inline_topic_edit" autocomplete="off" value="{{topic_name}}" />
+        <input name="old_topic_name" type="hidden" class="inline_topic_edit" value="{{topic_name}}" />
+        <input name="current_stream_id" type="hidden" value="{{current_stream_id}}" />
+        <div class="topic_move_breadcrumb_messages">
+            <label class="checkbox">
+                <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
+                <span></span>
+                {{t "Send automated notice to new topic" }}
+            </label>
+            <label class="checkbox">
+                <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
+                <span></span>
+                {{t "Send automated notice to old topic" }}
+            </label>
+        </div>
+    </div>
+</form>

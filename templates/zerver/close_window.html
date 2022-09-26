@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>{{ _("Video call ended") }} | Zulip</title>
+        <script>
+            window.close();
+            // Why doesn’t this work in Firefox?  See
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=1353466
+        </script>
+    </head>
+    <body>
+        <p>{{ _("You may now close this window.") }}</p>
+    </body>
+</html>

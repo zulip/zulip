@@ -1,0 +1,56 @@
+{% if show_message_content %}
+{% for recipient_block in messages %}
+{% for sender_block in recipient_block.senders %}
+{% for message_block in sender_block.content %}
+{{ message_block.plain }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% else %}
+{% if message_content_disabled_by_realm %}
+{% trans hide_content_url=realm_uri + "/help/hide-message-content-in-emails" %}
+This email does not include message content because your organization has disabled message content appearing in email notifications.
+See {{ hide_content_url }} for more details.
+{% endtrans %}
+{% elif message_content_disabled_by_user %}
+{% trans alert_notif_url=realm_uri + "/help/pm-mention-alert-notifications" %}
+This email does not include message content because you have disabled message content appearing in email notifications.
+See {{ alert_notif_url }} for more details.
+{% endtrans %}
+{% endif %}
+{% endif %}
+
+--
+{% if mention %}
+{% if mentioned_user_group_name %}
+{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned in {{ realm_name }}.{% endtrans %}
+{% else %}
+{% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}
+{% endif %}
+{% elif stream_email_notify %}
+{% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}
+{% endif %}
+
+{% if reply_to_zulip  %}
+{% trans %}Reply to this email directly, or view it in Zulip:{% endtrans %}
+
+{{ narrow_url }}
+{% elif not show_message_content %}
+{% trans %}View or reply in Zulip:{% endtrans %}
+
+{{ narrow_url }}
+{% else %}
+{% trans %}Reply in Zulip:{% endtrans %}
+
+{{ narrow_url }}
+
+{% trans %}
+Do not reply to this email. This Zulip server is not configured to accept
+incoming emails. Help:
+{% endtrans %}
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
+{% endif %}
+
+{% trans %}Manage email preferences: {% endtrans %}
+
+{{ realm_uri }}/#settings/notifications

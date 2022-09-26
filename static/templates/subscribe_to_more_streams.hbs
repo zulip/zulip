@@ -1,0 +1,16 @@
+{{#if exactly_one_unsubscribed_stream}}
+    <a href="#streams/all">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        {{~#tr}}Browse 1 more stream{{/tr~}}
+    </a>
+{{else if can_subscribe_stream_count}}
+    <a href="#streams/all">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        {{~#tr}}Browse {can_subscribe_stream_count} more streams{{/tr~}}
+    </a>
+{{else if can_create_streams}}
+    <a href="#streams/new">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        {{~t "Create a stream"~}}
+    </a>
+{{/if}}

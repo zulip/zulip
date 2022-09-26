@@ -1,0 +1,428 @@
+/* stylelint-disable color-no-hex  */
+/* hex color codes are used instead of our standard of hsl colors,
+because hex color codes are rendered by all email clients
+consistently.  Whereas HSL colors don't work with Hotmail. */
+
+img {
+    border: none;
+    -ms-interpolation-mode: bicubic;
+    max-width: 100%;
+    vertical-align: bottom;
+}
+
+body {
+    background-color: #f5f9f8;
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+pre {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+table {
+    border-collapse: separate;
+    mso-table-lspace: 0;
+    mso-table-rspace: 0;
+    width: 100%;
+}
+
+table td {
+    font-family: sans-serif;
+    font-size: 14px;
+    vertical-align: top;
+}
+
+.body {
+    background-color: #f5f9f8;
+    width: 100%;
+}
+
+.container {
+    display: block;
+    margin: 0 auto !important;
+    max-width: 500px;
+    padding: 10px;
+}
+
+.container.wide-container {
+    max-width: 700px;
+}
+
+.content {
+    box-sizing: border-box;
+    display: block;
+    margin: 20px auto 0;
+    max-width: 580px;
+    padding: 10px;
+}
+
+.content.wide-content {
+    max-width: 780px;
+}
+
+.main {
+    background-color: #fff;
+    border-radius: 3px;
+    width: 100%;
+}
+
+.wrapper {
+    box-sizing: border-box;
+    padding: 0 20px 20px;
+}
+
+.footer {
+    clear: both;
+    padding-top: 10px;
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.footer td,
+.footer p,
+.footer span,
+.footer a {
+    color: #5f5ec7;
+    font-size: 12px;
+    text-align: center;
+}
+
+.footer .content-block p {
+    margin-top: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    color: #4e4d4d !important;
+    font-family: sans-serif;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 35px;
+    font-weight: 300;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+h2 {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+ul,
+ol {
+    /* Override excessive indentation seen in Gmail. */
+    padding-left: 5px;
+}
+
+p,
+ul,
+ol {
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    margin: 10px 0;
+}
+
+p li,
+ul li,
+ol li {
+    list-style-position: outside;
+    margin-left: 15px;
+}
+
+a {
+    color: #5f5ec7;
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #434388;
+}
+
+.important {
+    border-bottom: 3px solid #d4e3e8;
+}
+
+.button {
+    display: block;
+    padding: 10px 0;
+    margin: 20px auto;
+    width: 200px;
+    color: #5f5ec7;
+    border: 2px solid #5f5ec7;
+    background-color: #fff;
+    border-radius: 4px;
+    font-size: 16px;
+    outline: none;
+    font-family: sans-serif;
+    text-decoration: none;
+    text-align: center;
+    text-shadow: none;
+}
+
+a.button:hover {
+    background-color: #5f5ec7;
+    color: #fff;
+    text-decoration: none;
+}
+
+.preheader {
+    color: transparent;
+    display: none;
+    height: 0;
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    mso-hide: all;
+    visibility: hidden;
+    width: 0;
+}
+
+.illustration {
+    pointer-events: none;
+    cursor: default !important;
+    z-index: 100;
+}
+
+#private-messages {
+    width: 600px;
+    font-size: 12px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.recipient_block {
+    background-color: #f0f4f5;
+    border: 1px solid #000;
+    margin-bottom: 4px;
+}
+
+.recipient_header {
+    color: #e0dada;
+    background-color: #444;
+    border-bottom: 1px solid #000;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content {
+    background-color: #eff3f4;
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.message_sender {
+    font-weight: bold;
+    padding-top: 1px;
+}
+
+.message_content_block {
+    padding-left: 6px;
+    font-weight: normal;
+}
+
+.messages {
+    width: 600px;
+    font-size: 12px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    overflow-y: auto;
+}
+
+.hot_convo_recipient_block {
+    border: 1px solid #000;
+    margin-bottom: 4px;
+}
+
+.hot_convo_recipient_header {
+    background-color: #9ec9ff;
+    border-bottom: 1px solid #000;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.hot_convo_message_content {
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.hot_convo_message_sender {
+    font-weight: bold;
+    padding-top: 1px;
+}
+
+.recipient_block_with_messages {
+    border: 1px solid #000;
+    margin-bottom: 4px;
+}
+
+.recipient_header_with_messages {
+    background-color: #9ecaff;
+    border-bottom: 1px solid #000;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content_with_messages {
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.recipient_block_without_messages {
+    background-color: #f0f4f5;
+    border: 1px solid #000;
+    margin-bottom: 4px;
+}
+
+.recipient_header_without_messages {
+    color: #fff;
+    background-color: #444;
+    border-bottom: 1px solid #000;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content_without_messages {
+    background-color: #f0f4f5;
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.hot_convo_message_content_block {
+    padding-left: 6px;
+    font-weight: normal;
+}
+
+.email-preferences {
+    color: #666;
+}
+
+.email-preferences a {
+    color: #15c;
+}
+
+.missed_message {
+    padding-bottom: 10px;
+}
+
+.missed_message_sender {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.content_disabled_help_link {
+    color: #15c;
+}
+
+.deactivated-user-text {
+    padding: 0 0 0 15px;
+    margin: 0 0 20px;
+    border-left: 5px solid #eee;
+    white-space: pre-line;
+}
+
+@media only screen and (max-width: 620px) {
+    table[class="body"] h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+    }
+
+    table[class="body"] p,
+    table[class="body"] ul,
+    table[class="body"] ol,
+    table[class="body"] td,
+    table[class="body"] span,
+    table[class="body"] a {
+        font-size: 16px !important;
+    }
+
+    table[class="body"] .wrapper {
+        padding: 0 10px 10px;
+    }
+
+    table[class="body"] .article {
+        padding: 10px !important;
+    }
+
+    table[class="body"] .content {
+        padding: 0 !important;
+    }
+
+    table[class="body"] .container {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    table[class="body"] .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+    }
+
+    table[class="body"] .btn table {
+        width: 100% !important;
+    }
+
+    table[class="body"] .btn a {
+        width: 100% !important;
+    }
+
+    table[class="body"] .img-responsive {
+        height: auto !important;
+        max-width: 100% !important;
+        width: auto !important;
+    }
+}
+
+@media all {
+    .ExternalClass {
+        width: 100%;
+    }
+
+    .ExternalClass,
+    .ExternalClass p,
+    .ExternalClass span,
+    .ExternalClass font,
+    .ExternalClass td,
+    .ExternalClass div {
+        line-height: 100%;
+    }
+
+    /* iOS converts addresses in emails to links automatically */
+    .apple-link a {
+        color: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+        text-decoration: none !important;
+    }
+}
+
+.float-right-image {
+    float: right;
+}
+
+/* The 450px cutoff was determined by testing in Gmail as a point
+   where an image looks good in either state. Logically it makes senes
+   since then the text still has the majority of the space in the
+   side-by-side view. */
+@media only screen and (min-width: 450px) {
+    .float-right-image {
+        max-width: 200px;
+    }
+}

@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+import json
+import os
+import sys
+
+import orjson
+
+from custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
+from emoji_setup_utils import get_emoji_code
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
+sys.path.append(ZULIP_PATH)
+EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
+OUT_EMOJI_FILE = os.path.join(ZULIP_PATH, "tools", "setup", "emoji", "emoji_names.py")
+
+with open(EMOJI_DATA_FILE, "rb") as fp:
+    EMOJI_DATA = orjson.loads(fp.read())
+
+# We don't include most clock emojis. See `custom_emoji_names` for more context.
+SKIPPED_CLOCK_EMOJI_CODES = [
+    "1f550",
+    "1f551",
+    "1f552",
+    "1f553",
+    "1f554",
+    "1f555",
+    "1f556",
+    "1f558",
+    "1f559",
+    "1f55a",
+    "1f55b",
+    "1f55c",
+    "1f55d",
+    "1f55e",
+    "1f55f",
+    "1f560",
+    "1f561",
+    "1f562",
+    "1f563",
+    "1f564",
+    "1f565",
+    "1f566",
+    "1f567",
+]
+
+# We don't include the skin tones as emojis that one can search for on their own.
+SKIN_TONE_EMOJI_CODES = [
+    "1f3fb",
+    "1f3fc",
+    "1f3fd",
+    "1f3fe",
+    "1f3ff",
+]
+
+
+def main() -> None:
+    all_emojis = {}
+    all_canonical_names = set()
+
+    for emoji_dict in EMOJI_DATA:
+        emoji_code = get_emoji_code(emoji_dict)
+        if emoji_code in SKIPPED_CLOCK_EMOJI_CODES or emoji_code in SKIN_TONE_EMOJI_CODES:
+            continue
+
+        if emoji_code in CUSTOM_EMOJI_NAME_MAPS:
+            canonical_name = CUSTOM_EMOJI_NAME_MAPS[emoji_code]["canonical_name"]
+            if canonical_name in all_canonical_names:
+                raise Exception(
+                    f"{canonical_name} was already added with a different codepoint. "
+                    f"Rename it in `custom_emoji_names` or add an entry for {emoji_code}."
+                )
+            all_canonical_names.add(canonical_name)
+            all_emojis[emoji_code] = CUSTOM_EMOJI_NAME_MAPS[emoji_code]
+        else:
+            continue  # this commit doesn't add CLDR data yet.
+            # create the unicode character(s) for the emoji, since this is the key into the CLDR data
+
+    with open(OUT_EMOJI_FILE, "w") as f:
+        f.write(
+            "from typing import Any, Dict\n\n"
+            "# Generated with `generate_emoji_names`.\n\n"
+            "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {\n"
+        )
+        for (key, emoji_names) in all_emojis.items():
+            f.write(f'    "{key}": {json.dumps(emoji_names)},\n')
+        f.write("}\n")
+
+    print(
+        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only black`"
+    )
+
+
+if __name__ == "__main__":
+    main()

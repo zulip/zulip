@@ -1,0 +1,44 @@
+<div id="groups_overlay" class="overlay new-style" data-overlay="group_subscriptions">
+    <div class="flex overlay-content">
+        <div class="user-groups-container modal-bg">
+            <div class="user-groups-header">
+                <div class="fa fa-chevron-left"></div>
+                <span class="user-groups-title">{{t 'User groups' }}</span>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+            </div>
+            <div class="left">
+                <div class="input-append group_name_search_section" id="group_filter">
+                    <input type="text" name="group_name" id="search_group_name" autocomplete="off"
+                      placeholder="{{t 'Filter groups' }}" value=""/>
+                    <button type="button" class="btn clear_search_button" id="clear_search_group_name">
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="user-groups-list" data-simplebar>
+                </div>
+            </div>
+            <div class="right">
+                <div class="display-type">
+                    <div id="user_group_settings_title" class="user-group-info-title">{{t 'User group settings' }}</div>
+                </div>
+                <div class="nothing-selected">
+                    {{#if can_create_or_edit_user_groups}}
+                    <button type="button" class="create_user_group_button animated-purple-button">{{t 'Create user group' }}</button>
+                    <span>
+                        {{#tr}}
+                            First time? Read our <z-link>guidelines</z-link> for creating user groups.
+                            {{#*inline "z-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                        {{/tr}}
+                    </span>
+                    {{/if}}
+                </div>
+                <div id="user_group_settings" class="settings" data-simplebar data-simplebar-auto-hide="false">
+                    {{!-- edit user group here --}}
+                </div>
+                {{> user_group_creation_form }}
+            </div>
+        </div>
+    </div>
+</div>

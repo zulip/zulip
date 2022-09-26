@@ -1,0 +1,95 @@
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+src_paths = [".", "tools", "tools/setup/emoji"]
+known_third_party = "zulip"
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+# Logistics of what code to check and how to handle the data.
+scripts_are_modules = true
+show_traceback = true
+# See https://zulip.readthedocs.io/en/latest/testing/mypy.html#mypy-stubs-for-third-party-modules
+# for notes on how we manage mypy stubs.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
+
+# Enable strict mode, with some exceptions.
+strict = true
+disallow_subclassing_any = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+warn_return_any = false
+
+# Enable optional errors.
+enable_error_code = [
+    "redundant-expr",
+    "truthy-bool",
+    "ignore-without-code",
+    "unused-awaitable",
+]
+
+# Display the codes needed for # type: ignore[code] annotations.
+show_error_codes = true
+
+# Warn of unreachable or redundant code.
+warn_unreachable = true
+
+# dmypy enables local_partial_types implicitly. We need mypy to align
+# with this behavior.
+local_partial_types = true
+
+[[tool.mypy.overrides]]
+module = ["zproject.configured_settings", "zproject.settings"]
+no_implicit_reexport = false
+
+[[tool.mypy.overrides]]
+module = [
+    "ahocorasick.*",
+    "aioapns.*",
+    "bitfield.*",
+    "bmemcached.*",
+    "cairosvg.*",
+    "circuitbreaker.*",
+    "coverage.*",
+    "cssutils.*",
+    "defusedxml.*", # https://github.com/tiran/defusedxml/issues/46
+    "digitalocean.*",
+    "disposable_email_domains.*",
+    "django.*", # https://github.com/zulip/zulip/issues/11560
+    "django_auth_ldap.*",
+    "django_bmemcached.*",
+    "django_cte.*",
+    "django_otp.*",
+    "django_scim.*",
+    "django_sendfile.*",
+    "django_statsd.*",
+    "DNS.*",
+    "fakeldap.*",
+    "gcm.*",
+    "gitlint.*",
+    "jsonref.*",
+    "ldap.*",
+    "moto.*", # https://github.com/spulec/moto/issues/4944
+    "onelogin.*",
+    "openapi_core.*",
+    "premailer.*",
+    "pyinotify.*",
+    "pyoembed.*",
+    "pyuca.*",
+    "re2.*",
+    "requests_oauthlib.*", # https://github.com/requests/requests-oauthlib/issues/428
+    "scim2_filter_parser.attr_paths",
+    "scrapy.*", # https://github.com/scrapy/scrapy/issues/4041
+    "social_core.*",
+    "social_django.*",
+    "sourcemap.*",
+    "talon_core.*",
+    "tlds.*",
+    "twitter.*",
+    "two_factor.*",
+]
+ignore_missing_imports = true

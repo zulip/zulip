@@ -1,0 +1,27 @@
+<div class="subscriber_list_add float-left">
+    {{> add_subscribers_form}}
+</div>
+<br />
+
+{{t "Do you want to add everyone?"}}
+<button class="add_all_users_to_stream small button rounded sea-green">{{t 'Add all users'}}</button>
+
+<div class="create_stream_subscriber_list_header">
+    <h4 class="stream_setting_subsection_title">{{t 'Subscribers' }}</h4>
+    <input class="add-user-list-filter" name="user_list_filter" type="text"
+      autocomplete="off" placeholder="{{t 'Filter subscribers' }}" />
+</div>
+
+<div class="subscriber-list-box">
+    <div class="subscriber_list_container" data-simplebar>
+        <table class="subscriber-list table table-striped">
+            <thead class="table-sticky-headers">
+                <th>{{t "Name" }}</th>
+                <th>{{t "Email" }}</th>
+                <th>{{t "User ID" }}</th>
+                <th>{{t "Action" }}</th>
+            </thead>
+            <tbody id="create_stream_subscribers" class="subscriber_table"></tbody>
+        </table>
+    </div>
+</div>

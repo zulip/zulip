@@ -1,0 +1,79 @@
+<ul class="nav nav-list topics_popover">
+    <li>
+        <p class="topic-name">
+            <i class="fa fa-chevron-right" aria-hidden="true" style="color: {{color}}"></i>
+            <b>{{topic_name}}</b>
+        </p>
+    </li>
+
+    <hr />
+
+    {{#unless topic_muted}}
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
+            {{t "Mute topic"}}
+        </a>
+    </li>
+    {{else}}
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="zulip-icon zulip-icon-mute" aria-hidden="true"></i>
+            {{t "Unmute topic"}}
+        </a>
+    </li>
+    {{/unless}}
+
+    {{#if has_starred_messages}}
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-star-o" aria-hidden="true"></i>
+            {{#tr}}Unstar all messages in topic{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+
+    <li class="hidden-for-spectators">
+        <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            {{t "Mark all messages as read"}}
+        </a>
+    </li>
+
+    <li>
+        <a tabindex="0" class="sidebar-popover-copy-link-to-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-link" aria-hidden="true"></i>
+            {{t "Copy link to topic"}}
+        </a>
+    </li>
+
+    {{#if can_move_topic}}
+    <hr />
+
+    <li>
+        <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-arrows" aria-hidden="true"></i>
+            {{t "Move topic"}}
+        </a>
+    </li>
+    <li>
+        <a tabindex="0" class="sidebar-popover-toggle-resolved" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-check" aria-hidden="true"></i>
+            {{# if topic_is_resolved }}
+            {{t "Mark as unresolved"}}
+            {{else}}
+            {{t "Mark as resolved"}}
+            {{/if}}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if is_realm_admin}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+            {{t "Delete topic"}}
+        </a>
+    </li>
+    {{/if}}
+</ul>

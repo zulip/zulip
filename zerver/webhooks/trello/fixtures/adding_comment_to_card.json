@@ -1,0 +1,75 @@
+{
+   "model":{
+      "id":"53582e2da0fac5676a714277",
+      "name":"Welcome Board",
+      "desc":"",
+      "descData":null,
+      "closed":false,
+      "idOrganization":null,
+      "pinned":false,
+      "url":"https://trello.com/b/iqXXzYEj/welcome-board",
+      "shortUrl":"https://trello.com/b/iqXXzYEj",
+      "prefs":{
+         "permissionLevel":"private",
+         "voting":"disabled",
+         "comments":"members",
+         "invitations":"members",
+         "selfJoin":false,
+         "cardCovers":true,
+         "calendarFeedEnabled":false,
+         "background":"blue",
+         "backgroundImage":null,
+         "backgroundImageScaled":null,
+         "backgroundTile":false,
+         "backgroundBrightness":"dark",
+         "backgroundColor":"#0079BF",
+         "canBePublic":true,
+         "canBeOrg":true,
+         "canBePrivate":true,
+         "canInvite":true
+      },
+      "labelNames":{
+         "green":"",
+         "yellow":"",
+         "orange":"",
+         "red":"",
+         "purple":"",
+         "blue":"",
+         "sky":"",
+         "lime":"",
+         "pink":"",
+         "black":""
+      }
+   },
+   "action":{
+      "id":"5735bd3a54bf8d93c35149bb",
+      "idMemberCreator":"53582e2da0fac5676a714276",
+      "data":{
+         "list":{
+            "name":"Basics",
+            "id":"53582e2da0fac5676a714279"
+         },
+         "board":{
+            "shortLink":"iqXXzYEj",
+            "name":"Welcome Board",
+            "id":"53582e2da0fac5676a714277"
+         },
+         "card":{
+            "shortLink":"xPKXoSTQ",
+            "idShort":3,
+            "name":"New card",
+            "id":"53582e2da0fac5676a714280"
+         },
+         "text":"New comment"
+      },
+      "type":"commentCard",
+      "date":"2016-05-13T11:40:42.612Z",
+      "memberCreator":{
+         "id":"53582e2da0fac5676a714276",
+         "avatarHash":null,
+         "fullName":"TomaszKolek",
+         "initials":"T",
+         "username":"tomaszkolek"
+      }
+   }
+}

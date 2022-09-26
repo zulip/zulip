@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import sys
+
+os.environ["RUNNING_OPENAPI_CURL_TEST"] = "1"
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+os.chdir(ZULIP_PATH)
+
+# check for the venv
+from tools.lib import sanity_check
+
+sanity_check.check_venv(__file__)
+
+from zulip import Client
+
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
+from tools.lib.test_server import test_server_running
+
+usage = """test-api [options]"""
+parser = argparse.ArgumentParser(usage)
+add_provision_check_override_param(parser)
+options = parser.parse_args()
+
+assert_provisioning_status_ok(options.skip_provision_check)
+
+with test_server_running(
+    skip_provision_check=options.skip_provision_check, external_host="zulipdev.com:9981"
+):
+    # zerver imports should happen after `django.setup()` is run
+    # by the test_server_running decorator.
+    from zerver.actions.create_user import do_create_user, do_reactivate_user
+    from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
+    from zerver.actions.users import change_user_is_active
+    from zerver.lib.test_helpers import reset_emails_in_zulip_realm
+    from zerver.lib.users import get_api_key
+    from zerver.models import get_realm, get_user
+    from zerver.openapi.javascript_examples import test_js_bindings
+    from zerver.openapi.python_examples import (
+        test_invalid_api_key,
+        test_realm_deactivated,
+        test_the_api,
+        test_user_account_deactivated,
+    )
+    from zerver.openapi.test_curl_examples import test_generated_curl_examples_for_success
+
+    print("Running API tests...")
+
+    reset_emails_in_zulip_realm()
+
+    # Prepare the admin client
+    email = "iago@zulip.com"  # Iago is an admin
+    realm = get_realm("zulip")
+    user = get_user(email, realm)
+    # Required to test can_create_users endpoints.
+    user.can_create_users = True
+    user.save(update_fields=["can_create_users"])
+
+    api_key = get_api_key(user)
+    site = "http://zulip.zulipdev.com:9981"
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+
+    # Prepare the owner client
+    email = "desdemona@zulip.com"  # desdemona is an owner
+    realm = get_realm("zulip")
+    user = get_user(email, realm)
+    api_key = get_api_key(user)
+    site = "http://zulip.zulipdev.com:9981"
+    owner_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+
+    # Prepare the non-admin client
+    email = "guest@zulip.com"  # guest is not an admin
+    guest_user = do_create_user(
+        "guest@zulip.com", "secret", get_realm("zulip"), "Mr. Guest", acting_user=None
+    )
+    api_key = get_api_key(guest_user)
+    nonadmin_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+
+    test_the_api(client, nonadmin_client, owner_client)
+    test_generated_curl_examples_for_success(client)
+    test_js_bindings(client)
+
+    # Test error payloads
+    client = Client(
+        email=email,
+        api_key="X" * 32,
+        site=site,
+    )
+    test_invalid_api_key(client)
+
+    # Test account deactivated error
+    # we deactivate user manually because do_deactivate_user removes user session
+    change_user_is_active(guest_user, False)
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+    test_user_account_deactivated(client)
+    # reactivate user to avoid any side-effects in other tests.
+    do_reactivate_user(guest_user, acting_user=None)
+
+    # Test realm deactivated error
+    do_deactivate_realm(guest_user.realm, acting_user=None)
+
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+    test_realm_deactivated(client)
+    do_reactivate_realm(guest_user.realm)
+
+
+print("API tests passed!")

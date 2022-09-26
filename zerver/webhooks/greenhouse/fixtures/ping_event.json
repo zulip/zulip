@@ -1,0 +1,13 @@
+{
+    "payload":{
+        "active":true,
+        "created_at":"2018-10-19T16:25:57Z",
+        "web_hook_id":9590,
+        "name":"Zulip",
+        "endpoint_url":"https:\/\/zulip.example.com\/",
+        "content-type":"application\/json",
+        "updated_at":"2018-10-19T16:49:16Z",
+        "event":"Candidate has been hired"
+    },
+    "action":"ping"
+}

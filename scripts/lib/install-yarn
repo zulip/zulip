@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+version=1.22.19
+sha256=732620bac8b1690d507274f025f3c6cfdc3627a84d9642e38a07452cc00e0f2e
+tarball="yarn-$version.tgz"
+
+check_version() {
+    # Reading the version of Yarn from its package.json is much faster
+    # than running yarn --version.
+    link="$(command -v yarn)" \
+        && [ "$link" -ef /srv/zulip-yarn/bin/yarn ] \
+        && current_version="$(jq -r '.version' /srv/zulip-yarn/package.json)" \
+        && [ "$current_version" = "$version" ]
+}
+
+if ! check_version; then
+    tmpdir="$(mktemp -d)"
+    trap 'rm -r "$tmpdir"' EXIT
+    cd "$tmpdir"
+    curl -fLO "https://registry.npmjs.org/yarn/-/$tarball"
+    sha256sum -c <<<"$sha256 $tarball"
+    rm -rf /srv/zulip-yarn
+    mkdir /srv/zulip-yarn
+    tar -xzf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-yarn
+    ln -nsf /srv/zulip-yarn/bin/yarn /usr/bin/yarn
+    check_version
+fi

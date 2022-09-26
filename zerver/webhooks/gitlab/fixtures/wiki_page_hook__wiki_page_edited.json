@@ -1,0 +1,39 @@
+{
+   "object_kind":"wiki_page",
+   "user":{
+      "name":"Tomasz Kolek",
+      "username":"tomaszkolek0",
+      "avatar_url":"https://secure.gravatar.com/avatar/116a6fdbcfd00466297a39174da11fbb?s=80\u0026d=identicon"
+   },
+   "project":{
+      "name":"my-awesome-project",
+      "description":"",
+      "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "avatar_url":null,
+      "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "git_http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git",
+      "namespace":"tomaszkolek0",
+      "visibility_level":0,
+      "path_with_namespace":"tomaszkolek0/my-awesome-project",
+      "default_branch":"master",
+      "homepage":"https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git"
+   },
+   "wiki":{
+      "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/home",
+      "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.wiki.git",
+      "git_http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.wiki.git",
+      "path_with_namespace":"tomaszkolek0/my-awesome-project.wiki",
+      "default_branch":"master"
+   },
+   "object_attributes":{
+      "slug":"how-to",
+      "title":"how to",
+      "format":"markdown",
+      "content":"abcaaa",
+      "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to",
+      "action":"update"
+   }
+}

@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(ZULIP_PATH)
+
+from scripts.lib.check_rabbitmq_queue import check_rabbitmq_queues
+
+if __name__ == "__main__":
+    check_rabbitmq_queues()

@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ $# == 0 ]]; then
+    MODE=dev
+elif [[ $# == 1 ]]; then
+    MODE=$1
+else
+    echo "Too many arguments"
+    exit 1
+fi
+
+if [[ "$MODE" == "dev" ]]; then
+    USERNAME=zulip
+    DBNAME=zulip
+    STATUS_FILE_NAME=migration_status_dev
+elif [[ "$MODE" == "test" ]]; then
+    USERNAME=zulip_test
+    DBNAME=zulip_test
+    STATUS_FILE_NAME=migration_status_test
+else
+    echo "Usage instructions"
+    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
+    echo "or specify 'test'"
+    exit 1
+fi
+
+set -x
+
+POSTGRES_USER="postgres"
+if [ "$(uname)" = "OpenBSD" ]; then
+    POSTGRES_USER="_postgresql"
+fi
+
+ROOT_POSTGRES=(sudo -i -u "$POSTGRES_USER" psql)
+DEFAULT_DB=""
+if [ "$(uname)" = "Darwin" ]; then
+    ROOT_POSTGRES=(psql)
+    DEFAULT_DB="postgres"
+fi
+
+if [ "$(uname)" = "OpenBSD" ]; then
+    DEFAULT_DB="postgres"
+fi
+
+VAGRANTUSERNAME=$(whoami)
+
+SEARCH_PATH=zulip,public
+PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
+DBNAME_BASE=${DBNAME}_base
+
+if ! pg_isready -U "$POSTGRES_USER" -q; then
+    set +x
+    echo
+    echo 'ERROR: PostgreSQL server is not running! Ensure the service is enabled.'
+    # shellcheck disable=SC2016
+    echo 'ERROR: Try `sudo service postgresql start`?'
+    echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$POSTGRES_USER"
+    exit 1
+fi
+
+# We need to remove the stamp file indicating that the database
+# is properly provisioned with migrations.
+uuid_var_path=$($(readlink -f "$(dirname "$0")/../../scripts/lib/zulip_tools.py") get_dev_uuid)
+rm -f "$uuid_var_path/$STATUS_FILE_NAME"
+
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DEFAULT_DB" <<EOF
+DO \$\$BEGIN
+    CREATE USER $USERNAME;
+EXCEPTION WHEN duplicate_object THEN
+    RAISE NOTICE '$USERNAME user already exists';
+END\$\$;
+ALTER USER $USERNAME PASSWORD '$PASSWORD';
+ALTER USER $USERNAME CREATEDB;
+ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
+
+DO \$\$BEGIN
+    CREATE USER $VAGRANTUSERNAME;
+EXCEPTION WHEN duplicate_object THEN
+    RAISE NOTICE '$VAGRANTUSERNAME user already exists';
+END\$\$;
+GRANT $USERNAME TO $VAGRANTUSERNAME;
+ALTER ROLE $VAGRANTUSERNAME SET search_path TO $SEARCH_PATH;
+EOF
+
+umask go-rw
+PGPASS_PREFIX="*:*:*:$USERNAME:"
+PGPASS_ESCAPED_PREFIX="*:\\*:\\*:$USERNAME:"
+if ! grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass; then
+    echo "$PGPASS_PREFIX$PASSWORD" >>~/.pgpass
+else
+    sed -i "s/$PGPASS_ESCAPED_PREFIX.*\$/$PGPASS_PREFIX$PASSWORD/" ~/.pgpass
+fi
+chmod go-rw ~/.pgpass
+
+PGHOST=localhost PGUSER="$USERNAME" \
+    "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" "$DBNAME" "$DBNAME_BASE"
+
+psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
+DROP DATABASE IF EXISTS $DBNAME;
+DROP DATABASE IF EXISTS $DBNAME_BASE;
+CREATE DATABASE $DBNAME_BASE
+EOF
+
+psql -v ON_ERROR_STOP=1 -e -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
+CREATE SCHEMA zulip;
+EOF
+
+"${ROOT_POSTGRES[@]}" -v ON_ERROR_STOP=1 -e "$DBNAME_BASE" <<EOF
+CREATE EXTENSION pgroonga;
+GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
+EOF
+
+psql -v ON_ERROR_STOP=1 -e -h localhost postgres "$USERNAME" <<EOF
+CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
+EOF
+
+"$(dirname "$0")/../../scripts/setup/flush-memcached"
+
+echo "Database created"
