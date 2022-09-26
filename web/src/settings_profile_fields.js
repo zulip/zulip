@@ -181,7 +181,7 @@ function get_value_for_new_option(container) {
     $choice_rows.each(function () {
         existing_option_values.push(Number.parseInt($(this).attr("data-value"), 10));
     });
-    existing_option_values.sort();
+    existing_option_values.sort((a, b) => a - b);
     return existing_option_values.at(-1) + 1;
 }
 
