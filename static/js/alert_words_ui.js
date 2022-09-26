@@ -76,7 +76,7 @@ function remove_alert_word(alert_word) {
             update_alert_word_status(
                 {
                     defaultMessage: "Alert word removed successfully!",
-                    message: `Alert word ${alert_word} removed successfully!`,
+                    message: `Alert word '${alert_word}' removed successfully!`,
                 },
                 false,
             );
