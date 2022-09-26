@@ -1255,7 +1255,8 @@ td.pointer {
     background-color: hsl(0, 0%, 88%);
 }
 
-.mention .messagebox {
+.group_mention .messagebox,
+.direct_mention .messagebox {
     background-color: hsl(8, 94%, 94%);
 }
 
