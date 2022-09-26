@@ -698,7 +698,8 @@ body.dark-theme {
         text-shadow: none;
     }
 
-    .mention .messagebox {
+    .group_mention .messagebox,
+    .direct_mention .messagebox {
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 
