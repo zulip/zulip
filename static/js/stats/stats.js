@@ -561,21 +561,6 @@ function populate_messages_sent_by_client(data) {
         }
         draw_plot();
     });
-
-    // handle links with @href started with '#' only
-    $(document).on("click", 'a[href^="#"]', function (e) {
-        // target element id
-        const id = $(this).attr("href");
-        // target element
-        const $id = $(id);
-        if ($id.length === 0) {
-            return;
-        }
-        // prevent standard hash navigation (avoid blinking in IE)
-        e.preventDefault();
-        const pos = $id.offset().top + $(".page-content")[0].scrollTop - 50;
-        $(".page-content").animate({scrollTop: pos + "px"}, 500);
-    });
 }
 
 function populate_messages_sent_by_message_type(data) {
