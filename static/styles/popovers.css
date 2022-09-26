@@ -1,6 +1,8 @@
 .popover {
     width: auto;
     max-width: 100%;
+    border: solid 1px hsla(0, 0%, 0%, 0.4);
+    border-radius: 5px;
 
     hr {
         margin-top: 5px;
@@ -13,10 +15,78 @@
         font-size: small;
         text-align: justify;
     }
+
+    .arrow {
+        position: absolute;
+        left: 50% !important;
+        top: -7.3px !important;
+        width: 16px;
+        height: 16px;
+        transform: translate(-50%, 0) rotate(0deg);
+        clip-path: inset(0 0 53% 0);
+        border: none !important;
+
+        &::after {
+            position: absolute;
+            content: "";
+            top: 0 !important;
+            left: 0 !important;
+            width: 11px;
+            height: 11px;
+            margin: 0 !important;
+            transform: translateX(-2.7px) translateY(4.4px) rotate(45deg);
+            transform-origin: bottom right;
+            border-radius: 20% 0 0;
+            background: hsl(0, 0%, 100%);
+            border: solid 1px hsla(0, 0%, 0%, 0.4) !important;
+            box-sizing: border-box;
+        }
+    }
+
+    &.bottom .arrow {
+        top: -7.3px !important;
+        bottom: unset !important;
+        left: calc(50% + 22px) !important;
+        right: unset !important;
+        transform: translate(-50%, 0) rotate(0deg);
+    }
+
+    &.left .arrow {
+        top: calc(50% + 11px) !important;
+        bottom: unset !important;
+        left: unset !important;
+        right: -7.3px !important;
+        transform: translate(0, -50%) rotate(90deg);
+    }
+
+    &.top {
+        margin-top: -65px;
+    }
+
+    &.top .arrow {
+        top: unset !important;
+        bottom: -7.3px !important;
+        left: calc(50% + 22px) !important;
+        right: unset !important;
+        transform: translate(-50%, 0) rotate(180deg);
+    }
+
+    &.right .arrow {
+        top: calc(50% + 11px) !important;
+        bottom: unset !important;
+        left: -7.3px !important;
+        right: unset !important;
+        transform: translate(0, -50%) rotate(270deg);
+    }
+}
+
+.popover-inner {
+    border-radius: 5px;
 }
 
 .popover-content {
     padding: 5px 0;
+    border-radius: 5px;
 }
 
 .popover-title {

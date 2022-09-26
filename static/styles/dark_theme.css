@@ -480,21 +480,15 @@ body.dark-theme {
         }
     }
 
-    .nav .dropdown-menu::after,
-    .popover.bottom .arrow {
+    .nav .dropdown-menu::after {
         border-bottom-color: hsl(212, 32%, 14%);
     }
 
-    .popover.left .arrow {
-        border-left-color: hsl(212, 32%, 14%);
-    }
-
-    .popover.top .arrow {
-        border-top-color: hsl(212, 32%, 14%);
-    }
-
-    .popover.right .arrow {
-        border-right-color: hsl(212, 32%, 14%);
+    .popover .arrow {
+        &::after {
+            background: hsl(212, 32%, 14%);
+            border: solid 1px hsla(0, 0%, 0%, 0.4);
+        }
     }
 
     .narrow_to_compose_recipients,
