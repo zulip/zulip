@@ -92,7 +92,7 @@ export function clear_preview_area() {
     autosize.update($("#compose-textarea"));
 }
 
-export function update_fade() {
+function update_fade() {
     if (!compose_state.composing()) {
         return;
     }
@@ -103,7 +103,7 @@ export function update_fade() {
     compose_fade.update_all();
 }
 
-function update_on_recipient_change() {
+export function update_on_recipient_change() {
     update_fade();
     compose_actions.update_narrow_to_recipient_visibility();
 }
