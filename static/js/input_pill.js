@@ -359,7 +359,7 @@ export function create(opts) {
             funcs.removePill($pill[0]);
             $next.trigger("focus");
 
-            compose.update_fade();
+            compose.update_on_recipient_change();
         });
 
         store.$parent.on("click", function (e) {

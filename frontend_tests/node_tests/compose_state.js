@@ -21,10 +21,29 @@ run_test("private_message_recipient", ({override}) => {
     assert.equal(compose_state.private_message_recipient(), "fred@fred.org");
 });
 
-run_test("is_topic_field_empty", () => {
+run_test("has_full_recipient", ({override}) => {
+    let emails;
+    override(compose_pm_pill, "set_from_emails", (value) => {
+        emails = value;
+    });
+
+    override(compose_pm_pill, "get_emails", () => emails);
+
+    compose_state.set_message_type("stream");
+    compose_state.stream_name("");
     compose_state.topic("");
-    assert.equal(compose_state.is_topic_field_empty(), true);
+    assert.equal(compose_state.has_full_recipient(), false);
 
     compose_state.topic("foo");
-    assert.equal(compose_state.is_topic_field_empty(), false);
+    assert.equal(compose_state.has_full_recipient(), false);
+
+    compose_state.stream_name("bar");
+    assert.equal(compose_state.has_full_recipient(), true);
+
+    compose_state.set_message_type("private");
+    compose_state.private_message_recipient("");
+    assert.equal(compose_state.has_full_recipient(), false);
+
+    compose_state.private_message_recipient("foo@zulip.com");
+    assert.equal(compose_state.has_full_recipient(), true);
 });

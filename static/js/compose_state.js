@@ -89,6 +89,9 @@ export function has_message_content() {
     return message_content() !== "";
 }
 
-export function is_topic_field_empty() {
-    return topic() === "";
+export function has_full_recipient() {
+    if (message_type === "stream") {
+        return stream_name() !== "" && topic() !== "";
+    }
+    return private_message_recipient() !== "";
 }
