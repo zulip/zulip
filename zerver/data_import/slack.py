@@ -953,16 +953,16 @@ def channel_message_to_zerver_message(
         topic_name = "imported from Slack"
 
         zulip_message = build_message(
-            topic_name,
-            get_timestamp_from_message(message),
-            message_id,
-            content,
-            rendered_content,
-            slack_user_id_to_zulip_user_id[slack_user_id],
-            recipient_id,
-            has_image,
-            has_link,
-            has_attachment,
+            topic_name=topic_name,
+            date_sent=get_timestamp_from_message(message),
+            message_id=message_id,
+            content=content,
+            rendered_content=rendered_content,
+            user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+            recipient_id=recipient_id,
+            has_image=has_image,
+            has_link=has_link,
+            has_attachment=has_attachment,
         )
         zerver_message.append(zulip_message)
 
