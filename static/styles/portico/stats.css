@@ -22,16 +22,21 @@ p {
 }
 
 .center-charts {
-    margin: 30px auto;
-    width: 790px; /* chart = 750px + 20px padding */
+    margin: 30px;
 }
 
-.stats-page .alert {
+.stats-page .alert,
+.analytics-page-header {
     text-align: center;
 }
 
+.flex-container {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-around;
+}
+
 .chart-container {
-    display: inline-block;
     vertical-align: top;
     margin: 10px 0;
     padding: 20px;
@@ -222,21 +227,5 @@ p {
 @keyframes spinner {
     to {
         transform: rotate(360deg);
-    }
-}
-
-@media (width >= 1680px) {
-    .center-charts {
-        width: calc(
-            816px * 2
-        ); /* 790px + 4px for borders + 2px for il-block + 20px margins */
-
-        .left,
-        .right {
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 10px;
-            width: 790px;
-        }
     }
 }
