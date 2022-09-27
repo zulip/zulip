@@ -32,7 +32,7 @@
     </svg>
 
     <div class="markdown">
-        <div class="content">
+        <div class="content" id="skip-link-nav">
             {% if page_is_policy_center %}
             {{ render_markdown_path(article, pure_markdown=True) }}
             {% else %}
@@ -41,7 +41,8 @@
 
             <div id="footer" class="documentation-footer">
                 <hr />
-                <p>We're here to help! Email us at <a href="mailto:{{ support_email }}">{{ support_email }}</a> with questions, feedback, or feature requests.</p>
+                <p>We're here to help! Email us at <a href="mailto:{{ support_email }}">{{ support_email }}</a> with questions,
+                    feedback, or feature requests.</p>
             </div>
         </div>
     </div>

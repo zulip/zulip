@@ -9,6 +9,8 @@ import {activate_correct_tab} from "./tabbed-instructions";
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
     const $blocks = $codeSection.find(".blocks div");
+    const $skiplink = $codeSection.find(".skip-link");
+    $skiplink.addClass("active");
 
     $li.on("click", function () {
         const language = this.dataset.language;
@@ -47,10 +49,14 @@ function highlight_current_article() {
     // Highlight current article link and the heading of the same
     $article.closest("ul").css("display", "block");
     $article.addClass("highlighted");
-    $article.attr("tabindex", "-1");
+    $article.attr("tabindex", "1");
 }
 
 function render_code_sections() {
+    // Removing #skip-link-nav hash from the url
+    if (parent.location.hash !== "") {
+        parent.location.hash = "";
+    }
     $(".code-section").each(function () {
         activate_correct_tab($(this));
         registerCodeSection($(this));
@@ -180,5 +186,4 @@ window.addEventListener("popstate", () => {
 });
 
 $("body").addClass("noscroll");
-
 $(".highlighted")[0].scrollIntoView({block: "center"});
