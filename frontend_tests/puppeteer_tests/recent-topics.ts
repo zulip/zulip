@@ -9,9 +9,13 @@ async function switch_include_muted_button(page: Page, checked: "true" | "false"
     if (checkedAttrIncludeMuteButton !== checked) {
         await page.click(include_mute_button_selector);
     }
-    await page.waitForFunction((include_mute_button_selector: string) => $(include_mute_button_selector).attr("aria-checked") === checked, {}, include_mute_button_selector);
+    await page.waitForFunction(
+        (include_mute_button_selector: string) =>
+            $(include_mute_button_selector).attr("aria-checked") === checked,
+        {},
+        include_mute_button_selector,
+    );
 }
-
 
 async function click_mute_icon(page: Page): Promise<void> {
     await page.click('#recent_topics_table tr[id^="recent_topic"] > .on_hover_topic_mute');
@@ -22,16 +26,17 @@ async function click_unmute_icon(page: Page): Promise<void> {
 }
 
 async function test_mute_topic(page: Page): Promise<void> {
-    await page.waitForSelector('#recent_filters_group', {visible: true});
+    await page.waitForSelector("#recent_filters_group", {visible: true});
 
     await switch_include_muted_button(page, "false");
-    
+
     await page.waitForSelector('#recent_topics_table tr[id^="recent_topic"]', {visible: true});
-    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length;
+    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]'))
+        .length;
     if (!unmuted_topics_quantity) {
         throw new Error("cannot find topics");
     }
-    
+
     await click_mute_icon(page);
 
     await page.waitForFunction(
@@ -43,12 +48,13 @@ async function test_mute_topic(page: Page): Promise<void> {
 }
 
 async function test_unmute_topic(page: Page): Promise<void> {
-    await page.waitForSelector('#recent_filters_group', {visible: true});
+    await page.waitForSelector("#recent_filters_group", {visible: true});
 
     await page.waitForSelector('#recent_topics_table tr[id^="recent_topic"]', {visible: true});
-    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length;
+    const unmuted_topics_quantity = (await page.$$('#recent_topics_table tr[id^="recent_topic"]'))
+        .length;
 
-    await switch_include_muted_button(page, "true");    
+    await switch_include_muted_button(page, "true");
     await click_unmute_icon(page);
     await switch_include_muted_button(page, "false");
 
