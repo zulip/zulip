@@ -122,6 +122,18 @@ function get_user_summary_statistics(data) {
     $("#id_active_fifteen_day_users").closest("summary-stats").show();
 }
 
+function get_total_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const total_messages_sent = data.human.at(-1) + data.bot.at(-1);
+    const total_messages_string = total_messages_sent.toLocaleString();
+
+    $("#id_total_messages_sent").text(total_messages_string);
+    $("#id_total_messages_sent").closest("summary-stats").show();
+}
+
 // PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
@@ -312,6 +324,7 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
+    get_total_messages_sent(values);
     const cumulative_traces = make_traces(dates, values, "scatter", date_formatter);
 
     // Functions to draw and interact with the plot
