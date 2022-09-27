@@ -519,13 +519,16 @@ class NarrowBuilder:
         condition = column("search_pgroonga", Text).op("&@~")(operand_escaped)
         return query.where(maybe_negate(condition))
 
+    def _process_tsearch_operand(self, operand: str):
+        return func.replace_url_delimiters(operand, ' ', type_=Text)
+
     def _by_search_tsearch(
         self, query: Select, operand: str, maybe_negate: ConditionTransform
     ) -> Select:
-        tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
+        tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), self._process_tsearch_operand(operand))
         query = query.add_columns(
             ts_locs_array(
-                literal("zulip.english_us_search", Text), column("rendered_content", Text), tsquery
+                literal("zulip.english_us_search", Text), func.process_text_for_search(column("rendered_content"), type_=Text), tsquery
             ).label("content_matches"),
             # We HTML-escape the topic in PostgreSQL to avoid doing a server round-trip
             ts_locs_array(
@@ -1360,6 +1363,7 @@ def messages_in_narrow_backend(
             rendered_content = row._mapping["rendered_content"]
             if "content_matches" in row._mapping:
                 content_matches = row._mapping["content_matches"]
+                print(content_matches)
                 topic_matches = row._mapping["topic_matches"]
             else:
                 content_matches = topic_matches = []

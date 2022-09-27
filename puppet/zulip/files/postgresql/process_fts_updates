@@ -81,7 +81,7 @@ def update_fts_columns(cursor: psycopg2.extensions.cursor) -> int:
         cursor.execute(
             "UPDATE zerver_message SET "
             "search_tsvector = to_tsvector('zulip.english_us_search', "
-            "subject || rendered_content) "
+            "subject || process_text_for_search(rendered_content)) "
             "WHERE id = %s",
             (message_id,),
         )
