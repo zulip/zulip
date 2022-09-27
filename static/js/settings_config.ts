@@ -501,7 +501,7 @@ export const display_settings_labels = {
 
 export const notification_settings_labels = {
     enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if I'm online (useful for testing)",
+        defaultMessage: "Send mobile notifications even if I'm online",
     }),
     pm_content_in_desktop_notifications: $t({
         defaultMessage: "Include content of private messages in desktop notifications",
@@ -530,7 +530,7 @@ export const realm_user_settings_defaults_labels = {
 
     /* Overrides to remove "I" from labels for the realm-level versions of these labels. */
     enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
+        defaultMessage: "Send mobile notifications even if user is online",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
 
