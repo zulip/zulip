@@ -134,6 +134,25 @@ function get_total_messages_sent(data) {
     $("#id_total_messages_sent").closest("summary-stats").show();
 }
 
+function get_thirty_days_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const thirty_days_bot_messages = data.bot
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+    const thirty_days_human_messages = data.human
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+
+    const thirty_days_total_messages = thirty_days_bot_messages + thirty_days_human_messages;
+    const thirty_days_messages_string = thirty_days_total_messages.toLocaleString();
+
+    $("#id_thirty_days_messages_sent").text(thirty_days_messages_string);
+    $("#id_thirty_days_messages_sent").closest("summary-stats").show();
+}
+
 // PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
@@ -307,6 +326,7 @@ function populate_messages_sent_over_time(data) {
     };
     const last_day_is_partial = info.last_value_is_partial;
     const daily_traces = make_traces(info.dates, info.values, "bar", date_formatter);
+    get_thirty_days_messages_sent(info.values);
 
     info = aggregate_data("week");
     date_formatter = function (date) {
