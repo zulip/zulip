@@ -272,13 +272,13 @@ def convert_gitter_workspace_messages(
             user_id = user_map[get_user_from_message(message)]
             recipient_id = stream_map[message["room"]] if "room" in message else 0
             zulip_message = build_message(
-                topic_name,
-                message_time,
-                message_id,
-                message["text"],
-                rendered_content,
-                user_id,
-                recipient_id,
+                topic_name=topic_name,
+                date_sent=message_time,
+                message_id=message_id,
+                content=message["text"],
+                rendered_content=rendered_content,
+                user_id=user_id,
+                recipient_id=recipient_id,
             )
             zerver_message.append(zulip_message)
 
