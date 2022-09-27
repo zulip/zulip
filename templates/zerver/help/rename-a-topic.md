@@ -21,7 +21,8 @@ for the details on when topic editing is allowed.
 
 {start_tabs}
 
-1. Click on the <i class="fa fa-pencil"></i> icon in the message recipient bar.
+1. Click on the **pencil** (<i class="fa fa-pencil"></i>) icon in the message
+   recipient bar.
 
 1. Edit the topic name.
 
