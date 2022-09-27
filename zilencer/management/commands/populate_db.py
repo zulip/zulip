@@ -60,7 +60,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     get_client,
-    get_huddle,
+    get_or_create_huddle,
     get_realm,
     get_stream,
     get_user,
@@ -793,7 +793,7 @@ class Command(BaseCommand):
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
+            get_or_create_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
         personals_pairs = [
