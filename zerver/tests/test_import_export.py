@@ -965,6 +965,11 @@ class RealmImportExportTest(ExportFile):
             imported_realm.authentication_methods_dict(),
         )
 
+        self.assertEqual(
+            Message.objects.filter(realm=original_realm).count(),
+            Message.objects.filter(realm=imported_realm).count(),
+        )
+
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()
         getters: List[Callable[[Realm], object]] = []

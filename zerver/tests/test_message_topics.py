@@ -40,6 +40,7 @@ class TopicHistoryTest(ZulipTestCase):
             message = Message(
                 sender=hamlet,
                 recipient=recipient,
+                realm=stream.realm,
                 content="whatever",
                 date_sent=timezone_now(),
                 sending_client=get_client("whatever"),

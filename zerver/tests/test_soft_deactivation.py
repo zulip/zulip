@@ -374,6 +374,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             recipient = stream.recipient
             message = Message(
                 sender=sender,
+                realm=realm,
                 recipient=recipient,
                 content=message_content,
                 date_sent=timezone_now(),

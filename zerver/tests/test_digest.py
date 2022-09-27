@@ -526,14 +526,22 @@ class TestDigestContentInBrowser(ZulipTestCase):
 
 class TestDigestTopics(ZulipTestCase):
     def populate_topic(
-        self, topic: DigestTopic, humans: int, human_messages: int, bots: int, bot_messages: int
+        self,
+        topic: DigestTopic,
+        humans: int,
+        human_messages: int,
+        bots: int,
+        bot_messages: int,
+        realm: Realm,
     ) -> None:
         def send_messages(client: Client, users: int, messages: int) -> None:
             messages_sent = 0
             while messages_sent < messages:
                 for index, username in enumerate(self.example_user_map, start=1):
                     topic.add_message(
-                        Message(sender=self.example_user(username), sending_client=client)
+                        Message(
+                            sender=self.example_user(username), sending_client=client, realm=realm
+                        )
                     )
                     messages_sent += 1
                     if messages_sent == messages:
@@ -549,31 +557,49 @@ class TestDigestTopics(ZulipTestCase):
         denmark = get_stream("Denmark", realm)
         verona = get_stream("Verona", realm)
         diverse_topic_a = DigestTopic((denmark.id, "5 humans talking"))
-        self.populate_topic(diverse_topic_a, humans=5, human_messages=10, bots=0, bot_messages=0)
+        self.populate_topic(
+            diverse_topic_a, humans=5, human_messages=10, bots=0, bot_messages=0, realm=realm
+        )
 
         diverse_topic_b = DigestTopic((denmark.id, "4 humans talking"))
-        self.populate_topic(diverse_topic_b, humans=4, human_messages=15, bots=0, bot_messages=0)
+        self.populate_topic(
+            diverse_topic_b, humans=4, human_messages=15, bots=0, bot_messages=0, realm=realm
+        )
 
         diverse_topic_c = DigestTopic((verona.id, "5 humans talking in another stream"))
-        self.populate_topic(diverse_topic_c, humans=5, human_messages=15, bots=0, bot_messages=0)
+        self.populate_topic(
+            diverse_topic_c, humans=5, human_messages=15, bots=0, bot_messages=0, realm=realm
+        )
 
         diverse_topic_d = DigestTopic((denmark.id, "3 humans and 2 bots talking"))
-        self.populate_topic(diverse_topic_d, humans=3, human_messages=15, bots=2, bot_messages=10)
+        self.populate_topic(
+            diverse_topic_d, humans=3, human_messages=15, bots=2, bot_messages=10, realm=realm
+        )
 
         diverse_topic_e = DigestTopic((denmark.id, "3 humans talking"))
-        self.populate_topic(diverse_topic_a, humans=3, human_messages=20, bots=0, bot_messages=0)
+        self.populate_topic(
+            diverse_topic_a, humans=3, human_messages=20, bots=0, bot_messages=0, realm=realm
+        )
 
         lengthy_topic_a = DigestTopic((denmark.id, "2 humans talking a lot"))
-        self.populate_topic(lengthy_topic_a, humans=2, human_messages=40, bots=0, bot_messages=0)
+        self.populate_topic(
+            lengthy_topic_a, humans=2, human_messages=40, bots=0, bot_messages=0, realm=realm
+        )
 
         lengthy_topic_b = DigestTopic((denmark.id, "2 humans talking"))
-        self.populate_topic(lengthy_topic_b, humans=2, human_messages=30, bots=0, bot_messages=0)
+        self.populate_topic(
+            lengthy_topic_b, humans=2, human_messages=30, bots=0, bot_messages=0, realm=realm
+        )
 
         lengthy_topic_c = DigestTopic((denmark.id, "a human and bot talking"))
-        self.populate_topic(lengthy_topic_c, humans=1, human_messages=20, bots=1, bot_messages=20)
+        self.populate_topic(
+            lengthy_topic_c, humans=1, human_messages=20, bots=1, bot_messages=20, realm=realm
+        )
 
         lengthy_topic_d = DigestTopic((verona.id, "2 humans talking in another stream"))
-        self.populate_topic(lengthy_topic_d, humans=2, human_messages=35, bots=0, bot_messages=0)
+        self.populate_topic(
+            lengthy_topic_d, humans=2, human_messages=35, bots=0, bot_messages=0, realm=realm
+        )
 
         topics = [
             diverse_topic_a,

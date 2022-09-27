@@ -339,6 +339,7 @@ def render_message_backend(
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile
+    message.realm = user_profile.realm
     message.content = content
     client = RequestNotes.get_notes(request).client
     assert client is not None

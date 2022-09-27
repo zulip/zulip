@@ -543,6 +543,7 @@ def process_raw_message_batch(
             message_id=message_id,
             date_sent=date_sent,
             recipient_id=recipient_id,
+            realm_id=realm_id,
             rendered_content=rendered_content,
             topic_name=topic_name,
             user_id=sender_user_id,

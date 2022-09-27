@@ -70,6 +70,7 @@ from zerver.models import (
     UserProfile,
     get_client,
     get_user,
+    is_cross_realm_bot_email,
 )
 
 
@@ -158,7 +159,12 @@ class AnalyticsTestCase(ZulipTestCase):
             "content": "hi",
             "date_sent": self.TIME_LAST_HOUR,
             "sending_client": get_client("website"),
+            "realm_id": sender.realm_id,
         }
+        # For simplicity, this helper doesn't support creating cross-realm messages
+        # since it'd require adding an additional realm argument.
+        assert not is_cross_realm_bot_email(sender.delivery_email)
+
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)

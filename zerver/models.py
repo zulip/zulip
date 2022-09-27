@@ -2811,6 +2811,8 @@ class AbstractMessage(models.Model):
     # See the Recipient class for details.
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
 
+    realm = models.ForeignKey(Realm, on_delete=CASCADE, null=True)
+
     # The message's topic.
     #
     # Early versions of Zulip called this concept a "subject", as in an email

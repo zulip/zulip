@@ -1008,6 +1008,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 def generate_and_send_messages(
     data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
 ) -> int:
+    realm = get_realm("zulip")
     (tot_messages, personals_pairs, options, random_seed) = data
     random.seed(random_seed)
 
@@ -1021,7 +1022,7 @@ def generate_and_send_messages(
     # We need to filter out streams from the analytics realm as we don't want to generate
     # messages to its streams - and they might also have no subscribers, which would break
     # our message generation mechanism below.
-    stream_ids = Stream.objects.filter(realm=get_realm("zulip")).values_list("id", flat=True)
+    stream_ids = Stream.objects.filter(realm=realm).values_list("id", flat=True)
     recipient_streams: List[int] = [
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
@@ -1053,7 +1054,7 @@ def generate_and_send_messages(
     messages: List[Message] = []
     while num_messages < tot_messages:
         saved_data: Dict[str, Any] = {}
-        message = Message()
+        message = Message(realm=realm)
         message.sending_client = get_client("populate_db")
 
         message.content = next(texts)

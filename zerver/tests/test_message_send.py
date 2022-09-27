@@ -1578,6 +1578,7 @@ class StreamMessagesTest(ZulipTestCase):
             message = Message(
                 sender=sender,
                 recipient=recipient,
+                realm=stream.realm,
                 content=message_content,
                 date_sent=timezone_now(),
                 sending_client=sending_client,

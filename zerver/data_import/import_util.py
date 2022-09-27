@@ -495,6 +495,7 @@ def build_message(
     rendered_content: Optional[str],
     user_id: int,
     recipient_id: int,
+    realm_id: int,
     has_image: bool = False,
     has_link: bool = False,
     has_attachment: bool = True,

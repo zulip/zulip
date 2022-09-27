@@ -143,6 +143,7 @@ class MessageDictTest(ZulipTestCase):
     def test_bulk_message_fetching(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
+        realm = get_realm("zulip")
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
@@ -155,6 +156,7 @@ class MessageDictTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
+                    realm=realm,
                     content=f"whatever {i}",
                     rendered_content="DOES NOT MATTER",
                     rendered_content_version=markdown_version,
@@ -192,6 +194,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -222,6 +225,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -287,6 +291,7 @@ class MessageDictTest(ZulipTestCase):
         message = Message(
             sender=sender,
             recipient=recipient,
+            realm=receiver.realm,
             content="hello **world**",
             date_sent=timezone_now(),
             sending_client=sending_client,
@@ -620,6 +625,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
         sender = self.example_user("othello")
         receiver = self.example_user("hamlet")
+        realm = get_realm("zulip")
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = "Çiğdem"
         stream = self.make_stream(stream_name)
@@ -632,6 +638,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                 message = Message(
                     sender=sender,
                     recipient=recipient,
+                    realm=realm,
                     content=f"whatever {i}",
                     date_sent=timezone_now(),
                     sending_client=sending_client,

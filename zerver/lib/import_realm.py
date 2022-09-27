@@ -1469,6 +1469,8 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
         # apply them.
         message_id_map = ID_MAP["message"]
         for row in data["zerver_message"]:
+            del row["realm"]
+            row["realm_id"] = realm.id
             row["id"] = message_id_map[row["id"]]
 
         for row in data["zerver_usermessage"]:

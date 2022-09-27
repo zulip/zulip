@@ -510,6 +510,7 @@ def build_message_send_dict(
     """
     if realm is None:
         realm = message.sender.realm
+    assert realm == message.realm
 
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
@@ -1442,6 +1443,7 @@ def check_message(
     message.sender = sender
     message.content = message_content
     message.recipient = recipient
+    message.realm = realm
     if addressee.is_stream():
         message.set_topic_name(topic_name)
     if forged and forged_timestamp is not None:
