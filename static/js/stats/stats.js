@@ -101,6 +101,28 @@ $(() => {
     // Add configuration for any additional tooltips here.
 });
 
+// SUMMARY STATISTICS
+function get_user_summary_statistics(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    // Users that are not deactivated and are not bots.
+    const total_users = data.all_time.at(-1);
+    const total_users_string = total_users.toLocaleString();
+
+    $("#id_total_users").text(total_users_string);
+    $("#id_total_users").closest("summary-stats").show();
+
+    // Users that have been active in the last 15 days and are not bots.
+    const active_fifeteen_day_users = data._15day.at(-1);
+    const active_fifteen_day_users_string = active_fifeteen_day_users.toLocaleString();
+
+    $("#id_active_fifteen_day_users").text(active_fifteen_day_users_string);
+    $("#id_active_fifteen_day_users").closest("summary-stats").show();
+}
+
+// PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -785,6 +807,7 @@ function populate_number_of_users(data) {
     // Initial drawing of plot
     draw_or_update_plot(all_time_trace, true);
     $("#all_time_actives_button").addClass("selected");
+    get_user_summary_statistics(data.everyone);
 }
 
 function populate_messages_read_over_time(data) {
