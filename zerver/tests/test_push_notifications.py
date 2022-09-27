@@ -839,7 +839,7 @@ class PushNotificationTest(BouncerTestCase):
         self.sender = self.example_user("hamlet")
         self.personal_recipient_user = self.example_user("othello")
 
-    def get_message(self, type: int, type_id: int = 100) -> Message:
+    def get_message(self, type: int, type_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(
             type_id=type_id,
             type=type,
