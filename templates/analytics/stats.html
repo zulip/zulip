@@ -21,6 +21,14 @@
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
             <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_name }}{% endtrans %}</h1>
+            <div class="summary-stats">
+                <h1>{{ _("Organization summary") }}</h1>
+                <ul>
+                    <li>{{ _("Number of users") }}: <span id="id_total_users"></span></li>
+                    <li>{{ _("Users active during the last 15 days") }}: <span id="id_active_fifteen_day_users"></span></li>
+
+                </ul>
+            </div>
             <div class="flex-container">
                 <div class="chart-container">
                     <h1>{{ _("Active users") }}</h1>

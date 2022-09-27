@@ -30,6 +30,20 @@ p {
     text-align: center;
 }
 
+.summary-stats {
+    vertical-align: top;
+    margin: 0 auto;
+    padding: 20px;
+    border: 2px solid hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 100%);
+    width: 395px;
+
+    h1 {
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+}
+
 .flex-container {
     display: flex;
     flex-flow: wrap;
