@@ -224,9 +224,6 @@ function initialize_compose_box() {
             embedded: $("#compose").attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
             giphy_enabled: giphy.is_giphy_enabled(),
-            scroll_to_bottom_key_html: common.has_mac_keyboard()
-                ? "Fn + <span class='tooltip_right_arrow'>→</span>"
-                : "End",
             max_stream_name_length: page_params.max_stream_name_length,
             max_topic_length: page_params.max_topic_length,
         }),
