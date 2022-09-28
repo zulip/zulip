@@ -508,7 +508,7 @@ function edit_message($row, raw_content) {
     switch (editability) {
         case editability_types.NO:
             $message_edit_content.attr("readonly", "readonly");
-            $message_edit_topic.attr("readonly", "readonly");
+            $message_edit_topic.prop("disabled", true);
             create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.NO_LONGER:
@@ -580,7 +580,7 @@ function edit_message($row, raw_content) {
                 clearInterval(countdown_timer);
                 $message_edit_content.prop("readonly", "readonly");
                 if (message.type === "stream") {
-                    $message_edit_topic.prop("readonly", "readonly");
+                    $message_edit_topic.prop("disabled", true);
                     $message_edit_topic_propagate.hide();
                     $message_edit_breadcrumb_messages.hide();
                 }
@@ -900,7 +900,7 @@ export function save_message_row_edit($row) {
     }
 
     const $edit_topic_input = $row.find(".message_edit_topic");
-    const can_edit_topic = message.is_stream && $edit_topic_input.attr("readonly") !== "readonly";
+    const can_edit_topic = message.is_stream && $edit_topic_input.prop("disabled") !== true;
     if (can_edit_topic) {
         new_topic = $edit_topic_input.val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
