@@ -1153,6 +1153,15 @@ class EditMessageTest(EditMessageTestCase):
         )
         do_edit_message_assert_success(id_, "E", "iago")
 
+        # even owners and admins cannot edit the topics of messages
+        set_message_editing_params(True, "unlimited", Realm.POLICY_NOBODY)
+        do_edit_message_assert_error(
+            id_, "H", "You don't have permission to edit this message", "desdemona"
+        )
+        do_edit_message_assert_error(
+            id_, "H", "You don't have permission to edit this message", "iago"
+        )
+
         # users cannot edit topics if allow_message_editing is False
         set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_error(

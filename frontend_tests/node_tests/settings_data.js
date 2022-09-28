@@ -248,6 +248,14 @@ test_message_policy(
     settings_data.user_can_edit_topic_of_any_message,
 );
 
+run_test("user_can_edit_topic_of_any_message_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_edit_topic_policy =
+        settings_config.edit_topic_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_edit_topic_of_any_message(), false);
+});
+
 test_message_policy(
     "user_can_delete_own_message",
     "realm_delete_own_message_policy",

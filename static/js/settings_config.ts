@@ -290,6 +290,15 @@ export const common_message_policy_values = {
     },
 };
 
+export const edit_topic_policy_values = {
+    ...common_message_policy_values,
+    nobody: {
+        order: 6,
+        code: 6,
+        description: $t({defaultMessage: "Nobody"}),
+    },
+};
+
 export const time_limit_dropdown_values = [
     {
         text: $t({defaultMessage: "Any time"}),
