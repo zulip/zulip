@@ -727,7 +727,7 @@ test("initialize", ({override, mock_template}) => {
         stream_typeahead_called = true;
     };
 
-    let subject_typeahead_called = false;
+    let topic_typeahead_called = false;
     $("#stream_message_recipient_topic").typeahead = (options) => {
         const topics = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
         stream_topic_history.get_recent_topic_names = (stream_id) => {
@@ -789,7 +789,7 @@ test("initialize", ({override, mock_template}) => {
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
-        subject_typeahead_called = true;
+        topic_typeahead_called = true;
 
         // Unset the stream name.
         $("#stream_message_recipient_stream").val("");
@@ -1210,7 +1210,7 @@ test("initialize", ({override, mock_template}) => {
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
     assert.ok(stream_typeahead_called);
-    assert.ok(subject_typeahead_called);
+    assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
 });
