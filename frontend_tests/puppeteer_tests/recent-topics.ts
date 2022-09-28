@@ -5,13 +5,13 @@ import * as common from "../puppeteer_lib/common";
 const include_mute_button_selector = 'button[data-filter="include_muted"]';
 
 async function switch_include_muted_button(page: Page, checked: "true" | "false"): Promise<void> {
-    const checkedAttrIncludeMuteButton = await page.$eval(include_mute_button_selector, el => el.ariaChecked);
+    const checkedAttrIncludeMuteButton = await page.$eval(include_mute_button_selector, (el: HTMLButtonElement) => el.ariaChecked);
     if (checkedAttrIncludeMuteButton !== checked) {
         await page.click(include_mute_button_selector);
     }
     await page.waitForFunction(
         async (include_mute_button_selector: string) =>
-            await page.$eval(include_mute_button_selector, el => el.ariaChecked),
+            await page.$eval(include_mute_button_selector, (el: HTMLButtonElement) => el.ariaChecked),
         {},
         include_mute_button_selector,
     );
