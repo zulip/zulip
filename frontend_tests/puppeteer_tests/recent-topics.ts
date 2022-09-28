@@ -5,13 +5,19 @@ import * as common from "../puppeteer_lib/common";
 const include_mute_button_selector = 'button[data-filter="include_muted"]';
 
 async function switch_include_muted_button(page: Page, checked: "true" | "false"): Promise<void> {
-    const checkedAttrIncludeMuteButton = await page.$eval(include_mute_button_selector, el => (el as HTMLButtonElement).ariaChecked);
+    const checkedAttrIncludeMuteButton = await page.$eval(
+        include_mute_button_selector,
+        (el) => (el as HTMLButtonElement).ariaChecked,
+    );
     if (checkedAttrIncludeMuteButton !== checked) {
         await page.click(include_mute_button_selector);
     }
     await page.waitForFunction(
         async (include_mute_button_selector: string) =>
-            await page.$eval(include_mute_button_selector, el => (el as HTMLButtonElement).ariaChecked),
+            await page.$eval(
+                include_mute_button_selector,
+                (el) => (el as HTMLButtonElement).ariaChecked,
+            ),
         {},
         include_mute_button_selector,
     );
@@ -41,7 +47,8 @@ async function test_mute_topic(page: Page): Promise<void> {
 
     await page.waitForFunction(
         async (expected_length: number) =>
-            (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length === expected_length,
+            (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length ===
+            expected_length,
         {},
         unmuted_topics_quantity - 1,
     );
@@ -60,7 +67,8 @@ async function test_unmute_topic(page: Page): Promise<void> {
 
     await page.waitForFunction(
         async (expected_length: number) =>
-            (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length === expected_length,
+            (await page.$$('#recent_topics_table tr[id^="recent_topic"]')).length ===
+            expected_length,
         {},
         unmuted_topics_quantity + 1,
     );
