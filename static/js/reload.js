@@ -176,12 +176,9 @@ export function initialize() {
         const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
-            // TODO: preserve focus
-            const topic = util.get_reload_topic(vars);
-
             compose_actions.start(vars.msg_type, {
                 stream: vars.stream || "",
-                topic: topic || "",
+                topic: vars.topic || "",
                 private_message_recipient: vars.recipient || "",
                 content: vars.msg || "",
                 draft_id: vars.draft_id || "",
