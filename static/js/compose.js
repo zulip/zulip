@@ -443,9 +443,12 @@ export function initialize() {
         // Change compose close button tooltip as per condition.
         // We save compose text in draft only if its length is > 2.
         if (compose_text_length > 2) {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_and_save_tooltip");
+            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip_template");
         } else {
-            $("#compose_close").attr("data-tooltip-template-id", "compose_close_tooltip");
+            $("#compose_close").attr(
+                "data-tooltip-template-id",
+                "compose_close_and_save_tooltip_template",
+            );
         }
     });
 
