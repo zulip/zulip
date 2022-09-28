@@ -7,6 +7,7 @@ import render_subscription_invites_warning_modal from "../templates/confirm_dial
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -399,7 +400,7 @@ export function set_up_handlers() {
     // Do not allow the user to enter newline characters while typing out the
     // stream's description during it's creation.
     $container.on("keydown", "#create_stream_description", (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
         }
     });

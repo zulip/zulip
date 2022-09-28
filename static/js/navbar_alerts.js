@@ -11,6 +11,7 @@ import render_profile_incomplete_alert_content from "../templates/navbar_alerts/
 import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
 
 import * as compose_ui from "./compose_ui";
+import * as keydown_util from "./keydown_util";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -233,7 +234,7 @@ export function initialize() {
     // Treat Enter with links in the navbar alerts UI focused like a click.,
     $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             $(this).trigger("click");
         }
     });

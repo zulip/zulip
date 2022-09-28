@@ -15,6 +15,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import * as dialog_widget from "./dialog_widget";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -384,7 +385,7 @@ export function set_up() {
                 do_get_api_key();
             });
             $("#get_api_key_password").on("keydown", (e) => {
-                if (e.key === "Enter") {
+                if (keydown_util.is_enter_event(e)) {
                     e.preventDefault();
                     e.stopPropagation();
                     do_get_api_key();

@@ -5,6 +5,7 @@ import render_admin_default_streams_list from "../templates/settings/admin_defau
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
 import {$t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -110,7 +111,7 @@ export function build_page() {
     update_default_streams_table();
 
     $(".create_default_stream").on("keypress", (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             e.stopPropagation();
             const $default_stream_input = $(".create_default_stream");

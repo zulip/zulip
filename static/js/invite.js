@@ -13,6 +13,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -210,7 +211,7 @@ export function launch() {
 
     // Ctrl + Enter key to submit form
     $("#invite-user").on("keydown", (e) => {
-        if (e.key === "Enter" && e.ctrlKey) {
+        if (keydown_util.is_enter_event(e) && e.ctrlKey) {
             submit_invitation_form();
         }
     });
@@ -333,7 +334,7 @@ export function initialize() {
     });
 
     $("#custom-expiration-time-input").on("keydown", (e) => {
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             return;
         }

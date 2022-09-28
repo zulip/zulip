@@ -15,6 +15,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -560,7 +561,7 @@ export function initialize() {
     $("#manage_streams_container").on("keypress", "#change_stream_description", (e) => {
         // Stream descriptions can not be multiline, so disable enter key
         // to prevent new line
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             return false;
         }
         return true;
