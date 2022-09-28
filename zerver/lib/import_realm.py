@@ -1328,14 +1328,21 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     bulk_import_model(data, Reaction)
 
     # Similarly, we need to recalculate the first_message_id for stream objects.
-    for stream in Stream.objects.filter(realm=realm):
-        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-        first_message = Message.objects.filter(recipient=recipient).first()
-        if first_message is None:
-            stream.first_message_id = None
-        else:
-            stream.first_message_id = first_message.id
-        stream.save(update_fields=["first_message_id"])
+    update_first_message_id_query = """
+    UPDATE zerver_stream
+    SET first_message_id = subquery.first_message_id
+    FROM (
+        SELECT r.type_id id, min(m.id) first_message_id
+        FROM zerver_message m
+        JOIN zerver_recipient r ON
+        r.id = m.recipient_id
+        WHERE r.type = 2
+        GROUP BY r.type_id
+        ) AS subquery
+    WHERE zerver_stream.id = subquery.id
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(update_first_message_id_query)
 
     if "zerver_userstatus" in data:
         fix_datetime_fields(data, "zerver_userstatus")
