@@ -1176,7 +1176,7 @@ class RealmAPITest(ZulipTestCase):
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
-            edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            edit_topic_policy=Realm.EDIT_TOPIC_POLICY_TYPES,
             message_content_edit_limit_seconds=[1000, 1100, 1200],
         )
 

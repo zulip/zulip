@@ -65,10 +65,8 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         // If message editing is disabled, so is topic editing.
         return false;
     }
-    // Organization admins and message senders can edit message topics indefinitely.
-    if (page_params.is_admin) {
-        return true;
-    }
+
+    // message senders can edit message topics indefinitely.
     if (message.sent_by_me) {
         return true;
     }
@@ -81,9 +79,10 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return false;
     }
 
-    // moderators can edit the topic if edit_topic_policy allows them to do so,
-    // irrespective of the topic editing deadline.
-    if (page_params.is_moderator) {
+    // Organization admins and moderators can edit message topics indefinitely,
+    // irrespective of the topic editing deadline, if edit_topic_policy allows
+    // them to do so.
+    if (page_params.is_admin || page_params.is_moderator) {
         return true;
     }
 

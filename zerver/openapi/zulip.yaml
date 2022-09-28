@@ -3890,9 +3890,11 @@ paths:
                                         - 3 = [full members][calc-full-member] only
                                         - 4 = moderators only
                                         - 5 = everyone
+                                        - 6 = nobody
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                                        previous `allow_community_topic_editing` boolean.
+                                        previous `allow_community_topic_editing` boolean. Nobody added
+                                        as an option in Zulip 7.0 (feature level 159).
 
                                         [permission-level]: /api/roles-and-permissions#permission-levels
                                         [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
@@ -12155,9 +12157,11 @@ paths:
                           - 3 = [full members][calc-full-member] only
                           - 4 = moderators only
                           - 5 = everyone
+                          - 6 = nobody
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the
-                          previous `allow_community_topic_editing` boolean.
+                          previous `allow_community_topic_editing` boolean. Nobody added as
+                          an option in Zulip 7.0 (feature level 159).
 
                           [permission-level]: /api/roles-and-permissions#permission-levels
                           [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
