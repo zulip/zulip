@@ -170,7 +170,7 @@ export function restore_message(draft) {
         compose_args = {
             type: "stream",
             stream: draft.stream,
-            topic: util.get_draft_topic(draft),
+            topic: draft.topic,
             content: draft.content,
         };
     } else {
@@ -306,12 +306,8 @@ export function format_draft(draft) {
                 draft_model.editDraft(id, draft);
             }
         }
-        let draft_topic = util.get_draft_topic(draft);
+        const draft_topic = draft.topic || compose.empty_topic_placeholder();
         const draft_stream_color = stream_data.get_color(stream_name);
-
-        if (draft_topic === "") {
-            draft_topic = compose.empty_topic_placeholder();
-        }
 
         formatted = {
             draft_id: draft.id,
