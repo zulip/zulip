@@ -21,14 +21,14 @@ See {{ alert_notif_url }} for more details.
 {% endif %}
 
 --
-{% if mention %}
-{% if mentioned_user_group_name %}
-{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned in {{ realm_name }}.{% endtrans %}
-{% else %}
-{% trans %}You are receiving this because you were mentioned in {{ realm_name }}.{% endtrans %}
-{% endif %}
+{% if personal_mentioned %}
+{% trans %}You are receiving this because you were personally mentioned.{% endtrans %}
+{% elif mentioned_user_group_name %}
+{% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned.{% endtrans %}
+{% elif wildcard_mentioned %}
+{% trans %}You are receiving this because everyone was mentioned.{% endtrans %}
 {% elif stream_email_notify %}
-{% trans %}You are receiving this because you have email notifications enabled for this stream.{% endtrans %}
+{% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}
 {% endif %}
 
 {% if reply_to_zulip  %}

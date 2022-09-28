@@ -518,7 +518,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > @**King Hamlet** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
+                "You are receiving this because you were personally mentioned.",
             ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
@@ -561,7 +561,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
-                "You are receiving this because you were mentioned in Zulip Dev.",
+                "You are receiving this because everyone was mentioned.",
             ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
@@ -599,7 +599,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
         verify_body_include = [
             "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > 12 -- ",
-            "You are receiving this because you have email notifications enabled for this stream.",
+            "You are receiving this because you have email notifications enabled for #Denmark.",
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
@@ -619,7 +619,7 @@ class TestMissedMessages(ZulipTestCase):
         )
         verify_body_include = [
             "Cordelia, Lear's daughter: > 0 > 1 > 2 Othello, the Moor of Venice: > @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev.",
+            "You are receiving this because you were personally mentioned.",
         ]
         email_subject = "#Denmark > test"
         self._test_cases(
@@ -849,7 +849,7 @@ class TestMissedMessages(ZulipTestCase):
 
         expected_email_include = [
             "Othello, the Moor of Venice: > @*hamlet_only* > @*hamlet_and_cordelia* -- ",
-            "You are receiving this because @hamlet_only was mentioned in Zulip Dev.",
+            "You are receiving this because @hamlet_only was mentioned.",
         ]
 
         for text in expected_email_include:
@@ -889,7 +889,76 @@ class TestMissedMessages(ZulipTestCase):
 
         expected_email_include = [
             "Othello, the Moor of Venice: > @*hamlet_and_cordelia* > @**King Hamlet** -- ",
-            "You are receiving this because you were mentioned in Zulip Dev.",
+            "You are receiving this because you were personally mentioned.",
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
+
+    def test_user_group_over_wildcard_mention_priority(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        hamlet_and_cordelia = create_user_group(
+            "hamlet_and_cordelia", [hamlet, cordelia], get_realm("zulip")
+        )
+
+        wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
+        user_group_mentioned_message_id = self.send_stream_message(
+            othello, "Denmark", "@*hamlet_and_cordelia*"
+        )
+
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {
+                    "message_id": wildcard_mentioned_message_id,
+                    "trigger": "wildcard_mentioned",
+                    "mentioned_user_group_id": None,
+                },
+                {
+                    "message_id": user_group_mentioned_message_id,
+                    "trigger": "mentioned",
+                    "mentioned_user_group_id": hamlet_and_cordelia.id,
+                },
+            ],
+        )
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: > @**all** > @*hamlet_and_cordelia* -- ",
+            "You are receiving this because @hamlet_and_cordelia was mentioned.",
+        ]
+
+        for text in expected_email_include:
+            self.assertIn(text, self.normalize_string(mail.outbox[0].body))
+
+    def test_wildcard_over_stream_mention_priority(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", "1")
+        wildcard_mentioned_message_id = self.send_stream_message(othello, "Denmark", "@**all**")
+
+        handle_missedmessage_emails(
+            hamlet.id,
+            [
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": "stream_email_notify",
+                    "mentioned_user_group_id": None,
+                },
+                {
+                    "message_id": wildcard_mentioned_message_id,
+                    "trigger": "wildcard_mentioned",
+                    "mentioned_user_group_id": None,
+                },
+            ],
+        )
+
+        expected_email_include = [
+            "Othello, the Moor of Venice: > 1 > @**all** -- ",
+            "You are receiving this because everyone was mentioned.",
         ]
 
         for text in expected_email_include:
