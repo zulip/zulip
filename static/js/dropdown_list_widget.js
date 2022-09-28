@@ -6,6 +6,7 @@ import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 
 import * as blueslip from "./blueslip";
 import {$t} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as ListWidget from "./list_widget";
 
 export class DropdownListWidget {
@@ -82,7 +83,7 @@ export class DropdownListWidget {
                     `.${CSS.escape(this.widget_name)}_setting`,
                 );
                 if (e.type === "keypress") {
-                    if (e.key === "Enter") {
+                    if (keydown_util.is_enter_event(e)) {
                         $setting_elem.find(".dropdown-menu").dropdown("toggle");
                     } else {
                         return;
@@ -533,7 +534,7 @@ export class MultiSelectDropdownListWidget extends DropdownListWidget {
         ).expectOne();
 
         $dropdown_list_body.on("click keypress", ".list_item", (e) => {
-            if (e.type === "keypress" && e.key !== "Enter") {
+            if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
                 return;
             }
 

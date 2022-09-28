@@ -10,6 +10,7 @@ import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
@@ -1135,7 +1136,7 @@ export function build_page() {
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
-        if (e.key === "Enter") {
+        if (keydown_util.is_enter_event(e)) {
             e.preventDefault();
             $(e.target)
                 .closest(".org-subsection-parent")

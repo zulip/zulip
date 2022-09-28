@@ -31,3 +31,7 @@ export function handle(opts: {
         }
     });
 }
+
+export function is_enter_event(event: JQuery.KeyDownEvent): boolean {
+    return event.key === "Enter";
+}

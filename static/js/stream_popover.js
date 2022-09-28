@@ -21,6 +21,7 @@ import * as drafts from "./drafts";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
+import * as keydown_util from "./keydown_util";
 import * as message_edit from "./message_edit";
 import * as muted_topics_ui from "./muted_topics_ui";
 import {page_params} from "./page_params";
@@ -634,7 +635,7 @@ export function register_click_handlers() {
         // and thus don't want to kill the natural bubbling of event.
         e.preventDefault();
 
-        if (e.type === "keypress" && e.key !== "Enter") {
+        if (e.type === "keypress" && !keydown_util.is_enter_event(e)) {
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(
