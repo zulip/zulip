@@ -511,14 +511,14 @@ function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reacti
         user_ids,
         ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
     };
-
-    update_user_fields(clean_reaction_object);
-
     clean_reaction_object.emoji_alt_code = user_settings.emojiset === "text";
     clean_reaction_object.is_realm_emoji =
         clean_reaction_object.reaction_type === "realm_emoji" ||
         clean_reaction_object.reaction_type === "zulip_extra_emoji";
 
+    // Call update_user_fields last, so it can rely on
+    // clean_reaction_object being otherwise fully populated.
+    update_user_fields(clean_reaction_object);
     return clean_reaction_object;
 }
 
