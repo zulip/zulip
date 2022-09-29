@@ -211,11 +211,11 @@ well; contributions of precise documentation for them are welcome!
    ```
 3. Make sure the remote server is running in VS Code (you can
    force-start through the Command Palette).
-4. SSH to your remote machine using
+4. SSH to your remote machine using:
    ```console
    $ ssh -R 52698:localhost:52698 user@example.org
    ```
-5. On your remote machine, run
+5. On your remote machine, run:
    ```console
    $ rmate [options] file
    ```
