@@ -1,8 +1,9 @@
 from typing import IO, Dict, Optional
 
-import django.db.utils
 import orjson
+from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
@@ -26,7 +27,7 @@ def check_add_realm_emoji(
         realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
         realm_emoji.full_clean()
         realm_emoji.save()
-    except django.db.utils.IntegrityError:
+    except (IntegrityError, ValidationError):
         # Match the string in upload_emoji.
         raise JsonableError(_("A custom emoji with this name already exists."))
 
