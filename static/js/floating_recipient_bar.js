@@ -109,7 +109,7 @@ export function get_date($elem) {
 
     const time = new Date(message.timestamp * 1000);
     const today = new Date();
-    const rendered_date = timerender.render_date(time, undefined, today)[0].outerHTML;
+    const rendered_date = timerender.render_date(time, today)[0].outerHTML;
 
     return rendered_date;
 }
