@@ -38,8 +38,8 @@ export function open_reactions_popover() {
 export function current_user_has_reacted_to_emoji(message, local_id) {
     set_clean_reactions(message);
 
-    const r = message.clean_reactions.get(local_id);
-    return r && r.user_ids.includes(page_params.user_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    return clean_reaction_object && clean_reaction_object.user_ids.includes(page_params.user_id);
 }
 
 function get_message(message_id) {
@@ -124,9 +124,9 @@ export function process_reaction_click(message_id, local_id) {
         return;
     }
 
-    const r = message.clean_reactions.get(local_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
 
-    if (!r) {
+    if (!clean_reaction_object) {
         blueslip.error(
             "Data integrity problem for reaction " + local_id + " (message " + message_id + ")",
         );
@@ -134,9 +134,9 @@ export function process_reaction_click(message_id, local_id) {
     }
 
     const reaction_info = {
-        reaction_type: r.reaction_type,
-        emoji_name: r.emoji_name,
-        emoji_code: r.emoji_code,
+        reaction_type: clean_reaction_object.reaction_type,
+        emoji_name: clean_reaction_object.emoji_name,
+        emoji_code: clean_reaction_object.emoji_code,
     };
 
     update_ui_and_send_reaction_ajax(message_id, reaction_info);
@@ -195,9 +195,9 @@ function generate_title(emoji_name, user_ids) {
 export function get_reaction_title_data(message_id, local_id) {
     const message = get_message(message_id);
 
-    const r = message.clean_reactions.get(local_id);
-    const user_list = r.user_ids;
-    const emoji_name = r.emoji_name;
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    const user_list = clean_reaction_object.user_ids;
+    const emoji_name = clean_reaction_object.emoji_name;
     const title = generate_title(emoji_name, user_list);
 
     return title;
@@ -241,16 +241,14 @@ export function add_reaction(event) {
 
     const local_id = get_local_reaction_id(event);
     const user_id = event.user_id;
-
-    const r = message.clean_reactions.get(local_id);
-
-    if (r && r.user_ids.includes(user_id)) {
+    const clean_reaction_object = message.clean_reactions.get(local_id);
+    if (clean_reaction_object && clean_reaction_object.user_ids.includes(user_id)) {
         return;
     }
 
-    if (r) {
-        r.user_ids.push(user_id);
-        update_user_fields(r);
+    if (clean_reaction_object) {
+        clean_reaction_object.user_ids.push(user_id);
+        update_user_fields(clean_reaction_object);
     } else {
         message.clean_reactions.set(
             local_id,
@@ -272,8 +270,8 @@ export function add_reaction(event) {
         user_id,
     };
 
-    if (r) {
-        opts.user_list = r.user_ids;
+    if (clean_reaction_object) {
+        opts.user_list = clean_reaction_object.user_ids;
         view.update_existing_reaction(opts);
     } else {
         view.insert_new_reaction(opts);
@@ -357,19 +355,19 @@ export function remove_reaction(event) {
 
     set_clean_reactions(message);
 
-    const r = message.clean_reactions.get(local_id);
+    const clean_reaction_object = message.clean_reactions.get(local_id);
 
-    if (!r) {
+    if (!clean_reaction_object) {
         return;
     }
 
-    if (!r.user_ids.includes(user_id)) {
+    if (!clean_reaction_object.user_ids.includes(user_id)) {
         return;
     }
 
-    r.user_ids = r.user_ids.filter((id) => id !== user_id);
-    if (r.user_ids.length > 0) {
-        update_user_fields(r);
+    clean_reaction_object.user_ids = clean_reaction_object.user_ids.filter((id) => id !== user_id);
+    if (clean_reaction_object.user_ids.length > 0) {
+        update_user_fields(clean_reaction_object);
     } else {
         message.clean_reactions.delete(local_id);
     }
@@ -379,7 +377,7 @@ export function remove_reaction(event) {
         reaction_type,
         emoji_name,
         emoji_code,
-        user_list: r.user_ids,
+        user_list: clean_reaction_object.user_ids,
         user_id,
     });
 }
@@ -424,9 +422,9 @@ export function get_emojis_used_by_user_for_message_id(message_id) {
     set_clean_reactions(message);
 
     const names = [];
-    for (const r of message.clean_reactions.values()) {
-        if (r.user_ids.includes(user_id)) {
-            names.push(r.emoji_name);
+    for (const clean_reaction_object of message.clean_reactions.values()) {
+        if (clean_reaction_object.user_ids.includes(user_id)) {
+            names.push(clean_reaction_object.emoji_name);
         }
     }
 
@@ -507,26 +505,31 @@ export function set_clean_reactions(message) {
 }
 
 function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
-    const r = {
+    const clean_reaction_object = {
         local_id,
         user_ids,
         ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
     };
 
-    update_user_fields(r);
+    update_user_fields(clean_reaction_object);
 
-    r.emoji_alt_code = user_settings.emojiset === "text";
-    r.is_realm_emoji = r.reaction_type === "realm_emoji" || r.reaction_type === "zulip_extra_emoji";
+    clean_reaction_object.emoji_alt_code = user_settings.emojiset === "text";
+    clean_reaction_object.is_realm_emoji =
+        clean_reaction_object.reaction_type === "realm_emoji" ||
+        clean_reaction_object.reaction_type === "zulip_extra_emoji";
 
-    return r;
+    return clean_reaction_object;
 }
 
-export function update_user_fields(r) {
-    r.count = r.user_ids.length;
-    r.label = generate_title(r.emoji_name, r.user_ids);
-    if (r.user_ids.includes(page_params.user_id)) {
-        r.class = "message_reaction reacted";
+export function update_user_fields(clean_reaction_object) {
+    clean_reaction_object.count = clean_reaction_object.user_ids.length;
+    clean_reaction_object.label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
+    if (clean_reaction_object.user_ids.includes(page_params.user_id)) {
+        clean_reaction_object.class = "message_reaction reacted";
     } else {
-        r.class = "message_reaction";
+        clean_reaction_object.class = "message_reaction";
     }
 }
