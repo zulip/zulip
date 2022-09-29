@@ -9,10 +9,19 @@
     </li>
     {{/if}}
 
-    {{#if should_display_edit_and_move_message}}
+    {{#if editability_menu_item}}
     <li>
         <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-arrows{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="fa fa-pencil" aria-hidden="true"></i> {{editability_menu_item}}
+            <span class="hotkey-hint">(e)</span>
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if move_message_menu_item}}
+    <li>
+        <a class="popover_move_message" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-arrows" aria-hidden="true"></i> {{move_message_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
     </li>
