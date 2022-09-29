@@ -31,4 +31,4 @@ types-zxcvbn
 
 importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
 
-https://github.com/typeddjango/django-stubs/archive/9bd8aed1e19f9da2c7d3a2879367a40847b57dea.zip#egg=django-stubs==1.12.0+git
+https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs==1.12.0+git

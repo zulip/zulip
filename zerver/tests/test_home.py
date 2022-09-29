@@ -928,6 +928,7 @@ class HomeTest(ZulipTestCase):
 
         # verify furthest_read_time is last activity time, irrespective of client
         furthest_read_time = get_furthest_read_time(hamlet)
+        assert furthest_read_time is not None
         self.assertGreaterEqual(furthest_read_time, activity_time)
 
         # Check when user has no activity

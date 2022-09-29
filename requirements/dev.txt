@@ -454,9 +454,9 @@ distro==1.7.0 \
     --hash=sha256:151aeccf60c216402932b52e40ee477a939f8d58898927378a02abbe852c1c39 \
     --hash=sha256:d596311d707e692c2160c37807f83e3820c5d539d5a83e87cfb6babd8ba3a06b
     # via zulip
-django[argon2]==4.0.7 \
-    --hash=sha256:41bd65a9e5f8a89cdbfa7a7bba45cd7431ae89e750af82dea8a35fd1a7ecbe66 \
-    --hash=sha256:9c6d5ad36be798e562ddcaa6b17b1c3ff2d3c4f529a47432b69fb9a30f847461
+django[argon2]==4.1.2 \
+    --hash=sha256:26dc24f99c8956374a054bcbf58aab8dc0cad2e6ac82b0fe036b752c00eee793 \
+    --hash=sha256:b8d843714810ab88d59344507d4447be8b2cf12a49031363b6eed9f1b9b2280f
     # via
     #   -r requirements/common.in
     #   django-auth-ldap
@@ -506,11 +506,11 @@ django-statsd-mozilla==0.4.0 \
     --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
     --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
     # via -r requirements/common.in
-https://github.com/typeddjango/django-stubs/archive/9bd8aed1e19f9da2c7d3a2879367a40847b57dea.zip#egg=django-stubs==1.12.0+git \
-    --hash=sha256:42340195b7e67a035f2399cf2718b0990ca40addf3ec2f0ac213887d7ef32c7b
+https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs==1.12.0+git \
+    --hash=sha256:28a308876bd36375e93335f39f84d95ba9607fe659f537d4d307343c33323304
     # via -r requirements/mypy.in
-https://github.com/typeddjango/django-stubs/archive/9bd8aed1e19f9da2c7d3a2879367a40847b57dea.zip#egg=django-stubs-ext==0.5.0+git&subdirectory=django_stubs_ext \
-    --hash=sha256:42340195b7e67a035f2399cf2718b0990ca40addf3ec2f0ac213887d7ef32c7b
+https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs-ext==0.5.0+git&subdirectory=django_stubs_ext \
+    --hash=sha256:28a308876bd36375e93335f39f84d95ba9607fe659f537d4d307343c33323304
     # via
     #   -r requirements/common.in
     #   django-stubs
@@ -1033,30 +1033,31 @@ moto[s3]==4.0.1 \
     --hash=sha256:6fb81f500c49f46f19f44b1db1c2ea56f19f90d0ca6b944866ae0f0eeab76398 \
     --hash=sha256:a9529f295ac786ea80cdce682d57170f801c3618c3b540ced29d0473518f534d
     # via -r requirements/dev.in
-mypy==0.971 \
-    --hash=sha256:02ef476f6dcb86e6f502ae39a16b93285fef97e7f1ff22932b657d1ef1f28655 \
-    --hash=sha256:0d054ef16b071149917085f51f89555a576e2618d5d9dd70bd6eea6410af3ac9 \
-    --hash=sha256:19830b7dba7d5356d3e26e2427a2ec91c994cd92d983142cbd025ebe81d69cf3 \
-    --hash=sha256:1f7656b69974a6933e987ee8ffb951d836272d6c0f81d727f1d0e2696074d9e6 \
-    --hash=sha256:23488a14a83bca6e54402c2e6435467a4138785df93ec85aeff64c6170077fb0 \
-    --hash=sha256:23c7ff43fff4b0df93a186581885c8512bc50fc4d4910e0f838e35d6bb6b5e58 \
-    --hash=sha256:25c5750ba5609a0c7550b73a33deb314ecfb559c350bb050b655505e8aed4103 \
-    --hash=sha256:2ad53cf9c3adc43cf3bea0a7d01a2f2e86db9fe7596dfecb4496a5dda63cbb09 \
-    --hash=sha256:3fa7a477b9900be9b7dd4bab30a12759e5abe9586574ceb944bc29cddf8f0417 \
-    --hash=sha256:40b0f21484238269ae6a57200c807d80debc6459d444c0489a102d7c6a75fa56 \
-    --hash=sha256:4b21e5b1a70dfb972490035128f305c39bc4bc253f34e96a4adf9127cf943eb2 \
-    --hash=sha256:5a361d92635ad4ada1b1b2d3630fc2f53f2127d51cf2def9db83cba32e47c856 \
-    --hash=sha256:77a514ea15d3007d33a9e2157b0ba9c267496acf12a7f2b9b9f8446337aac5b0 \
-    --hash=sha256:855048b6feb6dfe09d3353466004490b1872887150c5bb5caad7838b57328cc8 \
-    --hash=sha256:9796a2ba7b4b538649caa5cecd398d873f4022ed2333ffde58eaf604c4d2cb27 \
-    --hash=sha256:98e02d56ebe93981c41211c05adb630d1d26c14195d04d95e49cd97dbc046dc5 \
-    --hash=sha256:b793b899f7cf563b1e7044a5c97361196b938e92f0a4343a5d27966a53d2ec71 \
-    --hash=sha256:d1ea5d12c8e2d266b5fb8c7a5d2e9c0219fedfeb493b7ed60cd350322384ac27 \
-    --hash=sha256:d2022bfadb7a5c2ef410d6a7c9763188afdb7f3533f22a0a32be10d571ee4bbe \
-    --hash=sha256:d3348e7eb2eea2472db611486846742d5d52d1290576de99d59edeb7cd4a42ca \
-    --hash=sha256:d744f72eb39f69312bc6c2abf8ff6656973120e2eb3f3ec4f758ed47e414a4bf \
-    --hash=sha256:ef943c72a786b0f8d90fd76e9b39ce81fb7171172daf84bf43eaf937e9f220a9 \
-    --hash=sha256:f2899a3cbd394da157194f913a931edfd4be5f274a88041c9dc2d9cdcb1c315c
+mypy==0.982 \
+    --hash=sha256:1021c241e8b6e1ca5a47e4d52601274ac078a89845cfde66c6d5f769819ffa1d \
+    --hash=sha256:14d53cdd4cf93765aa747a7399f0961a365bcddf7855d9cef6306fa41de01c24 \
+    --hash=sha256:175f292f649a3af7082fe36620369ffc4661a71005aa9f8297ea473df5772046 \
+    --hash=sha256:26ae64555d480ad4b32a267d10cab7aec92ff44de35a7cd95b2b7cb8e64ebe3e \
+    --hash=sha256:41fd1cf9bc0e1c19b9af13a6580ccb66c381a5ee2cf63ee5ebab747a4badeba3 \
+    --hash=sha256:5085e6f442003fa915aeb0a46d4da58128da69325d8213b4b35cc7054090aed5 \
+    --hash=sha256:58f27ebafe726a8e5ccb58d896451dd9a662a511a3188ff6a8a6a919142ecc20 \
+    --hash=sha256:6389af3e204975d6658de4fb8ac16f58c14e1bacc6142fee86d1b5b26aa52bda \
+    --hash=sha256:724d36be56444f569c20a629d1d4ee0cb0ad666078d59bb84f8f887952511ca1 \
+    --hash=sha256:75838c649290d83a2b83a88288c1eb60fe7a05b36d46cbea9d22efc790002146 \
+    --hash=sha256:7b35ce03a289480d6544aac85fa3674f493f323d80ea7226410ed065cd46f206 \
+    --hash=sha256:85f7a343542dc8b1ed0a888cdd34dca56462654ef23aa673907305b260b3d746 \
+    --hash=sha256:86ebe67adf4d021b28c3f547da6aa2cce660b57f0432617af2cca932d4d378a6 \
+    --hash=sha256:8ee8c2472e96beb1045e9081de8e92f295b89ac10c4109afdf3a23ad6e644f3e \
+    --hash=sha256:91781eff1f3f2607519c8b0e8518aad8498af1419e8442d5d0afb108059881fc \
+    --hash=sha256:a692a8e7d07abe5f4b2dd32d731812a0175626a90a223d4b58f10f458747dd8a \
+    --hash=sha256:a705a93670c8b74769496280d2fe6cd59961506c64f329bb179970ff1d24f9f8 \
+    --hash=sha256:c6e564f035d25c99fd2b863e13049744d96bd1947e3d3d2f16f5828864506763 \
+    --hash=sha256:cebca7fd333f90b61b3ef7f217ff75ce2e287482206ef4a8b18f32b49927b1a2 \
+    --hash=sha256:d6af646bd46f10d53834a8e8983e130e47d8ab2d4b7a97363e35b24e1d588947 \
+    --hash=sha256:e7aeaa763c7ab86d5b66ff27f68493d672e44c8099af636d433a7f3fa5596d40 \
+    --hash=sha256:eaa97b9ddd1dd9901a22a879491dbb951b5dec75c3b90032e2baa7336777363b \
+    --hash=sha256:eb7a068e503be3543c4bd329c994103874fa543c1727ba5288393c21d912d795 \
+    --hash=sha256:f793e3dd95e166b66d50e7b63e69e58e88643d80a3dcc3bcd81368e0478b089c
     # via
     #   -r requirements/mypy.in
     #   django-stubs

@@ -173,7 +173,14 @@ def create_test_databases(worker_id: int) -> None:
         connection.close()
 
 
-def init_worker(counter: "multiprocessing.sharedctypes.Synchronized[int]") -> None:
+def init_worker(
+    counter: "multiprocessing.sharedctypes.Synchronized[int]",
+    initial_settings: Optional[Dict[str, Any]] = None,
+    serialized_contents: Optional[Dict[str, str]] = None,
+    process_setup: Optional[Callable[..., None]] = None,
+    process_setup_args: Optional[Tuple[Any, ...]] = None,
+    debug_mode: Optional[bool] = None,
+) -> None:
     """
     This function runs only under parallel mode. It initializes the
     individual processes which are also called workers.

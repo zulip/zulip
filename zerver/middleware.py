@@ -479,7 +479,7 @@ class JsonErrorHandler(MiddlewareMixin):
                     request.path,
                     response=response,
                     request=request,
-                    exc_info=True,
+                    exception=exception,
                 )
             return response
         if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
