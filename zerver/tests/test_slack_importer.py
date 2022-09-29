@@ -47,7 +47,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
-from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
 
 def remove_folder(path: str) -> None:
@@ -1147,6 +1147,8 @@ class SlackImporter(ZulipTestCase):
                 RealmAuditLog.REALM_CREATED,
             },
         )
+
+        self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
 
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
