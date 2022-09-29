@@ -25,6 +25,9 @@ format used by the Zulip server that they are interacting with.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: Nobody added as an option for the realm setting
   `edit_topic_policy`.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Nobody added as an option for the realm setting
+  `move_messages_between_streams_policy`.
 
 Feature levels 157-158 are reserved for future use in 6.x maintenance
 releases.
