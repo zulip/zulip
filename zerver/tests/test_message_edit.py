@@ -2056,6 +2056,18 @@ class EditMessageTest(EditMessageTestCase):
                 messages = get_topic_messages(user_profile, new_stream, "test")
                 self.assert_length(messages, 4)
 
+        # Check sending messages when policy is Realm.POLICY_NOBODY.
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_NOBODY,
+            acting_user=None,
+        )
+        check_move_message_according_to_policy(UserProfile.ROLE_REALM_OWNER, expect_fail=True)
+        check_move_message_according_to_policy(
+            UserProfile.ROLE_REALM_ADMINISTRATOR, expect_fail=True
+        )
+
         # Check sending messages when policy is Realm.POLICY_ADMINS_ONLY.
         do_set_realm_property(
             user_profile.realm,

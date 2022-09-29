@@ -251,9 +251,16 @@ test_message_policy(
 run_test("user_can_edit_topic_of_any_message_nobody_case", () => {
     page_params.is_admin = true;
     page_params.is_guest = false;
-    page_params.realm_edit_topic_policy =
-        settings_config.edit_topic_policy_values.nobody.code;
+    page_params.realm_edit_topic_policy = settings_config.edit_topic_policy_values.nobody.code;
     assert.equal(settings_data.user_can_edit_topic_of_any_message(), false);
+});
+
+run_test("user_can_move_messages_between_streams_nobody_case", () => {
+    page_params.is_admin = true;
+    page_params.is_guest = false;
+    page_params.realm_move_messages_between_streams_policy =
+        settings_config.move_messages_between_streams_policy_values.nobody.code;
+    assert.equal(settings_data.user_can_move_messages_between_streams(), false);
 });
 
 test_message_policy(

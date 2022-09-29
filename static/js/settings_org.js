@@ -117,6 +117,9 @@ export function get_organization_settings_options() {
     options.edit_topic_policy_values = get_sorted_options_list(
         settings_config.edit_topic_policy_values,
     );
+    options.move_messages_between_streams_policy_values = get_sorted_options_list(
+        settings_config.move_messages_between_streams_policy_values,
+    );
     return options;
 }
 
