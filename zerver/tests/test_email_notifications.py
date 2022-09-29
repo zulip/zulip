@@ -527,7 +527,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
 
@@ -538,7 +538,7 @@ class TestMissedMessages(ZulipTestCase):
                 "1 2 3 4 5 6 7 8 9 10 @**King Hamlet**",
                 "private",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -570,7 +570,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = "New messages"
@@ -580,7 +580,7 @@ class TestMissedMessages(ZulipTestCase):
                 "1 2 3 4 5 @**all**",
                 "private",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -648,14 +648,14 @@ class TestMissedMessages(ZulipTestCase):
                 verify_body_include = [
                     "This email does not include message content because your organization has disabled",
                     "http://zulip.testserver/help/hide-message-content-in-emails",
-                    "View or reply in Zulip",
+                    "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             elif message_content_disabled_by_user:
                 verify_body_include = [
                     "This email does not include message content because you have disabled message ",
                     "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                    "View or reply in Zulip",
+                    "View or reply in Zulip Dev Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
             email_subject = "New messages"
@@ -664,7 +664,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Extremely personal message!",
                 "mentioned",
                 "group",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -681,7 +681,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("hamlet"),
             "Extremely personal message!",
         )
-        verify_body_include = ["Reply to this email directly, or view it in Zulip"]
+        verify_body_include = ["Reply to this email directly, or view it in Zulip Dev Zulip"]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
@@ -717,7 +717,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_include = [
                 "This email does not include message content because you have disabled message ",
                 "http://zulip.testserver/help/pm-mention-alert-notifications ",
-                "View or reply in Zulip",
+                "View or reply in Zulip Dev Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
             email_subject = "New messages"
@@ -726,7 +726,7 @@ class TestMissedMessages(ZulipTestCase):
                 "Othello, the Moor of Venice Othello, the Moor of Venice",
                 "Group personal message!",
                 "mentioned",
-                "Reply to this email directly, or view it in Zulip",
+                "Reply to this email directly, or view it in Zulip Dev Zulip",
             ]
         self._test_cases(
             msg_id,
@@ -1519,7 +1519,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("hamlet"),
             "```\n```",
         )
-        verify_body_include = ["view it in Zulip"]
+        verify_body_include = ["view it in Zulip Dev Zulip"]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(
             msg_id, verify_body_include, email_subject, send_as_user=False, verify_html_body=True

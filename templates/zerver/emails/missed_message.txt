@@ -32,15 +32,15 @@ See {{ alert_notif_url }} for more details.
 {% endif %}
 
 {% if reply_to_zulip  %}
-{% trans %}Reply to this email directly, or view it in Zulip:{% endtrans %}
+{% trans %}Reply to this email directly, or view it in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 {% elif not show_message_content %}
-{% trans %}View or reply in Zulip:{% endtrans %}
+{% trans %}View or reply in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 {% else %}
-{% trans %}Reply in Zulip:{% endtrans %}
+{% trans %}Reply in {{ realm_name }} Zulip:{% endtrans %}
 
 {{ narrow_url }}
 
