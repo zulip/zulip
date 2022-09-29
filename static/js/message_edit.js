@@ -599,6 +599,8 @@ function edit_message($row, raw_content) {
         $message_edit_topic.trigger("focus");
     } else if (editability === editability_types.TOPIC_ONLY) {
         $row.find(".message_edit_topic").trigger("focus");
+    } else if (editability !== editability_types.FULL && is_stream_editable) {
+        $row.find(".select_stream_setting .dropdown-toggle").trigger("focus");
     } else {
         $message_edit_content.trigger("focus");
         // Put cursor at end of input.
