@@ -1127,7 +1127,7 @@ test("initialize", ({override, mock_template}) => {
 
     event.key = "Tab";
     event.shiftKey = false;
-    event.target.id = "subject";
+    event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     $("form#send_message_form").trigger(event);
