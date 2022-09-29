@@ -36,6 +36,7 @@ from django.contrib.auth.models import (
     UserManager,
 )
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
@@ -679,8 +680,12 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     if settings.BIG_BLUE_BUTTON_SECRET is not None and settings.BIG_BLUE_BUTTON_URL is not None:
         VIDEO_CHAT_PROVIDERS["big_blue_button"] = {"name": "BigBlueButton", "id": 4}
 
-    video_chat_provider = models.PositiveSmallIntegerField(
-        default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
+    def get_video_chat_provider_default() -> List[int]:
+        return [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]]
+
+    video_chat_provider: List[int] = ArrayField(
+        models.PositiveSmallIntegerField(),
+        default=get_video_chat_provider_default,
     )
 
     # Please access this via get_giphy_rating_options.
@@ -762,7 +767,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         private_message_policy=int,
         send_welcome_emails=bool,
         user_group_edit_policy=int,
-        video_chat_provider=int,
+        video_chat_provider=list,
         waiting_period_threshold=int,
         want_advertise_in_communities_directory=bool,
         wildcard_mention_policy=int,
