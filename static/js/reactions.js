@@ -438,25 +438,24 @@ export function get_message_reactions(message) {
 
 export function set_clean_reactions(message) {
     /*
-        The server sends us a single structure for
-        each reaction, even if two users are reacting
-        with the same emoji.  Our first loop creates
-        a map of distinct reactions and a map of
-        local_id -> user_ids.  The `local_id` is
-        basically a key for the emoji name.
+      set_clean_reactions processes the raw message.reactions object,
+      which will contain one object for each individual reaction, even
+      if two users react with the same emoji.
 
-        Then in our second loop we build a more compact
-        data structure that's easier for our message
-        list view templates to work with.
+      As output, it sets message.cleaned_reactions, which is a more
+      compressed format with one entry per reaction pill that should
+      be displayed visually to users.
     */
 
     if (message.clean_reactions) {
         return;
     }
 
+    // This first loop creates a temporary distinct_reactions data
+    // structure, which will accumulate the set of users who have
+    // reacted with each distinct reaction.
     const distinct_reactions = new Map();
     const user_map = new Map();
-
     for (const reaction of message.reactions) {
         const local_id = get_local_reaction_id(reaction);
         const user_id = reaction.user_id;
@@ -483,16 +482,12 @@ export function set_clean_reactions(message) {
         user_ids.push(user_id);
     }
 
-    /*
-        It might feel a little janky to attach clean_reactions
-        directly to the message object, but this allows the
-        server to send us a new copy of the message, and then
-        the next time we try to get reactions from it, we
-        won't have `clean_reactions`, and we will re-process
-        the server's latest copy of the reactions.
-    */
+    // TODO: Rather than adding this field to the message object, it
+    // might be cleaner to create an independent map from message_id
+    // => clean_reactions data for the message, with care being taken
+    // to make sure reify_message_id moves the data structure
+    // properly.
     message.clean_reactions = new Map();
-
     for (const local_id of distinct_reactions.keys()) {
         const reaction = distinct_reactions.get(local_id);
         const user_ids = user_map.get(local_id);
@@ -502,6 +497,12 @@ export function set_clean_reactions(message) {
             make_clean_reaction({local_id, user_ids, ...reaction}),
         );
     }
+
+    // We don't maintain message.reactions when users react to
+    // messages we already have a copy of, so it's safest to delete it
+    // after we've processed the reactions data for a message into the
+    // clean_reactions data structure, which we do maintain.
+    delete message.reactions;
 }
 
 function make_clean_reaction({local_id, user_ids, emoji_name, emoji_code, reaction_type}) {
