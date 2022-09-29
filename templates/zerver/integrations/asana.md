@@ -41,7 +41,7 @@ Get Zulip notifications for your Asana projects via Zapier!
 
 1.  Finally, configure **Data**. You have to add 2 fields:
 
-     * `subject` is the field corresponding to the subject of the message.
+     * `subject` is the field corresponding to the topic of the message.
      * `content` is the field corresponding to the content of the message.
 
 1.  You can format the content of the `content` and `subject` fields
