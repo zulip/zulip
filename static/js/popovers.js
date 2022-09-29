@@ -521,8 +521,6 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-        const should_display_view_source = editability !== message_edit.editability_types.FULL;
-
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
@@ -551,7 +549,6 @@ export function toggle_actions_popover(element, id) {
             should_display_delete_option,
             should_display_read_receipts_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_view_source,
             should_display_quote_and_reply,
         };
 
