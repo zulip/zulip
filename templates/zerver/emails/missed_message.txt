@@ -26,7 +26,7 @@ See {{ alert_notif_url }} for more details.
 {% elif mentioned_user_group_name %}
 {% trans %}You are receiving this because @{{ mentioned_user_group_name }} was mentioned.{% endtrans %}
 {% elif wildcard_mentioned %}
-{% trans %}You are receiving this because everyone was mentioned.{% endtrans %}
+{% trans %}You are receiving this because everyone was mentioned in #{{ stream_name }}.{% endtrans %}
 {% elif stream_email_notify %}
 {% trans %}You are receiving this because you have email notifications enabled for #{{ stream_name }}.{% endtrans %}
 {% endif %}

@@ -561,7 +561,7 @@ class TestMissedMessages(ZulipTestCase):
         if show_message_content:
             verify_body_include = [
                 "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
-                "You are receiving this because everyone was mentioned.",
+                "You are receiving this because everyone was mentioned in #Denmark.",
             ]
             email_subject = "#Denmark > test"
             verify_body_does_not_include: List[str] = []
@@ -958,7 +958,7 @@ class TestMissedMessages(ZulipTestCase):
 
         expected_email_include = [
             "Othello, the Moor of Venice: > 1 > @**all** -- ",
-            "You are receiving this because everyone was mentioned.",
+            "You are receiving this because everyone was mentioned in #Denmark.",
         ]
 
         for text in expected_email_include:
