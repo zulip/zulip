@@ -107,7 +107,7 @@ function analyze_edit_history(message) {
 function render_group_display_date(group, message_container) {
     const time = new Date(message_container.msg.timestamp * 1000);
     const today = new Date();
-    const date_element = timerender.render_date(time, undefined, today)[0];
+    const date_element = timerender.render_date(time, today)[0];
 
     group.date = date_element.outerHTML;
 }
@@ -116,21 +116,18 @@ function update_group_date_divider(group, message_container, prev) {
     const time = new Date(message_container.msg.timestamp * 1000);
     const today = new Date();
 
+    // TODO: investigate
     if (prev !== undefined) {
         const prev_time = new Date(prev.msg.timestamp * 1000);
         if (!isSameDay(time, prev_time)) {
             // NB: group_date_divider_html is HTML, inserted into the document without escaping.
-            group.group_date_divider_html = timerender.render_date(
-                time,
-                prev_time,
-                today,
-            )[0].outerHTML;
+            group.group_date_divider_html = timerender.render_date(time, today)[0].outerHTML;
             group.show_group_date_divider = true;
         }
     } else {
         // Show the date in the recipient bar, but not a date separator bar.
         group.show_group_date_divider = false;
-        group.group_date_divider_html = timerender.render_date(time, undefined, today)[0].outerHTML;
+        group.group_date_divider_html = timerender.render_date(time, today)[0].outerHTML;
     }
 }
 
@@ -155,16 +152,11 @@ function update_message_date_divider(opts) {
         return;
     }
 
-    const prev_time = new Date(prev_msg_container.msg.timestamp * 1000);
     const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
     const today = new Date();
 
     curr_msg_container.want_date_divider = true;
-    curr_msg_container.date_divider_html = timerender.render_date(
-        curr_time,
-        prev_time,
-        today,
-    )[0].outerHTML;
+    curr_msg_container.date_divider_html = timerender.render_date(curr_time, today)[0].outerHTML;
 }
 
 function set_timestr(message_container) {
@@ -258,7 +250,7 @@ export class MessageListView {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
             return (
-                timerender.render_date(last_edit_time, undefined, today)[0].textContent +
+                timerender.render_date(last_edit_time, today)[0].textContent +
                 " at " +
                 timerender.stringify_time(last_edit_time)
             );

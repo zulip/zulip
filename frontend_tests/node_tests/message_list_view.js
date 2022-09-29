@@ -14,11 +14,8 @@ const noop = () => {};
 
 // timerender calls setInterval when imported
 mock_esm("../../static/js/timerender", {
-    render_date(time1, time2) {
-        if (time2 === undefined) {
-            return [{outerHTML: String(time1.getTime())}];
-        }
-        return [{outerHTML: String(time1.getTime()) + " - " + String(time2.getTime())}];
+    render_date(time) {
+        return [{outerHTML: String(time.getTime())}];
     },
     stringify_time(time) {
         return time.toString("h:mm TT");
@@ -543,7 +540,7 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_groups, []);
         assert.deepEqual(result.append_messages, []);
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
-        assert.equal(message_group2.group_date_divider_html, "900000000 - 1000000");
+        assert.equal(message_group2.group_date_divider_html, "900000000");
     })();
 
     (function test_append_message_different_day() {
@@ -656,7 +653,7 @@ test("merge_message_groups", () => {
         const result = list.merge_message_groups([message_group2], "top");
 
         // We should have a group date divider between the recipient blocks.
-        assert.equal(message_group1.group_date_divider_html, "900000000 - 1000000");
+        assert.equal(message_group1.group_date_divider_html, "900000000");
         assert_message_groups_list_equal(list._message_groups, [message_group2, message_group1]);
         assert.deepEqual(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
@@ -676,7 +673,7 @@ test("merge_message_groups", () => {
         const result = list.merge_message_groups([message_group2], "top");
 
         // We should have a group date divider within the single recipient block.
-        assert.equal(message_group2.message_containers[1].date_divider_html, "900000000 - 1000000");
+        assert.equal(message_group2.message_containers[1].date_divider_html, "900000000");
         assert_message_groups_list_equal(list._message_groups, [message_group2]);
         assert.deepEqual(result.append_groups, []);
         assert.deepEqual(result.prepend_groups, []);
