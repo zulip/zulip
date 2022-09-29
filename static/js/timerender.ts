@@ -155,7 +155,6 @@ type UpdateEntry = {
     needs_update: boolean;
     className: string;
     time: Date;
-    time_above?: Date;
 };
 let update_list: UpdateEntry[] = [];
 
@@ -167,30 +166,14 @@ export function initialize(): void {
     last_update = startOfToday();
 }
 
-// time_above is an optional argument, to support dates that look like:
-// --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
 function maybe_add_update_list_entry(entry: UpdateEntry): void {
     if (entry.needs_update) {
         update_list.push(entry);
     }
 }
 
-function render_date_span(
-    $elem: JQuery,
-    rendered_time: TimeRender,
-    rendered_time_above?: TimeRender,
-): JQuery {
+function render_date_span($elem: JQuery, rendered_time: TimeRender): JQuery {
     $elem.text("");
-    if (rendered_time_above !== undefined) {
-        $elem.append(
-            $("<i>").addClass(["date-direction", "fa", "fa-caret-up"]),
-            _.escape(rendered_time_above.time_str),
-            $("<hr>").addClass("date-line"),
-            $("<i>").addClass(["date-direction", "fa", "fa-caret-down"]),
-            _.escape(rendered_time.time_str),
-        );
-        return $elem;
-    }
     $elem.append(_.escape(rendered_time.time_str));
     return $elem.attr("data-tippy-content", rendered_time.formal_time_str);
 }
@@ -198,28 +181,20 @@ function render_date_span(
 // Given an Date object 'time', return a DOM node that initially
 // displays the human-formatted date, and is updated automatically as
 // necessary (e.g. changing "Today" to "Yesterday" to "Jul 1").
-// If two dates are given, it renders them as:
-// --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
 
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-export function render_date(time: Date, time_above: Date | undefined, today: Date): JQuery {
+export function render_date(time: Date, today: Date): JQuery {
     const className = `timerender${next_timerender_id}`;
     next_timerender_id += 1;
     const rendered_time = render_now(time, today);
     let $node = $("<span>").attr("class", className);
-    if (time_above !== undefined) {
-        const rendered_time_above = render_now(time_above, today);
-        $node = render_date_span($node, rendered_time, rendered_time_above);
-    } else {
-        $node = render_date_span($node, rendered_time);
-    }
+    $node = render_date_span($node, rendered_time);
     maybe_add_update_list_entry({
         needs_update: rendered_time.needs_update,
         className,
         time,
-        time_above,
     });
     return $node;
 }
@@ -255,17 +230,14 @@ export function update_timestamps(): void {
             // messages above it and re-collapsed).
             if ($elements.length > 0) {
                 const time = entry.time;
-                const time_above = entry.time_above;
                 const rendered_time = render_now(time, today);
-                const rendered_time_above = time_above ? render_now(time_above, today) : undefined;
                 for (const element of $elements) {
-                    render_date_span($(element), rendered_time, rendered_time_above);
+                    render_date_span($(element), rendered_time);
                 }
                 maybe_add_update_list_entry({
                     needs_update: rendered_time.needs_update,
                     className,
                     time,
-                    time_above,
                 });
             }
         }

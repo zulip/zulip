@@ -222,36 +222,10 @@ run_test("render_date_renders_time_html", () => {
         return $span_stub;
     };
 
-    const $actual = timerender.render_date(message_time, undefined, today);
+    const $actual = timerender.render_date(message_time, today);
     assert.equal($actual.html(), expected_html);
     assert.equal(attrs["data-tippy-content"], "Friday, April 12, 2019");
     assert.equal(attrs.class, "timerender0");
-});
-
-run_test("render_date_renders_time_above_html", () => {
-    const today = date_2019;
-
-    const message_time = today;
-    const message_time_above = add(today, {days: -1});
-
-    const $span_stub = $("<span>");
-
-    let appended_val;
-    $span_stub.append = (...val) => {
-        appended_val = val;
-        return $span_stub;
-    };
-
-    const expected = [
-        $("<i>"),
-        $t({defaultMessage: "Yesterday"}),
-        $("<hr>"),
-        $("<i>"),
-        $t({defaultMessage: "Today"}),
-    ];
-
-    timerender.render_date(message_time, message_time_above, today);
-    assert.deepEqual(appended_val, expected);
 });
 
 run_test("get_full_time", () => {
