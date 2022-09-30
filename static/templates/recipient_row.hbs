@@ -69,7 +69,7 @@
                     <i class="zulip-icon zulip-icon-mute on_hover_topic_mute recipient_bar_icon hidden-for-spectators" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mute topic' }} (M)" role="button" tabindex="0" aria-label="{{t 'Mute topic' }}"></i>
                 {{/if}}
             </span>
-            <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+            <span class="recipient_row_date {{#if show_recipient_bar_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
         </div>
     </div>
 </div>
@@ -83,7 +83,7 @@
                 {{#tr}}You and {display_reply_to}{{/tr}}
             </a>
 
-            <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
+            <span class="recipient_row_date {{#if show_recipient_bar_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
         </div>
     </div>
 </div>
