@@ -35,6 +35,7 @@ from zerver.lib.validator import (
     check_int_in,
     check_string_in,
     check_string_or_int,
+    check_string_or_int_list,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
@@ -127,7 +128,9 @@ def update_realm(
     wildcard_mention_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
-    video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    video_chat_provider: Optional[List[int]] = REQ(
+        json_validator=check_string_or_int_list, default=None
+    ),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
@@ -165,9 +168,9 @@ def update_realm(
             raise OrganizationOwnerRequiredError
         if True not in list(authentication_methods.values()):
             raise JsonableError(_("At least one authentication method must be enabled."))
-    if video_chat_provider is not None and video_chat_provider not in {
-        p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
-    }:
+    if video_chat_provider is not None and not set(video_chat_provider).issubset(
+        {p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()}
+    ):
         raise JsonableError(_("Invalid video_chat_provider {}").format(video_chat_provider))
     if giphy_rating is not None and giphy_rating not in {
         p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()

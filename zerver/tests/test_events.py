@@ -2658,7 +2658,7 @@ class RealmPropertyActionTest(BaseAction):
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,
             bot_creation_policy=Realm.BOT_CREATION_POLICY_TYPES,
             video_chat_provider=[
-                Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
+                [Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]],
             ],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
