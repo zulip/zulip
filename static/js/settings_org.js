@@ -551,7 +551,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             // needs custom reset code.
             $elem
                 .closest(".org-subsection-parent")
-                .find(`.setting_user_list_style_choice[value='${CSS.escape(property_value)}'`)
+                .find(`.setting_user_list_style_choice[value='${CSS.escape(property_value)}']`)
                 .prop("checked", true);
             break;
         case "email_notifications_batching_period_seconds":
