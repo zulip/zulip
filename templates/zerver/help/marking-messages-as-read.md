@@ -76,3 +76,4 @@ stream or topic as read**.
 ## Related articles
 
 * [Reading strategies](/help/reading-strategies)
+* [Read receipts](/help/read-receipts)
