@@ -44,10 +44,10 @@
 
         <div class="input-group">
             <label class="emoji-theme title">{{t "Emoji theme" }}</label>
-            <div class="emojiset_choices grey-box">
+            <div class="emojiset_choices grey-box prop-element" id="{{prefix}}emojiset" data-setting-widget-type="radio-group" data-setting-choice-type="string">
                 {{#each settings_object.emojiset_choices}}
                     <label>
-                        <input type="radio" class="setting_emojiset_choice prop-element" name="emojiset" value="{{this.key}}" data-setting-widget-type="radio-group"/>
+                        <input type="radio" class="setting_emojiset_choice" name="emojiset" value="{{this.key}}"/>
                         <span>{{this.text}}</span>
                         <span class="right">
                             {{#if (eq this.key "text") }}
@@ -82,10 +82,10 @@
 
         <div class="input-group">
             <label class="title">{{t "User list style" }}</label>
-            <div class="user_list_style_values grey-box">
+            <div class="user_list_style_values grey-box prop-element" id="{{prefix}}user_list_style" data-setting-widget-type="radio-group" data-setting-choice-type="number">
                 {{#each user_list_style_values}}
                     <label>
-                        <input type="radio" class="setting_user_list_style_choice prop-element" name="user_list_style" value="{{this.code}}" data-setting-widget-type="radio-group"/>
+                        <input type="radio" class="setting_user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
                         <span>{{this.description}}</span>
                         <span class="right preview">
                             {{#if (eq this.code 1)}}
