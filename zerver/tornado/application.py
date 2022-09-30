@@ -1,5 +1,6 @@
 import tornado.web
 from django.conf import settings
+from django.core.handlers.base import BaseHandler
 from tornado import autoreload
 
 from zerver.lib.queue import TornadoQueueClient
@@ -12,6 +13,9 @@ def setup_tornado_rabbitmq(queue_client: TornadoQueueClient) -> None:  # nocover
 
 
 def create_tornado_application() -> tornado.web.Application:
+    django_handler = BaseHandler()
+    django_handler.load_middleware()
+
     urls = (
         r"/notify_tornado",
         r"/json/events",
@@ -20,7 +24,7 @@ def create_tornado_application() -> tornado.web.Application:
     )
 
     return tornado.web.Application(
-        [(url, AsyncDjangoHandler) for url in urls],
+        [(url, AsyncDjangoHandler, dict(django_handler=django_handler)) for url in urls],
         debug=settings.DEBUG,
         autoreload=False,
         # Disable Tornado's own request logging, since we have our own
