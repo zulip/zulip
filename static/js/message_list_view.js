@@ -112,28 +112,18 @@ function render_group_display_date(group, message_container) {
     group.date = date_element.outerHTML;
 }
 
-function update_group_date_divider(group, message_container, prev) {
+function update_group_date(group, message_container, prev) {
     const time = new Date(message_container.msg.timestamp * 1000);
     const today = new Date();
 
-    // TODO: investigate
-    if (prev !== undefined) {
-        const prev_time = new Date(prev.msg.timestamp * 1000);
-        if (!isSameDay(time, prev_time)) {
-            // NB: group_date_divider_html is HTML, inserted into the document without escaping.
-            group.group_date_divider_html = timerender.render_date(time, today)[0].outerHTML;
-            group.show_group_date_divider = true;
-        }
-    } else {
-        // Show the date in the recipient bar, but not a date separator bar.
-        group.show_group_date_divider = false;
-        group.group_date_divider_html = timerender.render_date(time, today)[0].outerHTML;
-    }
+    // Show the date in the recipient bar if the previous message was from a different day.
+    group.show_recipient_bar_date = !same_day(message_container, prev);
+    group.group_date_html = timerender.render_date(time, today)[0].outerHTML;
 }
 
-function clear_group_date_divider(group) {
-    group.show_group_date_divider = false;
-    group.group_date_divider_html = undefined;
+function clear_group_date(group) {
+    group.show_recipient_bar_date = true;
+    group.group_date_html = undefined;
 }
 
 function clear_message_date_divider(msg) {
@@ -455,7 +445,7 @@ export class MessageListView {
                 current_group = start_group();
                 add_message_container_to_group(message_container);
 
-                update_group_date_divider(current_group, message_container, prev);
+                update_group_date(current_group, message_container, prev);
                 clear_message_date_divider(message_container);
 
                 message_container.include_recipient = true;
@@ -607,7 +597,7 @@ export class MessageListView {
                 !same_day(second_group.message_containers[0], first_group.message_containers[0])
             ) {
                 // The groups did not merge, so we need up update the date row for the old group
-                update_group_date_divider(second_group, curr_msg_container, prev_msg_container);
+                update_group_date(second_group, curr_msg_container, prev_msg_container);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
             }
@@ -621,11 +611,11 @@ export class MessageListView {
                 new_message_groups = new_message_groups.slice(1);
             } else if (first_group !== undefined && second_group !== undefined) {
                 if (same_day(prev_msg_container, curr_msg_container)) {
-                    clear_group_date_divider(second_group);
+                    clear_group_date(second_group);
                 } else {
                     // If we just sent the first message on a new day
-                    // in a narrow, make sure we render a date separator.
-                    update_group_date_divider(second_group, curr_msg_container, prev_msg_container);
+                    // in a narrow, make sure we render a date.
+                    update_group_date(second_group, curr_msg_container, prev_msg_container);
                 }
             }
             message_actions.append_groups = new_message_groups;
