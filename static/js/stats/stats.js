@@ -17,6 +17,21 @@ const font_14pt = {
 
 let last_full_update = Number.POSITIVE_INFINITY;
 
+// Copied from attachments_ui.js
+function bytes_to_size(bytes, kb_with_1024_bytes = false) {
+    const kb_size = kb_with_1024_bytes ? 1024 : 1000;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) {
+        return "0 B";
+    }
+    const i = Number.parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
+    let size = Math.round(bytes / Math.pow(kb_size, i));
+    if (i > 0 && size < 10) {
+        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+    }
+    return size + " " + sizes[i];
+}
+
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
     let accumulator = 0;
@@ -151,6 +166,13 @@ function get_thirty_days_messages_sent(data) {
 
     $("#id_thirty_days_messages_sent").text(thirty_days_messages_string);
     $("#id_thirty_days_messages_sent").closest("summary-stats").show();
+}
+
+function set_storage_space_used_statistic(upload_space_used) {
+    const space_used = bytes_to_size(upload_space_used, true);
+
+    $("#id_storage_space_used").text(space_used);
+    $("#id_storage_space_used").closest("summary-stats").show();
 }
 
 // PLOTLY CHARTS
@@ -1113,3 +1135,5 @@ get_chart_data(
     {chart_name: "messages_read_over_time", min_length: "10"},
     populate_messages_read_over_time,
 );
+
+set_storage_space_used_statistic(page_params.upload_space_used);

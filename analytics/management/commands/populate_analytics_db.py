@@ -1,6 +1,8 @@
+import os
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Type, Union
 
+from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
 
@@ -18,8 +20,10 @@ from analytics.models import (
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.users import do_change_user_role
 from zerver.lib.create_user import create_user
+from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
+from zerver.lib.upload import upload_message_image_from_request
 from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserGroup, UserProfile
 
 
@@ -112,6 +116,13 @@ class Command(BaseCommand):
             ),
         ]
         Subscription.objects.bulk_create(subs)
+
+        # Create an attachment in the database for set_storage_space_used_statistic.
+        IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
+        file_info = os.stat(IMAGE_FILE_PATH)
+        file_size = file_info.st_size
+        with open(IMAGE_FILE_PATH, "rb") as fp:
+            upload_message_image_from_request(UploadedFile(fp), shylock, file_size)
 
         FixtureData = Mapping[Union[str, int, None], List[int]]
 
