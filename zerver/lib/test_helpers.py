@@ -34,7 +34,7 @@ from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto import mock_s3
+from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
 import zerver.lib.upload
