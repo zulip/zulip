@@ -214,6 +214,15 @@ if os.path.exists("/etc/init.d/postgresql"):
             ]
         )
 
+    if tuple(map(int, postgresql_version.split("."))) < (11,):
+        logging.critical("Unsupported PostgreSQL version: %s", postgresql_version)
+        logging.info(
+            "Please upgrade to PostgreSQL 11 or newer first.\n"
+            "See https://zulip.readthedocs.io/en/latest/production/"
+            "upgrade-or-modify.html#upgrading-postgresql"
+        )
+        sys.exit(1)
+
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
     run_psql_as_postgres(
