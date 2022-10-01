@@ -389,7 +389,7 @@ function build_drafts_popover(e) {
     e.stopPropagation();
 }
 
-function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
+function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
@@ -801,7 +801,7 @@ export function register_topic_handlers() {
         const $topic_row = $(e.currentTarget);
         const stream_id = Number.parseInt($topic_row.attr("data-stream-id"), 10);
         const topic_name = $topic_row.attr("data-topic-name");
-        build_move_topic_to_stream_popover(e, stream_id, topic_name);
+        build_move_topic_to_stream_popover(stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();
     });
