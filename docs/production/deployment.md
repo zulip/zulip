@@ -52,7 +52,7 @@ as well as those mentioned in the
 [install](install.md#installer-options) documentation:
 
 - `--postgresql-version`: Sets the version of PostgreSQL that will be
-  installed. We currently support PostgreSQL 10, 11, 12, 13, and 14.
+  installed. We currently support PostgreSQL 11, 12, 13, and 14.
 
 - `--postgresql-database-name=exampledbname`: With this option, you
   can customize the default database name. If you do not set this. The
