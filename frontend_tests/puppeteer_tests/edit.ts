@@ -20,10 +20,9 @@ async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.waitForSelector(".message_edit_content", {visible: true});
 }
 
-async function edit_stream_message(page: Page, topic: string, content: string): Promise<void> {
+async function edit_stream_message(page: Page, content: string): Promise<void> {
     await trigger_edit_last_message(page);
 
-    await common.clear_and_type(page, ".message_edit_topic", topic);
     await common.clear_and_type(page, ".message_edit_content", content);
     await page.click(".message_edit_save");
 
@@ -37,7 +36,7 @@ async function test_stream_message_edit(page: Page): Promise<void> {
         content: "test editing",
     });
 
-    await edit_stream_message(page, "edits", "test edited");
+    await edit_stream_message(page, "test edited");
 
     await common.check_messages_sent(page, "zhome", [["Verona > edits", ["test edited"]]]);
 }
@@ -61,7 +60,7 @@ async function test_edit_message_with_slash_me(page: Page): Promise<void> {
         )} and normalize-space()="Desdemona"]`,
     );
 
-    await edit_stream_message(page, "edits", "/me test edited a message with me");
+    await edit_stream_message(page, "/me test edited a message with me");
 
     await page.waitForSelector(
         `xpath/${last_message_xpath}//*[${common.has_class_x(
