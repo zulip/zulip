@@ -1,12 +1,13 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover">
-    {{#if should_display_hide_option}}
+    {{#if should_display_quote_and_reply}}
     <li>
-        <a class="rehide_muted_user_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-eye-slash" aria-hidden="true"></i>
-            {{t "Hide muted message again" }}
+        <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
+            <span class="hotkey-hint">(>)</span>
         </a>
     </li>
+    <hr />
     {{/if}}
 
     {{#if editability_menu_item}}
@@ -27,21 +28,27 @@
     </li>
     {{/if}}
 
-    {{#if should_display_quote_and_reply}}
+    {{#if should_display_delete_option}}
     <li>
-        <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
-            <span class="hotkey-hint">(>)</span>
+        <a class="delete_message" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-times" aria-hidden="true"></i>
+            {{t "Delete message" }}
         </a>
     </li>
     {{/if}}
 
-    {{#if view_source_menu_item}}
+    {{#if (or editability_menu_item move_message_menu_item should_display_delete_option)}}
+    <hr />
+    {{/if}}
+
+    {{#if should_display_add_reaction_option}}
     <li>
-        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
+        <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-smile-o" aria-hidden="true"></i>
+            {{#tr}}Add emoji reaction{{/tr}}
         </a>
     </li>
+    <hr />
     {{/if}}
 
     {{#if should_display_mark_as_unread}}
@@ -58,6 +65,15 @@
     <li>
         <a class='reminder_button' data-message-id="{{message_id}}" tabindex="0">
             <i class="fa fa-bell" aria-hidden="true"></i> {{t "Remind me about this" }}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if should_display_hide_option}}
+    <li>
+        <a class="rehide_muted_user_message" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-eye-slash" aria-hidden="true"></i>
+            {{t "Hide muted message again" }}
         </a>
     </li>
     {{/if}}
@@ -80,28 +96,23 @@
     </li>
     {{/if}}
 
+    {{#if (or should_display_mark_as_unread should_display_reminder_option should_display_hide_option should_display_collapse should_display_uncollapse)}}
+    <hr />
+    {{/if}}
+
+    {{#if view_source_menu_item}}
+    <li>
+        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_edit_history_option}}
     <li>
         <a class="view_edit_history" data-message-id="{{message_id}}" tabindex="0">
             <i class="fa fa-clock-o" aria-hidden="true"></i>
             {{t "View edit history" }}
-        </a>
-    </li>
-    {{/if}}
-    {{#if should_display_delete_option}}
-    <li>
-        <a class="delete_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-times" aria-hidden="true"></i>
-            {{t "Delete message" }}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if should_display_add_reaction_option}}
-    <li>
-        <a class="reaction_button" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-smile-o" aria-hidden="true"></i>
-            {{#tr}}Add emoji reaction{{/tr}}
         </a>
     </li>
     {{/if}}
