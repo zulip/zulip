@@ -8301,6 +8301,13 @@ paths:
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
                             },
+                            {
+                              "id": 9,
+                              "name": "Pronouns",
+                              "type": 8,
+                              "hint": "What pronouns should people use to refer to you?",
+                              "order": 9,
+                            },
                           ],
                       }
     patch:
@@ -8328,7 +8335,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+              example: [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
           required: true
       responses:
         "200":
@@ -8372,6 +8379,9 @@ paths:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
           schema:
             type: integer
           example: 3
@@ -9787,6 +9797,9 @@ paths:
                             - `URL` for links.
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
+                            - `PRONOUNS` for a short text field with convenient typeahead for one's preferred pronouns.
+
+                            **Changes**: `PRONOUNS` type added in Zulip 6.0 (feature level 151).
                           additionalProperties: false
                           properties:
                             id:
@@ -15484,6 +15497,9 @@ components:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
         order:
           type: integer
           description: |

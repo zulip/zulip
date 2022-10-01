@@ -417,7 +417,7 @@ def get_realm_profile_fields(client: Client) -> None:
 def reorder_realm_profile_fields(client: Client) -> None:
     # {code_example|start}
     # Reorder the custom profile fields in the user's organization.
-    order = [8, 7, 6, 5, 4, 3, 2, 1]
+    order = [9, 8, 7, 6, 5, 4, 3, 2, 1]
     request = {"order": json.dumps(order)}
 
     result = client.call_endpoint(url="/realm/profile_fields", method="PATCH", request=request)

@@ -366,6 +366,16 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
 
+    def test_create_field_of_type_pronouns(self) -> None:
+        self.login("iago")
+        data = {
+            "name": "Pronouns for you",
+            "hint": "What pronouns should people use to refer to you?",
+            "field_type": CustomProfileField.PRONOUNS,
+        }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_not_realm_admin(self) -> None:
         self.login("hamlet")
         result = self.client_post("/json/realm/profile_fields")
@@ -657,6 +667,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
             ("GitHub username", "zulip-mobile"),
+            ("Pronouns", "he/him"),
         ]
 
         data: List[ProfileDataElementUpdateDict] = []
