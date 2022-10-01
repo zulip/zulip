@@ -22,7 +22,13 @@ class Migration(migrations.Migration):
             ALTER TABLE zerver_usermessage RENAME COLUMN bigint_id to id;
             ALTER TABLE zerver_usermessage ADD CONSTRAINT zerver_usermessage_pkey PRIMARY KEY USING INDEX zerver_usermessage_bigint_id_idx;
             CREATE SEQUENCE zerver_usermessage_id_seq;
-            SELECT SETVAL('zerver_usermessage_id_seq', (SELECT MAX(id)+1 FROM zerver_usermessage));
+            SELECT setval(
+                'zerver_usermessage_id_seq',
+                GREATEST(
+                    (SELECT max(id) FROM zerver_usermessage),
+                    (SELECT max(id) FROM zerver_archivedusermessage)
+                )
+            );
             ALTER TABLE zerver_usermessage ALTER COLUMN id SET DEFAULT NEXTVAL('zerver_usermessage_id_seq');
             ALTER TABLE zerver_usermessage ALTER COLUMN id_old DROP NOT NULL;
             """,
