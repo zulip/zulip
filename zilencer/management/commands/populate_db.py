@@ -725,6 +725,12 @@ class Command(BaseCommand):
                 zulip_realm, "Mentor", CustomProfileField.USER
             )
             github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
+            pronouns = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Pronouns",
+                CustomProfileField.PRONOUNS,
+                hint="What pronouns should people use to refer to you?",
+            )
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
@@ -739,6 +745,7 @@ class Command(BaseCommand):
                     {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                     {"id": mentor.id, "value": [hamlet.id]},
                     {"id": github_profile.id, "value": "zulip"},
+                    {"id": pronouns.id, "value": "he/him"},
                 ],
             )
             do_update_user_custom_profile_data_if_changed(
@@ -755,6 +762,7 @@ class Command(BaseCommand):
                     {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                     {"id": mentor.id, "value": [iago.id]},
                     {"id": github_profile.id, "value": "zulipbot"},
+                    {"id": pronouns.id, "value": "he/him"},
                 ],
             )
         else:

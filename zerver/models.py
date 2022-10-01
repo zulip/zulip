@@ -4522,6 +4522,7 @@ class CustomProfileField(models.Model):
     URL = 5
     USER = 6
     EXTERNAL_ACCOUNT = 7
+    PRONOUNS = 8
 
     # These are the fields whose validators require more than var_name
     # and value argument. i.e. SELECT require field_data, USER require
@@ -4553,6 +4554,7 @@ class CustomProfileField(models.Model):
             str,
             "EXTERNAL_ACCOUNT",
         ),
+        (PRONOUNS, gettext_lazy("Pronouns"), check_short_string, str, "PRONOUNS"),
     ]
 
     ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]

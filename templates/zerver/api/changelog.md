@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 151**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`POST /realm/profile_fields`](/api/create-custom-profile-field),
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added
+  pronouns custom profile field type.
+
 **Feature level 150**
 
 * [`GET /events`](/api/get-events): Separate events are now sent on changing
