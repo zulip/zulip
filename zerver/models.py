@@ -26,6 +26,7 @@ from uuid import uuid4
 import django.contrib.auth
 import orjson
 import re2
+import uri_template
 from bitfield import BitField
 from bitfield.types import Bit, BitHandler
 from django.conf import settings
@@ -1298,6 +1299,15 @@ def filter_format_validator(value: str) -> None:
         raise ValidationError(_("Invalid format string in URL."))
 
 
+def url_template_validator(value: str) -> None:
+    """Verifies URL-ness, and then validates as a URL template"""
+    # URLValidator is assumed to catch anything which is malformed as a URL
+    URLValidator()(value)
+
+    if not uri_template.validate(value):
+        raise ValidationError(_("Invalid URL template."))
+
+
 class RealmFilter(models.Model):
     """Realm-specific regular expressions to automatically linkify certain
     strings inside the Markdown processor.  See "Custom filters" in the settings UI.
@@ -1305,7 +1315,10 @@ class RealmFilter(models.Model):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
-    url_format_string = models.TextField(validators=[filter_format_validator])
+    url_format_string = models.TextField(
+        validators=[filter_format_validator], null=True, blank=True
+    )
+    url_template = models.TextField(validators=[url_template_validator], null=True)
 
     class Meta:
         unique_together = ("realm", "pattern")
