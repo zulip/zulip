@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 153**
+
+* [`POST /mark_all_as_read`](/api/mark-all-as-read): Messages are now
+  marked as read in batches, so that progress will be made even if the
+  request times out because of an extremely large number of unread
+  messages to process. Upon timeout, a success response with a
+  "partially_completed" result will be returned by the server.
+
 **Feature level 152**
 
 * [`PATCH /messages/{message_id}`](/api/update-message): The

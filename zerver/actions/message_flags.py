@@ -44,15 +44,43 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     )
     do_clear_mobile_push_notifications_for_ids([user_profile.id], all_push_message_ids)
 
-    with transaction.atomic(savepoint=False):
-        query = (
-            UserMessage.select_for_update_query()
-            .filter(user_profile=user_profile)
-            .extra(where=[UserMessage.where_unread()])
-        )
-        count = query.update(
-            flags=F("flags").bitor(UserMessage.flags.read),
-        )
+    batch_size = 2000
+    count = 0
+    while True:
+        with transaction.atomic(savepoint=False):
+            query = (
+                UserMessage.select_for_update_query()
+                .filter(user_profile=user_profile)
+                .extra(where=[UserMessage.where_unread()])[:batch_size]
+            )
+            # This updated_count is the same as the number of UserMessage
+            # rows selected, because due to the FOR UPDATE lock, we're guaranteed
+            # that all the selected rows will indeed be updated.
+            # UPDATE queries don't support LIMIT, so we have to use a subquery
+            # to do batching.
+            updated_count = UserMessage.objects.filter(id__in=query).update(
+                flags=F("flags").bitor(UserMessage.flags.read),
+            )
+
+            event_time = timezone_now()
+            do_increment_logging_stat(
+                user_profile,
+                COUNT_STATS["messages_read::hour"],
+                None,
+                event_time,
+                increment=updated_count,
+            )
+            do_increment_logging_stat(
+                user_profile,
+                COUNT_STATS["messages_read_interactions::hour"],
+                None,
+                event_time,
+                increment=min(1, updated_count),
+            )
+
+            count += updated_count
+            if updated_count < batch_size:
+                break
 
     event = asdict(
         ReadMessagesEvent(
@@ -60,20 +88,7 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
             all=True,
         )
     )
-    event_time = timezone_now()
-
     send_event(user_profile.realm, event, [user_profile.id])
-
-    do_increment_logging_stat(
-        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
-    )
-    do_increment_logging_stat(
-        user_profile,
-        COUNT_STATS["messages_read_interactions::hour"],
-        None,
-        event_time,
-        increment=min(1, count),
-    )
 
     return count
 

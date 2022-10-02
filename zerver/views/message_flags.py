@@ -8,10 +8,11 @@ from zerver.actions.message_flags import (
     do_mark_stream_messages_as_read,
     do_update_message_flags,
 )
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_partial_success, json_success
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.topic import user_message_exists_for_topic
 from zerver.lib.validator import check_int, check_list
 from zerver.models import UserActivity, UserProfile
@@ -50,7 +51,10 @@ def update_message_flags(
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     request_notes = RequestNotes.get_notes(request)
-    count = do_mark_all_as_read(user_profile)
+    try:
+        count = timeout(50, lambda: do_mark_all_as_read(user_profile))
+    except TimeoutExpired:
+        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
 
     log_data_str = f"[{count} updated]"
     assert request_notes.log_data is not None

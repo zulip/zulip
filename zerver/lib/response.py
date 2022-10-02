@@ -45,6 +45,10 @@ def json_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> HttpResp
     return json_response(data=data)
 
 
+def json_partial_success(request: HttpRequest, data: Mapping[str, Any] = {}) -> HttpResponse:
+    return json_response(res_type="partially_completed", data=data, status=200)
+
+
 def json_response_from_error(exception: JsonableError) -> HttpResponse:
     """
     This should only be needed in middleware; in app code, just raise.
