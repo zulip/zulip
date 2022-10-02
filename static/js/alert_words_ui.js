@@ -69,10 +69,20 @@ function remove_alert_word(alert_word) {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
-            update_alert_word_status(
-                $t({defaultMessage: "Alert word removed successfully!"}),
-                false,
-            );
+            if(words_to_be_removed.toString().split(" ").length > 1) {
+                update_alert_word_status(
+                    $t({defaultMessage: "Alert words: " + words_to_be_removed.toString() +
+                            "have been removed successfully!"}),
+                    false,
+                );
+            }
+            else{
+                update_alert_word_status(
+                    $t({defaultMessage: "Alert word: " + words_to_be_removed.toString() +
+                            "has been removed successfully!"}),
+                    false,
+                );
+            }
         },
         error() {
             update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
