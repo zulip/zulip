@@ -412,7 +412,9 @@ def validate_against_openapi_schema(
     if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:
         return True
     # Check if the response matches its code
-    if status_code.startswith("2") and (content.get("result", "success").lower() != "success"):
+    if status_code.startswith("2") and (
+        content.get("result", "success").lower() not in ["success", "partially_completed"]
+    ):
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema

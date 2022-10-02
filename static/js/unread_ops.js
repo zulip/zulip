@@ -22,6 +22,13 @@ export function mark_all_as_read() {
         success: () => {
             // After marking all messages as read, we reload the browser.
             // This is useful to avoid leaving ourselves deep in the past.
+            // This is also the currently intended behavior in case of partial success,
+            // (response code 200 with result "partially_completed")
+            // where the request times out after marking some messages as read,
+            // so we don't need to distinguish that scenario here.
+            // TODO: The frontend handling of partial success can be improved
+            // by re-running the request in a loop, while showing some status indicator
+            // to the user.
             reload.initiate({
                 immediate: true,
                 save_pointer: false,
