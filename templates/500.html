@@ -19,13 +19,35 @@
             <div class="errorbox">
                 <div class="errorcontent">
                     <h1 class="lead">{{ _("Internal server error") }}</h1>
-                    {% trans %}
-                    <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>
-                    <p>The page will reload automatically soon after service is restored.</p>
-                    <p>If you'd like, you can <a href="mailto:{{ support_email }}">drop us a line</a> to let us know what happened.</p>
-                    {% endtrans %}
+                    <p>
+                        {% trans %}
+                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.
+                        {% endtrans %}
+                    </p>
+                    <p>
+                        {% trans %}
+                        This page will reload automatically when service is restored.
+                        {% endtrans %}
+                        {% if corporate_enabled %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact Zulip support</a>.
+                            {% endtrans %}
+                        {% else %}
+                            {% trans %}
+                            In the meantime, you can <a href="mailto:{{support_email}}">contact
+                            this server's administrators</a> for support.
+                            {% endtrans %}
+                        {% endif %}
+                    </p>
+                    {% if not corporate_enabled %}
+                        <p>
+                            {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
+                            If you administer this server, you may want to check out the
+                            <a href="{{troubleshooting_url}}">Zulip server troubleshooting guide</a>.
+                            {% endtrans %}
+                        </p>
+                    {% endif %}
                 </div>
-
             </div>
         </div>
     </div>
