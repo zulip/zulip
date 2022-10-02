@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, List, Mapping, Set
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Callable, Iterator, List, Mapping, Set
 from unittest import mock
 
 import orjson
@@ -22,6 +23,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
+from zerver.lib.timeout import TimeoutExpired
 from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
@@ -49,6 +51,18 @@ def check_flags(flags: List[str], expected: Set[str]) -> None:
         raise AssertionError(f"expected flags (ignoring has_alert_word) to be {expected}")
 
 
+@contextmanager
+def timeout_mock() -> Iterator[None]:
+    # timeout() doesn't work in test environment with database operations
+    # and they don't get committed - so we need to replace it with a mock
+    # that just calls the function.
+    def mock_timeout(seconds: int, func: Callable[[], object]) -> object:
+        return func()
+
+    with mock.patch("zerver.views.message_flags.timeout", new=mock_timeout):
+        yield
+
+
 class FirstUnreadAnchorTests(ZulipTestCase):
     """
     HISTORICAL NOTE:
@@ -62,7 +76,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         self.login("hamlet")
 
         # Mark all existing messages as read
-        result = self.client_post("/json/mark_all_as_read")
+        with timeout_mock():
+            result = self.client_post("/json/mark_all_as_read")
         self.assert_json_success(result)
 
         # Send a new message (this will be unread)
@@ -121,7 +136,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
     def test_visible_messages_use_first_unread_anchor(self) -> None:
         self.login("hamlet")
 
-        result = self.client_post("/json/mark_all_as_read")
+        with timeout_mock():
+            result = self.client_post("/json/mark_all_as_read")
         self.assert_json_success(result)
 
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
@@ -563,9 +579,50 @@ class PushNotificationMarkReadFlowsTest(ZulipTestCase):
             [third_message_id, fourth_message_id],
         )
 
-        result = self.client_post("/json/mark_all_as_read", {})
+        with timeout_mock():
+            result = self.client_post("/json/mark_all_as_read", {})
         self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
         mock_push_notifications.assert_called()
+
+
+class MarkAllAsReadEndpointTest(ZulipTestCase):
+    def test_mark_all_as_read_endpoint(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        self.subscribe(hamlet, "Denmark")
+
+        for i in range(0, 4):
+            self.send_stream_message(othello, "Verona", "test")
+            self.send_personal_message(othello, hamlet, "test")
+
+        unread_count = (
+            UserMessage.objects.filter(user_profile=hamlet)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+        )
+        self.assertNotEqual(unread_count, 0)
+        with timeout_mock():
+            result = self.client_post("/json/mark_all_as_read", {})
+        self.assert_json_success(result)
+
+        new_unread_count = (
+            UserMessage.objects.filter(user_profile=hamlet)
+            .extra(where=[UserMessage.where_unread()])
+            .count()
+        )
+        self.assertEqual(new_unread_count, 0)
+
+    def test_mark_all_as_read_timeout_response(self) -> None:
+        self.login("hamlet")
+        with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpired):
+            result = self.client_post("/json/mark_all_as_read", {})
+            self.assertEqual(result.status_code, 200)
+
+            result_dict = orjson.loads(result.content)
+            self.assertEqual(
+                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
+            )
 
 
 class GetUnreadMsgsTest(ZulipTestCase):

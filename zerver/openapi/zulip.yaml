@@ -4533,9 +4533,41 @@ paths:
       tags: ["messages"]
       description: |
         Marks all of the current user's unread messages as read.
+
+        **Changes**: Before Zulip 6.0 (feature level 153), this
+        request did a single atomic operation, which could time out
+        with 10,000s of unread messages to mark as read.
+
+        It now marks messages as read in batches, starting with the
+        newest messages, so that progress will be made even if the
+        request times out.
+
+        If the server's processing is interrupted by a timeout, it
+        will return an HTTP 200 success response with result
+        "partially_completed". A correct client should repeat the
+        request when handling such a response.
       responses:
         "200":
-          $ref: "#/components/responses/SimpleSuccess"
+          description: Success or partial success.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonSuccess"
+                      - $ref: "#/components/schemas/SuccessDescription"
+                  - allOf:
+                      - $ref: "#/components/schemas/PartiallyCompleted"
+                      - example:
+                          {
+                            "code": "REQUEST_TIMEOUT",
+                            "msg": "",
+                            "result": "partially_completed",
+                          }
+                        description: |
+                          If the request exceeds its processing time limit after having
+                          successfully marked some messages as read, response code 200
+                          with result "partially_completed" and code "REQUEST_TIMEOUT" will be returned like this:
   /mark_stream_as_read:
     post:
       operationId: mark-stream-as-read
@@ -16693,6 +16725,23 @@ components:
             result:
               enum:
                 - error
+            msg:
+              type: string
+    PartiallyCompleted:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
+        - required:
+            - result
+            - code
+          additionalProperties: false
+          properties:
+            result:
+              enum:
+                - partially_completed
+            code:
+              type: string
+              description: |
+                A string that identifies the cause of the partial completion of the request.
             msg:
               type: string
     ApiKeyResponse:
