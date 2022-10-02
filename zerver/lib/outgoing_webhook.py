@@ -128,7 +128,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         commandString = ""
         textString = event["command"]
         if event["command"][0] == "/":
-            command, text = event["command"].split(" ", 1)
+            commandString, textString = event["command"].split(" ", 1)
 
         request_data = [
             ("token", self.token),
