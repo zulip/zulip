@@ -8,7 +8,6 @@ from django.conf import settings
 
 from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.middleware import SCIMClient
 from zerver.models import UserProfile, get_realm
 
 if TYPE_CHECKING:
@@ -23,9 +22,6 @@ class SCIMTestCase(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.realm = get_realm("zulip")
-        self.scim_client = SCIMClient(
-            realm=self.realm, name=settings.SCIM_CONFIG["zulip"]["scim_client_name"]
-        )
 
     def scim_headers(self) -> SCIMHeadersDict:
         return {"HTTP_AUTHORIZATION": f"Bearer {settings.SCIM_CONFIG['zulip']['bearer_token']}"}
@@ -683,6 +679,16 @@ class TestSCIMUser(SCIMTestCase):
             self.assertEqual(
                 m.output, [f"ERROR:django.request:Not Implemented: /scim/v2/Users/{hamlet.id}"]
             )
+
+    def test_scim_client_requestor_for_logs(self) -> None:
+        hamlet = self.example_user("hamlet")
+        with self.assertLogs("zulip.requests", level="INFO") as m:
+            result = self.client_get(f"/scim/v2/Users/{hamlet.id}", {}, **self.scim_headers())
+        self.assertIn(
+            f"scim-client:{settings.SCIM_CONFIG['zulip']['scim_client_name']}:realm:{hamlet.realm.id}",
+            m.output[0],
+        )
+        self.assertEqual(result.status_code, 200)
 
 
 class TestSCIMGroup(SCIMTestCase):

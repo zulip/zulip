@@ -53,7 +53,7 @@ class MutedTopicsTests(ZulipTestCase):
             topic_name=topic_name,
         )
 
-        user_ids = stream_topic_target.user_ids_muting_topic()
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
         self.assertEqual(user_ids, set())
 
         def mute_topic_for_user(user: UserProfile) -> None:
@@ -67,7 +67,7 @@ class MutedTopicsTests(ZulipTestCase):
             )
 
         mute_topic_for_user(hamlet)
-        user_ids = stream_topic_target.user_ids_muting_topic()
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
         self.assertEqual(user_ids, {hamlet.id})
         hamlet_date_muted = UserTopic.objects.filter(
             user_profile=hamlet, visibility_policy=UserTopic.MUTED
@@ -75,7 +75,7 @@ class MutedTopicsTests(ZulipTestCase):
         self.assertTrue(timezone_now() - hamlet_date_muted <= timedelta(seconds=100))
 
         mute_topic_for_user(cordelia)
-        user_ids = stream_topic_target.user_ids_muting_topic()
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(UserTopic.MUTED)
         self.assertEqual(user_ids, {hamlet.id, cordelia.id})
         cordelia_date_muted = UserTopic.objects.filter(
             user_profile=cordelia, visibility_policy=UserTopic.MUTED

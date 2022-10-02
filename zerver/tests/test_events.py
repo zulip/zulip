@@ -70,7 +70,6 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_deactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
@@ -1604,27 +1603,6 @@ class NormalActionsTest(BaseAction):
                     value=value,
                 )
 
-    def test_change_realm_message_edit_settings(self) -> None:
-        # Test every transition among the four possibilities {T,F} x {0, non-0}
-        for (allow_message_editing, message_content_edit_limit_seconds) in (
-            (True, 0),
-            (False, 0),
-            (False, 1234),
-            (True, 600),
-            (False, 0),
-            (True, 1234),
-        ):
-            events = self.verify_action(
-                lambda: do_set_realm_message_editing(
-                    self.user_profile.realm,
-                    allow_message_editing,
-                    message_content_edit_limit_seconds,
-                    Realm.POLICY_ADMINS_ONLY,
-                    acting_user=None,
-                )
-            )
-            check_realm_update_dict("events[0]", events[0])
-
     def test_change_realm_notifications_stream(self) -> None:
 
         stream = get_stream("Rome", self.user_profile.realm)
@@ -2551,6 +2529,8 @@ class RealmPropertyActionTest(BaseAction):
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
             add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
             delete_own_message_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            edit_topic_policy=Realm.COMMON_MESSAGE_POLICY_TYPES,
+            message_content_edit_limit_seconds=[1000, 1100, 1200, None],
         )
 
         vals = test_values.get(name)
@@ -2607,7 +2587,15 @@ class RealmPropertyActionTest(BaseAction):
                 ).count(),
                 1,
             )
-            check_realm_update("events[0]", events[0], name)
+
+            if name in [
+                "allow_message_editing",
+                "edit_topic_policy",
+                "message_content_edit_limit_seconds",
+            ]:
+                check_realm_update_dict("events[0]", events[0])
+            else:
+                check_realm_update("events[0]", events[0], name)
 
             if name == "email_address_visibility" and Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE in [
                 old_value,

@@ -78,6 +78,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    UserTopic,
     get_client,
     get_huddle_user_ids,
     get_stream,
@@ -205,7 +206,7 @@ def get_recipient_info(
         # stream_topic.  We may eventually want to have different versions
         # of this function for different message types.
         assert stream_topic is not None
-        user_ids_muting_topic = stream_topic.user_ids_muting_topic()
+        user_ids_muting_topic = stream_topic.user_ids_with_visibility_policy(UserTopic.MUTED)
 
         subscription_rows = (
             get_subscriptions_for_send_message(

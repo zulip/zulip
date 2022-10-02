@@ -486,6 +486,7 @@ def build_huddle(huddle_id: int) -> ZerverFieldsT:
 
 
 def build_message(
+    *,
     topic_name: str,
     date_sent: float,
     message_id: int,

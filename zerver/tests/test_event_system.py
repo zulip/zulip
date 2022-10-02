@@ -151,17 +151,37 @@ class EventsEndpointTest(ZulipTestCase):
         # Verify that POST /register works for spectators, but not for
         # normal users.
         with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
-            result = self.client_post("/json/register", dict())
+            result = self.client_post("/json/register")
             self.assert_json_error(
                 result,
                 "Not logged in: API authentication or user session required",
                 status_code=401,
             )
 
-        result = self.client_post("/json/register", dict())
+        result = self.client_post("/json/register")
         result_dict = self.assert_json_success(result)
         self.assertEqual(result_dict["queue_id"], None)
         self.assertEqual(result_dict["realm_uri"], "http://zulip.testserver")
+
+        result = self.client_post("/json/register")
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post("/json/register", dict(client_gravatar="false"))
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post("/json/register", dict(client_gravatar="true"))
+        self.assert_json_error(
+            result,
+            "Invalid 'client_gravatar' parameter for anonymous request",
+            status_code=400,
+        )
+
+        result = self.client_post("/json/register", dict(include_subscribers="true"))
+        self.assert_json_error(
+            result,
+            "Invalid 'include_subscribers' parameter for anonymous request",
+            status_code=400,
+        )
 
     def test_events_register_endpoint_all_public_streams_access(self) -> None:
         guest_user = self.example_user("polonius")

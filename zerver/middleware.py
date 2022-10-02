@@ -2,7 +2,6 @@ import cProfile
 import logging
 import time
 import traceback
-from dataclasses import dataclass
 from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Tuple
 from urllib.parse import urlencode
 
@@ -697,21 +696,7 @@ class ZulipCommonMiddleware(CommonMiddleware):
         return super().should_redirect_with_slash(request)
 
 
-@dataclass
 class SCIMClient:
-    realm: Realm
-    name: str
-
-    def __str__(self) -> str:
-        return f"<SCIMClient {self.name} for realm {self.realm_id}>"
-
-    def format_requestor_for_logs(self) -> str:
-        return f"scim-client:{self.name}:realm:{self.realm_id}"
-
-    @property
-    def realm_id(self) -> int:
-        return self.realm.id
-
     @property
     def is_authenticated(self) -> bool:
         """
@@ -746,12 +731,15 @@ def validate_scim_bearer_token(request: HttpRequest) -> Optional[SCIMClient]:
         return None
 
     request_notes = RequestNotes.get_notes(request)
-    assert request_notes.realm
+    assert request_notes.realm is not None
+    request_notes.requestor_for_logs = (
+        f"scim-client:{scim_client_name}:realm:{request_notes.realm.id}"
+    )
 
     # While API authentication code paths are sufficiently high
     # traffic that we prefer to use a cache, SCIM is much lower
     # traffic, and doing a database query is plenty fast.
-    return SCIMClient(realm=request_notes.realm, name=scim_client_name)
+    return SCIMClient()
 
 
 class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
@@ -786,5 +774,7 @@ class ZulipSCIMAuthCheckMiddleware(SCIMAuthCheckMiddleware):
         # so we can assign the corresponding SCIMClient object to request.user - which
         # will allow this request to pass request.user.is_authenticated checks from now on,
         # to be served by the relevant views implemented in django-scim2.
-        request.user = scim_client
+        # Since request.user must be a UserProfile or AnonymousUser, setattr is a type-unsafe
+        # workaround to make this monkey-patching work.
+        setattr(request, "user", scim_client)
         return None

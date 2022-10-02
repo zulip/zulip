@@ -837,8 +837,9 @@ class PushNotificationTest(BouncerTestCase):
         self.user_profile = self.example_user("hamlet")
         self.sending_client = get_client("test")
         self.sender = self.example_user("hamlet")
+        self.personal_recipient_user = self.example_user("othello")
 
-    def get_message(self, type: int, type_id: int = 100) -> Message:
+    def get_message(self, type: int, type_id: int) -> Message:
         recipient, _ = Recipient.objects.get_or_create(
             type_id=type_id,
             type=type,
@@ -942,7 +943,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message,
@@ -1000,7 +1001,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message,
@@ -1054,7 +1055,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
 
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message,
@@ -1080,7 +1081,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
 
         usermessage = UserMessage.objects.create(
             user_profile=user_profile,
@@ -1117,7 +1118,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_deleted_message(self) -> None:
         """Simulates the race where message is deleted before handling push notifications"""
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
@@ -1146,7 +1147,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_missing_message(self) -> None:
         """Simulates the race where message is missing when handling push notifications"""
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.read,
@@ -1178,7 +1179,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_send_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=user_profile,
             message=message,
@@ -1216,7 +1217,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_non_bouncer_push(self) -> None:
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message,
@@ -1255,7 +1256,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
     def test_send_remove_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=user_profile,
             message=message,
@@ -1298,7 +1299,7 @@ class HandlePushNotificationTest(PushNotificationTest):
     def test_non_bouncer_push_remove(self) -> None:
         self.setup_apns_tokens()
         self.setup_gcm_tokens()
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=self.user_profile,
             message=message,
@@ -1513,7 +1514,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         self, mock_push_notifications: mock.MagicMock, mock_info: mock.MagicMock
     ) -> None:
         user_profile = self.example_user("hamlet")
-        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         UserMessage.objects.create(
             user_profile=user_profile,
             flags=UserMessage.flags.active_mobile_push_notification,
@@ -2007,7 +2008,7 @@ class TestGetGCMPayload(PushNotificationTest):
         )
 
     def test_get_message_payload_gcm_private_message(self) -> None:
-        message = self.get_message(Recipient.PERSONAL, 1)
+        message = self.get_message(Recipient.PERSONAL, type_id=self.personal_recipient_user.id)
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
             hamlet, message, NotificationTriggers.PRIVATE_MESSAGE

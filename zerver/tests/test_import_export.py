@@ -512,10 +512,15 @@ class RealmImportExportTest(ExportFile):
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
-        stream_b_message_id = self.send_stream_message(
+        stream_b_first_message_id = self.send_stream_message(
             self.example_user("prospero"), "Private B", "Hello stream B"
         )
+        # Hamlet subscribes now, so due to protected history, will not have access to the first message.
+        # This means that his consent will not be sufficient for the export of that message.
         self.subscribe(self.example_user("hamlet"), "Private B")
+        stream_b_second_message_id = self.send_stream_message(
+            self.example_user("prospero"), "Private B", "Hello again stream B"
+        )
 
         create_stream_if_needed(realm, "Private C", invite_only=True)
         self.subscribe(self.example_user("othello"), "Private C")
@@ -523,6 +528,17 @@ class RealmImportExportTest(ExportFile):
         stream_c_message_id = self.send_stream_message(
             self.example_user("othello"), "Private C", "Hello stream C"
         )
+
+        create_stream_if_needed(
+            realm, "Private D", invite_only=True, history_public_to_subscribers=True
+        )
+        self.subscribe(self.example_user("prospero"), "Private D")
+        self.send_stream_message(self.example_user("prospero"), "Private D", "Hello stream D")
+        # Hamlet subscribes now, but due to the stream having public history to subscribers, that doesn't
+        # matter and he his consent is sufficient to export also messages sent before he was added
+        # to the stream.
+        self.subscribe(self.example_user("hamlet"), "Private D")
+        self.send_stream_message(self.example_user("prospero"), "Private D", "Hello again stream D")
 
         # Create huddles
         self.send_huddle_message(
@@ -599,6 +615,7 @@ class RealmImportExportTest(ExportFile):
                 "Private A",
                 "Private B",
                 "Private C",
+                "Private D",
             },
         )
 
@@ -627,8 +644,10 @@ class RealmImportExportTest(ExportFile):
         ).values_list("id", flat=True)
 
         # Messages from Private stream C are not exported since no member gave consent
+        # Only the second message from Private stream B is exported, so that gets handled
+        # separately.
         private_stream_ids = Stream.objects.filter(
-            name__in=["Private A", "Private B", "core team"]
+            name__in=["Private A", "Private D", "core team"]
         ).values_list("id", flat=True)
         private_stream_recipients = Recipient.objects.filter(
             type_id__in=private_stream_ids, type=Recipient.STREAM
@@ -662,14 +681,13 @@ class RealmImportExportTest(ExportFile):
         exported_msg_ids = (
             set(public_stream_message_ids)
             | set(private_stream_message_ids)
+            | set([stream_b_second_message_id])
             | set(exported_pm_ids)
             | set(exported_huddle_ids)
         )
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
 
-        # TODO: This behavior is wrong and should be fixed. The message should not be exported
-        # since it was sent before the only consented user iago joined the stream.
-        self.assertIn(stream_b_message_id, exported_msg_ids)
+        self.assertNotIn(stream_b_first_message_id, exported_msg_ids)
 
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
         self.assertNotIn(huddle_c_message_id, exported_msg_ids)

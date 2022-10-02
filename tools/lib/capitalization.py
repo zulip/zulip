@@ -111,6 +111,8 @@ IGNORED_PHRASES = [
     r"to add a new line",
     # Used in showing Notification Bot read receipts message
     "Notification Bot",
+    # Used in presence_enabled setting label
+    r"invisible mode off",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

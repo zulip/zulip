@@ -3782,6 +3782,12 @@ paths:
                                   type: object
                                   description: |
                                     An object containing the properties that have changed.
+
+                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    `allow_message_editing`, `message_content_edit_limit_seconds`, or
+                                    `edit_topic_policy` settings, this object included all the three settings
+                                    irrespective of which of these settings were changed. Now, a separate event
+                                    is sent for each changed setting.
                                   properties:
                                     add_custom_emoji_policy:
                                       type: integer
@@ -4222,11 +4228,7 @@ paths:
                                   "op": "update_dict",
                                   "property": "default",
                                   "data":
-                                    {
-                                      "allow_message_editing": false,
-                                      "message_content_edit_limit_seconds": 600,
-                                      "edit_topic_policy": 2,
-                                    },
+                                    {"message_content_edit_limit_seconds": 600},
                                   "id": 0,
                                 }
                             - type: object
@@ -9551,7 +9553,50 @@ paths:
             type: boolean
             default: false
           example: true
-        - $ref: "#/components/parameters/ClientGravatar"
+        - name: client_gravatar
+          in: query
+          description: |
+            Whether the client supports computing gravatars URLs. If
+            enabled, `avatar_url` will be included in the response only
+            if there is a Zulip avatar, and will be `null` for users who
+            are using gravatar as their avatar. This option
+            significantly reduces the compressed size of user data,
+            since gravatar URLs are long, random strings and thus do not
+            compress well. The `client_gravatar` field is set to `true` if
+            clients can compute their own gravatars.
+
+            The default value is `true` for authenticated requests and
+            `false` for [unauthenticated
+            requests](/help/public-access-option). Passing `true` in
+            an unauthenticated request is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+          schema:
+            type: boolean
+          example: false
+        - name: include_subscribers
+          in: query
+          description: |
+            Whether each returned stream object should include a `subscribers`
+            field containing a list of the user IDs of its subscribers.
+
+            (This may be significantly slower in organizations with
+            thousands of users subscribed to many streams.)
+
+            Passing `true` in an [unauthenticated
+            request](/help/public-access-option) is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+
+            New in Zulip 2.1.0.
+          schema:
+            type: boolean
+            default: false
+          example: true
         - name: slim_presence
           in: query
           description: |
@@ -9565,7 +9610,6 @@ paths:
           example: true
         - $ref: "#/components/parameters/Event_types"
         - $ref: "#/components/parameters/AllPublicStreams"
-        - $ref: "#/components/parameters/IncludeSubscribers"
         - name: client_capabilities
           in: query
           description: |

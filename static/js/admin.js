@@ -53,6 +53,10 @@ const admin_settings_label = {
         defaultMessage: "Language for automated messages and invitation emails",
     }),
     realm_allow_message_editing: $t({defaultMessage: "Allow message editing"}),
+    realm_enable_read_receipts: $t({defaultMessage: "Enable read receipts"}),
+    realm_enable_read_receipts_parens_text: $t({
+        defaultMessage: "Users can always disable their personal read receipts.",
+    }),
 };
 
 function insert_tip_box() {

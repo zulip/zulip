@@ -22,16 +22,35 @@ p {
 }
 
 .center-charts {
-    margin: 30px auto;
-    width: 790px; /* chart = 750px + 20px padding */
+    margin: 30px;
 }
 
-.stats-page .alert {
+.stats-page .alert,
+.analytics-page-header {
     text-align: center;
 }
 
+.summary-stats {
+    vertical-align: top;
+    margin: 0 auto;
+    padding: 20px;
+    border: 2px solid hsl(0, 0%, 93%);
+    background-color: hsl(0, 0%, 100%);
+    width: 395px;
+
+    h1 {
+        margin-top: 0;
+        font-size: 1.5em;
+    }
+}
+
+.flex-container {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: space-around;
+}
+
 .chart-container {
-    display: inline-block;
     vertical-align: top;
     margin: 10px 0;
     padding: 20px;
@@ -222,21 +241,5 @@ p {
 @keyframes spinner {
     to {
         transform: rotate(360deg);
-    }
-}
-
-@media (width >= 1680px) {
-    .center-charts {
-        width: calc(
-            816px * 2
-        ); /* 790px + 4px for borders + 2px for il-block + 20px margins */
-
-        .left,
-        .right {
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 10px;
-            width: 790px;
-        }
     }
 }

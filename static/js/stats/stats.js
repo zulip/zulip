@@ -101,6 +101,59 @@ $(() => {
     // Add configuration for any additional tooltips here.
 });
 
+// SUMMARY STATISTICS
+function get_user_summary_statistics(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    // Users that are not deactivated and are not bots.
+    const total_users = data.all_time.at(-1);
+    const total_users_string = total_users.toLocaleString();
+
+    $("#id_total_users").text(total_users_string);
+    $("#id_total_users").closest("summary-stats").show();
+
+    // Users that have been active in the last 15 days and are not bots.
+    const active_fifeteen_day_users = data._15day.at(-1);
+    const active_fifteen_day_users_string = active_fifeteen_day_users.toLocaleString();
+
+    $("#id_active_fifteen_day_users").text(active_fifteen_day_users_string);
+    $("#id_active_fifteen_day_users").closest("summary-stats").show();
+}
+
+function get_total_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const total_messages_sent = data.human.at(-1) + data.bot.at(-1);
+    const total_messages_string = total_messages_sent.toLocaleString();
+
+    $("#id_total_messages_sent").text(total_messages_string);
+    $("#id_total_messages_sent").closest("summary-stats").show();
+}
+
+function get_thirty_days_messages_sent(data) {
+    if (data.length === 0) {
+        return;
+    }
+
+    const thirty_days_bot_messages = data.bot
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+    const thirty_days_human_messages = data.human
+        .slice(-30)
+        .reduce((total_messages, day_messages) => total_messages + day_messages);
+
+    const thirty_days_total_messages = thirty_days_bot_messages + thirty_days_human_messages;
+    const thirty_days_messages_string = thirty_days_total_messages.toLocaleString();
+
+    $("#id_thirty_days_messages_sent").text(thirty_days_messages_string);
+    $("#id_thirty_days_messages_sent").closest("summary-stats").show();
+}
+
+// PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
@@ -273,6 +326,7 @@ function populate_messages_sent_over_time(data) {
     };
     const last_day_is_partial = info.last_value_is_partial;
     const daily_traces = make_traces(info.dates, info.values, "bar", date_formatter);
+    get_thirty_days_messages_sent(info.values);
 
     info = aggregate_data("week");
     date_formatter = function (date) {
@@ -290,6 +344,7 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
+    get_total_messages_sent(values);
     const cumulative_traces = make_traces(dates, values, "scatter", date_formatter);
 
     // Functions to draw and interact with the plot
@@ -785,6 +840,7 @@ function populate_number_of_users(data) {
     // Initial drawing of plot
     draw_or_update_plot(all_time_trace, true);
     $("#all_time_actives_button").addClass("selected");
+    get_user_summary_statistics(data.everyone);
 }
 
 function populate_messages_read_over_time(data) {

@@ -61,6 +61,21 @@ def do_set_realm_property(
         property=name,
         value=value,
     )
+
+    # These settings have a different event format due to their history.
+    message_edit_settings = [
+        "allow_message_editing",
+        "edit_topic_policy",
+        "message_content_edit_limit_seconds",
+    ]
+    if name in message_edit_settings:
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={name: value},
+        )
+
     transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
 
     event_time = timezone_now()
@@ -131,60 +146,6 @@ def do_set_realm_authentication_methods(
         op="update_dict",
         property="default",
         data=dict(authentication_methods=updated_value),
-    )
-    send_event(realm, event, active_user_ids(realm.id))
-
-
-def do_set_realm_message_editing(
-    realm: Realm,
-    allow_message_editing: bool,
-    message_content_edit_limit_seconds: Optional[int],
-    edit_topic_policy: int,
-    *,
-    acting_user: Optional[UserProfile],
-) -> None:
-    old_values = dict(
-        allow_message_editing=realm.allow_message_editing,
-        message_content_edit_limit_seconds=realm.message_content_edit_limit_seconds,
-        edit_topic_policy=realm.edit_topic_policy,
-    )
-
-    realm.allow_message_editing = allow_message_editing
-    realm.message_content_edit_limit_seconds = message_content_edit_limit_seconds
-    realm.edit_topic_policy = edit_topic_policy
-
-    event_time = timezone_now()
-    updated_properties = dict(
-        allow_message_editing=allow_message_editing,
-        message_content_edit_limit_seconds=message_content_edit_limit_seconds,
-        edit_topic_policy=edit_topic_policy,
-    )
-
-    with transaction.atomic():
-        for updated_property, updated_value in updated_properties.items():
-            if updated_value == old_values[updated_property]:
-                continue
-            RealmAuditLog.objects.create(
-                realm=realm,
-                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-                event_time=event_time,
-                acting_user=acting_user,
-                extra_data=orjson.dumps(
-                    {
-                        RealmAuditLog.OLD_VALUE: old_values[updated_property],
-                        RealmAuditLog.NEW_VALUE: updated_value,
-                        "property": updated_property,
-                    }
-                ).decode(),
-            )
-
-        realm.save(update_fields=list(updated_properties.keys()))
-
-    event = dict(
-        type="realm",
-        op="update_dict",
-        property="default",
-        data=updated_properties,
     )
     send_event(realm, event, active_user_ids(realm.id))
 

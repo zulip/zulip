@@ -545,31 +545,34 @@ class TestDigestTopics(ZulipTestCase):
         send_messages(Client(name="bot"), bots, bot_messages)
 
     def test_get_hot_topics(self) -> None:
-        diverse_topic_a = DigestTopic((1, "5 humans talking"))
+        realm = get_realm("zulip")
+        denmark = get_stream("Denmark", realm)
+        verona = get_stream("Verona", realm)
+        diverse_topic_a = DigestTopic((denmark.id, "5 humans talking"))
         self.populate_topic(diverse_topic_a, humans=5, human_messages=10, bots=0, bot_messages=0)
 
-        diverse_topic_b = DigestTopic((1, "4 humans talking"))
+        diverse_topic_b = DigestTopic((denmark.id, "4 humans talking"))
         self.populate_topic(diverse_topic_b, humans=4, human_messages=15, bots=0, bot_messages=0)
 
-        diverse_topic_c = DigestTopic((2, "5 humans talking in another stream"))
+        diverse_topic_c = DigestTopic((verona.id, "5 humans talking in another stream"))
         self.populate_topic(diverse_topic_c, humans=5, human_messages=15, bots=0, bot_messages=0)
 
-        diverse_topic_d = DigestTopic((1, "3 humans and 2 bots talking"))
+        diverse_topic_d = DigestTopic((denmark.id, "3 humans and 2 bots talking"))
         self.populate_topic(diverse_topic_d, humans=3, human_messages=15, bots=2, bot_messages=10)
 
-        diverse_topic_e = DigestTopic((1, "3 humans talking"))
+        diverse_topic_e = DigestTopic((denmark.id, "3 humans talking"))
         self.populate_topic(diverse_topic_a, humans=3, human_messages=20, bots=0, bot_messages=0)
 
-        lengthy_topic_a = DigestTopic((1, "2 humans talking a lot"))
+        lengthy_topic_a = DigestTopic((denmark.id, "2 humans talking a lot"))
         self.populate_topic(lengthy_topic_a, humans=2, human_messages=40, bots=0, bot_messages=0)
 
-        lengthy_topic_b = DigestTopic((1, "2 humans talking"))
+        lengthy_topic_b = DigestTopic((denmark.id, "2 humans talking"))
         self.populate_topic(lengthy_topic_b, humans=2, human_messages=30, bots=0, bot_messages=0)
 
-        lengthy_topic_c = DigestTopic((1, "a human and bot talking"))
+        lengthy_topic_c = DigestTopic((denmark.id, "a human and bot talking"))
         self.populate_topic(lengthy_topic_c, humans=1, human_messages=20, bots=1, bot_messages=20)
 
-        lengthy_topic_d = DigestTopic((2, "2 humans talking in another stream"))
+        lengthy_topic_d = DigestTopic((verona.id, "2 humans talking in another stream"))
         self.populate_topic(lengthy_topic_d, humans=2, human_messages=35, bots=0, bot_messages=0)
 
         topics = [
@@ -584,12 +587,12 @@ class TestDigestTopics(ZulipTestCase):
             lengthy_topic_d,
         ]
         self.assertEqual(
-            get_hot_topics(topics, {1, 0}),
+            get_hot_topics(topics, {denmark.id, 0}),
             [diverse_topic_a, diverse_topic_b, lengthy_topic_a, lengthy_topic_b],
         )
         self.assertEqual(
-            get_hot_topics(topics, {1, 2}),
+            get_hot_topics(topics, {denmark.id, verona.id}),
             [diverse_topic_a, diverse_topic_c, lengthy_topic_a, lengthy_topic_d],
         )
-        self.assertEqual(get_hot_topics(topics, {2}), [diverse_topic_c, lengthy_topic_d])
+        self.assertEqual(get_hot_topics(topics, {verona.id}), [diverse_topic_c, lengthy_topic_d])
         self.assertEqual(get_hot_topics(topics, set()), [])

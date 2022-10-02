@@ -700,6 +700,7 @@ class Realm(models.Model):
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
+        allow_message_editing=bool,
         avatar_changes_disabled=bool,
         bot_creation_policy=int,
         create_private_stream_policy=int,
@@ -712,6 +713,7 @@ class Realm(models.Model):
         digest_emails_enabled=bool,
         digest_weekday=int,
         disallow_disposable_email_addresses=bool,
+        edit_topic_policy=int,
         email_address_visibility=int,
         email_changes_disabled=bool,
         emails_restricted_to_domains=bool,
@@ -725,6 +727,7 @@ class Realm(models.Model):
         invite_to_stream_policy=int,
         mandatory_topics=bool,
         message_content_allowed_in_email_notifications=bool,
+        message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
@@ -2811,7 +2814,7 @@ def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
     # the sender.  Note that get_huddle hits the cache, and then
     # we hit another cache to get the recipient.  We may want to
     # unify our caching strategy here.
-    huddle = get_huddle(list(user_profile_ids))
+    huddle = get_or_create_huddle(list(user_profile_ids))
     assert huddle.recipient is not None
     return huddle.recipient
 
@@ -3982,20 +3985,20 @@ def huddle_hash_cache_key(huddle_hash: str) -> str:
     return f"huddle_by_hash:{huddle_hash}"
 
 
-def get_huddle(id_list: List[int]) -> Huddle:
+def get_or_create_huddle(id_list: List[int]) -> Huddle:
     """
     Takes a list of user IDs and returns the Huddle object for the
     group consisting of these users. If the Huddle object does not
     yet exist, it will be transparently created.
     """
     huddle_hash = get_huddle_hash(id_list)
-    return get_huddle_backend(huddle_hash, id_list)
+    return get_or_create_huddle_backend(huddle_hash, id_list)
 
 
 @cache_with_key(
     lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600 * 24 * 7
 )
-def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
+def get_or_create_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
     with transaction.atomic():
         (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
         if created:

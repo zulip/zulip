@@ -214,15 +214,6 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
     init_worker = init_worker
 
-    def __init__(
-        self,
-        subsuites: List[TestSuite],
-        processes: int,
-        failfast: bool = False,
-        buffer: bool = False,
-    ) -> None:
-        super().__init__(subsuites=subsuites, processes=processes, failfast=failfast, buffer=buffer)
-
 
 def check_import_error(test_name: str) -> None:
     try:
