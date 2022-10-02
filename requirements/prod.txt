@@ -1576,6 +1576,10 @@ uhashring==2.3 \
     --hash=sha256:7ee8a25ca495a97effad10bd563c83b4054a6d7606d9530757049a04edab9297 \
     --hash=sha256:9f76187e8d8e82f6e5519c995eef1f1bf44d4a5e0fc4fdd1219a044b10040612
     # via python-binary-memcached
+uri-template==1.2.0 \
+    --hash=sha256:934e4d09d108b70eb8a24410af8615294d09d279ce0e7cbcdaef1bd21f932b06 \
+    --hash=sha256:f1699c77b73b925cf4937eae31ab282a86dc885c333f2e942513f08f691fc7db
+    # via -r requirements/common.in
 urllib3==1.26.15 \
     --hash=sha256:8a388717b9476f934a21484e8c8e61875ab60644d29b9b39e11e4b9dc1c6b305 \
     --hash=sha256:aa751d169e23c7479ce47a0cb0da579e3ede798f994f5816a74e4f4500dcea42
