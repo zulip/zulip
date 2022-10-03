@@ -3067,3 +3067,25 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 }
+
+.recipient_row {
+    /* See https://stackoverflow.com/questions/2717480/css-selector-for-first-element-with-class/8539107#8539107
+       for details on how this works */
+    .message_row.unread {
+        .date_row {
+            position: relative;
+            z-index: 1;
+            background-color: hsl(0, 0%, 100%);
+        }
+    }
+
+    /* Select all but the first .message_row.unread,
+       and remove the properties set from the previous rule. */
+    .message_row.unread ~ .message_row.unread {
+        .date_row {
+            position: unset;
+            z-index: 0;
+            background-color: transparent;
+        }
+    }
+}
