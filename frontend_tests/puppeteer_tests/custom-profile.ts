@@ -20,8 +20,8 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
     );
     await page.waitForSelector(".admin-profile-field-form", {visible: true});
     await common.fill_form(page, "form.admin-profile-field-form", {
-        name: "Teams",
         field_type: "1",
+        name: "Teams",
     });
     await page.click("#dialog_widget_modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
