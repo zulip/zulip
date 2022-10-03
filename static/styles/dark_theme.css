@@ -401,6 +401,20 @@ body.dark-theme {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .recipient_row {
+        .message_row.unread {
+            .date_row {
+                background-color: hsl(212, 28%, 18%);
+            }
+        }
+
+        .message_row.unread ~ .message_row.unread {
+            .date_row {
+                background-color: transparent;
+            }
+        }
+    }
+
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
