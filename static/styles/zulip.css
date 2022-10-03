@@ -1346,10 +1346,6 @@ td.pointer {
     }
 }
 
-.popover_info i.zulip-icon.zulip-icon-bot {
-    margin-top: 3px;
-}
-
 .actions_hover:hover {
     color: hsl(200, 100%, 40%);
 }

@@ -32,24 +32,74 @@
     }
 }
 
-.popover_info {
-    text-align: center;
-}
-
-.popover_info .custom_user_field {
+.user_full_name {
     text-overflow: ellipsis;
     overflow: hidden;
+    white-space: nowrap;
+}
 
-    a i {
-        /* Hack: This overrides the 3px margin-right for all <i> elements in
-           this component. Ideally, that other logic would restrict
-           the behavior elements with the right CSS class, and we'd
-           delete this. */
+.popover_user_name_row {
+    display: flex;
+    align-items: center;
+}
+
+.user_info_popover_action_buttons {
+    display: flex;
+    margin-left: auto;
+}
+
+.user_info_popover_manage_menu_btn {
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+}
+
+.user_popover_manage_menu {
+    .zulip-icon {
+        /* Overriding CSS margin */
         margin-right: 0;
     }
+}
 
-    a:hover {
-        text-decoration: none;
+.info_popover_actions .custom_user_field {
+    display: flex;
+    align-items: center;
+
+    .value {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    /* Overriding CSS from rendered_markdown.css */
+    .rendered_markdown p {
+        margin: 0;
+    }
+
+    /* Overriding CSS from bootstrap > nav-list. */
+    .custom_profile_fields_link {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        &:hover {
+            background-color: transparent;
+        }
+
+        &:focus {
+            background-color: transparent;
+        }
+    }
+}
+
+.info_popover_actions .user_info_popover_manage_menu_btn {
+    /* Create a larger click target around the icon. */
+    padding: 0 6px;
+
+    opacity: 0.8;
+
+    &:hover {
+        opacity: 1;
     }
 }
 
@@ -115,16 +165,25 @@ ul {
     &.streams_popover i,
     &.topics_popover i {
         display: inline-block;
-        width: 14px;
         text-align: center;
-        margin-right: 3px;
+
+        &:not(.popover_action_icon) {
+            width: 14px;
+        }
+
+        &:not(.popover_action_icon, .custom_user_field i) {
+            margin-right: 3px;
+        }
 
         &.zulip-icon {
             /* These icons are different from font awesome icons,
                 so they need to be aligned separately. */
             line-height: 14px;
             position: relative;
-            top: 2px;
+
+            &:not(.zulip-icon-bot) {
+                top: 2px;
+            }
         }
     }
 
@@ -181,6 +240,10 @@ ul {
     }
 }
 
+/* Important note: The user info popover user_popover class is applied
+   to user info popovers ONLY when they are opened from the right
+   sidebar; otherwise, it will have the user-info-popover class
+   instead. */
 .user_popover {
     width: 240px;
 
@@ -245,7 +308,8 @@ ul {
     display: inline-block;
     float: initial;
     position: relative;
-    top: 1px;
+    top: 0;
+    flex-shrink: 0;
 }
 
 .bot-owner-name {
@@ -712,12 +776,16 @@ ul {
 
 .user_info_status_text {
     opacity: 0.8;
-    padding: 2px 0 3px;
 
     .status_emoji {
         height: 18px;
         width: 18px;
         top: 2px;
+
+        /* Override the default 3px left margin for status emoji, which is
+           intended for their presentation elsewhere to the left of a
+           user's name. */
+        margin-left: 0;
     }
 }
 

@@ -244,6 +244,11 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
+        if (popovers.user_info_manage_menu_popped()) {
+            popovers.hide_user_info_popover_manage_menu();
+            $("#user_info_popover .user_info_popover_manage_menu_btn").trigger("focus");
+            return true;
+        }
         popovers.hide_all();
         return true;
     }
@@ -347,6 +352,11 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     if (popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_info_manage_menu_popped()) {
+        popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 

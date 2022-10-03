@@ -1,108 +1,89 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list actions_popover info_popover_actions" data-user-id="{{user_id}}">
-    <div class="popover_info">
-        <li>
-            <b>{{user_full_name}}</b>
-            {{#if is_active }}
-                {{#if is_bot}}
-                <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
-                {{else}}
-                <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
-                {{/if}}
-            {{/if}}
-        </li>
-
-
+<ul class="nav nav-list info_popover_actions" id="user_info_popover" data-user-id="{{user_id}}">
+    <li class="popover_user_name_row">
+        <b class="user_full_name" data-tippy-content="{{user_full_name}}">{{user_full_name}}</b>
         {{#if is_active }}
-            {{#if show_email}}
-            {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
-            <div>
-                <li class="user_popover_email">
-                    <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
-                    {{ user_email }}
-                </li>
-            </div>
-            {{/if}}
-        {{else}}
-            <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
-        {{/if}}
-
-
-        {{#if is_bot}}
-            {{#if bot_owner}}
-                <li>{{#tr}}Bot owner{{/tr}}:
-                    <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
-                        {{bot_owner.full_name}}
-                    </span>
-                </li>
-            {{else if is_system_bot}}
-                <li>{{#tr}}System bot{{/tr}}</li>
+            {{#if is_bot}}
+            <i class="zulip-icon zulip-icon-bot" aria-hidden="true"></i>
             {{else}}
-                <li>{{#tr}}Bot{{/tr}}</li>
+            <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
             {{/if}}
-        {{else}}
-            <li>{{ user_type }}</li>
         {{/if}}
-        {{!-- Display selected custom profile fields in this popover. --}}
-        {{#each display_profile_fields}}
-            <li data-type="{{this.type}}" class="field-section custom_user_field tippy-zulip-tooltip" data-tippy-content="{{this.name}}" data-field-id="{{this.id}}">
-                {{#if this.is_link}}
-                    <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                {{else if this.is_external_account}}
-                    <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">
-                        {{#if (eq this.subtype "github") }}
-                        <i class="fa fa-github" aria-hidden="true"></i>
-                        {{else if (eq this.subtype "twitter") }}
-                        <i class="fa fa-twitter" aria-hidden="true"></i>
-                        {{/if}}
-                        {{this.value}}
-                    </a>
-                {{else}}
-                    {{#if this.rendered_value}}
-                    <span class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</span>
-                    {{else}}
-                    <span class="value">{{this.value}}</span>
-                    {{/if}}
-                {{/if}}
+        {{#if show_manage_menu }}
+        <span class="user_info_popover_action_buttons">
+            <a class="user_info_popover_manage_menu_btn" role="button" tabindex="0" aria-haspopup="true">
+                <i class="popover_action_icon zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i>
+            </a>
+        </span>
+        {{/if}}
+    </li>
+
+
+    {{#if is_active }}
+        {{#if show_email}}
+        {{!-- This div is added to enable interactivity for tooltip - https://atomiks.github.io/tippyjs/v5/accessibility/#interactivity --}}
+        <div>
+            <li class="user_popover_email">
+                <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
+                {{ user_email }}
             </li>
-        {{/each}}
-
-        {{#if user_time}}
-            <li class="hidden-for-spectators">{{#tr}}{user_time} local time{{/tr}}</li>
+        </div>
         {{/if}}
+    {{else}}
+        <li class="user_popover_email half-opacity italic">{{#if is_bot}}{{#tr}}This bot has been deactivated.{{/tr}}{{else}}{{#tr}}This user has been deactivated.{{/tr}}{{/if}}</li>
+    {{/if}}
 
-        <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
-    </div>
 
-    {{#if is_me}}
-        <hr />
-        {{#if invisible_mode}}
-        <li>
-            <a tabindex="0" class="invisible_mode_turn_off">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
-            </a>
-        </li>
+    {{#if is_bot}}
+        {{#if bot_owner}}
+            <li>{{#tr}}Bot owner{{/tr}}:
+                <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
+                    {{bot_owner.full_name}}
+                </span>
+            </li>
+        {{else if is_system_bot}}
+            <li>{{#tr}}System bot{{/tr}}</li>
         {{else}}
-        <li>
-            <a tabindex="0" class="invisible_mode_turn_on">
-                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
-            </a>
-        </li>
+            <li>{{#tr}}Bot{{/tr}}</li>
         {{/if}}
-        <li>
-            <a tabindex="0" class="update_status_text">
-                <i class="fa fa-comments" aria-hidden="true"></i>
-                {{#if status_text}}
-                    {{#tr}}Edit status{{/tr}}
+    {{else}}
+        <li>{{ user_type }}</li>
+    {{/if}}
+    {{!-- Display selected custom profile fields in this popover. --}}
+    {{#each display_profile_fields}}
+        <li data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+            {{#if this.is_link}}
+                <a tabindex="0" href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</a>
+            {{else if this.is_external_account}}
+                <a tabindex="0" href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value custom_profile_fields_link tippy-zulip-tooltip" data-tippy-content="{{this.name}}">
+                    {{#if (eq this.subtype "github") }}
+                    <i class="fa fa-github" aria-hidden="true"></i>
+                    {{else if (eq this.subtype "twitter") }}
+                    <i class="fa fa-twitter" aria-hidden="true"></i>
+                    {{/if}}
+                    {{this.value}}
+                </a>
+            {{else}}
+                {{#if this.rendered_value}}
+                <span class="value rendered_markdown tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{rendered_markdown this.rendered_value}}</span>
                 {{else}}
-                    {{#tr}}Set a status{{/tr}}
+                <span class="value tippy-zulip-tooltip" data-tippy-content="{{this.name}}">{{this.value}}</span>
                 {{/if}}
-            </a>
+            {{/if}}
         </li>
+    {{/each}}
+
+
+    <li class="only-visible-for-spectators">{{#tr}}Joined {date_joined}{{/tr}}</li>
+
+    {{#if (or (and user_time is_active) is_me status_content_available) }}
+        <hr />
+    {{/if}}
+    {{#if (and user_time is_active)}}
+        <li class="hidden-for-spectators local_time">{{#tr}}{user_time} local time{{/tr}}</li>
     {{/if}}
 
     {{#if status_content_available}}
-        {{#unless is_me}}<hr />{{/unless}}
         <li class="user_info_status_text">
             <span id="status_message">
                 {{#if status_emoji_info}}
@@ -120,9 +101,34 @@
         </li>
     {{/if}}
 
-    {{#if spectator_view}}
-    {{else}}
+    {{#if is_me}}
+        <li>
+            <a tabindex="0" class="update_status_text">
+                <i class="fa fa-comments" aria-hidden="true"></i>
+                {{#if status_text}}
+                    {{#tr}}Edit status{{/tr}}
+                {{else}}
+                    {{#tr}}Set a status{{/tr}}
+                {{/if}}
+            </a>
+        </li>
+        {{#if invisible_mode}}
+        <li>
+            <a tabindex="0" class="invisible_mode_turn_off">
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Turn off invisible mode{{/tr}}
+            </a>
+        </li>
+        {{else}}
+        <li>
+            <a tabindex="0" class="invisible_mode_turn_on">
+                <i class="fa fa-circle-o" aria-hidden="true"></i> {{#tr}}Go invisible{{/tr}}
+            </a>
+        </li>
+        {{/if}}
+    {{/if}}
 
+
+    {{#unless spectator_view}}
         <hr />
         <li>
             <a tabindex="0" class="view_full_user_profile">
@@ -180,37 +186,5 @@
                 <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
             </a>
         </li>
-
-        {{#if can_mute }}
-        <hr />
-        <li>
-            <a tabindex="0" class="sidebar-popover-mute-user">
-                <i class="fa fa-eye-slash" aria-hidden="true"></i> {{#tr}}Mute this user{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        {{#if can_unmute}}
-        <hr />
-        <li>
-            <a tabindex="0" class="sidebar-popover-unmute-user">
-                <i class="fa fa-eye" aria-hidden="true"></i> {{#tr}}Unmute this user{{/tr}}
-            </a>
-        </li>
-        {{/if}}
-        {{#if can_manage_user}}
-            {{#if is_active}}
-            <li>
-                <a tabindex="0" class="sidebar-popover-manage-user">
-                    <i class="fa fa-edit" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Manage this bot{{/tr}}{{else}}{{#tr}}Manage this user{{/tr}}{{/if}}
-                </a>
-            </li>
-            {{else}}
-            <li>
-                <a tabindex="0" class="sidebar-popover-reactivate-user">
-                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{#if is_bot}}{{#tr}}Reactivate this bot{{/tr}}{{else}}{{#tr}}Reactivate this user{{/tr}}{{/if}}
-                </a>
-            </li>
-            {{/if}}
-        {{/if}}
-    {{/if}}
+    {{/unless}}
 </ul>
