@@ -116,6 +116,10 @@ IGNORED_PHRASES = [
     "Notification Bot",
     # Used in presence_enabled setting label
     r"invisible mode off",
+    # Typeahead suggestions for "Pronouns" custom field type.
+    r"he/him",
+    r"she/her",
+    r"they/them",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

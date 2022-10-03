@@ -596,6 +596,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
             true,
             false,
         );
+        settings_account.initialize_custom_pronouns_type_fields(element);
 
         $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
             e.preventDefault();
