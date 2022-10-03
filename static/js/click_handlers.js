@@ -128,7 +128,7 @@ export function initialize() {
         }
 
         // UI elements for triggering message editing or viewing edit history.
-        if ($target.is("i.edit_content_button") || $target.is(".message_edit_notice")) {
+        if ($target.is("i.edit_message_button") || $target.is(".message_edit_notice")) {
             return true;
         }
 
@@ -273,10 +273,23 @@ export function initialize() {
 
     // MESSAGE EDITING
 
-    $("body").on("click", ".edit_content_button", function (e) {
+    $("body").on("click", ".edit_content_button, .view_source_button", function (e) {
         const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
         message_lists.current.select_id(rows.id($row));
         message_edit.start($row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+    $("body").on("click", ".move_message_button", function (e) {
+        const $row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        const message_id = rows.id($row);
+        message_lists.current.select_id(message_id);
+        const message = message_lists.current.get(message_id);
+        stream_popover.build_move_topic_to_stream_popover(
+            message.stream_id,
+            message.topic,
+            message,
+        );
         e.stopPropagation();
         popovers.hide_all();
     });
