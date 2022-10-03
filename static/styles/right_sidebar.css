@@ -109,6 +109,11 @@
     flex-direction: row;
 }
 
+.user-name-and-status-wrapper {
+    display: block;
+    width: 100%;
+}
+
 .user-presence-link {
     width: calc(100% - 24px);
 
