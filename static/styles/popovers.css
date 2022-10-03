@@ -725,11 +725,12 @@ ul {
 
     .dropdown-list-widget,
     .stream_header_colorblock {
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
 
     .topic_stream_edit_header {
         display: flex;
+	flex-direction: column;
         flex-wrap: wrap;
         justify-content: flex-start;
 
@@ -763,4 +764,8 @@ ul {
     @media (width < $sm_min) {
         column-count: 1;
     }
+}
+
+.input_space{
+    margin: 10px 0;
 }
