@@ -317,7 +317,7 @@ export class MessageList {
     show_edit_topic_on_recipient_row($recipient_row, $form) {
         $recipient_row.find(".topic_edit_form").append($form);
         $recipient_row.find(".on_hover_topic_edit").hide();
-        $recipient_row.find(".edit_content_button").hide();
+        $recipient_row.find(".edit_message_button").hide();
         $recipient_row.find(".stream_topic").hide();
         $recipient_row.find(".topic_edit").show();
         $recipient_row.find(".always_visible_topic_edit").hide();
@@ -326,7 +326,7 @@ export class MessageList {
     hide_edit_topic_on_recipient_row($recipient_row) {
         $recipient_row.find(".stream_topic").show();
         $recipient_row.find(".on_hover_topic_edit").show();
-        $recipient_row.find(".edit_content_button").show();
+        $recipient_row.find(".edit_message_button").show();
         $recipient_row.find(".topic_edit_form").empty();
         $recipient_row.find(".topic_edit").hide();
         $recipient_row.find(".always_visible_topic_edit").show();
