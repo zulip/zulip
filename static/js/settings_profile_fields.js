@@ -11,7 +11,7 @@ import render_settings_profile_field_choice from "../templates/settings/profile_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -217,6 +217,11 @@ function set_up_create_field_form() {
     const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
     const profile_field_type = Number.parseInt($("#profile_field_type").val(), 10);
 
+    $("#profile_field_name").val("").prop("disabled", false);
+    $("#profile_field_hint").val("").prop("disabled", false);
+    $field_url_pattern_elem.hide();
+    $field_elem.hide();
+
     if (profile_field_type === field_types.EXTERNAL_ACCOUNT.id) {
         $field_elem.show();
         const $profile_field_external_account_type = $(
@@ -224,8 +229,6 @@ function set_up_create_field_form() {
         ).val();
         if ($profile_field_external_account_type === "custom") {
             $field_url_pattern_elem.show();
-            $("#profile_field_name").val("").prop("disabled", false);
-            $("#profile_field_hint").val("").prop("disabled", false);
         } else {
             $field_url_pattern_elem.hide();
             const profile_field_name =
@@ -234,11 +237,13 @@ function set_up_create_field_form() {
             $("#profile_field_name").val(profile_field_name).prop("disabled", true);
             $("#profile_field_hint").val("").prop("disabled", true);
         }
-    } else {
-        $("#profile_field_name").prop("disabled", false);
-        $("#profile_field_hint").prop("disabled", false);
-        $field_url_pattern_elem.hide();
-        $field_elem.hide();
+    } else if (profile_field_type === field_types.PRONOUNS.id) {
+        const default_label = $t({defaultMessage: "Pronouns"});
+        const default_hint = $t({
+            defaultMessage: "What pronouns should people use to refer to you?",
+        });
+        $("#profile_field_name").val(default_label);
+        $("#profile_field_hint").val(default_hint);
     }
 
     // Not showing "display in profile summary" option for long text/user profile field.
