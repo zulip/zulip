@@ -19,8 +19,11 @@ design of the terminal app is discussed in
 
 Everyone is encouraged to participate in design discussions! Your participation
 greatly helps improve the product, especially when you focus your contributions
-on supporting the productivity of the design team. The following guidelines
-should put you on the right track:
+on supporting the productivity of the design team. The more we are able to
+incorporate a variety of ideas, experiences, and perspectives into the
+discussion, the better decisions we'll be able to make.
+
+The following guidelines should put you on the right track:
 
 - Always treat other participants in the discussion with respect, regardless of
   whether you agree with their ideas. Ad hominem attacks are never appropriate.
@@ -57,17 +60,43 @@ should put you on the right track:
   project members may find your argument persuasive, and may have ideas that
   address your concerns.
 
-- Don’t forget to express support and appreciation for aspects of
-  ideas/work that you like, whether in messages or emoji reactions! It
-  helps motivate folks working on Zulip’s design, creates a more
-  positive atmosphere, and helps build consensus towards decisions.
+Finally, don’t forget to express support and appreciation for ideas and work
+that you like, whether in messages or emoji reactions! It helps motivate folks
+working on Zulip’s design, builds consensus towards decisions, and creates a more
+positive atmosphere in the community.
+
+Note that [#design][design stream] is a high-traffic stream, and thoughtful
+participation takes time. Don’t let it prevent you from doing your own work. It
+can be helpful to pick particular conversations to follow, where you feel that
+you have insight to share.
+
+## Participant roles
+
+At this point, it will be helpful to define a few key roles in design
+discussions:
+
+- [Code contributor](#guidelines-for-code-contributors): Anyone working on a PR
+  that includes some frontend changes.
+
+- [Community moderator](#guidelines-for-community-moderators): Any core
+  contributor or other experienced community member who is helping guide the
+  discussion (with or without "moderator" permissions in the organization).
+
+- **Design team**: Anyone working actively on the design of the feature at hand
+  and/or overall design for the Zulip product.
+
+- [Decision makers](#guidelines-for-decision-makers): Project maintainers
+  responsible for design decisions, including design leaders, product leaders,
+  and overall project leadership.
 
 ## Guidelines for code contributors
 
-When you are working on a PR that includes frontend changes, it may be helpful
+When you are working on a PR that includes frontend changes, you may find it helpful
 to get interactive feedback on the design. The best way to do so is by posting a
 message in the [#design][design stream] stream in the Zulip development
-community. Some situations where this likely to be a good approach:
+community.
+
+### When to post
 
 - The issue or a comment on your PR specifically asks you to get feedback in the
   [#design][design stream] stream.
@@ -80,7 +109,11 @@ community. Some situations where this likely to be a good approach:
 
 - You’re prototyping an idea that’s not fully fleshed out.
 
-Here are some guidelines for requesting design feedback:
+### Guidelines for requesting design feedback
+
+You will get the most helpful feedback by sharing enough context for community
+participants to understand what you're trying to do, and clearly stating the
+questions you are looking for feedback on. Some advice:
 
 - Start a new topic, or use an existing one if there is a topic linked from the
   issue you’re working on. If you’re starting a new topic, appending the issue
@@ -118,31 +151,14 @@ thread if you don’t see a response after a couple of business days.
 
 ## Guidelines for community moderators
 
-### General guidelines
-
-- We generally aim to discuss raw user feedback on the product’s design in
-  [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback).
-  The [#design][design stream] should be reserved for design aspects that we’re
-  actively (considering) working on. This lets the design team focus on
-  discussions that are expected to result in actionable decisions.
-
-- If a discussion that started in another stream has shifted into the design
-  phase, moving the discussion to [#design][design stream] helps the design team
-  follow the conversation.
-
-- Discussion of implementation-related decisions should ideally happen in
-  [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend). The line can
-  sometimes blur (and that’s OK), but we should aim to move (parts of) the
-  thread if there is an extensive conversation that belongs in the other stream.
-
-- [#design][design stream] is a very high traffic stream; don’t let it prevent
-  you from doing your own work. It can be helpful to pick particular
-  conversations to follow, where you feel that you have insight to share.
+Any experienced community participant can guide design discussions, and help
+make sure that we use everyone's time productively towards making the best
+decisions we can.
 
 ### Improving the quality of discussions
 
-We should aim to make sure that design conversations are helpful to those who
-are doing the work and/or making the decisions.
+Here are some suggestions for how you can help the community have a productive
+design discussion:
 
 - If a design discussion seems to have been derailed by a tangent or argument,
   consider moving the tangent to another topic so that the conversation can
@@ -150,10 +166,6 @@ are doing the work and/or making the decisions.
 
 - If the direction of the discussion seems unproductive, you can explicitly
   suggest circling back to a topic where additional discussion seems valuable.
-
-- If folks seem confused, it can be helpful to educate discussion participants,
-  e.g., by pointing them to earlier threads or help pages, or
-  clarifying with screenshots.
 
 - If someone is repeating the same points in a way that’s unhelpful, you can let
   them know that you understand what they are saying and appreciate their
@@ -172,12 +184,50 @@ are doing the work and/or making the decisions.
   enough feedback yet, they can revive the conversation as needed, and the pause
   can serve as a good reset.
 
-- If a conversation is going off-track and you are not sure how to fix it, ping
-  the product team to intervene and help get the conversion into a better state.
+If a conversation is going off-track and you are not sure how to fix it, please
+ping someone on the core team to intervene and help get the conversion into a
+better state.
+
+### Moving threads to the most appropriate stream
+
+Sometimes it helps to move (part of) a thread to a different stream, so that
+it's seen by the appropriate audience.
+
+- We generally aim to discuss raw user feedback on the product’s design in
+  [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback).
+  The [#design][design stream] should be reserved for design aspects that we’re
+  actively (considering) working on. This lets the design team focus on
+  discussions that are expected to result in actionable decisions.
+
+- If a discussion that started in another stream has shifted into the design
+  phase, moving the discussion to [#design][design stream] helps the design team
+  follow the conversation.
+
+- Discussion of implementation-related decisions should ideally happen in
+  [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend). The line can
+  sometimes blur (and that’s OK), but we should aim to move (parts of) the
+  thread if there is an extensive conversation that belongs in the other stream.
+
+- We use [#mobile-team](https://chat.zulip.org/#narrow/stream/243-mobile-team)
+  for discussions of mobile app design, and
+  [#zulip-terminal](https://chat.zulip.org/#narrow/stream/206-zulip-terminal) for
+  terminal app design.
 
 ## Guidelines for decision makers
 
+The main purpose of design discussions is to help us make the best design
+decisions we can. Decision makers should guide the conversation to elicit the
+ideas, feedback and advice they need from the community.
+
+Ideally, design discussions should also help us learn as a community. Community
+members who follow the conversation should get a better understanding of the
+considerations behind the decisions being discussed, and thus be better able to
+contribute to the next conversation.
+
 ### Managing the discussion
+
+Decision makers should actively manage the discussion to make sure we're making
+good use of everyone's time and attention, and getting useful feedback.
 
 - Decision makers should aim to follow design threads closely and provide input
   early and often, so that conversations don’t get blocked waiting for their
@@ -198,7 +248,27 @@ are doing the work and/or making the decisions.
 ### From discussion to decision
 
 There is a number of factors that affect when it’s time to move a thread from
-discussion to a decision.
+discussion to a decision. In part, this depends on how significant a commitment
+we are making with the decision at hand:
+
+- We want to be very thoughtful about decisions that will take a lot of work to
+  implement, and/or will be difficult to undo.
+
+- We should try to come up with good designs for the features we're building,
+  but sometimes it's difficult to foresee how an interaction will feel until we
+  try it. Prototyping a UI we are not sure about is a normal part of the design
+  process.
+
+- When the decision results in filing a non-urgent issue, it’s fine to write up
+  the conclusions on GitHub relatively quickly, and update the issue if more
+  ideas come in later on.
+
+- We should accept that sometimes an idea we decided on is just not working out,
+  and be willing to go back to the drawing board or iterate further until we get
+  to a state we're happy with.
+
+With those considerations in mind, here are rough guidelines for when to move on
+to a decision:
 
 - For very small decisions, it may be enough to get a sanity-check from one or
   two well-informed community participants.
@@ -215,9 +285,7 @@ discussion to a decision.
     between the well-informed participants in the discussion.
 
   - For a relatively small decision, there is enough useful feedback to
-    generate a solid proposal. Especially when the decision results in filing
-    a non-urgent issue, it’s fine to write up the conclusions on GitHub, and
-    update the issue if more ideas come in later on.
+    generate a solid proposal.
 
   - If the discussion is primarily rehashing old points, and doesn’t seem to
     be generating additional insights, it’s time to redirect the conversation

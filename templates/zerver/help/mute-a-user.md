@@ -30,6 +30,10 @@ have the following effects:
 * Muted users are excluded from the autocomplete for composing a
   private message or [mentioning a user](/help/mention-a-user-or-group).
 
+* Muted users are excluded from [read receipts](/help/read-receipts)
+  for all messages. Zulip never shares whether or not you have read
+  a message with a user you've muted.
+
 * Recent topics and other features that display avatars will show a
   generic user symbol in place of a muted user's profile picture.
 

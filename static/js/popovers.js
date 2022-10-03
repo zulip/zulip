@@ -467,17 +467,25 @@ export function toggle_actions_popover(element, id) {
             !message_container.is_hidden &&
             not_spectator;
         const editability = message_edit.get_editability(message);
-        let use_edit_icon;
+        const is_stream_editable =
+            message.is_stream && settings_data.user_can_move_messages_between_streams();
         let editability_menu_item;
+        let move_message_menu_item;
+        let view_source_menu_item;
+
         if (editability === message_edit.editability_types.FULL) {
-            use_edit_icon = true;
             editability_menu_item = $t({defaultMessage: "Edit message"});
-        } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
-            use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source / Move message"});
+            if (message.is_stream) {
+                move_message_menu_item = $t({defaultMessage: "Move message"});
+            }
+        } else if (
+            editability === message_edit.editability_types.TOPIC_ONLY ||
+            is_stream_editable
+        ) {
+            move_message_menu_item = $t({defaultMessage: "Move message"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
-            use_edit_icon = false;
-            editability_menu_item = $t({defaultMessage: "View source"});
+            view_source_menu_item = $t({defaultMessage: "View message source"});
         }
 
         // Theoretically, it could be useful to offer this even for a
@@ -513,10 +521,6 @@ export function toggle_actions_popover(element, id) {
         const should_display_uncollapse =
             !message.locally_echoed && !message.is_me_message && message.collapsed;
 
-        const should_display_edit_and_view_source =
-            message.content !== "<p>(deleted)</p>" ||
-            editability === message_edit.editability_types.FULL ||
-            editability === message_edit.editability_types.TOPIC_ONLY;
         const should_display_quote_and_reply =
             message.content !== "<p>(deleted)</p>" && not_spectator;
 
@@ -531,9 +535,10 @@ export function toggle_actions_popover(element, id) {
             message_id: message.id,
             historical: message.historical,
             stream_id: message.stream_id,
-            use_edit_icon,
             editability_menu_item,
+            move_message_menu_item,
             should_display_mark_as_unread,
+            view_source_menu_item,
             should_display_collapse,
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
@@ -544,7 +549,6 @@ export function toggle_actions_popover(element, id) {
             should_display_delete_option,
             should_display_read_receipts_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
-            should_display_edit_and_view_source,
             should_display_quote_and_reply,
         };
 
@@ -1230,14 +1234,18 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on("click", ".popover_edit_message", (e) => {
-        const message_id = $(e.currentTarget).data("message-id");
-        const $row = message_lists.current.get_row(message_id);
-        hide_actions_popover();
-        message_edit.start($row);
-        e.stopPropagation();
-        e.preventDefault();
-    });
+    $("body").on(
+        "click",
+        ".popover_edit_message, .popover_move_message, .popover_view_source",
+        (e) => {
+            const message_id = $(e.currentTarget).data("message-id");
+            const $row = message_lists.current.get_row(message_id);
+            hide_actions_popover();
+            message_edit.start($row);
+            e.stopPropagation();
+            e.preventDefault();
+        },
+    );
     $("body").on("click", ".rehide_muted_user_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         const $row = message_lists.current.get_row(message_id);

@@ -9,10 +9,19 @@
     </li>
     {{/if}}
 
-    {{#if should_display_edit_and_view_source}}
+    {{#if editability_menu_item}}
     <li>
         <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="fa fa-pencil" aria-hidden="true"></i> {{editability_menu_item}}
+            <span class="hotkey-hint">(e)</span>
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if move_message_menu_item}}
+    <li>
+        <a class="popover_move_message" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-arrows" aria-hidden="true"></i> {{move_message_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
     </li>
@@ -23,6 +32,14 @@
         <a class="respond_button" data-message-id="{{message_id}}" tabindex="0">
             <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
             <span class="hotkey-hint">(>)</span>
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if view_source_menu_item}}
+    <li>
+        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
         </a>
     </li>
     {{/if}}

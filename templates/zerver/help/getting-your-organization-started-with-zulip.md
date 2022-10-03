@@ -44,8 +44,7 @@ ensure you can always move from our hosting to yours (and back).
 
 ## Create your organization profile
 
-The information in your organization profile is displayed on the
-registration and login page for your organization, and in the Zulip app.
+{!organization-profile-intro.md!}
 
 ### Edit organization profile
 

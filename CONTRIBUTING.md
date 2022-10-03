@@ -39,6 +39,9 @@ don't require touching the codebase at all. For example, you can:
 - [Report issues](#reporting-issues), including both feature requests and
   bug reports.
 - [Give feedback](#user-feedback) if you are evaluating or using Zulip.
+- [Participate
+  thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
+  in design discussions.
 - [Sponsor Zulip](https://github.com/sponsors/zulip) through the GitHub sponsors program.
 - [Translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language.
