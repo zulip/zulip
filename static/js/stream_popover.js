@@ -389,16 +389,20 @@ function build_drafts_popover(e) {
     e.stopPropagation();
 }
 
-function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
+export function build_move_topic_to_stream_popover(current_stream_id, topic_name, message) {
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
         topic_name,
         current_stream_id,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
+        from_message_actions_popover: message !== undefined,
     };
 
-    hide_topic_popover();
+    let modal_heading = $t_html({defaultMessage: "Move topic"});
+    if (message !== undefined) {
+        modal_heading = $t_html({defaultMessage: "Move messages"});
+    }
 
     function get_params_from_form() {
         return Object.fromEntries(
@@ -423,7 +427,7 @@ function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
         const params = get_params_from_form();
 
         const {old_topic_name} = params;
-        const select_stream_id = stream_widget.value();
+        let select_stream_id = stream_widget.value();
 
         let {
             current_stream_id,
@@ -436,17 +440,40 @@ function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
 
+        if (old_topic_name.trim() === new_topic_name.trim()) {
+            // We use `undefined` to tell the server that
+            // there has been no change in the topic name.
+            new_topic_name = undefined;
+        }
+
+        let propagate_mode = "change_all";
+        if (message !== undefined) {
+            if (select_stream_id === current_stream_id) {
+                // We use `undefined` to tell the server that
+                // there has been no change in stream. This is
+                // important for cases when changing stream is
+                // not allowed.
+                select_stream_id = undefined;
+            }
+            // We already have the message_id here which means that modal is opened using
+            // message popover.
+            propagate_mode = $("#move_topic_modal select.message_edit_topic_propagate").val();
+            message_edit.move_topic_containing_message_to_stream(
+                message.id,
+                select_stream_id,
+                new_topic_name,
+                send_notification_to_new_thread,
+                send_notification_to_old_thread,
+                propagate_mode,
+            );
+            return;
+        }
+
         dialog_widget.show_dialog_spinner();
         message_edit.with_first_message_id(
             current_stream_id,
             old_topic_name,
             (message_id) => {
-                if (old_topic_name.trim() === new_topic_name.trim()) {
-                    // We use `undefined` to tell the server that
-                    // there has been no change in the topic name.
-                    new_topic_name = undefined;
-                }
-
                 if (old_topic_name && select_stream_id) {
                     message_edit.move_topic_containing_message_to_stream(
                         message_id,
@@ -454,6 +481,7 @@ function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
                         new_topic_name,
                         send_notification_to_new_thread,
                         send_notification_to_old_thread,
+                        propagate_mode,
                     );
                 }
             },
@@ -514,7 +542,7 @@ function build_move_topic_to_stream_popover(current_stream_id, topic_name) {
     }
 
     dialog_widget.launch({
-        html_heading: $t_html({defaultMessage: "Move topic"}),
+        html_heading: modal_heading,
         html_body: render_move_topic_to_stream(args),
         html_submit_button: $t_html({defaultMessage: "Confirm"}),
         id: "move_topic_modal",
@@ -801,6 +829,7 @@ export function register_topic_handlers() {
         const $topic_row = $(e.currentTarget);
         const stream_id = Number.parseInt($topic_row.attr("data-stream-id"), 10);
         const topic_name = $topic_row.attr("data-topic-name");
+        hide_topic_popover();
         build_move_topic_to_stream_popover(stream_id, topic_name);
         e.stopPropagation();
         e.preventDefault();

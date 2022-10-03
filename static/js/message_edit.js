@@ -978,6 +978,7 @@ export function move_topic_containing_message_to_stream(
     new_topic_name,
     send_notification_to_new_thread,
     send_notification_to_old_thread,
+    propagate_mode,
 ) {
     function reset_modal_ui() {
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
@@ -997,7 +998,7 @@ export function move_topic_containing_message_to_stream(
 
     const request = {
         stream_id: new_stream_id,
-        propagate_mode: "change_all",
+        propagate_mode,
         topic: new_topic_name,
         send_notification_to_old_thread,
         send_notification_to_new_thread,

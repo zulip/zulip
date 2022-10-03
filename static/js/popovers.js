@@ -1333,18 +1333,26 @@ export function register_click_handlers() {
         e.stopPropagation();
         e.preventDefault();
     });
-    $("body").on(
-        "click",
-        ".popover_edit_message, .popover_move_message, .popover_view_source",
-        (e) => {
-            const message_id = $(e.currentTarget).data("message-id");
-            const $row = message_lists.current.get_row(message_id);
-            hide_actions_popover();
-            message_edit.start($row);
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("body").on("click", ".popover_edit_message, .popover_view_source", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const $row = message_lists.current.get_row(message_id);
+        hide_actions_popover();
+        message_edit.start($row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("body").on("click", ".popover_move_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const message = message_lists.current.get(message_id);
+        hide_actions_popover();
+        stream_popover.build_move_topic_to_stream_popover(
+            message.stream_id,
+            message.topic,
+            message,
+        );
+        e.stopPropagation();
+        e.preventDefault();
+    });
     $("body").on("click", ".rehide_muted_user_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         const $row = message_lists.current.get_row(message_id);
