@@ -249,6 +249,13 @@ function set_up_create_field_form() {
     // Not showing "display in profile summary" option for long text/user profile field.
     if (is_valid_to_display_in_summary(profile_field_type)) {
         $("#profile_field_display_in_profile_summary").closest(".input-group").show();
+        const check_display_in_profile_summary_by_default =
+            profile_field_type === field_types.PRONOUNS.id &&
+            !display_in_profile_summary_fields_limit_reached;
+        $("#profile_field_display_in_profile_summary").prop(
+            "checked",
+            check_display_in_profile_summary_by_default,
+        );
     } else {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
     }
