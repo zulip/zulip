@@ -76,6 +76,16 @@ $user_status_emoji_width: 24px;
         }
     }
 
+    &:empty::after {
+        content: attr(data-empty);
+        display: block;
+        margin: 10px 0;
+        font-family: inherit;
+        font-size: 1rem;
+        text-align: center;
+        color: hsl(0, 0%, 67%);
+    }
+
     .user_circle {
         min-width: 8px;
         height: 8px;

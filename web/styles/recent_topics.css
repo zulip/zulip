@@ -52,14 +52,6 @@
             }
         }
 
-        .required-text:empty::after {
-            content: attr(data-empty);
-            display: block;
-            font-style: italic;
-            color: hsl(0deg 0% 67%);
-            position: absolute;
-        }
-
         .fa-check-square-o,
         .fa-square-o {
             padding: 0 2px;

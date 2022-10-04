@@ -1615,10 +1615,16 @@ $option_title_width: 180px;
 .required-text {
     &:empty::after {
         content: attr(data-empty);
-        display: block;
+        margin: 10px 0;
+        font-family: inherit;
+        font-size: 1.25rem;
+        text-align: center;
 
-        font-style: italic;
         color: hsl(0deg 0% 67%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%);
     }
 
     &.thick:empty::after {
@@ -1717,10 +1723,6 @@ $option_title_width: 180px;
 #toggle_collapse {
     margin-left: 2px;
     display: inline-block;
-}
-
-.admin_exports_table {
-    margin-bottom: 20px;
 }
 
 .settings_textarea {
