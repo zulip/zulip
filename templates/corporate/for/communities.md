@@ -116,14 +116,14 @@ Zulip’s topic-based threading model solves the problems described above:
 
 ## Try Zulip today!
 
-You can see Zulip in action in our own
-[Zulip development community](https://zulip.com/development-community/), which sends
-thousands of messages a week. We often get feedback from contributors
-around the world that they love how responsive Zulip’s project leaders
-are in public Zulip conversations. We are able to achieve this despite
-the project leaders collectively spending only a few hours a day
-managing the community and spending most of their time integrating
-improvements into Zulip.
+You can see Zulip in action in our own [Zulip development
+community](/development-community/), or in other open
+communities that have [opted in](/help/communities-directory) to be listed in our
+[directory](/communities/). We often get feedback from contributors around the
+world that they love how responsive Zulip’s project leaders are in public Zulip
+conversations. We are able to achieve this despite the project leaders
+collectively spending only a few hours a day managing the community and spending
+most of their time integrating improvements into Zulip.
 
 Many communities that migrated from
 [Slack](/help/import-from-slack),
