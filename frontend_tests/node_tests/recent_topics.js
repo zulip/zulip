@@ -107,6 +107,10 @@ const narrow = mock_esm("../../static/js/narrow", {
     handle_middle_pane_transition: noop,
     has_shown_message_list_view: true,
 });
+mock_esm("../../static/js/pm_list", {
+    update_private_messages: noop,
+    handle_narrow_deactivated: noop,
+});
 mock_esm("../../static/js/popovers", {
     any_active: () => false,
 });

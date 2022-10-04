@@ -55,7 +55,8 @@ function get_new_heights() {
         Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
-        $("#global_filters").safeOuterHeight(true);
+        $("#global_filters").safeOuterHeight(true) -
+        $("#private_messages_sticky_header").safeOuterHeight(true);
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -100,7 +101,8 @@ function left_userlist_get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
         $("#userlist-header").safeOuterHeight(true) -
-        $("#user_search_section").safeOuterHeight(true);
+        $("#user_search_section").safeOuterHeight(true) -
+        $("#private_messages_sticky_header").safeOuterHeight(true);
 
     const blocks = [
         {
