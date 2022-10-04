@@ -10,6 +10,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 $topic_resolve_width: 13px;
 /* Space between section in the left sidebar. */
 $sections_vertical_gutter: 8px;
+$bottom_scrolling_buffer: 25px;
 
 #left-sidebar {
     #user-list {
@@ -320,7 +321,7 @@ li.show-more-topics {
 #subscribe-to-more-streams {
     text-decoration: none;
     margin: 5px auto 5.5px 10px;
-    margin-bottom: 25px;
+    margin-bottom: $bottom_scrolling_buffer;
 
     i {
         min-width: 19px;
@@ -703,6 +704,10 @@ li.topic-list-item {
 .zoom-in {
     .show-more-topics {
         display: none;
+    }
+
+    &.private_messages_container ul.pm-list {
+        margin-bottom: $bottom_scrolling_buffer;
     }
 
     #more_private_messages_sidebar_title {

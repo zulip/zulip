@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import * as pm_list_data from "./pm_list_data";
 import * as pm_list_dom from "./pm_list_dom";
+import * as resize from "./resize";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as vdom from "./vdom";
@@ -92,6 +93,8 @@ export function update_private_messages() {
         const new_dom = _build_private_messages_list();
         set_dom_to(new_dom);
     }
+    // Make sure to update the left sidebar heights after updating PMs.
+    setTimeout(resize.resize_stream_filters_container, 0);
 }
 
 export function expand() {
