@@ -17,11 +17,12 @@ methods][authentication-production] documentation for details.
 
 {settings_tab|profile-field-settings}
 
-1. Under **Add a new profile field**, enter a **Label**, **Hint**, and **Type**.
+1. Click **Add a new profile field**.
 
-1. Click **Add profile field**.
+1. Fill out profile field information as desired, and click **Add**.
 
-1. Click and drag the vertical dots on the left to order the fields.
+1. In the **Labels** column, click and drag the vertical dots to reorder the
+   list of custom profile fields.
 
 {end_tabs}
 
