@@ -780,12 +780,22 @@ ul {
     .status_emoji {
         height: 18px;
         width: 18px;
-        top: 2px;
-
         /* Override the default 3px left margin for status emoji, which is
            intended for their presentation elsewhere to the left of a
            user's name. */
         margin-left: 0;
+        margin-right: 2px;
+    }
+
+    #status_message {
+        padding: 1px 0;
+        display: flex;
+        align-items: baseline;
+        hyphens: auto;
+    }
+
+    .status_text {
+        overflow-wrap: anywhere;
     }
 }
 
