@@ -1,5 +1,7 @@
 # Add custom profile fields
 
+{!admin-only.md!}
+
 By default, user profiles show their name, email, date they joined, and when
 they were last active. You can also add custom profile fields like country
 of residence, birthday, manager, Twitter handle, and more.
@@ -39,6 +41,35 @@ There are several different types of fields available.
 * **List of options**: Creates a dropdown with a list of options.
 * **Person picker**: For selecting other users, like "Manager" or
     "Direct reports".
+
+## Display custom fields in user profile summaries
+
+Organizations may find it useful to display additional fields in a user's
+profile summary, such as pronouns, GitHub username, job title, team, etc.
+
+All field types other than "Long text" or "Person" have a checkbox option
+that controls whether to display a custom field in a user's profile summary.
+There's a limit to the number of custom profile fields that can be displayed
+at a time. If the maximum number of fields is already selected, all unselected
+checkboxes will be disabled.
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the profile field
+   you want to edit.
+
+1. Toggle **Display in profile summary**.
+
+4. Click **Save changes**.
+
+!!! tip ""
+
+    You can also choose which custom profile fields will be displayed by toggling
+    the checkboxes in the **Summary** column of the **Custom profile fields** table.
+
+{end_tabs}
 
 ## Related articles
 
