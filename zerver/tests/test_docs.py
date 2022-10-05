@@ -172,10 +172,9 @@ class DocPageTest(ZulipTestCase):
             self._test("/team/", "industry veterans")
             self._test("/apps/", "Apps for every platform.")
 
-        self._test("/history/", "Cambridge, Massachusetts")
+        self._test("/history/", "Zulip released as open source!")
         # Test the i18n version of one of these pages.
-        self._test("/en/history/", "Cambridge, Massachusetts")
-
+        self._test("/en/history/", "Zulip released as open source!")
         self._test("/hello/", "Chat for distributed teams", landing_missing_strings=["Log in"])
         self._test("/attribution/", "Website attributions")
         self._test("/communities/", "Open communities directory")
