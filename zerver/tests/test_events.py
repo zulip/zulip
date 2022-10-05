@@ -146,7 +146,6 @@ from zerver.lib.event_schema import (
     check_realm_domains_remove,
     check_realm_emoji_update,
     check_realm_export,
-    check_realm_filters,
     check_realm_linkifiers,
     check_realm_playgrounds,
     check_realm_update,
@@ -263,6 +262,7 @@ class BaseAction(ZulipTestCase):
         stream_typing_notifications: bool = True,
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
+        linkifier_url_template: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -291,6 +291,7 @@ class BaseAction(ZulipTestCase):
                 stream_typing_notifications=stream_typing_notifications,
                 user_settings_object=user_settings_object,
                 pronouns_field_type_supported=pronouns_field_type_supported,
+                linkifier_url_template=linkifier_url_template,
             )
         )
 
@@ -305,6 +306,7 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
         # We want even those `send_event` calls which have been hooked to
@@ -335,6 +337,7 @@ class BaseAction(ZulipTestCase):
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            linkifier_url_template=linkifier_url_template,
         )
         post_process_state(self.user_profile, hybrid_state, notification_settings_null)
         after = orjson.dumps(hybrid_state)
@@ -361,6 +364,7 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
         post_process_state(self.user_profile, normal_state, notification_settings_null)
         self.match_states(hybrid_state, normal_state, events)
@@ -2010,14 +2014,13 @@ class NormalActionsTest(BaseAction):
 
     def test_realm_filter_events(self) -> None:
         regex = "#(?P<id>[123])"
-        url = "https://realm.com/my_realm_filter/%(id)s"
+        url = "https://realm.com/my_realm_filter/{id}"
 
         events = self.verify_action(
             lambda: do_add_linkifier(self.user_profile.realm, regex, url, acting_user=None),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
 
         regex = "#(?P<id>[0-9]+)"
         linkifier_id = events[0]["realm_linkifiers"][0]["id"]
@@ -2025,17 +2028,44 @@ class NormalActionsTest(BaseAction):
             lambda: do_update_linkifier(
                 self.user_profile.realm, linkifier_id, regex, url, acting_user=None
             ),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
 
         events = self.verify_action(
             lambda: do_remove_linkifier(self.user_profile.realm, regex, acting_user=None),
-            num_events=2,
+            num_events=1,
         )
         check_realm_linkifiers("events[0]", events[0])
-        check_realm_filters("events[1]", events[1])
+
+        # Redo the checks, but assume that the client does not support URL template.
+        # apply_event should drop the event, and no state change should occur.
+        regex = "#(?P<id>[123])"
+
+        events = self.verify_action(
+            lambda: do_add_linkifier(self.user_profile.realm, regex, url, acting_user=None),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
+
+        regex = "#(?P<id>[0-9]+)"
+        linkifier_id = events[0]["realm_linkifiers"][0]["id"]
+        events = self.verify_action(
+            lambda: do_update_linkifier(
+                self.user_profile.realm, linkifier_id, regex, url, acting_user=None
+            ),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
+
+        events = self.verify_action(
+            lambda: do_remove_linkifier(self.user_profile.realm, regex, acting_user=None),
+            num_events=1,
+            linkifier_url_template=False,
+            state_change_expected=False,
+        )
 
     def test_realm_domain_events(self) -> None:
         events = self.verify_action(

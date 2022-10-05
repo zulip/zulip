@@ -274,7 +274,7 @@ def remove_realm_filters() -> Dict[str, object]:
     filter_id = do_add_linkifier(
         get_realm("zulip"),
         "#(?P<id>[0-9]{2,8})",
-        "https://github.com/zulip/zulip/pull/%(id)s",
+        "https://github.com/zulip/zulip/pull/{id}",
         acting_user=None,
     )
     return {

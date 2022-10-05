@@ -20,6 +20,21 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 7.0
 
+**Feature level 176**
+
+* [`POST /realm/filters`](/api/add-linkifier), [`realm/filters/<int:filter_id>`](/api/update-linkifier):
+  The parameter `url_format_string` is replaced by `url_template`.
+  The linkifiers now accept only [RFC 6570][rfc6570] compliant URL Templates.
+  The old URL format strings are no longer supported.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue):
+  The key `url_format_string` is replaced by `url_template` for the `realm_linkifiers`
+  event type. For backwards-compatibility, clients that do not support the
+  `linkifier_url_template`
+  [client capability](/api/register-queue#parameter-client_capabilities)
+  will get an empty list in the response of `/register` and not receive `realm_linkifiers`
+  events. Unconditionally, the deprecated event type `realm_filters` gives an empty list in the
+  response of `/register` and is no longer sent the clients otherwise.
+
 **Feature level 175**
 
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
@@ -1463,3 +1478,4 @@ No changes; feature level used for Zulip 3.0 release.
 
 [server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
+[rfc6570]: https://www.rfc-editor.org/rfc/rfc6570.html

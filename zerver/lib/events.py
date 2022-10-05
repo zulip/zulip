@@ -70,7 +70,6 @@ from zerver.models import (
     get_realm_domains,
     get_realm_playgrounds,
     linkifiers_for_realm,
-    realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -115,6 +114,7 @@ def fetch_initial_state_data(
     include_streams: bool = True,
     spectator_requested_language: Optional[str] = None,
     pronouns_field_type_supported: bool = True,
+    linkifier_url_template: bool = False,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -385,11 +385,20 @@ def fetch_initial_state_data(
         state["realm_emoji"] = realm.get_emoji()
 
     if want("realm_linkifiers"):
-        state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+        if linkifier_url_template:
+            state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+        else:
+            # When URL template is not supported by the client, return an empty list
+            # because the new format is incompatible with the old URL format strings
+            # and the client would not render it properly.
+            state["realm_linkifiers"] = []
 
     # Backwards compatibility code.
     if want("realm_filters"):
-        state["realm_filters"] = realm_filters_for_realm(realm.id)
+        # Always return an empty list because the new URL template format is incompatible
+        # with the old URL format string, because legacy clients that use the
+        # backwards-compatible `realm_filters` event would not render the it properly.
+        state["realm_filters"] = []
 
     if want("realm_playgrounds"):
         state["realm_playgrounds"] = get_realm_playgrounds(realm)
@@ -648,6 +657,7 @@ def apply_events(
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
+    linkifier_url_template: bool,
 ) -> None:
     for event in events:
         if event["type"] == "restart":
@@ -669,6 +679,7 @@ def apply_events(
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             include_subscribers=include_subscribers,
+            linkifier_url_template=linkifier_url_template,
         )
 
 
@@ -680,6 +691,7 @@ def apply_event(
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
+    linkifier_url_template: bool,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -1266,10 +1278,12 @@ def apply_event(
         state["muted_topics"] = event["muted_topics"]
     elif event["type"] == "muted_users":
         state["muted_users"] = event["muted_users"]
-    elif event["type"] == "realm_filters":
-        state["realm_filters"] = event["realm_filters"]
     elif event["type"] == "realm_linkifiers":
-        state["realm_linkifiers"] = event["realm_linkifiers"]
+        # We only send realm_linkifiers event to clients that indicate
+        # support for linkifiers with URL templates. Otherwise, silently
+        # ignore the event.
+        if linkifier_url_template:
+            state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
@@ -1425,6 +1439,7 @@ def do_events_register(
     )
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
     user_settings_object = client_capabilities.get("user_settings_object", False)
+    linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
 
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
@@ -1445,6 +1460,7 @@ def do_events_register(
             queue_id=None,
             # Force client_gravatar=False for security reasons.
             client_gravatar=client_gravatar,
+            linkifier_url_template=linkifier_url_template,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             # slim_presence is a noop, because presence is not included.
@@ -1479,6 +1495,7 @@ def do_events_register(
             stream_typing_notifications=stream_typing_notifications,
             user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
         if queue_id is None:
@@ -1495,6 +1512,7 @@ def do_events_register(
             include_subscribers=include_subscribers,
             include_streams=include_streams,
             pronouns_field_type_supported=pronouns_field_type_supported,
+            linkifier_url_template=linkifier_url_template,
         )
 
         # Apply events that came in while we were fetching initial data
@@ -1508,6 +1526,7 @@ def do_events_register(
                 client_gravatar=client_gravatar,
                 slim_presence=slim_presence,
                 include_subscribers=include_subscribers,
+                linkifier_url_template=linkifier_url_template,
             )
         except RestartEventError:
             # This represents a rare race condition, where Tornado

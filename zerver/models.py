@@ -1300,10 +1300,7 @@ def filter_format_validator(value: str) -> None:
 
 
 def url_template_validator(value: str) -> None:
-    """Verifies URL-ness, and then validates as a URL template"""
-    # URLValidator is assumed to catch anything which is malformed as a URL
-    URLValidator()(value)
-
+    """Validate as a URL template"""
     if not uri_template.validate(value):
         raise ValidationError(_("Invalid URL template."))
 
@@ -1315,19 +1312,16 @@ class RealmFilter(models.Model):
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
-    url_format_string = models.TextField(
-        validators=[filter_format_validator], null=True, blank=True
-    )
-    url_template = models.TextField(validators=[url_template_validator], null=True)
+    url_template = models.TextField(validators=[url_template_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
 
     def __str__(self) -> str:
-        return f"{self.realm.string_id}: {self.pattern} {self.url_format_string}"
+        return f"{self.realm.string_id}: {self.pattern} {self.url_template}"
 
     def clean(self) -> None:
-        """Validate whether the set of parameters in the URL Format string
+        """Validate whether the set of parameters in the URL template
         match the set of parameters in the regular expression.
 
         Django's `full_clean` calls `clean_fields` followed by `clean` method
@@ -1338,33 +1332,33 @@ class RealmFilter(models.Model):
         pattern = filter_pattern_validator(self.pattern)
         group_set = set(pattern.groupindex.keys())
 
-        # Extract variables used in the URL format string.  Note that
-        # this regex will incorrectly reject patterns that attempt to
-        # escape % using %%.
-        found_group_set: Set[str] = set()
-        group_match_regex = r"(?<!%)%\((?P<group_name>[^()]+)\)s"
-        for m in re.finditer(group_match_regex, self.url_format_string):
-            group_name = m.group("group_name")
-            found_group_set.add(group_name)
+        # Do not continue the check if the url template is invalid to begin with.
+        # The ValidationError for invalid template will only be raised by the validator
+        # set on the url_template field instead of here to avoid duplicates.
+        if not uri_template.validate(self.url_template):
+            return
+
+        # Extract variables used in the URL template.
+        template_variables_set = set(uri_template.URITemplate(self.url_template).variable_names)
 
         # Report patterns missing in linkifier pattern.
-        missing_in_pattern_set = found_group_set - group_set
+        missing_in_pattern_set = template_variables_set - group_set
         if len(missing_in_pattern_set) > 0:
             name = min(missing_in_pattern_set)
             raise ValidationError(
-                _("Group %(name)r in URL format string is not present in linkifier pattern."),
+                _("Group %(name)r in URL template is not present in linkifier pattern."),
                 params={"name": name},
             )
 
-        missing_in_url_set = group_set - found_group_set
-        # Report patterns missing in URL format string.
+        missing_in_url_set = group_set - template_variables_set
+        # Report patterns missing in URL template.
         if len(missing_in_url_set) > 0:
             # We just report the first missing pattern here. Users can
             # incrementally resolve errors if there are multiple
             # missing patterns.
             name = min(missing_in_url_set)
             raise ValidationError(
-                _("Group %(name)r in linkifier pattern is not present in URL format string."),
+                _("Group %(name)r in linkifier pattern is not present in URL template."),
                 params={"name": name},
             )
 
@@ -1387,18 +1381,6 @@ def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
     return per_request_linkifiers_cache[realm_id]
 
 
-def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
-    """
-    Processes data from `linkifiers_for_realm` to return to older clients,
-    which use the `realm_filters` events.
-    """
-    linkifiers = linkifiers_for_realm(realm_id)
-    realm_filters: List[Tuple[str, str, int]] = []
-    for linkifier in linkifiers:
-        realm_filters.append((linkifier["pattern"], linkifier["url_format"], linkifier["id"]))
-    return realm_filters
-
-
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
 def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     linkifiers = []
@@ -1406,7 +1388,7 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
         linkifiers.append(
             LinkifierDict(
                 pattern=linkifier.pattern,
-                url_format=linkifier.url_format_string,
+                url_template=linkifier.url_template,
                 id=linkifier.id,
             )
         )

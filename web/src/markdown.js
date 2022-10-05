@@ -294,19 +294,19 @@ export function get_topic_links({topic, get_linkifier_map}) {
     // The lower the precedence is, the more prioritized the pattern is.
     let precedence = 0;
 
-    for (const [pattern, url] of get_linkifier_map().entries()) {
+    for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
         let match;
         while ((match = pattern.exec(topic)) !== null) {
-            let link_url = url;
             const matched_groups = match.slice(1);
             let i = 0;
+            const template_context = {};
             while (i < matched_groups.length) {
                 const matched_group = matched_groups[i];
                 const current_group = i + 1;
-                const back_ref = "\\" + current_group;
-                link_url = link_url.replace(back_ref, matched_group);
+                template_context[group_number_to_name[current_group]] = matched_group;
                 i += 1;
             }
+            const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
             links.push({url: link_url, text: match[0], index: match.index, precedence});
@@ -410,17 +410,17 @@ function handleEmoji({emoji_name, get_realm_emoji_url, get_emoji_codepoint}) {
 }
 
 function handleLinkifier({pattern, matches, get_linkifier_map}) {
-    let url = get_linkifier_map().get(pattern);
+    const {url_template, group_number_to_name} = get_linkifier_map().get(pattern);
 
     let current_group = 1;
+    const template_context = {};
 
     for (const match of matches) {
-        const back_ref = "\\" + current_group;
-        url = url.replace(back_ref, match);
+        template_context[group_number_to_name[current_group]] = match;
         current_group += 1;
     }
 
-    return url;
+    return url_template.expand(template_context);
 }
 
 function handleTimestamp(time) {

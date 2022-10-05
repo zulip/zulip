@@ -57,7 +57,7 @@ DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
 
 class LinkifierDict(TypedDict):
     pattern: str
-    url_format: str
+    url_template: str
     id: int
 
 

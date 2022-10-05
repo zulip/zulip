@@ -96,6 +96,7 @@ class ClientDescriptor:
         stream_typing_notifications: bool = False,
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
+        linkifier_url_template: bool = False,
     ) -> None:
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
@@ -120,6 +121,7 @@ class ClientDescriptor:
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
+        self.linkifier_url_template = linkifier_url_template
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -148,6 +150,7 @@ class ClientDescriptor:
             stream_typing_notifications=self.stream_typing_notifications,
             user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
+            linkifier_url_template=self.linkifier_url_template,
         )
 
     def __repr__(self) -> str:
@@ -181,6 +184,7 @@ class ClientDescriptor:
             d.get("stream_typing_notifications", False),
             d.get("user_settings_object", False),
             d.get("pronouns_field_type_supported", True),
+            d.get("linkifier_url_template", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
