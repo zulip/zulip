@@ -225,6 +225,12 @@
     }
 }
 
+#select_stream_widget {
+    .dropdown-toggle:disabled {
+        pointer-events: none;
+    }
+}
+
 @keyframes mmfadeIn {
     from {
         opacity: 0;
