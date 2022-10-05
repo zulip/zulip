@@ -26,10 +26,7 @@ async function test_add_linkifier(page: Page): Promise<void> {
         "#(?P<id>[0-9]+)",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
         "https://trac.example.com/ticket/{id}",
     );
 }
@@ -74,10 +71,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
         () => document.querySelector(".linkifier_pattern")?.textContent === "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
         "https://trac.example.com/commit/{num}",
     );
 }
@@ -102,13 +96,13 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         "Failed: Bad regular expression: bad repetition operator: ????",
     );
 
-    const edit_linkifier_format_status_selector = "div#edit-linkifier-format-status";
-    await page.waitForSelector(edit_linkifier_format_status_selector, {visible: true});
-    const edit_linkifier_format_status = await common.get_text_from_selector(
+    const edit_linkifier_template_status_selector = "div#edit-linkifier-template-status";
+    await page.waitForSelector(edit_linkifier_template_status_selector, {visible: true});
+    const edit_linkifier_template_status = await common.get_text_from_selector(
         page,
-        edit_linkifier_format_status_selector,
+        edit_linkifier_template_status_selector,
     );
-    assert.strictEqual(edit_linkifier_format_status, "Failed: Invalid URL template.");
+    assert.strictEqual(edit_linkifier_template_status, "Failed: Invalid URL template.");
 
     await page.click(".dialog_cancel_button");
     await page.waitForSelector("#dialog_widget_modal", {hidden: true});
@@ -119,10 +113,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
         "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(
-            page,
-            ".linkifier_row span.linkifier_url_format_string",
-        ),
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_url_template"),
         "https://trac.example.com/commit/{num}",
     );
 }
