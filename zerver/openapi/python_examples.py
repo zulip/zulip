@@ -430,12 +430,17 @@ def create_realm_profile_field(client: Client) -> None:
 
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
+    # TODO: Switch back to using client.add_realm_filter when python-zulip-api
+    # begins to support url_template.
+
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
     # issue in Zulip's server repo
-    result = client.add_realm_filter(
-        "#(?P<id>[0-9]+)", "https://github.com/zulip/zulip/issues/%(id)s"
-    )
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
+    }
+    result = client.call_endpoint("/realm/filters", method="POST", request=request)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
@@ -448,7 +453,7 @@ def update_realm_filter(client: Client) -> None:
     filter_id = 1
     request = {
         "pattern": "#(?P<id>[0-9]+)",
-        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
     }
 
     result = client.call_endpoint(

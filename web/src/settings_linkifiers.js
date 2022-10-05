@@ -42,7 +42,7 @@ function sort_pattern(a, b) {
 }
 
 function sort_url(a, b) {
-    return compare_values(a.url_format, b.url_format);
+    return compare_values(a.url_template, b.url_template);
 }
 
 function open_linkifier_edit_form(linkifier_id) {
@@ -51,7 +51,7 @@ function open_linkifier_edit_form(linkifier_id) {
     const html_body = render_admin_linkifier_edit_form({
         linkifier_id,
         pattern: linkifier.pattern,
-        url_format_string: linkifier.url_format,
+        url_format_string: linkifier.url_template,
     });
 
     function submit_linkifier_form() {
@@ -118,8 +118,8 @@ function handle_linkifier_api_error(xhr, pattern_status, format_status, linkifie
         xhr.responseText = JSON.stringify({msg: errors.pattern});
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
     }
-    if (errors.url_format_string !== undefined) {
-        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+    if (errors.url_template !== undefined) {
+        xhr.responseText = JSON.stringify({msg: errors.url_template});
         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, format_status);
     }
     if (errors.__all__ !== undefined) {
@@ -140,7 +140,7 @@ export function populate_linkifiers(linkifiers_data) {
             return render_admin_linkifier_list({
                 linkifier: {
                     pattern: linkifier.pattern,
-                    url_format_string: linkifier.url_format,
+                    url_format_string: linkifier.url_template,
                     id: linkifier.id,
                 },
                 can_modify: page_params.is_admin,
@@ -151,7 +151,7 @@ export function populate_linkifiers(linkifiers_data) {
             predicate(item, value) {
                 return (
                     item.pattern.toLowerCase().includes(value) ||
-                    item.url_format.toLowerCase().includes(value)
+                    item.url_template.toLowerCase().includes(value)
                 );
             },
             onupdate() {

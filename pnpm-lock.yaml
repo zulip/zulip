@@ -229,6 +229,9 @@ dependencies:
   url-loader:
     specifier: ^4.1.1
     version: 4.1.1(webpack@5.77.0)
+  url-template:
+    specifier: 2.0.8
+    version: 2.0.8
   webfonts-loader:
     specifier: ^8.0.0
     version: 8.0.1
@@ -11639,6 +11642,10 @@ packages:
       querystringify: 2.2.0
       requires-port: 1.0.0
     dev: true
+
+  /url-template@2.0.8:
+    resolution: {integrity: sha512-XdVKMF4SJ0nP/O7XIPB0JwAEuT9lDIYnNsK8yGVe43y0AWoKeJNdv3ZNWh7ksJ6KqQFjOO6ox/VEitLnaVNufw==}
+    dev: false
 
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}

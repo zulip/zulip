@@ -210,6 +210,7 @@ EXEMPT_FILES = make_set(
         "web/src/unread_ui.js",
         "web/src/upload.js",
         "web/src/upload_widget.ts",
+        "web/src/url-template.d.ts",
         "web/src/user_group_create.js",
         "web/src/user_group_create_members.js",
         "web/src/user_group_create_members_data.js",

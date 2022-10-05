@@ -3096,6 +3096,16 @@ paths:
                                 Processing this event is important to doing Markdown local echo
                                 correctly.
 
+                                The client will not receive this event unless the event queue
+                                is registered with `linkifier_url_template` client capability set to `true`.
+                                See [`POST /register`](/api/register-queue#parameter-client_capabilities)
+                                for how client capabilities can be specified.
+
+                                **Changes**: Changed in Zulip 7.0 (feature level 176). This event no longer
+                                gets sent unless the `linkifier_url_template` client capability is set to
+                                `true`, due to the backwards-incompatible change from specifying the
+                                URL from a `url_format` format string to `url_template`.
+
                                 **Changes**: New in Zulip 4.0 (feature level 54), replacing the
                                 previous `realm_filters` event type, which is still sent for
                                 backwards compatibility reasons.
@@ -3125,11 +3135,14 @@ paths:
                                         description: |
                                           The string regex pattern which represents the pattern that
                                           should be linkified by this linkifier.
-                                      url_format:
+                                      url_template:
                                         type: string
                                         description: |
-                                          The URL format string to be used for linkifying matches.
+                                          The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant
+                                          URL template to be used for linkifying matches.
 
+                                          **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                          which contained a URL format string.
                                       id:
                                         type: integer
                                         description: |
@@ -3141,7 +3154,7 @@ paths:
                                     [
                                       {
                                         "pattern": "#(?P<id>[123])",
-                                        "url_format": "https://realm.com/my_realm_filter/%(id)s",
+                                        "url_template": "https://realm.com/my_realm_filter/{id}",
                                         "id": 1,
                                       },
                                     ],
@@ -3154,6 +3167,9 @@ paths:
                                 Legacy event type. Sent to all users in a Zulip organization
                                 when the set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
+
+                                **Changes**: In Zulip 7.0 (feature level 176), clients will no longer
+                                receive this event.
 
                                 **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
                                 the `realm_linkifiers` event type, which has a clearer name and format,
@@ -3184,14 +3200,7 @@ paths:
                               example:
                                 {
                                   "type": "realm_filters",
-                                  "realm_filters":
-                                    [
-                                      [
-                                        "#(?P<id>[123])",
-                                        "https://realm.com/my_realm_filter/%(id)s",
-                                        1,
-                                      ],
-                                    ],
+                                  "realm_filters": [],
                                   "id": 0,
                                 }
                             - type: object
@@ -9939,10 +9948,14 @@ paths:
                               description: |
                                 The string regex pattern which represents the pattern that
                                 should be linkified by this linkifier.
-                            url_format:
+                            url_template:
                               type: string
                               description: |
-                                The URL format string to be used for linkifying matches.
+                                The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant
+                                URL template to be used for linkifying matches.
+
+                                **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                which contained a URL format string.
                             id:
                               type: integer
                               description: |
@@ -9954,7 +9967,7 @@ paths:
                           [
                             {
                               "pattern": "#(?P<id>[0-9]+)",
-                              "url_format": "https://github.com/zulip/zulip/issues/%(id)s",
+                              "url_template": "https://github.com/zulip/zulip/issues/{id}",
                               "id": 1,
                             },
                           ],
@@ -9971,7 +9984,7 @@ paths:
         appear in messages and topics.
       parameters:
         - $ref: "#/components/parameters/LinkifierPattern"
-        - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkifierURLTemplate"
       responses:
         "200":
           description: Success.
@@ -10032,7 +10045,7 @@ paths:
           example: 2
           required: true
         - $ref: "#/components/parameters/LinkifierPattern"
-        - $ref: "#/components/parameters/LinkifierURLFormatString"
+        - $ref: "#/components/parameters/LinkifierURLTemplate"
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
@@ -10300,6 +10313,15 @@ paths:
               any server version. Clients can then use the `zulip_feature_level` in the
               `/register` response or the presence/absence of a `user_settings` key to
               determine where to look for the data.
+
+            - `linkifier_url_template`: Boolean for whether the client accepts linkifiers
+              that uses [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
+              template for linkifying matches. If false or unset, then the `realm_linkifiers`
+              list in the `/register` response will be empty if present, and no `realm_linkifiers`
+              events will be sent.
+
+              **Changes**: New in Zulip 7.0 (feature level 176). This capability is for
+              backwards-compatibility.
           content:
             application/json:
               schema:
@@ -10654,6 +10676,16 @@ paths:
                           Array of objects where each object describes a single
                           [linkifier](/help/add-a-custom-linkifier).
 
+                          If the client capability `linkifier_url_template` is false or unset, then
+                          the `realm_linkifiers` list in the `/register` response will be empty if
+                          present, and no `realm_linkifiers` events will be sent.
+                          See [`POST /register`](/api/register-queue#parameter-client_capabilities).
+                          for how client capabilities can be specified.
+
+                          **Changes**: In Zulip 7.0 (feature level 176), clients will always receive
+                          an empty list in the response unless they set the `linkifier_url_template`
+                          client capability to `true`.
+
                           **Changes**: New in Zulip 4.0 (feature level 54). Clients can
                           access these data on older server versions via the previous
                           `realm_filters` key.
@@ -10666,10 +10698,14 @@ paths:
                               description: |
                                 The string regex pattern which represents the pattern that
                                 should be linkified on matching.
-                            url_format:
+                            url_template:
                               type: string
                               description: |
-                                The URL with which the pattern matching string should be linkified.
+                                The [RFC 6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL
+                                template with which the pattern matching string should be linkified.
+
+                                **Changes**: New in Zulip 7.0 (feature level 176). This replaced `url_format`,
+                                which contained a URL format string.
                             id:
                               type: integer
                               description: |
@@ -10687,11 +10723,13 @@ paths:
                           Legacy property for linkifiers. Present if `realm_filters` is
                           present in `fetch_event_types`.
 
-                          An array of tuples (fixed-length arrays) where each tuple describes
+                          When present, this is always an empty array.
+
+                          **Changes**: Became empty in Zulip 7.0 (feature level 176). In previous versions,
+                          there is an array of tuples (fixed-length arrays) where each tuple describes
                           a single [linkifier](/help/add-a-custom-linkifier).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
-
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the ID of the realm filter.
@@ -18260,16 +18298,22 @@ components:
         type: string
       example: "#(?P<id>[0-9]+)"
       required: true
-    LinkifierURLFormatString:
-      name: url_format_string
+    LinkifierURLTemplate:
+      name: url_template
       in: query
       description: |
-        The URL used for the link. If you used named groups for the `pattern`,
+        The [RFC
+        6570](https://www.rfc-editor.org/rfc/rfc6570.html) compliant URL template
+        used for the link. If you used named groups for the `pattern`,
         you can insert their content here with
-        `%(name_of_the_capturing_group)s`.
+        `{name_of_the_capturing_group}`.
+
+        **Changes**: New in Zulip 7.0 (feature level 176). This replaced
+        the parameter `url_format_string`, which was a format string in which
+        named groups' content could be inserted with `%(name_of_the_capturing_group)s`.
       schema:
         type: string
-      example: https://github.com/zulip/zulip/issues/%(id)s
+      example: https://github.com/zulip/zulip/issues/{id}
       required: true
     DirectMemberOnly:
       name: direct_member_only

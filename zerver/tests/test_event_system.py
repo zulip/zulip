@@ -744,6 +744,35 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
+    def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+        }
+        post_result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(post_result)
+
+        result = fetch_initial_state_data(
+            user_profile=user,
+            linkifier_url_template=True,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"][0]["pattern"], "#(?P<id>[123])")
+        self.assertEqual(
+            result["realm_linkifiers"][0]["url_template"],
+            "https://realm.com/my_realm_filter/{id}",
+        )
+
+        # The default behavior should be `linkifier_url_template=False`
+        result = fetch_initial_state_data(
+            user_profile=user,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"], [])
+
     def test_pronouns_field_type_support(self) -> None:
         hamlet = self.example_user("hamlet")
         result = fetch_initial_state_data(
@@ -1211,7 +1240,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         flush_per_request_caches()
-        with self.assert_database_query_count(38):
+        with self.assert_database_query_count(37):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1232,8 +1261,8 @@ class FetchQueriesTest(ZulipTestCase):
             realm_embedded_bots=0,
             realm_incoming_webhook_bots=0,
             realm_emoji=1,
-            realm_filters=1,
-            realm_linkifiers=1,
+            realm_filters=0,
+            realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=3,

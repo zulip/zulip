@@ -505,7 +505,7 @@ exports.fixtures = {
         realm_linkifiers: [
             {
                 pattern: "#[123]",
-                url_format: "ticket %(id)s",
+                url_template: "ticket {id}",
                 id: 55,
             },
         ],

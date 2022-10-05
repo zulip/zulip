@@ -61,6 +61,7 @@ def events_register_backend(
                 ("user_avatar_url_field_optional", check_bool),
                 ("stream_typing_notifications", check_bool),
                 ("user_settings_object", check_bool),
+                ("linkifier_url_template", check_bool),
             ],
             value_validator=check_bool,
         ),
