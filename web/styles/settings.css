@@ -246,7 +246,7 @@ h3,
 
 #linkifier-settings {
     #linkifier_pattern,
-    #linkifier_format_string {
+    #linkifier_template {
         width: calc(100% - 10em - 6em);
     }
 }
@@ -726,7 +726,7 @@ input[type="checkbox"] {
 }
 
 #admin-linkifier-pattern-status,
-#admin-linkifier-format-status {
+#admin-linkifier-template-status {
     margin: 20px 0 0;
 }
 
@@ -1899,7 +1899,7 @@ $option_title_width: 180px;
 
 #edit-linkifier-form {
     #edit-linkifier-pattern,
-    #edit-linkifier-url-format-string {
+    #edit-linkifier-url-template {
         width: 400px;
     }
 
@@ -1908,7 +1908,7 @@ $option_title_width: 180px;
     }
 
     #edit-linkifier-pattern-status,
-    #edit-linkifier-format-status {
+    #edit-linkifier-template-status {
         margin-top: 10px;
     }
 
