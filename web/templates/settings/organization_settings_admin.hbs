@@ -101,16 +101,11 @@
                 {{> settings_save_discard_widget section_name="other-settings" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label for="realm_video_chat_provider" class="dropdown-title">
-                        {{t 'Video call provider' }}
-                    </label>
-                    <select name="realm_video_chat_provider" class ="setting-widget prop-element settings_select bootstrap-focus-style" id="id_realm_video_chat_provider" data-setting-widget-type="number">
-                        {{#each realm_available_video_chat_providers}}
-                            <option value='{{this.id}}'>{{this.name}}</option>
-                        {{/each}}
-                    </select>
+                <p>{{t "Video call provider"}}</p>
+                <div id="id_realm_video_chat_provider" class="input-group">
+                    {{! Empty div is intentional, it will get populated by a dedicated template }}
                 </div>
+
                 <div class="input-group">
                     <label for="realm_giphy_rating" class="dropdown-title">
                         {{t 'GIPHY integration' }}
@@ -122,7 +117,6 @@
                         {{/each}}
                     </select>
                 </div>
-
 
                 {{> dropdown_list_widget
                   widget_name="realm_default_code_block_language"
