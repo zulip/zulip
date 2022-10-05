@@ -258,6 +258,7 @@ test_ui("actions_popover", ({override, mock_template}) => {
         };
     };
 
+    mock_template("actions_popover_template.hbs", false, () => "actions-template");
     mock_template("actions_popover_content.hbs", false, (opts) => {
         // TODO: Test all the properties of the popover
         assert.equal(
