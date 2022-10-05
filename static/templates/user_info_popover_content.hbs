@@ -136,7 +136,7 @@
         {{#if can_send_private_message}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
-                    <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                    <i class="fa fa-comment" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
         {{/if}}
@@ -167,7 +167,7 @@
         <hr />
         <li>
             <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
-                <i class="fa fa-lock" aria-hidden="true"></i>
+                <i class="fa fa-envelope" aria-hidden="true"></i>
                 {{#if is_me}}
                     {{#tr}}View private messages to myself{{/tr}}
                 {{else}}
