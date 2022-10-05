@@ -402,6 +402,14 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
     let modal_heading = $t_html({defaultMessage: "Move topic"});
     if (message !== undefined) {
         modal_heading = $t_html({defaultMessage: "Move messages"});
+        // We disable topic input only for modal is opened from the message actions
+        // popover and not when moving the whole topic from left sidebar. This is
+        // because topic editing permission depend on message and we do not have
+        // any message object when opening the modal and the first message of
+        // topic is fetched from the server after clicking submit.
+        // Though, this will be changed soon as we are going to make topic
+        // edit permission independent of message.
+        args.disable_topic_input = !message_edit.is_topic_editable(message);
     }
 
     function get_params_from_form() {
@@ -418,9 +426,13 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
         // Unlike most topic comparisons in Zulip, we intentionally do
         // a case-sensitive comparison, since adjusting the
         // capitalization of a topic is a valid operation.
+        // new_topic_name can be undefined when the new topic input is
+        // disabled in case when user does not have permission to edit
+        // topic and thus submit button is disabled if stream is also
+        // not changed.
         $("#move_topic_modal .dialog_submit_button")[0].disabled =
             Number.parseInt(current_stream_id, 10) === Number.parseInt(select_stream_id, 10) &&
-            new_topic_name.trim() === old_topic_name.trim();
+            (new_topic_name === undefined || new_topic_name.trim() === old_topic_name.trim());
     }
 
     function move_topic() {
@@ -435,12 +447,16 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
             send_notification_to_new_thread,
             send_notification_to_old_thread,
         } = params;
-        new_topic_name = new_topic_name.trim();
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
         current_stream_id = Number.parseInt(current_stream_id, 10);
 
-        if (old_topic_name.trim() === new_topic_name.trim()) {
+        if (new_topic_name !== undefined) {
+            // new_topic_name can be undefined when the new topic input is disabled when
+            // user does not have permission to edit topic.
+            new_topic_name = new_topic_name.trim();
+        }
+        if (old_topic_name.trim() === new_topic_name) {
             // We use `undefined` to tell the server that
             // there has been no change in the topic name.
             new_topic_name = undefined;
@@ -535,6 +551,10 @@ export function build_move_topic_to_stream_popover(current_stream_id, topic_name
 
         stream_widget.setup();
 
+        $("#select_stream_widget .dropdown-toggle").prop(
+            "disabled",
+            !settings_data.user_can_move_messages_between_streams(),
+        );
         update_submit_button_disabled_state(stream_widget.value());
         $("#move_topic_modal .inline_topic_edit").on("input", () => {
             update_submit_button_disabled_state(stream_widget.value());
