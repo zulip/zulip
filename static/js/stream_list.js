@@ -753,8 +753,8 @@ export function scroll_stream_into_view($stream_li) {
         blueslip.error("Invalid stream_li was passed in");
         return;
     }
-
-    scroll_util.scroll_element_into_container($stream_li, $container);
+    const stream_header_height = $("#streams_header").outerHeight();
+    scroll_util.scroll_element_into_container($stream_li, $container, stream_header_height);
 }
 
 export function maybe_scroll_narrow_into_view() {

@@ -409,6 +409,7 @@ test_ui("narrowing", ({mock_template}) => {
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
+    $("#streams_header").outerHeight = () => 0;
 
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
@@ -700,6 +701,7 @@ test_ui("refresh_pin", ({override, override_rewire, mock_template}) => {
 
     override_rewire(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
+    $("#streams_header").outerHeight = () => 0;
 
     let scrolled;
     override(scroll_util, "scroll_element_into_container", ($li) => {
