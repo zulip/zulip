@@ -5,6 +5,7 @@ import $ from "jquery";
 import tippy, {hideAll} from "tippy.js";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_actions_popover_template from "../templates/actions_popover_template.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
 import render_playground_links_popover_content from "../templates/playground_links_popover_content.hbs";
 import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
@@ -20,6 +21,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
+import {media_breakpoints_num} from "./css_variables";
 import * as dialog_widget from "./dialog_widget";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
@@ -558,11 +560,18 @@ export function toggle_actions_popover(element, id) {
             placement: message_viewport.height() - ypos < 220 ? "top" : "bottom",
             title: "",
             content: render_actions_popover_content(args),
+            template: render_actions_popover_template(),
             html: true,
             trigger: "manual",
         });
         $elt.popover("show");
         $current_actions_popover_elem = $elt;
+    }
+
+    if (window.innerWidth < media_breakpoints_num.xl) {
+        // This ensures that the popover doesn't overflow to the right of the window.
+        const actions_popover_left = window.innerWidth - $(".actions_popover_wrapper").outerWidth();
+        $(".actions_popover_wrapper").css("left", actions_popover_left);
     }
 }
 
