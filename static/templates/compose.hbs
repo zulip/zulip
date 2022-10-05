@@ -143,4 +143,9 @@
     </div>
 </div>
 
-<template id="add-global-time-tooltip">{{#tr}}Add global time<br />Everyone sees global times in their own time zone.{{/tr}}</template>
+<template id="add-global-time-tooltip">
+    <div>
+        <span>{{#tr}}Add global time{{/tr}}</span><br/>
+        <span class="tooltip-inner-content italic">{{#tr}}Everyone sees global times in their own time zone.{{/tr}}</span>
+    </div>
+</template>

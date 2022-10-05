@@ -23,6 +23,10 @@
             color: hsla(0, 0%, 100%, 1);
         }
 
+        .tooltip-inner-content {
+            line-height: 17px;
+        }
+
         &[data-placement^="top"] > .tippy-arrow::before {
             border-top-color: hsla(0, 0%, 20%, 1);
         }
