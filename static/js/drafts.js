@@ -476,7 +476,7 @@ function show_scheduled_messages() {
                     content: `<p>${message.content}</p>`,
                     stream_color: stream_color,
                     dark_background: dark_background,
-                    recipients: recipients.full_name
+                    // recipients: recipients.full_name
                 })
                 // console.log('template: ', message_template)
         
