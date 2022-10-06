@@ -381,6 +381,21 @@ types might be appropriate. (But don’t use `Iterable` for a value
 that might be iterated multiple times, since a one-use iterator is
 `Iterable` too.)
 
+For example, if a function gets called with either a `list` or a `QuerySet`,
+and it only iterates the object once, the parameter can be typed as `Iterable`.
+
+```python
+def f(items: Iterable[Realm]) -> None:
+    for item in items:
+        ...
+
+realms_list: List[Realm] = [zulip, analytics]
+realms_queryset: QuerySet[Realm] = Realm.objects.all()
+
+f(realms_list)      # OK
+f(realms_queryset)  # Also OK
+```
+
 A function's return type can be mutable if the return value is always
 a freshly created collection, since the caller ends up with the only
 reference to the value and can freely mutate it without risk of
