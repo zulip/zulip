@@ -1979,8 +1979,9 @@ class StripeTest(StripeTestCase):
             invoice: bool,
             licenses: Optional[int],
             min_licenses_in_response: int,
-            upgrade_params: Dict[str, Any] = {},
+            upgrade_params: Mapping[str, Any] = {},
         ) -> None:
+            upgrade_params = dict(upgrade_params)
             if licenses is None:
                 del_args = ["licenses"]
             else:
@@ -2006,8 +2007,9 @@ class StripeTest(StripeTestCase):
             )
 
         def check_success(
-            invoice: bool, licenses: Optional[int], upgrade_params: Dict[str, Any] = {}
+            invoice: bool, licenses: Optional[int], upgrade_params: Mapping[str, Any] = {}
         ) -> None:
+            upgrade_params = dict(upgrade_params)
             if licenses is None:
                 del_args = ["licenses"]
             else:

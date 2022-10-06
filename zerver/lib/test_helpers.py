@@ -14,6 +14,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
     TypeVar,
@@ -305,7 +306,7 @@ class HostRequestMock(HttpRequest):
 
     def __init__(
         self,
-        post_data: Dict[str, Any] = {},
+        post_data: Mapping[str, Any] = {},
         user_profile: Union[UserProfile, None] = None,
         remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,

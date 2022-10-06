@@ -253,7 +253,7 @@ Output:
         url: str,
         method: str,
         result: "TestHttpResponse",
-        data: Union[str, bytes, Dict[str, Any]],
+        data: Union[str, bytes, Mapping[str, Any]],
         extra: Dict[str, str],
         intentionally_undocumented: bool = False,
     ) -> None:
@@ -296,7 +296,7 @@ Output:
     def client_patch(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -325,7 +325,7 @@ Output:
     def client_patch_multipart(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -340,7 +340,7 @@ Output:
         with the Django test client, it deals with MULTIPART_CONTENT
         automatically, but not patch.)
         """
-        encoded = encode_multipart(BOUNDARY, info)
+        encoded = encode_multipart(BOUNDARY, dict(info))
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.patch(
@@ -359,7 +359,7 @@ Output:
     def json_patch(
         self,
         url: str,
-        payload: Dict[str, Any] = {},
+        payload: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -376,7 +376,7 @@ Output:
     def client_put(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -391,7 +391,7 @@ Output:
     def json_put(
         self,
         url: str,
-        payload: Dict[str, Any] = {},
+        payload: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -408,7 +408,7 @@ Output:
     def client_delete(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -434,7 +434,7 @@ Output:
     def client_options(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -442,13 +442,13 @@ Output:
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.options(url, info, follow=follow, secure=secure, **extra)
+        return django_client.options(url, dict(info), follow=follow, secure=secure, **extra)
 
     @instrument_url
     def client_head(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -500,7 +500,7 @@ Output:
     def client_get(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -858,7 +858,7 @@ Output:
         return "Basic " + base64.b64encode(credentials.encode()).decode()
 
     def uuid_get(
-        self, identifier: str, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, identifier: str, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
         return self.client_get(
@@ -890,7 +890,7 @@ Output:
         )
 
     def api_get(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_get(
@@ -923,7 +923,7 @@ Output:
         )
 
     def api_patch(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_patch(
@@ -937,7 +937,7 @@ Output:
         )
 
     def api_delete(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **extra: str
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **extra: str
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_delete(
@@ -1247,7 +1247,7 @@ Output:
         self,
         user: UserProfile,
         streams: Iterable[str],
-        extra_post_data: Dict[str, Any] = {},
+        extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,

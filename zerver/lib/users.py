@@ -1,7 +1,7 @@
 import re
 import unicodedata
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Sequence, TypedDict
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, TypedDict
 
 import dateutil.parser as date_parser
 from django.conf import settings
@@ -79,7 +79,9 @@ def check_short_name(short_name_raw: str) -> str:
     return short_name
 
 
-def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[str, str]) -> None:
+def check_valid_bot_config(
+    bot_type: int, service_name: str, config_data: Mapping[str, str]
+) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
         from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 

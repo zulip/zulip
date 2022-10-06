@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 import copy
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -1365,7 +1365,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Dict[str, bool] = {},
+    client_capabilities: Mapping[str, bool] = {},
     narrow: Collection[Sequence[str]] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
