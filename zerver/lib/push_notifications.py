@@ -6,7 +6,7 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
 
 import gcm
 import lxml.html
@@ -149,7 +149,7 @@ def apns_enabled() -> bool:
     return settings.APNS_CERT_FILE is not None
 
 
-def modernize_apns_payload(data: Dict[str, Any]) -> Dict[str, Any]:
+def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
     """Take a payload in an unknown Zulip version's format, and return in current format."""
     # TODO this isn't super robust as is -- if a buggy remote server
     # sends a malformed payload, we are likely to raise an exception.
@@ -182,7 +182,7 @@ APNS_MAX_RETRIES = 3
 def send_apple_push_notification(
     user_identity: UserPushIndentityCompat,
     devices: Sequence[DeviceToken],
-    payload_data: Dict[str, Any],
+    payload_data: Mapping[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
 ) -> None:
     if not devices:
@@ -221,7 +221,7 @@ def send_apple_push_notification(
             user_identity,
             len(devices),
         )
-    payload_data = modernize_apns_payload(payload_data).copy()
+    payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
     for device in devices:
         # TODO obviously this should be made to actually use the async

@@ -254,7 +254,7 @@ Output:
         url: str,
         method: str,
         result: HttpResponse,
-        data: Union[str, bytes, Dict[str, Any]],
+        data: Union[str, bytes, Mapping[str, Any]],
         kwargs: Dict[str, ClientArg],
         intentionally_undocumented: bool = False,
     ) -> None:
@@ -298,7 +298,7 @@ Output:
     def client_patch(
         self,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         intentionally_undocumented: bool = False,
         **kwargs: ClientArg,
     ) -> HttpResponse:
@@ -321,7 +321,7 @@ Output:
 
     @instrument_url
     def client_patch_multipart(
-        self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         """
         Use this for patch requests that have file uploads or
@@ -331,7 +331,7 @@ Output:
         with the Django test client, it deals with MULTIPART_CONTENT
         automatically, but not patch.)
         """
-        encoded = encode_multipart(BOUNDARY, info)
+        encoded = encode_multipart(BOUNDARY, dict(info))
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         result = django_client.patch(url, encoded, content_type=MULTIPART_CONTENT, **kwargs)
@@ -339,7 +339,7 @@ Output:
         return result
 
     def json_patch(
-        self, url: str, payload: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, url: str, payload: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         data = orjson.dumps(payload)
         django_client = self.client  # see WRAPPER_COMMENT
@@ -347,13 +347,17 @@ Output:
         return django_client.patch(url, data=data, content_type="application/json", **kwargs)
 
     @instrument_url
-    def client_put(self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg) -> HttpResponse:
+    def client_put(
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
+    ) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
         return django_client.put(url, encoded, **kwargs)
 
-    def json_put(self, url: str, payload: Dict[str, Any] = {}, **kwargs: ClientArg) -> HttpResponse:
+    def json_put(
+        self, url: str, payload: Mapping[str, Any] = {}, **kwargs: ClientArg
+    ) -> HttpResponse:
         data = orjson.dumps(payload)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -361,7 +365,7 @@ Output:
 
     @instrument_url
     def client_delete(
-        self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
@@ -372,7 +376,7 @@ Output:
 
     @instrument_url
     def client_options(
-        self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
@@ -380,7 +384,9 @@ Output:
         return django_client.options(url, encoded, **kwargs)
 
     @instrument_url
-    def client_head(self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg) -> HttpResponse:
+    def client_head(
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
+    ) -> HttpResponse:
         encoded = urllib.parse.urlencode(info)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(kwargs)
@@ -418,7 +424,9 @@ Output:
         return match.func(req)
 
     @instrument_url
-    def client_get(self, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg) -> HttpResponse:
+    def client_get(
+        self, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
+    ) -> HttpResponse:
         intentionally_undocumented = kwargs.pop("intentionally_undocumented", False)
         assert isinstance(intentionally_undocumented, bool)
         django_client = self.client  # see WRAPPER_COMMENT
@@ -754,7 +762,7 @@ Output:
         return "Basic " + base64.b64encode(credentials.encode()).decode()
 
     def uuid_get(
-        self, identifier: str, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, identifier: str, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
         return self.client_get(url, info, **kwargs)
@@ -770,7 +778,7 @@ Output:
         return self.client_post(url, info, **kwargs)
 
     def api_get(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_get(url, info, **kwargs)
@@ -789,7 +797,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Dict[str, Any] = {},
+        info: Mapping[str, Any] = {},
         intentionally_undocumented: bool = False,
         **kwargs: ClientArg,
     ) -> HttpResponse:
@@ -799,7 +807,7 @@ Output:
         )
 
     def api_delete(
-        self, user: UserProfile, url: str, info: Dict[str, Any] = {}, **kwargs: ClientArg
+        self, user: UserProfile, url: str, info: Mapping[str, Any] = {}, **kwargs: ClientArg
     ) -> HttpResponse:
         kwargs["HTTP_AUTHORIZATION"] = self.encode_user(user)
         return self.client_delete(url, info, **kwargs)
@@ -1087,7 +1095,7 @@ Output:
         self,
         user: UserProfile,
         streams: Iterable[str],
-        extra_post_data: Dict[str, Any] = {},
+        extra_post_data: Mapping[str, Any] = {},
         invite_only: bool = False,
         is_web_public: bool = False,
         allow_fail: bool = False,
