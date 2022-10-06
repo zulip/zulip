@@ -58,7 +58,7 @@ def is_root_domain_available() -> bool:
     return not Realm.objects.filter(string_id=Realm.SUBDOMAIN_FOR_ROOT_DOMAIN).exists()
 
 
-def is_static_or_current_realm_url(url: str, realm: Realm) -> bool:
+def is_static_or_current_realm_url(url: str, realm: Optional[Realm]) -> bool:
     split_url = urllib.parse.urlsplit(url)
     split_static_url = urllib.parse.urlsplit(settings.STATIC_URL)
 
@@ -70,7 +70,11 @@ def is_static_or_current_realm_url(url: str, realm: Realm) -> bool:
     # HTTPS access to this Zulip organization's domain; our existing
     # HTTPS protects this request, and there's no privacy benefit to
     # using camo in front of the Zulip server itself.
-    if split_url.netloc == realm.host and f"{split_url.scheme}://" == settings.EXTERNAL_URI_SCHEME:
+    if (
+        realm is not None
+        and split_url.netloc == realm.host
+        and f"{split_url.scheme}://" == settings.EXTERNAL_URI_SCHEME
+    ):
         return True
 
     # Relative URLs will be processed by the browser the same way as the above.
