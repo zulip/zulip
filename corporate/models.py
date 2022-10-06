@@ -345,7 +345,6 @@ class LicenseLedger(models.Model):
 
 
 class ZulipSponsorshipRequest(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     requested_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
 
