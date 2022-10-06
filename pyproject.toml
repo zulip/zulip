@@ -76,7 +76,6 @@ module = [
     "ldap.*",
     "moto.*", # https://github.com/spulec/moto/issues/4944
     "onelogin.*",
-    "openapi_core.*",
     "premailer.*",
     "pyinotify.*",
     "pyoembed.*",

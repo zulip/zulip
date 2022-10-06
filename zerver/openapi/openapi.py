@@ -12,11 +12,11 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
 import orjson
 from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
-from openapi_core import create_spec
+from openapi_core import Spec
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaValue
-from openapi_core.validation.request.validators import RequestValidator
-from openapi_core.validation.response.validators import ResponseValidator
+from openapi_core.validation.request import openapi_request_validator
+from openapi_core.validation.response import openapi_response_validator
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -79,8 +79,7 @@ class OpenAPISpec:
         self.mtime: Optional[float] = None
         self._openapi: Dict[str, Any] = {}
         self._endpoints_dict: Dict[str, str] = {}
-        self._request_validator: Optional[RequestValidator] = None
-        self._response_validator: Optional[ResponseValidator] = None
+        self._spec: Optional[Spec] = None
 
     def check_reload(self) -> None:
         # Because importing yaml takes significant time, and we only
@@ -105,9 +104,8 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = create_spec(openapi)
-        self._request_validator = RequestValidator(spec)
-        self._response_validator = ResponseValidator(spec)
+        spec = Spec.create(openapi)
+        self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
         self.mtime = mtime
@@ -165,23 +163,14 @@ class OpenAPISpec:
         assert len(self._endpoints_dict) > 0
         return self._endpoints_dict
 
-    def request_validator(self) -> RequestValidator:
+    def spec(self) -> Spec:
         """Reload the OpenAPI file if it has been modified after the last time
         it was read, and then return the openapi_core validator object. Similar
         to preceding functions. Used for proper access to OpenAPI objects.
         """
         self.check_reload()
-        assert self._request_validator is not None
-        return self._request_validator
-
-    def response_validator(self) -> RequestValidator:
-        """Reload the OpenAPI file if it has been modified after the last time
-        it was read, and then return the openapi_core validator object. Similar
-        to preceding functions. Used for proper access to OpenAPI objects.
-        """
-        self.check_reload()
-        assert self._response_validator is not None
-        return self._response_validator
+        assert self._spec is not None
+        return self._spec
 
 
 class SchemaError(Exception):
@@ -443,16 +432,17 @@ def validate_against_openapi_schema(
     mock_request = MockRequest("http://localhost:9991/", method, "/api/v1" + path)
     mock_response = MockResponse(
         # TODO: Use original response content instead of re-serializing it.
-        orjson.dumps(content),
-        status_code=status_code,
+        orjson.dumps(content).decode(),
+        status_code=int(status_code),
     )
-    result = openapi_spec.response_validator().validate(mock_request, mock_response)
+    result = openapi_response_validator.validate(openapi_spec.spec(), mock_request, mock_response)
     try:
         result.raise_for_errors()
     except InvalidSchemaValue as isv:
-        message = f"{len(isv.schema_errors)} response validation error(s) at {method} /api/v1{path} ({status_code}):"
-        for error in isv.schema_errors:
-            if display_brief_error:
+        schema_errors = list(isv.schema_errors)
+        message = f"{len(schema_errors)} response validation error(s) at {method} /api/v1{path} ({status_code}):"
+        for error in schema_errors:
+            if display_brief_error and isinstance(error, JsonSchemaValidationError):
                 # display_brief_error is designed to avoid printing 1000 lines
                 # of output when the schema to validate is extremely large
                 # (E.g. the several dozen format variants for individual
@@ -557,22 +547,24 @@ def validate_request(
 
     # Now using the openapi_core APIs, validate the request schema
     # against the OpenAPI documentation.
+    assert isinstance(data, dict)
     mock_request = MockRequest(
         "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
     )
-    result = openapi_spec.request_validator().validate(mock_request)
-    if len(result.errors) != 0:
-        # Requests that do not validate against the OpenAPI spec must either:
-        # * Have returned a 400 (bad request) error
-        # * Have returned a 200 (success) with this request marked as intentionally
-        # undocumented behavior.
-        if status_code.startswith("4"):
-            return
-        if status_code.startswith("2") and intentionally_undocumented:
-            return
+    result = openapi_request_validator.validate(openapi_spec.spec(), mock_request)
+    errors = list(result.errors)
 
     # If no errors are raised, then validation is successful
-    if len(result.errors) == 0:
+    if not errors:
+        return
+
+    # Requests that do not validate against the OpenAPI spec must either:
+    # * Have returned a 400 (bad request) error
+    # * Have returned a 200 (success) with this request marked as intentionally
+    # undocumented behavior.
+    if status_code.startswith("4"):
+        return
+    if status_code.startswith("2") and intentionally_undocumented:
         return
 
     # Show a block error message explaining the options for fixing it.
@@ -590,6 +582,6 @@ with the parameters passed in this HTTP request.  Consider:
 See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
 
 The errors logged by the OpenAPI validator are below:\n"""
-    for error in result.errors:
+    for error in errors:
         msg += f"* {str(error)}\n"
     raise SchemaError(msg)
