@@ -2103,7 +2103,7 @@ DEFAULT_MARKDOWN_KEY = -1
 ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
 
-class Markdown(markdown.Markdown):
+class ZulipMarkdown(markdown.Markdown):
     zulip_message: Optional[Message]
     zulip_realm: Optional[Realm]
     zulip_db_data: Optional[DbData]
@@ -2322,7 +2322,7 @@ class Markdown(markdown.Markdown):
             )
 
 
-md_engines: Dict[Tuple[int, bool], Markdown] = {}
+md_engines: Dict[Tuple[int, bool], ZulipMarkdown] = {}
 linkifier_data: Dict[int, List[LinkifierDict]] = {}
 
 
@@ -2332,7 +2332,7 @@ def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
         del md_engines[md_engine_key]
 
     linkifiers = linkifier_data[linkifiers_key]
-    md_engines[md_engine_key] = Markdown(
+    md_engines[md_engine_key] = ZulipMarkdown(
         linkifiers=linkifiers,
         linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
