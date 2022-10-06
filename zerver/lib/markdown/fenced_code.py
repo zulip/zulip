@@ -415,16 +415,16 @@ class FencedBlockPreprocessor(Preprocessor):
     def run(self, lines: Iterable[str]) -> List[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
 
+        from zerver.lib.markdown import ZulipMarkdown
+
         output: List[str] = []
 
         processor = self
         self.handlers: List[ZulipBaseHandler] = []
 
         default_language = None
-        try:
+        if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:
             default_language = self.md.zulip_realm.default_code_block_language
-        except AttributeError:
-            pass
         handler = OuterHandler(processor, output, self.run_content_validators, default_language)
         self.push(handler)
 
