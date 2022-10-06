@@ -43,7 +43,6 @@
     justify-content: flex-end;
     align-items: center;
     padding: 20px 24px;
-    border-top: 1px solid hsla(0, 0%, 100%, 0.2);
 }
 
 .modal__title {
@@ -72,7 +71,6 @@
 }
 
 .modal__content {
-    display: flex;
     font-size: 1rem;
     overflow-y: auto;
     padding: 0 24px;
