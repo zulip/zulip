@@ -1,4 +1,4 @@
-import Uppy from "@uppy/core";
+import {Uppy} from "@uppy/core";
 import ProgressBar from "@uppy/progress-bar";
 import XHRUpload from "@uppy/xhr-upload";
 import $ from "jquery";
