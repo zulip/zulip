@@ -3,7 +3,6 @@ import "css.escape";
 import path from "path";
 
 import ErrorStackParser from "error-stack-parser";
-import fetch from "node-fetch";
 import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
 import puppeteer from "puppeteer";
 import StackFrame from "stackframe";
