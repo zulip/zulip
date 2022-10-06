@@ -2107,7 +2107,7 @@ class Markdown(markdown.Markdown):
     zulip_message: Optional[Message]
     zulip_realm: Optional[Realm]
     zulip_db_data: Optional[DbData]
-    zulip_rendering_result: Optional[MessageRenderingResult]
+    zulip_rendering_result: MessageRenderingResult
     image_preview_enabled: bool
     url_embed_preview_enabled: bool
     url_embed_data: Optional[Dict[str, Optional[UrlEmbedData]]]
