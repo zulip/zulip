@@ -10,8 +10,14 @@ import {page_params} from "../page_params";
 Plotly.register([PlotlyBar, PlotlyPie]);
 
 const font_14pt = {
-    family: "Source Sans 3",
+    family: "Open Sans, sans-serif",
     size: 14,
+    color: "#000000",
+};
+
+const font_12pt = {
+    family: "Open Sans, sans-serif",
+    size: 12,
     color: "#000000",
 };
 
@@ -219,6 +225,7 @@ function populate_messages_sent_over_time(data) {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
@@ -227,7 +234,7 @@ function populate_messages_sent_over_time(data) {
             orientation: "h",
             font: font_14pt,
         },
-        font: font_14pt,
+        font: font_12pt,
     };
 
     function make_rangeselector(x, y, button1, button2) {
@@ -553,7 +560,6 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: {color: "#537c5e"},
-                font: {family: "Source Sans 3", size: 18, color: "#000000"},
             },
             trace_annotations: {
                 x: annotations.values,
@@ -645,7 +651,10 @@ function populate_messages_sent_by_message_type(data) {
         margin: {l: 90, r: 0, b: 0, t: 0},
         width: 750,
         height: 300,
-        font: font_14pt,
+        legend: {
+            font: font_14pt,
+        },
+        font: font_12pt,
     };
 
     function make_plot_data(time_series_data, num_steps) {
@@ -782,9 +791,10 @@ function populate_number_of_users(data) {
                     {step: "all", label: $t({defaultMessage: "All time"})},
                 ],
             },
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
-        font: font_14pt,
+        font: font_12pt,
     };
 
     const end_dates = data.end_times.map((timestamp) => new Date(timestamp * 1000));
@@ -900,6 +910,7 @@ function populate_messages_read_over_time(data) {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
             type: "date",
+            tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
         legend: {
@@ -908,7 +919,7 @@ function populate_messages_read_over_time(data) {
             orientation: "h",
             font: font_14pt,
         },
-        font: font_14pt,
+        font: font_12pt,
     };
 
     function make_rangeselector(x, y, button1, button2) {
