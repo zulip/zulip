@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-from zerver.models import filter_format_validator, url_template_validator
+from zerver.models import url_template_validator
 
 
 class Migration(migrations.Migration):
@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="realmfilter",
             name="url_format_string",
-            field=models.TextField(validators=[filter_format_validator], null=True, blank=True),
+            field=models.TextField(null=True, blank=True),
         ),
     ]
