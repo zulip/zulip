@@ -4,11 +4,11 @@ set -eu
 
 ARCH=$(uname -m)
 
-AWS_CLI_VERSION="2.4.26"
+AWS_CLI_VERSION="2.8.1"
 if [ "$ARCH" == "x86_64" ]; then
-    AWS_CLI_SHA="20d0f048b32782c67fcb1495928deec5aa4e4e93cb67778a0f5a4f14de0c4b8d"
+    AWS_CLI_SHA="8253e0567ff15d8cc3dc24d9dcbc41753a59662a006849e3b584a73a48f23b0d"
 elif [ "$ARCH" == "aarch64" ]; then
-    AWS_CLI_SHA="c7e5b9a4893aa51a51af7ff95db0a41d695f90509b13787935d6ff9a5b60e2a5"
+    AWS_CLI_SHA="56f22efb25c8b5648d9616e4b89b5a0c12b13037520b870017dce5622ff10e77"
 else
     echo "Unsupported architecture: $ARCH"
     exit 1
