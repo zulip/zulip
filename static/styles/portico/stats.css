@@ -3,10 +3,6 @@ body {
     background-color: hsl(0, 0%, 98%);
 }
 
-hr {
-    border-width: 2px;
-}
-
 p {
     margin-bottom: 0;
 }
@@ -70,10 +66,6 @@ p {
     &:not(.pie-chart) .number-stat {
         position: relative;
         top: -30px;
-    }
-
-    &.pie-chart hr {
-        margin-bottom: 8px;
     }
 
     .button-container {
