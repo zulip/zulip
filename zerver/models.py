@@ -1,5 +1,4 @@
 import datetime
-import re
 import secrets
 import time
 from contextlib import suppress
@@ -1264,39 +1263,6 @@ def filter_pattern_validator(value: str) -> Pattern[str]:
         raise ValidationError(_("Unknown regular expression error"))  # nocoverage
 
     return regex
-
-
-def filter_format_validator(value: str) -> None:
-    """Verifies URL-ness, and then %(foo)s.
-
-    URLValidator is assumed to catch anything which is malformed as a
-    URL; the regex then verifies the format-string pieces.
-    """
-
-    URLValidator()(value)
-
-    regex = re.compile(
-        r"""
-            ^
-            (
-              [^%]                        # Any non-percent,
-            |                             #   OR...
-              % (                         # A %, which can mean:
-                  \( [a-zA-Z0-9_-]+ \) s  #   Interpolation group
-                |                         #     OR
-                  %                       #   %%, which is an escaped %
-                |                         #     OR
-                  [0-9a-fA-F][0-9a-fA-F]  #   URL percent-encoded bytes, which we
-                                          #   special-case in markdown translation
-                )
-            )+                            # Those happen one or more times
-            $
-        """,
-        re.VERBOSE,
-    )
-
-    if not regex.match(value):
-        raise ValidationError(_("Invalid format string in URL."))
 
 
 def url_template_validator(value: str) -> None:
