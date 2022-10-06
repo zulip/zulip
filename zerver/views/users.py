@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -467,7 +467,7 @@ def add_bot_backend(
     bot_type: int = REQ(json_validator=check_int, default=UserProfile.DEFAULT_BOT),
     payload_url: str = REQ(json_validator=check_url, default=""),
     service_name: Optional[str] = REQ(default=None),
-    config_data: Dict[str, str] = REQ(
+    config_data: Mapping[str, str] = REQ(
         default={}, json_validator=check_dict(value_validator=check_string)
     ),
     interface_type: int = REQ(json_validator=check_int, default=Service.GENERIC),

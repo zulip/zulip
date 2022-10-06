@@ -13,6 +13,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Protocol,
     Set,
@@ -173,7 +174,7 @@ def make_user_messages(
     subscriber_map: Dict[int, Set[int]],
     is_pm_data: bool,
     mention_map: Dict[int, Set[int]],
-    wildcard_mention_map: Dict[int, bool] = {},
+    wildcard_mention_map: Mapping[int, bool] = {},
 ) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []

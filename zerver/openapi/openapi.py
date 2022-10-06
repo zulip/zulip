@@ -539,7 +539,7 @@ SKIP_JSON = {
 def validate_request(
     url: str,
     method: str,
-    data: Union[str, bytes, Dict[str, Any]],
+    data: Union[str, bytes, Mapping[str, Any]],
     http_headers: Dict[str, str],
     json_url: bool,
     status_code: str,

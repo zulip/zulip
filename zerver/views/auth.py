@@ -517,7 +517,7 @@ def oauth_redirect_to_root(
     url: str,
     sso_type: str,
     is_signup: bool = False,
-    extra_url_params: Dict[str, str] = {},
+    extra_url_params: Mapping[str, str] = {},
     next: Optional[str] = REQ(default=None),
     multiuse_object_key: str = REQ(default=""),
     mobile_flow_otp: Optional[str] = REQ(default=None),
