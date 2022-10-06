@@ -72,10 +72,6 @@ p {
         position: relative;
         z-index: 1;
 
-        label {
-            margin: 3px;
-        }
-
         > * {
             display: inline-block;
             vertical-align: top;
