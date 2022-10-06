@@ -4,7 +4,19 @@ import os
 import random
 import shutil
 from functools import partial
-from typing import AbstractSet, Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, TypeVar
+from typing import (
+    AbstractSet,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+)
 
 import orjson
 import requests
@@ -159,7 +171,7 @@ def make_user_messages(
     subscriber_map: Dict[int, Set[int]],
     is_pm_data: bool,
     mention_map: Dict[int, Set[int]],
-    wildcard_mention_map: Dict[int, bool] = {},
+    wildcard_mention_map: Mapping[int, bool] = {},
 ) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []

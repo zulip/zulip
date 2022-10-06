@@ -3080,7 +3080,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         multiuse_object_key: str = "",
         alternative_start_url: Optional[str] = None,
         id_token: Optional[str] = None,
-        account_data_dict: Dict[str, str] = {},
+        account_data_dict: Mapping[str, str] = {},
         *,
         user_agent: Optional[str] = None,
     ) -> Tuple[str, Dict[str, Any]]:

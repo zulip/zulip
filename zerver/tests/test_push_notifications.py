@@ -4,7 +4,7 @@ import datetime
 import re
 import uuid
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 from unittest import mock, skipUnless
 from urllib import parse
 
@@ -1514,7 +1514,7 @@ class TestAPNs(PushNotificationTest):
     def send(
         self,
         devices: Optional[List[Union[PushDeviceToken, RemotePushDeviceToken]]] = None,
-        payload_data: Dict[str, Any] = {},
+        payload_data: Mapping[str, Any] = {},
     ) -> None:
         send_apple_push_notification(
             UserPushIndentityCompat(user_id=self.user_profile.id),
