@@ -35,7 +35,7 @@
                 <div class="chart-container">
                     <h1>{{ _("Active users") }}</h1>
                     <div class="button-container">
-                        <div class="buttons button-active-users">
+                        <div class="buttons">
                             <button class="button" type="button" id="1day_actives_button">{{ _("Daily actives") }}</button>
                             <button class="button" type="button" id="15day_actives_button">{{ _("15 day actives") }}</button>
                             <button class="button" type="button" id="all_time_actives_button">{{ _("Total users") }}</button>
@@ -55,13 +55,17 @@
                 <div class="chart-container pie-chart">
                     <div id="pie_messages_sent_by_type">
                         <h1>{{ _("Messages sent by recipient type") }}</h1>
+                        <div class="button-container">
+                            <div class="buttons">
+                                <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                                <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
+                            </div>
+                        </div>
                         <div id="id_messages_sent_by_message_type">
                             <div class="spinner"></div>
                         </div>
                         <div id="pie_messages_sent_by_type_total" class="number-stat"></div>
                         <div class="buttons">
-                            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-                            <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
                             <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
                             <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
                             <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>
@@ -114,12 +118,16 @@
                 <div class="chart-container pie-chart">
                     <div id="pie_messages_sent_by_client">
                         <h1>{{ _("Messages sent by client") }}</h1>
+                        <div class="button-container">
+                            <div class="buttons">
+                                <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
+                                <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
+                            </div>
+                        </div>
                         <div id="id_messages_sent_by_client">
                             <div class="spinner"></div>
                         </div>
                         <div class="buttons">
-                            <button class="button" type="button" data-user="user">{{ _("Me") }}</button>
-                            <button class="button selected" type="button" data-user="everyone">{{ _("Everyone") }}</button>
                             <button class="button" type="button" data-time="week">{{ _("Last week") }}</button>
                             <button class="button selected" type="button" data-time="month">{{ _("Last month") }}</button>
                             <button class="button" type="button" data-time="year">{{ _("Last year") }}</button>

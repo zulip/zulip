@@ -71,6 +71,7 @@ p {
     .button-container {
         position: relative;
         z-index: 1;
+        margin-bottom: 5px;
 
         > * {
             display: inline-block;
@@ -97,14 +98,6 @@ p {
         font-size: 0.8em;
         font-weight: 400;
     }
-
-    .buttons {
-        float: right;
-
-        button {
-            padding: 2px 6px;
-        }
-    }
 }
 
 .buttons button {
@@ -115,22 +108,15 @@ p {
     }
 }
 
-.button-active-users {
-    float: right;
-}
-
 .button {
     font-family: "Source Sans 3", sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;
+    padding: 2px 6px;
 
     &:hover {
         background-color: hsl(0, 0%, 84%) !important;
-    }
-
-    &[data-user="everyone"] {
-        margin-right: 10px;
     }
 }
 
@@ -198,6 +184,10 @@ p {
     display: none;
 }
 
+#pie_messages_sent_by_type_total {
+    float: right;
+}
+
 #users_hover_info,
 #read_hover_info,
 #hoverinfo {
@@ -205,9 +195,9 @@ p {
     font-size: 0.8em;
     font-weight: 400;
     position: relative;
+    float: right;
     height: 0;
-    top: -35px;
-    left: 40px;
+    top: -25px;
 }
 
 .spinner::before {
