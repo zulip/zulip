@@ -1308,6 +1308,11 @@ $option_title_width: 180px;
                 background-repeat: no-repeat;
             }
 
+            .zulip-icon-smart-toy {
+                font-size: 1.6em;
+                margin: 8px 11px 10px 9px;
+            }
+
             .locked {
                 width: 18px;
                 height: 18px;
