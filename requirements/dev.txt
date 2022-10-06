@@ -69,7 +69,7 @@ attrs==21.4.0 \
     #   automat
     #   glom
     #   jsonschema
-    #   openapi-core
+    #   openapi-schema-validator
     #   semgrep
     #   service-identity
     #   twisted
@@ -441,11 +441,6 @@ deprecated==1.2.13 \
     --hash=sha256:43ac5335da90c31c24ba028af536a91d41d53f9e6901ddb021bcc572ce44e38d \
     --hash=sha256:64756e3e14c8c5eea9795d93c524551432a0be75629f8f29e67ab8caf076c76d
     # via redis
-dictpath==0.1.3 \
-    --hash=sha256:225248e3c1e7c375495d5da5c390cbf3490f56ee42c151df733e5b2df6b521b5 \
-    --hash=sha256:751cde3b76b176d25f961b90c423a11a4d5ede9bd09ab0d64a85abb738c190d8 \
-    --hash=sha256:d5212361d1fb93909cff715f6e0404e17752cf7a48df3e140639e529a027c437
-    # via openapi-core
 disposable-email-domains==0.0.80 \
     --hash=sha256:97342c8c496ec913168345ed9966fdc9a2ff014f347e7238b776e30059bdf486 \
     --hash=sha256:c65f1924126dd5a4b27b037e2125f6dc7e357e35732a50f7261355b94631054e
@@ -677,12 +672,12 @@ importlib-metadata==4.12.0 ; python_version < "3.10" \
     #   markdown
     #   sphinx
     #   zulip-bots
-importlib-resources==5.9.0 ; python_version < "3.9" \
+importlib-resources==5.9.0 \
     --hash=sha256:5481e97fb45af8dcf2f798952625591c58fe599d0735d86b10f54de086a61681 \
     --hash=sha256:f78a8df21a79bcc30cfd400bdc38f314333de7c0fb619763f6b9dabab8268bb7
     # via
-    #   -r requirements/common.in
     #   jsonschema
+    #   openapi-spec-validator
 incremental==21.3.0 \
     --hash=sha256:02f5de5aff48f6b9f665d99d48bfc7ec03b6e3943210de7cfc88856d755d6f57 \
     --hash=sha256:92014aebc6a20b78a8084cdd5645eeaa7f74b8933f70fa3ada2cfbd1e3b54321
@@ -749,9 +744,16 @@ jsonschema==4.14.0 \
     --hash=sha256:15062f4cc6f591400cd528d2c355f2cfa6a57e44c820dc783aee5e23d36a831f \
     --hash=sha256:9892b8d630a82990521a9ca630d3446bd316b5ad54dbe981338802787f3e0d2d
     # via
+    #   jsonschema-spec
     #   openapi-schema-validator
     #   openapi-spec-validator
     #   semgrep
+jsonschema-spec==0.1.2 \
+    --hash=sha256:1e525177574c23ae0f55cd62382632a083a0339928f0ca846a975a4da9851cec \
+    --hash=sha256:780a22d517cdc857d9714a80d8349c546945063f20853ea32ba7f85bc643ec7d
+    # via
+    #   openapi-core
+    #   openapi-spec-validator
 jsx-lexer==2.0.0 \
     --hash=sha256:bff51c2a2faa2c682cbc9a0f360b8c65e4153eb1df06988e8dad34373d3f9995 \
     --hash=sha256:ca22483ced80a92e45fa1855da7cf99309852c0637842a79a759e10ea57b904d
@@ -794,7 +796,7 @@ lazy-object-proxy==1.7.1 \
     --hash=sha256:f769457a639403073968d118bc70110e7dce294688009f5c24ab78800ae56dc8 \
     --hash=sha256:fccdf7c2c5821a8cbd0a9440a456f5050492f2270bd54e94360cac663398739b \
     --hash=sha256:fd45683c3caddf83abbb1249b653a266e7069a09f486daa8863fb0e7496a9fdb
-    # via openapi-core
+    # via openapi-spec-validator
 libcst==0.4.7 \
     --hash=sha256:0ca2771ff3cfdf1f148349f89fcae64afa365213ed5c2703a69a89319325d0c8 \
     --hash=sha256:1e541ccfeebda1ae5f005fc120a5bf3e8ac9ccfda405ec3efd3df54fc4688ac3 \
@@ -1107,21 +1109,19 @@ oauthlib==3.2.0 \
     # via
     #   requests-oauthlib
     #   social-auth-core
-openapi-core==0.14.2 \
-    --hash=sha256:05e100cfb25b4c68d2f647b3f204da26630d79df02d5e0aacae2bcc1915a2796 \
-    --hash=sha256:3426b5ae551a04f7d7a3a625ca600bff157affb4eb691d36412997f6a9ac6898 \
-    --hash=sha256:62ad93c8114ce6025f25b004ff0f3674eea8bc4ae920c726e98921fdbe41b4f3
+https://github.com/p1c2u/openapi-core/archive/ac64879418096c437ad5de9bf7a8c7498959ab87.zip#egg=openapi-core==0.16.0+git \
+    --hash=sha256:225605fc34214987652f3d7f2f8a23dce91b887833394700abc23ce5e8bded7c
     # via -r requirements/common.in
-openapi-schema-validator==0.2.3 \
-    --hash=sha256:2c64907728c3ef78e23711c8840a423f0b241588c9ed929855e4b2d1bb0cf5f2 \
-    --hash=sha256:9bae709212a19222892cabcc60cafd903cbf4b220223f48583afa3c0e3cc6fc4
+openapi-schema-validator==0.3.4 \
+    --hash=sha256:34fbd14b7501abe25e64d7b4624a9db02cde1a578d285b3da6f34b290cdf0b3a \
+    --hash=sha256:7cf27585dd7970b7257cefe48e1a3a10d4e34421831bdb472d96967433bc27bd
     # via
     #   -r requirements/common.in
     #   openapi-core
     #   openapi-spec-validator
-openapi-spec-validator==0.4.0 \
-    --hash=sha256:06900ac4d546a1df3642a779da0055be58869c598e3042a2fef067cfd99d04d0 \
-    --hash=sha256:97f258850afc97b048f7c2653855e0f88fa66ac103c2be5077c7960aca2ad49a
+openapi-spec-validator==0.5.1 \
+    --hash=sha256:4a8aee1e45b1ac868e07ab25e18828fe9837baddd29a8e20fdb3d3c61c8eea3d \
+    --hash=sha256:8248634bad1f23cac5d5a34e193ab36e23914057ca69e91a1ede5af75552c465
     # via openapi-core
 orjson==3.8.0 \
     --hash=sha256:02d638d43951ba346a80f0abd5942a872cc87db443e073f6f6fc530fee81e19b \
@@ -1188,6 +1188,12 @@ parso==0.8.3 \
     --hash=sha256:8c07be290bb59f03588915921e29e8a50002acaf2cdc5fa0e0114f91709fafa0 \
     --hash=sha256:c001d4636cd3aecdaf33cbb40aebb59b094be2a74c556778ef5576c175e19e75
     # via jedi
+pathable==0.4.3 \
+    --hash=sha256:5c869d315be50776cc8a993f3af43e0c60dc01506b399643f919034ebf4cdcab \
+    --hash=sha256:cdd7b1f9d7d5c8b8d3315dbf5a86b2596053ae845f056f57d97c0eefff84da14
+    # via
+    #   jsonschema-spec
+    #   openapi-core
 pathspec==0.9.0 \
     --hash=sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a \
     --hash=sha256:e564499435a2673d586f6b2130bb5b95f04a3ba06f81b8f895b651a3c76aabb1
@@ -1675,6 +1681,7 @@ pyyaml==6.0 \
     --hash=sha256:e61ceaab6f49fb8bdfaa0f92c4b57bcfbea54c09277b1b4f7ac376bfb7a7c174 \
     --hash=sha256:f84fbc98b019fef2ee9a1cb3ce93e3187a6df0b2538a651bfb890254ba9f90b5
     # via
+    #   jsonschema-spec
     #   libcst
     #   moto
     #   myst-parser
@@ -1884,7 +1891,6 @@ six==1.16.0 \
     #   ecdsa
     #   html5lib
     #   isodate
-    #   openapi-core
     #   parsel
     #   protego
     #   python-binary-memcached
@@ -2222,6 +2228,7 @@ typing-extensions==4.3.0 \
     #   boto3-stubs
     #   django-stubs
     #   django-stubs-ext
+    #   jsonschema-spec
     #   libcst
     #   mypy
     #   mypy-boto3-s3
@@ -2229,6 +2236,7 @@ typing-extensions==4.3.0 \
     #   mypy-boto3-sns
     #   mypy-boto3-sqs
     #   myst-parser
+    #   openapi-core
     #   pyre-check
     #   pyre-extensions
     #   semgrep
@@ -2526,7 +2534,6 @@ setuptools==65.3.0 \
     # via
     #   -r requirements/pip.in
     #   ipython
-    #   openapi-spec-validator
     #   pip-tools
     #   scrapy
     #   zope.interface
