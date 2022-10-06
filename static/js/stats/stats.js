@@ -107,6 +107,19 @@ $(() => {
     // Add configuration for any additional tooltips here.
 });
 
+// Helper used in vertical bar charts
+function make_rangeselector(button1, button2) {
+    return {
+        x: -0.045,
+        y: -0.62,
+        buttons: [
+            {stepmode: "backward", ...button1},
+            {stepmode: "backward", ...button2},
+            {step: "all", label: $t({defaultMessage: "All time"})},
+        ],
+    };
+}
+
 // SUMMARY STATISTICS
 function get_user_summary_statistics(data) {
     if (data.length === 0) {
@@ -198,7 +211,7 @@ function populate_messages_sent_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: {l: 40, r: 0, b: 40, t: 0},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
@@ -215,28 +228,12 @@ function populate_messages_sent_over_time(data) {
         font: font_12pt,
     };
 
-    function make_rangeselector(x, y, button1, button2) {
-        return {
-            x,
-            y,
-            buttons: [
-                {stepmode: "backward", ...button1},
-                {stepmode: "backward", ...button2},
-                {step: "all", label: $t({defaultMessage: "All time"})},
-            ],
-        };
-    }
-
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68,
-        -0.62,
         {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
         {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
-        0.656,
-        -0.62,
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
@@ -487,7 +484,7 @@ function populate_messages_sent_by_client(data) {
     const layout = {
         width: 750,
         height: null, // set in draw_plot()
-        margin: {l: 3, r: 40, b: 40, t: 0},
+        margin: {l: 10, r: 10, b: 40, t: 10},
         font: font_14pt,
         xaxis: {range: null}, // set in draw_plot()
         yaxis: {showticklabels: false},
@@ -626,7 +623,7 @@ function populate_messages_sent_by_client(data) {
 
 function populate_messages_sent_by_message_type(data) {
     const layout = {
-        margin: {l: 90, r: 0, b: 0, t: 0},
+        margin: {l: 90, r: 0, b: 10, t: 0},
         width: 750,
         height: 300,
         legend: {
@@ -743,32 +740,19 @@ function populate_messages_sent_by_message_type(data) {
 }
 
 function populate_number_of_users(data) {
+    const weekly_rangeselector = make_rangeselector(
+        {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
+        {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
+    );
+
     const layout = {
         width: 750,
         height: 370,
-        margin: {l: 40, r: 0, b: 65, t: 20},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
-            rangeselector: {
-                x: 0.64,
-                y: -0.79,
-                buttons: [
-                    {
-                        count: 2,
-                        label: $t({defaultMessage: "Last 2 months"}),
-                        step: "month",
-                        stepmode: "backward",
-                    },
-                    {
-                        count: 6,
-                        label: $t({defaultMessage: "Last 6 months"}),
-                        step: "month",
-                        stepmode: "backward",
-                    },
-                    {step: "all", label: $t({defaultMessage: "All time"})},
-                ],
-            },
+            rangeselector: weekly_rangeselector,
             tickangle: 0,
         },
         yaxis: {fixedrange: true, rangemode: "tozero"},
@@ -883,7 +867,7 @@ function populate_messages_read_over_time(data) {
         barmode: "group",
         width: 750,
         height: 400,
-        margin: {l: 40, r: 0, b: 40, t: 0},
+        margin: {l: 40, r: 10, b: 40, t: 0},
         xaxis: {
             fixedrange: true,
             rangeslider: {bordercolor: "#D8D8D8", borderwidth: 1},
@@ -900,28 +884,12 @@ function populate_messages_read_over_time(data) {
         font: font_12pt,
     };
 
-    function make_rangeselector(x, y, button1, button2) {
-        return {
-            x,
-            y,
-            buttons: [
-                {stepmode: "backward", ...button1},
-                {stepmode: "backward", ...button2},
-                {step: "all", label: $t({defaultMessage: "All time"})},
-            ],
-        };
-    }
-
     // This is also the cumulative rangeselector
     const daily_rangeselector = make_rangeselector(
-        0.68,
-        -0.62,
         {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
         {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
-        0.656,
-        -0.62,
         {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
         {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
