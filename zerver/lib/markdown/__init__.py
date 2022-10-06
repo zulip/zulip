@@ -1239,7 +1239,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 parsed_url = urllib.parse.urlsplit(urllib.parse.urljoin("/", url))
                 host = parsed_url.netloc
 
-                if host != "" and host != self.md.zulip_realm.host:
+                if host != "" and (self.md.zulip_realm is None or host != self.md.zulip_realm.host):
                     continue
 
                 if not parsed_url.path.startswith("/user_uploads/"):
