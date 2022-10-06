@@ -19,10 +19,7 @@ You can learn more about it at:
 - The
   [mypy cheat sheet for Python 3](https://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
   is the best resource for quickly understanding how to write the PEP
-  484 type annotations used by mypy correctly. The
-  [Python 2 cheat sheet](https://mypy.readthedocs.io/en/latest/cheat_sheet.html)
-  is useful for understanding the type comment syntax needed for our
-  few modules that need to support both Python 2 and 3.
+  484 type annotations used by mypy correctly.
 
 - The
   [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/).
