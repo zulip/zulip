@@ -188,9 +188,25 @@
                   label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group">
+                    <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages between streams" }}
+                    </label>
+                    <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-msg-deletion" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message deletion" }}
+                    {{> ../help_link_widget link="/help/edit-or-delete-a-message#delete-a-message" }}
+                </h3>
+                <label for="org-msg-deletion" class="dropdown-title">{{t "Administrators can delete any message." }}</label>
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
                     <label for="realm_delete_own_message_policy" class="dropdown-title">{{t "Who can delete their own messages" }}
-                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
-                          aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
                     <select name="realm_delete_own_message_policy" id="id_realm_delete_own_message_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_message_policy_values}}
@@ -200,8 +216,6 @@
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_delete_limit_seconds" class="dropdown-title">
                         {{t "Time limit for deleting messages" }}
-                        <i class="fa fa-info-circle settings-info-icon tippy-zulip-tooltip"
-                          aria-hidden="true" data-tippy-content="{{t 'Administrators can delete any message.' }}"></i>
                     </label>
                     <select name="realm_message_content_delete_limit_seconds" id="id_realm_message_content_delete_limit_seconds" class="prop-element" data-setting-widget-type="time-limit">
                         {{#each msg_delete_limit_dropdown_values}}
@@ -218,14 +232,6 @@
                           autocomplete="off"
                           value="{{ realm_message_content_delete_limit_minutes }}"/>
                     </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages between streams" }}
-                    </label>
-                    <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=common_policy_values}}
-                    </select>
                 </div>
             </div>
         </div>
