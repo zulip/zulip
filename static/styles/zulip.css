@@ -963,6 +963,18 @@ td.pointer {
     .message_edit_notice {
         vertical-align: middle;
     }
+
+    &.sender-status-edit {
+        /* Hackery to place the textarea for the message edit form nicely
+           for /me messages. */
+
+        vertical-align: top;
+        line-height: 0;
+
+        .message_edit_notice {
+            line-height: 0;
+        }
+    }
 }
 
 .message_edit_notice {
