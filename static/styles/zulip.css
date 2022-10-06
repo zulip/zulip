@@ -1078,7 +1078,7 @@ td.pointer {
     }
 
     &.sender-status-controls {
-        top: 10px;
+        top: 8px;
     }
 
     .message_failed {
