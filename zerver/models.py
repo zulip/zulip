@@ -270,8 +270,6 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
-
     # User-visible display name and description used on e.g. the organization homepage
     name = models.CharField(max_length=MAX_REALM_NAME_LENGTH)
     description = models.TextField(default="")
@@ -1039,7 +1037,6 @@ class RealmDomain(models.Model):
     """For an organization with emails_restricted_to_domains enabled, the list of
     allowed domains"""
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True)
@@ -1071,7 +1068,6 @@ def get_realm_domains(realm: Realm) -> List[RealmDomainDict]:
 
 
 class RealmEmoji(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     author = models.ForeignKey(
         "UserProfile",
         blank=True,
@@ -1256,7 +1252,6 @@ class RealmFilter(models.Model):
     strings inside the Markdown processor.  See "Custom filters" in the settings UI.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     pattern = models.TextField()
     url_format_string = models.TextField(validators=[filter_format_validator])
@@ -1449,7 +1444,6 @@ class Recipient(models.Model):
     objects are subscribed to which Recipient objects.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, stream, huddle}
@@ -1684,7 +1678,6 @@ class RealmUserDefault(UserBaseSettings):
     like notification settings, used when creating a new user account.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.OneToOneField(Realm, on_delete=CASCADE)
 
 
@@ -1722,8 +1715,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
     ]
-
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
     # For historical reasons, Zulip has two email fields.  The
     # `delivery_email` field is the user's email address, where all
@@ -2161,7 +2152,6 @@ class PasswordTooWeakError(Exception):
 
 class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-stubs cannot resolve the custom CTEManager yet https://github.com/typeddjango/django-stubs/issues/1023
     objects: CTEManager = CTEManager()
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=100)
     direct_members = models.ManyToManyField(
         UserProfile, through="UserGroupMembership", related_name="direct_groups"
@@ -2217,7 +2207,6 @@ class UserGroup(models.Model):  # type: ignore[django-manager-missing] # django-
 
 
 class UserGroupMembership(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_group = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE, related_name="+")
 
@@ -2226,7 +2215,6 @@ class UserGroupMembership(models.Model):
 
 
 class GroupGroupMembership(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     supergroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
     subgroup = models.ForeignKey(UserGroup, on_delete=CASCADE, related_name="+")
 
@@ -2260,7 +2248,6 @@ class PreregistrationUser(models.Model):
     #   from the authentication step and pass it to the registration
     #   form.
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     email = models.EmailField()
 
     confirmation = GenericRelation("confirmation.Confirmation", related_query_name="prereg_user")
@@ -2338,7 +2325,6 @@ def filter_to_valid_prereg_users(
 
 
 class MultiuseInvite(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)
     streams = models.ManyToManyField("Stream")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
@@ -2346,7 +2332,6 @@ class MultiuseInvite(models.Model):
 
 
 class EmailChangeStatus(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     new_email = models.EmailField()
     old_email = models.EmailField()
     updated_at = models.DateTimeField(auto_now=True)
@@ -2360,7 +2345,6 @@ class EmailChangeStatus(models.Model):
 
 
 class RealmReactivationStatus(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_USED
     status = models.IntegerField(default=0)
@@ -2397,7 +2381,6 @@ class AbstractPushDeviceToken(models.Model):
 
 
 class PushDeviceToken(AbstractPushDeviceToken):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
     # The user whose device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
@@ -2414,7 +2397,6 @@ class Stream(models.Model):
     MAX_NAME_LENGTH = 60
     MAX_DESCRIPTION_LENGTH = 1024
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
     date_created = models.DateTimeField(default=timezone_now)
@@ -2596,7 +2578,6 @@ post_delete.connect(flush_stream, sender=Stream)
 
 
 class UserTopic(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
@@ -2674,7 +2655,6 @@ post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
     def __str__(self) -> str:
@@ -2867,7 +2847,6 @@ class AbstractMessage(models.Model):
 
 
 class ArchiveTransaction(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     timestamp = models.DateTimeField(default=timezone_now, db_index=True)
     # Marks if the data archived in this transaction has been restored:
     restored = models.BooleanField(default=False, db_index=True)
@@ -2896,12 +2875,10 @@ class ArchivedMessage(AbstractMessage):
     'message retention' feature.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     archive_transaction = models.ForeignKey(ArchiveTransaction, on_delete=CASCADE)
 
 
 class Message(AbstractMessage):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     search_tsvector = SearchVectorField(null=True)
 
     def topic_name(self) -> str:
@@ -3026,7 +3003,6 @@ class AbstractSubMessage(models.Model):
 
 
 class SubMessage(AbstractSubMessage):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
     @staticmethod
@@ -3038,7 +3014,6 @@ class SubMessage(AbstractSubMessage):
 
 
 class ArchivedSubMessage(AbstractSubMessage):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
 
@@ -3147,7 +3122,6 @@ class AbstractReaction(AbstractEmoji):
 
 
 class Reaction(AbstractReaction):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message = models.ForeignKey(Message, on_delete=CASCADE)
 
     @staticmethod
@@ -3171,7 +3145,6 @@ class Reaction(AbstractReaction):
 
 
 class ArchivedReaction(AbstractReaction):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message = models.ForeignKey(ArchivedMessage, on_delete=CASCADE)
 
 
@@ -3460,14 +3433,12 @@ class ArchivedAttachment(AbstractAttachment):
     the associated uploaded files from storage.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     messages = models.ManyToManyField(
         ArchivedMessage, related_name="attachment_set", related_query_name="attachment"
     )
 
 
 class Attachment(AbstractAttachment):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     messages = models.ManyToManyField(Message)
 
     def is_claimed(self) -> bool:
@@ -3641,7 +3612,6 @@ class Subscription(models.Model):
     fields in this model describe the user's subscription to that stream.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
 
@@ -3930,7 +3900,6 @@ class Huddle(models.Model):
     corresponding Huddle object.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
@@ -3994,7 +3963,6 @@ class UserActivity(models.Model):
     and database migration purposes.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     client = models.ForeignKey(Client, on_delete=CASCADE)
     query = models.CharField(max_length=50, db_index=True)
@@ -4009,7 +3977,6 @@ class UserActivity(models.Model):
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     start = models.DateTimeField("start time", db_index=True)
     end = models.DateTimeField("end time", db_index=True)
@@ -4037,7 +4004,6 @@ class UserPresence(models.Model):
             ("realm", "timestamp"),
         ]
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     client = models.ForeignKey(Client, on_delete=CASCADE)
@@ -4111,7 +4077,6 @@ class UserPresence(models.Model):
 
 
 class UserStatus(AbstractEmoji):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.OneToOneField(UserProfile, on_delete=CASCADE)
 
     timestamp = models.DateTimeField()
@@ -4126,7 +4091,6 @@ class UserStatus(AbstractEmoji):
 
 
 class DefaultStream(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
 
@@ -4137,7 +4101,6 @@ class DefaultStream(models.Model):
 class DefaultStreamGroup(models.Model):
     MAX_NAME_LENGTH = 60
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     streams = models.ManyToManyField("Stream")
@@ -4175,7 +4138,6 @@ class ScheduledEmail(AbstractScheduledJob):
     # ScheduledEmails for use in clear_scheduled_emails; the
     # recipients used for actually sending messages are stored in the
     # data field of AbstractScheduledJob.
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     users = models.ManyToManyField(UserProfile)
     # Just the address part of a full "name <address>" email address
     address = models.EmailField(null=True, db_index=True)
@@ -4191,7 +4153,6 @@ class ScheduledEmail(AbstractScheduledJob):
 
 
 class MissedMessageEmailAddress(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     message = models.ForeignKey(Message, on_delete=CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     email_token = models.CharField(max_length=34, unique=True, db_index=True)
@@ -4244,7 +4205,6 @@ class ScheduledMessageNotificationEmail(models.Model):
 
 
 class ScheduledMessage(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
     subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
@@ -4430,7 +4390,6 @@ class RealmAuditLog(AbstractRealmAuditLog):
       modified_stream will be None.
     """
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     acting_user = models.ForeignKey(
         UserProfile,
@@ -4460,7 +4419,6 @@ class RealmAuditLog(AbstractRealmAuditLog):
 
 
 class UserHotspot(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)
     hotspot = models.CharField(max_length=30)
     timestamp = models.DateTimeField(default=timezone_now)
@@ -4503,7 +4461,6 @@ class CustomProfileField(models.Model):
     NAME_MAX_LENGTH = 40
     MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS = 2
 
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     name = models.CharField(max_length=NAME_MAX_LENGTH)
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default="")
@@ -4614,7 +4571,6 @@ def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileFiel
 
 
 class CustomProfileFieldValue(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)
     value = models.TextField()
@@ -4648,7 +4604,6 @@ SLACK_INTERFACE = "SlackOutgoingWebhookService"
 #   embedded bots with the same name will run the same code
 # - base_url and token are currently unused
 class Service(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH)
     # Bot user corresponding to the Service.  The bot_type of this user
     # determines the type of service.  If non-bot services are added later,
@@ -4687,7 +4642,6 @@ def get_service_profile(user_profile_id: int, service_name: str) -> Service:
 
 
 class BotStorageData(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     key = models.TextField(db_index=True)
     value = models.TextField()
@@ -4697,7 +4651,6 @@ class BotStorageData(models.Model):
 
 
 class BotConfigData(models.Model):
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     bot_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     key = models.TextField(db_index=True)
     value = models.TextField()
@@ -4735,7 +4688,6 @@ class AlertWord(models.Model):
     # never move to another realm, so it's static, and having Realm
     # here optimizes the main query on this table, which is fetching
     # all the alert words in a realm.
-    id = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     # Case-insensitive name for the alert word.
