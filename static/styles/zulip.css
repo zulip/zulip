@@ -961,7 +961,7 @@ td.pointer {
     max-width: calc(100% - 50px);
 
     .message_edit_notice {
-        line-height: 18px;
+        vertical-align: middle;
     }
 }
 
