@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {FormData} = require("formdata-node");
-
 const {$t} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -26,8 +24,6 @@ mock_esm("../../static/js/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
-
-set_global("FormData", FormData);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
