@@ -14,5 +14,6 @@ remove the message content from view.
 
 {end_tabs}
 
-To un-collapse a message, click **[More...]** at the bottom of the collapsed
-message.
+!!! tip ""
+     To expand a message, click **[More...]** at the bottom of the collapsed
+     message.
