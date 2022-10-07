@@ -79,6 +79,7 @@
 * [Reading strategies](/help/reading-strategies)
 * [Recent topics](/help/recent-topics)
 * [Marking messages as read](/help/marking-messages-as-read)
+* [Marking messages as unread](/help/marking-messages-as-unread)
 * [Emoji reactions](/help/emoji-reactions)
 * [Star a message](/help/star-a-message)
 * [View and browse images](/help/view-and-browse-images)
