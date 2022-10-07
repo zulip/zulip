@@ -29,7 +29,7 @@ async function expect_verona_stream(page: Page): Promise<void> {
         ["Verona > other topic", ["verona other topic c"]],
         ["Verona > test", ["verona test d"]],
     ]);
-    assert.strictEqual(await page.title(), "Verona - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "#Verona - Zulip Dev - Zulip");
 }
 
 async function expect_verona_stream_test_topic(page: Page): Promise<void> {
@@ -103,7 +103,7 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await page.click(`#zhome [title='Narrow to stream "Verona"']`);
     await expect_verona_stream(page);
 
-    assert.strictEqual(await page.title(), "Verona - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "#Verona - Zulip Dev - Zulip");
     await un_narrow(page);
     await expect_home(page);
 
@@ -192,7 +192,7 @@ async function search_tests(page: Page): Promise<void> {
         "Verona",
         "Stream",
         expect_verona_stream,
-        "Verona - Zulip Dev - Zulip",
+        "#Verona - Zulip Dev - Zulip",
     );
 
     await search_and_check(
@@ -208,7 +208,7 @@ async function search_tests(page: Page): Promise<void> {
         "stream:Verona",
         "",
         expect_verona_stream,
-        "Verona - Zulip Dev - Zulip",
+        "#Verona - Zulip Dev - Zulip",
     );
 
     await search_and_check(
@@ -216,7 +216,7 @@ async function search_tests(page: Page): Promise<void> {
         "stream:Verona topic:test",
         "",
         expect_verona_stream_test_topic,
-        "test - Zulip Dev - Zulip",
+        "#Verona > test - Zulip Dev - Zulip",
     );
 
     await search_and_check(
@@ -224,7 +224,7 @@ async function search_tests(page: Page): Promise<void> {
         "stream:Verona topic:other+topic",
         "",
         expect_verona_other_topic,
-        "other topic - Zulip Dev - Zulip",
+        "#Verona > other topic - Zulip Dev - Zulip",
     );
 
     await search_and_check(
