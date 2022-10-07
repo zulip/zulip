@@ -79,6 +79,8 @@ You can configure:
 
 * [Status and availability](/help/status-and-availability)
 * [Typing notifications](/help/typing-notifications)
+* [Marking messages as read](/help/marking-messages-as-read)
+* [Marking messages as unread](/help/marking-messages-as-unread)
 
 [configure-personal-read-recipts]: /help/read-receipts#configure-whether-zulip-lets-others-see-when-youve-read-messages
 [configure-organization-read-recipts]:
