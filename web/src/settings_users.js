@@ -299,7 +299,9 @@ section.bots.create_table = () => {
                     item.display_email.toLowerCase().includes(value)
                 );
             },
-            onupdate: reset_scrollbar($bots_table),
+            onupdate() {
+                reset_scrollbar($bots_table);
+            },
         },
         $parent_container: $("#admin-bot-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],
@@ -327,7 +329,9 @@ section.active.create_table = (active_users) => {
         filter: {
             $element: $users_table.closest(".settings-section").find(".search"),
             filterer: people.filter_for_user_settings_search,
-            onupdate: reset_scrollbar($users_table),
+            onupdate() {
+                reset_scrollbar($users_table);
+            },
         },
         $parent_container: $("#admin-user-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],
@@ -356,7 +360,9 @@ section.deactivated.create_table = (deactivated_users) => {
         filter: {
             $element: $deactivated_users_table.closest(".settings-section").find(".search"),
             filterer: people.filter_for_user_settings_search,
-            onupdate: reset_scrollbar($deactivated_users_table),
+            onupdate() {
+                reset_scrollbar($deactivated_users_table);
+            },
         },
         $parent_container: $("#admin-deactivated-users-list").expectOne(),
         init_sort: ["alphabetic", "full_name"],

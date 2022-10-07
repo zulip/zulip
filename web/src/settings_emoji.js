@@ -109,7 +109,7 @@ export function populate_emoji() {
     }
 
     const $emoji_table = $("#admin_emoji_table").expectOne();
-    ListWidget.create($emoji_table, Object.values(emoji_data), {
+    const emoji_table_widget = ListWidget.create($emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
         modifier(item) {
             if (item.deactivated !== true) {
@@ -131,6 +131,28 @@ export function populate_emoji() {
                 return item.name.toLowerCase().includes(value);
             },
             onupdate() {
+                const $emoji_table_search = $emoji_table
+                    .closest(".settings-section")
+                    .find(".search")
+                    .val();
+
+                const $active_emoji_list = emoji_table_widget.get_current_list().filter((emoji) => {
+                    if (!emoji.deactivated) {
+                        return emoji;
+                    }
+                    return null;
+                });
+
+                if ($active_emoji_list.length === 0 && $emoji_table_search !== "") {
+                    $(".admin_emoji_table").addClass("empty-table");
+                    $emoji_table.attr("data-empty", "No custom emoji match your current filter.");
+                } else if ($active_emoji_list.length === 0) {
+                    $(".admin_emoji_table").addClass("empty-table");
+                    $emoji_table.attr("data-empty", "No custom emoji found.");
+                } else {
+                    $(".admin_emoji_table").removeClass("empty-table");
+                    $emoji_table.attr("data-empty", "No custom emoji found.");
+                }
                 ui.reset_scrollbar($emoji_table);
             },
         },
@@ -142,6 +164,16 @@ export function populate_emoji() {
         $simplebar_container: $("#emoji-settings .progressive-table-wrapper"),
     });
 
+    const $active_emoji = emoji_table_widget.get_current_list().filter((emoji) => {
+        if (!emoji.deactivated) {
+            return emoji;
+        }
+        return null;
+    });
+
+    if ($active_emoji.length === 0) {
+        $(".admin_emoji_table").addClass("empty-table");
+    }
     loading.destroy_indicator($("#admin_page_emoji_loading_indicator"));
 }
 

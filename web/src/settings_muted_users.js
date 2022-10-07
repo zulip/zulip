@@ -30,12 +30,28 @@ export function populate_list() {
                 return item.user_name.toLocaleLowerCase().includes(value);
             },
             onupdate() {
+                const $muted_users_table_search = $search_input.val();
+
+                if (all_muted_users.length === 0 && $muted_users_table_search !== "") {
+                    $(".muted_users_table").addClass("empty-table");
+                    $muted_users_table.attr("data-empty", "No users match your current filter.");
+                } else if (all_muted_users.length === 0) {
+                    $(".muted_users_table").addClass("empty-table");
+                    $muted_users_table.attr("data-empty", "You have not muted any users yet.");
+                } else {
+                    $(".muted_users_table").removeClass("empty-table");
+                    $muted_users_table.attr("data-empty", "You have not muted any users yet.");
+                }
                 ui.reset_scrollbar($muted_users_table.closest(".progressive-table-wrapper"));
             },
         },
         $parent_container: $("#muted-user-settings"),
         $simplebar_container: $("#muted-user-settings .progressive-table-wrapper"),
     });
+
+    if (all_muted_users.length === 0) {
+        $(".muted_users_table").addClass("empty-table");
+    }
 }
 
 export function set_up() {

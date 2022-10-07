@@ -26,12 +26,28 @@ export function populate_list() {
                 return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
+                const $muted_topics_table_search = $search_input.val();
+
+                if (all_muted_topics.length === 0 && $muted_topics_table_search !== "") {
+                    $(".muted_topics_table").addClass("empty-table");
+                    $muted_topics_table.attr("data-empty", "No topics match your current filter.");
+                } else if (all_muted_topics.length === 0) {
+                    $(".muted_topics_table").addClass("empty-table");
+                    $muted_topics_table.attr("data-empty", "You have not muted any topics yet.");
+                } else {
+                    $(".muted_topics_table").removeClass("empty-table");
+                    $muted_topics_table.attr("data-empty", "You have not muted any topics yet.");
+                }
                 ui.reset_scrollbar($muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
         $parent_container: $("#muted-topic-settings"),
         $simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
     });
+
+    if (all_muted_topics.length === 0) {
+        $(".muted_topics_table").addClass("empty-table");
+    }
 }
 
 export function set_up() {

@@ -9,7 +9,7 @@
     </div>
 
     <div class="progressive-table-wrapper" data-simplebar>
-        <table class="table table-condensed table-striped wrapped-table">
+        <table class="table table-condensed table-striped wrapped-table admin_users_table">
             <thead class="table-sticky-headers">
                 <th class="active" data-sort="alphabetic" data-sort-prop="full_name">{{t "Name" }}</th>
                 <th data-sort="email">{{t "Email" }}</th>
@@ -20,8 +20,10 @@
                 <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>
-            <tbody id="admin_users_table" class="admin_user_table required-text thick"
-              data-empty="{{t 'No users match your current filter.' }}"></tbody>
+            <tbody id="admin_users_table" class="admin_user_table required-empty-text required-search-results-empty-text thick"
+              data-empty="{{t 'No users match your current filter.' }}"
+              data-search-results-empty="{{t 'No users match your current filter.' }}">
+            </tbody>
         </table>
     </div>
     <div id="admin_page_users_loading_indicator"></div>

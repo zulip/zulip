@@ -71,7 +71,8 @@
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
                 </thead>
-                <tbody id="admin_linkifiers_table" class="required-text" data-empty="{{t 'No linkifiers set.' }}"></tbody>
+                <tbody id="admin_linkifiers_table" class="required-empty-text required-search-results-empty-text" data-empty="{{t 'No linkifiers set.' }}"
+                  data-search-results-empty="{{t 'No linkifiers match your current filter.' }}"></tbody>
             </table>
         </div>
     </div>

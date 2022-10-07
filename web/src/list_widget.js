@@ -98,6 +98,24 @@ export function numeric_sort(prop) {
     };
 }
 
+export function empty_feed_notice(table, table_widget) {
+    const $table_search = table.closest(".settings-section").find(".search").val();
+
+    if (table_widget.get_current_list().length === 0 && $table_search !== "") {
+        $(`.${table.attr("id")}`).addClass("empty-table");
+        $(`#${table.attr("id")}`).removeClass("required-empty-text");
+        $(`#${table.attr("id")}`).addClass("required-search-results-empty-text");
+    } else if (table_widget.get_current_list().length === 0) {
+        $(`.${table.attr("id")}`).addClass("empty-table");
+        $(`#${table.attr("id")}`).addClass("required-empty-text");
+        $(`#${table.attr("id")}`).removeClass("required-search-results-empty-text");
+    } else {
+        $(`.${table.attr("id")}`).removeClass("empty-table");
+        $(`#${table.attr("id")}`).removeClass("required-empty-text");
+        $(`#${table.attr("id")}`).addClass("required-search-results-empty-text");
+    }
+}
+
 export function valid_filter_opts(opts) {
     if (!opts.filter) {
         return true;
@@ -213,6 +231,9 @@ export function create($container, list, opts) {
     // into the specified container.
     widget.render = function (how_many) {
         let load_count = how_many || DEFAULTS.LOAD_COUNT;
+
+        empty_feed_notice($container, widget);
+
         if (opts.get_min_load_count) {
             load_count = opts.get_min_load_count(meta.offset, load_count);
         }

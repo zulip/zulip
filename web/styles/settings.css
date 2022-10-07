@@ -1612,7 +1612,7 @@ $option_title_width: 180px;
     width: 100px;
 }
 
-.required-text {
+.required-empty-text {
     &:empty::after {
         content: attr(data-empty);
         margin: 10px 0;
@@ -1630,6 +1630,30 @@ $option_title_width: 180px;
     &.thick:empty::after {
         width: 100%;
     }
+}
+
+.required-search-results-empty-text {
+    &:empty::after {
+        content: attr(data-search-results-empty);
+        margin: 10px 0;
+        font-family: inherit;
+        font-size: 1.25rem;
+        text-align: center;
+
+        color: hsl(0, 0%, 67%);
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translateX(-50%);
+    }
+
+    &.thick:empty::after {
+        width: 100%;
+    }
+}
+
+.empty-table {
+    margin-bottom: 100px;
 }
 
 #payload_url_inputbox,
