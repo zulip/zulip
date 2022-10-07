@@ -42,3 +42,8 @@ can disable that feature.
 1. Under **Advanced**, toggle **Show counts for starred messages**.
 
 {end_tabs}
+
+## Related articles
+
+* [Marking messages as unread](/help/marking-messages-as-unread)
+* [Reading strategies](/help/reading-strategies)

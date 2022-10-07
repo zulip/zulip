@@ -65,3 +65,4 @@ like to reply to later.
 * [Recent topics](/help/recent-topics)
 * [Searching for messages](/help/search-for-messages)
 * [Marking messages as read](/help/marking-messages-as-read)
+* [Marking messages as unread](/help/marking-messages-as-unread)
