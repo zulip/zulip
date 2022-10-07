@@ -75,5 +75,6 @@ stream or topic as read**.
 
 ## Related articles
 
+* [Marking messages as unread](/help/marking-messages-as-unread)
 * [Reading strategies](/help/reading-strategies)
 * [Read receipts](/help/read-receipts)
