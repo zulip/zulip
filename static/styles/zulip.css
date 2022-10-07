@@ -1555,7 +1555,7 @@ div.focused_table {
 
 .message_edit_topic_propagate {
     display: inline-block;
-    width: 320px;
+    width: auto;
     margin-bottom: 10px;
     max-width: 100%;
 }
