@@ -123,7 +123,7 @@ async function test_restore_message_draft(page: Page): Promise<void> {
     });
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "tests - Zulip Dev - Zulip",
+        "#all > tests - Zulip Dev - Zulip",
         "Didn't narrow to the right topic.",
     );
 }

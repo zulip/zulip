@@ -129,10 +129,12 @@ function update_narrow_title(filter) {
     // If the operator is something other than "stream", "topic", or
     // "is", we shouldn't update the narrow title
     if (filter.has_operator("stream")) {
+        const stream_name = filter.operands("stream")[0];
         if (filter.has_operator("topic")) {
-            set_narrow_title(filter.operands("topic")[0]);
+            const topic_name = filter.operands("topic")[0];
+            set_narrow_title("#" + stream_name + " > " + topic_name);
         } else {
-            set_narrow_title(filter.operands("stream")[0]);
+            set_narrow_title("#" + stream_name);
         }
     } else if (filter.has_operator("is")) {
         const title = filter.operands("is")[0];
