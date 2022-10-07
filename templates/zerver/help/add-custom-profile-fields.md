@@ -38,8 +38,9 @@ There are several different types of fields available.
 * **Date picker**: For dates, like "Birthday".
 * **Link**: For links to websites.
 * **External account**: For linking to GitHub, Twitter, etc.
+* **Pronouns**: What pronouns should people use to refer to the user?
 * **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting other users, like "Manager" or
+* **Person picker**: For selecting one or more users, like "Manager" or
     "Direct reports".
 
 ## Display custom fields in user profile summaries
