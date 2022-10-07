@@ -499,7 +499,9 @@ export function toggle_actions_popover(element, id) {
         // fetch_status data structure means we'll be able to mark
         // everything below the current message as read correctly.
         const should_display_mark_as_unread =
-            message_lists.current.data.fetch_status.has_found_newest() && !message.unread;
+            message_lists.current.data.fetch_status.has_found_newest() &&
+            !message.unread &&
+            not_spectator;
 
         const should_display_edit_history_option =
             message.edit_history &&
