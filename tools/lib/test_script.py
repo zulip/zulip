@@ -124,5 +124,5 @@ def prepare_puppeteer_run(is_firefox: bool = False) -> None:
     os.environ["PUPPETEER_PRODUCT"] = "firefox" if is_firefox else "chrome"
     subprocess.check_call(["node", "node_modules/puppeteer/install.js"])
     os.makedirs("var/puppeteer", exist_ok=True)
-    for f in glob.glob("var/puppeteer/puppeteer-failure*.png"):
+    for f in glob.glob("var/puppeteer/failure-*.png"):
         os.remove(f)
