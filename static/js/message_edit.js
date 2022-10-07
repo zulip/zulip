@@ -985,7 +985,6 @@ export function move_topic_containing_message_to_stream(
             (id) => id !== message_id,
         );
         dialog_widget.hide_dialog_spinner();
-        dialog_widget.close_modal();
     }
     if (currently_topic_editing_messages.includes(message_id)) {
         ui_report.client_error(
@@ -1012,15 +1011,11 @@ export function move_topic_containing_message_to_stream(
             // The main UI will update via receiving the event
             // from server_events.js.
             reset_modal_ui();
+            dialog_widget.close_modal();
         },
         error(xhr) {
             reset_modal_ui();
-            ui_report.error(
-                $t_html({defaultMessage: "Error moving the topic"}),
-                xhr,
-                $("#home-error"),
-                4000,
-            );
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
         },
     });
 }
