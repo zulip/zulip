@@ -408,9 +408,21 @@ body.dark-theme {
             }
         }
 
+        .private-message.unread {
+            .date_row {
+                background-color: hsl(208, 17%, 29%);
+            }
+        }
+
         .message_row.unread ~ .message_row.unread {
             .date_row {
                 background-color: transparent;
+            }
+        }
+
+        .private-message.unread ~ .private-message.unread {
+            .date_row {
+                background-color: hsl(208, 17%, 29%);
             }
         }
     }

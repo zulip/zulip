@@ -3079,6 +3079,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
         }
     }
 
+    .private-message.unread {
+        .date_row {
+            background-color: hsl(192, 20%, 95%);
+        }
+    }
+
     /* Select all but the first .message_row.unread,
        and remove the properties set from the previous rule. */
     .message_row.unread ~ .message_row.unread {
@@ -3086,6 +3092,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
             position: unset;
             z-index: 0;
             background-color: transparent;
+        }
+    }
+
+    .private-message.unread ~ .private-message.unread {
+        .date_row {
+            background-color: hsl(192, 20%, 95%);
         }
     }
 }
