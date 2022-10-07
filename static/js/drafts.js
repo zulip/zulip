@@ -56,12 +56,14 @@ export const draft_model = (function () {
         return get()[id] || false;
     };
 
-    function save(drafts) {
+    function save(drafts, update_count = true) {
         ls.set(KEY, drafts);
-        set_count(Object.keys(drafts).length);
+        if (update_count) {
+            set_count(Object.keys(drafts).length);
+        }
     }
 
-    exports.addDraft = function (draft) {
+    exports.addDraft = function (draft, update_count = true) {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -70,7 +72,7 @@ export const draft_model = (function () {
 
         draft.updatedAt = getTimestamp();
         drafts[id] = draft;
-        save(drafts);
+        save(drafts, update_count);
 
         return id;
     };
@@ -103,6 +105,11 @@ export const draft_model = (function () {
 
     return exports;
 })();
+
+export function sync_count() {
+    const drafts = draft_model.get();
+    set_count(Object.keys(drafts).length);
+}
 
 export function delete_all_drafts() {
     const drafts = draft_model.get();
@@ -229,9 +236,9 @@ export function update_draft(opts = {}) {
         return draft_id;
     }
 
-    // We have never saved a draft for this message, so add
-    // one.
-    const new_draft_id = draft_model.addDraft(draft);
+    // We have never saved a draft for this message, so add one.
+    const update_count = opts.update_count === undefined ? true : opts.update_count;
+    const new_draft_id = draft_model.addDraft(draft, update_count);
     $("#compose-textarea").data("draft-id", new_draft_id);
     maybe_notify(no_notify);
 
