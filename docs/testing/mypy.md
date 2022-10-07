@@ -165,7 +165,7 @@ def get_book_meta_data(
     return Book.objects.filter(id__in=book_ids).values("name", "id")
 ```
 
-When writing a helper function ehat returns the response from a test
+When writing a helper function that returns the response from a test
 client, it should be typed as `TestHttpResponse` instead of
 `HttpResponse`. This type is only defined in the Django stubs, so it
 has to be conditionally imported only when type
