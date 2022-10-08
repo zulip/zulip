@@ -173,12 +173,11 @@ def generate_and_save_stripe_fixture(
                 stripe_object = mocked_function(*args, **kwargs)
         except stripe.error.StripeError as e:
             with open(fixture_path, "w") as f:
-                error_dict = e.__dict__
-                error_dict["headers"] = dict(error_dict["headers"])
+                error_dict = {**vars(e), "headers": dict(e.headers)}
                 f.write(
                     json.dumps(error_dict, indent=2, separators=(",", ": "), sort_keys=True) + "\n"
                 )
-            raise e
+            raise
         with open(fixture_path, "w") as f:
             if stripe_object is not None:
                 f.write(str(stripe_object) + "\n")
