@@ -134,9 +134,7 @@ function message_hover($message_row) {
     message_unhover();
     $current_message_hover = $message_row;
 
-    // Locally echoed messages have !is_topic_editable and thus go
-    // through this code path.
-    if (!message_edit.is_topic_editable(message)) {
+    if (!message.sent_by_me) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
