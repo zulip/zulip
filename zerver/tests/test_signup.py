@@ -12,7 +12,8 @@ from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.mail.message import EmailMultiAlternatives
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBase
+from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils import translation
@@ -198,7 +199,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.client_get("/login/", follow=True)
-        self.assertEqual(getattr(result, "redirect_chain")[-1], ("/accounts/deactivated/", 302))
+        self.assertEqual(result.redirect_chain[-1], ("/accounts/deactivated/", 302))
         self.assertIn("Zulip Dev, has been deactivated.", result.content.decode())
         self.assertNotIn("It has moved to", result.content.decode())
 
@@ -1080,10 +1081,12 @@ class LoginTest(ZulipTestCase):
         description = "https://www.google.com/images/srpr/logo4w.png"
         realm.description = description
         realm.save(update_fields=["description"])
-        response = self.client_get("/login/")
+        response: HttpResponseBase = self.client_get("/login/")
         expected_response = """<p><a href="https://www.google.com/images/srpr/logo4w.png">\
 https://www.google.com/images/srpr/logo4w.png</a></p>"""
-        self.assertEqual(getattr(response, "context_data")["realm_description"], expected_response)
+        assert isinstance(response, TemplateResponse)
+        assert response.context_data is not None
+        self.assertEqual(response.context_data["realm_description"], expected_response)
         self.assertEqual(response.status_code, 200)
 
 

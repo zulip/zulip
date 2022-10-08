@@ -228,9 +228,8 @@ class Command(makemessages.Command):
         process_all = self.frontend_all
 
         # After calling super().handle(), default_locale_path gets set on self
-        # so that we can reuse it here. We have to use getattr it to access it without
-        # getting an attribute error from mypy.
-        default_locale_path = getattr(self, "default_locale_path")
+        # so that we can reuse it here.
+        default_locale_path = self.default_locale_path  # type: ignore[attr-defined] # not in stubs
         paths = glob.glob(f"{default_locale_path}/*")
         all_locales = [os.path.basename(path) for path in paths if os.path.isdir(path)]
 

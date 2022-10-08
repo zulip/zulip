@@ -368,7 +368,7 @@ def webhook_view(
 
         # Store the event types registered for this webhook as an attribute, which can be access
         # later conveniently in zerver.lib.test_classes.WebhookTestCase.
-        setattr(_wrapped_func_arguments, "_all_event_types", all_event_types)
+        _wrapped_func_arguments._all_event_types = all_event_types  # type: ignore[attr-defined] # custom attribute
         return _wrapped_func_arguments
 
     return _wrapped_view_func
@@ -793,7 +793,7 @@ def process_as_post(
         if not request.POST:
             # Only take action if POST is empty.
             if request.content_type == "multipart/form-data":
-                POST, _files = MultiPartParser(
+                POST, files = MultiPartParser(
                     request.META,
                     BytesIO(request.body),
                     request.upload_handlers,
@@ -809,10 +809,7 @@ def process_as_post(
                 # See also: https://github.com/typeddjango/django-stubs/pull/925#issue-1206399444
                 POST._mutable = False
                 request.POST = cast("_ImmutableQueryDict", POST)
-                # Note that request._files is just the private attribute that backs the
-                # FILES property, so we are essentially setting request.FILES here.  (In
-                # Django 3.2 FILES was still a read-only property.)
-                setattr(request, "_files", _files)
+                request.FILES.update(files)
             elif request.content_type == "application/x-www-form-urlencoded":
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 

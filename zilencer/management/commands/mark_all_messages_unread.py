@@ -15,6 +15,6 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         assert settings.DEVELOPMENT
         UserMessage.objects.all().update(flags=F("flags").bitand(~UserMessage.flags.read))
-        _cache = getattr(cache, "_cache")
+        _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
         assert isinstance(_cache, bmemcached.Client)
         _cache.flush_all()

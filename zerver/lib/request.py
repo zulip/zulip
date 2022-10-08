@@ -474,9 +474,9 @@ def get_current_request() -> Optional[HttpRequest]:
 
 
 def set_request(req: HttpRequest) -> None:
-    setattr(local, "request", req)
+    local.request = req
 
 
 def unset_request() -> None:
     if hasattr(local, "request"):
-        delattr(local, "request")
+        del local.request

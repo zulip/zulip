@@ -892,7 +892,7 @@ def import_uploads(
                 process_avatars(record)
         else:
             connection.close()
-            _cache = getattr(cache, "_cache")
+            _cache = cache._cache  # type: ignore[attr-defined] # not in stubs
             assert isinstance(_cache, bmemcached.Client)
             _cache.disconnect_all()
             with ProcessPoolExecutor(max_workers=processes) as executor:
