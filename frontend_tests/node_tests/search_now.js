@@ -87,6 +87,10 @@ run_test("initialize", ({mock_template}) => {
     search_suggestion.max_num_of_search_results = 999;
     $search_query_box.typeahead = (opts) => {
         assert.equal(opts.fixed, true);
+        assert.equal(
+            opts.container,
+            '<div class="typeahead dropdown-menu search_typeahead"></div>',
+        );
         assert.equal(opts.items, 999);
         assert.equal(opts.naturalSearch, true);
         assert.equal(opts.helpOnEmptyStrings, true);
@@ -262,7 +266,6 @@ run_test("initialize", ({mock_template}) => {
             $search_query_box.off("blur");
         }
     };
-
     search.initialize();
 
     $search_button.prop("disabled", true);
@@ -271,8 +274,9 @@ run_test("initialize", ({mock_template}) => {
 
     $search_query_box.val("test string");
     narrow_state.search_string = () => "ver";
+    narrow_state.filter = () => ({is_common_narrow: () => true});
     $search_query_box.trigger("blur");
-    assert.equal($search_query_box.val(), "test string");
+    assert.equal($search_query_box.val(), "");
 
     search.__Rewire__("is_using_input_method", false);
     $searchbox_form.trigger("compositionend");
@@ -354,7 +358,19 @@ run_test("initialize", ({mock_template}) => {
     $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
 
+    let typeahead_forced_open = false;
+    $search_query_box.typeahead = (lookup) => {
+        if (lookup === "lookup") {
+            typeahead_forced_open = true;
+        }
+        return $search_query_box;
+    };
+    ev.key = "Backspace";
+    $searchbox_form.trigger(ev);
+    assert.ok(typeahead_forced_open);
+
     _setup("ver");
+    ev.key = "Enter";
     search.__Rewire__("is_using_input_method", true);
     $searchbox_form.trigger(ev);
     // No change on Enter keyup event when using input tool
@@ -367,43 +383,95 @@ run_test("initialize", ({mock_template}) => {
     $searchbox_form.trigger(ev);
     assert.ok(is_blurred);
     assert.ok(!$search_button.prop("disabled"));
-});
 
-run_test("initiate_search", () => {
+    // Search
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if
     // this test ever fails unexpectedly.
     narrow_state.filter = () => ({is_search: () => true});
-    let typeahead_forced_open = false;
+    typeahead_forced_open = false;
     let is_searchbox_text_selected = false;
-    $("#search_query").typeahead = (lookup) => {
+    $search_query_box.typeahead = (lookup) => {
         if (lookup === "lookup") {
             typeahead_forced_open = true;
         }
-        return $("#search_query");
+        return $search_query_box;
     };
-    $("#search_query").on("select", () => {
+    $search_query_box.on("select", () => {
         is_searchbox_text_selected = true;
     });
-
-    let searchbox_css_args;
-
-    $("#searchbox").css = (args) => {
-        searchbox_css_args = args;
+    default_prevented = false;
+    let propagation_stopped = false;
+    ev = {
+        type: "click",
+        preventDefault() {
+            default_prevented = true;
+        },
+        stopPropagation() {
+            propagation_stopped = true;
+        },
     };
+    $("#message_view_header").outerWidth = () => 200;
+    search.__Rewire__("search_box_opened", false);
 
-    search.initiate_search();
+    const $search_typeahead = $(".search_typeahead.dropdown-menu ul");
+    $search_typeahead.css = (args, value) => {
+        assert.equal(args, "width");
+        assert.equal(value, "200px");
+    };
+    $search_query_box.trigger(ev);
+    assert.ok(propagation_stopped);
+    assert.ok(default_prevented);
     assert.ok(typeahead_forced_open);
     assert.ok(is_searchbox_text_selected);
-    assert.equal($("#search_query").val(), "ver");
-
-    assert.deepEqual(searchbox_css_args, {
-        "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
-    });
 
     // test that we append space for user convenience
+    $("#message_view_header").outerWidth = () => 202;
+    $search_typeahead.css = (args, value) => {
+        assert.equal(args, "width");
+        assert.equal(value, "202px");
+    };
+    search.__Rewire__("search_box_opened", false);
     narrow_state.filter = () => ({is_search: () => false});
-    search.initiate_search();
+    $search_query_box.trigger(ev);
     assert.equal($("#search_query").val(), "ver ");
+
+    search.__Rewire__("search_box_opened", true);
+    propagation_stopped = false;
+    default_prevented = false;
+
+    $search_query_box.trigger(ev);
+    assert.ok(!propagation_stopped);
+    assert.ok(!default_prevented);
+
+    typeahead_forced_open = false;
+    $("#message_view_header").outerWidth = () => 202;
+    $search_typeahead.css = (args, value) => {
+        assert.equal(args, "width");
+        assert.equal(value, "202px");
+    };
+    search.resize_search_box();
+    assert.ok(typeahead_forced_open);
+
+    let narrow_or_search_for_term_called = false;
+    typeahead_forced_open = false;
+    search.__Rewire__("search_box_opened", false);
+    search.__Rewire__("narrow_or_search_for_term", () => {
+        narrow_or_search_for_term_called = true;
+    });
+    default_prevented = false;
+    // open the search box when we click on the search icon, if it's not already open
+    $(".search_icon").trigger(ev);
+    assert.ok(default_prevented);
+    assert.ok(!narrow_or_search_for_term_called);
+    assert.ok(typeahead_forced_open);
+
+    // search and then close the search box when we click on the search icon, if it's already open
+    default_prevented = false;
+    typeahead_forced_open = false;
+    $(".search_icon").trigger(ev);
+    assert.ok(default_prevented);
+    assert.ok(narrow_or_search_for_term_called);
+    assert.ok(!typeahead_forced_open);
 });

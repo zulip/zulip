@@ -1727,17 +1727,6 @@ div.focused_table {
     font-weight: bold;
 }
 
-.search_icon {
-    /* These rules match the .dropdown-toggle CSS for the gear menu. */
-    color: inherit;
-    opacity: 0.5;
-    text-decoration: none;
-
-    &:hover {
-        opacity: 1;
-    }
-}
-
 #message_view_header {
     z-index: 2;
     float: left;
@@ -1877,6 +1866,9 @@ div.focused_table {
         margin: 0;
         padding: 12px 0;
         padding-left: 10px;
+        /* We are adding right margin so the text can truncate
+        and it doesn't overflow through search section. */
+        margin: 0 150px 0 0;
 
         @media (width < $sm_min) {
             padding: 7px 0;
@@ -1886,13 +1878,15 @@ div.focused_table {
         & > a {
             padding: 12px 0;
         }
+
+        @media (width < $md_min) {
+            margin-right: 60px;
+        }
     }
 
     .search_closed {
         overflow: visible;
         flex: 0; /* makes sure search icon is always visible */
-
-        cursor: pointer;
         font-size: 20px;
 
         padding: 10px 15px 0 0;
@@ -1907,13 +1901,6 @@ div.focused_table {
        elements take up the entirety of the white space. */
     .navbar-click-opens-search {
         flex-grow: 1;
-
-        /* Provide the visual cue that clicking this will work as expected. */
-        cursor: pointer;
-
-        &:hover ~ .search_closed {
-            opacity: 1;
-        }
     }
 }
 
@@ -1922,8 +1909,54 @@ div.focused_table {
     width: 100%;
     height: $header_height;
 
+    .navbar-search {
+        margin-top: 6px;
+        border-radius: 5px 5px 0 0;
+        position: absolute;
+        color: hsla(0, 0%, 0%, 0.5);
+
+        .search_icon {
+            text-decoration: none;
+            color: hsla(0, 0%, 0%, 0.5);
+        }
+    }
+
     .navbar-search:not(.expanded) {
-        display: none;
+        right: 0;
+
+        .search_button {
+            display: none;
+        }
+
+        #search_query {
+            border-radius: 5px;
+            color: hsl(0, 0, 0);
+
+            box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.15),
+                0 1px 5px hsla(0, 0%, 0%, 0.1);
+
+            &:hover {
+                box-shadow: none;
+            }
+        }
+
+        #search_arrows {
+            width: 150px;
+        }
+
+        @media (width < $md_min) {
+            #search_arrows {
+                width: 40px;
+                border-right: 1px solid hsl(0, 0%, 87%);
+            }
+
+            #search_query {
+                width: 100%;
+                padding: 0;
+                opacity: 0;
+                height: 30px;
+            }
+        }
     }
 
     .navbar-search.expanded {
@@ -1931,60 +1964,82 @@ div.focused_table {
         overflow: hidden;
         margin-top: 0;
         margin-bottom: 0;
-        width: calc(100% - 2px);
         position: absolute;
+        color: hsla(0, 0%, 0%, 1);
+        width: 100%;
+        box-shadow: 0 10px 20px hsla(0, 0%, 0%, 0.25),
+            0 7px 5px hsla(0, 0%, 0%, 0.1), 0 -7px 9px hsla(0, 0%, 0%, 0.1);
 
         .search_button {
             display: inline;
-            margin-right: 15px;
+        }
+
+        #search_query {
+            background: hsl(0, 0%, 100%);
+            border-radius: 5px 5px 0 0;
+            color: hsla(0, 0%, 0%, 1);
+
+            &::placeholder {
+                color: hsl(0, 0%, 0%);
+            }
         }
     }
 
     .input-append {
         position: relative;
-        width: 100%;
         width: max-content;
         min-width: 100%;
 
         .zulip-icon-search {
             padding: 0;
-            font-size: 20px;
+            font-size: 17px;
             position: absolute;
-            left: 10px;
-            top: 10px;
+            left: 8px;
+            top: 7px;
             z-index: 5;
         }
 
         .zulip-icon-search:not(.deactivated) {
             cursor: pointer;
         }
+
+        @media (width < $md_min) {
+            .zulip-icon-search {
+                color: hsla(224.106, 99%, 70%, 1);
+                font-size: 18px;
+                top: 12px;
+            }
+        }
     }
 
     #search_query {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         width: 100%;
-        font-size: 16px;
-        height: $header_height;
+        font-size: 14px;
         padding: 0;
         padding-left: 5px;
         padding-right: 40px;
-        border-radius: 0;
+        border: none;
         font-family: "Source Sans 3", sans-serif;
-        font-weight: 300;
-        line-height: $header_height;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-    }
+        font-weight: 400;
+        line-height: 1;
+        height: calc($header_height - 2 * 6.5px);
+        background: hsl(0, 0%, 100%);
 
-    #search_arrows:focus {
-        box-shadow: inset 0 0 0 2px hsl(204, 20%, 74%);
+        .search_text {
+            text-align: center;
+            vertical-align: middle;
+            line-height: $header_height;
+        }
     }
 
     .search_button,
     .search_button:disabled:hover {
         position: absolute;
         right: 35px;
-        top: 6px;
+        top: 1px;
         background: none;
         border-radius: 0;
         height: 30px;
@@ -1996,6 +2051,7 @@ div.focused_table {
         box-shadow: none;
         text-shadow: none;
         z-index: 5;
+        outline: none;
     }
 
     .search_button:hover {
@@ -2012,8 +2068,15 @@ div.focused_table {
         text-decoration: none;
         padding: 0 10px;
         font-size: 20px;
+        border: none;
+        background-color: transparent;
         z-index: 5;
         left: 0;
+
+        &:active,
+        &:focus {
+            outline: none;
+        }
     }
 
     #search_arrows {
@@ -2057,14 +2120,27 @@ div.focused_table {
     }
 
     .search_button {
-        right: 0;
+        right: 2px;
     }
+}
 
-    .navbar-search.expanded {
-        .search_button {
-            margin-right: 14px;
-        }
+.dropdown-menu.search_typeahead {
+    margin-top: 0;
+    padding-top: 0;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 4px 20px hsla(0, 0%, 0%, 0.25), 0 1px 5px hsla(0, 0%, 0%, 0.1);
+    /* The search_typeahead appears when the search box is open and selected, we
+    do not want to cover the search box in a box shadow so we clip only the top
+    of the box-shadow off, so it doesn't overlap with #search_query, which has
+    its own shadow. */
+    clip: rect(0, 8000px, 8000px, -8000px);
+
+    .active > a {
+        background-color: hsl(0, 0%, 94%);
+        background-image: none;
+        color: hsl(0, 0%, 20%);
     }
+    border-width: 0;
 }
 
 #navbar-buttons {
@@ -2870,10 +2946,14 @@ textarea.invitee_emails {
         margin-right: 7px;
     }
 
+    #searchbox_legacy .navbar-search:not(.expanded) {
+        margin-right: 75px;
+    }
+
     .top-navbar-container,
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 84px);
+        width: calc(100% - 80px);
     }
 
     .search_closed .zulip-icon-search {
@@ -2954,9 +3034,18 @@ textarea.invitee_emails {
         display: block;
     }
 
+    .top-navbar-container {
+        margin-left: 40px;
+    }
+
+    #searchbox .navbar-search,
+    #searchbox_legacy .navbar-search {
+        margin-top: 0;
+    }
+
     #searchbox_legacy .navbar-search.expanded,
     #searchbox .navbar-search.expanded {
-        width: calc(100% - 123px);
+        width: calc(100% - 120px);
     }
 
     .search_closed .zulip-icon-search {
@@ -2967,6 +3056,19 @@ textarea.invitee_emails {
         #searchbox_legacy .navbar-search.expanded,
         #searchbox .navbar-search.expanded {
             width: calc(100% - 90px);
+        }
+    }
+
+    .dropdown-menu.search_typeahead ul {
+        margin: 0 -25px 0 0;
+        background: transparent;
+
+        li {
+            width: calc(100% - 25px);
+
+            a {
+                white-space: normal;
+            }
         }
     }
 }
@@ -3012,8 +3114,14 @@ textarea.invitee_emails {
         height: 30px !important;
     }
 
-    #search_query {
-        height: 30px !important;
+    #searchbox_legacy #search_exit {
+        top: 2px;
+        right: 1px;
+    }
+
+    #searchbox_legacy #search_query {
+        height: 30px;
+        margin: 0;
         vertical-align: text-bottom;
     }
 
@@ -3030,12 +3138,23 @@ textarea.invitee_emails {
 
     #searchbox,
     #searchbox_legacy {
+        .input-block-level {
+            height: 20px;
+            min-height: 20px;
+        }
+
+        .search_icon {
+            top: 1px;
+        }
+
         .input-append .zulip-icon-search {
+            font-size: 18px;
             top: 5px;
         }
 
         .search_button,
         .search_button:disabled:hover {
+            font-size: 16px;
             top: 0;
         }
     }
@@ -3077,6 +3196,31 @@ textarea.invitee_emails {
         width: calc(90% - 30px);
         left: 5%;
         top: 5%;
+    }
+
+    #searchbox_legacy {
+        #searchbox_form {
+            height: inherit;
+
+            &:not(.expanded) {
+                margin-right: 80px;
+            }
+
+            &.expanded {
+                padding-bottom: 2px;
+            }
+        }
+
+        #search_arrows {
+            height: inherit;
+
+            #search_query {
+                /* height: 20px; */
+                vertical-align: text-bottom;
+                margin-top: 0;
+                height: inherit;
+            }
+        }
     }
 }
 

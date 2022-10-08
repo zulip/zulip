@@ -318,6 +318,7 @@ test("initialize", ({mock_template}) => {
         css_args = args;
     };
     $searchbox.trigger("focusout");
+
     assert.deepEqual(css_args, {"box-shadow": "unset"});
 
     search.__Rewire__("is_using_input_method", false);
@@ -441,18 +442,17 @@ test("initiate_search", () => {
     $("#search_query").on("select", () => {
         is_searchbox_text_selected = true;
     });
+    $("#message_view_header").outerWidth = () => 200;
+    const $search_typeahead = $(".search_typeahead.dropdown-menu ul");
+    $search_typeahead.css = (args, value) => {
+        assert.equal(args, "width");
+        assert.equal(value, "200px");
+    };
 
     $("#search_query")[0] = "stub";
-
-    const $searchbox = $("#searchbox");
-    let css_args;
-    $searchbox.css = (args) => {
-        css_args = args;
-    };
 
     search.initiate_search();
     assert.ok(typeahead_forced_open);
     assert.ok(is_searchbox_text_selected);
     assert.ok(is_searchbox_focused);
-    assert.deepEqual(css_args, {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
 });

@@ -93,47 +93,17 @@ function append_and_display_title_area(message_view_header_data) {
     }
 }
 
-function bind_title_area_handlers() {
-    $(".search_closed").on("click", (e) => {
-        search.initiate_search();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $("#message_view_header .navbar-click-opens-search").on("click", (e) => {
-        if (document.getSelection().type === "Range") {
-            // Allow copy/paste to work normally without interference.
-            return;
-        }
-
-        // Let links behave normally, ie, do nothing if <a>
-        if ($(e.target).closest("a").length === 0) {
-            search.initiate_search();
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
-    // handler that makes sure that hover plays nicely
-    // with whether search is being opened or not.
-    $("#message_view_header .narrow_description > a")
-        .on("mouseenter", () => {
-            $("#message_view_header .search_closed").css("opacity", 0.5);
-        })
-        .on("mouseleave", () => {
-            $("#message_view_header .search_closed").css("opacity", "");
-        });
-}
-
 function build_message_view_header(filter) {
     // This makes sure we don't waste time appending
     // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
         open_search_bar_and_close_narrow_description();
+        const search_string = narrow_state.search_string();
+        $("#search_query").val(search_string);
     } else {
         const message_view_header_data = make_message_view_header(filter);
         append_and_display_title_area(message_view_header_data);
-        bind_title_area_handlers();
+
         if (page_params.search_pills_enabled && $("#search_query").is(":focus")) {
             open_search_bar_and_close_narrow_description();
         } else {
@@ -146,13 +116,15 @@ function build_message_view_header(filter) {
 // the searchbar has the right text.
 export function reset_searchbox_text() {
     let search_string = narrow_state.search_string();
-    if (search_string !== "") {
-        if (!page_params.search_pills_enabled && !narrow_state.filter().is_search()) {
-            // saves the user a keystroke for quick searches
-            search_string = search_string + " ";
-        }
-        $("#search_query").val(search_string);
+    if (
+        search_string !== "" &&
+        !page_params.search_pills_enabled &&
+        !narrow_state.filter().is_search()
+    ) {
+        // saves the user a keystroke for quick searches
+        search_string = search_string + " ";
     }
+    $("#search_query").val(search_string);
 }
 
 export function exit_search() {
@@ -205,4 +177,7 @@ export function close_search_bar_and_open_narrow_description() {
         $(".navbar-search").removeClass("expanded");
         $("#message_view_header").removeClass("hidden");
     }
+    // remove searchbar text if searchbar is closed
+    $("#search_query").val("");
+    search.close_search_box();
 }

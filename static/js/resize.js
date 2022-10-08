@@ -9,6 +9,7 @@ import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
+import * as search from "./search";
 import * as util from "./util";
 
 function get_new_heights() {
@@ -149,6 +150,7 @@ export function resize_page_components() {
     navbar_alerts.resize_app();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
+    search.resize_search_box();
 }
 
 let _old_width = $(window).width();
