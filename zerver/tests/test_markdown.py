@@ -1309,7 +1309,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1447,7 +1447,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier_1.save()
         self.assertEqual(
-            linkifier_1.__str__(),
+            str(linkifier_1),
             r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1459,7 +1459,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier_2.save()
         self.assertEqual(
-            linkifier_2.__str__(),
+            str(linkifier_2),
             r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)"
             " https://other-trac.example.com/ticket/%(id)s>",
         )
@@ -2230,7 +2230,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user that potentially interferes with the pattern.
@@ -2318,7 +2318,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user-group that potentially interferes with the pattern.
@@ -2576,7 +2576,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a topic link that potentially interferes with the pattern.
@@ -2645,7 +2645,7 @@ class MarkdownTest(ZulipTestCase):
         )
         linkifier.save()
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a stream that potentially interferes with the pattern.

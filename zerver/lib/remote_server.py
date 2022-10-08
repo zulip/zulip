@@ -70,7 +70,7 @@ def send_to_push_bouncer(
         requests.exceptions.ConnectionError,
     ) as e:
         raise PushNotificationBouncerRetryLaterError(
-            f"{e.__class__.__name__} while trying to connect to push notification bouncer"
+            f"{type(e).__name__} while trying to connect to push notification bouncer"
         )
 
     if res.status_code >= 500:

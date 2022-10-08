@@ -197,7 +197,7 @@ def retry_send_email_failures(
             socket.timeout,
             EmailNotDeliveredException,
         ) as e:
-            error_class_name = e.__class__.__name__
+            error_class_name = type(e).__name__
 
             def on_failure(event: Dict[str, Any]) -> None:
                 logging.exception(

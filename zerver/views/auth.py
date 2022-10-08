@@ -377,8 +377,8 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # automatically.  So we call it manually here.
     #
     # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
-    #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
-    email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
+    #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
+    email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
@@ -916,11 +916,11 @@ def api_fetch_api_key(
     assert user_profile.is_authenticated
 
     # Maybe sending 'user_logged_in' signal is the better approach:
-    #   user_logged_in.send(sender=user_profile.__class__, request=request, user=user_profile)
+    #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
     # Not doing this only because over here we don't add the user information
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
-    email_on_new_login(sender=user_profile.__class__, request=request, user=user_profile)
+    email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
 
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)

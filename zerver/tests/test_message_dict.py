@@ -258,7 +258,7 @@ class MessageDictTest(ZulipTestCase):
             realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
         self.assertEqual(
-            linkifier.__str__(),
+            str(linkifier),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 

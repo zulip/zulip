@@ -897,7 +897,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             # django-auth-ldap authenticate().
             username = self.django_to_ldap_username(username)
         except ZulipLDAPExceptionNoMatchingLDAPUser as e:
-            ldap_logger.debug("%s: %s", self.__class__.__name__, e)
+            ldap_logger.debug("%s: %s", type(self).__name__, e)
             if return_data is not None:
                 return_data["no_matching_ldap_user"] = True
             return None
@@ -1103,7 +1103,7 @@ def catch_ldap_error(signal: Signal, **kwargs: Any) -> None:
     if kwargs["context"] == "populate_user":
         # The exception message can contain the password (if it was invalid),
         # so it seems better not to log that, and only use the original exception's name here.
-        raise PopulateUserLDAPError(kwargs["exception"].__class__.__name__)
+        raise PopulateUserLDAPError(type(kwargs["exception"]).__name__)
 
 
 def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bool:
@@ -1822,7 +1822,7 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
             # the flow or the IdP is unreliable and returns a bad http response),
             # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
-            self.logger.info("%s: %s", e.__class__.__name__, str(e))
+            self.logger.info("%s: %s", type(e).__name__, str(e))
             return None
         except SocialAuthBaseException as e:
             # Other python-social-auth exceptions are likely
