@@ -1,6 +1,6 @@
 from functools import partial
 from html.parser import HTMLParser
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from django.http import HttpRequest, HttpResponse
 
@@ -8,6 +8,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -85,81 +86,98 @@ def strip_tags(html: str) -> str:
     return s.get_data()
 
 
-def get_topic_for_contacts(user: Dict[str, Any]) -> str:
+def get_topic_for_contacts(user: WildValue) -> str:
     topic = "{type}: {name}".format(
-        type=user["type"].capitalize(),
-        name=user.get("name") or user.get("pseudonym") or user.get("email"),
+        type=user["type"].tame(check_string).capitalize(),
+        name=user.get("name").tame(check_none_or(check_string))
+        or user.get("pseudonym").tame(check_none_or(check_string))
+        or user.get("email").tame(check_none_or(check_string)),
     )
 
     return topic
 
 
-def get_company_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
-    body = COMPANY_CREATED.format(**payload["data"]["item"])
+def get_company_created_message(payload: WildValue) -> Tuple[str, str]:
+    body = COMPANY_CREATED.format(
+        name=payload["data"]["item"]["name"].tame(check_string),
+        user_count=payload["data"]["item"]["user_count"].tame(check_int),
+        monthly_spend=payload["data"]["item"]["monthly_spend"].tame(check_int),
+    )
     return ("Companies", body)
 
 
-def get_contact_added_email_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_contact_added_email_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
-    body = CONTACT_EMAIL_ADDED.format(email=user["email"])
+    body = CONTACT_EMAIL_ADDED.format(email=user["email"].tame(check_string))
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
-def get_contact_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_contact_created_message(payload: WildValue) -> Tuple[str, str]:
     contact = payload["data"]["item"]
     body = CONTACT_CREATED.format(
-        name=contact.get("name") or contact.get("pseudonym"),
-        email=contact["email"],
+        name=contact.get("name").tame(check_none_or(check_string))
+        or contact.get("pseudonym").tame(check_none_or(check_string)),
+        email=contact["email"].tame(check_string),
         location_info="{city_name}, {region_name}, {country_name}".format(
-            **contact["location_data"],
+            city_name=contact["location_data"]["city_name"].tame(check_string),
+            region_name=contact["location_data"]["region_name"].tame(check_string),
+            country_name=contact["location_data"]["country_name"].tame(check_string),
         ),
     )
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
 
-def get_contact_signed_up_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_contact_signed_up_message(payload: WildValue) -> Tuple[str, str]:
     contact = payload["data"]["item"]
     body = CONTACT_SIGNED_UP.format(
-        email=contact["email"],
+        email=contact["email"].tame(check_string),
         location_info="{city_name}, {region_name}, {country_name}".format(
-            **contact["location_data"],
+            city_name=contact["location_data"]["city_name"].tame(check_string),
+            region_name=contact["location_data"]["region_name"].tame(check_string),
+            country_name=contact["location_data"]["country_name"].tame(check_string),
         ),
     )
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
 
-def get_contact_tag_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
-    body = CONTACT_TAG_CREATED.format(**payload["data"]["item"]["tag"])
+def get_contact_tag_created_message(payload: WildValue) -> Tuple[str, str]:
+    body = CONTACT_TAG_CREATED.format(
+        name=payload["data"]["item"]["tag"]["name"].tame(check_string)
+    )
     contact = payload["data"]["item"]["contact"]
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
 
-def get_contact_tag_deleted_message(payload: Dict[str, Any]) -> Tuple[str, str]:
-    body = CONTACT_TAG_DELETED.format(**payload["data"]["item"]["tag"])
+def get_contact_tag_deleted_message(payload: WildValue) -> Tuple[str, str]:
+    body = CONTACT_TAG_DELETED.format(
+        name=payload["data"]["item"]["tag"]["name"].tame(check_string)
+    )
     contact = payload["data"]["item"]["contact"]
     topic = get_topic_for_contacts(contact)
     return (topic, body)
 
 
-def get_conversation_admin_assigned_message(payload: Dict[str, Any]) -> Tuple[str, str]:
-    body = CONVERSATION_ADMIN_ASSIGNED.format(**payload["data"]["item"]["assignee"])
+def get_conversation_admin_assigned_message(payload: WildValue) -> Tuple[str, str]:
+    body = CONVERSATION_ADMIN_ASSIGNED.format(
+        name=payload["data"]["item"]["assignee"]["name"].tame(check_string)
+    )
     user = payload["data"]["item"]["user"]
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
 def get_conversation_admin_message(
-    payload: Dict[str, Any],
+    payload: WildValue,
     action: str,
 ) -> Tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
     body = CONVERSATION_ADMIN_TEMPLATE.format(
-        admin_name=assignee.get("name"),
+        admin_name=assignee.get("name").tame(check_none_or(check_string)),
         action=action,
     )
     topic = get_topic_for_contacts(user)
@@ -167,15 +185,15 @@ def get_conversation_admin_message(
 
 
 def get_conversation_admin_reply_message(
-    payload: Dict[str, Any],
+    payload: WildValue,
     action: str,
 ) -> Tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
     note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
-    content = strip_tags(note["body"])
+    content = strip_tags(note["body"].tame(check_string))
     body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
-        admin_name=assignee.get("name"),
+        admin_name=assignee.get("name").tame(check_none_or(check_string)),
         action=action,
         content=content,
     )
@@ -183,37 +201,37 @@ def get_conversation_admin_reply_message(
     return (topic, body)
 
 
-def get_conversation_admin_single_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_conversation_admin_single_created_message(payload: WildValue) -> Tuple[str, str]:
     assignee = payload["data"]["item"]["assignee"]
     user = payload["data"]["item"]["user"]
-    conversation_body = payload["data"]["item"]["conversation_message"]["body"]
+    conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
     content = strip_tags(conversation_body)
     body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
-        admin_name=assignee.get("name"),
+        admin_name=assignee.get("name").tame(check_none_or(check_string)),
         content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
-def get_conversation_user_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_conversation_user_created_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]["user"]
-    conversation_body = payload["data"]["item"]["conversation_message"]["body"]
+    conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
     content = strip_tags(conversation_body)
     body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
-        admin_name=user.get("name"),
+        admin_name=user.get("name").tame(check_none_or(check_string)),
         content=content,
     )
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
-def get_conversation_user_replied_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_conversation_user_replied_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]["user"]
     note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
-    content = strip_tags(note["body"])
+    content = strip_tags(note["body"].tame(check_string))
     body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
-        admin_name=user.get("name"),
+        admin_name=user.get("name").tame(check_none_or(check_string)),
         action="replied to",
         content=content,
     )
@@ -221,54 +239,56 @@ def get_conversation_user_replied_message(payload: Dict[str, Any]) -> Tuple[str,
     return (topic, body)
 
 
-def get_event_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_event_created_message(payload: WildValue) -> Tuple[str, str]:
     event = payload["data"]["item"]
-    body = EVENT_CREATED.format(**event)
+    body = EVENT_CREATED.format(event_name=event["event_name"].tame(check_string))
     return ("Events", body)
 
 
-def get_user_created_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_user_created_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
-    body = USER_CREATED.format(**user)
+    body = USER_CREATED.format(
+        name=user["name"].tame(check_string), email=user["email"].tame(check_string)
+    )
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
-def get_user_deleted_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_user_deleted_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
     topic = get_topic_for_contacts(user)
     return (topic, "User deleted.")
 
 
-def get_user_email_updated_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_user_email_updated_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
-    body = "User's email was updated to {}.".format(user["email"])
+    body = "User's email was updated to {}.".format(user["email"].tame(check_string))
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
 def get_user_tagged_message(
-    payload: Dict[str, Any],
+    payload: WildValue,
     action: str,
 ) -> Tuple[str, str]:
     user = payload["data"]["item"]["user"]
     tag = payload["data"]["item"]["tag"]
     topic = get_topic_for_contacts(user)
     body = "The tag `{tag_name}` was {action} the user.".format(
-        tag_name=tag["name"],
+        tag_name=tag["name"].tame(check_string),
         action=action,
     )
     return (topic, body)
 
 
-def get_user_unsubscribed_message(payload: Dict[str, Any]) -> Tuple[str, str]:
+def get_user_unsubscribed_message(payload: WildValue) -> Tuple[str, str]:
     user = payload["data"]["item"]
     body = "User unsubscribed from emails."
     topic = get_topic_for_contacts(user)
     return (topic, body)
 
 
-EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Tuple[str, str]]] = {
+EVENT_TO_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Tuple[str, str]]] = {
     "company.created": get_company_created_message,
     "contact.added_email": get_contact_added_email_message,
     "contact.created": get_contact_created_message,
@@ -309,9 +329,9 @@ ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
 def api_intercom_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    event_type = payload["topic"]
+    event_type = payload["topic"].tame(check_string)
     if event_type == "ping":
         return json_success(request)
 
