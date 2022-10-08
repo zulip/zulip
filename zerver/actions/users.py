@@ -160,7 +160,8 @@ def do_deactivate_user(
         if settings.BILLING_ENABLED:
             update_license_ledger_if_needed(user_profile.realm, event_time)
 
-    delete_user_sessions(user_profile)
+        transaction.on_commit(lambda: delete_user_sessions(user_profile))
+
     event = dict(
         type="realm_user",
         op="remove",
