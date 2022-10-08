@@ -258,6 +258,7 @@ function set_up_create_field_form() {
         );
     } else {
         $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
+        $("#profile_field_display_in_profile_summary").prop("checked", false);
     }
 }
 
