@@ -623,7 +623,7 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(converted.rendered_content, with_preview)
 
         realm = msg.get_realm()
-        setattr(realm, "inline_image_preview", False)
+        realm.inline_image_preview = False
         realm.save()
 
         sender_user_profile = self.example_user("othello")

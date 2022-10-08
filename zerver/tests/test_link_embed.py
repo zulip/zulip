@@ -542,7 +542,7 @@ class PreviewTestCase(ZulipTestCase):
         self.assertEqual(msg.rendered_content, with_preview)
 
         realm = msg.get_realm()
-        setattr(realm, "inline_url_embed_preview", False)
+        realm.inline_url_embed_preview = False
         realm.save()
 
         msg = self._send_message_with_test_org_url(

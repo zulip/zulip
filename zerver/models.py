@@ -3245,22 +3245,20 @@ class AbstractUserMessage(models.Model):
 
     @staticmethod
     def where_unread() -> str:
-        return AbstractUserMessage.where_flag_is_absent(getattr(AbstractUserMessage.flags, "read"))
+        return AbstractUserMessage.where_flag_is_absent(AbstractUserMessage.flags.read)
 
     @staticmethod
     def where_read() -> str:
-        return AbstractUserMessage.where_flag_is_present(getattr(AbstractUserMessage.flags, "read"))
+        return AbstractUserMessage.where_flag_is_present(AbstractUserMessage.flags.read)
 
     @staticmethod
     def where_starred() -> str:
-        return AbstractUserMessage.where_flag_is_present(
-            getattr(AbstractUserMessage.flags, "starred")
-        )
+        return AbstractUserMessage.where_flag_is_present(AbstractUserMessage.flags.starred)
 
     @staticmethod
     def where_active_push_notification() -> str:
         return AbstractUserMessage.where_flag_is_present(
-            getattr(AbstractUserMessage.flags, "active_mobile_push_notification")
+            AbstractUserMessage.flags.active_mobile_push_notification
         )
 
     def flags_list(self) -> List[str]:

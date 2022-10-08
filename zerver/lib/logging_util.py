@@ -197,12 +197,10 @@ class ZulipFormatter(logging.Formatter):
         return " ".join(pieces)
 
     def format(self, record: logging.LogRecord) -> str:
-        if not getattr(record, "zulip_decorated", False):
-            # The `setattr` calls put this logic explicitly outside the bounds of the
-            # type system; otherwise mypy would complain LogRecord lacks these attributes.
-            setattr(record, "zulip_level_abbrev", abbrev_log_levelname(record.levelname))
-            setattr(record, "zulip_origin", find_log_origin(record))
-            setattr(record, "zulip_decorated", True)
+        if not hasattr(record, "zulip_decorated"):
+            record.zulip_level_abbrev = abbrev_log_levelname(record.levelname)
+            record.zulip_origin = find_log_origin(record)
+            record.zulip_decorated = True
         return super().format(record)
 
 
@@ -227,12 +225,12 @@ class ZulipWebhookFormatter(ZulipFormatter):
 
         request = get_current_request()
         if not request:
-            setattr(record, "user", None)
-            setattr(record, "client", None)
-            setattr(record, "url", None)
-            setattr(record, "content_type", None)
-            setattr(record, "custom_headers", None)
-            setattr(record, "payload", None)
+            record.user = None
+            record.client = None
+            record.url = None
+            record.content_type = None
+            record.custom_headers = None
+            record.payload = None
             return super().format(record)
 
         if request.content_type == "application/json":
@@ -257,12 +255,12 @@ class ZulipWebhookFormatter(ZulipFormatter):
         assert client is not None
 
         assert request.user.is_authenticated
-        setattr(record, "user", f"{request.user.delivery_email} ({request.user.realm.string_id})")
-        setattr(record, "client", client.name)
-        setattr(record, "url", request.META.get("PATH_INFO", None))
-        setattr(record, "content_type", request.content_type)
-        setattr(record, "custom_headers", header_text or None)
-        setattr(record, "payload", payload)
+        record.user = f"{request.user.delivery_email} ({request.user.realm.string_id})"
+        record.client = client.name
+        record.url = request.META.get("PATH_INFO", None)
+        record.content_type = request.content_type
+        record.custom_headers = header_text or None
+        record.payload = payload
         return super().format(record)
 
 

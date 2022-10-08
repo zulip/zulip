@@ -394,7 +394,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
                 info = "<bytes>"
             elif isinstance(info, dict):
                 info = {
-                    k: "<file object>" if hasattr(v, "read") and callable(getattr(v, "read")) else v
+                    k: "<file object>" if hasattr(v, "read") and callable(v.read) else v
                     for k, v in info.items()
                 }
 
