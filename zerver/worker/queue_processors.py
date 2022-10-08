@@ -958,7 +958,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                     bot_handler=self.get_bot_api_client(user_profile),
                 )
             except EmbeddedBotQuitException as e:
-                logging.warning(str(e))
+                logging.warning("%s", e)
 
 
 @assign_queue("deferred_work")

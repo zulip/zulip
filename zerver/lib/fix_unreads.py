@@ -94,7 +94,7 @@ def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
         rows = cursor.fetchall()
         for row in rows:
             recipient_ids.append(row[0])
-        logger.info(str(recipient_ids))
+        logger.info("%s", recipient_ids)
 
     get_timing(
         "get recipients",
