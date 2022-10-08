@@ -289,9 +289,7 @@ def send_email(
         )
         raise EmailNotDeliveredException
     except smtplib.SMTPException as e:
-        logger.exception(
-            "Error sending %s email to %s: %s", template, mail.to, str(e), stack_info=True
-        )
+        logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
         raise EmailNotDeliveredException
 
 

@@ -1822,12 +1822,12 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
             # the flow or the IdP is unreliable and returns a bad http response),
             # don't throw a 500, just send them back to the
             # login page and record the event at the info log level.
-            self.logger.info("%s: %s", type(e).__name__, str(e))
+            self.logger.info("%s: %s", type(e).__name__, e)
             return None
         except SocialAuthBaseException as e:
             # Other python-social-auth exceptions are likely
             # interesting enough that we should log a warning.
-            self.logger.warning(str(e))
+            self.logger.warning("%s", e)
             return None
 
     def should_auto_signup(self) -> bool:
