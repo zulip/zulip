@@ -1625,7 +1625,8 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 1)
 
-        do_deactivate_user(user, acting_user=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_user(user, acting_user=None)
         self.assertEqual(Session.objects.filter(pk=session_key).count(), 0)
 
         result = self.client_get("/json/users")
