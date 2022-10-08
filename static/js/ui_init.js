@@ -143,7 +143,9 @@ function message_hover($message_row) {
 
     // But the message edit hover icon is determined by whether the message is still editable
     const editability = message_edit.get_editability(message);
-    const is_content_editable = editability === message_edit.editability_types.FULL;
+    const is_content_editable =
+        editability === message_edit.editability_types.FULL ||
+        editability === message_edit.editability_types.CONTENT_ONLY;
 
     const can_move_message = message_edit.can_move_message(message);
     const args = {
