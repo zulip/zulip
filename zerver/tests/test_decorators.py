@@ -1216,7 +1216,8 @@ class InactiveUserTest(ZulipTestCase):
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        do_deactivate_user(user_profile, acting_user=None)
+        with self.captureOnCommitCallbacks(execute=True):
+            do_deactivate_user(user_profile, acting_user=None)
 
         result = self.client_post(
             "/json/messages",
