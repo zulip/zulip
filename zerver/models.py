@@ -776,7 +776,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         from zproject.backends import AUTH_BACKEND_NAME_MAP
 
         ret: Dict[str, bool] = {}
-        supported_backends = [backend.__class__ for backend in supported_auth_backends()]
+        supported_backends = [type(backend) for backend in supported_auth_backends()]
         # `authentication_methods` is a bitfield.types.BitHandler, not
         # a true dict; since it is still python2- and python3-compat,
         # `iteritems` is its method to iterate over its contents.
@@ -2845,7 +2845,7 @@ class AbstractMessage(models.Model):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.recipient)
-        return f"<{self.__class__.__name__}: {display_recipient} / {self.subject} / {self.sender}>"
+        return f"<{type(self).__name__}: {display_recipient} / {self.subject} / {self.sender}>"
 
 
 class ArchiveTransaction(models.Model):
@@ -3034,7 +3034,7 @@ class Draft(models.Model):
     last_edit_time = models.DateTimeField(db_index=True)
 
     def __str__(self) -> str:
-        return f"<{self.__class__.__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
+        return f"<{type(self).__name__}: {self.user_profile.email} / {self.id} / {self.last_edit_time}>"
 
     def to_dict(self) -> Dict[str, Any]:
         if self.recipient is None:
@@ -3336,7 +3336,7 @@ class UserMessage(AbstractUserMessage):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.message.recipient)
-        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
+        return f"<{type(self).__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
 
     @staticmethod
     def select_for_update_query() -> QuerySet["UserMessage"]:
@@ -3374,7 +3374,7 @@ class ArchivedUserMessage(AbstractUserMessage):
 
     def __str__(self) -> str:
         display_recipient = get_display_recipient(self.message.recipient)
-        return f"<{self.__class__.__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
+        return f"<{type(self).__name__}: {display_recipient} / {self.user_profile.email} ({self.flags_list()})>"
 
 
 class AbstractAttachment(models.Model):
@@ -3416,7 +3416,7 @@ class AbstractAttachment(models.Model):
         abstract = True
 
     def __str__(self) -> str:
-        return f"<{self.__class__.__name__}: {self.file_name}>"
+        return f"<{type(self).__name__}: {self.file_name}>"
 
 
 class ArchivedAttachment(AbstractAttachment):

@@ -72,7 +72,7 @@ class _RateLimitFilter:
         try:
             # Track duplicate errors
             duplicate = False
-            rate = getattr(settings, f"{self.__class__.__name__.upper()}_LIMIT", 600)  # seconds
+            rate = getattr(settings, f"{type(self).__name__.upper()}_LIMIT", 600)  # seconds
 
             if rate > 0:
                 (use_cache, should_reset_handling_exception) = self.can_use_remote_cache()
@@ -81,7 +81,7 @@ class _RateLimitFilter:
                         tb = "\n".join(traceback.format_exception(*record.exc_info))
                     else:
                         tb = str(record)
-                    key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
+                    key = type(self).__name__.upper() + hashlib.sha1(tb.encode()).hexdigest()
                     duplicate = cache.get(key) == 1
                     if not duplicate:
                         cache.set(key, 1, rate)

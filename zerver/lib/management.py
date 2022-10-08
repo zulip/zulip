@@ -26,7 +26,7 @@ def check_config() -> None:
         # if required setting is the same as default OR is not found in settings,
         # throw error to add/set that setting in config
         try:
-            if settings.__getattr__(setting_name) != default:
+            if getattr(settings, setting_name) != default:
                 continue
         except AttributeError:
             pass

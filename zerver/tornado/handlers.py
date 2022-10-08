@@ -110,7 +110,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         # `get_response()`.
         set_script_prefix(get_script_name(environ))
         await sync_to_async(
-            lambda: signals.request_started.send(sender=self.django_handler.__class__),
+            lambda: signals.request_started.send(sender=type(self.django_handler)),
             thread_sensitive=True,
         )()
         self._request = WSGIRequest(environ)
