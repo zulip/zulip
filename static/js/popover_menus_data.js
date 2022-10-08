@@ -26,16 +26,17 @@ export function get_actions_popover_content_context(message_id) {
     let move_message_menu_item;
     let view_source_menu_item;
 
-    if (editability === message_edit.editability_types.FULL) {
+    if (
+        editability === message_edit.editability_types.FULL ||
+        editability === message_edit.editability_types.CONTENT_ONLY
+    ) {
         editability_menu_item = $t({defaultMessage: "Edit message"});
-        if (message.is_stream) {
-            move_message_menu_item = $t({defaultMessage: "Move messages"});
-        }
-    } else if (can_move_message) {
-        move_message_menu_item = $t({defaultMessage: "Move messages"});
-        view_source_menu_item = $t({defaultMessage: "View message source"});
     } else {
         view_source_menu_item = $t({defaultMessage: "View message source"});
+    }
+
+    if (can_move_message) {
+        move_message_menu_item = $t({defaultMessage: "Move messages"});
     }
 
     // We do not offer "Mark as unread" on messages in streams

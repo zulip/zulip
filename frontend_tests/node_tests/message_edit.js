@@ -57,30 +57,28 @@ run_test("get_editability", ({override}) => {
     page_params.realm_allow_message_editing = false;
     assert.equal(get_editability(message), editability_types.NO);
 
-    message.type = "stream";
-    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
-
     page_params.realm_allow_message_editing = true;
     // Limit of 0 means no time limit on editing messages
     page_params.realm_message_content_edit_limit_seconds = null;
-    assert.equal(get_editability(message), editability_types.FULL);
+    assert.equal(get_editability(message), editability_types.CONTENT_ONLY);
 
     page_params.realm_message_content_edit_limit_seconds = 10;
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
     // Have 55+10 > 60 seconds from message.timestamp to edit the message; we're good!
-    assert.equal(get_editability(message, 55), editability_types.FULL);
+    assert.equal(get_editability(message, 55), editability_types.CONTENT_ONLY);
     // It's been 60 > 45+10 since message.timestamp. When realm_allow_message_editing
     // is true, we can edit the topic if there is one.
-    message.type = "stream";
-    assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
+    assert.equal(get_editability(message, 45), editability_types.NO);
     // Right now, we prevent users from editing widgets.
     message.submessages = ["/poll"];
-    assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
+    assert.equal(get_editability(message, 55), editability_types.NO);
     delete message.submessages;
     message.type = "private";
     assert.equal(get_editability(message, 45), editability_types.NO);
+
+    assert.equal(get_editability(message, 55), editability_types.CONTENT_ONLY);
     // If we don't pass a second argument, treat it as 0
     assert.equal(get_editability(message), editability_types.NO);
 
@@ -92,9 +90,22 @@ run_test("get_editability", ({override}) => {
         settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
     page_params.realm_message_content_edit_limit_seconds = null;
-    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    page_params.realm_community_topic_editing_limit_seconds = 50;
     page_params.is_admin = false;
     message.timestamp = current_timestamp - 60;
+    assert.equal(get_editability(message), editability_types.NO);
+
+    page_params.is_admin = true;
+    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+
+    page_params.is_admin = false;
+    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+
+    message.sent_by_me = true;
+    assert.equal(get_editability(message), editability_types.FULL);
+
+    page_params.realm_allow_message_editing = false;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
 });
 
@@ -105,8 +116,11 @@ run_test("is_topic_editable", ({override}) => {
     const message = {
         sent_by_me: true,
         locally_echoed: true,
+        type: "stream",
     };
     page_params.realm_allow_message_editing = true;
+    override(settings_data, "user_can_edit_topic_of_any_message", () => true);
+    page_params.is_admin = true;
 
     assert.equal(message_edit.is_topic_editable(message), false);
 
@@ -117,13 +131,13 @@ run_test("is_topic_editable", ({override}) => {
     message.failed_request = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    message.sent_by_me = false;
-    page_params.is_admin = true;
+    page_params.sent_by_me = false;
+    assert.equal(message_edit.is_topic_editable(message), true);
+
     override(settings_data, "user_can_edit_topic_of_any_message", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     page_params.is_admin = false;
-    message.sent_by_me = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 
     message.topic = "translated: (no topic)";
