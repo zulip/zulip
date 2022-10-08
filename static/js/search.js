@@ -15,6 +15,13 @@ import * as ui_util from "./ui_util";
 // Exported for unit testing
 export let is_using_input_method = false;
 
+// Monitor if the search box is opened or closed.
+let search_box_opened = false;
+
+export function close_search_box() {
+    search_box_opened = false;
+}
+
 export function narrow_or_search_for_term(search_string) {
     const $search_query_box = $("#search_query");
     if (is_using_input_method) {
@@ -94,6 +101,7 @@ export function initialize() {
         items: search_suggestion.max_num_of_search_results,
         helpOnEmptyStrings: true,
         naturalSearch: true,
+        container: '<div class="typeahead dropdown-menu search_typeahead"></div>',
         highlighter(item) {
             const obj = search_map.get(item);
             return render_search_list_item(obj);
@@ -162,6 +170,16 @@ export function initialize() {
                 $search_query_box.trigger("blur");
                 update_buttons_with_focus(false);
             }
+
+            if (e.key === "Backspace" && $search_query_box.val() === "") {
+                // We just pressed Backspace and the box was empty. This
+                // dismisses the typeahead, which leaves us in a broken / ugly
+                // UI state due to the box shadow on the search query box. To
+                // prevent this, we trigger a lookup to bring the typeahead
+                // back.
+                $("#search_query").typeahead("lookup").trigger("select");
+                search_box_opened = true;
+            }
         });
 
     // Some of these functions don't actually need to be exported,
@@ -197,6 +215,22 @@ export function initialize() {
                 return;
             }
         }
+
+        // This part of the blur event is a bit of a pain. The intent is that if
+        // the user clicks out of the searchbox in a non-searching narrow, the
+        // searchbox will close and show the narrow description. The part that
+        // is annoying is that this can break the typeahead by interfering with
+        // the selection via mouse click, ie selecting an item from the
+        // typeahead will be buggy. To prevent this bug, we check that the
+        // **element that received focus'** parent isn't the typeahead.
+        if (e.relatedTarget === null || e.relatedTarget === undefined || !search_box_opened) {
+            const filter = narrow_state.filter();
+            if (!filter || filter.is_common_narrow()) {
+                message_view_header.close_search_bar_and_open_narrow_description();
+                search_box_opened = false;
+            }
+        }
+
         setTimeout(() => {
             update_button_visibility();
         }, 100);
@@ -209,7 +243,40 @@ export function initialize() {
         $searchbox.on("focusout", () => {
             message_view_header.close_search_bar_and_open_narrow_description();
             $searchbox.css({"box-shadow": "unset"});
+            search_box_opened = false;
         });
+    }
+
+    $search_query_box.on("click", (e) => {
+        if (!search_box_opened) {
+            initiate_search();
+            e.preventDefault();
+            e.stopPropagation();
+        } else {
+            const $setter = $("#message_view_header");
+            const $typeahead = $(".search_typeahead.dropdown-menu ul");
+            $typeahead.css("width", $setter.outerWidth() + "px");
+        }
+    });
+
+    $(".search_icon").on("click", (e) => {
+        e.preventDefault();
+        if (search_box_opened) {
+            narrow_or_search_for_term($search_query_box.val());
+            $search_query_box.trigger("blur");
+            update_buttons_with_focus(false);
+        } else {
+            $search_query_box.trigger("click");
+        }
+    });
+}
+
+export function resize_search_box() {
+    if (search_box_opened) {
+        const $setter = $("#message_view_header");
+        const $typeahead = $(".search_typeahead.dropdown-menu ul");
+        $typeahead.css("width", $setter.outerWidth() + "px");
+        $("#search_query").typeahead("lookup").trigger("select");
     }
 }
 
@@ -220,12 +287,15 @@ export function focus_search() {
 
 export function initiate_search() {
     message_view_header.open_search_bar_and_close_narrow_description();
-    $("#searchbox").css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+    const $setter = $("#message_view_header");
+    const $typeahead = $(".search_typeahead.dropdown-menu ul");
+    $typeahead.css("width", $setter.outerWidth() + "px");
     $("#search_query").typeahead("lookup").trigger("select");
     if (page_params.search_pills_enabled) {
         $("#search_query").trigger("focus");
         ui_util.place_caret_at_end($("#search_query")[0]);
     }
+    search_box_opened = true;
 }
 
 export function clear_search_form() {

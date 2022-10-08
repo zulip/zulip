@@ -513,12 +513,13 @@ export async function select_item_via_typeahead(
     field_selector: string,
     str: string,
     item: string,
+    is_search_typeahead: boolean = false,
 ): Promise<void> {
     console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
     await clear_and_type(page, field_selector, str);
     const entry = await page.waitForSelector(
         `xpath///*[${has_class_x(
-            "typeahead",
+            is_search_typeahead ? "search_typeahead" : "typeahead",
         )} and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         {visible: true},
     );

@@ -308,10 +308,11 @@ body.dark-theme {
     }
 
     .header {
+        background-color: inherit;
         border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
     }
 
-    #searchbox_legacy .navbar-search:not(.expanded) #search_query {
+    #searchbox_legacy .navbar-search:not(.expanded) #search_query::placeholder {
         color: hsla(0, 0%, 100%, 0.5);
     }
 
@@ -323,7 +324,7 @@ body.dark-theme {
     /* with .expanded for specificity */
     #searchbox_legacy .navbar-search.expanded #search_query,
     #searchbox_legacy #search_query {
-        background: hsl(212, 32%, 14%);
+        background: hsla(0, 0%, 100%, 0.1);
         caret-color: hsl(0, 0%, 100%);
         color: hsl(0, 0%, 100%);
     }
@@ -339,7 +340,11 @@ body.dark-theme {
     .typeahead.dropdown-menu.search_typeahead,
     .dropdown-menu.search_typeahead {
         color: hsl(0, 0%, 100%);
-        background: hsl(212, 32%, 14%);
+        background: hsl(214, 15%, 28%);
+
+        ul {
+            background: hsl(214, 15%, 28%);
+        }
 
         .active > a {
             background-color: hsl(200, 100%, 38%);

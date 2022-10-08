@@ -10,6 +10,7 @@ import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as popovers from "./popovers";
 import * as recent_topics_util from "./recent_topics_util";
+import * as search from "./search";
 import * as ui from "./ui";
 import {user_settings} from "./user_settings";
 import * as util from "./util";
@@ -250,6 +251,7 @@ export function resize_page_components() {
     navbar_alerts.resize_app();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
+    search.resize_search_box();
 }
 
 let _old_width = $(window).width();
