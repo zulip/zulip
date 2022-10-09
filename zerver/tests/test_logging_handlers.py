@@ -2,29 +2,38 @@ import logging
 import sys
 from functools import wraps
 from types import TracebackType
-from typing import Dict, Iterator, NoReturn, Optional, Tuple, Type, Union, cast
+from typing import Callable, Dict, Iterator, NoReturn, Optional, Tuple, Type, Union
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.utils.log import AdminEmailHandler
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.lib.types import ViewFuncT
 from zerver.logging_handlers import AdminNotifyHandler, HasRequest
+from zerver.models import UserProfile
 
+ParamT = ParamSpec("ParamT")
 captured_request: Optional[HttpRequest] = None
 captured_exc_info: Optional[
     Union[Tuple[Type[BaseException], BaseException, TracebackType], Tuple[None, None, None]]
 ] = None
 
 
-def capture_and_throw(view_func: ViewFuncT) -> ViewFuncT:
+def capture_and_throw(
+    view_func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], NoReturn]:
     @wraps(view_func)
-    def wrapped_view(request: HttpRequest, *args: object, **kwargs: object) -> NoReturn:
+    def wrapped_view(
+        request: HttpRequest,
+        /,
+        *args: ParamT.args,
+        **kwargs: ParamT.kwargs,
+    ) -> NoReturn:
         global captured_request
         captured_request = request
         try:
@@ -34,7 +43,7 @@ def capture_and_throw(view_func: ViewFuncT) -> ViewFuncT:
             captured_exc_info = sys.exc_info()
             raise e
 
-    return cast(ViewFuncT, wrapped_view)  # https://github.com/python/mypy/issues/1927
+    return wrapped_view
 
 
 class AdminNotifyHandlerTest(ZulipTestCase):

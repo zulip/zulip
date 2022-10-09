@@ -71,9 +71,12 @@ In a production environment, we have:
   using the [standard Python
   `RawConfigParser`](https://docs.python.org/3/library/configparser.html#configparser.RawConfigParser),
   and accessed in `zproject/computed_settings.py` by the `get_secret`
-  function. All secrets/API keys/etc. used by the Zulip Django
-  application should be stored here, and read using the `get_secret`
-  function in `zproject/config.py`.
+  or `get_mandatory_secret` function defined in `zproject/config.py`.
+  All secrets/API keys/etc. used by the Zulip Django application should
+  be stored here. The secrets mandatory to start the Zulip Django app
+  are read using `get_mandatory_secret` and the others are read with
+  `get_secret`. If any of the mandatory secrets is missing, a
+  `ZulipSettingsError` is raised.
 
 - `zproject/settings.py` is the main Django settings file for Zulip.
   It imports everything from `zproject/configured_settings.py` and
@@ -121,7 +124,8 @@ in two or three places:
   for production environments.
 
 - If the settings has a secret key,
-  you'll add a `get_secret` call in `zproject/computed_settings.py` (and the
+  you'll add a `get_secret` or `get_mandatory_secret` call in
+  `zproject/computed_settings.py` (and the
   user will add the value when they configure the feature).
 
 - In an appropriate section of `zproject/prod_settings_template.py`,

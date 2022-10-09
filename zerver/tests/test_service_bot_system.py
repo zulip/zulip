@@ -1,10 +1,11 @@
 from functools import wraps
-from typing import Any, Callable, Dict, Optional, TypeVar, cast
+from typing import Any, Callable, Dict, Optional
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.test import override_settings
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_service_bot_events
@@ -12,7 +13,7 @@ from zerver.lib.bot_config import ConfigError, load_bot_config_template, set_bot
 from zerver.lib.bot_lib import EmbeddedBotEmptyRecipientsList, EmbeddedBotHandler, StateHandler
 from zerver.lib.bot_storage import StateError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import patch_queue_publish
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.validator import check_string
 from zerver.models import Recipient, UserProfile, get_realm
 
@@ -413,20 +414,41 @@ class TestServiceBotConfigHandler(ZulipTestCase):
             self.bot_handler.send_message(message={"type": "private", "to": []})
 
 
-FuncT = TypeVar("FuncT", bound=Callable[..., None])
+ParamT = ParamSpec("ParamT")
 
 
-def for_all_bot_types(test_func: FuncT) -> FuncT:
+def for_all_bot_types(
+    test_func: Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]
+) -> Callable[Concatenate["TestServiceBotEventTriggers", ParamT], None]:
     @wraps(test_func)
-    def _wrapped(*args: object, **kwargs: object) -> None:
-        assert len(args) > 0
-        self = cast(TestServiceBotEventTriggers, args[0])
+    def _wrapped(
+        self: "TestServiceBotEventTriggers", /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> None:
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
-            test_func(*args, **kwargs)
+            test_func(self, *args, **kwargs)
 
-    return cast(FuncT, _wrapped)  # https://github.com/python/mypy/issues/1927
+    return _wrapped
+
+
+def patch_queue_publish(
+    method_to_patch: str,
+) -> Callable[
+    [Callable[["TestServiceBotEventTriggers", mock.Mock], None]],
+    Callable[["TestServiceBotEventTriggers"], None],
+]:
+    def inner(
+        func: Callable[["TestServiceBotEventTriggers", mock.Mock], None]
+    ) -> Callable[["TestServiceBotEventTriggers"], None]:
+        @wraps(func)
+        def _wrapped(self: "TestServiceBotEventTriggers") -> None:
+            with mock_queue_publish(method_to_patch) as m:
+                func(self, m)
+
+        return _wrapped
+
+    return inner
 
 
 class TestServiceBotEventTriggers(ZulipTestCase):

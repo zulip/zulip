@@ -256,8 +256,9 @@ html {
     margin-bottom: 60px;
 }
 
-#digest-page-title {
+.digest-page-title {
     text-align: center;
+    font-weight: 400;
 }
 
 .thanks-page div {

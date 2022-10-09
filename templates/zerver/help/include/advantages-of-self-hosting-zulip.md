@@ -1,13 +1,13 @@
 * Zulip is [100% open-source software][zulip-github], with no "open core" catch.
   When you self-host Zulip, you get the same software as [Zulip Cloud
-  Standard](/plans/) customers.
+  Standard](https://zulip.com/plans/) customers.
 
 * Retain full control over your data and simplify compliance by self-hosting
   Zulip behind your firewall.
 
 * We work hard to make it easy to [install][install-zulip], [back
   up][back-up-zulip], and [maintain][maintain-zulip] a self-hosted
-  Zulip server. Self host Zulip directly on Ubuntu or Debian Linux, in
+  Zulip server. Self-host Zulip directly on Ubuntu or Debian Linux, in
   <a href="https://github.com/zulip/docker-zulip">Docker</a>, or with
   prebuilt images for <a
   href="https://marketplace.digitalocean.com/apps/zulip">Digital

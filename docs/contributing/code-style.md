@@ -62,8 +62,8 @@ The Vagrant setup process runs this for you.
 ## Secrets
 
 Please don't put any passwords, secret access keys, etc. inline in the
-code. Instead, use the `get_secret` function in `zproject/config.py`
-to read secrets from `/etc/zulip/secrets.conf`.
+code. Instead, use the `get_secret` function or the `get_mandatory_secret`
+function in `zproject/config.py` to read secrets from `/etc/zulip/secrets.conf`.
 
 ## Dangerous constructs
 

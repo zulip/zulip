@@ -1,12 +1,22 @@
 import datetime
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypedDict,
+    TypeVar,
+    Union,
+)
 
-from django.http import HttpResponse
-from django.utils.functional import Promise
 from typing_extensions import NotRequired
 
-ViewFuncT = TypeVar("ViewFuncT", bound=Callable[..., HttpResponse])
+if TYPE_CHECKING:
+    from django.utils.functional import _StrPromise as StrPromise
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
@@ -40,9 +50,11 @@ class ProfileDataElementUpdateDict(TypedDict):
 
 ProfileData = List[ProfileDataElement]
 
-FieldElement = Tuple[int, Promise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
-ExtendedFieldElement = Tuple[int, Promise, ExtendedValidator, Callable[[Any], Any], str]
-UserFieldElement = Tuple[int, Promise, RealmUserValidator, Callable[[Any], Any], str]
+FieldElement = Tuple[
+    int, "StrPromise", Validator[ProfileDataElementValue], Callable[[Any], Any], str
+]
+ExtendedFieldElement = Tuple[int, "StrPromise", ExtendedValidator, Callable[[Any], Any], str]
+UserFieldElement = Tuple[int, "StrPromise", RealmUserValidator, Callable[[Any], Any], str]
 
 ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
 

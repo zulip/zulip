@@ -6200,7 +6200,7 @@ paths:
         - name: send_notification_to_old_thread
           in: query
           description: |
-            Whether to send breadcrumb message to the old thread to
+            Whether to send an automated message to the old thread to
             notify users where the messages were moved to.
 
             **Changes**: New in Zulip 3.0 (feature level 9).
@@ -6211,7 +6211,7 @@ paths:
         - name: send_notification_to_new_thread
           in: query
           description: |
-            Whether to send a notification message to the new thread to
+            Whether to send an automated message to the new thread to
             notify users where the messages came from.
 
             **Changes**: New in Zulip 3.0 (feature level 9).
@@ -12166,6 +12166,26 @@ paths:
                           (`realm_enable_spectator_access`).
 
                           **Changes**: New in Zulip 5.0 (feature level 110).
+                      server_emoji_data_url:
+                        type: string
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The URL to a JSON file that describes which emoji names map to which
+                          emoji codes, for all Unicode emoji this Zulip server accepts.
+
+                          The data at the given URL is a JSON object with one property, `code_to_names`.
+                          The value of that property is a JSON object where each key is an
+                          [emoji code](/api/add-reaction#parameter-emoji_code) for an available
+                          Unicode emoji, and each value is the corresponding
+                          [emoji names](/api/add-reaction#parameter-emoji_name) for this emoji,
+                          with the canonical name for the emoji always appearing first.
+
+                          The HTTP response at that URL will have appropriate HTTP caching headers, such
+                          any HTTP implementation should get a cached version if emoji haven't changed
+                          since the last request.
+
+                          **Changes**: New in Zulip 6.0 (feature level 140).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |

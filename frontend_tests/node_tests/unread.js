@@ -57,7 +57,7 @@ function test_notifiable_count(home_unread_messages, expected_notifiable_count) 
 function test(label, f) {
     run_test(label, (helpers) => {
         unread.declare_bankruptcy();
-        user_topics.set_muted_topics([]);
+        user_topics.set_user_topics([]);
         f(helpers);
     });
 }
@@ -580,6 +580,80 @@ test("mention updates", () => {
 
     message.unread = true;
     test_counted(true);
+});
+
+test("stream_has_any_unread_mentions", () => {
+    const muted_stream_id = 401;
+    user_topics.add_muted_topic(401, "lunch");
+
+    const mention_me_message = {
+        id: 15,
+        type: "stream",
+        stream_id: 400,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    const mention_all_message = {
+        id: 16,
+        type: "stream",
+        stream_id: 400,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    // This message's stream_id should not be present in `streams_with_mentions`.
+    const muted_mention_all_message = {
+        id: 17,
+        type: "stream",
+        stream_id: muted_stream_id,
+        topic: "lunch",
+        mentioned: true,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([
+        mention_me_message,
+        mention_all_message,
+        muted_mention_all_message,
+    ]);
+
+    assert.equal(unread.stream_has_any_unread_mentions(400), true);
+    assert.equal(unread.stream_has_any_unread_mentions(muted_stream_id), false);
+});
+
+test("topics with unread mentions", () => {
+    const message_with_mention = {
+        id: 98,
+        type: "stream",
+        stream_id: 999,
+        topic: "topic with mention",
+        mentioned: true,
+        mentioned_me_directly: true,
+        unread: true,
+    };
+
+    const message_without_mention = {
+        id: 99,
+        type: "stream",
+        stream_id: 999,
+        topic: "topic without mention",
+        mentioned: false,
+        mentioned_me_directly: false,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message_with_mention, message_without_mention]);
+    assert.equal(unread.get_topics_with_unread_mentions(999).size, 1);
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set(["topic with mention"]));
+    unread.mark_as_read(message_with_mention.id);
+    assert.equal(unread.get_topics_with_unread_mentions(999).size, 0);
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set([]));
 });
 
 test("starring", () => {

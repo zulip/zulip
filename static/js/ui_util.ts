@@ -49,6 +49,21 @@ export function update_unread_count_in_dom($unread_count_elem: JQuery, count: nu
     $unread_count_span.text(count);
 }
 
+export function update_unread_mention_info_in_dom(
+    $unread_mention_info_elem: JQuery,
+    stream_has_any_unread_mention_messages: Boolean,
+): void {
+    const $unread_mention_info_span = $unread_mention_info_elem.find(".unread_mention_info");
+    if (!stream_has_any_unread_mention_messages) {
+        $unread_mention_info_span.hide();
+        $unread_mention_info_span.text("");
+        return;
+    }
+
+    $unread_mention_info_span.show();
+    $unread_mention_info_span.text("@");
+}
+
 /**
  * Parse HTML and return a DocumentFragment.
  *

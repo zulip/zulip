@@ -55,7 +55,7 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
-import * as settings_user_groups from "./settings_user_groups";
+import * as settings_user_groups from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
 import * as stream_data from "./stream_data";
@@ -141,8 +141,8 @@ export function dispatch_normal_event(event) {
             }
             break;
 
-        case "muted_topics":
-            muted_topics_ui.handle_topic_updates(event.muted_topics);
+        case "user_topic":
+            muted_topics_ui.handle_topic_updates(event);
             break;
 
         case "muted_users":

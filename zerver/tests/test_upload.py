@@ -21,7 +21,7 @@ from urllib3 import encode_multipart_formdata
 
 import zerver.lib.upload
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source

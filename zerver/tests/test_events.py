@@ -45,11 +45,8 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.actions.message_edit import (
-    do_delete_messages,
-    do_update_embedded_data,
-    do_update_message,
-)
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.message_edit import do_update_embedded_data, do_update_message
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.presence import do_update_user_presence, do_update_user_status
@@ -1733,7 +1730,11 @@ class NormalActionsTest(BaseAction):
 
     def test_change_notification_settings(self) -> None:
         for notification_setting, v in self.user_profile.notification_setting_types.items():
-            if notification_setting in ["notification_sound", "desktop_icon_count_display"]:
+            if notification_setting in [
+                "notification_sound",
+                "desktop_icon_count_display",
+                "presence_enabled",
+            ]:
                 # These settings are tested in their own tests.
                 continue
 
@@ -1768,6 +1769,26 @@ class NormalActionsTest(BaseAction):
                 )
                 check_user_settings_update("events[0]", events[0])
                 check_update_global_notifications("events[1]", events[1], setting_value)
+
+    def test_change_presence_enabled(self) -> None:
+        presence_enabled_setting = "presence_enabled"
+
+        for val in [True, False]:
+            events = self.verify_action(
+                lambda: do_change_user_setting(
+                    self.user_profile, presence_enabled_setting, val, acting_user=self.user_profile
+                ),
+                num_events=3,
+            )
+            check_user_settings_update("events[0]", events[0])
+            check_update_global_notifications("events[1]", events[1], val)
+            check_presence(
+                "events[2]",
+                events[2],
+                has_email=True,
+                presence_key="website",
+                status="active" if val else "idle",
+            )
 
     def test_change_notification_sound(self) -> None:
         notification_setting = "notification_sound"

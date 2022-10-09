@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import shutil
+from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from functools import partial
 from typing import (
@@ -10,6 +11,7 @@ from typing import (
     Callable,
     Dict,
     Iterable,
+    Iterator,
     List,
     Optional,
     Protocol,
@@ -21,6 +23,7 @@ from typing import (
 import orjson
 import requests
 from django.forms.models import model_to_dict
+from django.utils.timezone import now as timezone_now
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -741,3 +744,60 @@ def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> N
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, "wb") as fp:
         fp.write(orjson.dumps(data, option=orjson.OPT_INDENT_2))
+
+
+# External user-id
+ExternalId = TypeVar("ExternalId")
+
+
+def long_term_idle_helper(
+    message_iterator: Iterator[ZerverFieldsT],
+    user_from_message: Callable[[ZerverFieldsT], Optional[ExternalId]],
+    timestamp_from_message: Callable[[ZerverFieldsT], float],
+    zulip_user_id_from_user: Callable[[ExternalId], int],
+    all_user_ids_iterator: Iterator[ExternalId],
+    zerver_userprofile: List[ZerverFieldsT],
+) -> Set[int]:
+    """Algorithmically, we treat users who have sent at least 10 messages
+    or have sent a message within the last 60 days as active.
+    Everyone else is treated as long-term idle, which means they will
+    have a slightly slower first page load when coming back to
+    Zulip.
+    """
+    sender_counts: Dict[ExternalId, int] = defaultdict(int)
+    recent_senders: Set[ExternalId] = set()
+    NOW = float(timezone_now().timestamp())
+    for message in message_iterator:
+        timestamp = timestamp_from_message(message)
+        user = user_from_message(message)
+        if user is None:
+            continue
+
+        if user in recent_senders:
+            continue
+
+        if NOW - timestamp < 60 * 24 * 60 * 60:
+            recent_senders.add(user)
+
+        sender_counts[user] += 1
+    for (user, count) in sender_counts.items():
+        if count > 10:
+            recent_senders.add(user)
+
+    long_term_idle = set()
+
+    for user_id in all_user_ids_iterator:
+        if user_id in recent_senders:
+            continue
+        zulip_user_id = zulip_user_id_from_user(user_id)
+        long_term_idle.add(zulip_user_id)
+
+    for user_profile_row in zerver_userprofile:
+        if user_profile_row["id"] in long_term_idle:
+            user_profile_row["long_term_idle"] = True
+            # Setting last_active_message_id to 1 means the user, if
+            # imported, will get the full message history for the
+            # streams they were on.
+            user_profile_row["last_active_message_id"] = 1
+
+    return long_term_idle

@@ -822,7 +822,7 @@ upgrading to `main`, make sure you understand:
 Zulip contains thousands of changes submitted by volunteer
 contributors like you. If your changes are likely to be of useful to
 other organizations, consider [contributing
-them](../overview/contributing.md).
+them](../contributing/contributing.md).
 
 [fork-clone]: ../git/cloning.md#get-zulip-code
 [upgrade-zulip-from-git]: #upgrading-from-a-git-repository

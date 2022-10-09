@@ -174,7 +174,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/for/communities/", "Zulip for communities")
         self._test("/self-hosting/", "Self-host Zulip")
         self._test("/security/", "TLS encryption")
-        self._test("/attribution/", "Attributions")
+        self._test("/attribution/", "Website attributions")
         self._test("/devlogin/", "Normal users", landing_page=False)
         self._test("/devtools/", "Useful development URLs")
         self._test("/errors/404/", "Page not found")
@@ -198,6 +198,13 @@ class DocPageTest(ZulipTestCase):
 
         result = self.client_get("/for/companies/", follow=True)
         self.assert_in_success_response(["Communication efficiency represents"], result)
+
+    def test_open_organizations_endpoint(self) -> None:
+        realm = get_realm("zulip")
+        realm.want_advertise_in_communities_directory = True
+        realm.save()
+
+        self._test("/communities/", "Open communities directory")
 
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
@@ -379,7 +386,7 @@ class AboutPageTest(ZulipTestCase):
         self.assert_in_success_response(["2017-11-20"], result)
         self.assert_in_success_response(["timabbott", "showell", "gnprice", "rishig"], result)
 
-        with mock.patch("zerver.views.portico.open", side_effect=FileNotFoundError) as m:
+        with mock.patch("corporate.views.portico.open", side_effect=FileNotFoundError) as m:
             result = self.client_get("/team/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_success_response(["Never ran"], result)
@@ -556,7 +563,7 @@ class AppsPageTest(ZulipTestCase):
     def test_app_download_link_view(self) -> None:
         return_value = "https://desktop-download.zulip.com/v5.4.3/Zulip-Web-Setup-5.4.3.exe"
         with mock.patch(
-            "zerver.views.portico.get_latest_github_release_download_link_for_platform",
+            "corporate.views.portico.get_latest_github_release_download_link_for_platform",
             return_value=return_value,
         ) as m:
             result = self.client_get("/apps/download/windows")

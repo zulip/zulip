@@ -1,11 +1,10 @@
 # Webhooks for external integrations.
-from typing import Any, Dict
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import MAX_TOPIC_NAME_LENGTH, UserProfile
 
@@ -23,15 +22,15 @@ Splunk alert from saved search:
 def api_splunk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
     # use default values if expected data is not provided
-    search_name = payload.get("search_name", "Missing search_name")
-    results_link = payload.get("results_link", "Missing results_link")
-    host = payload.get("result", {}).get("host", "Missing host")
-    source = payload.get("result", {}).get("source", "Missing source")
-    raw = payload.get("result", {}).get("_raw", "Missing _raw")
+    search_name = payload.get("search_name", "Missing search_name").tame(check_string)
+    results_link = payload.get("results_link", "Missing results_link").tame(check_string)
+    host = payload.get("result", {}).get("host", "Missing host").tame(check_string)
+    source = payload.get("result", {}).get("source", "Missing source").tame(check_string)
+    raw = payload.get("result", {}).get("_raw", "Missing _raw").tame(check_string)
 
     # for the default topic, use search name but truncate if too long
     if len(search_name) >= MAX_TOPIC_NAME_LENGTH:

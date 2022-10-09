@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_realm import do_create_realm
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.submessage import do_add_submessage

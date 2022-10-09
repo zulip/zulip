@@ -517,7 +517,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 @**King Hamlet** -- ",
+                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > @**King Hamlet** -- ",
                 "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = "#Denmark > test"
@@ -560,7 +560,7 @@ class TestMissedMessages(ZulipTestCase):
 
         if show_message_content:
             verify_body_include = [
-                "Othello, the Moor of Venice: 1 2 3 4 5 @**all** -- ",
+                "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > @**all** -- ",
                 "You are receiving this because you were mentioned in Zulip Dev.",
             ]
             email_subject = "#Denmark > test"
@@ -598,7 +598,7 @@ class TestMissedMessages(ZulipTestCase):
         self.send_stream_message(self.example_user("othello"), "Denmark", "11", topic_name="test2")
         msg_id = self.send_stream_message(self.example_user("othello"), "denmark", "12")
         verify_body_include = [
-            "Othello, the Moor of Venice: 1 2 3 4 5 6 7 8 9 10 12 -- ",
+            "Othello, the Moor of Venice: > 1 > 2 > 3 > 4 > 5 > 6 > 7 > 8 > 9 > 10 > 12 -- ",
             "You are receiving this because you have email notifications enabled for this stream.",
         ]
         email_subject = "#Denmark > test"
@@ -618,7 +618,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
         verify_body_include = [
-            "Cordelia, Lear's daughter: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
+            "Cordelia, Lear's daughter: > 0 > 1 > 2 Othello, the Moor of Venice: > @**King Hamlet** -- ",
             "You are receiving this because you were mentioned in Zulip Dev.",
         ]
         email_subject = "#Denmark > test"
@@ -626,7 +626,7 @@ class TestMissedMessages(ZulipTestCase):
             msg_id, verify_body_include, email_subject, send_as_user, trigger="mentioned"
         )
 
-    def _extra_context_in_personal_missed_stream_messages(
+    def _extra_context_in_missed_personal_messages(
         self,
         send_as_user: bool,
         show_message_content: bool = True,
@@ -640,7 +640,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         if show_message_content:
-            verify_body_include = ["Extremely personal message!"]
+            verify_body_include = ["> Extremely personal message!"]
             email_subject = "PMs with Othello, the Moor of Venice"
             verify_body_does_not_include: List[str] = []
         else:
@@ -675,7 +675,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
+    def _reply_to_email_in_missed_personal_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -685,7 +685,7 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
-    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
+    def _reply_warning_in_missed_personal_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -695,7 +695,7 @@ class TestMissedMessages(ZulipTestCase):
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
-    def _extra_context_in_huddle_missed_stream_messages_two_others(
+    def _extra_context_in_missed_huddle_messages_two_others(
         self, send_as_user: bool, show_message_content: bool = True
     ) -> None:
         msg_id = self.send_huddle_message(
@@ -708,7 +708,9 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         if show_message_content:
-            verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+            verify_body_include = [
+                "Othello, the Moor of Venice: > Group personal message! -- Reply"
+            ]
             email_subject = "Group PMs with Iago and Othello, the Moor of Venice"
             verify_body_does_not_include: List[str] = []
         else:
@@ -735,9 +737,7 @@ class TestMissedMessages(ZulipTestCase):
             verify_body_does_not_include=verify_body_does_not_include,
         )
 
-    def _extra_context_in_huddle_missed_stream_messages_three_others(
-        self, send_as_user: bool
-    ) -> None:
+    def _extra_context_in_missed_huddle_messages_three_others(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -748,15 +748,13 @@ class TestMissedMessages(ZulipTestCase):
             "Group personal message!",
         )
 
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+        verify_body_include = ["Othello, the Moor of Venice: > Group personal message! -- Reply"]
         email_subject = (
             "Group PMs with Cordelia, Lear's daughter, Iago, and Othello, the Moor of Venice"
         )
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
-    def _extra_context_in_huddle_missed_stream_messages_many_others(
-        self, send_as_user: bool
-    ) -> None:
+    def _extra_context_in_missed_huddle_messages_many_others(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -768,7 +766,7 @@ class TestMissedMessages(ZulipTestCase):
             "Group personal message!",
         )
 
-        verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
+        verify_body_include = ["Othello, the Moor of Venice: > Group personal message! -- Reply"]
         email_subject = "Group PMs with Cordelia, Lear's daughter, Iago, and 2 others"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
@@ -784,7 +782,7 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user: bool) -> None:
+    def _deleted_message_in_missed_personal_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_personal_message(
             self.example_user("othello"),
             self.example_user("hamlet"),
@@ -798,7 +796,7 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(hamlet.id, [{"message_id": msg_id}])
         self.assert_length(mail.outbox, 0)
 
-    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user: bool) -> None:
+    def _deleted_message_in_missed_huddle_messages(self, send_as_user: bool) -> None:
         msg_id = self.send_huddle_message(
             self.example_user("othello"),
             [
@@ -850,7 +848,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         expected_email_include = [
-            "Othello, the Moor of Venice: @*hamlet_only* @*hamlet_and_cordelia* -- ",
+            "Othello, the Moor of Venice: > @*hamlet_only* > @*hamlet_and_cordelia* -- ",
             "You are receiving this because @hamlet_only was mentioned in Zulip Dev.",
         ]
 
@@ -890,7 +888,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         expected_email_include = [
-            "Othello, the Moor of Venice: @*hamlet_and_cordelia* @**King Hamlet** -- ",
+            "Othello, the Moor of Venice: > @*hamlet_and_cordelia* > @**King Hamlet** -- ",
             "You are receiving this because you were mentioned in Zulip Dev.",
         ]
 
@@ -924,13 +922,11 @@ class TestMissedMessages(ZulipTestCase):
             False, show_message_content=False
         )
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
+        self._extra_context_in_missed_personal_messages(
             False, show_message_content=False, message_content_disabled_by_user=True
         )
         mail.outbox = []
-        self._extra_context_in_huddle_missed_stream_messages_two_others(
-            False, show_message_content=False
-        )
+        self._extra_context_in_missed_huddle_messages_two_others(False, show_message_content=False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self) -> None:
@@ -953,8 +949,8 @@ class TestMissedMessages(ZulipTestCase):
     def test_extra_context_in_missed_stream_messages_two_senders(self) -> None:
         self._extra_context_in_missed_stream_messages_mention_two_senders(False)
 
-    def test_reply_to_email_in_personal_missed_stream_messages(self) -> None:
-        self._reply_to_email_in_personal_missed_stream_messages(False)
+    def test_reply_to_email_in_missed_personal_messages(self) -> None:
+        self._reply_to_email_in_missed_personal_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_email_notify_as_user(self) -> None:
@@ -964,36 +960,36 @@ class TestMissedMessages(ZulipTestCase):
         self._extra_context_in_missed_stream_messages_email_notify(False)
 
     @override_settings(EMAIL_GATEWAY_PATTERN="")
-    def test_reply_warning_in_personal_missed_stream_messages(self) -> None:
-        self._reply_warning_in_personal_missed_stream_messages(False)
+    def test_reply_warning_in_missed_personal_messages(self) -> None:
+        self._reply_warning_in_missed_personal_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_personal_missed_stream_messages_as_user(self) -> None:
-        self._extra_context_in_personal_missed_stream_messages(True)
+    def test_extra_context_in_missed_personal_messages_as_user(self) -> None:
+        self._extra_context_in_missed_personal_messages(True)
 
-    def test_extra_context_in_personal_missed_stream_messages(self) -> None:
-        self._extra_context_in_personal_missed_stream_messages(False)
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_two_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_two_others(True)
-
-    def test_extra_context_in_huddle_missed_stream_messages_two_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_two_others(False)
+    def test_extra_context_in_missed_personal_messages(self) -> None:
+        self._extra_context_in_missed_personal_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_three_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_three_others(True)
+    def test_extra_context_in_missed_huddle_messages_two_others_as_user(self) -> None:
+        self._extra_context_in_missed_huddle_messages_two_others(True)
 
-    def test_extra_context_in_huddle_missed_stream_messages_three_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_three_others(False)
+    def test_extra_context_in_missed_huddle_messages_two_others(self) -> None:
+        self._extra_context_in_missed_huddle_messages_two_others(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_many_others_as_user(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_many_others(True)
+    def test_extra_context_in_missed_huddle_messages_three_others_as_user(self) -> None:
+        self._extra_context_in_missed_huddle_messages_three_others(True)
 
-    def test_extra_context_in_huddle_missed_stream_messages_many_others(self) -> None:
-        self._extra_context_in_huddle_missed_stream_messages_many_others(False)
+    def test_extra_context_in_missed_huddle_messages_three_others(self) -> None:
+        self._extra_context_in_missed_huddle_messages_three_others(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_huddle_messages_many_others_as_user(self) -> None:
+        self._extra_context_in_missed_huddle_messages_many_others(True)
+
+    def test_extra_context_in_missed_huddle_messages_many_others(self) -> None:
+        self._extra_context_in_missed_huddle_messages_many_others(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_deleted_message_in_missed_stream_messages_as_user(self) -> None:
@@ -1003,18 +999,18 @@ class TestMissedMessages(ZulipTestCase):
         self._deleted_message_in_missed_stream_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_personal_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_personal_missed_stream_messages(True)
+    def test_deleted_message_in_missed_personal_messages_as_user(self) -> None:
+        self._deleted_message_in_missed_personal_messages(True)
 
-    def test_deleted_message_in_personal_missed_stream_messages(self) -> None:
-        self._deleted_message_in_personal_missed_stream_messages(False)
+    def test_deleted_message_in_missed_personal_messages(self) -> None:
+        self._deleted_message_in_missed_personal_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_deleted_message_in_huddle_missed_stream_messages_as_user(self) -> None:
-        self._deleted_message_in_huddle_missed_stream_messages(True)
+    def test_deleted_message_in_missed_huddle_messages_as_user(self) -> None:
+        self._deleted_message_in_missed_huddle_messages(True)
 
-    def test_deleted_message_in_huddle_missed_stream_messages(self) -> None:
-        self._deleted_message_in_huddle_missed_stream_messages(False)
+    def test_deleted_message_in_missed_huddle_messages(self) -> None:
+        self._deleted_message_in_missed_huddle_messages(False)
 
     def test_realm_message_content_allowed_in_email_notifications(self) -> None:
         user = self.example_user("hamlet")
@@ -1029,14 +1025,14 @@ class TestMissedMessages(ZulipTestCase):
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
+        self._extra_context_in_missed_personal_messages(False, show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
         do_change_user_setting(
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
+        self._extra_context_in_missed_personal_messages(
             False, show_message_content=False, message_content_disabled_by_user=True
         )
 
@@ -1050,7 +1046,7 @@ class TestMissedMessages(ZulipTestCase):
             user, "message_content_in_email_notifications", True, acting_user=None
         )
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
+        self._extra_context_in_missed_personal_messages(
             False, show_message_content=False, message_content_disabled_by_realm=True
         )
 
@@ -1058,7 +1054,7 @@ class TestMissedMessages(ZulipTestCase):
             user, "message_content_in_email_notifications", False, acting_user=None
         )
         mail.outbox = []
-        self._extra_context_in_personal_missed_stream_messages(
+        self._extra_context_in_missed_personal_messages(
             False,
             show_message_content=False,
             message_content_disabled_by_user=True,
@@ -1137,7 +1133,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[0], EmailMultiAlternatives)
         assert isinstance(mail.outbox[0].alternatives[0][0], str)
-        self.assertIn("Iago: @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
+        self.assertIn("Iago:\n> @**King Hamlet**\n\n--\nYou are", mail.outbox[0].body)
         # If message content starts with <p> tag the sender name is appended inside the <p> tag.
         self.assertIn(
             '<p><b>Iago</b>: <span class="user-mention"', mail.outbox[0].alternatives[0][0]
@@ -1145,7 +1141,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[1], EmailMultiAlternatives)
         assert isinstance(mail.outbox[1].alternatives[0][0], str)
-        self.assertIn("Iago: * 1\n *2\n\n--\nYou are receiving", mail.outbox[1].body)
+        self.assertIn("Iago:\n> * 1\n>  *2\n\n--\nYou are receiving", mail.outbox[1].body)
         # If message content does not starts with <p> tag sender name is appended before the <p> tag
         self.assertIn(
             "       <b>Iago</b>: <div><ul>\n<li>1<br/>\n *2</li>\n</ul></div>\n",
@@ -1154,7 +1150,7 @@ class TestMissedMessages(ZulipTestCase):
 
         assert isinstance(mail.outbox[2], EmailMultiAlternatives)
         assert isinstance(mail.outbox[2].alternatives[0][0], str)
-        self.assertEqual("Hello\n\n--\n\nReply", mail.outbox[2].body[:16])
+        self.assertEqual("> Hello\n\n--\n\nReply", mail.outbox[2].body[:18])
         # Sender name is not appended to message for PM missed messages
         self.assertIn(
             ">\n                    \n                        <div><p>Hello</p></div>\n",
@@ -1526,3 +1522,22 @@ class TestFollowupEmailDelay(ZulipTestCase):
         # Test date_joined == Friday
         user_profile.date_joined = datetime(2018, 1, 5, 1, 0, 0, 0, tzinfo=timezone.utc)
         self.assertEqual(followup_day2_email_delay(user_profile), timedelta(days=3, hours=-1))
+
+
+class TestCustomEmailSender(ZulipTestCase):
+    def test_custom_email_sender(self) -> None:
+        name = "Nonreg Email"
+        email = self.nonreg_email("test")
+        with override_settings(
+            WELCOME_EMAIL_SENDER={
+                "name": name,
+                "email": email,
+            }
+        ):
+            hamlet = self.example_user("hamlet")
+            enqueue_welcome_emails(hamlet)
+            scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
+            email_data = orjson.loads(scheduled_emails[0].data)
+            self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
+            self.assertEqual(email_data["from_name"], name)
+            self.assertEqual(email_data["from_address"], email)

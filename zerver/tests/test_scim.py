@@ -170,6 +170,33 @@ class TestSCIMUser(SCIMTestCase):
 
         self.assertEqual(output_data, expected_empty_results_response_schema)
 
+    def test_get_basic_filter_by_username_case_insensitive(self) -> None:
+        """
+        Verifies that the "userName eq XXXX" syntax is case-insensitive.
+        """
+
+        hamlet = self.example_user("hamlet")
+
+        # The assumption for the test to make sense is that these two are not the same:
+        self.assertNotEqual(hamlet.delivery_email.upper(), hamlet.delivery_email)
+
+        expected_response_schema = {
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
+            "totalResults": 1,
+            "itemsPerPage": 50,
+            "startIndex": 1,
+            "Resources": [self.generate_user_schema(hamlet)],
+        }
+
+        result = self.client_get(
+            f'/scim/v2/Users?filter=userName eq "{hamlet.delivery_email.upper()}"',
+            {},
+            **self.scim_headers(),
+        )
+        self.assertEqual(result.status_code, 200)
+        output_data = orjson.loads(result.content)
+        self.assertEqual(output_data, expected_response_schema)
+
     def test_get_all_with_pagination(self) -> None:
         realm = get_realm("zulip")
 

@@ -3,6 +3,7 @@ import time
 from typing import Optional
 
 from django.conf import settings
+from django.db import transaction
 
 from zerver.actions.user_activity import update_user_activity_interval
 from zerver.decorator import statsd_increment
@@ -13,7 +14,9 @@ from zerver.models import Client, UserPresence, UserProfile, UserStatus, active_
 from zerver.tornado.django_api import send_event
 
 
-def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> None:
+def send_presence_changed(
+    user_profile: UserProfile, presence: UserPresence, *, force_send_update: bool = False
+) -> None:
     # Most presence data is sent to clients in the main presence
     # endpoint in response to the user's own presence; this results
     # data that is 1-2 minutes stale for who is online.  The flaw with
@@ -24,7 +27,10 @@ def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> 
     # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
     # internals documentation on presence.
     user_ids = active_user_ids(user_profile.realm_id)
-    if len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS:
+    if (
+        len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
+        and not force_send_update
+    ):
         # These immediate presence generate quadratic work for Tornado
         # (linear number of users in each event and the frequency of
         # users coming online grows linearly with userbase too).  In
@@ -64,7 +70,12 @@ def consolidate_client(client: Client) -> Client:
 
 @statsd_increment("user_presence")
 def do_update_user_presence(
-    user_profile: UserProfile, client: Client, log_time: datetime.datetime, status: int
+    user_profile: UserProfile,
+    client: Client,
+    log_time: datetime.datetime,
+    status: int,
+    *,
+    force_send_update: bool = False,
 ) -> None:
     client = consolidate_client(client)
 
@@ -103,8 +114,18 @@ def do_update_user_presence(
             update_fields.append("status")
         presence.save(update_fields=update_fields)
 
-    if not user_profile.realm.presence_disabled and (created or became_online):
-        send_presence_changed(user_profile, presence)
+    if force_send_update or (
+        not user_profile.realm.presence_disabled and (created or became_online)
+    ):
+        # We do a the transaction.on_commit here, rather than inside
+        # send_presence_changed, to help keep presence transactions
+        # brief; the active_user_ids call there is more expensive than
+        # this whole function.
+        transaction.on_commit(
+            lambda: send_presence_changed(
+                user_profile, presence, force_send_update=force_send_update
+            )
+        )
 
 
 def update_user_presence(

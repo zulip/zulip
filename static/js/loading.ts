@@ -70,9 +70,9 @@ export function destroy_indicator($container: JQuery): void {
 
 export function show_button_spinner($elt: JQuery, using_dark_theme: boolean): void {
     if (!using_dark_theme) {
-        $elt.attr("src", "/static/images/loader-black.svg");
+        $elt.attr("src", "/static/images/loading/loader-black.svg");
     } else {
-        $elt.attr("src", "/static/images/loader-white.svg");
+        $elt.attr("src", "/static/images/loading/loader-white.svg");
     }
     $elt.css("display", "inline-block");
 }

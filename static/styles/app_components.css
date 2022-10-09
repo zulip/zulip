@@ -563,6 +563,12 @@ div.overlay {
     color: hsl(0, 0%, 100%);
 }
 
+.unread_mention_info:not(:empty) {
+    margin-right: 5px;
+    margin-left: 2px;
+    opacity: 0.7;
+}
+
 /* Implement the web app's default-hidden convention for alert
    elements.  Portico pages lack this CSS and thus show them by
    default. */

@@ -199,6 +199,10 @@ li.show-more-topics {
     width: 100%;
 }
 
+#stream-filters-container .simplebar-content-wrapper {
+    outline: none;
+}
+
 #private-container {
     max-height: 210px;
 

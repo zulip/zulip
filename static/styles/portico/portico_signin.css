@@ -401,6 +401,33 @@ html {
         font-weight: 400;
     }
 
+    .demo-organization-warning {
+        position: relative;
+        display: block;
+        background-color: hsl(360, 100%, 93%);
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 1rem;
+        font-weight: 500;
+        line-height: 1.5;
+        color: hsl(0, 0%, 27%);
+
+        a {
+            text-decoration: none;
+        }
+
+        &::before {
+            display: inline;
+            margin-right: 8px;
+
+            font-family: FontAwesome;
+            font-weight: 600;
+            content: "\f071";
+        }
+    }
+
     .alert {
         &:not(.alert-info) {
             padding: 0;

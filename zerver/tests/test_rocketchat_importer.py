@@ -853,7 +853,11 @@ class RocketChatImporter(ZulipTestCase):
         rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
         output_dir = self.make_import_output_dir("rocketchat")
 
-        with self.assertLogs(level="INFO") as info_log:
+        with self.assertLogs(level="INFO") as info_log, self.settings(
+            EXTERNAL_HOST="zulip.example.com"
+        ):
+            # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
+            # uses it to generate email addresses for users without an email specified.
             do_convert_data(
                 rocketchat_data_dir=rocketchat_data_dir,
                 output_dir=output_dir,
@@ -900,7 +904,7 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             exported_user_emails,
             {
-                "rocket.cat-bot@testserver",
+                "rocket.cat-bot@zulip.example.com",
                 "priyansh3133@email.com",
                 "harrypotter@email.com",
                 "hermionegranger@email.com",
@@ -966,8 +970,8 @@ class RocketChatImporter(ZulipTestCase):
 
         realm = get_realm("hogwarts")
 
-        self.assertFalse(get_user("rocket.cat-bot@testserver", realm).is_mirror_dummy)
-        self.assertTrue(get_user("rocket.cat-bot@testserver", realm).is_bot)
+        self.assertFalse(get_user("rocket.cat-bot@zulip.example.com", realm).is_mirror_dummy)
+        self.assertTrue(get_user("rocket.cat-bot@zulip.example.com", realm).is_bot)
         self.assertFalse(get_user("harrypotter@email.com", realm).is_mirror_dummy)
         self.assertFalse(get_user("harrypotter@email.com", realm).is_bot)
         self.assertFalse(get_user("ronweasley@email.com", realm).is_mirror_dummy)

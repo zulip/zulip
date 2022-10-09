@@ -105,12 +105,11 @@ remote="$(git config zulip.zulipRemote)" || remote=upstream
 git push "$remote" "$branch:$branch"
 
 OUTPUT_DIR=$(mktemp -d)
-trap 'rm -r "$OUTPUT_DIR"' EXIT
 export OUTPUT_DIR
 
 ./tools/build-release-tarball "$version"
 
-TARBALL="$OUTDIR/zulip-server-$version.tar.gz"
+TARBALL="$OUTPUT_DIR/zulip-server-$version.tar.gz"
 if ! [ -f "$TARBALL" ]; then
     echo "Did not find expected $TARBALL!"
     exit 1
@@ -118,7 +117,7 @@ fi
 
 ./tools/upload-release "$TARBALL"
 
-git push "$version"
+git push "$remote" "$version"
 
 # Upload to Github
 gh release create "$version" \

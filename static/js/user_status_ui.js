@@ -191,5 +191,9 @@ export function initialize() {
             status_text: $t({defaultMessage: "Working remotely"}),
             emoji: emoji.get_emoji_details_by_name("house"),
         },
+        {
+            status_text: $t({defaultMessage: "At the office"}),
+            emoji: emoji.get_emoji_details_by_name("office"),
+        },
     ];
 }

@@ -81,9 +81,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             if self.payload.get(available_type):
                 return self.payload_available_types[available_type]
         for available_type in self.attachments_available_types:
-            if self.attachments[0].get(available_type):
+            if len(self.attachments) > 0 and self.attachments[0].get(available_type):
                 return self.attachments_available_types[available_type]
-        raise Exception("Unexcepted message type")
+        raise Exception("Unexpected message type")
 
     def handle(self) -> str:
         return self.find_handle_method()()

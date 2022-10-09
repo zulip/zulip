@@ -2,7 +2,7 @@
 
 Send animated GIFs with your message using GIPHY integration.
 
-![](/static/images/GIPHY_zulip.png)
+![](/static/images/integrations/giphy/GIPHY_zulip.png)
 
 GIPHY is enabled by default in Zulip Cloud. If the you're on a
 self-hosted server where the [GIPHY integration][help-center-giphy]

@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import orjson
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -23,7 +24,10 @@ from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
-from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.realm_settings import (
+    do_change_realm_plan_type,
+    do_set_realm_authentication_methods,
+)
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_topics import do_mute_topic
 from zerver.actions.users import do_deactivate_user
@@ -75,6 +79,7 @@ from zerver.models import (
     get_active_streams,
     get_client,
     get_huddle_hash,
+    get_realm,
     get_stream,
 )
 
@@ -686,6 +691,18 @@ class RealmImportExportTest(ExportFile):
 
         # Deactivate a user to ensure such a case is covered.
         do_deactivate_user(self.example_user("aaron"), acting_user=None)
+
+        # Change some authentication_methods so that some are enabled and some disabled
+        # for this to be properly tested, as opposed to some special case
+        # with e.g. everything enabled.
+        authentication_methods = original_realm.authentication_methods_dict()
+        authentication_methods["Email"] = False
+        authentication_methods["Dev"] = True
+
+        do_set_realm_authentication_methods(
+            original_realm, authentication_methods, acting_user=None
+        )
+
         # data to test import of huddles
         huddle = [
             self.example_user("hamlet"),
@@ -809,7 +826,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         # Make sure our export/import didn't somehow leak info into the
         # original realm.
@@ -916,6 +933,11 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(all_imported_realm_emoji.count(), original_realm_emoji_count)
         for imported_realm_emoji in all_imported_realm_emoji:
             self.assertNotEqual(imported_realm_emoji.author, None)
+
+        self.assertEqual(
+            original_realm.authentication_methods_dict(),
+            imported_realm.authentication_methods_dict(),
+        )
 
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()
@@ -1179,6 +1201,38 @@ class RealmImportExportTest(ExportFile):
 
         return getters
 
+    def test_import_realm_with_invalid_email_addresses_fails_validation(self) -> None:
+        realm = get_realm("zulip")
+
+        self.export_realm(realm)
+        data = read_json("realm.json")
+
+        data["zerver_userprofile"][0]["delivery_email"] = "invalid_email_address"
+
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
+            do_import_realm(output_dir, "test-zulip")
+
+        # Now test a weird case where delivery_email is valid, but .email is not.
+        # Such data should never reasonably get generated, but we should still
+        # be defensive against it (since it can still happen due to bugs or manual edition
+        # of export files in an attempt to get us to import malformed data).
+        self.export_realm(realm)
+        data = read_json("realm.json")
+        data["zerver_userprofile"][0]["email"] = "invalid_email_address"
+
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertRaises(ValidationError), self.assertLogs(level="INFO"):
+            do_import_realm(output_dir, "test-zulip2")
+
     def test_import_realm_with_no_realm_user_default_table(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
 
@@ -1186,7 +1240,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
         imported_realm = Realm.objects.get(string_id="test-zulip")
@@ -1209,7 +1263,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
         # Test attachments
@@ -1273,7 +1327,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+            do_import_realm(get_output_dir(), "test-zulip")
 
         imported_realm = Realm.objects.get(string_id="test-zulip")
         test_image_data = read_test_image_file("img.png")
@@ -1357,9 +1411,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
-            realm = do_import_realm(
-                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-1"
-            )
+            realm = do_import_realm(get_output_dir(), "test-zulip-1")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, 5)
@@ -1370,9 +1422,7 @@ class RealmImportExportTest(ExportFile):
                 ).exists()
             )
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            realm = do_import_realm(
-                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-2"
-            )
+            realm = do_import_realm(get_output_dir(), "test-zulip-2")
             self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
             self.assertEqual(realm.max_invites, 100)
             self.assertEqual(realm.upload_quota_gb, None)

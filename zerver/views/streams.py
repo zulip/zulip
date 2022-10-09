@@ -21,7 +21,7 @@ from zerver.actions.default_streams import (
     do_remove_streams_from_default_stream_group,
     get_default_streams_for_realm,
 )
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
     do_send_messages,
     internal_prep_private_message,
@@ -740,7 +740,7 @@ def send_messages_for_new_subscribers(
                     internal_prep_stream_message(
                         sender=sender,
                         stream=stream,
-                        topic=Realm.STREAM_EVENTS_NOTIFICATION_TOPIC,
+                        topic=str(Realm.STREAM_EVENTS_NOTIFICATION_TOPIC),
                         content=_(
                             "**{policy}** stream created by {user_name}. **Description:**"
                         ).format(

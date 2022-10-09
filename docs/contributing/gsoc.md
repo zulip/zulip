@@ -67,7 +67,7 @@ also give you a feel for what it's like to do GSoC with us.
 
 We have an easy-to-set-up development environment, and a library of
 tasks that are great for first-time contributors. Use
-[our first-time Zulip developer guide](../overview/contributing.md#your-first-codebase-contribution)
+[our first-time Zulip developer guide](contributing.md#your-first-codebase-contribution)
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in the
 [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) stream on the
@@ -135,7 +135,7 @@ For the first time in 2022, being a student is not required in order to apply to
 GSoC. We are happy to accept both student and non-student participants.
 
 Our documentation on [what makes a great Zulip
-contributor](../overview/contributing.md#what-makes-a-great-zulip-contributor)
+contributor](contributing.md#what-makes-a-great-zulip-contributor)
 offers some additional helpful information. We also recommend reviewing the
 [official GSoC
 resources](https://developers.google.com/open-source/gsoc/resources/),
@@ -169,7 +169,7 @@ other contributors learn from reading the conversation.
   - [Try, Then Ask](https://www.mattringel.com/2013/09/30/you-must-try-and-then-you-must-ask/)
   - [We Aren’t Just Making Code, We’re Making History](https://www.harihareswara.net/sumana/2016/10/12/0)
   - [How to Ask Good Questions](https://jvns.ca/blog/good-questions/)
-- Understand [what makes a great Zulip contributor](../overview/contributing.md#what-makes-a-great-zulip-contributor)
+- Understand [what makes a great Zulip contributor](contributing.md#what-makes-a-great-zulip-contributor)
 
 This is a typical question/response sequence:
 

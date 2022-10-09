@@ -170,6 +170,7 @@ body.dark-theme {
 
     .column-left .left-sidebar,
     .stream_name_search_section,
+    .group_name_search_section,
     .column-right .right-sidebar {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
@@ -290,9 +291,7 @@ body.dark-theme {
         color: hsl(236, 33%, 90%);
     }
 
-    .recent_topics_container .unread_count,
-    .topic-list-item .unread_count,
-    .expanded_private_message .unread_count {
+    .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }
 
@@ -423,6 +422,10 @@ body.dark-theme {
         #stream-creation
         #stream_creation_form
         #stream_creating_indicator:not(:empty),
+    #groups_overlay
+        #user-group-creation
+        #user_group_creation_form
+        #user_group_creating_indicator:not(:empty),
     .emoji-info-popover
         .emoji-popover
         .emoji-popover-emoji:not(.reacted):focus {
@@ -568,6 +571,7 @@ body.dark-theme {
         border-top: none;
     }
 
+    .group-row.active,
     .stream-row.active,
     .emoji-info-popover .emoji-showcase-container,
     .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,
@@ -634,6 +638,7 @@ body.dark-theme {
     .nav > li > a:focus,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
+    .user-groups-container .user-groups-header,
     .grey-box,
     .white-box,
     .stream-email,
@@ -652,12 +657,17 @@ body.dark-theme {
         background-color: hsl(212, 28%, 18%);
     }
 
+    .user-groups-container .right .display-type,
     .subscriptions-container .right .display-type,
     .stream-row,
+    .group-row,
     .subscriptions-container .left .search-container,
     .subscriptions-container .left,
+    .user-groups-container .left,
     .subscriber-list-box,
     .subscriber-list-box .subscriber_list_container .subscriber-list tr,
+    .member-list-box,
+    .member-list-box .member_list_container .member-list tr,
     #subscription_overlay .subsection-parent div,
     #subscription_overlay .radio-input-parent,
     #stream_privacy_modal .radio-input-parent,

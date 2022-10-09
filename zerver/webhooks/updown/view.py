@@ -1,6 +1,5 @@
 # Webhooks for external integrations.
 import re
-from typing import Any, Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
@@ -8,6 +7,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -15,22 +15,24 @@ TOPIC_TEMPLATE = "{service_url}"
 
 
 def send_message_for_event(
-    request: HttpRequest, user_profile: UserProfile, event: Dict[str, Any]
+    request: HttpRequest, user_profile: UserProfile, event: WildValue
 ) -> None:
     event_type = get_event_type(event)
-    subject = TOPIC_TEMPLATE.format(service_url=event["check"]["url"])
+    subject = TOPIC_TEMPLATE.format(service_url=event["check"]["url"].tame(check_string))
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
     check_send_webhook_message(request, user_profile, subject, body, event_type)
 
 
-def get_body_for_up_event(event: Dict[str, Any]) -> str:
+def get_body_for_up_event(event: WildValue) -> str:
     body = "Service is `up`"
     event_downtime = event["downtime"]
-    if event_downtime["started_at"]:
+    if event_downtime["started_at"].tame(check_none_or(check_string)):
         body = f"{body} again"
-        string_date = get_time_string_based_on_duration(event_downtime["duration"])
-        if string_date:
-            body = f"{body} after {string_date}"
+        duration = event_downtime["duration"].tame(check_none_or(check_int))
+        if duration:
+            string_date = get_time_string_based_on_duration(duration)
+            if string_date:
+                body = f"{body} after {string_date}"
     return f"{body}."
 
 
@@ -55,10 +57,13 @@ def add_time_part_to_string_date_if_needed(value: int, text_name: str) -> str:
     return ""
 
 
-def get_body_for_down_event(event: Dict[str, Any]) -> str:
+def get_body_for_down_event(event: WildValue) -> str:
     return "Service is `down`. It returned a {} error at {}.".format(
-        event["downtime"]["error"],
-        event["downtime"]["started_at"].replace("T", " ").replace("Z", " UTC"),
+        event["downtime"]["error"].tame(check_none_or(check_string)),
+        event["downtime"]["started_at"]
+        .tame(check_string)  # started_at is not None in a "down" event.
+        .replace("T", " ")
+        .replace("Z", " UTC"),
     )
 
 
@@ -74,17 +79,17 @@ ALL_EVENT_TYPES = list(EVENT_TYPE_BODY_MAPPER.keys())
 def api_updown_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: List[Dict[str, Any]] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)
     return json_success(request)
 
 
-def get_event_type(event: Dict[str, Any]) -> str:
-    event_type_match = re.match("check.(.*)", event["event"])
+def get_event_type(event: WildValue) -> str:
+    event_type_match = re.match("check.(.*)", event["event"].tame(check_string))
     if event_type_match:
         event_type = event_type_match.group(1)
         if event_type in EVENT_TYPE_BODY_MAPPER:
             return event_type
-    raise UnsupportedWebhookEventType(event["event"])
+    raise UnsupportedWebhookEventType(event["event"].tame(check_string))

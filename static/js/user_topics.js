@@ -7,6 +7,13 @@ import {get_time_from_date_muted} from "./util";
 
 const muted_topics = new Map();
 
+export const visibility_policy = {
+    VISIBILITY_POLICY_INHERIT: 0,
+    MUTED: 1,
+    UNMUTED: 2,
+    FOLLOWED: 3,
+};
+
 export function add_muted_topic(stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
@@ -51,25 +58,36 @@ export function get_muted_topics() {
     return topics;
 }
 
-export function set_muted_topics(tuples) {
+export function set_user_topic(user_topic) {
+    const stream_id = user_topic.stream_id;
+    const topic = user_topic.topic_name;
+    const date_muted = user_topic.last_updated;
+
+    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+
+    if (!stream_name) {
+        blueslip.warn("Unknown stream ID in set_user_topic: " + stream_id);
+        return;
+    }
+
+    switch (user_topic.visibility_policy) {
+        case visibility_policy.MUTED:
+            add_muted_topic(stream_id, topic, date_muted);
+            break;
+        case visibility_policy.VISIBILITY_POLICY_INHERIT:
+            remove_muted_topic(stream_id, topic);
+            break;
+    }
+}
+
+export function set_user_topics(user_topics) {
     muted_topics.clear();
 
-    for (const tuple of tuples) {
-        const stream_name = tuple[0];
-        const topic = tuple[1];
-        const date_muted = tuple[2];
-
-        const stream_id = stream_data.get_stream_id(stream_name);
-
-        if (!stream_id) {
-            blueslip.warn("Unknown stream in set_muted_topics: " + stream_name);
-            continue;
-        }
-
-        add_muted_topic(stream_id, topic, date_muted);
+    for (const user_topic of user_topics) {
+        set_user_topic(user_topic);
     }
 }
 
 export function initialize() {
-    set_muted_topics(page_params.muted_topics);
+    set_user_topics(page_params.user_topics);
 }

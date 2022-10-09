@@ -1,6 +1,6 @@
 # Webhooks for teamcity integration
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
@@ -13,6 +13,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
+from zerver.lib.validator import WildValue, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile
 
@@ -41,10 +42,10 @@ def guess_zulip_user_from_teamcity(teamcity_username: str, realm: Realm) -> Opti
         return None
 
 
-def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) -> Optional[str]:
+def get_teamcity_property_value(property_list: WildValue, name: str) -> Optional[str]:
     for property in property_list:
-        if property["name"] == name:
-            return property["value"]
+        if property["name"].tame(check_string) == name:
+            return property["value"].tame(check_string)
     return None
 
 
@@ -53,27 +54,29 @@ def get_teamcity_property_value(property_list: List[Dict[str, str]], name: str) 
 def api_teamcity_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-    message = payload.get("build")
-    if message is None:
+    if "build" not in payload:
         # Ignore third-party specific (e.g. Slack) payload formats
         # and notify the bot owner
-        message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
+        error_message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
             bot_name=user_profile.full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
-        send_rate_limited_pm_notification_to_bot_owner(user_profile, user_profile.realm, message)
+        send_rate_limited_pm_notification_to_bot_owner(
+            user_profile, user_profile.realm, error_message
+        )
 
         return json_success(request)
 
-    build_name = message["buildFullName"]
-    build_url = message["buildStatusUrl"]
+    message = payload.get("build")
+    build_name = message["buildFullName"].tame(check_string)
+    build_url = message["buildStatusUrl"].tame(check_string)
     changes_url = build_url + "&tab=buildChangesDiv"
-    build_number = message["buildNumber"]
-    build_result = message["buildResult"]
-    build_result_delta = message["buildResultDelta"]
-    build_status = message["buildStatus"]
+    build_number = message["buildNumber"].tame(check_string)
+    build_result = message["buildResult"].tame(check_string)
+    build_result_delta = message["buildResultDelta"].tame(check_string)
+    build_status = message["buildStatus"].tame(check_string)
 
     if build_result == "success":
         if build_result_delta == "fixed":
@@ -102,7 +105,7 @@ def api_teamcity_webhook(
     )
 
     if "branchDisplayName" in message:
-        topic = "{} ({})".format(build_name, message["branchDisplayName"])
+        topic = "{} ({})".format(build_name, message["branchDisplayName"].tame(check_string))
     else:
         topic = build_name
 
@@ -114,7 +117,7 @@ def api_teamcity_webhook(
         # The triggeredBy field gives us the teamcity user full name, and the
         # "teamcity.build.triggeredBy.username" property gives us the teamcity username.
         # Let's try finding the user email from both.
-        teamcity_fullname = message["triggeredBy"].split(";")[0]
+        teamcity_fullname = message["triggeredBy"].tame(check_string).split(";")[0]
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
         if teamcity_user is None:

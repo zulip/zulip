@@ -6,6 +6,12 @@ import django.urls.resolvers
 from django.test import Client
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.url_redirects import (
+    API_DOCUMENTATION_REDIRECTS,
+    HELP_DOCUMENTATION_REDIRECTS,
+    LANDING_PAGE_REDIRECTS,
+    POLICY_DOCUMENTATION_REDIRECTS,
+)
 from zerver.models import Realm, Stream
 from zproject import urls
 
@@ -154,3 +160,25 @@ class ErrorPageTest(ZulipTestCase):
             "/json/users", secure=True, HTTP_REFERER="https://somewhere", HTTP_HOST="$nonsense"
         )
         self.assertEqual(result.status_code, 400)
+
+
+class RedirectURLTest(ZulipTestCase):
+    def test_api_redirects(self) -> None:
+        for redirect in API_DOCUMENTATION_REDIRECTS:
+            result = self.client_get(redirect.old_url, follow=True)
+            self.assert_in_success_response(["Zulip homepage", "API documentation home"], result)
+
+    def test_help_redirects(self) -> None:
+        for redirect in HELP_DOCUMENTATION_REDIRECTS:
+            result = self.client_get(redirect.old_url, follow=True)
+            self.assert_in_success_response(["Zulip homepage", "Help center home"], result)
+
+    def test_policy_redirects(self) -> None:
+        for redirect in POLICY_DOCUMENTATION_REDIRECTS:
+            result = self.client_get(redirect.old_url, follow=True)
+            self.assert_in_success_response(["Policies", "Archive"], result)
+
+    def test_landing_page_redirects(self) -> None:
+        for redirect in LANDING_PAGE_REDIRECTS:
+            result = self.client_get(redirect.old_url, follow=True)
+            self.assert_in_success_response(["Download"], result)

@@ -551,7 +551,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/email.html",
             "zerver/tests/fixtures/email",
-            "templates/zerver/for-business.html",
+            "templates/corporate/for/business.html",
             "templates/corporate/support_request.html",
             "templates/corporate/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
@@ -620,7 +620,7 @@ html_rules: List["Rule"] = [
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
         "exclude": {
             "templates/corporate/billing.html",
-            "templates/zerver/hello.html",
+            "templates/corporate/hello.html",
             "templates/corporate/upgrade.html",
             "templates/corporate/event_status.html",
         },
@@ -695,6 +695,7 @@ html_rules: List["Rule"] = [
             # exclude_pattern above handles color, but have other issues:
             "static/templates/draft.hbs",
             "static/templates/stream_settings/browse_streams_list_item.hbs",
+            "static/templates/user_group_settings/browse_user_groups_list_item.hbs",
             "static/templates/single_message.hbs",
             # Old-style email templates need to use inline style
             # attributes; it should be possible to clean these up
@@ -714,7 +715,7 @@ html_rules: List["Rule"] = [
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
             "templates/zerver/billing_nav.html",
-            "templates/zerver/features.html",
+            "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
             "templates/corporate/billing.html",
             "templates/corporate/upgrade.html",
@@ -846,7 +847,7 @@ markdown_rules = RuleList(
         {
             "pattern": "https://zulip.readthedocs.io/en/latest/[a-zA-Z0-9]",
             "exclude": {
-                "docs/overview/contributing.md",
+                "docs/contributing/contributing.md",
                 "docs/overview/readme.md",
                 "docs/README.md",
                 "docs/subsystems/email.md",

@@ -825,7 +825,7 @@ export function keyboard_sub() {
 
 export function toggle_view(event) {
     const active_data = get_active_data();
-    const stream_filter_tab = $(active_data.$tabs[0]).text();
+    const stream_filter_tab = active_data.$tabs.first().text();
 
     if (event === "right_arrow" && stream_filter_tab === "Subscribed") {
         toggler.goto("all-streams");

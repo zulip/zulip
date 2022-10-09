@@ -4,7 +4,6 @@ import re
 import sys
 import time
 from contextlib import contextmanager
-from functools import wraps
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -482,24 +481,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
-            "help/add-custom-emoji",
-            "help/configure-who-can-add-custom-emoji",
-            "help/change-the-topic-of-a-message",
-            "help/configure-missed-message-emails",
-            "help/community-topic-edits",
-            "help/about-streams-and-topics",
-            "help/delete-a-stream",
-            "help/add-an-alert-word",
-            "help/change-notification-sound",
-            "help/configure-message-notification-emails",
-            "help/disable-new-login-emails",
-            "help/test-mobile-notifications",
-            "help/troubleshooting-desktop-notifications",
-            "help/web-public-streams",
-            "for/working-groups-and-communities/",
-            "help/only-allow-admins-to-add-emoji",
-            "help/night-mode",
-            "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
             "flush_caches",
@@ -722,17 +703,3 @@ def mock_queue_publish(
 
     with mock.patch(method_to_patch, side_effect=verify_serialize):
         yield inner
-
-
-def patch_queue_publish(
-    method_to_patch: str,
-) -> Callable[[Callable[..., None]], Callable[..., None]]:
-    def inner(func: Callable[..., None]) -> Callable[..., None]:
-        @wraps(func)
-        def _wrapped(*args: object, **kwargs: object) -> None:
-            with mock_queue_publish(method_to_patch) as m:
-                func(*args, m, **kwargs)
-
-        return _wrapped
-
-    return inner

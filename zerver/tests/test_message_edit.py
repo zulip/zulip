@@ -7,9 +7,9 @@ import orjson
 from django.db import IntegrityError
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_edit import (
     check_update_message,
-    do_delete_messages,
     do_update_message,
     get_mentions_for_message_updates,
 )

@@ -1,7 +1,7 @@
 # Using Zulip for a class
 
 Welcome to Zulip! This pages offers some tips for [using Zulip for a
-class](/for/education).  If this is your first time using Zulip, we
+class](https://zulip.com/for/education).  If this is your first time using Zulip, we
 recommend checking out [Getting started with
 Zulip](/help/getting-started-with-zulip) to get oriented.
 

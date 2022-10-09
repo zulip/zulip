@@ -5,6 +5,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
@@ -220,7 +221,6 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(str(access_denied_error.exception), "Access denied")
         self.assertEqual(access_denied_error.exception.http_status_code, 403)
 
-        assert settings.SHARED_SECRET is not None
         post_data["secret"] = settings.SHARED_SECRET
         req = HostRequestMock(post_data, tornado_handler=dummy_handler)
         req.META["REMOTE_ADDR"] = "127.0.0.1"
@@ -1200,8 +1200,12 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
 
 
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):
+    # For this test, we verify do_update_user_presence doesn't send
+    # events for organizations with more than
+    # USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS users, unless
+    # force_send_update is passed.
+    @override_settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=3)
     def test_presence_events_disabled_on_larger_realm(self) -> None:
-        # First check that normally the mocked function gets called.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_update_user_presence(
@@ -1209,15 +1213,14 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                 get_client("website"),
                 timezone_now(),
                 UserPresence.ACTIVE,
+                force_send_update=True,
             )
 
-        # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
-        # amount of active users, send_event doesn't get called.
         with self.tornado_redirected_to_list(events, expected_num_events=0):
-            with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
-                do_update_user_presence(
-                    self.example_user("hamlet"),
-                    get_client("website"),
-                    timezone_now(),
-                    UserPresence.ACTIVE,
-                )
+            do_update_user_presence(
+                self.example_user("hamlet"),
+                get_client("website"),
+                timezone_now(),
+                UserPresence.ACTIVE,
+                force_send_update=False,
+            )

@@ -468,10 +468,7 @@ export function receives_notifications(stream_id, notification_name) {
     if (sub[notification_name] !== null) {
         return sub[notification_name];
     }
-    if (notification_name === "wildcard_mentions_notify") {
-        return user_settings[notification_name];
-    }
-    return user_settings["enable_stream_" + notification_name];
+    return user_settings[settings_config.generalize_stream_notification_setting[notification_name]];
 }
 
 export function all_subscribed_streams_are_in_home_view() {

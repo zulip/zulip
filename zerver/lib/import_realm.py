@@ -11,6 +11,7 @@ import orjson
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.cache import cache
+from django.core.validators import validate_email
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from psycopg2.extras import execute_values
@@ -587,9 +588,14 @@ def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> N
 
 
 def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_name: Field) -> None:
-    """Used to fixup the authentication_methods bitfield to be a string"""
+    """Used to fixup the authentication_methods bitfield to be an integer."""
     for item in data[table]:
-        values_as_bitstring = "".join("1" if field[1] else "0" for field in item[field_name])
+        # The ordering of bits here is important for the imported value
+        # to end up as expected.
+        charlist = ["1" if field[1] else "0" for field in item[field_name]]
+        charlist.reverse()
+
+        values_as_bitstring = "".join(charlist)
         values_as_int = int(values_as_bitstring, 2)
         item[field_name] = values_as_int
 
@@ -1015,6 +1021,11 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     user_profiles = [UserProfile(**item) for item in data["zerver_userprofile"]]
     for user_profile in user_profiles:
+        # Validate both email attributes to be defensive
+        # against any malformed data, where .delivery_email
+        # might be set correctly, but .email not.
+        validate_email(user_profile.delivery_email)
+        validate_email(user_profile.email)
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
 

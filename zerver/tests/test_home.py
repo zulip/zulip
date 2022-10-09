@@ -190,6 +190,7 @@ class HomeTest(ZulipTestCase):
         "request_language",
         "search_pills_enabled",
         "server_avatar_changes_disabled",
+        "server_emoji_data_url",
         "server_generation",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
@@ -493,9 +494,9 @@ class HomeTest(ZulipTestCase):
         user.tos_version = None
         user.save()
 
-        with self.settings(FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="zerver/hello.html"), self.settings(
-            TERMS_OF_SERVICE_VERSION="99.99"
-        ):
+        with self.settings(
+            FIRST_TIME_TERMS_OF_SERVICE_TEMPLATE="corporate/hello.html"
+        ), self.settings(TERMS_OF_SERVICE_VERSION="99.99"):
             result = self.client_post("/accounts/accept_terms/")
             self.assertEqual(result.status_code, 200)
             self.assert_in_response("I agree to the", result)

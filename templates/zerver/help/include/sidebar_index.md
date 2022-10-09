@@ -88,6 +88,7 @@
 * [View when message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View a message's edit history](/help/view-a-messages-edit-history)
 * [Collapse a message](/help/collapse-a-message)
+* [Read receipts](/help/read-receipts)
 
 ## People
 * [Status and availability](/help/status-and-availability)

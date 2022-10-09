@@ -192,8 +192,15 @@ def webpack_entry(entrypoint: str) -> List[str]:
     if status != "done":
         raise RuntimeError("Webpack compilation was not successful")
 
-    return [
-        staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
-        for filename in stats["chunks"][entrypoint]
-        if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
-    ]
+    try:
+        files_from_entrypoints = [
+            staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
+            for filename in stats["chunks"][entrypoint]
+            if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
+        ]
+    except KeyError:
+        raise KeyError(
+            f"'{entrypoint}' entrypoint could not be found. Please define it in tools/webpack.assets.json."
+        )
+
+    return files_from_entrypoints

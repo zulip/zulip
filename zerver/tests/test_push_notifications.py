@@ -23,7 +23,7 @@ from requests.models import PreparedRequest
 
 from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
-from zerver.actions.message_edit import do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url
@@ -460,11 +460,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
                     "ConnectionError while trying to connect to push notification bouncer",
                     502,
                 )
-                self.assertEqual(
-                    error_log.output,
-                    [
-                        f"ERROR:django.request:Bad Gateway: {endpoint}",
-                    ],
+                self.assertIn(
+                    f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback",
+                    error_log.output[0],
                 )
 
             with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as warn_log:
@@ -472,11 +470,11 @@ class PushBouncerNotificationTest(BouncerTestCase):
                 result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
                 self.assert_json_error(result, "Received 500 from push notification bouncer", 502)
                 self.assertEqual(
-                    warn_log.output,
-                    [
-                        "WARNING:root:Received 500 from push notification bouncer",
-                        f"ERROR:django.request:Bad Gateway: {endpoint}",
-                    ],
+                    warn_log.output[0],
+                    "WARNING:root:Received 500 from push notification bouncer",
+                )
+                self.assertIn(
+                    f"ERROR:django.request:Bad Gateway: {endpoint}\nTraceback", warn_log.output[1]
                 )
 
         # Add tokens
@@ -552,13 +550,12 @@ class AnalyticsBouncerTest(BouncerTestCase):
         user = self.example_user("hamlet")
         end_time = self.TIME_ZERO
 
-        with responses.RequestsMock() as resp, mock.patch(
-            "zerver.lib.remote_server.logging.warning"
-        ) as mock_warning:
+        with responses.RequestsMock() as resp, self.assertLogs(level="WARNING") as mock_warning:
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
             send_analytics_to_remote_server()
-            mock_warning.assert_called_once_with(
-                "ConnectionError while trying to connect to push notification bouncer"
+            self.assertIn(
+                "WARNING:root:ConnectionError while trying to connect to push notification bouncer\nTraceback ",
+                mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
 

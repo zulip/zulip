@@ -19,6 +19,7 @@ from .config import (
     config_file,
     get_config,
     get_from_file_if_exists,
+    get_mandatory_secret,
     get_secret,
 )
 from .configured_settings import (
@@ -72,16 +73,16 @@ from .configured_settings import (
 ########################################################################
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = get_secret("secret_key")
+SECRET_KEY = get_mandatory_secret("secret_key")
 
 # A shared secret, used to authenticate different parts of the app to each other.
-SHARED_SECRET = get_secret("shared_secret")
+SHARED_SECRET = get_mandatory_secret("shared_secret")
 
 # We use this salt to hash a user's email into a filename for their user-uploaded
 # avatar.  If this salt is discovered, attackers will only be able to determine
 # that the owner of an email account has uploaded an avatar to Zulip, which isn't
 # the end of the world.  Don't use the salt where there is more security exposure.
-AVATAR_SALT = get_secret("avatar_salt")
+AVATAR_SALT = get_mandatory_secret("avatar_salt")
 
 # SERVER_GENERATION is used to track whether the server has been
 # restarted for triggering browser clients to reload.
@@ -606,7 +607,8 @@ LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, "locale"),)
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-STATICFILES_DIRS = ["static/"]
+if DEVELOPMENT or "ZULIP_COLLECTING_STATIC" in os.environ:
+    STATICFILES_DIRS = [os.path.join(DEPLOY_ROOT, "static")]
 
 if DEBUG:
     WEBPACK_BUNDLES = "../webpack/"

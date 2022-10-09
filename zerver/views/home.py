@@ -19,7 +19,6 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.user_counts import realm_user_count
 from zerver.lib.utils import statsd
 from zerver.models import PreregistrationUser, Realm, Stream, UserProfile
-from zerver.views.portico import hello_view
 
 
 def need_accept_tos(user_profile: Optional[UserProfile]) -> bool:
@@ -115,7 +114,14 @@ def home(request: HttpRequest) -> HttpResponse:
 
     # If settings.ROOT_DOMAIN_LANDING_PAGE and this is the root
     # domain, send the user the landing page.
-    if settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN:
+    if (
+        settings.ROOT_DOMAIN_LANDING_PAGE
+        and subdomain == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
+        and settings.CORPORATE_ENABLED
+    ):
+
+        from corporate.views.portico import hello_view
+
         return hello_view(request)
 
     realm = get_realm_from_request(request)

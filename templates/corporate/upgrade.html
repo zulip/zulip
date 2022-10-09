@@ -24,6 +24,16 @@
                 </div>
                 {% endif %}
 
+                {% if is_demo_organization %}
+                <div class="demo-organization-warning">
+                    Demo organizations cannot be directly upgraded to a paid plan. Please start by
+                    <a href="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization">
+                    converting your demo organization
+                    </a>
+                    to a permanent organization.
+                </div>
+                {% endif %}
+
                 {% if error_message %}
                 <div class="alert alert-danger" id="upgrade-error-message-box">
                     {{ error_message }}
@@ -140,10 +150,14 @@
                                     <h4>Number of licenses (minimum {{ seat_count }})</h4>
                                     <input type="number" name="licenses" min="{{ seat_count }}" autocomplete="off" id="manual_license_count" required/><br />
                                 </div>
-
-                                <button id="add-card-button" class="stripe-button-el invoice-button">
-                                    <span id="add-card-button-span">Add card</span>
-                                </button>
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button id="add-card-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        <span id="add-card-button-span">
+                                            Add card
+                                        </span>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                         <div id="autopay-loading">
@@ -201,7 +215,12 @@
                                 <h4>Number of licenses (minimum {{ min_invoiced_licenses }})</h4>
                                 <input type="number" min="{{ min_invoiced_licenses }}" autocomplete="off"
                                   id="invoiced_licenses" name="licenses" required/><br />
-                                <button type="submit" id="invoice-button" class="stripe-button-el invoice-button">Buy Standard</button>
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button type="submit" id="invoice-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        Buy Standard
+                                    </button>
+                                </div>
                             </form>
                         </div>
                         <div id="invoice-loading">
@@ -247,7 +266,12 @@
                                 <textarea name="description" style="width: 100%;" cols="100" rows="5" required></textarea>
                                 <br />
                                 <p id="sponsorship-discount-details"></p>
-                                <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button">Submit</button>
+                                <!-- Disabled buttons do not fire any events, so we need a container div that isn't disabled for tippyjs to work -->
+                                <div class="upgrade-button-container" {% if is_demo_organization %}data-tippy-content="{% trans %}Convert demo organization before upgrading.{% endtrans %}"{% endif %}>
+                                    <button type="submit" id="sponsorship-button" class="stripe-button-el invoice-button" {% if is_demo_organization %}disabled{% endif %}>
+                                        Submit
+                                    </button>
+                                </div>
                             </form>
                         </div>
                         <div id="sponsorship-loading">

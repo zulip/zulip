@@ -19,6 +19,9 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     strategy:
@@ -69,7 +72,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /srv/zulip-npm-cache
-          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json') }}-${{ hashFiles('yarn.lock') }}
+          key: v1-yarn-deps-${{ matrix.os }}-${{ hashFiles('package.json', 'yarn.lock') }}
           restore-keys: v1-yarn-deps-${{ matrix.os }}
 
       - name: Restore python cache
@@ -83,7 +86,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /srv/zulip-emoji-cache
-          key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
+          key: v1-emoji-${{ matrix.os }}-${{ hashFiles('tools/setup/emoji/emoji_map.json', 'tools/setup/emoji/build_emoji', 'tools/setup/emoji/emoji_setup_utils.py', 'tools/setup/emoji/emoji_names.py', 'package.json') }}
           restore-keys: v1-emoji-${{ matrix.os }}
 
       - name: Install dependencies

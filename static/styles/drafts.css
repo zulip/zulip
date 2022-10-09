@@ -69,6 +69,12 @@
             color: hsl(0, 0%, 67%);
             pointer-events: none;
         }
+
+        h2 {
+            font-size: 1.1em;
+            line-height: normal;
+            margin-bottom: 5px;
+        }
     }
 }
 

@@ -33,16 +33,17 @@ Come find us on the [development community chat](https://zulip.com/development-c
 ## Getting started
 
 - **Contributing code**. Check out our [guide for new
-  contributors](https://zulip.readthedocs.io/en/latest/overview/contributing.html)
-  to get started. We have invested into making Zulip’s code uniquely readable,
-  well tested, and easy to modify. Beyond that, we have written an extraordinary
-  150K words of documentation on how to contribute to Zulip.
+  contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
+  to get started. We have invested in making Zulip’s code highly
+  readable, thoughtfully tested, and easy to modify. Beyond that, we
+  have written an extraordinary 150K words of documentation for Zulip
+  contributors.
 
 - **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/overview/contributing.html#reporting-issues),
+  issue](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#reporting-issues),
   [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback).
+  feedback](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#user-feedback).
   We'd love to hear from you, whether you've been using Zulip for years, or are just
   trying it out for the first time.
 
@@ -51,7 +52,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   recommend reading about Zulip's [unique
   approach](https://zulip.com/why-zulip/) to organizing conversations.
 
-- **Running a Zulip server**. Self host Zulip directly on Ubuntu or Debian
+- **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
   images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
   [Render](https://render.com/docs/deploy-zulip).
@@ -64,14 +65,14 @@ Come find us on the [development community chat](https://zulip.com/development-c
   projects](https://zulip.com/for/open-source/).
 
 - **Participating in [outreach
-  programs](https://zulip.readthedocs.io/en/latest/overview/contributing.html#outreach-programs)**
+  programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
   like [Google Summer of Code](https://developers.google.com/open-source/gsoc/)
   and [Outreachy](https://www.outreachy.org/).
 
 - **Supporting Zulip**. Advocate for your organization to use Zulip, become a
   [sponsor](https://github.com/sponsors/zulip), write a review in the mobile app
   stores, or [help others find
-  Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#help-others-find-zulip).
+  Zulip](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#help-others-find-zulip).
 
 You may also be interested in reading our [blog](https://blog.zulip.org/), and
 following us on [Twitter](https://twitter.com/zulip) and

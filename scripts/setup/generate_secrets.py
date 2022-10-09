@@ -11,6 +11,7 @@ from scripts.lib.zulip_tools import get_config, get_config_file
 
 setup_path()
 
+os.environ["DISABLE_MANDATORY_SECRET_CHECK"] = "True"
 os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
 
 import argparse

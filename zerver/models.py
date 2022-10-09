@@ -46,7 +46,6 @@ from django.db.models.functions import Upper
 from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
-from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
@@ -120,6 +119,7 @@ if TYPE_CHECKING:
     # We use ModelBackend only for typing. Importing it otherwise causes circular dependency.
     from django.contrib.auth.backends import ModelBackend
     from django.db.models.query import _QuerySet as ValuesQuerySet
+    from django.utils.functional import _StrPromise as StrPromise
 
 
 class EmojiInfo(TypedDict):
@@ -907,7 +907,7 @@ class Realm(models.Model):
 
     def ensure_not_on_limited_plan(self) -> None:
         if self.plan_type == Realm.PLAN_TYPE_LIMITED:
-            raise JsonableError(self.UPGRADE_TEXT_STANDARD)
+            raise JsonableError(str(self.UPGRADE_TEXT_STANDARD))
 
     @property
     def subdomain(self) -> str:
@@ -1872,7 +1872,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     }
 
     def get_role_name(self) -> str:
-        return self.ROLE_ID_TO_NAME_MAP[self.role]
+        return str(self.ROLE_ID_TO_NAME_MAP[self.role])
 
     def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
@@ -2452,7 +2452,7 @@ class Stream(models.Model):
 
     # Who in the organization has permission to send messages to this stream.
     stream_post_policy: int = models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE)
-    POST_POLICIES: Dict[int, str] = {
+    POST_POLICIES: Dict[int, "StrPromise"] = {
         # These strings should match the strings in the
         # stream_post_policy_values object in stream_data.js.
         STREAM_POST_POLICY_EVERYONE: gettext_lazy("All stream members can post"),
@@ -4505,7 +4505,9 @@ class CustomProfileField(models.Model):
     FIELD_CONVERTERS: Dict[int, Callable[[Any], Any]] = {
         item[0]: item[3] for item in ALL_FIELD_TYPES
     }
-    FIELD_TYPE_CHOICES: List[Tuple[int, Promise]] = [(item[0], item[1]) for item in ALL_FIELD_TYPES]
+    FIELD_TYPE_CHOICES: List[Tuple[int, "StrPromise"]] = [
+        (item[0], item[1]) for item in ALL_FIELD_TYPES
+    ]
 
     field_type: int = models.PositiveSmallIntegerField(
         choices=FIELD_TYPE_CHOICES,

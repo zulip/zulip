@@ -1,7 +1,7 @@
 # Zulip Cloud billing
 
 This page answers some frequently asked questions about [Zulip Cloud plans and
-pricing](/plans). If you have any other questions, please don't hesitate to
+pricing](https://zulip.com/plans). If you have any other questions, please don't hesitate to
 reach out at sales@zulip.com.
 
 ## Differences between Zulip Cloud plans
@@ -11,6 +11,13 @@ reach out at sales@zulip.com.
 Only the most recent 10,000 messages can be viewed and searched on the Zulip
 Cloud Free plan. Older messages are still stored and will become available
 again if the organization is upgraded to Zulip Cloud Standard.
+
+### Will you switch to limiting Zulip Cloud Free history to messages sent in the last 90 days (like Slack has)?
+
+**No.** As discussed in [this blog
+post](https://blog.zulip.com/2022/08/26/why-slacks-free-plan-change-is-causing-an-exodus/),
+a time-based limit to message history is simply a bad model for a collaboration
+tool.
 
 ## Payment methods
 

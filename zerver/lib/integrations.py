@@ -1,14 +1,16 @@
 import os
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
-from django.utils.functional import Promise
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 
 from zerver.lib.storage import static_path
+
+if TYPE_CHECKING:
+    from django.utils.functional import _StrPromise as StrPromise
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -31,7 +33,7 @@ features for writing and configuring integrations efficiently.
 
 OptionValidator = Callable[[str, str], Optional[str]]
 
-CATEGORIES: Dict[str, Promise] = {
+CATEGORIES: Dict[str, "StrPromise"] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
@@ -332,6 +334,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("ansibletower", ["deployment"], display_name="Ansible Tower"),
     WebhookIntegration("appfollow", ["customer-support"], display_name="AppFollow"),
     WebhookIntegration("appveyor", ["continuous-integration"], display_name="AppVeyor"),
+    WebhookIntegration("azuredevops", ["version-control"], display_name="AzureDevOps"),
     WebhookIntegration("beanstalk", ["version-control"], stream_name="commits"),
     WebhookIntegration("basecamp", ["project-management"]),
     WebhookIntegration("beeminder", ["misc"], display_name="Beeminder"),
@@ -464,6 +467,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
         function="zerver.webhooks.yo.view.api_yo_app_webhook",
         display_name="Yo",
     ),
+    WebhookIntegration("wekan", ["productivity"], display_name="Wekan"),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
     WebhookIntegration("zendesk", ["customer-support"]),
@@ -506,7 +510,7 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name="GIPHY",
         categories=["misc"],
         doc="zerver/integrations/giphy.md",
-        logo="images/GIPHY_big_logo.png",
+        logo="images/integrations/giphy/GIPHY_big_logo.png",
     ),
     "git": Integration(
         "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
@@ -687,6 +691,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "ansibletower": [ScreenshotConfig("job_successful_multiple_hosts.json")],
     "appfollow": [ScreenshotConfig("review.json")],
     "appveyor": [ScreenshotConfig("appveyor_build_success.json")],
+    "azuredevops": [ScreenshotConfig("code_push.json")],
     "basecamp": [ScreenshotConfig("doc_active.json")],
     "beanstalk": [
         ScreenshotConfig("git_multiple.json", use_basic_auth=True, payload_as_query_param=True)
@@ -806,6 +811,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "trello": [ScreenshotConfig("adding_comment_to_card.json")],
     "updown": [ScreenshotConfig("check_multiple_events.json")],
     "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
+    "wekan": [ScreenshotConfig("add_comment.json")],
     "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
     "yo": [
         ScreenshotConfig(

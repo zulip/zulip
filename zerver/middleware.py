@@ -16,12 +16,14 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
+from django.utils.log import log_response
 from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django_scim.middleware import SCIMAuthCheckMiddleware
 from django_scim.settings import scim_settings
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
+from typing_extensions import Concatenate, ParamSpec
 
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
@@ -38,11 +40,11 @@ from zerver.lib.response import (
     json_unauthorized,
 )
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import ViewFuncT
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
 from zerver.models import Realm, SCIMClient, flush_per_request_caches, get_realm
 
+ParamT = ParamSpec("ParamT")
 logger = logging.getLogger("zulip.requests")
 slow_query_logger = logging.getLogger("zulip.slow_queries")
 
@@ -368,8 +370,8 @@ class LogRequests(MiddlewareMixin):
     def process_view(
         self,
         request: HttpRequest,
-        view_func: ViewFuncT,
-        args: List[str],
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
         kwargs: Dict[str, Any],
     ) -> None:
         request_notes = RequestNotes.get_notes(request)
@@ -464,7 +466,22 @@ class JsonErrorHandler(MiddlewareMixin):
                 return json_unauthorized(www_authenticate="session")
 
         if isinstance(exception, JsonableError):
-            return json_response_from_error(exception)
+            response = json_response_from_error(exception)
+            if response.status_code >= 500:
+                # Here we use Django's log_response the way Django uses
+                # it normally to log error responses. However, we make the small
+                # modification of including the traceback to make the log message
+                # more helpful. log_response takes care of knowing not to duplicate
+                # the logging, so Django won't generate a second log message.
+                log_response(
+                    "%s: %s",
+                    response.reason_phrase,
+                    request.path,
+                    response=response,
+                    request=request,
+                    exc_info=True,
+                )
+            return response
         if RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
             capture_exception(exception)
             json_error_logger = logging.getLogger("zerver.middleware.json_error_handler")
@@ -475,7 +492,11 @@ class JsonErrorHandler(MiddlewareMixin):
 
 class TagRequests(MiddlewareMixin):
     def process_view(
-        self, request: HttpRequest, view_func: ViewFuncT, args: List[str], kwargs: Dict[str, Any]
+        self,
+        request: HttpRequest,
+        view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponseBase],
+        args: List[object],
+        kwargs: Dict[str, Any],
     ) -> None:
         self.process_request(request)
 

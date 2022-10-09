@@ -68,3 +68,23 @@ class LibratoHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
         self.IS_ATTACHMENT = False
+
+    def test_bad_request(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.check_webhook(
+                "bad",
+                "",
+                "",
+                content_type="application/json",
+            )
+        self.assertIn("Malformed JSON input", e.exception.args[0])
+
+    def test_bad_msg_type(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.check_webhook(
+                "bad_msg_type",
+                "",
+                "",
+                content_type="application/x-www-form-urlencoded",
+            )
+        self.assertIn("Unexpected message type", e.exception.args[0])

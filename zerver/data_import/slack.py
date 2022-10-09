@@ -29,6 +29,7 @@ from zerver.data_import.import_util import (
     build_usermessages,
     build_zerver_realm,
     create_converted_data_files,
+    long_term_idle_helper,
     make_subscriber_map,
     process_avatars,
     process_emojis,
@@ -644,51 +645,14 @@ def process_long_term_idle_users(
     dm_members: DMMembersT,
     zerver_userprofile: List[ZerverFieldsT],
 ) -> Set[int]:
-    """Algorithmically, we treat users who have sent at least 10 messages
-    or have sent a message within the last 60 days as active.
-    Everyone else is treated as long-term idle, which means they will
-    have a slightly slower first page load when coming back to
-    Zulip.
-    """
-    all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members)
-
-    sender_counts: Dict[str, int] = defaultdict(int)
-    recent_senders: Set[str] = set()
-    NOW = float(timezone_now().timestamp())
-    for message in all_messages:
-        timestamp = float(message["ts"])
-        slack_user_id = get_message_sending_user(message)
-        if not slack_user_id:
-            continue
-
-        if slack_user_id in recent_senders:
-            continue
-
-        if NOW - timestamp < 60:
-            recent_senders.add(slack_user_id)
-
-        sender_counts[slack_user_id] += 1
-    for (slack_sender_id, count) in sender_counts.items():
-        if count > 10:
-            recent_senders.add(slack_sender_id)
-
-    long_term_idle = set()
-
-    for slack_user in users:
-        if slack_user["id"] in recent_senders:
-            continue
-        zulip_user_id = slack_user_id_to_zulip_user_id[slack_user["id"]]
-        long_term_idle.add(zulip_user_id)
-
-    for user_profile_row in zerver_userprofile:
-        if user_profile_row["id"] in long_term_idle:
-            user_profile_row["long_term_idle"] = True
-            # Setting last_active_message_id to 1 means the user, if
-            # imported, will get the full message history for the
-            # streams they were on.
-            user_profile_row["last_active_message_id"] = 1
-
-    return long_term_idle
+    return long_term_idle_helper(
+        get_messages_iterator(slack_data_dir, added_channels, added_mpims, dm_members),
+        get_message_sending_user,
+        get_timestamp_from_message,
+        lambda id: slack_user_id_to_zulip_user_id[id],
+        iter(user["id"] for user in users),
+        zerver_userprofile,
+    )
 
 
 def convert_slack_workspace_messages(
@@ -830,7 +794,7 @@ def get_messages_iterator(
 
         # we sort the messages according to the timestamp to show messages with
         # the proper date order
-        yield from sorted(messages_for_one_day, key=lambda m: m["ts"])
+        yield from sorted(messages_for_one_day, key=get_timestamp_from_message)
 
 
 def channel_message_to_zerver_message(
@@ -960,7 +924,7 @@ def channel_message_to_zerver_message(
 
         zulip_message = build_message(
             topic_name,
-            float(message["ts"]),
+            get_timestamp_from_message(message),
             message_id,
             content,
             rendered_content,
@@ -1176,6 +1140,10 @@ def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
     if message.get("file"):
         return message["file"].get("user")
     return None
+
+
+def get_timestamp_from_message(message: ZerverFieldsT) -> float:
+    return float(message["ts"])
 
 
 def fetch_shared_channel_users(

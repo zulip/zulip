@@ -2,8 +2,13 @@ import Handlebars from "handlebars/runtime";
 
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
-import type {RealmDefaultSettingsType} from "./realm_user_settings_defaults";
-import type {UserSettingsType} from "./user_settings";
+import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
+import type {StreamSpecificNotificationSettings} from "./sub_store";
+import type {
+    PmNotificationSettings,
+    StreamNotificationSettings,
+    UserSettings,
+} from "./user_settings";
 
 /*
     This file contains translations between the integer values used in
@@ -535,7 +540,7 @@ export const realm_user_settings_defaults_labels = {
 
     realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
-    realm_send_read_receipts: $t({defaultMessage: "Let others see when user has read messages"}),
+    realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
 };
 
 // NOTIFICATIONS
@@ -563,7 +568,7 @@ export const general_notifications_table_labels = {
     },
 };
 
-export const stream_specific_notification_settings = [
+export const stream_specific_notification_settings: (keyof StreamSpecificNotificationSettings)[] = [
     "desktop_notifications",
     "audible_notifications",
     "push_notifications",
@@ -571,9 +576,7 @@ export const stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-type SettingsObjectType = UserSettingsType | RealmDefaultSettingsType;
-type PageParamsItem = keyof SettingsObjectType;
-export const stream_notification_settings: PageParamsItem[] = [
+export const stream_notification_settings: (keyof StreamNotificationSettings)[] = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
@@ -581,7 +584,29 @@ export const stream_notification_settings: PageParamsItem[] = [
     "wildcard_mentions_notify",
 ];
 
-export const pm_mention_notification_settings: PageParamsItem[] = [
+export const generalize_stream_notification_setting: Record<
+    keyof StreamSpecificNotificationSettings,
+    keyof StreamNotificationSettings
+> = {
+    desktop_notifications: "enable_stream_desktop_notifications",
+    audible_notifications: "enable_stream_audible_notifications",
+    push_notifications: "enable_stream_push_notifications",
+    email_notifications: "enable_stream_email_notifications",
+    wildcard_mentions_notify: "wildcard_mentions_notify",
+};
+
+export const specialize_stream_notification_setting: Record<
+    keyof StreamNotificationSettings,
+    keyof StreamSpecificNotificationSettings
+> = {
+    enable_stream_desktop_notifications: "desktop_notifications",
+    enable_stream_audible_notifications: "audible_notifications",
+    enable_stream_push_notifications: "push_notifications",
+    enable_stream_email_notifications: "email_notifications",
+    wildcard_mentions_notify: "wildcard_mentions_notify",
+};
+
+export const pm_mention_notification_settings: (keyof PmNotificationSettings)[] = [
     "enable_desktop_notifications",
     "enable_sounds",
     "enable_offline_push_notifications",
@@ -659,6 +684,8 @@ export const all_notification_settings = other_notification_settings.concat(
     stream_notification_settings,
 );
 
+type Settings = UserSettings | RealmDefaultSettings;
+type PageParamsItem = keyof Settings;
 type NotificationSettingCheckbox = {
     setting_name: string;
     is_disabled: boolean;
@@ -667,7 +694,7 @@ type NotificationSettingCheckbox = {
 
 export function get_notifications_table_row_data(
     notify_settings: PageParamsItem[],
-    settings_object: SettingsObjectType,
+    settings_object: Settings,
 ): NotificationSettingCheckbox[] {
     return general_notifications_table_labels.realm.map((column, index) => {
         const setting_name = notify_settings[index];
@@ -710,7 +737,7 @@ export interface AllNotifications {
     };
 }
 
-export const all_notifications = (settings_object: SettingsObjectType): AllNotifications => ({
+export const all_notifications = (settings_object: Settings): AllNotifications => ({
     general_settings: [
         {
             label: $t({defaultMessage: "Streams"}),

@@ -24,7 +24,6 @@ def user_avatar_hash(uid: str) -> str:
     # The salt probably doesn't serve any purpose now.  In the past we
     # used a hash of the email address, not the user ID, and we salted
     # it in order to make the hashing scheme different from Gravatar's.
-    assert settings.AVATAR_SALT is not None
     user_key = uid + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 

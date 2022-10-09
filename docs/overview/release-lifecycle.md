@@ -184,7 +184,7 @@ GitHub issue. Please an include an explanation of your use case: such
 details can be extremely helpful in designing appropriately general
 solutions, and also helps us identify cases where an existing solution
 can solve your problem. See [Reporting
-issues](contributing.md#reporting-issues) for more details.
+issues](../contributing/contributing.md#reporting-issues) for more details.
 
 ## Client apps
 

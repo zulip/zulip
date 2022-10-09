@@ -31,6 +31,7 @@ export const unread_mentions_counter = new Set();
 const unread_messages = new Set();
 
 class Bucketer {
+    // Maps item_id => bucket_key for items present in a bucket.
     reverse_lookup = new Map();
 
     constructor(options) {
@@ -58,12 +59,13 @@ class Bucketer {
         } else {
             bucket.add(item_id);
         }
-        this.reverse_lookup.set(item_id, bucket);
+        this.reverse_lookup.set(item_id, bucket_key);
     }
 
     delete(item_id) {
-        const bucket = this.reverse_lookup.get(item_id);
-        if (bucket) {
+        const bucket_key = this.reverse_lookup.get(item_id);
+        if (bucket_key) {
+            const bucket = this.get_bucket(bucket_key);
             bucket.delete(item_id);
             this.reverse_lookup.delete(item_id);
         }
@@ -373,6 +375,21 @@ class UnreadTopicCounter {
         return util.sorted_ids(ids);
     }
 
+    get_streams_with_unread_mentions() {
+        const streams_with_mentions = new Set();
+        // Collect the set of streams containing at least one mention.
+        // We can do this efficiently, since unread_mentions_counter
+        // contains all unread message IDs, and we use stream_ids as
+        // bucket keys in our outer bucketer.
+
+        for (const message_id of unread_mentions_counter) {
+            const stream_id = this.bucketer.reverse_lookup.get(message_id);
+            streams_with_mentions.add(stream_id);
+        }
+
+        return streams_with_mentions;
+    }
+
     topic_has_any_unread(stream_id, topic) {
         const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
 
@@ -386,6 +403,32 @@ class UnreadTopicCounter {
         }
 
         return id_set.size !== 0;
+    }
+
+    get_topics_with_unread_mentions(stream_id) {
+        // Returns the set of lower cased topics with unread mentions
+        // in the given stream.
+        const result = new Set();
+        const per_stream_bucketer = this.bucketer.get_bucket(stream_id);
+
+        if (!per_stream_bucketer) {
+            return result;
+        }
+
+        for (const message_id of unread_mentions_counter) {
+            // Because bucket keys in per_stream_bucketer are topics,
+            // we can just directly use reverse_lookup to find the
+            // topic in this stream containing a given unread message
+            // ID. If it's not in this stream, we'll get undefined.
+            const topic_match = per_stream_bucketer.reverse_lookup.get(message_id);
+            if (topic_match !== undefined) {
+                // Important: We lower-case topics here before adding them
+                // to this set, to support case-insensitive checks.
+                result.add(topic_match.toLowerCase());
+            }
+        }
+
+        return result;
     }
 }
 const unread_topic_counter = new UnreadTopicCounter();
@@ -526,8 +569,10 @@ export function get_counts() {
 
     // This sets stream_count, topic_count, and home_unread_messages
     const topic_res = unread_topic_counter.get_counts();
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
     res.home_unread_messages = topic_res.stream_unread_messages;
     res.stream_count = topic_res.stream_count;
+    res.streams_with_mentions = Array.from(streams_with_mentions);
 
     const pm_res = unread_pm_counter.get_counts();
     res.pm_count = pm_res.pm_dict;
@@ -573,8 +618,17 @@ export function num_unread_for_topic(stream_id, topic_name) {
     return unread_topic_counter.get(stream_id, topic_name);
 }
 
+export function stream_has_any_unread_mentions(stream_id) {
+    const streams_with_mentions = unread_topic_counter.get_streams_with_unread_mentions();
+    return streams_with_mentions.has(stream_id);
+}
+
 export function topic_has_any_unread(stream_id, topic) {
     return unread_topic_counter.topic_has_any_unread(stream_id, topic);
+}
+
+export function get_topics_with_unread_mentions(stream_id) {
+    return unread_topic_counter.get_topics_with_unread_mentions(stream_id);
 }
 
 export function num_unread_for_person(user_ids_string) {

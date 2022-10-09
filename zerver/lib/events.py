@@ -14,6 +14,7 @@ from zerver.actions.default_streams import (
     streams_to_dicts_sorted,
 )
 from zerver.actions.users import get_owned_bot_dicts
+from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
@@ -307,6 +308,8 @@ def fetch_initial_state_data(
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        state["server_emoji_data_url"] = emoji.data_url()
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
         state[

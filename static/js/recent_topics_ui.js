@@ -11,7 +11,6 @@ import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {localstorage} from "./localstorage";
-import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
@@ -190,17 +189,20 @@ export function revive_current_focus() {
 
     if (is_table_focused()) {
         if (last_visited_topic) {
-            const topic_last_msg_id = topics.get(last_visited_topic).last_msg_id;
-            const current_list = topics_widget.get_current_list();
-            const last_visited_topic_index = current_list.findIndex(
-                (topic) => topic.last_msg_id === topic_last_msg_id,
-            );
-            if (last_visited_topic_index >= 0) {
-                row_focus = last_visited_topic_index;
+            // If the only message in the topic was deleted,
+            // then the topic will not be in recent topics data.
+            if (topics.get(last_visited_topic) !== undefined) {
+                const topic_last_msg_id = topics.get(last_visited_topic).last_msg_id;
+                const current_list = topics_widget.get_current_list();
+                const last_visited_topic_index = current_list.findIndex(
+                    (topic) => topic.last_msg_id === topic_last_msg_id,
+                );
+                if (last_visited_topic_index >= 0) {
+                    row_focus = last_visited_topic_index;
+                }
             }
             last_visited_topic = "";
         }
-
         set_table_focus(row_focus, col_focus);
         return true;
     }
@@ -661,7 +663,6 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
-    message_lists.set_current(message_lists.home);
     narrow.set_narrow_title("Recent topics");
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();

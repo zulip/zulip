@@ -116,6 +116,19 @@ def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
     return codepoint_to_name
 
 
+def generate_codepoint_to_names_map(
+    emoji_name_maps: Dict[str, Dict[str, Any]]
+) -> Dict[str, List[str]]:
+    codepoint_to_names: Dict[str, List[str]] = {}
+    for emoji_code, name_info in emoji_name_maps.items():
+        # The first element of the names list is always the canonical name.
+        names = [name_info["canonical_name"]]
+        for alias in name_info["aliases"]:
+            names.append(alias)
+        codepoint_to_names[emoji_code] = names
+    return codepoint_to_names
+
+
 def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
     name_to_codepoint = {}
     for emoji_code, name_info in emoji_name_maps.items():

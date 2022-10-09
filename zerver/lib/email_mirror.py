@@ -27,6 +27,7 @@ from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
+from zerver.lib.string_validation import is_character_printable
 from zerver.lib.upload import upload_message_file
 from zerver.models import (
     Message,
@@ -414,6 +415,10 @@ def is_forwarded(subject: str) -> bool:
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
     subject = strip_from_subject(subject_header) or "(no topic)"
+
+    # We don't want to reject email messages with disallowed characters in the Subject,
+    # so we just remove them to make it a valid Zulip topic name.
+    subject = "".join([char for char in subject if is_character_printable(char)]) or "(no topic)"
 
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:
