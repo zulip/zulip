@@ -4,7 +4,6 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const blueslip = require("../zjsunit/zblueslip");
 
 const channel = mock_esm("../../static/js/channel");
 
@@ -37,9 +36,7 @@ emoji.initialize(emoji_params);
 function initialize() {
     const params = {
         user_status: {
-            1: {away: true, status_text: "in a meeting"},
-            2: {away: true},
-            3: {away: true},
+            1: {status_text: "in a meeting"},
             4: {emoji_name: "smiley", emoji_code: "1f603", reaction_type: "unicode_emoji"},
             5: {
                 emoji_name: "deactivated_realm_emoji",
@@ -77,15 +74,6 @@ run_test("basics", () => {
         still_url: "/url/still/991",
         url: "/url/for/991",
     });
-
-    assert.ok(user_status.is_away(2));
-    assert.ok(!user_status.is_away(99));
-
-    assert.ok(!user_status.is_away(4));
-    user_status.set_away(4);
-    assert.ok(user_status.is_away(4));
-    user_status.revoke_away(4);
-    assert.ok(!user_status.is_away(4));
 
     assert.equal(user_status.get_status_text(1), "in a meeting");
 
@@ -137,27 +125,9 @@ run_test("server", () => {
 
     assert.equal(sent_data, undefined);
 
-    user_status.server_set_away();
-    assert.deepEqual(sent_data, {
-        away: true,
-        status_text: undefined,
-        emoji_code: undefined,
-        emoji_name: undefined,
-        reaction_type: undefined,
-    });
-
-    user_status.server_revoke_away();
-    assert.deepEqual(sent_data, {
-        away: false,
-        status_text: undefined,
-        emoji_code: undefined,
-        emoji_name: undefined,
-        reaction_type: undefined,
-    });
-
     let called;
 
-    user_status.server_update({
+    user_status.server_update_status({
         status_text: "out to lunch",
         success: () => {
             called = true;
@@ -169,10 +139,6 @@ run_test("server", () => {
 });
 
 run_test("defensive checks", () => {
-    blueslip.expect("error", "need ints for user_id", 2);
-    user_status.set_away("string");
-    user_status.revoke_away("string");
-
     assert.throws(
         () =>
             user_status.set_status_emoji({

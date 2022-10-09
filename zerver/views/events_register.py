@@ -40,7 +40,9 @@ def events_register_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
     apply_markdown: bool = REQ(default=False, json_validator=check_bool),
-    client_gravatar: bool = REQ(default=True, json_validator=check_bool),
+    client_gravatar_raw: Optional[bool] = REQ(
+        "client_gravatar", default=None, json_validator=check_bool
+    ),
     slim_presence: bool = REQ(default=False, json_validator=check_bool),
     all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
     include_subscribers: bool = REQ(default=False, json_validator=check_bool),
@@ -74,11 +76,17 @@ def events_register_backend(
     ),
     queue_lifespan_secs: int = REQ(json_validator=check_int, default=0, documentation_pending=True),
 ) -> HttpResponse:
+    if client_gravatar_raw is None:
+        client_gravatar = maybe_user_profile.is_authenticated
+    else:
+        client_gravatar = client_gravatar_raw
+
     if maybe_user_profile.is_authenticated:
         user_profile = maybe_user_profile
         spectator_requested_language = None
         assert isinstance(user_profile, UserProfile)
         realm = user_profile.realm
+        include_streams = True
 
         if all_public_streams and not user_profile.can_access_public_streams():
             raise JsonableError(_("User not authorized for this query"))
@@ -88,15 +96,26 @@ def events_register_backend(
     else:
         user_profile = None
         realm = get_valid_realm_from_request(request)
+        if not realm.allow_web_public_streams_access():
+            raise MissingAuthenticationError()
+
+        # These parameters must be false for anonymous requests.
+        if client_gravatar:
+            raise JsonableError(
+                _("Invalid '{}' parameter for anonymous request").format("client_gravatar")
+            )
+        if include_subscribers:
+            raise JsonableError(
+                _("Invalid '{}' parameter for anonymous request").format("include_subscribers")
+            )
+
         # Language set by spectator to be passed down to clients as user_settings.
         spectator_requested_language = request.COOKIES.get(
             settings.LANGUAGE_COOKIE_NAME, realm.default_language
         )
 
-        if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
-
         all_public_streams = False
+        include_streams = False
 
     if client_capabilities is None:
         client_capabilities = {}
@@ -116,6 +135,7 @@ def events_register_backend(
         all_public_streams,
         narrow=narrow,
         include_subscribers=include_subscribers,
+        include_streams=include_streams,
         client_capabilities=client_capabilities,
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,

@@ -41,6 +41,7 @@ import * as stream_popover from "./stream_popover";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
+import * as unread_ops from "./unread_ops";
 import {user_settings} from "./user_settings";
 
 function do_narrow_action(action) {
@@ -135,6 +136,7 @@ const keypress_mappings = {
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    85: {name: "mark_unread", message_view_only: true}, // 'U'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
@@ -242,6 +244,11 @@ export function process_escape_key(e) {
     }
 
     if (popovers.any_active()) {
+        if (popovers.user_info_manage_menu_popped()) {
+            popovers.hide_user_info_popover_manage_menu();
+            $("#user_info_popover .user_info_popover_manage_menu_btn").trigger("focus");
+            return true;
+        }
         popovers.hide_all();
         return true;
     }
@@ -345,6 +352,11 @@ export function process_escape_key(e) {
 function handle_popover_events(event_name) {
     if (popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_info_manage_menu_popped()) {
+        popovers.user_info_popover_manage_menu_handle_keyboard(event_name);
         return true;
     }
 
@@ -939,6 +951,9 @@ export function process_hotkey(e, hotkey) {
             return true;
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
+            return true;
+        case "mark_unread":
+            unread_ops.mark_as_unread_from_here(msg.id);
             return true;
         case "compose_quote_reply": // > : respond to selected message with quote
             compose_actions.quote_and_reply({trigger: "hotkey"});

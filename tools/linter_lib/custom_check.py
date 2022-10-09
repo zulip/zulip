@@ -76,6 +76,10 @@ whitespace_rules: List["Rule"] = [
         "pattern": "\t",
         "description": "Fix tab-based whitespace",
     },
+    {
+        "pattern": r"(?i:webapp)",
+        "description": "Web app should be two words",
+    },
 ]
 comma_whitespace_rule: List["Rule"] = [
     {

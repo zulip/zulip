@@ -613,7 +613,8 @@ class PermissionTest(ZulipTestCase):
             "Birthday": "1909-03-05",
             "Favorite website": "https://zulip.com",
             "Mentor": [cordelia.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": "she/her",
         }
 
         for field_name in fields:
@@ -721,7 +722,8 @@ class PermissionTest(ZulipTestCase):
             "Birthday": None,
             "Favorite website": "https://zulip.github.io",
             "Mentor": [hamlet.id],
-            "GitHub": "timabbott",
+            "GitHub username": "timabbott",
+            "Pronouns": None,
         }
         new_profile_data = []
         for field_name in fields:

@@ -11,6 +11,7 @@ import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
+import * as drafts from "./drafts";
 import * as echo from "./echo";
 import * as flatpickr from "./flatpickr";
 import {$t, $t_html} from "./i18n";
@@ -92,7 +93,7 @@ export function clear_preview_area() {
     autosize.update($("#compose-textarea"));
 }
 
-export function update_fade() {
+function update_fade() {
     if (!compose_state.composing()) {
         return;
     }
@@ -103,7 +104,7 @@ export function update_fade() {
     compose_fade.update_all();
 }
 
-function update_on_recipient_change() {
+export function update_on_recipient_change() {
     update_fade();
     compose_actions.update_narrow_to_recipient_visibility();
 }
@@ -256,6 +257,10 @@ export function send_message(request = create_message_object()) {
         }
 
         echo.message_send_error(message.id, response);
+
+        // We might not have updated the draft count because we assumed the
+        // message would send. Ensure that the displayed count is correct.
+        drafts.sync_count();
     }
 
     transmit.send_message(request, success, error);

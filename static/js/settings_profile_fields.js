@@ -1,6 +1,7 @@
 import $ from "jquery";
 import {Sortable} from "sortablejs";
 
+import render_confirm_delete_profile_field from "../templates/confirm_dialog/confirm_delete_profile_field.hbs";
 import render_confirm_delete_profile_field_option from "../templates/confirm_dialog/confirm_delete_profile_field_option.hbs";
 import render_add_new_custom_profile_field_form from "../templates/settings/add_new_custom_profile_field_form.hbs";
 import render_admin_profile_field_list from "../templates/settings/admin_profile_field_list.hbs";
@@ -10,15 +11,23 @@ import render_settings_profile_field_choice from "../templates/settings/profile_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
-import {$t_html} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_ui from "./settings_ui";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
 };
+
+function display_success_status() {
+    const $spinner = $("#admin-profile-field-status").expectOne();
+    const success_msg_html = settings_ui.strings.success_html;
+    ui_report.success(success_msg_html, $spinner, 1000);
+    settings_ui.display_checkmark($spinner);
+}
 
 export function maybe_disable_widgets() {
     if (page_params.is_admin) {
@@ -30,6 +39,7 @@ export function maybe_disable_widgets() {
         .prop("disabled", true);
 }
 
+let display_in_profile_summary_fields_limit_reached = false;
 let order = [];
 const field_types = page_params.custom_profile_field_types;
 
@@ -49,6 +59,14 @@ export function field_type_id_to_string(type_id) {
     return undefined;
 }
 
+// Checking custom profile field type is valid for showing display in profile summary checkbox field.
+function is_valid_to_display_in_summary(field_type) {
+    if (field_type === field_types.LONG_TEXT.id || field_type === field_types.USER.id) {
+        return false;
+    }
+    return true;
+}
+
 function update_profile_fields_table_element() {
     const $profile_fields_table = $("#admin_profile_fields_table").expectOne();
 
@@ -64,13 +82,39 @@ function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    settings_ui.do_settings_change(
-        channel.del,
-        "/json/realm/profile_fields/" + encodeURIComponent($(this).attr("data-profile-field-id")),
-        {},
-        $("#admin-profile-field-status").expectOne(),
-    );
-    update_profile_fields_table_element();
+    const profile_field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const profile_field = get_profile_field(profile_field_id);
+    const active_user_ids = people.get_active_user_ids();
+    let users_using_deleting_profile_field = 0;
+
+    for (const user_id of active_user_ids) {
+        const user_profile_data = people.get_custom_profile_data(user_id, profile_field_id);
+        if (user_profile_data) {
+            users_using_deleting_profile_field += 1;
+        }
+    }
+
+    const html_body = render_confirm_delete_profile_field({
+        profile_field_name: profile_field.name,
+        count: users_using_deleting_profile_field,
+    });
+
+    function request_delete() {
+        const url = "/json/realm/profile_fields/" + profile_field_id;
+        const opts = {
+            success_continuation() {
+                display_success_status();
+                update_profile_fields_table_element();
+            },
+        };
+        dialog_widget.submit_api_request(channel.del, url, {}, opts);
+    }
+
+    confirm_dialog.launch({
+        html_body,
+        html_heading: $t_html({defaultMessage: "Delete custom profile field?"}),
+        on_click: request_delete,
+    });
 }
 
 function read_select_field_data_from_form($profile_field_form, old_field_data) {
@@ -171,23 +215,49 @@ function set_up_create_field_form() {
     $("#dialog_error").hide();
     const $field_elem = $("#profile_field_external_accounts");
     const $field_url_pattern_elem = $("#custom_external_account_url_pattern");
+    const profile_field_type = Number.parseInt($("#profile_field_type").val(), 10);
 
-    if (Number.parseInt($("#profile_field_type").val(), 10) === field_types.EXTERNAL_ACCOUNT.id) {
+    $("#profile_field_name").val("").prop("disabled", false);
+    $("#profile_field_hint").val("").prop("disabled", false);
+    $field_url_pattern_elem.hide();
+    $field_elem.hide();
+
+    if (profile_field_type === field_types.EXTERNAL_ACCOUNT.id) {
         $field_elem.show();
-        if ($("#profile_field_external_accounts_type").val() === "custom") {
+        const $profile_field_external_account_type = $(
+            "#profile_field_external_accounts_type",
+        ).val();
+        if ($profile_field_external_account_type === "custom") {
             $field_url_pattern_elem.show();
-            $("#profile_field_name").val("").closest(".input-group").show();
-            $("#profile_field_hint").val("").closest(".input-group").show();
         } else {
             $field_url_pattern_elem.hide();
-            $("#profile_field_name").closest(".input-group").hide();
-            $("#profile_field_hint").closest(".input-group").hide();
+            const profile_field_name =
+                page_params.realm_default_external_accounts[$profile_field_external_account_type]
+                    .name;
+            $("#profile_field_name").val(profile_field_name).prop("disabled", true);
+            $("#profile_field_hint").val("").prop("disabled", true);
         }
+    } else if (profile_field_type === field_types.PRONOUNS.id) {
+        const default_label = $t({defaultMessage: "Pronouns"});
+        const default_hint = $t({
+            defaultMessage: "What pronouns should people use to refer to you?",
+        });
+        $("#profile_field_name").val(default_label);
+        $("#profile_field_hint").val(default_hint);
+    }
+
+    // Not showing "display in profile summary" option for long text/user profile field.
+    if (is_valid_to_display_in_summary(profile_field_type)) {
+        $("#profile_field_display_in_profile_summary").closest(".input-group").show();
+        const check_display_in_profile_summary_by_default =
+            profile_field_type === field_types.PRONOUNS.id &&
+            !display_in_profile_summary_fields_limit_reached;
+        $("#profile_field_display_in_profile_summary").prop(
+            "checked",
+            check_display_in_profile_summary_by_default,
+        );
     } else {
-        $("#profile_field_name").closest(".input-group").show();
-        $("#profile_field_hint").closest(".input-group").show();
-        $field_url_pattern_elem.hide();
-        $field_elem.hide();
+        $("#profile_field_display_in_profile_summary").closest(".input-group").hide();
     }
 }
 
@@ -220,15 +290,39 @@ function open_custom_profile_field_form_modal() {
             hint: $("#profile_field_hint").val(),
             field_type,
             field_data: JSON.stringify(field_data),
+            display_in_profile_summary: $("#profile_field_display_in_profile_summary").is(
+                ":checked",
+            ),
         };
         const url = "/json/realm/profile_fields";
-        dialog_widget.submit_api_request(channel.post, url, data);
+        const opts = {
+            success_continuation() {
+                display_success_status();
+            },
+        };
+        dialog_widget.submit_api_request(channel.post, url, data, opts);
     }
 
     function set_up_form_fields() {
         set_up_select_field();
         set_up_external_account_field();
         clear_form_data();
+
+        // If we already have 2 custom profile fields configured to be
+        // displayed in the user profile summary, disable the input to
+        // change it.
+        $("#add-new-custom-profile-field-form #profile_field_display_in_profile_summary").prop(
+            "disabled",
+            display_in_profile_summary_fields_limit_reached,
+        );
+        $("#add-new-custom-profile-field-form .profile_field_display_label").toggleClass(
+            "disabled_label",
+            display_in_profile_summary_fields_limit_reached,
+        );
+        $("#add-new-custom-profile-field-form .checkbox").toggleClass(
+            "display_in_profile_summary_tooltip",
+            display_in_profile_summary_fields_limit_reached,
+        );
     }
 
     dialog_widget.launch({
@@ -264,17 +358,24 @@ function show_modal_for_deleting_options(field, deleted_values, update_profile_f
     let users_count_with_deleted_option_selected = 0;
     for (const user_id of active_user_ids) {
         const field_value = people.get_custom_profile_data(user_id, field.id);
-        if (field_value && deleted_values.has(field_value.value)) {
+        if (field_value && deleted_values[field_value.value]) {
             users_count_with_deleted_option_selected += 1;
         }
     }
+    const deleted_options_count = Object.keys(deleted_values).length;
     const html_body = render_confirm_delete_profile_field_option({
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
+        deleted_options_count,
+        deleted_values,
     });
 
+    let modal_heading_text = "Delete this option?";
+    if (deleted_options_count !== 1) {
+        modal_heading_text = "Delete these options?";
+    }
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete option"}),
+        html_heading: $t_html({defaultMessage: "{modal_heading_text}"}, {modal_heading_text}),
         html_body,
         on_click: update_profile_field,
     });
@@ -301,11 +402,11 @@ function set_up_external_account_field_edit_form($profile_field_form, url_patter
     if ($profile_field_form.find("select[name=external_acc_field_type]").val() === "custom") {
         $profile_field_form.find("input[name=url_pattern]").val(url_pattern_val);
         $profile_field_form.find(".custom_external_account_detail").show();
-        $profile_field_form.find("input[name=name]").val("").closest(".input-group").show();
-        $profile_field_form.find("input[name=hint]").val("").closest(".input-group").show();
+        $profile_field_form.find("input[name=name]").prop("disabled", false);
+        $profile_field_form.find("input[name=hint]").prop("disabled", false);
     } else {
-        $profile_field_form.find("input[name=name]").closest(".input-group").hide();
-        $profile_field_form.find("input[name=hint]").closest(".input-group").hide();
+        $profile_field_form.find("input[name=name]").prop("disabled", true);
+        $profile_field_form.find("input[name=hint]").prop("disabled", true);
         $profile_field_form.find(".custom_external_account_detail").hide();
     }
 }
@@ -356,14 +457,27 @@ function open_edit_form_modal(e) {
             name: field.name,
             hint: field.hint,
             choices,
+            display_in_profile_summary: field.display_in_profile_summary === true,
             is_select_field: field.type === field_types.SELECT.id,
             is_external_account_field: field.type === field_types.EXTERNAL_ACCOUNT.id,
+            valid_to_display_in_summary: is_valid_to_display_in_summary(field.type),
         },
         realm_default_external_accounts: page_params.realm_default_external_accounts,
     });
 
     function set_initial_values_of_profile_field() {
         const $profile_field_form = $("#edit-custom-profile-field-form-" + field_id);
+
+        // If its passes or equals the max limit we are disabling option for display custom profile field
+        // in user profile summary and adding tooptip except already checked field.
+        if (display_in_profile_summary_fields_limit_reached && !field.display_in_profile_summary) {
+            $profile_field_form
+                .find("input[name=display_in_profile_summary]")
+                .prop("disabled", true);
+            $profile_field_form
+                .find(".checkbox")
+                .addClass("display_in_profile_summary_tooltip disabled_label");
+        }
 
         if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
             set_up_select_field_edit_form($profile_field_form, field_data);
@@ -386,9 +500,6 @@ function open_edit_form_modal(e) {
         $profile_field_form
             .find(".edit_profile_field_choices_container")
             .on("click", "button.delete-choice", delete_choice_row);
-        $(".profile_field_external_accounts_edit select").on("change", () => {
-            set_up_external_account_field_edit_form($profile_field_form, "");
-        });
     }
 
     function submit_form() {
@@ -400,6 +511,9 @@ function open_edit_form_modal(e) {
 
         data.name = $profile_field_form.find("input[name=name]").val();
         data.hint = $profile_field_form.find("input[name=hint]").val();
+        data.display_in_profile_summary = $profile_field_form
+            .find("input[name=display_in_profile_summary]")
+            .is(":checked");
 
         const new_field_data = read_field_data_from_form(
             Number.parseInt(field.type, 10),
@@ -410,17 +524,24 @@ function open_edit_form_modal(e) {
 
         function update_profile_field() {
             const url = "/json/realm/profile_fields/" + field_id;
-            dialog_widget.submit_api_request(channel.patch, url, data);
+            const opts = {
+                success_continuation() {
+                    display_success_status();
+                },
+            };
+            dialog_widget.submit_api_request(channel.patch, url, data, opts);
         }
 
         if (field.type === field_types.SELECT.id) {
-            const old_values = new Set(Object.keys(field_data));
             const new_values = new Set(Object.keys(new_field_data));
-            const deleted_values = new Set(
-                [...old_values].filter((value) => !new_values.has(value)),
-            );
+            const deleted_values = {};
+            for (const [value, option] of Object.entries(field_data)) {
+                if (!new_values.has(value)) {
+                    deleted_values[value] = option.text;
+                }
+            }
 
-            if (deleted_values.size !== 0) {
+            if (Object.keys(deleted_values).length !== 0) {
                 const edit_select_field_modal_callback = () =>
                     show_modal_for_deleting_options(field, deleted_values, update_profile_field);
                 dialog_widget.close_modal(edit_select_field_modal_callback);
@@ -436,10 +557,50 @@ function open_edit_form_modal(e) {
         form_id: edit_custom_profile_field_form_id,
         html_heading: $t_html({defaultMessage: "Edit custom profile field"}),
         html_body,
+        id: "edit-custom-profile-field-form-modal",
         on_click: submit_form,
         post_render: set_initial_values_of_profile_field,
         loading_spinner: true,
     });
+}
+
+// If passes or equals the max limit, we are disabling option for
+// display custom profile field in user profile summary and adding tooltip.
+function update_profile_fields_checkboxes() {
+    // Disabling only uncheck checkboxes in table, so user should able uncheck checked checkboxes.
+    $("#admin_profile_fields_table .display_in_profile_summary_checkbox_false").prop(
+        "disabled",
+        display_in_profile_summary_fields_limit_reached,
+    );
+    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass(
+        "display_in_profile_summary_tooltip",
+        display_in_profile_summary_fields_limit_reached,
+    );
+}
+
+function toggle_display_in_profile_summary_profile_field(e) {
+    const field_id = Number.parseInt($(e.currentTarget).attr("data-profile-field-id"), 10);
+    const field = get_profile_field(field_id);
+
+    let field_data;
+    if (field.field_data) {
+        field_data = field.field_data;
+    }
+
+    const data = {
+        name: field.name,
+        hint: field.hint,
+        field_data,
+        display_in_profile_summary: !field.display_in_profile_summary,
+    };
+    const $profile_field_status = $("#admin-profile-field-status").expectOne();
+
+    settings_ui.do_settings_change(
+        channel.patch,
+        "/json/realm/profile_fields/" + field_id,
+        data,
+        $profile_field_status,
+    );
 }
 
 export function reset() {
@@ -476,6 +637,7 @@ export function do_populate_profile_fields(profile_fields_data) {
     $profile_fields_table.find("tr.profile-field-form").remove(); // Clear all rows.
     order = [];
 
+    let display_in_profile_summary_fields_count = 0;
     for (const profile_field of profile_fields_data) {
         order.push(profile_field.id);
         let field_data = {};
@@ -487,6 +649,7 @@ export function do_populate_profile_fields(profile_fields_data) {
             choices = parse_field_choices_from_field_data(field_data);
         }
 
+        const display_in_profile_summary = profile_field.display_in_profile_summary === true;
         $profile_fields_table.append(
             render_admin_profile_field_list({
                 profile_field: {
@@ -498,12 +661,22 @@ export function do_populate_profile_fields(profile_fields_data) {
                     is_select_field: profile_field.type === field_types.SELECT.id,
                     is_external_account_field:
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
+                    display_in_profile_summary,
+                    valid_to_display_in_summary: is_valid_to_display_in_summary(profile_field.type),
                 },
                 can_modify: page_params.is_admin,
                 realm_default_external_accounts: page_params.realm_default_external_accounts,
             }),
         );
+
+        // Keeping counts of all display_in_profile_summary profile fields, to keep track.
+        if (display_in_profile_summary) {
+            display_in_profile_summary_fields_count += 1;
+        }
     }
+
+    // Update whether we're at the limit for display_in_profile_summary.
+    display_in_profile_summary_fields_limit_reached = display_in_profile_summary_fields_count >= 2;
 
     if (page_params.is_admin) {
         const field_list = $("#admin_profile_fields_table")[0];
@@ -514,6 +687,7 @@ export function do_populate_profile_fields(profile_fields_data) {
         });
     }
 
+    update_profile_fields_checkboxes();
     update_profile_fields_table_element();
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
@@ -590,4 +764,9 @@ export function build_page() {
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
     $("#add-custom-profile-field-btn").on("click", open_custom_profile_field_form_modal);
     $("#admin_profile_fields_table").on("click", ".open-edit-form-modal", open_edit_form_modal);
+    $("#admin_profile_fields_table").on(
+        "click",
+        ".display_in_profile_summary",
+        toggle_display_in_profile_summary_profile_field,
+    );
 }

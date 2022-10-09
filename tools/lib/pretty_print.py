@@ -111,7 +111,7 @@ def fix_indents_for_multi_line_tags(tokens: List[Token]) -> None:
         if token.line_span == 1 or token.indent is None:
             continue
 
-        if token.kind in ("django_comment", "handlebar_comment", "html_comment", "text"):
+        if token.kind in ("django_comment", "handlebars_comment", "html_comment", "text"):
             continue_indent = token.indent
         else:
             continue_indent = token.indent + "  "

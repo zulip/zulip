@@ -27,6 +27,11 @@ const message_lists = mock_esm("../../static/js/message_lists", {
         view: {
             message_containers: {},
         },
+        data: {
+            fetch_status: {
+                has_found_newest: () => true,
+            },
+        },
     },
 });
 mock_esm("../../static/js/message_viewport", {
@@ -169,15 +174,12 @@ test_ui("sender_hover", ({override, mock_template}) => {
         });
         return "title-html";
     });
-
+    const $popover_content = $.create("content-html");
     mock_template("user_info_popover_content.hbs", false, (opts) => {
         assert.deepEqual(opts, {
-            can_set_away: false,
-            can_revoke_away: false,
-            can_mute: true,
-            can_manage_user: false,
+            invisible_mode: false,
             can_send_private_message: true,
-            can_unmute: false,
+            display_profile_fields: [],
             user_full_name: "Alice Smith",
             user_email: "alice@example.com",
             user_id: 42,
@@ -189,7 +191,7 @@ test_ui("sender_hover", ({override, mock_template}) => {
             sent_by_uri: "#narrow/sender/42-alice",
             private_message_class: "respond_personal_button",
             show_email: false,
-            show_user_profile: true,
+            show_manage_menu: true,
             is_me: false,
             is_active: true,
             is_bot: undefined,
@@ -202,10 +204,14 @@ test_ui("sender_hover", ({override, mock_template}) => {
             date_joined: undefined,
             spectator_view: false,
         });
-        return "content-html";
+        return $popover_content;
     });
 
     $.create(".user_popover_email", {children: []});
+    $popover_content.get = () => {};
+    const $user_name_element = $.create("user_full_name");
+    $popover_content.set_find_results(".user_full_name", $user_name_element);
+
     const image_stubber = make_image_stubber();
     handler.call($target, e);
 
@@ -253,6 +259,7 @@ test_ui("actions_popover", ({override, mock_template}) => {
         };
     };
 
+    mock_template("actions_popover_template.hbs", false, () => "actions-template");
     mock_template("actions_popover_content.hbs", false, (opts) => {
         // TODO: Test all the properties of the popover
         assert.equal(

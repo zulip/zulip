@@ -60,6 +60,7 @@ const overlays = mock_esm("../../static/js/overlays", {
 });
 const popovers = mock_esm("../../static/js/popovers", {
     actions_popped: () => false,
+    user_info_manage_menu_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
@@ -262,7 +263,7 @@ run_test("allow normal typing when processing text", ({override, override_rewire
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped("bfmoyz");
-    assert_unmapped("BEFHILNOQTUWXYZ");
+    assert_unmapped("BEFHILNOQTWXYZ");
 
     // All letters should return false if we are composing text.
     override_rewire(hotkey, "processing_text", () => true);

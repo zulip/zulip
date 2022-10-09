@@ -324,7 +324,7 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/login/")
 
-        # Load webapp directly if spectator access is enabled.
+        # Load web app directly if spectator access is enabled.
         do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
@@ -928,6 +928,7 @@ class HomeTest(ZulipTestCase):
 
         # verify furthest_read_time is last activity time, irrespective of client
         furthest_read_time = get_furthest_read_time(hamlet)
+        assert furthest_read_time is not None
         self.assertGreaterEqual(furthest_read_time, activity_time)
 
         # Check when user has no activity

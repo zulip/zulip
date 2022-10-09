@@ -40,6 +40,7 @@
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
 * [Switching between organizations](/help/switching-between-organizations)
+* [Import your settings](/help/import-your-settings)
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Display settings
@@ -62,7 +63,6 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Typing notifications](/help/typing-notifications)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
-* [Enable Enter to send](/help/enable-enter-to-send)
 * [Verify a message was sent](/help/verify-your-message-was-successfully-sent)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message drafts](/help/view-and-edit-your-message-drafts)
@@ -154,7 +154,7 @@
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Add custom profile fields](/help/add-custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
-* [Configure organization language](/help/change-the-default-language-for-your-organization)
+* [Configure organization language](/help/configure-organization-language)
 * [User groups](/help/user-groups)
 * [Restrict visibility of email addresses](/help/restrict-visibility-of-email-addresses)
 * [Change a user's role](/help/change-a-users-role)
@@ -197,8 +197,9 @@
 ## Bots & integrations
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Request an integration](/help/request-an-integration)
+* [Edit a bot](/help/edit-a-bot)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Request an integration](/help/request-an-integration)
 * [Restrict bot creation](/help/restrict-bot-creation)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 

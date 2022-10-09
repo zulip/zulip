@@ -32,6 +32,7 @@ Usage: ./manage.py deliver_scheduled_messages
         original_sender = scheduled_message.sender
         message.content = scheduled_message.content
         message.recipient = scheduled_message.recipient
+        message.realm = scheduled_message.realm
         message.subject = scheduled_message.subject
         message.date_sent = timezone_now()
         message.sending_client = scheduled_message.sending_client

@@ -481,7 +481,7 @@ with the new value. E.g., for `authentication_methods`, we created
 
 # import do_set_realm_authentication_methods from actions.py
 from zerver.actions.realm_settings import (
-    do_set_realm_message_editing,
+    do_reactivate_realm,
     do_set_realm_authentication_methods,
     # ...
 )

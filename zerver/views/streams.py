@@ -55,6 +55,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import (
     StreamDict,
@@ -130,19 +131,14 @@ def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) ->
         raise PrincipalError(principal)
 
 
-def check_if_removing_someone_else(
-    user_profile: UserProfile, principals: Optional[Union[List[str], List[int]]]
-) -> bool:
-    if principals is None or len(principals) == 0:
-        return False
-
-    if len(principals) > 1:
+def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) -> bool:
+    """Returns whether the target user is either the current user or a bot
+    owned by the current user"""
+    if user_profile == target:
         return True
-
-    if isinstance(principals[0], int):
-        return principals[0] != user_profile.id
-    else:
-        return principals[0] != user_profile.email
+    if target.is_bot and target.bot_owner == user_profile:
+        return True
+    return False
 
 
 def deactivate_stream_backend(
@@ -464,22 +460,27 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
 
     realm = user_profile.realm
-    removing_someone_else = check_if_removing_someone_else(user_profile, principals)
 
     streams_as_dict: List[StreamDict] = []
     for stream_name in streams_raw:
         streams_as_dict.append({"name": stream_name.strip()})
 
-    streams, __ = list_to_streams(
-        streams_as_dict, user_profile, unsubscribing_others=removing_someone_else
-    )
-
+    unsubscribing_others = False
     if principals:
-        people_to_unsub = {
-            principal_to_user_profile(user_profile, principal) for principal in principals
-        }
+        people_to_unsub = set()
+        for principal in principals:
+            target_user = principal_to_user_profile(user_profile, principal)
+            people_to_unsub.add(target_user)
+            if not user_directly_controls_user(user_profile, target_user):
+                unsubscribing_others = True
     else:
         people_to_unsub = {user_profile}
+
+    streams, __ = list_to_streams(
+        streams_as_dict,
+        user_profile,
+        unsubscribing_others=unsubscribing_others,
+    )
 
     result: Dict[str, List[str]] = dict(removed=[], not_removed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions(
@@ -694,7 +695,6 @@ def send_messages_for_new_subscribers(
 
             notifications.append(
                 internal_prep_private_message(
-                    realm=realm,
                     sender=sender,
                     recipient_user=recipient_user,
                     content=msg,
@@ -849,7 +849,6 @@ def get_topics_backend(
     return json_success(request, data=dict(topics=result))
 
 
-@transaction.atomic
 @require_realm_admin
 @has_request_variables
 def delete_in_topic(
@@ -858,7 +857,7 @@ def delete_in_topic(
     stream_id: int = REQ(converter=to_non_negative_int, path_only=True),
     topic_name: str = REQ("topic_name"),
 ) -> HttpResponse:
-    (stream, sub) = access_stream_by_id(user_profile, stream_id)
+    stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
     messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
     if not stream.is_history_public_to_subscribers():
@@ -868,9 +867,20 @@ def delete_in_topic(
         ).values_list("message_id", flat=True)
         messages = messages.filter(id__in=deletable_message_ids)
 
-    messages = messages.select_for_update(of=("self",))
-
-    do_delete_messages(user_profile.realm, messages)
+    # Topics can be large enough that this request will inevitably time out.
+    # In such a case, it's good for some progress to be accomplished, so that
+    # full deletion can be achieved by repeating the request. For that purpose,
+    # we delete messages in atomic batches, committing after each batch.
+    # TODO: Ideally this should be moved to the deferred_work queue.
+    batch_size = RETENTION_STREAM_MESSAGE_BATCH_SIZE
+    while True:
+        with transaction.atomic(durable=True):
+            messages_to_delete = messages.order_by("-id")[0:batch_size].select_for_update(
+                of=("self",)
+            )
+            if not messages_to_delete:
+                break
+            do_delete_messages(user_profile.realm, messages_to_delete)
 
     return json_success(request)
 

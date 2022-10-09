@@ -7,6 +7,7 @@ from django.urls import path
 from django.urls.resolvers import URLPattern
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext as _
+from django.views.decorators.csrf import csrf_exempt
 from typing_extensions import Concatenate, ParamSpec
 
 from zerver.decorator import get_basic_credentials, process_client
@@ -19,7 +20,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.rate_limiter import should_rate_limit
 from zerver.lib.request import RequestNotes
-from zerver.lib.rest import get_target_view_function_or_response
+from zerver.lib.rest import default_never_cache_responses, get_target_view_function_or_response
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zilencer.models import (
@@ -107,7 +108,9 @@ def authenticated_remote_server_view(
     return _wrapped_view_func
 
 
-def remote_server_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
+@default_never_cache_responses
+@csrf_exempt
+def remote_server_dispatch(request: HttpRequest, /, **kwargs: Any) -> HttpResponse:
     result = get_target_view_function_or_response(request, kwargs)
     if isinstance(result, HttpResponse):
         return result

@@ -9,8 +9,9 @@ def get_canonical_timezone_map() -> Dict[str, str]:
     canonical = {}
     with get_tzdata_zi() as f:
         for line in f:
-            if line.startswith("L "):
-                l, name, alias = line.split()
+            fields = line.split()
+            if fields and "link".startswith(fields[0].lower()):  # zic(8) accepts any prefix of Link
+                code, name, alias = fields
                 canonical[alias] = name
     return canonical
 

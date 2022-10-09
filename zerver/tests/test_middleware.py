@@ -94,7 +94,7 @@ class OpenGraphTest(ZulipTestCase):
         # in the first paragraph.
         self.check_title_and_description(
             "/help/disable-message-edit-history",
-            "Disable message edit history (Zulip Help Center)",
+            "Disable message edit history | Zulip help center",
             [
                 "In Zulip, users can view the edit history of a message. | To remove the",
                 "best to delete the message entirely. ",
@@ -111,7 +111,7 @@ class OpenGraphTest(ZulipTestCase):
         # deactivate-your-account starts with {settings_tab|account-and-privacy}
         self.check_title_and_description(
             "/help/deactivate-your-account",
-            "Deactivate your account (Zulip Help Center)",
+            "Deactivate your account | Zulip help center",
             ["Any bots that you maintain will be disabled. | Deactivating "],
             ["Confirm by clicking", "  ", "\n"],
         )
@@ -120,11 +120,11 @@ class OpenGraphTest(ZulipTestCase):
         # logging-out starts with {start_tabs}
         self.check_title_and_description(
             "/help/logging-out",
-            "Logging out (Zulip Help Center)",
+            "Logging out | Zulip help center",
             # Ideally we'd do something better here
             [
-                "We're here to help! Email us at desdemona+admin@zulip.com with questions, feedback, or "
-                + "feature requests."
+                "Your feedback helps us make Zulip better for everyone! Please contact us "
+                + "with questions, suggestions, and feature requests."
             ],
             ["Click on the gear"],
         )
@@ -132,7 +132,7 @@ class OpenGraphTest(ZulipTestCase):
     def test_index_pages(self) -> None:
         self.check_title_and_description(
             "/help/",
-            "Zulip Help Center",
+            "Zulip help center",
             [("Welcome to the Zulip")],
             [],
         )
@@ -153,10 +153,10 @@ class OpenGraphTest(ZulipTestCase):
         self.check_title_and_description(
             "/help/not-a-real-page",
             # Probably we should make this "Zulip Help Center"
-            "No such article. (Zulip Help Center)",
+            "No such article. | Zulip help center",
             [
-                "No such article. | We're here to help!",
-                "Email us at desdemona+admin@zulip.com with questions, feedback, or feature requests.",
+                "No such article.",
+                "Your feedback helps us make Zulip better for everyone! Please contact us",
             ],
             [],
             # Test that our open graph logic doesn't throw a 500

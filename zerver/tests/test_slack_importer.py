@@ -39,6 +39,7 @@ from zerver.data_import.slack import (
     get_subscription,
     get_user_timezone,
     process_message_files,
+    slack_emoji_name_to_codepoint,
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
@@ -46,7 +47,7 @@ from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.topic import EXPORT_TOPIC_NAME
-from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile, get_realm
+from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile, get_realm
 
 
 def remove_folder(path: str) -> None:
@@ -1147,6 +1148,8 @@ class SlackImporter(ZulipTestCase):
             },
         )
 
+        self.assertEqual(Message.objects.filter(realm=realm).count(), 82)
+
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
         remove_folder(output_dir)
@@ -1252,3 +1255,9 @@ class SlackImporter(ZulipTestCase):
             SlackBotEmail.get_email({"first_name": "Other Name", "bot_id": "other"}, "example.com"),
             "othername-bot@example.com",
         )
+
+    def test_slack_emoji_name_to_codepoint(self) -> None:
+        self.assertEqual(slack_emoji_name_to_codepoint["thinking_face"], "1f914")
+        self.assertEqual(slack_emoji_name_to_codepoint["tophat"], "1f3a9")
+        self.assertEqual(slack_emoji_name_to_codepoint["dog2"], "1f415")
+        self.assertEqual(slack_emoji_name_to_codepoint["dog"], "1f436")

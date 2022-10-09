@@ -5,7 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
-from zerver.lib.types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
+from zproject.settings_types import OIDCIdPConfigDict, SAMLIdPConfigDict, SCIMConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (

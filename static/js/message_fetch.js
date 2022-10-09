@@ -12,7 +12,6 @@ import * as message_util from "./message_util";
 import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as pm_list from "./pm_list";
 import * as recent_topics_ui from "./recent_topics_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -56,6 +55,10 @@ function process_result(data, opts) {
     // when fetching in a narrow, since we might return unread
     // messages that aren't in the home view data set (e.g. on a muted
     // stream).
+    //
+    // BUG: This code path calls pm_list.update_private_messages, even
+    // if there were no private messages (or even no new messages at
+    // all) in data.messages, which is a waste of resources.
     message_util.do_unread_count_updates(messages);
 
     // If we're loading more messages into the home view, save them to
@@ -71,7 +74,6 @@ function process_result(data, opts) {
 
     huddle_data.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    pm_list.update_private_messages();
     recent_topics_ui.process_messages(messages);
 
     stream_list.maybe_scroll_narrow_into_view();

@@ -1,8 +1,8 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function check_compose_form_empty(page: Page): Promise<void> {
     await common.check_form_contents(page, "#send_message_form", {
@@ -17,26 +17,19 @@ async function close_compose_box(page: Page): Promise<void> {
     await page.waitForSelector("#compose-textarea", {hidden: true});
 }
 
-function get_message_xpath(text: string): string {
-    return `//p[text()='${text}']`;
-}
-
-function get_last_element<T>(array: T[]): T {
-    return array.slice(-1)[0];
+function get_message_selector(text: string): string {
+    return `xpath/(//p[text()='${text}'])[last()]`;
 }
 
 async function test_send_messages(page: Page): Promise<void> {
-    const initial_msgs_count = await page.evaluate(() => $("#zhome .message_row").length);
+    const initial_msgs_count = (await page.$$("#zhome .message_row")).length;
 
     await common.send_multiple_messages(page, [
         {stream: "Verona", topic: "Reply test", content: "Compose stream reply test"},
         {recipient: "cordelia@zulip.com", content: "Compose private message reply test"},
     ]);
 
-    assert.equal(
-        await page.evaluate(() => $("#zhome .message_row").length),
-        initial_msgs_count + 2,
-    );
+    assert.equal((await page.$$("#zhome .message_row")).length, initial_msgs_count + 2);
 }
 
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
@@ -59,11 +52,11 @@ async function test_keyboard_shortcuts(page: Page): Promise<void> {
 }
 
 async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): Promise<void> {
-    const stream_message_xpath = get_message_xpath("Compose stream reply test");
-    await page.waitForXPath(stream_message_xpath, {visible: true});
-    const stream_message = get_last_element(await page.$x(stream_message_xpath));
+    const stream_message_selector = get_message_selector("Compose stream reply test");
+    const stream_message = await page.waitForSelector(stream_message_selector, {visible: true});
+    assert.ok(stream_message !== null);
     // we chose only the last element make sure we don't click on any duplicates.
-    await (stream_message as ElementHandle<Element>).click();
+    await stream_message.click();
     await common.check_form_contents(page, "#send_message_form", {
         stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "Reply test",
@@ -75,10 +68,11 @@ async function test_reply_by_click_prepopulates_stream_topic_names(page: Page): 
 async function test_reply_by_click_prepopulates_private_message_recipient(
     page: Page,
 ): Promise<void> {
-    const private_message = get_last_element(
-        await page.$x(get_message_xpath("Compose private message reply test")),
+    const private_message = await page.$(
+        get_message_selector("Compose private message reply test"),
     );
-    await (private_message as ElementHandle<Element>).click();
+    assert.ok(private_message !== null);
+    await private_message.click();
     await page.waitForSelector("#private_message_recipient", {visible: true});
     await common.pm_recipient.expect(
         page,
@@ -125,16 +119,15 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
-    await page.waitForFunction(
-        () => document.activeElement === $(".compose_table #stream_message_recipient_stream")[0],
-    );
+    await page.waitForSelector(".compose_table #stream_message_recipient_stream:focus", {
+        visible: true,
+    });
     await close_compose_box(page);
 }
 
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
     const multiple_recipients_pm = "A huddle to check spaces";
-    const pm_selector = `.messagebox:contains('${CSS.escape(multiple_recipients_pm)}')`;
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
         outside_view: true,
@@ -145,10 +138,15 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     await page.click(".top_left_all_messages");
 
     await page.waitForSelector("#zhome .message_row", {visible: true});
-    await page.waitForFunction((selector: string) => $(selector).length !== 0, {}, pm_selector);
-    await page.evaluate((selector: string) => {
-        $(selector).slice(-1)[0].click();
-    }, pm_selector);
+    const pm = await page.waitForSelector(
+        `xpath/(//*[${common.has_class_x(
+            "messagebox",
+        )} and contains(normalize-space(), "${multiple_recipients_pm}") and count(.//*[${common.has_class_x(
+            "star",
+        )}])>0])[last()]`,
+    );
+    assert.ok(pm !== null);
+    await pm.click();
     await page.waitForSelector("#compose-textarea", {visible: true});
     const recipient_internal_emails = [
         await common.get_internal_email_from_name(page, "othello"),
@@ -189,24 +187,22 @@ async function test_markdown_preview_without_any_content(page: Page): Promise<vo
 
 async function test_markdown_rendering(page: Page): Promise<void> {
     await page.waitForSelector("#compose .markdown_preview", {visible: true});
-    let markdown_preview_element = await page.$("#compose .preview_content");
-    assert.ok(markdown_preview_element);
-    assert.equal(
-        await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
-        "",
-    );
+    assert.equal(await common.get_text_from_selector(page, "#compose .preview_content"), "");
     await common.fill_form(page, 'form[action^="/json/messages"]', {
         content: "**Markdown preview** >> Test for Markdown preview",
     });
     await page.click("#compose .markdown_preview");
-    await page.waitForSelector("#compose .preview_content", {visible: true});
+    const preview_content = await page.waitForSelector(
+        `xpath///*[@id="compose"]//*[${common.has_class_x(
+            "preview_content",
+        )} and normalize-space()!=""]`,
+        {visible: true},
+    );
+    assert.ok(preview_content !== null);
     const expected_markdown_html =
         "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
-    await page.waitForFunction(() => $("#compose .preview_content").html() !== "");
-    markdown_preview_element = await page.$("#compose .preview_content");
-    assert.ok(markdown_preview_element);
     assert.equal(
-        await page.evaluate((element: Element) => element.innerHTML, markdown_preview_element),
+        await (await preview_content.getProperty("innerHTML")).jsonValue(),
         expected_markdown_html,
     );
 }

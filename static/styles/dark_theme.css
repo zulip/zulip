@@ -142,6 +142,7 @@ body.dark-theme {
     #compose,
     .column-left .left-sidebar,
     .column-right .right-sidebar,
+    #groups_overlay .right,
     #subscription_overlay .right,
     #settings_page .right {
         background-color: hsl(212, 28%, 18%);
@@ -291,7 +292,10 @@ body.dark-theme {
         color: hsl(236, 33%, 90%);
     }
 
-    .unread_count {
+    .unread_count,
+    /* The actions_popover unread_count object has its own variable CSS,
+       and thus needs to be repeated here with all three classes for precedence) */
+    .actions_popover .mark_as_unread .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }
 
@@ -395,6 +399,32 @@ body.dark-theme {
     .draft-row .draft-info-box,
     .preview_message_area {
         border-color: hsla(0, 0%, 0%, 0.2);
+    }
+
+    .recipient_row {
+        .message_row.unread {
+            .date_row {
+                background-color: hsl(212, 28%, 18%);
+            }
+        }
+
+        .private-message.unread {
+            .date_row {
+                background-color: hsl(208, 17%, 29%);
+            }
+        }
+
+        .message_row.unread ~ .message_row.unread {
+            .date_row {
+                background-color: transparent;
+            }
+        }
+
+        .private-message.unread ~ .private-message.unread {
+            .date_row {
+                background-color: hsl(208, 17%, 29%);
+            }
+        }
     }
 
     .top-navbar-border {
@@ -694,7 +724,8 @@ body.dark-theme {
         text-shadow: none;
     }
 
-    .mention .messagebox {
+    .group_mention .messagebox,
+    .direct_mention .messagebox {
         background-color: hsla(8, 78%, 43%, 0.15);
     }
 

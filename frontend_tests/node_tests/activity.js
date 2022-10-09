@@ -38,7 +38,6 @@ const presence = zrequire("presence");
 const people = zrequire("people");
 const buddy_data = zrequire("buddy_data");
 const {buddy_list} = zrequire("buddy_list");
-const user_status = zrequire("user_status");
 const activity = zrequire("activity");
 
 const me = {
@@ -376,6 +375,7 @@ test("handlers", ({override, mock_template}) => {
 test("first/prev/next", ({override, mock_template}) => {
     let rendered_alice;
     let rendered_fred;
+    user_settings.user_list_style = 2;
 
     mock_template("presence_row.hbs", false, (data) => {
         switch (data.user_id) {
@@ -385,13 +385,17 @@ test("first/prev/next", ({override, mock_template}) => {
                     faded: true,
                     href: "#narrow/pm-with/1-alice",
                     is_current_user: false,
-                    my_user_status: undefined,
                     name: "Alice Smith",
                     num_unread: 0,
                     user_circle_class: "user_circle_green",
-                    user_circle_status: "translated: Active",
                     user_id: alice.user_id,
                     status_emoji_info: undefined,
+                    status_text: undefined,
+                    user_list_style: {
+                        COMPACT: false,
+                        WITH_STATUS: true,
+                        WITH_AVATAR: false,
+                    },
                 });
                 break;
             case fred.user_id:
@@ -400,13 +404,17 @@ test("first/prev/next", ({override, mock_template}) => {
                     href: "#narrow/pm-with/2-fred",
                     name: "Fred Flintstone",
                     user_id: fred.user_id,
-                    my_user_status: undefined,
                     is_current_user: false,
                     num_unread: 0,
                     user_circle_class: "user_circle_green",
-                    user_circle_status: "translated: Active",
                     faded: false,
                     status_emoji_info: undefined,
+                    status_text: undefined,
+                    user_list_style: {
+                        COMPACT: false,
+                        WITH_STATUS: true,
+                        WITH_AVATAR: false,
+                    },
                 });
                 break;
             /* istanbul ignore next */
@@ -438,18 +446,23 @@ test("first/prev/next", ({override, mock_template}) => {
 });
 
 test("insert_one_user_into_empty_list", ({override, mock_template}) => {
+    user_settings.user_list_style = 2;
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
             href: "#narrow/pm-with/1-alice",
             name: "Alice Smith",
             user_id: 1,
-            my_user_status: undefined,
             is_current_user: false,
             num_unread: 0,
             user_circle_class: "user_circle_green",
-            user_circle_status: "translated: Active",
             faded: true,
             status_emoji_info: undefined,
+            status_text: undefined,
+            user_list_style: {
+                COMPACT: false,
+                WITH_STATUS: true,
+                WITH_AVATAR: false,
+            },
         });
         assert.ok(html.startsWith("<li data-user-id="));
         return html;
@@ -658,17 +671,6 @@ test("initialize", ({override, mock_template}) => {
     $("html").get_on_handler("mousemove")();
 
     clear();
-});
-
-test("away_status", ({override}) => {
-    override(pm_list, "update_private_messages", () => {});
-    override(buddy_list, "insert_or_move", () => {});
-
-    assert.ok(!user_status.is_away(alice.user_id));
-    activity.on_set_away(alice.user_id);
-    assert.ok(user_status.is_away(alice.user_id));
-    activity.on_revoke_away(alice.user_id);
-    assert.ok(!user_status.is_away(alice.user_id));
 });
 
 test("electron_bridge", ({override_rewire}) => {

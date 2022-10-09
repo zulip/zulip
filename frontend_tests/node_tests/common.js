@@ -89,9 +89,7 @@ run_test("adjust_mac_shortcuts non-mac", ({override}) => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-// Test non-default value of adjust_mac_shortcuts boolean parameter:
-// `kbd_elem = false`.
-run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
+run_test("adjust_mac_shortcuts mac", ({override}) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -101,64 +99,8 @@ run_test("adjust_mac_shortcuts mac non-defaults", ({override}) => {
         ["PgDn", "↓"],
         ["Ctrl", "⌘"],
         ["Alt", "⌘"],
-        ["X + Shift", "X + Shift"],
-        ["⌘ + Return", "⌘ + Return"],
-        ["Enter or Backspace", "Enter or Backspace"],
         ["#stream_name", "#stream_name"],
         ["Ctrl+K", "Ctrl+K"],
-    ]);
-
-    const fn_shortcuts = new Set(["Home", "End", "PgUp", "PgDn"]);
-    const inserted_fn_key = "<code>Fn</code> + ";
-
-    override(navigator, "platform", "MacIntel");
-
-    const kbd_element = false;
-
-    const test_items = [];
-    let key_no = 1;
-
-    for (const [old_key, mac_key] of keys_to_test_mac) {
-        const test_item = {};
-        const $stub = $.create("hotkey_" + key_no);
-        $stub.text(old_key);
-        assert.equal($stub.hasClass("arrow-key"), false);
-        if (fn_shortcuts.has(old_key)) {
-            $stub.before = ($elem) => {
-                assert.equal($elem, inserted_fn_key);
-            };
-        }
-        test_item.$stub = $stub;
-        test_item.mac_key = mac_key;
-        test_item.adds_arrow_key = fn_shortcuts.has(old_key) && kbd_element;
-        test_items.push(test_item);
-        key_no += 1;
-    }
-
-    const children = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
-
-    $.create(".markdown_content", {children});
-
-    common.adjust_mac_shortcuts(".markdown_content", kbd_element);
-
-    for (const test_item of test_items) {
-        assert.equal(test_item.$stub.text(), test_item.mac_key);
-        assert.equal(test_item.$stub.hasClass("arrow-key"), test_item.adds_arrow_key);
-    }
-});
-
-// Test default value of adjust_mac_shortcuts boolean parameter:
-// `kbd_elem = true`.
-run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
-    const keys_to_test_mac = new Map([
-        ["Backspace", "Delete"],
-        ["Enter", "Return"],
-        ["Home", "←"],
-        ["End", "→"],
-        ["PgUp", "↑"],
-        ["PgDn", "↓"],
-        ["Ctrl", "⌘"],
-        ["Alt", "⌘"],
         ["[", "["],
         ["X", "X"],
     ]);
@@ -168,8 +110,6 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
 
     override(navigator, "platform", "MacIntel");
 
-    const kbd_element = true;
-
     const test_items = [];
     let key_no = 1;
 
@@ -185,16 +125,16 @@ run_test("adjust_mac_shortcuts mac defaults", ({override}) => {
         }
         test_item.$stub = $stub;
         test_item.mac_key = mac_key;
-        test_item.adds_arrow_key = fn_shortcuts.has(old_key) && kbd_element;
+        test_item.adds_arrow_key = fn_shortcuts.has(old_key);
         test_items.push(test_item);
         key_no += 1;
     }
 
     const children = test_items.map((test_item) => ({to_$: () => test_item.$stub}));
 
-    $.create(".hotkeys_table kbd", {children});
+    $.create(".markdown kbd", {children});
 
-    common.adjust_mac_shortcuts(".hotkeys_table kbd");
+    common.adjust_mac_shortcuts(".markdown kbd");
 
     for (const test_item of test_items) {
         assert.equal(test_item.$stub.text(), test_item.mac_key);

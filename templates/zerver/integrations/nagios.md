@@ -2,8 +2,7 @@
 
 1.  {!download-python-bindings.md!}
 
-1.  Next, on your {{ settings_html|safe }}, create a bot for
-    {{ integration_display_name }}.
+1.  {!create-an-incoming-webhook.md!}
 
 1.  Next, open `integrations/nagios/zuliprc.example` in your favorite
     editor, and change the following lines to specify the email address

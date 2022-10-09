@@ -166,6 +166,9 @@ export function set_up(settings_panel) {
     $container
         .find(`.setting_emojiset_choice[value="${CSS.escape(settings_object.emojiset)}"]`)
         .prop("checked", true);
+    $container
+        .find(`.setting_user_list_style_choice[value=${settings_object.user_list_style}]`)
+        .prop("checked", true);
 
     if (for_realm_settings) {
         // For the realm-level defaults page, we use the common
@@ -224,6 +227,29 @@ export function set_up(settings_panel) {
             },
         });
     });
+
+    $container.find(".setting_user_list_style_choice").on("click", function () {
+        const data = {user_list_style: $(this).val()};
+        const current_user_list_style = settings_object.user_list_style;
+        if (current_user_list_style === data.user_list_style) {
+            return;
+        }
+        const $spinner = $container.find(".theme-settings-status").expectOne();
+        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+
+        channel.patch({
+            url: "/json/settings",
+            data,
+            success() {},
+            error(xhr) {
+                ui_report.error(
+                    settings_ui.strings.failure_html,
+                    xhr,
+                    $container.find(".theme-settings-status").expectOne(),
+                );
+            },
+        });
+    });
 }
 
 export async function report_emojiset_change(settings_panel) {
@@ -247,6 +273,25 @@ export async function report_emojiset_change(settings_panel) {
     }
 }
 
+export async function report_user_list_style_change(settings_panel) {
+    // TODO: Clean up how this works so we can use
+    // change_display_setting.  The challenge is that we don't want to
+    // report success before the server_events request returns that
+    // causes the actual sprite sheet to change.  The current
+    // implementation is wrong, though, in that it displays the UI
+    // update in all active browser windows.
+    const $spinner = $(settings_panel.container).find(".theme-settings-status");
+    if ($spinner.length) {
+        loading.destroy_indicator($spinner);
+        ui_report.success(
+            $t_html({defaultMessage: "User list style changed successfully!"}),
+            $spinner.expectOne(),
+        );
+        $spinner.expectOne();
+        settings_ui.display_checkmark($spinner);
+    }
+}
+
 export function update_page(property) {
     if (!overlays.settings_open()) {
         return;
@@ -262,8 +307,8 @@ export function update_page(property) {
     }
 
     // settings_org.set_input_element_value doesn't support radio
-    // button widgets like this one.
-    if (property === "emojiset") {
+    // button widgets like these.
+    if (property === "emojiset" || property === "user_list_style") {
         $container.find(`input[value=${CSS.escape(value)}]`).prop("checked", true);
         return;
     }

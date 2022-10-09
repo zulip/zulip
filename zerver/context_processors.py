@@ -180,9 +180,9 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "corporate_enabled": corporate_enabled,
     }
 
-    context["OPEN_GRAPH_URL"] = f"{realm_uri}{request.path}"
+    context["PAGE_METADATA_URL"] = f"{realm_uri}{request.path}"
     if realm is not None and realm.icon_source == realm.ICON_UPLOADED:
-        context["OPEN_GRAPH_IMAGE"] = urljoin(realm_uri, realm_icon)
+        context["PAGE_METADATA_IMAGE"] = urljoin(realm_uri, realm_icon)
 
     return context
 
@@ -211,8 +211,8 @@ def login_context(request: HttpRequest) -> Dict[str, Any]:
     }
 
     if realm is not None and realm.description:
-        context["OPEN_GRAPH_TITLE"] = realm.name
-        context["OPEN_GRAPH_DESCRIPTION"] = get_realm_text_description(realm)
+        context["PAGE_TITLE"] = realm.name
+        context["PAGE_DESCRIPTION"] = get_realm_text_description(realm)
 
     # Add the keys for our standard authentication backends.
     no_auth_enabled = True

@@ -97,5 +97,6 @@ for invitations for the organization owners role.
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language for automated messages and invitation emails][org-lang]
 * [Roles and permissions](/help/roles-and-permissions)
+* [Joining a Zulip organization](/help/join-a-zulip-organization)
 
-[org-lang]: /help/change-the-default-language-for-your-organization
+[org-lang]: /help/configure-organization-language

@@ -1,5 +1,7 @@
 # Add custom profile fields
 
+{!admin-only.md!}
+
 By default, user profiles show their name, email, date they joined, and when
 they were last active. You can also add custom profile fields like country
 of residence, birthday, manager, Twitter handle, and more.
@@ -17,11 +19,12 @@ methods][authentication-production] documentation for details.
 
 {settings_tab|profile-field-settings}
 
-1. Under **Add a new profile field**, enter a **Label**, **Hint**, and **Type**.
+1. Click **Add a new profile field**.
 
-1. Click **Add profile field**.
+1. Fill out profile field information as desired, and click **Add**.
 
-1. Click and drag the vertical dots on the left to order the fields.
+1. In the **Labels** column, click and drag the vertical dots to reorder the
+   list of custom profile fields.
 
 {end_tabs}
 
@@ -35,9 +38,39 @@ There are several different types of fields available.
 * **Date picker**: For dates, like "Birthday".
 * **Link**: For links to websites.
 * **External account**: For linking to GitHub, Twitter, etc.
+* **Pronouns**: What pronouns should people use to refer to the user?
 * **List of options**: Creates a dropdown with a list of options.
-* **Person picker**: For selecting other users, like "Manager" or
+* **Person picker**: For selecting one or more users, like "Manager" or
     "Direct reports".
+
+## Display custom fields in user profile summaries
+
+Organizations may find it useful to display additional fields in a user's
+profile summary, such as pronouns, GitHub username, job title, team, etc.
+
+All field types other than "Long text" or "Person" have a checkbox option
+that controls whether to display a custom field in a user's profile summary.
+There's a limit to the number of custom profile fields that can be displayed
+at a time. If the maximum number of fields is already selected, all unselected
+checkboxes will be disabled.
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the profile field
+   you want to edit.
+
+1. Toggle **Display in profile summary**.
+
+4. Click **Save changes**.
+
+!!! tip ""
+
+    You can also choose which custom profile fields will be displayed by toggling
+    the checkboxes in the **Summary** column of the **Custom profile fields** table.
+
+{end_tabs}
 
 ## Related articles
 

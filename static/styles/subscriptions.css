@@ -2,10 +2,12 @@
     margin: 10px auto;
 }
 
+.member_list_loading_indicator,
 .subscriber_list_loading_indicator {
     margin: 10px auto;
 }
 
+.member_list_loading_indicator:empty,
 .subscriber_list_loading_indicator:empty {
     margin: 0;
 }
@@ -218,6 +220,7 @@ h4.user_group_setting_subsection_title {
     width: 100%;
     margin: 0 0 10px;
 
+    .user_group_subscription_request_result,
     .stream_subscription_request_result {
         a {
             color: inherit;
@@ -225,6 +228,7 @@ h4.user_group_setting_subsection_title {
     }
 }
 
+.member-search,
 .subscriber-search {
     margin: 10px 0 0;
 
@@ -279,6 +283,7 @@ h4.user_group_setting_subsection_title {
     transition: all 0.3s ease;
 }
 
+.user-groups-container .user-groups-header.slide-left .fa-chevron-left,
 .subscriptions-container .subscriptions-header.slide-left .fa-chevron-left,
 #settings_overlay_container
     .settings-header.mobile.slide-left
@@ -598,7 +603,7 @@ h4.user_group_setting_subsection_title {
         }
 
         .top-bar .stream-name,
-        .top-bar .group-name,
+        .top-bar .group-name-wrapper,
         .bottom-bar .description {
             white-space: nowrap;
             overflow: hidden;
@@ -624,7 +629,7 @@ h4.user_group_setting_subsection_title {
         }
 
         .top-bar .stream-name,
-        .top-bar .group-name {
+        .top-bar .group-name-wrapper {
             font-weight: 600;
         }
 
@@ -740,6 +745,7 @@ h4.user_group_setting_subsection_title {
         margin: 20px;
     }
 
+    .group_settings_header,
     .stream_settings_header {
         white-space: nowrap;
         display: flex;
@@ -766,10 +772,12 @@ h4.user_group_setting_subsection_title {
         }
     }
 
+    .group-header,
     .stream-header {
         white-space: nowrap;
         padding-top: 10px;
 
+        .group-name-wrapper,
         .stream-name {
             display: inline-block;
             position: relative;
@@ -780,6 +788,7 @@ h4.user_group_setting_subsection_title {
             white-space: nowrap;
             max-width: 260px;
 
+            .group-name,
             .sub-stream-name {
                 display: block;
                 max-width: 20ch;
@@ -825,12 +834,14 @@ h4.user_group_setting_subsection_title {
             }
         }
 
+        .group_change_property_info,
         .stream_change_property_info {
             vertical-align: top;
             margin: -5px 0 0;
         }
     }
 
+    .group-description-wrapper,
     .stream-description {
         margin-bottom: 5px;
 
@@ -995,6 +1006,7 @@ h4.user_group_setting_subsection_title {
     margin: 5.5px 0 1px;
 }
 
+#change_user_group_description,
 #change_stream_description {
     width: 100%;
     height: 80px;
@@ -1036,6 +1048,7 @@ h4.user_group_setting_subsection_title {
         text-align: center;
     }
 
+    #groups_overlay .group_settings_header,
     #subscription_overlay .stream_settings_header {
         flex-wrap: wrap;
     }
@@ -1084,7 +1097,7 @@ h4.user_group_setting_subsection_title {
         left: 101%;
 
         top: 45px;
-        background-color: hsl(0, 0%, 100%);
+        background-color: hsl(0, 0%, 98%);
         border-top: none;
 
         transition: all 0.3s ease;
@@ -1115,6 +1128,7 @@ h4.user_group_setting_subsection_title {
 }
 
 @media (width < $sm_min) {
+    #groups_overlay .user_group_settings_wrapper,
     #subscription_overlay .subscription_settings {
         .button-group {
             display: block;
@@ -1122,10 +1136,14 @@ h4.user_group_setting_subsection_title {
             margin-top: 10px;
         }
 
-        .stream-header .button-group {
-            margin-top: -5px;
+        .group-header,
+        .stream-header {
+            .button-group {
+                margin-top: -5px;
+            }
         }
 
+        .group_change_property_info,
         .stream_change_property_info {
             /* For small widths where there is not enough space
             to show alert beside stream name we set its display
@@ -1144,7 +1162,9 @@ h4.user_group_setting_subsection_title {
 }
 
 @media (width <= 500px) {
+    #groups_overlay,
     #subscription_overlay {
+        .groups_settings_header,
         .stream_settings_header {
             display: block;
             text-align: center;

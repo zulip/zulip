@@ -9,10 +9,19 @@
     </li>
     {{/if}}
 
-    {{#if should_display_edit_and_view_source}}
+    {{#if editability_menu_item}}
     <li>
         <a class="popover_edit_message" data-message-id="{{message_id}}" tabindex="0">
-            <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <i class="fa fa-pencil" aria-hidden="true"></i> {{editability_menu_item}}
+            <span class="hotkey-hint">(e)</span>
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if move_message_menu_item}}
+    <li>
+        <a class="popover_move_message" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-arrows" aria-hidden="true"></i> {{move_message_menu_item}}
             <span class="hotkey-hint">(e)</span>
         </a>
     </li>
@@ -27,6 +36,24 @@
     </li>
     {{/if}}
 
+    {{#if view_source_menu_item}}
+    <li>
+        <a class="popover_view_source" data-message-id="{{message_id}}" tabindex="0">
+            <i class="fa fa-file-code-o" aria-hidden="true"></i> {{view_source_menu_item}}
+        </a>
+    </li>
+    {{/if}}
+
+    {{#if should_display_mark_as_unread}}
+        <li>
+            <a class="mark_as_unread" data-message-id="{{message_id}}" tabindex="0">
+                <span class="unread_count">1</span>
+                {{t "Mark as unread from here" }}
+                <span class="hotkey-hint">(U)</span>
+            </a>
+        </li>
+    {{/if}}
+
     {{#if should_display_reminder_option}}
     <li>
         <a class='reminder_button' data-message-id="{{message_id}}" tabindex="0">
@@ -39,7 +66,7 @@
     <li>
         <a class="popover_toggle_collapse" data-message-id="{{message_id}}" tabindex="0">
             <i class="fa fa-minus" aria-hidden="true"></i>
-            {{t "Collapse" }} <span class="hotkey-hint">(–)</span>
+            {{t "Collapse message" }} <span class="hotkey-hint">(–)</span>
         </a>
     </li>
     {{/if}}

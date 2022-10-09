@@ -13,7 +13,6 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_editing,
     do_set_realm_notifications_stream,
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
@@ -177,7 +176,17 @@ def update_realm(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
 
-    if invite_to_realm_policy is not None and not user_profile.is_realm_owner:
+    if (
+        invite_to_realm_policy is not None or invite_required is not None
+    ) and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequired()
+
+    if (
+        emails_restricted_to_domains is not None or disallow_disposable_email_addresses is not None
+    ) and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequired()
+
+    if waiting_period_threshold is not None and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequired()
 
     if enable_spectator_access:
@@ -206,6 +215,29 @@ def update_realm(
                 acting_user=user_profile,
             )
             data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
+
+    message_content_edit_limit_seconds: Optional[int] = None
+    if message_content_edit_limit_seconds_raw is not None:
+        message_content_edit_limit_seconds = parse_message_content_edit_or_delete_limit(
+            message_content_edit_limit_seconds_raw,
+            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+            setting_name="message_content_edit_limit_seconds",
+        )
+
+        if (
+            message_content_edit_limit_seconds is None
+            and realm.message_content_edit_limit_seconds is not None
+        ):
+            # We handle 'None' here separately, since in the loop below,
+            # do_set_realm_property is called only if setting value is
+            # not None.
+            do_set_realm_property(
+                realm,
+                "message_content_edit_limit_seconds",
+                message_content_edit_limit_seconds,
+                acting_user=user_profile,
+            )
+            data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
 
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
@@ -241,29 +273,6 @@ def update_realm(
             Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
             setting_name="message_content_edit_limit_seconds",
         )
-
-    if (
-        (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing)
-        or (
-            message_content_edit_limit_seconds_raw is not None
-            and message_content_edit_limit_seconds != realm.message_content_edit_limit_seconds
-        )
-        or (edit_topic_policy is not None and realm.edit_topic_policy != edit_topic_policy)
-    ):
-        if allow_message_editing is None:
-            allow_message_editing = realm.allow_message_editing
-        if edit_topic_policy is None:
-            edit_topic_policy = realm.edit_topic_policy
-        do_set_realm_message_editing(
-            realm,
-            allow_message_editing,
-            message_content_edit_limit_seconds,
-            edit_topic_policy,
-            acting_user=user_profile,
-        )
-        data["allow_message_editing"] = allow_message_editing
-        data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
-        data["edit_topic_policy"] = edit_topic_policy
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
@@ -440,6 +449,9 @@ def update_realm_user_settings_defaults(
         json_validator=check_bool, default=None
     ),
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    user_list_style: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
+    ),
 ) -> HttpResponse:
     if notification_sound is not None or email_notifications_batching_period_seconds is not None:
         check_settings_values(notification_sound, email_notifications_batching_period_seconds)

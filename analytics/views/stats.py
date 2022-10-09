@@ -59,6 +59,7 @@ def render_stats(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
+        upload_space_used=request.user.realm.currently_used_upload_space_bytes(),
     )
 
     request_language = get_and_set_request_language(

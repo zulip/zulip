@@ -1,12 +1,11 @@
 {% extends "zerver/portico.html" %}
 {% set entrypoint = "landing-page" %}
 
-(% set OPEN_GRAPH_TITLE = 'Modern chat for open source' %}
-{% set OPEN_GRAPH_DESCRIPTION = 'Zulip is the only modern team chat app that is ideal for both live and asynchronous conversations. Discuss issues, pull requests and feature ideas, engage with users, answer questions, and onboard new contributors.' %}
+{% set PAGE_TITLE = "Zulip for open-source projects" %}
 
-{% block title %}
-<title>Zulip: the best group chat for open-source projects</title>
-{% endblock %}
+{% set PAGE_DESCRIPTION = "Grow your community with thoughtful and inclusive
+  discussion, using the only modern team chat app that is ideal for both live
+  and asynchronous conversations." %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -123,6 +122,16 @@
                 <ul>
                     <li>
                         <div class="list-content">
+                            Maintain access to your organization's entire
+                            message history with free <a href="/plans">Zulip
+                            Cloud Standard</a> hosting. Information is at your
+                            fingertips with Zulip's <a
+                            href="/help/search-for-messages">powerful full-text
+                            search</a>.
+                        </div>
+                    </li>
+                    <li>
+                        <div class="list-content">
                             <a href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere">Permanently link</a>
                             to a Zulip conversation or a message in context
                             from your issue tracker, forum, or anywhere else.
@@ -141,14 +150,6 @@
                             Conversations are organized by topic, so you can
                             review old discussions to understand past work,
                             explanations, and decisions.
-                        </div>
-                    </li>
-                    <li>
-                        <div class="list-content">
-                            Topics make it easy to find the right conversation with Zulip's
-                            <a href="/help/search-for-messages">powerful full-text search</a>.
-                            New participants can learn from past discussions as they onboard,
-                            with unlimited message history.
                         </div>
                     </li>
                 </ul>

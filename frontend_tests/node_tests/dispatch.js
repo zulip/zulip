@@ -509,14 +509,13 @@ run_test("realm_bot add", ({override}) => {
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
     override(settings_bots, "render_bots", () => {});
-    override(settings_users, "update_bot_data", admin_stub.f);
+    override(settings_users, "redraw_bots_list", admin_stub.f);
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
     assert.equal(admin_stub.num_calls, 1);
     const args = bot_stub.get_args("bot");
     assert_same(args.bot, event.bot);
-    admin_stub.get_args("update_user_id", "update_bot_data");
 });
 
 run_test("realm_bot remove", ({override}) => {
@@ -885,16 +884,32 @@ run_test("user_settings", ({override}) => {
         assert_same(user_settings.demote_inactive_streams, 2);
     }
 
+    {
+        const stub = make_stub();
+        event = event_fixtures.user_settings__user_list_style;
+        override(settings_display, "report_user_list_style_change", stub.f);
+        user_settings.user_list_style = 1;
+        override(activity, "build_user_sidebar", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 2);
+        assert_same(user_settings.user_list_style, 2);
+    }
+
     event = event_fixtures.user_settings__enter_sends;
     user_settings.enter_sends = false;
     dispatch(event);
     assert_same(user_settings.enter_sends, true);
 
-    event = event_fixtures.user_settings__presence_enabled;
+    event = event_fixtures.user_settings__presence_disabled;
     user_settings.presence_enabled = true;
     override(activity, "redraw_user", noop);
     dispatch(event);
     assert_same(user_settings.presence_enabled, false);
+
+    event = event_fixtures.user_settings__presence_enabled;
+    override(activity, "redraw_user", noop);
+    dispatch(event);
+    assert_same(user_settings.presence_enabled, true);
 
     {
         event = event_fixtures.user_settings__enable_stream_audible_notifications;
@@ -1001,27 +1016,7 @@ run_test("delete_message", ({override}) => {
 });
 
 run_test("user_status", ({override}) => {
-    let event = event_fixtures.user_status__set_away;
-    {
-        const stub = make_stub();
-        override(activity, "on_set_away", stub.f);
-        dispatch(event);
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("user_id");
-        assert_same(args.user_id, 55);
-    }
-
-    event = event_fixtures.user_status__revoke_away;
-    {
-        const stub = make_stub();
-        override(activity, "on_revoke_away", stub.f);
-        dispatch(event);
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("user_id");
-        assert_same(args.user_id, 63);
-    }
-
-    event = event_fixtures.user_status__set_status_emoji;
+    let event = event_fixtures.user_status__set_status_emoji;
     {
         const stub = make_stub();
         override(activity, "redraw_user", stub.f);

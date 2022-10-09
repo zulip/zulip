@@ -2,7 +2,7 @@ import os
 from unittest.mock import Mock, patch
 
 from django.conf import settings
-from moto import mock_s3
+from moto.s3 import mock_s3
 
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.lib.avatar_hash import user_avatar_path

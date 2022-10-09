@@ -86,7 +86,7 @@ from zerver.lib.redis_utils import get_dict_from_redis, get_redis_client, put_di
 from zerver.lib.request import RequestNotes
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.types import OIDCIdPConfigDict, ProfileDataElementUpdateDict
+from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.users import check_full_name, validate_user_custom_profile_field
 from zerver.models import (
@@ -105,6 +105,7 @@ from zerver.models import (
     remote_user_to_email,
     supported_auth_backends,
 )
+from zproject.settings_types import OIDCIdPConfigDict
 
 redis_client = get_redis_client()
 
@@ -1401,7 +1402,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend, ExternalAuthMethod):
 
     create_unknown_user = False
 
-    def authenticate(
+    def authenticate(  # type: ignore[override] # authenticate has an incompatible signature with ModelBackend and BaseBackend
         self,
         request: Optional[HttpRequest] = None,
         *,

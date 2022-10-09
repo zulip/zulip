@@ -113,6 +113,13 @@ export function get_bot_owner_user(user) {
     return get_by_user_id(owner_id);
 }
 
+export function can_admin_user(user) {
+    return (
+        (user.is_bot && user.bot_owner_id && user.bot_owner_id === page_params.user_id) ||
+        is_my_user_id(user.user_id)
+    );
+}
+
 export function id_matches_email_operand(user_id, email) {
     const person = get_by_email(email);
 

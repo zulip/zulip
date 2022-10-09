@@ -34,10 +34,6 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (width <= 768px) {
-            width: auto;
-        }
-
-        @media (width <= 686px) {
             width: calc(100% - 50px);
             margin: 0 auto;
         }
@@ -225,7 +221,8 @@ $category-text: hsl(219, 23%, 33%);
         }
 
         @media (width <= 906px) {
-            display: block;
+            /* Change it to `display: block` when enabling catergories. */
+            display: none;
             width: 670px;
 
             h3,
@@ -594,6 +591,7 @@ $category-text: hsl(219, 23%, 33%);
 .portico-landing.integrations.communities {
     .main {
         visibility: visible;
+        max-width: 900px;
     }
 
     .portico-page-heading {
@@ -602,10 +600,10 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .portico-page-subheading {
-        font-size: 16px;
-        font-weight: 400;
+        font-weight: 300;
         color: hsl(0, 0%, 20%);
-        max-width: 340px;
+        max-width: 800px;
+        line-height: 150%;
         margin: auto;
     }
 
@@ -616,17 +614,17 @@ $category-text: hsl(219, 23%, 33%);
     }
 
     .catalog {
-        margin-top: 50px;
+        margin: 50px auto 0;
+        max-width: 700px;
     }
 
     .eligible_realms {
         display: flex;
         flex-direction: column;
-        gap: 30px;
 
         .eligible_realm {
             display: flex;
-            gap: 20px;
+            margin-bottom: 10px;
             padding: 5px 10px;
             border: 1px solid transparent;
             border-radius: 4px;
@@ -637,6 +635,7 @@ $category-text: hsl(219, 23%, 33%);
 
             .eligible_realm_logo {
                 display: flex;
+                margin-right: 20px;
                 width: 60px;
                 height: 60px;
             }
@@ -651,7 +650,7 @@ $category-text: hsl(219, 23%, 33%);
                     font-size: 21px;
                     color: hsl(220.6, 20%, 33.3%);
                     line-height: 23px;
-                    margin: 0;
+                    margin: 0 0 2px;
                 }
 
                 .eligible_realm_description {
@@ -660,7 +659,6 @@ $category-text: hsl(219, 23%, 33%);
                     color: hsl(220, 2.7%, 56.5%);
                     line-height: 19px;
                     margin: 0;
-                    width: min(600px, 50vw);
                     /* For restricting text to only two lines.
                        See https://caniuse.com/?search=display%3A%20-webkit-box for support. */
                     overflow: hidden;
@@ -671,8 +669,13 @@ $category-text: hsl(219, 23%, 33%);
             }
         }
 
+        hr {
+            margin: 10px 0;
+        }
+
         .eligible_realm_end_notice {
             text-align: center;
+            font-size: 18px;
         }
     }
 }

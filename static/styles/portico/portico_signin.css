@@ -960,7 +960,7 @@ button#register_auth_button_gitlab {
         margin-bottom: 0;
         font-size: 21px;
         line-height: 40px;
-        color: hsla(0, 0%, 0%, 0.2);
+        color: hsla(0, 0%, 0%, 0.5);
         border: 0;
         border-bottom: 1px solid hsla(0, 0%, 90%, 1);
 

@@ -1,6 +1,10 @@
 {% extends "zerver/base.html" %}
 {% set entrypoint = "confirm-preregistrationuser" %}
 
+{% block title %}
+<title>{{ _("Confirming your email address") }} | Zulip</title>
+{% endblock %}
+
 {% block content %}
 
 {#

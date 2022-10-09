@@ -26,7 +26,13 @@ from zerver.lib.message import (
     render_markdown,
     update_first_visible_message_id,
 )
-from zerver.lib.narrow import build_narrow_filter, is_spectator_compatible
+from zerver.lib.narrow import (
+    BadNarrowOperator,
+    NarrowBuilder,
+    build_narrow_filter,
+    exclude_muting_conditions,
+    is_spectator_compatible,
+)
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -49,9 +55,6 @@ from zerver.models import (
 )
 from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
-    BadNarrowOperator,
-    NarrowBuilder,
-    exclude_muting_conditions,
     find_first_unread_anchor,
     get_messages_backend,
     ok_to_include_history,

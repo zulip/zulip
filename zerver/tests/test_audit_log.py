@@ -34,8 +34,8 @@ from zerver.actions.realm_settings import (
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
-    do_set_realm_message_editing,
     do_set_realm_notifications_stream,
+    do_set_realm_property,
     do_set_realm_signup_notifications_stream,
 )
 from zerver.actions.streams import (
@@ -440,30 +440,42 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         realm = get_realm("zulip")
         user = self.example_user("hamlet")
-        values_expected = [
-            {
-                "property": "message_content_edit_limit_seconds",
-                RealmAuditLog.OLD_VALUE: realm.message_content_edit_limit_seconds,
-                RealmAuditLog.NEW_VALUE: 1000,
-            },
-            {
-                "property": "edit_topic_policy",
-                RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
-                RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
-            },
-        ]
+        value_expected = {
+            RealmAuditLog.OLD_VALUE: realm.message_content_edit_limit_seconds,
+            RealmAuditLog.NEW_VALUE: 1000,
+            "property": "message_content_edit_limit_seconds",
+        }
 
-        do_set_realm_message_editing(realm, True, 1000, Realm.POLICY_ADMINS_ONLY, acting_user=user)
-        realm_audit_logs = RealmAuditLog.objects.filter(
-            realm=realm,
-            event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
-            event_time__gte=now,
-            acting_user=user,
-        ).order_by("id")
-        self.assertEqual(realm_audit_logs.count(), 2)
+        do_set_realm_property(realm, "message_content_edit_limit_seconds", 1000, acting_user=user)
         self.assertEqual(
-            [orjson.loads(assert_is_not_none(entry.extra_data)) for entry in realm_audit_logs],
-            values_expected,
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(value_expected).decode(),
+            ).count(),
+            1,
+        )
+
+        value_expected = {
+            RealmAuditLog.OLD_VALUE: Realm.POLICY_EVERYONE,
+            RealmAuditLog.NEW_VALUE: Realm.POLICY_ADMINS_ONLY,
+            "property": "edit_topic_policy",
+        }
+
+        do_set_realm_property(
+            realm, "edit_topic_policy", Realm.POLICY_ADMINS_ONLY, acting_user=user
+        )
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
+                event_time__gte=now,
+                acting_user=user,
+                extra_data=orjson.dumps(value_expected).decode(),
+            ).count(),
+            1,
         )
 
     def test_set_realm_notifications_stream(self) -> None:

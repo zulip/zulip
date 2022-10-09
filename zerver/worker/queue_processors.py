@@ -995,9 +995,11 @@ class DeferredWorker(QueueProcessingWorker):
                 messages = Message.objects.filter(
                     recipient_id=event["stream_recipient_id"]
                 ).order_by("id")[offset : offset + batch_size]
-                UserMessage.objects.filter(message__in=messages).extra(
-                    where=[UserMessage.where_unread()]
-                ).update(flags=F("flags").bitor(UserMessage.flags.read))
+
+                with transaction.atomic(savepoint=False):
+                    UserMessage.select_for_update_query().filter(message__in=messages).extra(
+                        where=[UserMessage.where_unread()]
+                    ).update(flags=F("flags").bitor(UserMessage.flags.read))
                 offset += len(messages)
                 if len(messages) < batch_size:
                     break

@@ -147,6 +147,10 @@ test_ui("send_message", ({override, override_rewire}) => {
         return stub_state;
     }
 
+    const $container = $(".top_left_drafts");
+    const $child = $(".unread_count");
+    $container.set_find_results(".unread_count", $child);
+
     override(server_events, "assert_get_events_running", () => {
         stub_state.get_events_running_called += 1;
     });

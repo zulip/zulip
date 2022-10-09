@@ -60,7 +60,7 @@ from zerver.models import (
     UserPresence,
     UserProfile,
     get_client,
-    get_huddle,
+    get_or_create_huddle,
     get_realm,
     get_stream,
     get_user,
@@ -725,6 +725,12 @@ class Command(BaseCommand):
                 zulip_realm, "Mentor", CustomProfileField.USER
             )
             github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
+            pronouns = try_add_realm_custom_profile_field(
+                zulip_realm,
+                "Pronouns",
+                CustomProfileField.PRONOUNS,
+                hint="What pronouns should people use to refer to you?",
+            )
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
@@ -739,6 +745,7 @@ class Command(BaseCommand):
                     {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
                     {"id": mentor.id, "value": [hamlet.id]},
                     {"id": github_profile.id, "value": "zulip"},
+                    {"id": pronouns.id, "value": "he/him"},
                 ],
             )
             do_update_user_custom_profile_data_if_changed(
@@ -755,6 +762,7 @@ class Command(BaseCommand):
                     {"id": favorite_website.id, "value": "https://blog.zulig.org"},
                     {"id": mentor.id, "value": [iago.id]},
                     {"id": github_profile.id, "value": "zulipbot"},
+                    {"id": pronouns.id, "value": "he/him"},
                 ],
             )
         else:
@@ -764,7 +772,9 @@ class Command(BaseCommand):
             ]
 
         # Extract a list of all users
-        user_profiles: List[UserProfile] = list(UserProfile.objects.filter(is_bot=False))
+        user_profiles: List[UserProfile] = list(
+            UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
+        )
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
@@ -791,7 +801,7 @@ class Command(BaseCommand):
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
+            get_or_create_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
         personals_pairs = [
@@ -998,6 +1008,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 def generate_and_send_messages(
     data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], int]
 ) -> int:
+    realm = get_realm("zulip")
     (tot_messages, personals_pairs, options, random_seed) = data
     random.seed(random_seed)
 
@@ -1011,7 +1022,7 @@ def generate_and_send_messages(
     # We need to filter out streams from the analytics realm as we don't want to generate
     # messages to its streams - and they might also have no subscribers, which would break
     # our message generation mechanism below.
-    stream_ids = Stream.objects.filter(realm=get_realm("zulip")).values_list("id", flat=True)
+    stream_ids = Stream.objects.filter(realm=realm).values_list("id", flat=True)
     recipient_streams: List[int] = [
         recipient.id
         for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
@@ -1043,7 +1054,7 @@ def generate_and_send_messages(
     messages: List[Message] = []
     while num_messages < tot_messages:
         saved_data: Dict[str, Any] = {}
-        message = Message()
+        message = Message(realm=realm)
         message.sending_client = get_client("populate_db")
 
         message.content = next(texts)

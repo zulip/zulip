@@ -121,36 +121,40 @@ function set_presence(user_id, status) {
     });
 }
 
-test("user_circle, level, status_description", () => {
+test("user_circle, level", () => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
-    user_status.set_away(selma.user_id);
-    assert.equal(buddy_data.level(selma.user_id), 3);
+    assert.equal(buddy_data.level(selma.user_id), 1);
 
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty_line");
-    user_status.revoke_away(selma.user_id);
-    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
-    assert.equal(buddy_data.status_description(selma.user_id), "translated: Active");
+    set_presence(selma.user_id, "idle");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_idle");
+    assert.equal(buddy_data.level(selma.user_id), 2);
+
+    set_presence(selma.user_id, "offline");
+    assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty");
+    assert.equal(buddy_data.level(selma.user_id), 3);
 
     set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
-    user_status.set_away(me.user_id);
-    assert.equal(buddy_data.status_description(me.user_id), "translated: Unavailable");
     assert.equal(buddy_data.level(me.user_id), 0);
 
-    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty_line");
-    user_status.revoke_away(me.user_id);
+    user_settings.presence_enabled = false;
+    assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty");
+    assert.equal(buddy_data.level(me.user_id), 0);
+
+    user_settings.presence_enabled = true;
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
+    assert.equal(buddy_data.level(me.user_id), 0);
 
     set_presence(fred.user_id, "idle");
     assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_idle");
     assert.equal(buddy_data.level(fred.user_id), 2);
-    assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
 
     set_presence(fred.user_id, undefined);
-    assert.equal(buddy_data.status_description(fred.user_id), "translated: Offline");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_empty");
+    assert.equal(buddy_data.level(fred.user_id), 3);
 });
 
 test("compose fade interactions (streams)", () => {
@@ -264,23 +268,6 @@ test("compose fade interactions (PMs)", () => {
     });
 
     assert.equal(faded(), false);
-});
-
-test("buddy_status", () => {
-    set_presence(selma.user_id, "active");
-    set_presence(me.user_id, "active");
-
-    assert.equal(buddy_data.buddy_status(selma.user_id), "active");
-    user_status.set_away(selma.user_id);
-    assert.equal(buddy_data.buddy_status(selma.user_id), "away_them");
-    user_status.revoke_away(selma.user_id);
-    assert.equal(buddy_data.buddy_status(selma.user_id), "active");
-
-    assert.equal(buddy_data.buddy_status(me.user_id), "active");
-    user_status.set_away(me.user_id);
-    assert.equal(buddy_data.buddy_status(me.user_id), "away_me");
-    user_status.revoke_away(me.user_id);
-    assert.equal(buddy_data.buddy_status(me.user_id), "active");
 });
 
 test("title_data", () => {
@@ -434,16 +421,6 @@ test("always show me", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
 });
 
-test("user_status", () => {
-    user_status.initialize({user_status: []});
-    set_presence(me.user_id, "active");
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
-    user_status.set_away(me.user_id);
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (unavailable)");
-    user_status.revoke_away(me.user_id);
-    assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
-});
-
 test("level", () => {
     add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
@@ -462,8 +439,8 @@ test("level", () => {
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 1);
 
-    user_status.set_away(me.user_id);
-    user_status.set_away(selma.user_id);
+    user_settings.presence_enabled = false;
+    set_presence(selma.user_id, "offline");
 
     // Selma gets demoted to level 3, but "me"
     // stays in level 0.
@@ -507,8 +484,9 @@ test("user_last_seen_time_status", ({override}) => {
 test("get_items_for_users", () => {
     people.add_active_user(alice);
     people.add_active_user(fred);
-    user_status.set_away(alice.user_id);
+    set_presence(alice.user_id, "offline");
     user_settings.emojiset = "google";
+    user_settings.user_list_style = 2;
     const status_emoji_info = {
         emoji_alt_code: false,
         emoji_name: "car",
@@ -521,42 +499,48 @@ test("get_items_for_users", () => {
         user_status.set_status_emoji({user_id, ...status_emoji_info});
     }
 
+    const user_list_style = {
+        COMPACT: false,
+        WITH_STATUS: true,
+        WITH_AVATAR: false,
+    };
+
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
             faded: false,
             href: "#narrow/pm-with/1001-self",
             is_current_user: true,
-            my_user_status: "translated: (you)",
             name: "Human Myself",
             num_unread: 0,
             status_emoji_info,
+            status_text: undefined,
             user_circle_class: "user_circle_green",
-            user_circle_status: "translated: Active",
             user_id: 1001,
+            user_list_style,
         },
         {
             faded: false,
             href: "#narrow/pm-with/1002-alice",
             is_current_user: false,
-            my_user_status: undefined,
             name: "Alice Smith",
             num_unread: 0,
             status_emoji_info,
-            user_circle_class: "user_circle_empty_line",
-            user_circle_status: "translated: Unavailable",
+            status_text: undefined,
+            user_circle_class: "user_circle_empty",
             user_id: 1002,
+            user_list_style,
         },
         {
             faded: false,
             href: "#narrow/pm-with/1003-fred",
             is_current_user: false,
-            my_user_status: undefined,
             name: "Fred Flintstone",
             num_unread: 0,
             status_emoji_info,
+            status_text: undefined,
             user_circle_class: "user_circle_empty",
-            user_circle_status: "translated: Offline",
             user_id: 1003,
+            user_list_style,
         },
     ]);
 });

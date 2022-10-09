@@ -40,6 +40,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
     subscribed = []
     for stream in get_web_public_streams_queryset(realm):
         # Add Stream fields.
+        can_remove_subscribers_group_id = stream.can_remove_subscribers_group_id
         date_created = datetime_to_timestamp(stream.date_created)
         description = stream.description
         first_message_id = stream.first_message_id
@@ -71,6 +72,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
         sub = SubscriptionStreamDict(
             audible_notifications=audible_notifications,
+            can_remove_subscribers_group_id=can_remove_subscribers_group_id,
             color=color,
             date_created=date_created,
             description=description,
@@ -110,6 +112,7 @@ def build_stream_dict_for_sub(
     recent_traffic: Dict[int, int],
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
+    can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
@@ -153,6 +156,7 @@ def build_stream_dict_for_sub(
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
         audible_notifications=audible_notifications,
+        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
         color=color,
         date_created=date_created,
         description=description,
@@ -182,6 +186,7 @@ def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
     recent_traffic: Dict[int, int],
 ) -> NeverSubscribedStreamDict:
+    can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
@@ -202,6 +207,7 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
+        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
         date_created=date_created,
         description=description,
         first_message_id=first_message_id,
@@ -390,7 +396,7 @@ def gather_subscriptions_helper(
     include_subscribers: bool = True,
 ) -> SubscriptionInfo:
     realm = user_profile.realm
-    all_streams: QuerySet[RawStreamDict] = get_active_streams(realm).values(
+    all_streams = get_active_streams(realm).values(
         *Stream.API_FIELDS,
         # The realm_id and recipient_id are generally not needed in the API.
         "realm_id",

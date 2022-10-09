@@ -3,7 +3,7 @@
 
 {# Zulip user and API documentation. #}
 {% block title %}
-<title>{{ OPEN_GRAPH_TITLE }}</title>
+<title>{{ PAGE_TITLE }}</title>
 {% endblock %}
 
 {% block portico_content %}
@@ -41,7 +41,15 @@
 
             <div id="footer" class="documentation-footer">
                 <hr />
-                <p>We're here to help! Email us at <a href="mailto:{{ support_email }}">{{ support_email }}</a> with questions, feedback, or feature requests.</p>
+                {% if corporate_enabled %}
+                    {% if page_is_policy_center %}
+                    <p>Please contact {{ support_email_html_tag }} with any questions about Zulip's policies.</p>
+                    {% else %}
+                    <p>Your feedback helps us make Zulip better for everyone! Please <a href="mailto:{{ support_email }}">contact us</a> with questions, suggestions, and feature requests.</p>
+                    {% endif %}
+                {% else %}
+                    <p>Don't see an answer to your question? <a href="mailto:{{ support_email }}">Contact this Zulip server's administrators</a> for support.</p>
+                {% endif %}
             </div>
         </div>
     </div>

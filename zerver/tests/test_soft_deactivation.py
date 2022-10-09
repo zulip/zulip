@@ -367,9 +367,14 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         topic_name = "foo"
 
         def send_fake_message(message_content: str, stream: Stream) -> Message:
+            """
+            The purpose of this helper is to create a Message object without corresponding
+            UserMessage rows being created.
+            """
             recipient = stream.recipient
             message = Message(
                 sender=sender,
+                realm=realm,
                 recipient=recipient,
                 content=message_content,
                 date_sent=timezone_now(),

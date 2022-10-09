@@ -7,6 +7,9 @@
     </label>
     <label for="{{prefix}}{{setting_name}}" class="inline {{setting_name}}_label" id="{{prefix}}{{setting_name}}_label">
         {{label}}
+        {{#if label_parens_text}}
+        (<i>{{label_parens_text}}</i>)
+        {{/if}}
         {{#if help_link}}
         {{> ../help_link_widget link=help_link }}
         {{/if}}

@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function copy_messages(
     page: Page,
@@ -12,7 +12,9 @@ async function copy_messages(
     return await page.evaluate(
         (start_message: string, end_message: string) => {
             function get_message_node(message: string): Element {
-                return $(`.message_row .message_content:contains("${CSS.escape(message)}")`)[0];
+                return [...document.querySelectorAll("#zhome .message_content")].find(
+                    (node) => node.textContent?.trim() === message,
+                )!;
             }
 
             // select messages from start_message to end_message
@@ -25,17 +27,21 @@ async function copy_messages(
             // Remove existing copy/paste divs, which may linger from the previous
             // example.  (The code clears these out with a zero-second timeout, which
             // is probably sufficient for human users, but which causes problems here.)
-            $("#copytempdiv").remove();
+            document.querySelector("#copytempdiv")?.remove();
 
             // emulate copy event
-            $("body").trigger(new $.Event("keydown", {which: 67, ctrlKey: true}));
+            document.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                    key: "c",
+                    code: "KeyC",
+                    ctrlKey: true,
+                    keyCode: 67,
+                    which: 67,
+                } as KeyboardEventInit),
+            );
 
             // find temp div with copied text
-            const $temp_div = $("#copytempdiv");
-            return $temp_div
-                .children("p")
-                .get()
-                .map((p) => p.textContent!);
+            return [...document.querySelectorAll("#copytempdiv > p")].map((p) => p.textContent!);
         },
         start_message,
         end_message,

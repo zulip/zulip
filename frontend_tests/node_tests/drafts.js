@@ -67,20 +67,6 @@ const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
 
-const legacy_draft = {
-    stream: "stream",
-    subject: "lunch",
-    type: "stream",
-    content: "whatever",
-};
-
-const compose_args_for_legacy_draft = {
-    stream: "stream",
-    topic: "lunch",
-    type: "stream",
-    content: "whatever",
-};
-
 const draft_1 = {
     stream: "stream",
     stream_id: 30,
@@ -96,7 +82,7 @@ const draft_2 = {
 };
 const short_msg = {
     stream: "stream",
-    subject: "topic",
+    topic: "topic",
     type: "stream",
     content: "a",
 };
@@ -108,10 +94,6 @@ function test(label, f) {
         f(helpers);
     });
 }
-
-test("legacy", () => {
-    assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
-});
 
 test("draft_model add", ({override}) => {
     const draft_model = drafts.draft_model;
@@ -223,7 +205,7 @@ test("initialize", ({override_rewire}) => {
 test("remove_old_drafts", () => {
     const draft_3 = {
         stream: "stream",
-        subject: "topic",
+        topic: "topic",
         type: "stream",
         content: "Test stream message",
         updatedAt: Date.now(),
@@ -349,7 +331,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     };
     const draft_3 = {
         stream: "stream 2",
-        subject: "topic",
+        topic: "topic",
         type: "stream",
         content: "Test stream message 2",
         updatedAt: date(-10),
@@ -490,7 +472,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
     };
     const stream_draft_2 = {
         stream: "stream 2",
-        subject: "topic",
+        topic: "topic",
         type: "stream",
         content: "Test stream message 2",
         updatedAt: date(-10),

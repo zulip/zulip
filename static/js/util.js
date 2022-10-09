@@ -217,18 +217,6 @@ export function get_match_topic(obj) {
     return obj.match_subject;
 }
 
-export function get_draft_topic(obj) {
-    // We will need to support subject for old drafts.
-    return obj.topic || obj.subject || "";
-}
-
-export function get_reload_topic(obj) {
-    // When we first upgrade to releases that have
-    // topic=foo in the code, the user's reload URL
-    // may still have subject=foo from the prior version.
-    return obj.topic || obj.subject || "";
-}
-
 export function get_edit_event_topic(obj) {
     if (obj.topic === undefined) {
         return obj.subject;

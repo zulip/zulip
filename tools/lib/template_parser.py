@@ -66,13 +66,13 @@ def tokenize(text: str) -> List[Token]:
     def looking_at_htmlcomment() -> bool:
         return looking_at("<!--")
 
-    def looking_at_handlebarcomment() -> bool:
+    def looking_at_handlebars_comment() -> bool:
         return looking_at("{{!")
 
     def looking_at_djangocomment() -> bool:
         return looking_at("{#")
 
-    def looking_at_handlebarpartial() -> bool:
+    def looking_at_handlebars_partial() -> bool:
         return looking_at("{{>")
 
     def looking_at_html_start() -> bool:
@@ -128,16 +128,16 @@ def tokenize(text: str) -> List[Token]:
                 s = get_html_comment(text, state.i)
                 tag = s[4:-3]
                 kind = "html_comment"
-            elif looking_at_handlebarcomment():
-                s = get_handlebar_comment(text, state.i)
+            elif looking_at_handlebars_comment():
+                s = get_handlebars_comment(text, state.i)
                 tag = s[3:-2]
-                kind = "handlebar_comment"
+                kind = "handlebars_comment"
             elif looking_at_djangocomment():
                 s = get_django_comment(text, state.i)
                 tag = s[2:-2]
                 kind = "django_comment"
-            elif looking_at_handlebarpartial():
-                s = get_handlebar_partial(text, state.i)
+            elif looking_at_handlebars_partial():
+                s = get_handlebars_partial(text, state.i)
                 tag = s[9:-2]
                 kind = "handlebars_singleton"
             elif looking_at_html_start():
@@ -298,7 +298,7 @@ def tag_flavor(token: Token) -> Optional[str]:
     if kind in (
         "code",
         "django_comment",
-        "handlebar_comment",
+        "handlebars_comment",
         "handlebars_singleton",
         "html_comment",
         "html_doctype",
@@ -687,7 +687,7 @@ def get_html_comment(text: str, i: int) -> str:
     raise TokenizationException("Unclosed comment", text[i:unclosed_end])
 
 
-def get_handlebar_comment(text: str, i: int) -> str:
+def get_handlebars_comment(text: str, i: int) -> str:
     end = i + 5
     unclosed_end = 0
     while end <= len(text):
@@ -725,7 +725,7 @@ def get_django_comment(text: str, i: int) -> str:
     raise TokenizationException("Unclosed comment", text[i:unclosed_end])
 
 
-def get_handlebar_partial(text: str, i: int) -> str:
+def get_handlebars_partial(text: str, i: int) -> str:
     end = i + 10
     unclosed_end = 0
     while end <= len(text):

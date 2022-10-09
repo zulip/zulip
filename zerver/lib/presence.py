@@ -10,7 +10,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, query_for_ids
 
 
-def get_status_dicts_for_rows(
+def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
 
@@ -28,15 +28,15 @@ def get_status_dicts_for_rows(
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
         get_user_key = lambda row: str(row["user_profile_id"])
-        get_user_info = get_modern_user_info
+        get_user_presence_info = get_modern_user_presence_info
     else:
         get_user_key = lambda row: row["user_profile__email"]
-        get_user_info = get_legacy_user_info
+        get_user_presence_info = get_legacy_user_presence_info
 
     user_statuses: Dict[str, Dict[str, Any]] = {}
 
     for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
-        info = get_user_info(
+        info = get_user_presence_info(
             list(presence_rows),
             mobile_user_ids=mobile_user_ids,
         )
@@ -45,7 +45,7 @@ def get_status_dicts_for_rows(
     return user_statuses
 
 
-def get_modern_user_info(
+def get_modern_user_presence_info(
     presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
 
@@ -75,7 +75,7 @@ def get_modern_user_info(
     return result
 
 
-def get_legacy_user_info(
+def get_legacy_user_presence_info(
     presence_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int]
 ) -> Dict[str, Any]:
 
@@ -139,10 +139,10 @@ def get_presence_for_user(
         # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
         mobile_user_ids.add(user_profile_id)
 
-    return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_presence_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
 
-def get_status_dict_by_realm(
+def get_presence_dict_by_realm(
     realm_id: int, slim_presence: bool = False
 ) -> Dict[str, Dict[str, Any]]:
     two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
@@ -184,7 +184,7 @@ def get_status_dict_by_realm(
     )
     mobile_user_ids = set(mobile_query_ids)
 
-    return get_status_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
+    return get_presence_dicts_for_rows(presence_rows, mobile_user_ids, slim_presence)
 
 
 def get_presences_for_realm(
@@ -195,7 +195,7 @@ def get_presences_for_realm(
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)
 
-    return get_status_dict_by_realm(realm.id, slim_presence)
+    return get_presence_dict_by_realm(realm.id, slim_presence)
 
 
 def get_presence_response(

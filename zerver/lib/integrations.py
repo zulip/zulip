@@ -1,16 +1,14 @@
 import os
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls import URLResolver, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
+from django_stubs_ext import StrPromise
 
 from zerver.lib.storage import static_path
-
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -25,7 +23,9 @@ To add a new webhook integration, declare a WebhookIntegration in the
 WEBHOOK_INTEGRATIONS list below (it will be automatically added to
 INTEGRATIONS).
 
-To add a new integration category, add to the CATEGORIES dict.
+To add a new integration category, add to either the CATEGORIES or
+META_CATEGORY dicts below. The META_CATEGORY dict is for categories
+that do not describe types of tools (e.g., bots or frameworks).
 
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
@@ -33,22 +33,26 @@ features for writing and configuring integrations efficiently.
 
 OptionValidator = Callable[[str, str], Optional[str]]
 
-CATEGORIES: Dict[str, "StrPromise"] = {
+META_CATEGORY: Dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
+    "bots": gettext_lazy("Interactive bots"),
+}
+
+CATEGORIES: Dict[str, StrPromise] = {
+    **META_CATEGORY,
     "continuous-integration": gettext_lazy("Continuous integration"),
     "customer-support": gettext_lazy("Customer support"),
     "deployment": gettext_lazy("Deployment"),
     "entertainment": gettext_lazy("Entertainment"),
     "communication": gettext_lazy("Communication"),
     "financial": gettext_lazy("Financial"),
-    "hr": gettext_lazy("HR"),
+    "hr": gettext_lazy("Human resources"),
     "marketing": gettext_lazy("Marketing"),
     "misc": gettext_lazy("Miscellaneous"),
-    "monitoring": gettext_lazy("Monitoring tools"),
+    "monitoring": gettext_lazy("Monitoring"),
     "project-management": gettext_lazy("Project management"),
     "productivity": gettext_lazy("Productivity"),
     "version-control": gettext_lazy("Version control"),
-    "bots": gettext_lazy("Interactive bots"),
 }
 
 
@@ -211,9 +215,12 @@ class WebhookIntegration(Integration):
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
 
         if isinstance(function, str):
-            function = import_string(function)
+            # We rename the imported function as view_function here to appease
+            # mypy, since it does not allow redefinition of variables with
+            # different types.
+            view_function = import_string(function)
 
-        self.function = function
+        self.function = view_function
 
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
@@ -461,12 +468,6 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("trello", ["project-management"]),
     WebhookIntegration("updown", ["monitoring"]),
     WebhookIntegration("uptimerobot", ["monitoring"], display_name="UptimeRobot"),
-    WebhookIntegration(
-        "yo",
-        ["communication"],
-        function="zerver.webhooks.yo.view.api_yo_app_webhook",
-        display_name="Yo",
-    ),
     WebhookIntegration("wekan", ["productivity"], display_name="Wekan"),
     WebhookIntegration("wordpress", ["marketing"], display_name="WordPress"),
     WebhookIntegration("zapier", ["meta-integration"]),
@@ -813,14 +814,6 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
     "wekan": [ScreenshotConfig("add_comment.json")],
     "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
-    "yo": [
-        ScreenshotConfig(
-            "",
-            "002.png",
-            "yo-app",
-            extra_params={"email": "iago@zulip.com", "username": "Cordelia"},
-        )
-    ],
     "zabbix": [ScreenshotConfig("zabbix_alert.json")],
     "zendesk": [
         ScreenshotConfig(

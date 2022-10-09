@@ -1,6 +1,5 @@
 # After editing this file, you MUST afterward run
-# /tools/update-locked-requirements to update requirements/dev.txt
-# and requirements/mypy.txt.
+# /tools/update-locked-requirements to update requirements/dev.txt.
 # See requirements/README.md for more detail.
 mypy
 
@@ -31,3 +30,5 @@ types-stripe
 types-zxcvbn
 
 importlib-metadata ; python_version < "3.10"  # for SQLAlchemy
+
+https://github.com/typeddjango/django-stubs/archive/41deee4ec678544b0f2cbb6f3ea54a3a8151109c.zip#egg=django-stubs==1.12.0+git

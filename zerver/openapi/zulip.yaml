@@ -644,6 +644,7 @@ paths:
                                         "in_home_view": true,
                                         "email_address": "test_stream.af64447e9e39374841063747ade8e6b0.show-sender@testserver",
                                         "stream_weekly_traffic": null,
+                                        "can_remove_subscribers_group_id": 2,
                                         "subscribers": [10],
                                       },
                                     ],
@@ -1046,6 +1047,7 @@ paths:
                                     presence as a UNIX timestamp.
                                 presence:
                                   type: object
+                                  x-model: dict
                                   description: |
                                     Object containing the details of the user's most recent presence.
                                   additionalProperties:
@@ -1143,6 +1145,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1188,6 +1191,7 @@ paths:
                                         "first_message_id": null,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -1552,8 +1556,14 @@ paths:
                                         - user_status
                                 away:
                                   type: boolean
+                                  deprecated: true
                                   description: |
                                     Whether the user has marked themself "away" with this status.
+
+                                    **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                    starting with that feature level, `away` is a legacy way to
+                                    access the user's `presence_enabled` setting, with
+                                    `away = !presence_enabled`. To be removed in a future release.
                                 status_text:
                                   type: string
                                   description: |
@@ -1663,6 +1673,7 @@ paths:
                                         "hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 5,
@@ -1679,6 +1690,7 @@ paths:
                                         "hint": "Or your personal blog's URL",
                                         "field_data": "",
                                         "order": 6,
+                                        "display_in_profile_summary": true,
                                       },
                                       {
                                         "id": 7,
@@ -1745,6 +1757,7 @@ paths:
                                               "first_message_id": 1,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Denmark",
@@ -1758,6 +1771,7 @@ paths:
                                               "first_message_id": 4,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                             {
                                               "name": "Verona",
@@ -1771,6 +1785,7 @@ paths:
                                               "first_message_id": 6,
                                               "message_retention_days": null,
                                               "is_announcement_only": false,
+                                              "can_remove_subscribers_group_id": 2,
                                             },
                                           ],
                                       },
@@ -1815,6 +1830,7 @@ paths:
                                         "first_message_id": 1,
                                         "message_retention_days": null,
                                         "is_announcement_only": false,
+                                        "can_remove_subscribers_group_id": 2,
                                       },
                                     ],
                                   "id": 0,
@@ -2719,6 +2735,7 @@ paths:
                                     marking already read messages as unread was not
                                     supported by the Zulip API.
                                   type: object
+                                  x-model: dict
                                   additionalProperties:
                                     type: object
                                     description: |
@@ -3218,6 +3235,7 @@ paths:
                                     - update
                                 realm_emoji:
                                   type: object
+                                  x-model: dict
                                   description: |
                                     An object in which each key describes a realm emoji.
                                   additionalProperties:
@@ -3767,6 +3785,12 @@ paths:
                                   type: object
                                   description: |
                                     An object containing the properties that have changed.
+
+                                    **Changes**: Before Zulip 6.0 (feature level 150), on changing any of
+                                    `allow_message_editing`, `message_content_edit_limit_seconds`, or
+                                    `edit_topic_policy` settings, this object included all the three settings
+                                    irrespective of which of these settings were changed. Now, a separate event
+                                    is sent for each changed setting.
                                   properties:
                                     add_custom_emoji_policy:
                                       type: integer
@@ -3785,6 +3809,7 @@ paths:
                                         allows editing the content of messages.
                                     authentication_methods:
                                       type: object
+                                      x-model: dict
                                       additionalProperties:
                                         description: |
                                           Boolean describing whether the authentication method (i.e its key)
@@ -4207,11 +4232,7 @@ paths:
                                   "op": "update_dict",
                                   "property": "default",
                                   "data":
-                                    {
-                                      "allow_message_editing": false,
-                                      "message_content_edit_limit_seconds": 600,
-                                      "edit_topic_policy": 2,
-                                    },
+                                    {"message_content_edit_limit_seconds": 600},
                                   "id": 0,
                                 }
                             - type: object
@@ -5073,7 +5094,29 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
+                  oneOf:
+                    - type: object
+                      required:
+                        - operator
+                        - operand
+                      additionalProperties: false
+                      properties:
+                        operator:
+                          type: string
+                        operand:
+                          oneOf:
+                            - type: string
+                            - type: integer
+                            - type: array
+                              items:
+                                type: integer
+                        negated:
+                          type: boolean
+                    - type: array
+                      items:
+                        type: string
+                      minItems: 2
+                      maxItems: 2
                 default: []
               example: [{"operand": "Denmark", "operator": "stream"}]
         - $ref: "#/components/parameters/ClientGravatar"
@@ -5310,9 +5353,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: integer
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: array
+                    items:
+                      type: string
+                  - type: array
+                    items:
+                      type: integer
+                    minLength: 1
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
@@ -5867,8 +5917,16 @@ paths:
 
                           The IDs of users who have disabled sending read receipts
                           (`send_read_receipts=false`) will never appear in the response,
-                          nor will the message's sender. The current user's ID will, if
-                          they have marked the read target message as read.
+                          nor will the message's sender. Additionally, the IDs of any users
+                          who have been muted by the current user or who have muted the
+                          current user will not be included in the response.
+
+                          The current user's ID will appear if they have marked the target
+                          message as read.
+
+                          **Changes**: Prior to Zulip 6.0 (feature level 143), the IDs of
+                          users who have been muted by or have muted the current user were
+                          included in the response.
                         items:
                           type: integer
                     example:
@@ -5948,6 +6006,7 @@ paths:
                       msg: {}
                       messages:
                         type: object
+                        x-model: dict
                         description: |
                           A dictionary with a key for each queried message that matches the narrow,
                           with message IDs as keys and search rendering data as values.
@@ -6682,6 +6741,7 @@ paths:
                       msg: {}
                       presence:
                         type: object
+                        x-model: dict
                         description: |
                           An object containing the presence details for every client the user has
                           logged into.
@@ -7126,11 +7186,17 @@ paths:
           example: on vacation
           required: false
         - name: away
+          deprecated: true
           schema:
             type: boolean
           in: query
           description: |
             Whether the user should be marked as "away".
+
+            **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+            starting with that feature level, `away` is a legacy way to
+            access the user's `presence_enabled` setting, with
+            `away = !presence_enabled`. To be removed in a future release.
           example: true
           required: false
         - name: emoji_name
@@ -7636,6 +7702,7 @@ paths:
                       msg: {}
                       subscribed:
                         type: object
+                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -7650,6 +7717,7 @@ paths:
                             type: string
                       already_subscribed:
                         type: object
+                        x-model: dict
                         description: |
                           A dictionary where the key is the email
                           address of the user/bot and the value is a
@@ -7692,6 +7760,16 @@ paths:
       tags: ["streams"]
       description: |
         Unsubscribe yourself or other users from one or more streams.
+
+        In addition to managing the current user's subscriptions, this
+        endpoint can be used by organization administrators to remove
+        other users from streams, or to remove a bot that the current
+        user is the `bot_owner` for from any stream that the current
+        user can access.
+
+        **Changes**: Before Zulip 6.0 (feature level 145), only
+        organization administrators could remove other users from
+        streams.
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -8042,6 +8120,7 @@ paths:
                       msg: {}
                       emoji:
                         type: object
+                        x-model: dict
                         description: |
                           An object that contains `emoji` objects, each identified with their
                           emoji ID as the key.
@@ -8095,11 +8174,13 @@ paths:
                           in the response.
                       presences:
                         type: object
+                        x-model: dict
                         description: |
                           A dictionary where each entry describes the presence details
                           of a user in the Zulip organization.
                         additionalProperties:
                           type: object
+                          x-model: dict
                           description: |
                             `{user_email}`: Object containing the details of a user's presence
                             on every client the user is logged into. The object's key is the
@@ -8196,6 +8277,7 @@ paths:
                               "hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 5,
@@ -8212,6 +8294,7 @@ paths:
                               "hint": "Or your personal blog's URL",
                               "field_data": "",
                               "order": 6,
+                              "display_in_profile_summary": true,
                             },
                             {
                               "id": 7,
@@ -8228,6 +8311,13 @@ paths:
                               "hint": "Enter your GitHub username",
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
+                            },
+                            {
+                              "id": 9,
+                              "name": "Pronouns",
+                              "type": 8,
+                              "hint": "What pronouns should people use to refer to you?",
+                              "order": 9,
                             },
                           ],
                       }
@@ -8256,7 +8346,7 @@ paths:
                 type: array
                 items:
                   type: integer
-              example: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+              example: [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
           required: true
       responses:
         "200":
@@ -8300,6 +8390,9 @@ paths:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
           schema:
             type: integer
           example: 3
@@ -8319,11 +8412,31 @@ paths:
             application/json:
               schema:
                 type: object
+                x-model: dict
               example:
                 {
                   "python": {"text": "Python", "order": "1"},
                   "java": {"text": "Java", "order": "2"},
                 }
+        - name: display_in_profile_summary
+          in: query
+          description: |
+            Whether clients should display this profile field in a summary section of a
+            user's profile (or in a more easily accessible "small profile").
+
+            At most 2 profile fields may have this property be true in a given
+            organization. The "Long text" [profile field types][profile-field-types]
+            profile field types cannot be selected to be displayed in profile summaries.
+
+            The "Person picker" profile field is also not supported, but that is likely to
+            be temporary.
+
+            [profile-field-types]: /help/add-custom-profile-fields#profile-field-types
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
+          schema:
+            type: boolean
+          example: true
       responses:
         "200":
           description: Success.
@@ -8494,10 +8607,10 @@ paths:
             The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
             used to display emoji to the user everywhere they appear in the UI.
 
-            - "google" - Google modern
-            - "google-blob" - Google classic
+            - "google" - Google
             - "twitter" - Twitter
             - "text" - Plain text
+            - "google-blob" - Google blobs
           schema:
             type: string
           example: "google"
@@ -8509,6 +8622,23 @@ paths:
             - 1 - Automatic
             - 2 - Always
             - 3 - Never
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
           schema:
             type: integer
             enum:
@@ -9445,7 +9575,50 @@ paths:
             type: boolean
             default: false
           example: true
-        - $ref: "#/components/parameters/ClientGravatar"
+        - name: client_gravatar
+          in: query
+          description: |
+            Whether the client supports computing gravatars URLs. If
+            enabled, `avatar_url` will be included in the response only
+            if there is a Zulip avatar, and will be `null` for users who
+            are using gravatar as their avatar. This option
+            significantly reduces the compressed size of user data,
+            since gravatar URLs are long, random strings and thus do not
+            compress well. The `client_gravatar` field is set to `true` if
+            clients can compute their own gravatars.
+
+            The default value is `true` for authenticated requests and
+            `false` for [unauthenticated
+            requests](/help/public-access-option). Passing `true` in
+            an unauthenticated request is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+          schema:
+            type: boolean
+          example: false
+        - name: include_subscribers
+          in: query
+          description: |
+            Whether each returned stream object should include a `subscribers`
+            field containing a list of the user IDs of its subscribers.
+
+            (This may be significantly slower in organizations with
+            thousands of users subscribed to many streams.)
+
+            Passing `true` in an [unauthenticated
+            request](/help/public-access-option) is an error.
+
+            **Changes**: Before Zulip 6.0 (feature level 149), this
+            parameter was silently ignored and processed as though it
+            were `false` in unauthenticated requests.
+
+            New in Zulip 2.1.0.
+          schema:
+            type: boolean
+            default: false
+          example: true
         - name: slim_presence
           in: query
           description: |
@@ -9459,7 +9632,6 @@ paths:
           example: true
         - $ref: "#/components/parameters/Event_types"
         - $ref: "#/components/parameters/AllPublicStreams"
-        - $ref: "#/components/parameters/IncludeSubscribers"
         - name: client_capabilities
           in: query
           description: |
@@ -9613,6 +9785,7 @@ paths:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:
                         type: object
+                        x-model: dict
                         description: |
                           Present if `custom_profile_fields` is present in `fetch_event_types`.
 
@@ -9637,6 +9810,9 @@ paths:
                             - `URL` for links.
                             - `EXTERNAL_ACCOUNT` for external accounts.
                             - `USER` for selecting a user for the field.
+                            - `PRONOUNS` for a short text field with convenient typeahead for one's preferred pronouns.
+
+                            **Changes**: `PRONOUNS` type added in Zulip 6.0 (feature level 151).
                           additionalProperties: false
                           properties:
                             id:
@@ -9786,6 +9962,7 @@ paths:
                                 An integer UNIX timestamp representing when the user was muted.
                       presences:
                         type: object
+                        x-model: dict
                         description: |
                           Present if `presence` is present in `fetch_event_types`.
 
@@ -9795,6 +9972,7 @@ paths:
                           Users who have been offline for multiple weeks may not appear in this object.
                         additionalProperties:
                           type: object
+                          x-model: dict
                           description: |
                             `{user_id}` or `{user_email}`: Object containing the details of a user's
                             presence on every client the user is logged into. Depending on the value
@@ -9829,6 +10007,7 @@ paths:
                           emoji that has been uploaded in this Zulip organization.
                         oneOf:
                           - type: object
+                            x-model: dict
                             additionalProperties:
                               $ref: "#/components/schemas/RealmEmoji"
                           - type: array
@@ -10043,6 +10222,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -10261,6 +10441,7 @@ paths:
                           a stop word in the query was ignored.
                       user_status:
                         type: object
+                        x-model: dict
                         description: |
                           Present if `user_status` is present in `fetch_event_types`.
 
@@ -10278,8 +10459,14 @@ paths:
                           properties:
                             away:
                               type: boolean
+                              deprecated: true
                               description: |
                                 If present, the user has marked themself "away".
+
+                                **Changes**: Deprecated in Zulip 6.0 (feature level 148);
+                                starting with that feature level, `away` is a legacy way to
+                                access the user's `presence_enabled` setting, with
+                                `away = !presence_enabled`. To be removed in a future release.
                             status_text:
                               type: string
                               description: |
@@ -10431,6 +10618,16 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           timezone:
                             type: string
                             description: |
@@ -10441,7 +10638,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -11392,7 +11589,7 @@ paths:
 
                           The [organization language][org-lang] for automated messages and invitation emails.
 
-                          [org-lang]: /help/change-the-default-language-for-your-organization
+                          [org-lang]: /help/configure-organization-language
                       realm_description:
                         type: string
                         description: |
@@ -11688,6 +11885,7 @@ paths:
                           special value `0` before Zulip 5.0 (feature level 100).
                       realm_authentication_methods:
                         type: object
+                        x-model: dict
                         additionalProperties:
                           description: |
                             Boolean describing whether the authentication method (i.e its key)
@@ -11851,6 +12049,7 @@ paths:
                           The URL for the organization.
                       realm_available_video_chat_providers:
                         type: object
+                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -11997,6 +12196,7 @@ paths:
                           a new wide organization logo to brand the organization.
                       realm_default_external_accounts:
                         type: object
+                        x-model: dict
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
@@ -12072,6 +12272,7 @@ paths:
                           will be accepted.
                       giphy_rating_options:
                         type: object
+                        x-model: dict
                         description: |
                           Dictionary where each entry describes a valid rating
                           that is configured on this server and could be selected by an
@@ -12344,6 +12545,16 @@ paths:
                               - 1 - Automatic
                               - 2 - Always
                               - 3 - Never
+                          user_list_style:
+                            type: integer
+                            description: |
+                              The style selected by the user for the right sidebar user list.
+
+                              - 1 - Compact
+                              - 2 - With status
+                              - 3 - With avatar and status
+
+                              **Changes**: New in Zulip 6.0 (feature level 141).
                           enable_stream_desktop_notifications:
                             type: boolean
                             description: |
@@ -12432,7 +12643,7 @@ paths:
                           enter_sends:
                             type: boolean
                             description: |
-                              Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                              Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                               in the compose box is enabled.
                           enable_drafts_synchronization:
                             type: boolean
@@ -12662,7 +12873,7 @@ paths:
                           and only for clients that did not include `user_settings_object` in
                           their client_capabilities` when registering the event queue.
 
-                          Whether the user setting for [sending on pressing Enter](/help/enable-enter-to-send)
+                          Whether the user setting for [sending on pressing Enter](/help/mastering-the-compose-box#toggle-between-ctrl-enter-and-enter-to-send-a-message)
                           in the compose box is enabled.
 
                           **Changes**: Deprecated in Zulip 5.0 (feature level 89). Clients
@@ -12822,6 +13033,7 @@ paths:
                       msg: {}
                       authentication_methods:
                         type: object
+                        x-model: dict
                         additionalProperties: false
                         deprecated: true
                         description: |
@@ -13350,6 +13562,23 @@ paths:
               - 2
               - 3
           example: 1
+        - name: user_list_style
+          in: query
+          description: |
+            The style selected by the user for the right sidebar user list.
+
+            - 1 - Compact
+            - 2 - With status
+            - 3 - With avatar and status
+
+            **Changes**: New in Zulip 6.0 (feature level 141).
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+          example: 1
         - name: timezone
           in: query
           description: |
@@ -13796,6 +14025,7 @@ paths:
                                 first_message_id:
                                   nullable: true
                                 is_announcement_only: {}
+                                can_remove_subscribers_group_id: {}
                                 is_default:
                                   type: boolean
                                   description: |
@@ -13906,6 +14136,7 @@ paths:
                             "rendered_description": "<p>A Scandinavian country</p>",
                             "stream_id": 7,
                             "stream_post_policy": 1,
+                            "can_remove_subscribers_group_id": 2,
                           },
                       }
         "400":
@@ -14098,6 +14329,12 @@ paths:
         Topics are a field on messages (not an independent
         data structure), so deleting all the messages in the topic
         deletes the topic from Zulip.
+
+        **Changes**: Before Zulip 6.0 (feature level 147), this
+        request did a single atomic operation, which could time out
+        for very large topics. It now deletes messages in batches,
+        starting with the newest messages, so that progress will be
+        made even if the request times out.
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
         - name: topic_name
@@ -14992,6 +15229,7 @@ components:
             first_message_id:
               nullable: true
             is_announcement_only: {}
+            can_remove_subscribers_group_id: {}
     BasicStreamBase:
       type: object
       description: |
@@ -15093,6 +15331,13 @@ components:
 
             **Changes**: Deprecated in Zulip 3.0 (feature level 1). Clients
             should use `stream_post_policy` instead.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     BasicBot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -15239,6 +15484,7 @@ components:
                 A boolean describing whether the user account has been deactivated.
     Config:
       type: object
+      x-model: dict
       description: |
         A "string: string" dictionary which describes the configuration
         for the embedded bot (usually details like API keys).
@@ -15274,6 +15520,9 @@ components:
             - **5**: Link
             - **6**: Person picker
             - **7**: External account
+            - **8**: Pronouns
+
+            **Changes**: Field type `8` added in Zulip 6.0 (feature level 151).
         order:
           type: integer
           description: |
@@ -15299,6 +15548,15 @@ components:
             dropdown UI for individual users to select an option.
 
             The interface for field type 7 is not yet stabilized.
+        display_in_profile_summary:
+          type: boolean
+          description: |
+            Whether the custom profile field, display or not in the user profile summary.
+
+            Currently it's value not allowed to be `true` of `Long text` and `Person picker`
+            [profile field types](/help/add-custom-profile-fields#profile-field-types).
+
+            **Changes**: New in Zulip 6.0 (feature level 146).
     Hotspot:
       type: object
       additionalProperties: false
@@ -15709,6 +15967,13 @@ components:
 
             Null means the stream was recently created and there is
             insufficient data to estimate the average traffic.
+        can_remove_subscribers_group_id:
+          type: integer
+          description: |
+            ID of the user group whose members are allowed to unsubscribe others
+            from the stream.
+
+            **Changes**: New in Zulip 6.0 (feature level 142).
     DefaultStreamGroup:
       type: object
       description: |
@@ -16351,6 +16616,7 @@ components:
           $ref: "#/components/schemas/profile_data"
     profile_data:
       type: object
+      x-model: dict
       description: |
         Only present if `is_bot` is false; bots can't have custom profile fields.
 
@@ -16529,6 +16795,7 @@ components:
             msg: {}
             subscribed:
               type: object
+              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that were subscribed to as a
@@ -16542,6 +16809,7 @@ components:
                   type: string
             already_subscribed:
               type: object
+              x-model: dict
               description: |
                 A dictionary where the key is the email address of the user/bot and the
                 value is a list of the names of the streams that the user/bot is already

@@ -173,6 +173,11 @@
             flex-flow: row nowrap;
         }
 
+        .recent_topic_actions .recent_topics_focusable {
+            display: flex;
+            align-items: center;
+        }
+
         .recent_topics_participants {
             display: inline-flex; /* Causes LI items to display in row. */
             list-style-type: none;

@@ -251,13 +251,64 @@ and the latter for `server` contexts.
 ## Upgrading the operating system
 
 When you upgrade the operating system on which Zulip is installed
-(E.g. Ubuntu 18.04 Bionic to Ubuntu 20.04 Focal), you need to take
+(E.g. Ubuntu 20.04 Focal to Ubuntu 22.04 Jammy), you need to take
 some additional steps to update your Zulip installation, documented
 below.
 
 The steps are largely the same for the various OS upgrades aside from
 the versions of PostgreSQL, so you should be able to adapt these
 instructions for other supported platforms.
+
+### Upgrading from Ubuntu 20.04 Focal to 22.04 Jammy
+
+1. Upgrade your server to the latest Zulip `5.x` release (at
+   least 5.3, which adds support for Ubuntu 22.04 and above).
+
+2. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   supervisorctl stop all
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
+
+3. Switch to the root user and upgrade the operating system using the
+   OS's standard tooling. E.g. for Ubuntu, this means running
+   `do-release-upgrade` and following the prompts until it completes
+   successfully:
+
+   ```bash
+   sudo -i # Or otherwise get a root shell
+   do-release-upgrade
+   ```
+
+   When `do-release-upgrade` asks you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+4. As root, upgrade the database to the latest version of PostgreSQL:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/setup/upgrade-postgresql
+   ```
+
+5. Next, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python and rewrite Zulip's
+   full-text search indexes to work with the upgraded dictionary
+   packages:
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/*
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
+   ```
+
+   This will finish by restarting your Zulip server; you should now be
+   able to navigate to its URL and confirm everything is working
+   correctly.
 
 ### Upgrading from Ubuntu 18.04 Bionic to 20.04 Focal
 
@@ -320,6 +371,11 @@ instructions for other supported platforms.
    ```bash
    /home/zulip/deployments/current/scripts/setup/reindex-textual-data --force
    ```
+
+7. We recommend that you now [upgrade from Ubuntu 20.04 to
+   22.04](#upgrading-from-ubuntu-2004-focal-to-2204-jammy). Although
+   Ubuntu 20.04 is still supported at this time, Ubuntu 22.04 will be
+   supported farther into the future.
 
 ### Upgrading from Ubuntu 16.04 Xenial to 18.04 Bionic
 

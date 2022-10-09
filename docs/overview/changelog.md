@@ -96,7 +96,11 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Upgrade notes for 6.0
 
-- None yet.
+- Installations using the AzureAD authentication backend will need to
+  update `/etc/zulip/zulip-secrets.conf` after upgrading. The
+  `azure_oauth2_secret` secret was renamed to
+  `social_auth_azuread_oauth2_secret`, to match our other external
+  authentication methods.
 
 ## Zulip 5.x series
 

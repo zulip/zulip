@@ -39,6 +39,22 @@ export const demote_inactive_streams_values = {
     },
 };
 
+export const user_list_style_values = {
+    compact: {
+        code: 1,
+        description: $t({defaultMessage: "Compact"}),
+    },
+    with_status: {
+        code: 2,
+        description: $t({defaultMessage: "Show status text"}),
+    },
+    // The `with_avatar` design in still in discussion.
+    // with_avatar: {
+    //     code: 3,
+    //     description: $t({defaultMessage: "Show status text and avatar"}),
+    // },
+};
+
 export const default_view_values = {
     recent_topics: {
         code: "recent_topics",
@@ -275,71 +291,51 @@ export const common_message_policy_values = {
     },
 };
 
-const time_limit_dropdown_values = new Map([
-    [
-        "any_time",
-        {
-            text: $t({defaultMessage: "Any time"}),
-            seconds: null,
-        },
-    ],
-    [
-        "upto_two_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "2 minutes"})},
-            ),
-            seconds: 2 * 60,
-        },
-    ],
-    [
-        "upto_ten_min",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "10 minutes"})},
-            ),
-            seconds: 10 * 60,
-        },
-    ],
-    [
-        "upto_one_hour",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 hour"})},
-            ),
-            seconds: 60 * 60,
-        },
-    ],
-    [
-        "upto_one_day",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 day"})},
-            ),
-            seconds: 24 * 60 * 60,
-        },
-    ],
-    [
-        "upto_one_week",
-        {
-            text: $t(
-                {defaultMessage: "Up to {time_limit} after posting"},
-                {time_limit: $t({defaultMessage: "1 week"})},
-            ),
-            seconds: 7 * 24 * 60 * 60,
-        },
-    ],
-    [
-        "custom_limit",
-        {
-            text: $t({defaultMessage: "Custom"}),
-        },
-    ],
-]);
+export const time_limit_dropdown_values = [
+    {
+        text: $t({defaultMessage: "Any time"}),
+        value: "any_time",
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "2 minutes"})},
+        ),
+        value: 2 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "10 minutes"})},
+        ),
+        value: 10 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 hour"})},
+        ),
+        value: 60 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 day"})},
+        ),
+        value: 24 * 60 * 60,
+    },
+    {
+        text: $t(
+            {defaultMessage: "Up to {time_limit} after posting"},
+            {time_limit: $t({defaultMessage: "1 week"})},
+        ),
+        value: 7 * 24 * 60 * 60,
+    },
+    {
+        text: $t({defaultMessage: "Custom"}),
+        value: "custom_period",
+    },
+];
 export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
 export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
 
@@ -496,7 +492,7 @@ export const display_settings_labels = {
     display_emoji_reaction_users: new Handlebars.SafeString(
         $t_html({
             defaultMessage:
-                "Display names of reacting users when few users have reacted to a message.",
+                "Display names of reacting users when few users have reacted to a message",
         }),
     ),
     escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
@@ -505,7 +501,7 @@ export const display_settings_labels = {
 
 export const notification_settings_labels = {
     enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if I'm online (useful for testing)",
+        defaultMessage: "Send mobile notifications even if I'm online",
     }),
     pm_content_in_desktop_notifications: $t({
         defaultMessage: "Include content of private messages in desktop notifications",
@@ -534,11 +530,14 @@ export const realm_user_settings_defaults_labels = {
 
     /* Overrides to remove "I" from labels for the realm-level versions of these labels. */
     enable_online_push_notifications: $t({
-        defaultMessage: "Send mobile notifications even if user is online (useful for testing)",
+        defaultMessage: "Send mobile notifications even if user is online",
     }),
     enable_digest_emails: $t({defaultMessage: "Send digest emails when user is away"}),
 
-    realm_presence_enabled: $t({defaultMessage: "Display availability to other users when online"}),
+    realm_presence_enabled: $t({
+        defaultMessage: "Display availability to other users",
+    }),
+    realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
 };

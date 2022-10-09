@@ -19,7 +19,7 @@ from zerver.actions.custom_profile_fields import (
     try_add_realm_custom_profile_field,
 )
 from zerver.actions.muted_users import do_mute_user
-from zerver.actions.presence import do_update_user_presence, do_update_user_status
+from zerver.actions.presence import do_update_user_presence
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.realm_emoji import check_add_realm_emoji
 from zerver.actions.realm_icon import do_change_icon_source
@@ -29,6 +29,7 @@ from zerver.actions.realm_settings import (
     do_set_realm_authentication_methods,
 )
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
+from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_mute_topic
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
@@ -57,6 +58,7 @@ from zerver.models import (
     BotStorageData,
     CustomProfileField,
     CustomProfileFieldValue,
+    GroupGroupMembership,
     Huddle,
     Message,
     MutedUser,
@@ -434,6 +436,12 @@ class RealmImportExportTest(ExportFile):
         self.assert_length(exported_realm_user_default, 1)
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
+        exported_usergroups = data["zerver_usergroup"]
+        self.assert_length(exported_usergroups, 8)
+        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[1])
+        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
         exported_um = self.find_by_id(data["zerver_usermessage"], um.id)
@@ -504,10 +512,15 @@ class RealmImportExportTest(ExportFile):
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
-        stream_b_message_id = self.send_stream_message(
+        stream_b_first_message_id = self.send_stream_message(
             self.example_user("prospero"), "Private B", "Hello stream B"
         )
+        # Hamlet subscribes now, so due to protected history, will not have access to the first message.
+        # This means that his consent will not be sufficient for the export of that message.
         self.subscribe(self.example_user("hamlet"), "Private B")
+        stream_b_second_message_id = self.send_stream_message(
+            self.example_user("prospero"), "Private B", "Hello again stream B"
+        )
 
         create_stream_if_needed(realm, "Private C", invite_only=True)
         self.subscribe(self.example_user("othello"), "Private C")
@@ -515,6 +528,17 @@ class RealmImportExportTest(ExportFile):
         stream_c_message_id = self.send_stream_message(
             self.example_user("othello"), "Private C", "Hello stream C"
         )
+
+        create_stream_if_needed(
+            realm, "Private D", invite_only=True, history_public_to_subscribers=True
+        )
+        self.subscribe(self.example_user("prospero"), "Private D")
+        self.send_stream_message(self.example_user("prospero"), "Private D", "Hello stream D")
+        # Hamlet subscribes now, but due to the stream having public history to subscribers, that doesn't
+        # matter and he his consent is sufficient to export also messages sent before he was added
+        # to the stream.
+        self.subscribe(self.example_user("hamlet"), "Private D")
+        self.send_stream_message(self.example_user("prospero"), "Private D", "Hello again stream D")
 
         # Create huddles
         self.send_huddle_message(
@@ -591,6 +615,7 @@ class RealmImportExportTest(ExportFile):
                 "Private A",
                 "Private B",
                 "Private C",
+                "Private D",
             },
         )
 
@@ -619,8 +644,10 @@ class RealmImportExportTest(ExportFile):
         ).values_list("id", flat=True)
 
         # Messages from Private stream C are not exported since no member gave consent
+        # Only the second message from Private stream B is exported, so that gets handled
+        # separately.
         private_stream_ids = Stream.objects.filter(
-            name__in=["Private A", "Private B", "core team"]
+            name__in=["Private A", "Private D", "core team"]
         ).values_list("id", flat=True)
         private_stream_recipients = Recipient.objects.filter(
             type_id__in=private_stream_ids, type=Recipient.STREAM
@@ -654,14 +681,13 @@ class RealmImportExportTest(ExportFile):
         exported_msg_ids = (
             set(public_stream_message_ids)
             | set(private_stream_message_ids)
+            | set([stream_b_second_message_id])
             | set(exported_pm_ids)
             | set(exported_huddle_ids)
         )
         self.assertEqual(self.get_set(data["zerver_message"], "id"), exported_msg_ids)
 
-        # TODO: This behavior is wrong and should be fixed. The message should not be exported
-        # since it was sent before the only consented user iago joined the stream.
-        self.assertIn(stream_b_message_id, exported_msg_ids)
+        self.assertNotIn(stream_b_first_message_id, exported_msg_ids)
 
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
         self.assertNotIn(huddle_c_message_id, exported_msg_ids)
@@ -939,6 +965,11 @@ class RealmImportExportTest(ExportFile):
             imported_realm.authentication_methods_dict(),
         )
 
+        self.assertEqual(
+            Message.objects.filter(realm=original_realm).count(),
+            Message.objects.filter(realm=imported_realm).count(),
+        )
+
     def get_realm_getters(self) -> List[Callable[[Realm], object]]:
         names = set()
         getters: List[Callable[[Realm], object]] = []
@@ -1061,13 +1092,13 @@ class RealmImportExportTest(ExportFile):
             return names
 
         @getter
-        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, int, str]]:
+        def get_realm_user_statuses(r: Realm) -> Set[Tuple[str, str, str]]:
             cordelia = self.example_user("cordelia")
             tups = {
-                (rec.user_profile.full_name, rec.emoji_name, rec.status, rec.status_text)
+                (rec.user_profile.full_name, rec.emoji_name, rec.status_text)
                 for rec in UserStatus.objects.filter(user_profile__realm_id=r.id)
             }
-            assert (cordelia.full_name, "hawaii", UserStatus.AWAY, "in Hawaii") in tups
+            assert (cordelia.full_name, "hawaii", "in Hawaii") in tups
             return tups
 
         @getter
@@ -1123,6 +1154,33 @@ class RealmImportExportTest(ExportFile):
             usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
             users = {membership.user_profile.email for membership in usergroup_membership}
             return users
+
+        @getter
+        def get_group_group_membership(r: Realm) -> Set[str]:
+            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
+            subgroups = {membership.subgroup.name for membership in group_group_membership}
+            return subgroups
+
+        @getter
+        def get_user_group_direct_members(r: Realm) -> Set[str]:
+            # We already check the members of the group through UserGroupMembership
+            # objects, but we also want to check direct_members field is set
+            # correctly since we do not include this in export data.
+            usergroup = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            direct_members = usergroup.direct_members.all()
+            direct_member_emails = {user.email for user in direct_members}
+            return direct_member_emails
+
+        @getter
+        def get_user_group_direct_subgroups(r: Realm) -> Set[str]:
+            # We already check the subgroups of the group through GroupGroupMembership
+            # objects, but we also want to check that direct_subgroups field is set
+            # correctly since we do not include this in export data.
+            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            direct_subgroups = usergroup.direct_subgroups.all()
+            direct_subgroup_names = {group.name for group in direct_subgroups}
+            return direct_subgroup_names
 
         # test botstoragedata and botconfigdata
         @getter
@@ -1687,7 +1745,7 @@ class SingleUserExportTest(ExportFile):
 
         do_update_user_status(
             user_profile=cordelia,
-            away=True,
+            away=None,
             status_text="on vacation",
             client_id=client.id,
             emoji_name=None,
@@ -1709,7 +1767,6 @@ class SingleUserExportTest(ExportFile):
         def zerver_userstatus(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
-            self.assertEqual(rec["status"], UserStatus.AWAY)
 
         do_mute_topic(cordelia, scotland, "bagpipe music")
         do_mute_topic(othello, scotland, "nessie")

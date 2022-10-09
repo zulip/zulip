@@ -33,3 +33,4 @@ an organization from the **Window** menu in the top menu bar.
 * [Logging out](logging-out)
 * [Deactivate your account](deactivate-your-account)
 * [Create your organization profile](create-your-organization-profile)
+* [Joining a Zulip organization](/help/join-a-zulip-organization)

@@ -13,6 +13,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Protocol,
     Set,
@@ -173,7 +174,7 @@ def make_user_messages(
     subscriber_map: Dict[int, Set[int]],
     is_pm_data: bool,
     mention_map: Dict[int, Set[int]],
-    wildcard_mention_map: Dict[int, bool] = {},
+    wildcard_mention_map: Mapping[int, bool] = {},
 ) -> List[ZerverFieldsT]:
 
     zerver_usermessage = []
@@ -486,6 +487,7 @@ def build_huddle(huddle_id: int) -> ZerverFieldsT:
 
 
 def build_message(
+    *,
     topic_name: str,
     date_sent: float,
     message_id: int,
@@ -493,6 +495,7 @@ def build_message(
     rendered_content: Optional[str],
     user_id: int,
     recipient_id: int,
+    realm_id: int,
     has_image: bool = False,
     has_link: bool = False,
     has_attachment: bool = True,

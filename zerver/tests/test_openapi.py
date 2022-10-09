@@ -107,7 +107,7 @@ class OpenAPIToolsTest(ZulipTestCase):
                 bad_content, TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE_SUCCESS
             )
 
-        with self.assertRaisesRegex(SchemaError, r"42 is not of type string"):
+        with self.assertRaisesRegex(SchemaError, r"42 is not of type 'string'"):
             bad_content = {
                 "msg": 42,
                 "result": "success",

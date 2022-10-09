@@ -62,8 +62,8 @@ in detail [here](/why-zulip), are even more important for open communities:
   existing conversation. This makes it harder for newer and shyer
   members to jump into the community. Often this disproportionately
   affects groups that are already underrepresented.
-- The lack of organization in Slack message history (and its 10K
-  message history limit) mean that users asking for help cannot
+- The lack of organization in Slack message history (and its 90 day
+  message history limit!) mean that users asking for help cannot
   effectively do self-service support. This results in the community
   answering a lot of duplicate questions.
 

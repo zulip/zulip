@@ -397,9 +397,19 @@ input.text-error {
 
     .footer-section {
         margin: 0 20px;
-        max-width: max-content;
         vertical-align: top;
         text-align: left;
+        /* 20-22vw for fitting content in the 4 column grid layout. We
+           need to set max-width so to avoid content overflow in different
+           languagues on different widths. */
+        max-width: 21vw;
+
+        @media (width < 1200px) {
+            ul li {
+                text-indent: -5px;
+                padding-left: 5px;
+            }
+        }
 
         h3 {
             text-transform: uppercase;
@@ -1186,6 +1196,11 @@ input.new-organization-button {
         margin-left: auto;
         margin-right: auto;
         grid-template-columns: repeat(2, max-content);
+
+        .footer-section {
+            /* 40vw to fit content in 2 grid columns. */
+            max-width: 40vw;
+        }
     }
 }
 

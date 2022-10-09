@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Set
 
+from django.db import transaction
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -43,13 +44,15 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     )
     do_clear_mobile_push_notifications_for_ids([user_profile.id], all_push_message_ids)
 
-    msgs = UserMessage.objects.filter(user_profile=user_profile).extra(
-        where=[UserMessage.where_unread()],
-    )
-
-    count = msgs.update(
-        flags=F("flags").bitor(UserMessage.flags.read),
-    )
+    with transaction.atomic(savepoint=False):
+        query = (
+            UserMessage.select_for_update_query()
+            .filter(user_profile=user_profile)
+            .extra(where=[UserMessage.where_unread()])
+        )
+        count = query.update(
+            flags=F("flags").bitor(UserMessage.flags.read),
+        )
 
     event = asdict(
         ReadMessagesEvent(
@@ -80,30 +83,32 @@ def do_mark_stream_messages_as_read(
 ) -> int:
     log_statsd_event("mark_stream_as_read")
 
-    msgs = UserMessage.objects.filter(
-        user_profile=user_profile,
-    )
-
-    msgs = msgs.filter(message__recipient_id=stream_recipient_id)
-
-    if topic_name:
-        msgs = filter_by_topic_name_via_message(
-            query=msgs,
-            topic_name=topic_name,
+    with transaction.atomic(savepoint=False):
+        query = (
+            UserMessage.select_for_update_query()
+            .filter(
+                user_profile=user_profile,
+                message__recipient_id=stream_recipient_id,
+            )
+            .extra(
+                where=[UserMessage.where_unread()],
+            )
         )
 
-    msgs = msgs.extra(
-        where=[UserMessage.where_unread()],
-    )
+        if topic_name:
+            query = filter_by_topic_name_via_message(
+                query=query,
+                topic_name=topic_name,
+            )
 
-    message_ids = list(msgs.values_list("message_id", flat=True))
+        message_ids = list(query.values_list("message_id", flat=True))
 
-    if len(message_ids) == 0:
-        return 0
+        if len(message_ids) == 0:
+            return 0
 
-    count = msgs.update(
-        flags=F("flags").bitor(UserMessage.flags.read),
-    )
+        count = query.update(
+            flags=F("flags").bitor(UserMessage.flags.read),
+        )
 
     event = asdict(
         ReadMessagesEvent(
@@ -133,18 +138,20 @@ def do_mark_muted_user_messages_as_read(
     user_profile: UserProfile,
     muted_user: UserProfile,
 ) -> int:
-    messages = UserMessage.objects.filter(
-        user_profile=user_profile, message__sender=muted_user
-    ).extra(where=[UserMessage.where_unread()])
+    with transaction.atomic(savepoint=False):
+        query = (
+            UserMessage.select_for_update_query()
+            .filter(user_profile=user_profile, message__sender=muted_user)
+            .extra(where=[UserMessage.where_unread()])
+        )
+        message_ids = list(query.values_list("message_id", flat=True))
 
-    message_ids = list(messages.values_list("message_id", flat=True))
+        if len(message_ids) == 0:
+            return 0
 
-    if len(message_ids) == 0:
-        return 0
-
-    count = messages.update(
-        flags=F("flags").bitor(UserMessage.flags.read),
-    )
+        count = query.update(
+            flags=F("flags").bitor(UserMessage.flags.read),
+        )
 
     event = asdict(
         ReadMessagesEvent(
@@ -239,22 +246,25 @@ def do_update_message_flags(
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
     flagattr = getattr(UserMessage.flags, flag)
 
-    msgs = UserMessage.objects.filter(user_profile=user_profile, message_id__in=messages)
-    um_message_ids = {um.message_id for um in msgs}
-    historical_message_ids = list(set(messages) - um_message_ids)
+    with transaction.atomic(savepoint=False):
+        query = UserMessage.select_for_update_query().filter(
+            user_profile=user_profile, message_id__in=messages
+        )
+        um_message_ids = {um.message_id for um in query}
+        historical_message_ids = list(set(messages) - um_message_ids)
 
-    # Users can mutate flags for messages that don't have a UserMessage yet.
-    # First, validate that the user is even allowed to access these message_ids.
-    for message_id in historical_message_ids:
-        access_message(user_profile, message_id)
+        # Users can mutate flags for messages that don't have a UserMessage yet.
+        # First, validate that the user is even allowed to access these message_ids.
+        for message_id in historical_message_ids:
+            access_message(user_profile, message_id)
 
-    # And then create historical UserMessage records.  See the called function for more context.
-    create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
+        # And then create historical UserMessage records.  See the called function for more context.
+        create_historical_user_messages(user_id=user_profile.id, message_ids=historical_message_ids)
 
-    if operation == "add":
-        count = msgs.update(flags=F("flags").bitor(flagattr))
-    elif operation == "remove":
-        count = msgs.update(flags=F("flags").bitand(~flagattr))
+        if operation == "add":
+            count = query.update(flags=F("flags").bitor(flagattr))
+        elif operation == "remove":
+            count = query.update(flags=F("flags").bitand(~flagattr))
 
     event = {
         "type": "update_message_flags",

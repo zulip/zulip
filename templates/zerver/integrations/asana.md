@@ -2,11 +2,7 @@ Get Zulip notifications for your Asana projects via Zapier!
 
 1.  {!create-stream.md!}
 
-1.  Next, on your {{ settings_html|safe }}, create a bot for Asana.
-    Construct the URL for the Asana bot using the bot API key and
-    stream name, like so:
-
-    `{{ api_url }}/v1/external/zapier?api_key=abcdefgh&stream=asana`
+1. {!create-bot-construct-url.md!}
 
 1.  Start by setting up a [Zapier](https://zapier.com/) account.
 
@@ -45,7 +41,7 @@ Get Zulip notifications for your Asana projects via Zapier!
 
 1.  Finally, configure **Data**. You have to add 2 fields:
 
-     * `subject` is the field corresponding to the subject of the message.
+     * `subject` is the field corresponding to the topic of the message.
      * `content` is the field corresponding to the content of the message.
 
 1.  You can format the content of the `content` and `subject` fields

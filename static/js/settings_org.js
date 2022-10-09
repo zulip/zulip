@@ -46,7 +46,8 @@ export function maybe_disable_widgets() {
     if (page_params.is_admin) {
         $("#deactivate_realm_button").prop("disabled", true);
         $("#org-message-retention").find("input, select").prop("disabled", true);
-        $("#id_realm_invite_to_realm_policy").prop("disabled", true);
+        $("#org-join").find("input, select").prop("disabled", true);
+        $("#id_realm_invite_required_label").parent().addClass("control-label-disabled");
         return;
     }
 
@@ -151,14 +152,6 @@ function get_property_value(property_name, for_realm_default_settings) {
         return realm_user_settings_defaults[property_name];
     }
 
-    if (property_name === "realm_message_content_edit_limit_minutes") {
-        return get_realm_time_limits_in_minutes("realm_message_content_edit_limit_seconds");
-    }
-
-    if (property_name === "realm_message_content_delete_limit_minutes") {
-        return get_realm_time_limits_in_minutes("realm_message_content_delete_limit_seconds");
-    }
-
     if (property_name === "realm_waiting_period_setting") {
         if (page_params.realm_waiting_period_threshold === 0) {
             return "none";
@@ -169,36 +162,11 @@ function get_property_value(property_name, for_realm_default_settings) {
         return "custom_days";
     }
 
-    if (property_name === "realm_msg_edit_limit_setting") {
-        if (page_params.realm_message_content_edit_limit_seconds === null) {
-            return "any_time";
-        }
-
-        for (const [value, elem] of settings_config.msg_edit_limit_dropdown_values) {
-            if (elem.seconds === page_params.realm_message_content_edit_limit_seconds) {
-                return value;
-            }
-        }
-        return "custom_limit";
-    }
-
     if (property_name === "realm_message_retention_setting") {
         if (page_params.realm_message_retention_days === settings_config.retain_message_forever) {
             return "retain_forever";
         }
         return "retain_for_period";
-    }
-
-    if (property_name === "realm_msg_delete_limit_setting") {
-        if (page_params.realm_message_content_delete_limit_seconds === null) {
-            return "any_time";
-        }
-        for (const [value, elem] of settings_config.msg_delete_limit_dropdown_values) {
-            if (elem.seconds === page_params.realm_message_content_delete_limit_seconds) {
-                return value;
-            }
-        }
-        return "custom_limit";
     }
 
     if (property_name === "realm_org_join_restrictions") {
@@ -244,8 +212,14 @@ function get_subsection_property_elements(element) {
         // structure, it needs custom code.
         const $color_scheme_elem = $subsection.find(".setting_color_scheme");
         const $emojiset_elem = $subsection.find("input[name='emojiset']:checked");
+        const $user_list_style_elem = $subsection.find("input[name='user_list_style']:checked");
         const $translate_emoticons_elem = $subsection.find(".translate_emoticons");
-        return [$color_scheme_elem, $emojiset_elem, $translate_emoticons_elem];
+        return [
+            $color_scheme_elem,
+            $emojiset_elem,
+            $user_list_style_elem,
+            $translate_emoticons_elem,
+        ];
     }
     return Array.from($subsection.find(".prop-element"));
 }
@@ -298,7 +272,11 @@ function set_giphy_rating_dropdown() {
 }
 
 function update_message_edit_sub_settings(is_checked) {
-    settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_msg_edit_limit_setting", true);
+    settings_ui.disable_sub_setting_onchange(
+        is_checked,
+        "id_realm_message_content_edit_limit_seconds",
+        true,
+    );
     settings_ui.disable_sub_setting_onchange(
         is_checked,
         "id_realm_message_content_edit_limit_minutes",
@@ -307,13 +285,52 @@ function update_message_edit_sub_settings(is_checked) {
     settings_ui.disable_sub_setting_onchange(is_checked, "id_realm_edit_topic_policy", true);
 }
 
-function set_msg_edit_limit_dropdown() {
-    const value = get_property_value("realm_msg_edit_limit_setting");
-    $("#id_realm_msg_edit_limit_setting").val(value);
+function update_custom_value_input(property_name) {
+    const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);
+    const custom_input_elem_id = $dropdown_elem
+        .parent()
+        .find(".admin-realm-time-limit-input")
+        .attr("id");
+
+    const show_custom_limit_input = $dropdown_elem.val() === "custom_period";
+    change_element_block_display_property(custom_input_elem_id, show_custom_limit_input);
+    if (show_custom_limit_input) {
+        $(`#${CSS.escape(custom_input_elem_id)}`).val(
+            get_realm_time_limits_in_minutes(property_name),
+        );
+    }
+}
+
+function get_time_limit_dropdown_setting_value(property_name) {
+    if (page_params[property_name] === null) {
+        return "any_time";
+    }
+
+    const valid_limit_values = settings_config.time_limit_dropdown_values.map((x) => x.value);
+    if (valid_limit_values.includes(page_params[property_name])) {
+        return page_params[property_name].toString();
+    }
+
+    return "custom_period";
+}
+
+function set_time_limit_setting(property_name) {
+    const dropdown_elem_val = get_time_limit_dropdown_setting_value(property_name);
+    $(`#id_${CSS.escape(property_name)}`).val(dropdown_elem_val);
+
+    const $custom_input = $(`#id_${CSS.escape(property_name)}`)
+        .parent()
+        .find(".admin-realm-time-limit-input");
+    $custom_input.val(get_realm_time_limits_in_minutes(property_name));
+
     change_element_block_display_property(
-        "id_realm_message_content_edit_limit_minutes",
-        value === "custom_limit",
+        $custom_input.attr("id"),
+        dropdown_elem_val === "custom_period",
     );
+}
+
+function set_msg_edit_limit_dropdown() {
+    set_time_limit_setting("realm_message_content_edit_limit_seconds");
 }
 
 function message_delete_limit_setting_enabled(setting_value) {
@@ -331,11 +348,13 @@ function set_delete_own_message_policy_dropdown(setting_value) {
     $("#id_realm_delete_own_message_policy").val(setting_value);
     settings_ui.disable_sub_setting_onchange(
         message_delete_limit_setting_enabled(setting_value),
-        "id_realm_msg_delete_limit_setting",
+        "id_realm_message_content_delete_limit_seconds",
         true,
     );
-    const limit_value = get_property_value("realm_msg_delete_limit_setting");
-    if (limit_value === "custom_limit") {
+    const limit_setting_dropdown_value = get_time_limit_dropdown_setting_value(
+        "realm_message_content_delete_limit_seconds",
+    );
+    if (limit_setting_dropdown_value === "custom_period") {
         settings_ui.disable_sub_setting_onchange(
             message_delete_limit_setting_enabled(setting_value),
             "id_realm_message_content_delete_limit_minutes",
@@ -345,12 +364,7 @@ function set_delete_own_message_policy_dropdown(setting_value) {
 }
 
 function set_msg_delete_limit_dropdown() {
-    const value = get_property_value("realm_msg_delete_limit_setting");
-    $("#id_realm_msg_delete_limit_setting").val(value);
-    change_element_block_display_property(
-        "id_realm_message_content_delete_limit_minutes",
-        value === "custom_limit",
-    );
+    set_time_limit_setting("realm_message_content_delete_limit_seconds");
 }
 
 function set_message_retention_setting_dropdown() {
@@ -466,16 +480,8 @@ function update_dependent_subsettings(property_name) {
         case "realm_allow_message_editing":
             update_message_edit_sub_settings(page_params.realm_allow_message_editing);
             break;
-        case "realm_msg_edit_limit_setting":
-        case "realm_message_content_edit_limit_minutes":
-            set_msg_edit_limit_dropdown();
-            break;
         case "realm_message_retention_days":
             set_message_retention_setting_dropdown();
-            break;
-        case "realm_msg_delete_limit_setting":
-        case "realm_message_content_delete_limit_minutes":
-            set_msg_delete_limit_dropdown();
             break;
         case "realm_delete_own_message_policy":
             set_delete_own_message_policy_dropdown(page_params.realm_delete_own_message_policy);
@@ -533,11 +539,19 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             );
             break;
         case "emojiset":
-            // Because the emojiset widget has a unique radio button
-            // structure, it needs custom reset code.
+            // Because this widget has a radio button structure, it
+            // needs custom reset code.
             $elem
                 .closest(".org-subsection-parent")
                 .find(`.setting_emojiset_choice[value='${CSS.escape(property_value)}'`)
+                .prop("checked", true);
+            break;
+        case "user_list_style":
+            // Because this widget has a radio button structure, it
+            // needs custom reset code.
+            $elem
+                .closest(".org-subsection-parent")
+                .find(`.setting_user_list_style_choice[value='${CSS.escape(property_value)}']`)
                 .prop("checked", true);
             break;
         case "email_notifications_batching_period_seconds":
@@ -556,12 +570,9 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
                 $("#id_realm_org_type option[value=0]").remove();
             }
             break;
-        case "realm_message_content_edit_limit_minutes":
-        case "realm_message_content_delete_limit_minutes":
-            // We are not using set_input_element_value here because we
-            // need to make the custom input box empty by setting the
-            // value null for "Anytime" case.
-            $elem.val(property_value);
+        case "realm_message_content_edit_limit_seconds":
+        case "realm_message_content_delete_limit_seconds":
+            set_time_limit_setting(property_name);
             break;
         default:
             if (property_value !== undefined) {
@@ -593,15 +604,9 @@ export function sync_realm_settings(property) {
     }
 
     switch (property) {
-        case "message_content_edit_limit_seconds":
-            property = "message_content_edit_limit_minutes";
-            break;
         case "emails_restricted_to_domains":
         case "disallow_disposable_email_addresses":
             property = "org_join_restrictions";
-            break;
-        case "message_content_delete_limit_seconds":
-            property = "message_content_delete_limit_minutes";
             break;
     }
     const $element = $(`#id_realm_${CSS.escape(property)}`);
@@ -611,13 +616,13 @@ export function sync_realm_settings(property) {
 }
 
 export function change_save_button_state($element, state) {
-    function show_hide_element($element, show, fadeout_delay) {
+    function show_hide_element($element, show, fadeout_delay, fadeout_callback) {
         if (show) {
             $element.removeClass("hide").addClass(".show").fadeIn(300);
             return;
         }
         setTimeout(() => {
-            $element.fadeOut(300);
+            $element.fadeOut(300, fadeout_callback);
         }, fadeout_delay);
     }
 
@@ -629,10 +634,9 @@ export function change_save_button_state($element, state) {
     }
 
     if (state === "discarded") {
-        if ($saveBtn.prop("disabled")) {
-            $saveBtn.prop("disabled", false);
-        }
-        show_hide_element($element, false, 0);
+        show_hide_element($element, false, 0, () =>
+            enable_or_disable_save_button($element.closest(".org-subsection-parent")),
+        );
         return;
     }
 
@@ -674,6 +678,9 @@ export function change_save_button_state($element, state) {
 
     $textEl.text(button_text);
     $saveBtn.attr("data-status", data_status);
+    if (state === "unsaved") {
+        enable_or_disable_save_button($element.closest(".org-subsection-parent"));
+    }
     show_hide_element($element, is_show, 800);
 }
 
@@ -719,6 +726,8 @@ export function get_input_element_value(input_elem, input_type) {
                 return $input_elem.val().trim();
             }
             return undefined;
+        case "time-limit":
+            return get_time_limit_setting_value($input_elem);
         default:
             return undefined;
     }
@@ -755,68 +764,76 @@ function get_auth_method_list_data() {
     return new_auth_methods;
 }
 
-function get_email_notification_batching_setting_element_value() {
-    const select_elem_val = $("#realm-user-default-settings")
-        .find(".setting_email_notifications_batching_period_seconds")
-        .val();
+function get_time_limit_setting_value($input_elem, for_api_data = true) {
+    const select_elem_val = $input_elem.val();
+
+    if (select_elem_val === "any_time") {
+        // "unlimited" is sent to API when a user wants to set the setting to
+        // "Any time" and the message_content_edit_limit_seconds field is "null"
+        // for that case.
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify("unlimited");
+    }
+
     if (select_elem_val !== "custom_period") {
         return Number.parseInt(select_elem_val, 10);
     }
-    const edit_elem_val = $("#realm_email_notification_batching_period_edit_minutes").val();
-    const setting_value_in_minutes = Number.parseInt(edit_elem_val, 10);
-    return setting_value_in_minutes * 60;
+
+    const $custom_input_elem = $input_elem.parent().find(".admin-realm-time-limit-input");
+    if ($custom_input_elem.val().length === 0) {
+        // This handles the case where the initial setting value is "Any time" and then
+        // dropdown is changed to "Custom" where the input box is empty initially and
+        // thus we do not show the save-discard widget until something is typed in the
+        // input box.
+        return null;
+    }
+    return parse_time_limit($custom_input_elem);
 }
 
 function check_property_changed(elem, for_realm_default_settings) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
     let current_val = get_property_value(property_name, for_realm_default_settings);
-    let changed_val;
+    let proposed_val;
 
     switch (property_name) {
         case "realm_authentication_methods":
             current_val = sort_object_by_key(current_val);
             current_val = JSON.stringify(current_val);
-            changed_val = get_auth_method_list_data();
-            changed_val = JSON.stringify(changed_val);
+            proposed_val = get_auth_method_list_data();
+            proposed_val = JSON.stringify(proposed_val);
             break;
         case "realm_notifications_stream_id":
-            changed_val = Number.parseInt(notifications_stream_widget.value(), 10);
+            proposed_val = Number.parseInt(notifications_stream_widget.value(), 10);
             break;
         case "realm_signup_notifications_stream_id":
-            changed_val = Number.parseInt(signup_notifications_stream_widget.value(), 10);
+            proposed_val = Number.parseInt(signup_notifications_stream_widget.value(), 10);
             break;
         case "realm_default_code_block_language":
-            changed_val = default_code_language_widget.value();
+            proposed_val = default_code_language_widget.value();
             break;
         case "email_notifications_batching_period_seconds":
-        case "email_notification_batching_period_edit_minutes": {
-            changed_val = get_email_notification_batching_setting_element_value();
+            proposed_val = get_time_limit_setting_value($elem, false);
             break;
-        }
-        case "realm_message_content_edit_limit_minutes":
-        case "realm_message_content_delete_limit_minutes": {
-            const input_val = Number.parseInt($(`#id_${CSS.escape(property_name)}`).val(), 10);
-            if (Number.isNaN(input_val)) {
-                changed_val = null;
-                break;
-            }
-            changed_val = input_val.toString();
+        case "realm_message_content_edit_limit_seconds":
+        case "realm_message_content_delete_limit_seconds":
+            proposed_val = get_time_limit_setting_value($elem, false);
             break;
-        }
         case "realm_default_language":
-            changed_val = $(
+            proposed_val = $(
                 "#org-notifications .language_selection_widget .language_selection_button span",
             ).attr("data-language-code");
             break;
         default:
             if (current_val !== undefined) {
-                changed_val = get_input_element_value($elem, typeof current_val);
+                proposed_val = get_input_element_value($elem, typeof current_val);
             } else {
                 blueslip.error("Element refers to unknown property " + property_name);
             }
     }
-    return current_val !== changed_val;
+    return current_val !== proposed_val;
 }
 
 export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
@@ -873,6 +890,26 @@ export function init_dropdown_widgets() {
     default_code_language_widget.setup();
 }
 
+function enable_or_disable_save_button($subsection_elem) {
+    const time_limit_settings = Array.from($subsection_elem.find(".time-limit-setting"));
+    let disable_save_btn = false;
+    for (const setting_elem of time_limit_settings) {
+        const dropdown_elem_val = $(setting_elem).find("select").val();
+        const custom_input_elem_val = Number.parseInt(
+            Number($(setting_elem).find(".admin-realm-time-limit-input").val()),
+            10,
+        );
+
+        disable_save_btn =
+            dropdown_elem_val === "custom_period" &&
+            (custom_input_elem_val <= 0 || Number.isNaN(custom_input_elem_val));
+        if (disable_save_btn) {
+            break;
+        }
+    }
+    $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
+}
+
 export function register_save_discard_widget_handlers(
     $container,
     patch_url,
@@ -920,60 +957,13 @@ export function register_save_discard_widget_handlers(
     });
 
     parse_time_limit = function parse_time_limit($elem) {
-        return Math.floor(Number.parseFloat($elem.val(), 10).toFixed(1) * 60);
+        return Math.floor(Number.parseFloat(Number($elem.val()), 10).toFixed(1) * 60);
     };
 
     function get_complete_data_for_subsection(subsection) {
         let data = {};
 
         switch (subsection) {
-            case "msg_editing": {
-                const edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
-                data.allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
-                switch (edit_limit_setting_value) {
-                    case "custom_limit": {
-                        data.message_content_edit_limit_seconds = parse_time_limit(
-                            $("#id_realm_message_content_edit_limit_minutes"),
-                        );
-
-                        break;
-                    }
-                    case "any_time": {
-                        data.message_content_edit_limit_seconds = JSON.stringify("unlimited");
-
-                        break;
-                    }
-                    default: {
-                        data.message_content_edit_limit_seconds =
-                            settings_config.msg_edit_limit_dropdown_values.get(
-                                edit_limit_setting_value,
-                            ).seconds;
-                    }
-                }
-                const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
-                switch (delete_limit_setting_value) {
-                    case "any_time": {
-                        data.message_content_delete_limit_seconds = JSON.stringify("unlimited");
-
-                        break;
-                    }
-                    case "custom_limit": {
-                        data.message_content_delete_limit_seconds = parse_time_limit(
-                            $("#id_realm_message_content_delete_limit_minutes"),
-                        );
-
-                        break;
-                    }
-                    default: {
-                        data.message_content_delete_limit_seconds =
-                            settings_config.msg_delete_limit_dropdown_values.get(
-                                delete_limit_setting_value,
-                            ).seconds;
-                    }
-                }
-                data.delete_own_message_policy = $("#id_realm_delete_own_message_policy").val();
-                break;
-            }
             case "notifications":
                 data.notifications_stream_id = Number.parseInt(
                     notifications_stream_widget.value(),
@@ -1054,14 +1044,6 @@ export function register_save_discard_widget_handlers(
         for (const input_elem of properties_elements) {
             const $input_elem = $(input_elem);
             if (check_property_changed($input_elem, for_realm_default_settings)) {
-                if (
-                    $input_elem.hasClass("email_notification_batching_period_edit_minutes") ||
-                    $input_elem.hasClass("setting_email_notifications_batching_period_seconds")
-                ) {
-                    const setting_value = get_email_notification_batching_setting_element_value();
-                    data.email_notifications_batching_period_seconds = setting_value;
-                    continue;
-                }
                 const input_value = get_input_element_value($input_elem);
                 if (input_value !== undefined) {
                     let property_name;
@@ -1148,35 +1130,6 @@ export function build_page() {
 
     register_save_discard_widget_handlers($(".admin-realm-form"), "/json/realm", false);
 
-    function update_save_button_state(e) {
-        const edit_limit_value = Number.parseInt(
-            $("#id_realm_message_content_edit_limit_minutes").val(),
-            10,
-        );
-        const delete_limit_value = Number.parseInt(
-            $("#id_realm_message_content_delete_limit_minutes").val(),
-            10,
-        );
-
-        const msg_edit_limit_dropdown_value = $("#id_realm_msg_edit_limit_setting").val();
-        const edit_limit_custom_value_invalid =
-            msg_edit_limit_dropdown_value === "custom_limit" &&
-            (edit_limit_value <= 0 || Number.isNaN(edit_limit_value));
-
-        const msg_delete_limit_dropdown_value = $("#id_realm_msg_delete_limit_setting").val();
-        const delete_limit_custom_value_invalid =
-            msg_delete_limit_dropdown_value === "custom_limit" &&
-            (delete_limit_value <= 0 || Number.isNaN(delete_limit_value));
-
-        const disable_save_btn =
-            edit_limit_custom_value_invalid || delete_limit_custom_value_invalid;
-
-        $(e.target)
-            .closest(".org-subsection-parent")
-            .find(".subsection-changes-save button")
-            .prop("disabled", disable_save_btn);
-    }
-
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (e.key === "Enter") {
@@ -1188,42 +1141,12 @@ export function build_page() {
         }
     });
 
-    $("#id_realm_msg_edit_limit_setting").on("change", (e) => {
-        const msg_edit_limit_dropdown_value = e.target.value;
-        const show_custom_limit_input = msg_edit_limit_dropdown_value === "custom_limit";
-        change_element_block_display_property(
-            "id_realm_message_content_edit_limit_minutes",
-            show_custom_limit_input,
-        );
-
-        if (!show_custom_limit_input) {
-            // Set the input value to the original setting value if hiding the input box
-            // so that the save-discard widget is hidden again if we change the setting
-            // again to original input.
-            const setting_value = get_property_value("realm_message_content_edit_limit_minutes");
-            $("#id_realm_message_content_edit_limit_minutes").val(setting_value);
-        }
-
-        update_save_button_state(e);
+    $("#id_realm_message_content_edit_limit_seconds").on("change", () => {
+        update_custom_value_input("realm_message_content_edit_limit_seconds");
     });
 
-    $("#id_realm_msg_delete_limit_setting").on("change", (e) => {
-        const msg_delete_limit_dropdown_value = e.target.value;
-        const show_custom_limit_input = msg_delete_limit_dropdown_value === "custom_limit";
-        change_element_block_display_property(
-            "id_realm_message_content_delete_limit_minutes",
-            show_custom_limit_input,
-        );
-
-        if (!show_custom_limit_input) {
-            // Set the input value to the original setting value if hiding the input box
-            // so that the save-discard widget is hidden again if we change the setting
-            // again to original input.
-            const setting_value = get_property_value("realm_message_content_delete_limit_minutes");
-            $("#id_realm_message_content_delete_limit_minutes").val(setting_value);
-        }
-
-        update_save_button_state(e);
+    $("#id_realm_message_content_delete_limit_seconds").on("change", () => {
+        update_custom_value_input("realm_message_content_delete_limit_seconds");
     });
 
     $("#id_realm_message_retention_setting").on("change", (e) => {
@@ -1278,10 +1201,6 @@ export function build_page() {
         // no allowed domains otherwise it gets closed due to
         // the click event handler attached to `#settings_overlay_container`
         e.stopPropagation();
-    });
-
-    $("#org-msg-editing").on("input", ".admin-realm-time-limit-input", (e) => {
-        update_save_button_state(e);
     });
 
     $("#show_realm_domains_modal").on("click", (e) => {

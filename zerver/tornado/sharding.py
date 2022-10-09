@@ -1,18 +1,34 @@
 import json
 import os
+import re
 
 from django.conf import settings
 
 from zerver.models import Realm
 
 shard_map = {}
+shard_regexes = []
 if os.path.exists("/etc/zulip/sharding.json"):
     with open("/etc/zulip/sharding.json") as f:
-        shard_map = json.loads(f.read())
+        data = json.loads(f.read())
+        shard_map = data.get(
+            "shard_map",
+            data,  # backwards compatibility
+        )
+        shard_regexes = [
+            (re.compile(regex, re.I), port) for regex, port in data.get("shard_regexes", [])
+        ]
 
 
 def get_tornado_port(realm: Realm) -> int:
-    return shard_map.get(realm.host, settings.TORNADO_PORTS[0])
+    if realm.host in shard_map:
+        return shard_map[realm.host]
+
+    for regex, port in shard_regexes:
+        if regex.match(realm.host):
+            return port
+
+    return settings.TORNADO_PORTS[0]
 
 
 def get_tornado_uri(realm: Realm) -> str:

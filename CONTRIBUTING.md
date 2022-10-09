@@ -39,6 +39,9 @@ don't require touching the codebase at all. For example, you can:
 - [Report issues](#reporting-issues), including both feature requests and
   bug reports.
 - [Give feedback](#user-feedback) if you are evaluating or using Zulip.
+- [Participate
+  thoughtfully](https://zulip.readthedocs.io/en/latest/contributing/design-discussions.html)
+  in design discussions.
 - [Sponsor Zulip](https://github.com/sponsors/zulip) through the GitHub sponsors program.
 - [Translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
   Zulip into your language.
@@ -148,15 +151,21 @@ repository](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3
 
 ### Claiming an issue
 
-#### In the main server and web app repository
+#### In the main server/web app repository and Zulip Terminal repository
 
-After making sure the issue is tagged with a [help
+The Zulip server/web app repository
+([`zulip/zulip`](https://github.com/zulip/zulip/)) and the Zulip Terminal
+repository ([`zulip/zulip-terminal`](https://github.com/zulip/zulip-terminal/))
+are set up with a GitHub workflow bot called
+[Zulipbot](https://github.com/zulip/zulipbot), which manages issues and pull
+requests in order to create a better workflow for Zulip contributors.
+
+To claim an issue in these repositories, simply post a comment that says
+`@zulipbot claim` to the issue thread. If the issue is tagged with a [help
 wanted](https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-label, post a comment with `@zulipbot claim` to the issue thread.
-[Zulipbot](https://github.com/zulip/zulipbot) is a GitHub workflow bot; it will
-assign you to the issue and label the issue as "in progress".
+label, Zulipbot will immediately assign the issue to you.
 
-New contributors can only claim one issue until their first pull request is
+Note that new contributors can only claim one issue until their first pull request is
 merged. This is to encourage folks to finish ongoing work before starting
 something new. If you would like to pick up a new issue while waiting for review
 on an almost-ready pull request, you can post a comment to this effect on the
@@ -164,8 +173,11 @@ issue you're interested in.
 
 #### In other Zulip repositories
 
-There is no bot for other repositories, so you can simply post a comment saying
-that you'd like to work on the issue.
+There is no bot for other Zulip repositories
+([`zulip/zulip-mobile`](https://github.com/zulip/zulip-mobile/), etc.). If
+you are interested in claiming an issue in one of these repositories, simply
+post a comment on the issue thread saying that you'd like to work on it. There
+is no need to @-mention the issue creator in your comment.
 
 Please follow the same guidelines as described above: find an issue labeled
 "help wanted", and only pick up one issue at a time to start with.
@@ -254,7 +266,7 @@ Your pull request will likely go through several stages of review.
    progress on the PR by getting more frequent feedback. A project maintainer
    may leave a comment asking someone with expertise in the area you're working
    on to review your work.
-5. Final code review and integration for server and webapp PRs is generally done
+5. Final code review and integration for server and web app PRs is generally done
    by `@timabbott`.
 
 #### How to help move the review process forward
@@ -335,13 +347,11 @@ labels.
 Zulip has a lot of experience working with new contributors. In our
 experience, these are the best predictors of success:
 
-- Posting good questions. It's very hard to answer a general question like, "How
-  do I do this issue?" When asking for help, explain
-  your current understanding, including what you've done or tried so far and where
+- [Asking great questions][great-questions]. It's very hard to answer a general
+  question like, "How do I do this issue?" When asking for help, explain your
+  current understanding, including what you've done or tried so far and where
   you got stuck. Post tracebacks or other error messages if appropriate. For
-  more information, check out the ["Getting help" section of our community
-  guidelines](https://zulip.com/development-community/#getting-help) and
-  [this essay][good-questions-blog] for some good advice.
+  more advice, check out [our guide][great-questions]!
 - Learning and practicing
   [Git commit discipline](https://zulip.readthedocs.io/en/latest/contributing/version-control.html#commit-discipline).
 - Submitting carefully tested code. See our [detailed guide on how to review
@@ -350,6 +360,8 @@ experience, these are the best predictors of success:
 - Posting
   [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
   for frontend changes.
+- Working to [make your pull requests easy to
+  review](https://zulip.readthedocs.io/en/latest/contributing/reviewable-prs.html).
 - Clearly describing what you have implemented and why. For example, if your
   implementation differs from the issue description in some way or is a partial
   step towards the requirements described in the issue, be sure to call
@@ -360,10 +372,7 @@ experience, these are the best predictors of success:
 - Being helpful and friendly on the [Zulip community
   server](https://zulip.com/development-community/).
 
-[good-questions-blog]: https://jvns.ca/blog/good-questions/
-
-These are also the main criteria we use to select candidates for all
-of our outreach programs.
+[great-questions]: https://zulip.readthedocs.io/en/latest/contributing/asking-great-questions.html
 
 ## Reporting issues
 
@@ -415,67 +424,20 @@ by emailing [support@zulip.com](mailto:support@zulip.com).
 
 ## Outreach programs
 
-Zulip participates in [Google Summer of Code
-(GSoC)](https://developers.google.com/open-source/gsoc/) every year.
-In the past, we've also participated in
-[Outreachy](https://www.outreachy.org/), [Google
-Code-In](https://developers.google.com/open-source/gci/), and hosted
-summer interns from Harvard, MIT, and Stanford.
+Zulip regularly participates in [Google Summer of Code
+(GSoC)](https://developers.google.com/open-source/gsoc/) and
+[Outreachy](https://www.outreachy.org/). We have been a GSoC mentoring
+organization since 2016, and we accept 15-20 GSoC participants each summer. In
+the past, we’ve also participated in [Google
+Code-In](https://developers.google.com/open-source/gci/), and hosted summer
+interns from Harvard, MIT, and Stanford.
 
-While each third-party program has its own rules and requirements, the
-Zulip community's approaches all of these programs with these ideas in
-mind:
-
-- We try to make the application process as valuable for the applicant as
-  possible. Expect high-quality code reviews, a supportive community, and
-  publicly viewable patches you can link to from your resume, regardless of
-  whether you are selected.
-- To apply, you'll have to submit at least one pull request to a Zulip
-  repository. Most students accepted to one of our programs have
-  several merged pull requests (including at least one larger PR) by
-  the time of the application deadline.
-- The main criteria we use is quality of your best contributions, and
-  the bullets listed at
-  [What makes a great Zulip contributor](#what-makes-a-great-zulip-contributor).
-  Because we focus on evaluating your best work, it doesn't hurt your
-  application to makes mistakes in your first few PRs as long as your
-  work improves.
-
-Most of our outreach program participants end up sticking around the
-project long-term, and many have become core team members, maintaining
-important parts of the project. We hope you apply!
-
-### Google Summer of Code
-
-The largest outreach program Zulip participates in is GSoC (14
-students in 2017; 11 in 2018; 17 in 2019; 18 in 2020; 18 in 2021). While we
-don't control how
-many slots Google allocates to Zulip, we hope to mentor a similar
-number of students in future summers. Check out our [blog
-post](https://blog.zulip.com/2021/09/30/google-summer-of-code-2021/) to learn
-about the GSoC 2021 experience and our participants' accomplishments.
-
-If you're reading this well before the application deadline and want
-to make your application strong, we recommend getting involved in the
-community and fixing issues in Zulip now. Having good contributions
-and building a reputation for doing good work is the best way to have
-a strong application.
-
-Our [GSoC program page][gsoc-guide] has lots more details on how
-Zulip does GSoC, as well as project ideas. Note, however, that the project idea
-list is maintained only during the GSoC application period, so if
-you're looking at some other time of year, the project list is likely
-out-of-date.
-
-In some years, we have also run a Zulip Summer of Code (ZSoC)
-program for students who we wanted to accept into GSoC but did not have an
-official slot for. Student expectations are the
-same as with GSoC, and ZSoC has no separate application process; your
-GSoC application is your ZSoC application. If we'd like to select you
-for ZSoC, we'll contact you when the GSoC results are announced.
-
-[gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc.html
-[gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
+Check out our [outreach programs
+overview](https://zulip.readthedocs.io/en/latest/outreach/overview.html) to learn
+more about participating in an outreach program with Zulip. Most of our program
+participants end up sticking around the project long-term, and many have become
+core team members, maintaining important parts of the project. We hope you
+apply!
 
 ## Stay connected
 

@@ -19,7 +19,9 @@
     },
     "plugins": ["formatjs", "no-jquery"],
     "settings": {
-        "additionalFunctionNames": ["$t", "$t_html"],
+        "formatjs": {
+            "additionalFunctionNames": ["$t", "$t_html"]
+        },
         "no-jquery": {
             "collectionReturningPlugins": {
                 "expectOne": "always"
@@ -141,7 +143,6 @@
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
-                "$": false,
                 "zulip_test": false
             }
         },

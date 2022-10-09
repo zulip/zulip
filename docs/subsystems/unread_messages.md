@@ -48,5 +48,5 @@ in the register call.
 Three event types are required to correctly maintain the `unread_msgs`. New
 messages can be created without the unread flag by the `message` event type.
 The unread flag can be added and removed by the `update_message_flags` event,
-and the subject of unread messages can be updated by the `update_message` event
+and the topic of unread messages can be updated by the `update_message` event
 type.

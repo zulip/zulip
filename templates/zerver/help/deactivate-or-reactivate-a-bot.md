@@ -22,4 +22,8 @@ bot, regardless of who owns them.
 
 ## Related articles
 
+* [Bots and integrations](/help/bots-and-integrations)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Edit a bot](/help/edit-a-bot)
 * [Restrict bot creation](/help/restrict-bot-creation)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)

@@ -19,10 +19,7 @@ You can learn more about it at:
 - The
   [mypy cheat sheet for Python 3](https://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
   is the best resource for quickly understanding how to write the PEP
-  484 type annotations used by mypy correctly. The
-  [Python 2 cheat sheet](https://mypy.readthedocs.io/en/latest/cheat_sheet.html)
-  is useful for understanding the type comment syntax needed for our
-  few modules that need to support both Python 2 and 3.
+  484 type annotations used by mypy correctly.
 
 - The
   [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/).
@@ -38,11 +35,7 @@ CI testing process in the `backend` build.
 
 ## Installing mypy
 
-mypy is installed by default in the Zulip development environment. If
-you'd like to install just the version of `mypy` that we're using
-(useful if e.g. you want `mypy` installed on your laptop outside the
-Vagrant guest), you can do that with
-`pip install -r requirements/mypy.txt`.
+mypy is installed by default in the Zulip development environment.
 
 ## Running mypy on Zulip's code locally
 
@@ -113,6 +106,88 @@ For any third-party modules that don't have stubs, `mypy` treats
 everything in the third-party module as an `Any`, which is the right
 model (one certainly wouldn't want to need stubs for everything just
 to use `mypy`!), but means the code can't be fully type-checked.
+
+## Working with types from django-stubs
+
+For features that are difficult to be expressed with static type
+annotations, type analysis is supplemented with mypy plugins. Zulip's
+Python codebases uses the Django web framework, and such a plugin is
+required in order for `mypy` to correctly infer the types of most code
+interacting with Django model classes (i.e. code that accesses the
+database).
+
+We use the `mypy_django_plugin` plugin from the
+[django-stubs](https://github.com/typeddjango/django-stubs) project,
+which supports accurate type inference for classes like
+`QuerySet`. For example, `Stream.objects.filter(realm=realm)` is
+simple Django code to fetch all the streams in a realm. With this
+plugin, mypy will correctly determine its type is `QuerySet[Stream]`,
+aka a standard, lazily evaluated Django query object that can be
+iterated through to access `Stream` objects, without the developer
+needing to do an explicit annotation.
+
+When declaring the types for functions that accept a `QuerySet`
+object, you should always supply the model type that it accepts as the
+type parameter.
+
+```python
+def foo(user: QuerySet[UserProfile]) -> None:
+    ...
+```
+
+In cases where you need to type the return value from `.values_list`
+or `.values` on a `QuerySet`, you can use the special
+`django_stubs_ext.ValuesQuerySet` type.
+
+For `.values_list`, the second type parameter will be the type of the
+column.
+
+```python
+from django_stubs_ext import ValuesQuerySet
+
+def get_book_page_counts() -> ValuesQuerySet[Book, int]:
+    return Book.objects.filter().values_list("page_count", flat=True)
+```
+
+For `.values`, we prefer to define a `TypedDict` containing the
+key-value pairs for the columns.
+
+```python
+from django_stubs_ext import ValuesQuerySet
+
+class BookMetadata(TypedDict):
+    id: int
+    name: str
+
+def get_book_meta_data(
+    book_ids: List[int],
+) -> ValuesQuerySet[Book, BookMetadata]:
+    return Book.objects.filter(id__in=book_ids).values("name", "id")
+```
+
+When writing a helper function that returns the response from a test
+client, it should be typed as `TestHttpResponse` instead of
+`HttpResponse`. This type is only defined in the Django stubs, so it
+has to be conditionally imported only when type
+checking. Conventionally, we alias it as `TestHttpResponse`, which is
+internally named `_MonkeyPatchedWSGIResponse` within django-stubs.
+
+```python
+from typing import TYPE_CHECKING
+from zerver.lib.test_classes import ZulipTestCase
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
+
+class FooTestCase(ZulipTestCase):
+    def helper(self) -> "TestHttpResponse":
+        return self.client_get("/bar")
+```
+
+We sometimes encounter innaccurate type annotations in the Django
+stubs project. We prefer to address these by [submiting a pull
+request](https://github.com/typeddjango/django-stubs/pulls) to fix the
+issue in the upstream project, just like we do with `typeshed` bugs.
 
 ## Using @overload to accurately describe variations
 
@@ -387,6 +462,21 @@ or
 types might be appropriate. (But don’t use `Iterable` for a value
 that might be iterated multiple times, since a one-use iterator is
 `Iterable` too.)
+
+For example, if a function gets called with either a `list` or a `QuerySet`,
+and it only iterates the object once, the parameter can be typed as `Iterable`.
+
+```python
+def f(items: Iterable[Realm]) -> None:
+    for item in items:
+        ...
+
+realms_list: List[Realm] = [zulip, analytics]
+realms_queryset: QuerySet[Realm] = Realm.objects.all()
+
+f(realms_list)      # OK
+f(realms_queryset)  # Also OK
+```
 
 A function's return type can be mutable if the return value is always
 a freshly created collection, since the caller ends up with the only

@@ -454,8 +454,6 @@ function edit_message($row, raw_content) {
             message_id: message.id,
             is_editable,
             is_content_editable,
-            is_widget_message: is_widget_message(message),
-            has_been_editable: editability !== editability_types.NO,
             topic: message.topic,
             content: raw_content,
             file_upload_enabled,
@@ -507,8 +505,8 @@ function edit_message($row, raw_content) {
 
     switch (editability) {
         case editability_types.NO:
-            $message_edit_content.prop("disabled", true);
-            $message_edit_topic.prop("disabled", true);
+            $message_edit_content.attr("readonly", "readonly");
+            $message_edit_topic.attr("readonly", "readonly");
             create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.NO_LONGER:
@@ -516,14 +514,12 @@ function edit_message($row, raw_content) {
             // changes (e.g. if we stop allowing topics to be modified forever
             // in streams), then we'll need to disable
             // row.find('input.message_edit_topic') as well.
-            $message_edit_content.prop("disabled", true);
-            $message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
+            $message_edit_content.attr("readonly", "readonly");
             create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.TOPIC_ONLY:
-            $message_edit_content.prop("disabled", true);
+            $message_edit_content.attr("readonly", "readonly");
             // Hint why you can edit the topic but not the message content
-            $message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
             create_copy_to_clipboard_handler($row, $copy_message[0], message.id);
             break;
         case editability_types.FULL: {
@@ -547,7 +543,7 @@ function edit_message($row, raw_content) {
 
     // Add tooltip
     if (
-        editability !== editability_types.NO &&
+        editability === editability_types.FULL &&
         page_params.realm_message_content_edit_limit_seconds > 0
     ) {
         $row.find(".message-edit-timer").show();
@@ -578,9 +574,9 @@ function edit_message($row, raw_content) {
             seconds_left -= 1;
             if (seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                $message_edit_content.prop("disabled", true);
+                $message_edit_content.prop("readonly", "readonly");
                 if (message.type === "stream") {
-                    $message_edit_topic.prop("disabled", true);
+                    $message_edit_topic.prop("readonly", "readonly");
                     $message_edit_topic_propagate.hide();
                     $message_edit_breadcrumb_messages.hide();
                 }
@@ -603,6 +599,8 @@ function edit_message($row, raw_content) {
         $message_edit_topic.trigger("focus");
     } else if (editability === editability_types.TOPIC_ONLY) {
         $row.find(".message_edit_topic").trigger("focus");
+    } else if (editability !== editability_types.FULL && is_stream_editable) {
+        $row.find(".select_stream_setting .dropdown-toggle").trigger("focus");
     } else {
         $message_edit_content.trigger("focus");
         // Put cursor at end of input.
@@ -892,7 +890,7 @@ export function save_message_row_edit($row) {
     show_message_edit_spinner($row);
 
     const $edit_content_input = $row.find(".message_edit_content");
-    const can_edit_content = $edit_content_input.prop("disabled") !== true;
+    const can_edit_content = $edit_content_input.attr("readonly") !== "readonly";
     if (can_edit_content) {
         new_content = $edit_content_input.val();
         content_changed = old_content !== new_content;
@@ -900,7 +898,7 @@ export function save_message_row_edit($row) {
     }
 
     const $edit_topic_input = $row.find(".message_edit_topic");
-    const can_edit_topic = message.is_stream && $edit_topic_input.prop("disabled") !== true;
+    const can_edit_topic = message.is_stream && $edit_topic_input.attr("readonly") !== "readonly";
     if (can_edit_topic) {
         new_topic = $edit_topic_input.val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
@@ -1133,11 +1131,30 @@ export function delete_message(msg_id) {
     });
 }
 
-export function delete_topic(stream_id, topic_name) {
+export function delete_topic(stream_id, topic_name, failures = 0) {
     channel.post({
         url: "/json/streams/" + stream_id + "/delete_topic",
         data: {
             topic_name,
+        },
+        success() {},
+        error(xhr) {
+            if (failures >= 9) {
+                // Don't keep retrying indefinitely to avoid DoSing the server.
+                return;
+            }
+            if (xhr.status === 502) {
+                /* When trying to delete a very large topic, it's
+                   possible for the request to the server to
+                   time out after making some progress. Retry the
+                   request, so that the user can just do nothing and
+                   watch the topic slowly be deleted.
+
+                   TODO: Show a nice loading indicator experience.
+                */
+                failures += 1;
+                delete_topic(stream_id, topic_name, failures);
+            }
         },
     });
 }

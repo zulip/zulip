@@ -1,22 +1,9 @@
 import datetime
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    TypedDict,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
+from django_stubs_ext import StrPromise
 from typing_extensions import NotRequired
-
-if TYPE_CHECKING:
-    from django.utils.functional import _StrPromise as StrPromise
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
@@ -29,11 +16,12 @@ RealmUserValidator = Callable[[int, object, bool], List[int]]
 ProfileDataElementValue = Union[str, List[int]]
 
 
-class ProfileDataElementBase(TypedDict):
+class ProfileDataElementBase(TypedDict, total=False):
     id: int
     name: str
     type: int
     hint: str
+    display_in_profile_summary: bool
     field_data: str
     order: int
 
@@ -50,11 +38,9 @@ class ProfileDataElementUpdateDict(TypedDict):
 
 ProfileData = List[ProfileDataElement]
 
-FieldElement = Tuple[
-    int, "StrPromise", Validator[ProfileDataElementValue], Callable[[Any], Any], str
-]
-ExtendedFieldElement = Tuple[int, "StrPromise", ExtendedValidator, Callable[[Any], Any], str]
-UserFieldElement = Tuple[int, "StrPromise", RealmUserValidator, Callable[[Any], Any], str]
+FieldElement = Tuple[int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
+ExtendedFieldElement = Tuple[int, StrPromise, ExtendedValidator, Callable[[Any], Any], str]
+UserFieldElement = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
 
 ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
 
@@ -73,34 +59,6 @@ class LinkifierDict(TypedDict):
     pattern: str
     url_format: str
     id: int
-
-
-class SAMLIdPConfigDict(TypedDict, total=False):
-    entity_id: str
-    url: str
-    slo_url: str
-    attr_user_permanent_id: str
-    attr_first_name: str
-    attr_last_name: str
-    attr_username: str
-    attr_email: str
-    attr_org_membership: str
-    auto_signup: bool
-    display_name: str
-    display_icon: str
-    limit_to_subdomains: List[str]
-    extra_attrs: List[str]
-    x509cert: str
-    x509cert_path: str
-
-
-class OIDCIdPConfigDict(TypedDict, total=False):
-    oidc_url: str
-    display_name: str
-    display_icon: Optional[str]
-    client_id: str
-    secret: Optional[str]
-    auto_signup: bool
 
 
 class UnspecifiedValue:
@@ -177,6 +135,7 @@ class RawStreamDict(TypedDict):
     are needed to encode the stream for the API.
     """
 
+    can_remove_subscribers_group_id: int
     date_created: datetime.datetime
     description: str
     email_token: str
@@ -216,6 +175,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: Optional[bool]
+    can_remove_subscribers_group_id: int
     color: str
     date_created: int
     description: str
@@ -242,6 +202,7 @@ class SubscriptionStreamDict(TypedDict):
 
 
 class NeverSubscribedStreamDict(TypedDict):
+    can_remove_subscribers_group_id: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -264,6 +225,7 @@ class APIStreamDict(TypedDict):
     with few exceptions and possible additional fields.
     """
 
+    can_remove_subscribers_group_id: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -312,9 +274,3 @@ class RealmPlaygroundDict(TypedDict):
     name: str
     pygments_language: str
     url_prefix: str
-
-
-class SCIMConfigDict(TypedDict):
-    bearer_token: str
-    scim_client_name: str
-    name_formatted_included: bool

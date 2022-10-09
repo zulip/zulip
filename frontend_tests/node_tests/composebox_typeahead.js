@@ -400,6 +400,14 @@ test("content_typeahead_selected", ({override}) => {
         caret_called2 = true;
         return this;
     };
+    let range_called = false;
+    fake_this.$element.range = function (...args) {
+        const [arg1, arg2] = args;
+        // .range() used in setTimeout
+        assert.ok(arg2 > arg1);
+        range_called = true;
+        return this;
+    };
     autosize_called = false;
     set_timeout_called = false;
 
@@ -621,6 +629,12 @@ test("content_typeahead_selected", ({override}) => {
     expected_value = "```python\n\n```";
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = "```spo";
+    fake_this.token = "spo";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "spoiler");
+    expected_value = "```spoiler translated: Header\n\n```";
+    assert.equal(actual_value, expected_value);
+
     // Test special case to not close code blocks if there is text afterward
     fake_this.query = "```p\nsome existing code";
     fake_this.token = "p";
@@ -638,6 +652,7 @@ test("content_typeahead_selected", ({override}) => {
 
     assert.ok(caret_called1);
     assert.ok(caret_called2);
+    assert.ok(range_called);
     assert.ok(autosize_called);
     assert.ok(set_timeout_called);
     assert.ok(warned_for_stream_link);
@@ -712,7 +727,7 @@ test("initialize", ({override, mock_template}) => {
         stream_typeahead_called = true;
     };
 
-    let subject_typeahead_called = false;
+    let topic_typeahead_called = false;
     $("#stream_message_recipient_topic").typeahead = (options) => {
         const topics = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
         stream_topic_history.get_recent_topic_names = (stream_id) => {
@@ -774,7 +789,7 @@ test("initialize", ({override, mock_template}) => {
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
-        subject_typeahead_called = true;
+        topic_typeahead_called = true;
 
         // Unset the stream name.
         $("#stream_message_recipient_stream").val("");
@@ -1112,7 +1127,7 @@ test("initialize", ({override, mock_template}) => {
 
     event.key = "Tab";
     event.shiftKey = false;
-    event.target.id = "subject";
+    event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     $("form#send_message_form").trigger(event);
@@ -1195,7 +1210,7 @@ test("initialize", ({override, mock_template}) => {
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
     assert.ok(stream_typeahead_called);
-    assert.ok(subject_typeahead_called);
+    assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
 });

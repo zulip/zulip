@@ -1,5 +1,6 @@
 import autosize from "autosize";
 import $ from "jquery";
+import _ from "lodash";
 
 import * as fenced_code from "../shared/js/fenced_code";
 
@@ -141,6 +142,25 @@ function composing_to_current_topic_narrow() {
     );
 }
 
+function composing_to_current_private_message_narrow() {
+    const compose_state_recipient = compose_state.private_message_recipient();
+    const narrow_state_recipient = narrow_state.pm_emails_string();
+    return (
+        compose_state_recipient &&
+        narrow_state_recipient &&
+        _.isEqual(
+            compose_state_recipient
+                .split(",")
+                .map((s) => s.trim())
+                .sort(),
+            narrow_state_recipient
+                .split(",")
+                .map((s) => s.trim())
+                .sort(),
+        )
+    );
+}
+
 export function update_narrow_to_recipient_visibility() {
     const message_type = compose_state.get_message_type();
     if (message_type === "stream") {
@@ -150,13 +170,23 @@ export function update_narrow_to_recipient_visibility() {
         if (
             stream_exists &&
             !composing_to_current_topic_narrow() &&
-            !compose_state.is_topic_field_empty()
+            compose_state.has_full_recipient()
         ) {
-            $(".narrow_to_compose_recipients").show();
+            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
+            return;
+        }
+    } else if (message_type === "private") {
+        const recipients = compose_state.private_message_recipient();
+        if (
+            recipients &&
+            !composing_to_current_private_message_narrow() &&
+            compose_state.has_full_recipient()
+        ) {
+            $(".narrow_to_compose_recipients").toggleClass("invisible", false);
             return;
         }
     }
-    $(".narrow_to_compose_recipients").hide();
+    $(".narrow_to_compose_recipients").toggleClass("invisible", true);
 }
 
 export function complete_starting_tasks(msg_type, opts) {

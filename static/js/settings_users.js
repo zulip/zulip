@@ -374,6 +374,11 @@ export function redraw_bots_list() {
         return;
     }
 
+    // In order to properly redraw after a user may have been added,
+    // we need to update the bot_list_widget with the new set of bot
+    // user IDs to display.
+    const bot_user_ids = bot_data.all_user_ids();
+    bot_list_widget.replace_list_data(bot_user_ids);
     bot_list_widget.hard_redraw();
 }
 
@@ -591,6 +596,7 @@ export function show_edit_user_info_modal(user_id, from_user_info_popover) {
             true,
             false,
         );
+        settings_account.initialize_custom_pronouns_type_fields(element);
 
         $("#edit-user-form").on("click", ".deactivate_user_button", (e) => {
             e.preventDefault();
@@ -688,4 +694,10 @@ export function set_up_humans() {
 export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
+
+    $("#admin-bot-list .add-a-new-bot").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        settings_bots.add_a_new_bot();
+    });
 }

@@ -19,7 +19,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Set, 
 import orjson
 from django.apps import apps
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import make_aware as timezone_make_aware
@@ -152,7 +152,6 @@ ALL_ZULIP_TABLES = {
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
     "zerver_scheduledmessagenotificationemail",
-    "zerver_scimclient",
     "zerver_service",
     "zerver_stream",
     "zerver_submessage",
@@ -203,8 +202,6 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
-    # SCIMClient should be manually created for the new realm after importing.
-    "zerver_scimclient",
     # These tables are related to a user's 2FA authentication
     # configuration, which will need to be set up again on the new
     # server.
@@ -420,6 +417,8 @@ def make_raw(query: Any, exclude: Optional[List[Field]] = None) -> List[Record]:
         instances below.
         """
         for field in instance._meta.many_to_many:
+            if exclude is not None and field.name in exclude:
+                continue
             value = data[field.name]
             data[field.name] = [row.id for row in value]
 
@@ -775,6 +774,7 @@ def get_realm_config() -> Config:
         model=UserGroup,
         normal_parent=realm_config,
         include_rows="realm_id__in",
+        exclude=["direct_members", "direct_subgroups"],
     )
 
     Config(
@@ -1238,11 +1238,17 @@ def export_partial_message_files(
             type=Recipient.STREAM, type_id__in=public_streams
         ).values_list("id", flat=True)
 
+        streams_with_protected_history_recipient_ids = Stream.objects.filter(
+            realm=realm, history_public_to_subscribers=False
+        ).values_list("recipient_id", flat=True)
+
         consented_recipient_ids = Subscription.objects.filter(
             user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
-        recipient_ids_set = set(public_stream_recipient_ids) | set(consented_recipient_ids)
+        recipient_ids_set = set(public_stream_recipient_ids) | set(consented_recipient_ids) - set(
+            streams_with_protected_history_recipient_ids
+        )
         recipient_ids_for_us = get_ids(response["zerver_recipient"]) & recipient_ids_set
     else:
         recipient_ids_for_us = get_ids(response["zerver_recipient"])
@@ -1260,6 +1266,8 @@ def export_partial_message_files(
             messages_we_received,
         ]
     else:
+        message_queries = []
+
         # We capture most messages here: Messages that were sent by
         # anyone in the export and received by any of the users who we
         # have consent to export.
@@ -1267,6 +1275,27 @@ def export_partial_message_files(
             sender__in=ids_of_our_possible_senders,
             recipient__in=recipient_ids_for_us,
         )
+        message_queries.append(messages_we_received)
+
+        if consent_message_id is not None:
+            # Export with member consent requires some careful handling to make sure
+            # we only include messages that a consenting user can access.
+            has_usermessage_expression = Exists(
+                UserMessage.objects.filter(
+                    user_profile_id__in=consented_user_ids, message_id=OuterRef("id")
+                )
+            )
+            messages_we_received_in_protected_history_streams = Message.objects.annotate(
+                has_usermessage=has_usermessage_expression
+            ).filter(
+                sender__in=ids_of_our_possible_senders,
+                recipient_id__in=(
+                    set(consented_recipient_ids) & set(streams_with_protected_history_recipient_ids)
+                ),
+                has_usermessage=True,
+            )
+
+            message_queries.append(messages_we_received_in_protected_history_streams)
 
         # The above query is missing some messages that consenting
         # users have access to, namely, PMs sent by one of the users
@@ -1287,10 +1316,7 @@ def export_partial_message_files(
             recipient__in=recipient_ids_for_them,
         )
 
-        message_queries = [
-            messages_we_received,
-            messages_we_sent_to_them,
-        ]
+        message_queries.append(messages_we_sent_to_them)
 
     all_message_ids: Set[int] = set()
 

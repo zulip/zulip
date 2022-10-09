@@ -970,7 +970,11 @@ export function open_create_stream() {
 }
 
 export function unsubscribe_from_private_stream(sub) {
-    const html_body = render_unsubscribe_private_stream_modal();
+    const html_body = render_unsubscribe_private_stream_modal({
+        message: $t({
+            defaultMessage: "Once you leave this stream, you will not be able to rejoin.",
+        }),
+    });
 
     function unsubscribe_from_stream() {
         let $stream_row;

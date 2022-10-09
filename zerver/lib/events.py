@@ -2,7 +2,7 @@
 # high-level documentation on how this system works.
 import copy
 import time
-from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Dict, Iterable, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -20,7 +20,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.external_accounts import get_default_external_accounts
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
 from zerver.lib.message import (
@@ -49,7 +49,7 @@ from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.lib.user_mutes import get_user_mutes
-from zerver.lib.user_status import get_user_info_dict
+from zerver.lib.user_status import get_user_status_dict
 from zerver.lib.user_topics import get_topic_mutes, get_user_topics
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
@@ -318,7 +318,7 @@ def fetch_initial_state_data(
 
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
+        state["realm_default_external_accounts"] = get_default_external_accounts()
 
         if settings.JITSI_SERVER_URL is not None:
             state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
@@ -592,7 +592,9 @@ def fetch_initial_state_data(
 
     if want("user_status"):
         # We require creating an account to access statuses.
-        state["user_status"] = {} if user_profile is None else get_user_info_dict(realm_id=realm.id)
+        state["user_status"] = (
+            {} if user_profile is None else get_user_status_dict(realm_id=realm.id)
+        )
 
     if want("user_topic"):
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
@@ -1193,7 +1195,7 @@ def apply_event(
                 state["starred_messages"] = [
                     message
                     for message in state["starred_messages"]
-                    if not (message in event["messages"])
+                    if message not in event["messages"]
                 ]
     elif event["type"] == "realm_domains":
         if event["op"] == "add":
@@ -1363,7 +1365,7 @@ def do_events_register(
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
-    client_capabilities: Dict[str, bool] = {},
+    client_capabilities: Mapping[str, bool] = {},
     narrow: Collection[Sequence[str]] = [],
     fetch_event_types: Optional[Collection[str]] = None,
     spectator_requested_language: Optional[str] = None,
@@ -1394,27 +1396,25 @@ def do_events_register(
         event_types_set = None
 
     if user_profile is None:
-        # TODO: Unify this with the below code path once if/when we
-        # support requesting an event queue for spectators.
-        #
-        # Doing so likely has a prerequisite of making this function's
-        # caller enforce client_gravatar=False,
-        # include_subscribers=False and include_streams=False.
+        # TODO: Unify the two fetch_initial_state_data code paths.
+        assert client_gravatar is False
+        assert include_subscribers is False
+        assert include_streams is False
         ret = fetch_initial_state_data(
             user_profile,
             realm=realm,
             event_types=event_types_set,
             queue_id=None,
             # Force client_gravatar=False for security reasons.
-            client_gravatar=False,
+            client_gravatar=client_gravatar,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
             user_settings_object=user_settings_object,
             # slim_presence is a noop, because presence is not included.
             slim_presence=True,
             # Force include_subscribers=False for security reasons.
-            include_subscribers=False,
+            include_subscribers=include_subscribers,
             # Force include_streams=False for security reasons.
-            include_streams=False,
+            include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
         )
 

@@ -34,8 +34,17 @@ export class MessageList {
         this.table_name = table_name;
         this.narrowed = this.table_name === "zfilt";
         this.num_appends = 0;
+        this.reading_prevented = false;
 
         return this;
+    }
+
+    prevent_reading() {
+        this.reading_prevented = true;
+    }
+
+    resume_reading() {
+        this.reading_prevented = false;
     }
 
     add_messages(messages, opts) {
@@ -100,6 +109,10 @@ export class MessageList {
         return this.data.last();
     }
 
+    ids_greater_or_equal_than(id) {
+        return this.data.ids_greater_or_equal_than(id);
+    }
+
     prev() {
         return this.data.prev();
     }
@@ -121,7 +134,14 @@ export class MessageList {
     }
 
     can_mark_messages_read() {
-        return this.data.can_mark_messages_read();
+        /* Automatically marking messages as read can be disabled for
+           two different reasons:
+           * The view is structurally a search view, encoded in the
+             properties of the message_list_data object.
+           * The user recently marked messages in the view as unread, and
+             we don't want to lose that state.
+        */
+        return this.data.can_mark_messages_read() && !this.reading_prevented;
     }
 
     clear({clear_selected_id = true} = {}) {
@@ -201,10 +221,6 @@ export class MessageList {
         }
 
         $(document).trigger(new $.Event("message_selected.zulip", opts));
-    }
-
-    reselect_selected_id() {
-        this.select_id(this.data.selected_id(), {from_rendering: true});
     }
 
     selected_message() {
@@ -326,9 +342,17 @@ export class MessageList {
         $row.removeClass("unread");
     }
 
+    reselect_selected_id() {
+        const selected_id = this.data.selected_id();
+
+        if (selected_id !== -1) {
+            this.select_id(this.data.selected_id(), {from_rendering: true, mark_read: false});
+        }
+    }
+
     rerender_view() {
         this.view.rerender_preserving_scrolltop();
-        this.redo_selection();
+        this.reselect_selected_id();
     }
 
     rerender() {
@@ -347,14 +371,6 @@ export class MessageList {
             }
         }
         this.rerender_view();
-    }
-
-    redo_selection() {
-        const selected_id = this.data.selected_id();
-
-        if (selected_id !== -1) {
-            this.select_id(selected_id);
-        }
     }
 
     update_muting_and_rerender() {

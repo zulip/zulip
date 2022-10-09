@@ -6,6 +6,7 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 set_global("document", "document-stub");
 
@@ -309,11 +310,26 @@ test("muted_message_vars", () => {
     }
 
     (function test_hidden_message_variables() {
+        // We want to have no search results, which apparently works like this.
+        // See https://chat.zulip.org/#narrow/stream/6-frontend/topic/set_find_results.20with.20no.20results/near/1414799
+        const empty_list_stub = $.create("empty-stub", {children: []});
+        $("<message-stub-1>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
+        $("<message-stub2>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
+        $("<message-stub-3>").set_find_results(".user-mention:not(.silent)", empty_list_stub);
         // Make a representative message group of three messages.
         const messages = [
-            build_message_context({sender_id: 10}, {include_sender: true}),
-            build_message_context({mentioned: true, sender_id: 10}, {include_sender: false}),
-            build_message_context({sender_id: 10}, {include_sender: false}),
+            build_message_context(
+                {sender_id: 10, content: "<message-stub-1>"},
+                {include_sender: true},
+            ),
+            build_message_context(
+                {mentioned: true, sender_id: 10, content: "<message-stub2>"},
+                {include_sender: false},
+            ),
+            build_message_context(
+                {sender_id: 10, content: "<message-stub-3>"},
+                {include_sender: false},
+            ),
         ];
         const message_group = build_message_group(messages);
         const list = build_list([message_group]);
@@ -336,8 +352,8 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
 
-        // Additionally test that, `contains_mention` is true on that message has a mention.
-        assert.equal(result[1].contains_mention, true);
+        // Additionally test that the message with a mention is marked as such.
+        assert.equal(result[1].mention_classname, "group_mention");
 
         // Now, mute the sender.
         muted_users.add_muted_user(10);
@@ -352,8 +368,9 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
 
-        // Additionally test that, `contains_mention` is false even on that message which has a mention.
-        assert.equal(result[1].contains_mention, false);
+        // Additionally test that, both there is no mention classname even on that message
+        // which has a mention, since we don't want to display muted mentions so visibly.
+        assert.equal(result[1].mention_classname, null);
 
         // Now, reveal the hidden messages.
         let is_revealed = true;
@@ -368,8 +385,8 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, true);
         assert.equal(result[2].include_sender, true);
 
-        // Additionally test that, `contains_mention` is true on that message which has a mention.
-        assert.equal(result[1].contains_mention, true);
+        // Additionally test that the message with a mention is marked as such.
+        assert.equal(result[1].mention_classname, "group_mention");
 
         // Now test rehiding muted user's message
         is_revealed = false;
@@ -384,8 +401,9 @@ test("muted_message_vars", () => {
         assert.equal(result[1].include_sender, false);
         assert.equal(result[2].include_sender, false);
 
-        // Additionally test that, `contains_mention` is false on that message which has a mention.
-        assert.equal(result[1].contains_mention, false);
+        // Additionally test that, both there is no mention classname even on that message
+        // which has a mention, since we don't want to display hidden mentions so visibly.
+        assert.equal(result[1].mention_classname, null);
     })();
 });
 
@@ -403,7 +421,7 @@ test("merge_message_groups", () => {
             status_message: false,
             type: "stream",
             stream: "Test stream 1",
-            topic: "Test subject 1",
+            topic: "Test topic 1",
             sender_email: "test@example.com",
             timestamp: (next_timestamp += 1),
             ...message,
@@ -470,7 +488,7 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
     })();
 
-    (function test_append_message_same_subject() {
+    (function test_append_message_same_topic() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -490,11 +508,11 @@ test("merge_message_groups", () => {
         assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
     })();
 
-    (function test_append_message_different_subject() {
+    (function test_append_message_different_topic() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test subject 2"});
+        const message2 = build_message_context({topic: "Test topic 2"});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
@@ -509,11 +527,11 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
     })();
 
-    (function test_append_message_different_subject_and_days() {
+    (function test_append_message_different_topic_and_days() {
         const message1 = build_message_context({timestamp: 1000});
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test subject 2", timestamp: 900000});
+        const message2 = build_message_context({topic: "Test topic 2", timestamp: 900000});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
@@ -566,7 +584,7 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
     })();
 
-    (function test_append_message_same_subject_me_message() {
+    (function test_append_message_same_topic_me_message() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -587,7 +605,7 @@ test("merge_message_groups", () => {
         assert_message_list_equal(result.rerender_messages_next_same_sender, [message1]);
     })();
 
-    (function test_prepend_message_same_subject() {
+    (function test_prepend_message_same_topic() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
@@ -609,11 +627,11 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
     })();
 
-    (function test_prepend_message_different_subject() {
+    (function test_prepend_message_different_topic() {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test subject 2"});
+        const message2 = build_message_context({topic: "Test topic 2"});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
@@ -627,11 +645,11 @@ test("merge_message_groups", () => {
         assert.deepEqual(result.rerender_messages_next_same_sender, []);
     })();
 
-    (function test_prepend_message_different_subject_and_day() {
+    (function test_prepend_message_different_topic_and_day() {
         const message1 = build_message_context({timestamp: 900000});
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test subject 2", timestamp: 1000});
+        const message2 = build_message_context({topic: "Test topic 2", timestamp: 1000});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);

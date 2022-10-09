@@ -28,7 +28,7 @@ They also do not contribute to stream unread counts.
 1. Find a message belonging to the topic that you
    wish to mute.
 
-1. Click on the <i class="fa fa-bell-slash"></i> to mute the topic.
+2. Click on the <i class="zulip-icon zulip-icon-mute"></i> to mute the topic.
 
 {end_tabs}
 

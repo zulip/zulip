@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function test_add_linkifier(page: Page): Promise<void> {
     await page.waitForSelector(".admin-linkifier-form", {visible: true});
@@ -36,6 +36,9 @@ async function test_add_linkifier(page: Page): Promise<void> {
 
 async function test_delete_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .delete");
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#confirm_delete_linkifiers_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
     await page.waitForSelector(".linkifier_row", {hidden: true});
 }
 

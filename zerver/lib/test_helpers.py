@@ -14,6 +14,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Tuple,
     TypeVar,
@@ -34,7 +35,7 @@ from django.http.request import QueryDict
 from django.http.response import HttpResponseBase
 from django.test import override_settings
 from django.urls import URLResolver
-from moto import mock_s3
+from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
 import zerver.lib.upload
@@ -295,9 +296,17 @@ class HostRequestMock(HttpRequest):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
+    # The base class HttpRequest declares GET and POST as immutable
+    # QueryDict objects. The implementation of HostRequestMock
+    # requires POST to be mutable, and we have some use cases that
+    # modify GET, so GET and POST are both redeclared as mutable.
+
+    GET: QueryDict  # type: ignore[assignment] # See previous comment.
+    POST: QueryDict  # type: ignore[assignment] # See previous comment.
+
     def __init__(
         self,
-        post_data: Dict[str, Any] = {},
+        post_data: Mapping[str, Any] = {},
         user_profile: Union[UserProfile, None] = None,
         remote_server: Optional[RemoteZulipServer] = None,
         host: str = settings.EXTERNAL_HOST,

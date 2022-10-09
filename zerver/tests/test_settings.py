@@ -357,6 +357,7 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset="google",
             timezone="America/Denver",
             demote_inactive_streams=2,
+            user_list_style=2,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",
@@ -369,7 +370,7 @@ class ChangeSettingsTest(ZulipTestCase):
         if test_value is None:
             raise AssertionError(f"No test created for {setting_name}")
 
-        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
+        if setting_name not in ["demote_inactive_streams", "user_list_style", "color_scheme"]:
             data = {setting_name: test_value}
         else:
             data = {setting_name: orjson.dumps(test_value).decode()}
@@ -395,6 +396,7 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset="apple",
             timezone="invalid_US/Mountain",
             demote_inactive_streams=10,
+            user_list_style=10,
             color_scheme=10,
             notification_sound="invalid_sound",
             desktop_icon_count_display=10,

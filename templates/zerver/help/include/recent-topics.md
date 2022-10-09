@@ -4,10 +4,11 @@ messages sent while you were away.
 
 {start_tabs}
 
-1. Open **Recent topics** from the left sidebar or by pressing the `Esc` key.
+1. Open **Recent topics** from the left sidebar or by pressing the
+   <kbd>Esc</kbd> key.
 
-1. The filters at the top help you quickly find relevant
-   conversations. For example, select **Participated** to narrow to
-   the topics you have sent messages to.
+1. The filters at the top help you quickly find relevant conversations.
+   For example, select **Participated** to narrow to the topics you
+   have sent messages to.
 
 {end_tabs}
