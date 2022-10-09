@@ -1820,21 +1820,7 @@ class LinkifierPattern(CompiledInlineProcessor):
         options.log_errors = False
 
         compiled_re2 = re2.compile(prepare_linkifier_pattern(source_pattern), options=options)
-
-        # Find percent-encoded bytes and escape them from the python
-        # interpolation.  That is:
-        #     %(foo)s -> %(foo)s
-        #     %%      -> %%
-        #     %ab     -> %%ab
-        #     %%ab    -> %%ab
-        #     %%%ab   -> %%%%ab
-        #
-        # We do this here, rather than before storing, to make edits
-        # to the underlying linkifier more straightforward, and
-        # because JS does not have a real formatter.
-        self.format_string = re.sub(
-            r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string
-        )
+        self.format_string = percent_escape_format_string(format_string)
 
         super().__init__(compiled_re2, zmd)
 
@@ -2371,6 +2357,22 @@ def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
 # our common single link matching regex on it.
 basic_link_splitter = re.compile(r"[ !;\?\),\'\"]")
 
+
+def percent_escape_format_string(format_string: str) -> str:
+    # Find percent-encoded bytes and escape them from the python
+    # interpolation.  That is:
+    #     %(foo)s -> %(foo)s
+    #     %%      -> %%
+    #     %ab     -> %%ab
+    #     %%ab    -> %%ab
+    #     %%%ab   -> %%%%ab
+    #
+    # We do this here, rather than before storing, to make edits
+    # to the underlying linkifier more straightforward, and
+    # because JS does not have a real formatter.
+    return re.sub(r"(?<!%)(%%)*%([a-fA-F0-9][a-fA-F0-9])", r"\1%%\2", format_string)
+
+
 # Security note: We don't do any HTML escaping in this
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
@@ -2383,7 +2385,7 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     options.log_errors = False
     for linkifier in linkifiers:
         raw_pattern = linkifier["pattern"]
-        url_format_string = linkifier["url_format"]
+        url_format_string = percent_escape_format_string(linkifier["url_format"])
         try:
             pattern = re2.compile(prepare_linkifier_pattern(raw_pattern), options=options)
         except re2.error:
