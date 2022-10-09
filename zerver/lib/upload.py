@@ -63,6 +63,7 @@ INLINE_MIME_TYPES = [
     "image/jpeg",
     "image/png",
     "image/webp",
+    "video/webm",
     # To avoid cross-site scripting attacks, DO NOT add types such
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.
