@@ -1,11 +1,19 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import (
+    WildValue,
+    check_int,
+    check_none_or,
+    check_string,
+    check_union,
+    to_wild_value,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -40,17 +48,17 @@ subject_types: Dict[str, List[List[str]]] = {
 }
 
 
-def get_value(_obj: Dict[str, Any], key: str) -> str:
+def get_value(_obj: WildValue, key: str) -> str:
     for _key in key.lstrip("!").split("/"):
         if _key in _obj.keys():
             _obj = _obj[_key]
         else:
             return ""
-    return str(_obj)
+    return str(_obj.tame(check_union([check_string, check_int])))
 
 
 def format_object(
-    obj: Dict[str, Any],
+    obj: WildValue,
     subject_type: str,
     message: str,
 ) -> str:
@@ -63,9 +71,10 @@ def format_object(
         if len(title) > 1:
             title_str = title[0].format(get_value(obj, title[1]))
         else:
-            title_str = obj[title[0]]
-        if obj["html_url"] is not None:
-            url: str = obj["html_url"]
+            title_str = obj[title[0]].tame(check_string)
+
+        url = obj["html_url"].tame(check_none_or(check_string))
+        if url is not None:
             if "opbeat.com" not in url:
                 url = "https://opbeat.com/" + url.lstrip("/")
             message += f"\n**[{title_str}]({url})**"
@@ -89,7 +98,9 @@ def format_object(
                 else:
                     message += f"\n>{key}: {value}"
             if key == "subject":
-                message = format_object(obj["subject"], obj["subject_type"], message + "\n")
+                message = format_object(
+                    obj["subject"], obj["subject_type"].tame(check_string), message + "\n"
+                )
             if ":" in key:
                 value, value_type = key.split(":")
                 message = format_object(obj[value], value_type, message + "\n")
@@ -101,7 +112,7 @@ def format_object(
 def api_opbeat_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
     """
     This uses the subject name from opbeat to make the subject,
@@ -109,7 +120,7 @@ def api_opbeat_webhook(
     details about the object mentioned.
     """
 
-    message_subject = payload["title"]
+    message_subject = payload["title"].tame(check_string)
 
     message = format_object(payload, "base", "")
 
