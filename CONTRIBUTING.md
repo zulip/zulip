@@ -7,7 +7,7 @@ Welcome to the Zulip community!
 The
 [Zulip community server](https://zulip.com/development-community/)
 is the primary communication forum for the Zulip community. It is a good
-place to start whether you have a question, are a new contributor, are a new
+place to start whether you have a question, as a new contributor, as a new
 user, or anything else. Please review our
 [community norms](https://zulip.com/development-community/#community-norms)
 before posting. The Zulip community is also governed by a
