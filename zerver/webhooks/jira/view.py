@@ -1,8 +1,9 @@
 # Webhooks for external integrations.
 import re
 import string
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 
@@ -10,6 +11,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayload, UnsupportedWebhookEventType
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
@@ -92,17 +94,17 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     return content
 
 
-def get_in(payload: Dict[str, Any], keys: List[str], default: str = "") -> Any:
+def get_in(payload: WildValue, keys: List[str], default: str = "") -> WildValue:
     try:
         for key in keys:
             payload = payload[key]
-    except (AttributeError, KeyError, TypeError):
-        return default
+    except (AttributeError, KeyError, TypeError, ValidationError):
+        return WildValue("default", default)
     return payload
 
 
 def get_issue_string(
-    payload: Dict[str, Any], issue_id: Optional[str] = None, with_title: bool = False
+    payload: WildValue, issue_id: Optional[str] = None, with_title: bool = False
 ) -> str:
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
@@ -115,7 +117,9 @@ def get_issue_string(
     else:
         text = issue_id
 
-    base_url = re.match(r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]))
+    base_url = re.match(
+        r"(.*)\/rest\/api/.*", get_in(payload, ["issue", "self"]).tame(check_string)
+    )
     if base_url and len(base_url.groups()):
         return f"[{text}]({base_url.group(1)}/browse/{issue_id})"
     else:
@@ -132,11 +136,11 @@ def get_assignee_mention(assignee_email: str, realm: Realm) -> str:
     return ""
 
 
-def get_issue_author(payload: Dict[str, Any]) -> str:
-    return get_in(payload, ["user", "displayName"])
+def get_issue_author(payload: WildValue) -> str:
+    return get_in(payload, ["user", "displayName"]).tame(check_string)
 
 
-def get_issue_id(payload: Dict[str, Any]) -> str:
+def get_issue_id(payload: WildValue) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
@@ -144,12 +148,12 @@ def get_issue_id(payload: Dict[str, Any]) -> str:
         # issue number and use that in the topic.
         #
         # Users who want better formatting can upgrade Jira.
-        return payload["comment"]["self"].split("/")[-3]
+        return payload["comment"]["self"].tame(check_string).split("/")[-3]
 
-    return get_in(payload, ["issue", "key"])
+    return get_in(payload, ["issue", "key"]).tame(check_string)
 
 
-def get_issue_title(payload: Dict[str, Any]) -> str:
+def get_issue_title(payload: WildValue) -> str:
     if "issue" not in payload:
         # Some ancient version of Jira or one of its extensions posts
         # comment_created events without an "issue" element.  For
@@ -159,15 +163,15 @@ def get_issue_title(payload: Dict[str, Any]) -> str:
         # Users who want better formatting can upgrade Jira.
         return "Upgrade Jira to get the issue title here."
 
-    return get_in(payload, ["issue", "fields", "summary"])
+    return get_in(payload, ["issue", "fields", "summary"]).tame(check_string)
 
 
-def get_issue_subject(payload: Dict[str, Any]) -> str:
+def get_issue_subject(payload: WildValue) -> str:
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
-def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
-    sub_event = payload.get("issue_event_type_name", "")
+def get_sub_event_for_update_issue(payload: WildValue) -> str:
+    sub_event = payload.get("issue_event_type_name", "").tame(check_string)
     if sub_event == "":
         if payload.get("comment"):
             return "issue_commented"
@@ -176,14 +180,16 @@ def get_sub_event_for_update_issue(payload: Dict[str, Any]) -> str:
     return sub_event
 
 
-def get_event_type(payload: Dict[str, Any]) -> Optional[str]:
-    event = payload.get("webhookEvent")
+def get_event_type(payload: WildValue) -> Optional[str]:
+    event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event is None and payload.get("transition"):
         event = "jira:issue_updated"
     return event
 
 
-def add_change_info(content: str, field: str, from_field: str, to_field: str) -> str:
+def add_change_info(
+    content: str, field: Optional[str], from_field: Optional[str], to_field: Optional[str]
+) -> str:
     content += f"* Changed {field}"
     if from_field:
         content += f" from **{from_field}**"
@@ -192,14 +198,16 @@ def add_change_info(content: str, field: str, from_field: str, to_field: str) ->
     return content
 
 
-def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
     # Reassigned, commented, reopened, and resolved events are all bundled
     # into this one 'updated' event type, so we try to extract the meaningful
     # event that happened
-    issue_id = get_in(payload, ["issue", "key"])
+    issue_id = get_in(payload, ["issue", "key"]).tame(check_string)
     issue = get_issue_string(payload, issue_id, True)
 
-    assignee_email = get_in(payload, ["issue", "fields", "assignee", "emailAddress"], "")
+    assignee_email = get_in(payload, ["issue", "fields", "assignee", "emailAddress"], "").tame(
+        check_string
+    )
     assignee_mention = get_assignee_mention(assignee_email, user_profile.realm)
 
     if assignee_mention != "":
@@ -217,12 +225,12 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
             verb = "deleted a comment from"
 
         if payload.get("webhookEvent") == "comment_created":
-            author = payload["comment"]["author"]["displayName"]
+            author = payload["comment"]["author"]["displayName"].tame(check_string)
         else:
             author = get_issue_author(payload)
 
         content = f"{author} {verb} {issue}{assignee_blurb}"
-        comment = get_in(payload, ["comment", "body"])
+        comment = get_in(payload, ["comment", "body"]).tame(check_string)
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
             content = f"{content}:\n\n``` quote\n{comment}\n```"
@@ -230,36 +238,40 @@ def handle_updated_issue_event(payload: Dict[str, Any], user_profile: UserProfil
             content = f"{content}."
     else:
         content = f"{get_issue_author(payload)} updated {issue}{assignee_blurb}:\n\n"
-        changelog = get_in(payload, ["changelog"])
+        changelog = payload.get("changelog")
 
-        if changelog != "":
+        if changelog:
             # Use the changelog to display the changes, whitelist types we accept
             items = changelog.get("items")
             for item in items:
-                field = item.get("field")
+                field = item.get("field").tame(check_none_or(check_string))
 
                 if field == "assignee" and assignee_mention != "":
                     target_field_string = assignee_mention
                 else:
                     # Convert a user's target to a @-mention if possible
-                    target_field_string = "**{}**".format(item.get("toString"))
+                    target_field_string = "**{}**".format(
+                        item.get("toString").tame(check_none_or(check_string))
+                    )
 
-                from_field_string = item.get("fromString")
+                from_field_string = item.get("fromString").tame(check_none_or(check_string))
                 if target_field_string or from_field_string:
                     content = add_change_info(
                         content, field, from_field_string, target_field_string
                     )
 
         elif sub_event == "issue_transited":
-            from_field_string = get_in(payload, ["transition", "from_status"])
-            target_field_string = "**{}**".format(get_in(payload, ["transition", "to_status"]))
+            from_field_string = get_in(payload, ["transition", "from_status"]).tame(check_string)
+            target_field_string = "**{}**".format(
+                get_in(payload, ["transition", "to_status"]).tame(check_string)
+            )
             if target_field_string or from_field_string:
                 content = add_change_info(content, "status", from_field_string, target_field_string)
 
     return content
 
 
-def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
     template = """
 {author} created {issue_string}:
 
@@ -270,12 +282,14 @@ def handle_created_issue_event(payload: Dict[str, Any], user_profile: UserProfil
     return template.format(
         author=get_issue_author(payload),
         issue_string=get_issue_string(payload, with_title=True),
-        priority=get_in(payload, ["issue", "fields", "priority", "name"]),
-        assignee=get_in(payload, ["issue", "fields", "assignee", "displayName"], "no one"),
+        priority=get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string),
+        assignee=get_in(payload, ["issue", "fields", "assignee", "displayName"], "no one").tame(
+            check_string
+        ),
     )
 
 
-def handle_deleted_issue_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
     template = "{author} deleted {issue_string}{punctuation}"
     title = get_issue_title(payload)
     punctuation = "." if title[-1] not in string.punctuation else ""
@@ -294,37 +308,37 @@ def normalize_comment(comment: str) -> str:
     return normalized_comment
 
 
-def handle_comment_created_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
     title = get_issue_title(payload)
     return '{author} commented on issue: *"{title}"\
 *\n``` quote\n{comment}\n```\n'.format(
-        author=payload["comment"]["author"]["displayName"],
+        author=payload["comment"]["author"]["displayName"].tame(check_string),
         title=title,
-        comment=normalize_comment(payload["comment"]["body"]),
+        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 
 
-def handle_comment_updated_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
     title = get_issue_title(payload)
     return '{author} updated their comment on issue: *"{title}"\
 *\n``` quote\n{comment}\n```\n'.format(
-        author=payload["comment"]["author"]["displayName"],
+        author=payload["comment"]["author"]["displayName"].tame(check_string),
         title=title,
-        comment=normalize_comment(payload["comment"]["body"]),
+        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 
 
-def handle_comment_deleted_event(payload: Dict[str, Any], user_profile: UserProfile) -> str:
+def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
     title = get_issue_title(payload)
     return '{author} deleted their comment on issue: *"{title}"\
 *\n``` quote\n~~{comment}~~\n```\n'.format(
-        author=payload["comment"]["author"]["displayName"],
+        author=payload["comment"]["author"]["displayName"].tame(check_string),
         title=title,
-        comment=normalize_comment(payload["comment"]["body"]),
+        comment=normalize_comment(payload["comment"]["body"].tame(check_string)),
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: Dict[str, Optional[Callable[[Dict[str, Any], UserProfile], str]]] = {
+JIRA_CONTENT_FUNCTION_MAPPER: Dict[str, Optional[Callable[[WildValue, UserProfile], str]]] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
@@ -341,7 +355,7 @@ ALL_EVENT_TYPES = list(JIRA_CONTENT_FUNCTION_MAPPER.keys())
 def api_jira_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
 
     event = get_event_type(payload)
