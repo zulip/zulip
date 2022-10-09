@@ -1427,14 +1427,18 @@ class MarkdownTest(ZulipTestCase):
         RealmFilter(
             realm=realm,
             pattern=r"url-(?P<id>[0-9]+)",
-            url_format_string="https://example.com/%%%ba/%(id)s",
+            url_format_string="https://example.com/A%20Test/%%%ba/%(id)s",
         ).save()
         msg = Message(sender=self.example_user("hamlet"))
         content = "url-123 is well-escaped"
         converted = markdown_convert(content, message_realm=realm, message=msg)
         self.assertEqual(
             converted.rendered_content,
-            '<p><a href="https://example.com/%%ba/123">url-123</a> is well-escaped</p>',
+            '<p><a href="https://example.com/A%20Test/%%ba/123">url-123</a> is well-escaped</p>',
+        )
+        converted_topic = topic_links(realm.id, content)
+        self.assertEqual(
+            converted_topic, [{"url": "https://example.com/A%20Test/%%ba/123", "text": "url-123"}]
         )
 
     def test_multiple_matching_realm_patterns(self) -> None:
