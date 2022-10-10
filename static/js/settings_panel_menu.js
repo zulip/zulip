@@ -115,7 +115,14 @@ export class SettingsPanelMenu {
             }
         }
 
-        this.$curr_li = this.li_for_section(section);
+        const $li_for_section = this.li_for_section(section);
+        if ($li_for_section.length === 0) {
+            // This happens when there is no such section or the user does not have
+            // permission to view that section.
+            section = this.current_tab();
+        } else {
+            this.$curr_li = $li_for_section;
+        }
 
         this.$main_elem.children("li").removeClass("active");
         this.$curr_li.addClass("active");
