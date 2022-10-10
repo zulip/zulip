@@ -84,13 +84,14 @@
         </div>
         <h3 class="light">
             {{t "Deactivate organization" }}
-            <i class="fa fa-info-circle settings-info-icon realm_deactivation_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can deactivate the organization.' }}"></i>
+            {{> ../help_link_widget link="/help/deactivate-your-organization" }}
         </h3>
         <div class="deactivate-realm-section">
             <div class="input-group">
-                <button class="button rounded btn-danger" id="deactivate_realm_button">
-                    {{t 'Deactivate organization' }}
-                </button>
+                <div class="inline-block tippy-zulip-tooltip" data-tippy-content="{{t 'Only organization owners may deactivate an organization.' }}">
+                    <button class="button rounded btn-danger" id="deactivate_realm_button"> {{t 'Deactivate organization' }}
+                    </button>
+                </div>
             </div>
         </div>
     </form>
