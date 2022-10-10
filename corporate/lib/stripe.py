@@ -69,6 +69,8 @@ def get_seat_count(
         .exclude(role=UserProfile.ROLE_GUEST)
         .count()
     ) + extra_non_guests_count
+
+    # This guest count calculation should match the similar query in render_stats().
     guests = (
         UserProfile.objects.filter(
             realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST

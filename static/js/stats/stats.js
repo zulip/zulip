@@ -194,6 +194,13 @@ function set_storage_space_used_statistic(upload_space_used) {
     $("#id_storage_space_used").closest("summary-stats").show();
 }
 
+function set_guest_users_statistic(guest_users) {
+    const guest_users_string = guest_users.toLocaleString();
+
+    $("#id_guest_users_count").text(guest_users_string);
+    $("#id_guest_users_count").closest("summary-stats").show();
+}
+
 // PLOTLY CHARTS
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
@@ -1116,3 +1123,4 @@ get_chart_data(
 );
 
 set_storage_space_used_statistic(page_params.upload_space_used);
+set_guest_users_statistic(page_params.guest_users);

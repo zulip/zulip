@@ -92,6 +92,16 @@ class Command(BaseCommand):
         )
         do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
+        # Create guest user for set_guest_users_statistic.
+        create_user(
+            "bassanio@analytics.ds",
+            "Bassanio",
+            realm,
+            full_name="Bassanio",
+            role=UserProfile.ROLE_GUEST,
+            force_date_joined=installation_time,
+        )
+
         administrators_user_group = UserGroup.objects.get(
             name=UserGroup.ADMINISTRATORS_GROUP_NAME, realm=realm, is_system_group=True
         )
