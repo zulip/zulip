@@ -219,6 +219,13 @@ export function initialize() {
         // so that regular users don't have to see
         // them unless they want to.
         delay: LONG_HOVER_DELAY,
+        // By default, tippyjs uses a trigger value of "mouseenter focus",
+        // which means the tooltips can appear either when the element is
+        // hovered over or when it receives focus (e.g. by being clicked).
+        // However, we only want the tooltips to appear on hover, not on click.
+        // Therefore, we need to remove the "focus" trigger from the buttons,
+        // so that the tooltips don't appear when the buttons are clicked.
+        trigger: "mouseenter",
         // This ensures that the upload files tooltip
         // doesn't hide behind the left sidebar.
         appendTo: () => document.body,
