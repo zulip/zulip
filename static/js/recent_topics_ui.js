@@ -32,6 +32,7 @@ import {
     is_visible,
     set_visible,
 } from "./recent_topics_util";
+import * as search from "./search";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
@@ -875,6 +876,7 @@ export function show() {
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
     pm_list.handle_narrow_deactivated();
+    search.clear_search_form();
 
     complete_rerender();
 }
