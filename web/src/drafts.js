@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
@@ -29,6 +30,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
+import {show_copied_confirmation} from "./tippyjs";
 import * as ui_util from "./ui_util";
 import * as util from "./util";
 
@@ -311,6 +313,26 @@ export function restore_draft(draft_id) {
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
     compose_validate.check_overflow_text();
+}
+
+export function copy_draft(draft_id) {
+    const draft = draft_model.getDraft(draft_id);
+    if (!draft) {
+        return;
+    }
+
+    const clipboard = new ClipboardJS(
+        "#drafts_table .overlay_message_controls .copy-overlay-message",
+        {
+            text() {
+                return draft.content;
+            },
+        },
+    );
+
+    clipboard.on("success", (e) => {
+        show_copied_confirmation(e.trigger);
+    });
 }
 
 const DRAFT_LIFETIME = 30;
@@ -636,6 +658,12 @@ export function launch() {
             const is_checked = is_checkbox_icon_checked($(e.target));
             toggle_checkbox_icon_state($(e.target), !is_checked);
             update_bulk_delete_ui();
+        });
+
+        $("#drafts_table .overlay_message_controls .copy-overlay-message").on("click", function () {
+            const $draft_row = $(this).closest(".overlay-message-row");
+            const draft_id = $draft_row.data("draft-id");
+            copy_draft(draft_id);
         });
 
         $(".select-drafts-button").on("click", (e) => {

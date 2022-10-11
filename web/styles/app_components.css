@@ -1054,6 +1054,16 @@ div.overlay {
                 word-wrap: unset;
             }
 
+            .copy-overlay-message {
+                cursor: pointer;
+                color: hsl(0deg 0% 54%);
+                opacity: 0.7;
+
+                &:hover {
+                    opacity: 1;
+                }
+            }
+
             .restore-overlay-message {
                 cursor: pointer;
                 color: hsl(170deg 48% 54%);
