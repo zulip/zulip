@@ -58,7 +58,7 @@ function same_recipient(a, b) {
     return util.same_recipient(a.msg, b.msg);
 }
 
-function analyze_edit_history(message) {
+function analyze_edit_history(message, last_edit_timestr) {
     // Returns a dict of booleans that describe the message's history:
     //   * edited: if the message has had its content edited
     //   * moved: if the message has had its stream/topic edited
@@ -100,6 +100,12 @@ function analyze_edit_history(message) {
                 moved = true;
             }
         }
+    } else if (last_edit_timestr !== undefined) {
+        // When the edit_history is disabled for the organization, we do not receive the edit_history
+        // variable in the message object. In this case, we will check if the last_edit_timestr is
+        // available or not. Since we don't have the edit_history, we can't determine if the message
+        // was moved or edited. Therefore, we simply mark the messages as edited.
+        edited = true;
     }
     return {edited, moved, resolve_toggled};
 }
@@ -307,7 +313,7 @@ export class MessageListView {
         const include_sender = message_container.include_sender;
         const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
-        const edit_history_details = analyze_edit_history(message_container.msg);
+        const edit_history_details = analyze_edit_history(message_container.msg, last_edit_timestr);
 
         if (
             last_edit_timestr === undefined ||
