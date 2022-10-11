@@ -9,6 +9,12 @@
     </div>
     {{/unless}}
 
+    {{#if msg/should_display_quote_and_reply}}
+    <div class="respond_button message_control_button" data-tippy-content="{{t 'Quote and reply or forward' }} (>)" data-message-id="{{message_id}}" tabindex="0">
+        <i class="fa fa-reply" aria-label="{{#tr}}Quote and reply or forward{{/tr}} (>)" role="button" aria-haspopup="true" tabindex="0"></i>
+    </div>
+    {{/if}}
+
     {{#unless msg/locally_echoed}}
     <div class="actions_hover message_control_button" data-tippy-content="{{#tr}}Message actions{{/tr}} (i)" >
         <i class="zulip-icon zulip-icon-ellipsis-v-solid" role="button" aria-haspopup="true" tabindex="0" aria-label="{{#tr}}Message actions{{/tr}}"></i>
