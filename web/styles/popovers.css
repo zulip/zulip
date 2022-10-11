@@ -347,6 +347,36 @@ ul {
         outline: 10px solid hsl(0deg 0% 100%);
     }
 
+    .popover-avatar-background {
+        background-color: hsl(0deg 0% 0%);
+        height: 100%;
+        width: 100%;
+        opacity: 0.6;
+        display: none;
+    }
+
+    .exit_user_info_popover {
+        color: hsl(0deg 0% 100%);
+        cursor: pointer;
+        display: none;
+        position: absolute;
+        font-size: 2rem;
+        top: 0;
+        right: 10px;
+    }
+
+    &:hover,
+    &:active {
+        .popover-avatar-background {
+            display: block;
+        }
+
+        .exit_user_info_popover {
+            display: block;
+            opacity: 1;
+        }
+    }
+
     .popover-inner {
         width: 240px;
     }
