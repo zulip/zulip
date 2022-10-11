@@ -244,6 +244,7 @@ export function initialize() {
             "#compose_top_right [data-tippy-content]",
             "#compose_top_right [data-tooltip-template-id]",
         ],
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onHidden(instance) {
             instance.destroy();
@@ -286,6 +287,7 @@ export function initialize() {
 
     delegate("body", {
         target: [".enter_sends_true", ".enter_sends_false"],
+        delay: LONG_HOVER_DELAY,
         content: $t({defaultMessage: "Change send shortcut"}),
         onShow() {
             // Don't show tooltip if the popover is displayed.
