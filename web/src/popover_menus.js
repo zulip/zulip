@@ -34,7 +34,6 @@ import * as flatpickr from "./flatpickr";
 import * as giphy from "./giphy";
 import {$t_html} from "./i18n";
 import * as message_edit from "./message_edit";
-import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -800,17 +799,6 @@ export function initialize() {
                 if ($row && !message_container.is_hidden) {
                     message_lists.current.view.hide_revealed_message(message_id);
                 }
-                e.preventDefault();
-                e.stopPropagation();
-                instance.hide();
-            });
-
-            $popper.one("click", ".view_edit_history", (e) => {
-                const message_id = $(e.currentTarget).data("message-id");
-                const $row = message_lists.current.get_row(message_id);
-                const message = message_lists.current.get(rows.id($row));
-                message_edit_history.show_history(message);
-                $("#message-history-cancel").trigger("focus");
                 e.preventDefault();
                 e.stopPropagation();
                 instance.hide();

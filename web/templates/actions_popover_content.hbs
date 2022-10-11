@@ -101,15 +101,6 @@
     </li>
     {{/if}}
 
-    {{#if should_display_edit_history_option}}
-    <li>
-        <a class="view_edit_history" data-message-id="{{message_id}}" tabindex="0">
-            <i class="fa fa-clock-o" aria-hidden="true"></i>
-            {{t "View edit history" }}
-        </a>
-    </li>
-    {{/if}}
-
     {{#if should_display_read_receipts_option}}
     <li>
         <a class="view_read_receipts" data-message-id="{{message_id}}" tabindex="0">
