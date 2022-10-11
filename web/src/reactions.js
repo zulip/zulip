@@ -226,6 +226,11 @@ export function set_reaction_vote_text($reaction, vote_text) {
     $count_element.text(vote_text);
 }
 
+export function message_has_reactions(message) {
+    set_clean_reactions(message);
+    return Boolean(message.clean_reactions);
+}
+
 export function add_reaction(event) {
     const message_id = event.message_id;
     const message = message_store.get(message_id);

@@ -278,6 +278,33 @@ test("unknown realm emojis (insert)", () => {
     );
 });
 
+test("check_message_reactions", () => {
+    const updated_message = {
+        clean_reactions: new Map(
+            Object.entries({
+                "realm_emoji,992": {
+                    class: "message_reaction reacted",
+                    count: 1,
+                    emoji_alt_code: false,
+                    emoji_code: "992",
+                    emoji_name: "inactive_realm_emoji",
+                    is_realm_emoji: true,
+                    label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
+                    local_id: "realm_emoji,992",
+                    reaction_type: "realm_emoji",
+                    still_url: "/still/url/for/992",
+                    url: "/url/for/992",
+                    user_ids: [5],
+                    vote_text: "translated: You",
+                },
+            }),
+        ),
+        id: 1001,
+    };
+
+    assert.equal(reactions.message_has_reactions(updated_message), true);
+});
+
 test("sending", ({override, override_rewire}) => {
     const message = {...sample_message};
     assert.equal(message.id, 1001);
