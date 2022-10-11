@@ -10640,10 +10640,7 @@ paths:
                           timezone:
                             type: string
                             description: |
-                              The user's [configured time zone](/help/change-your-timezone).
-
-                              Time zone values supported by the server are served at
-                              [/static/generated/timezones.json](/static/generated/timezones.json).
+                              The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
                           enter_sends:
                             type: boolean
                             description: |
@@ -13591,10 +13588,7 @@ paths:
         - name: timezone
           in: query
           description: |
-            The user's [configured time zone](/help/change-your-timezone).
-
-            Time zone values supported by the server are served at
-            [/static/generated/timezones.json](/static/generated/timezones.json).
+            The IANA identifier of the user's [configured time zone](/help/change-your-timezone).
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
