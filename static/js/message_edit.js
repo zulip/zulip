@@ -68,9 +68,14 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
+    if (page_params.realm_move_messages_within_stream_limit_seconds === null) {
+        // This means no time limit for editing topics.
+        return true;
+    }
+
     // If you're using community topic editing, there's a deadline.
     return (
-        page_params.realm_community_topic_editing_limit_seconds +
+        page_params.realm_move_messages_within_stream_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
         0
