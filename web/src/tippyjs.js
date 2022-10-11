@@ -501,6 +501,23 @@ export function initialize() {
             defaultMessage: "View user card (u)",
         }),
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                return false;
+            }
+            const $elem = $(instance.reference);
+            const target = $elem.parents(".message_row.include-sender").get(0);
+            const config = {attributes: true, childList: false, subtree: false};
+            const nodes_to_check_for_removal = [$elem.get(0)];
+            hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
+        },
+        onHidden(instance) {
+            instance.destroy();
+            if (observer) {
+                observer.disconnect();
+            }
+        },
         appendTo: () => document.body,
     });
 }
