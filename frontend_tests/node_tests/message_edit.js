@@ -6,7 +6,7 @@ const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-page_params.realm_community_topic_editing_limit_seconds = 259200;
+page_params.realm_move_messages_within_stream_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
 
@@ -118,7 +118,7 @@ run_test("is_topic_editable", ({override}) => {
     override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
-    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    page_params.realm_move_messages_within_stream_limit_seconds = 259200;
     message.timestamp = current_timestamp - 60;
 
     override(settings_data, "user_can_move_messages_to_another_topic", () => true);
