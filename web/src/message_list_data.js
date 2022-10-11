@@ -29,7 +29,7 @@ export class MessageListData {
         // _all_items is a sorted list of all message objects that
         // match this.filter, regardless of muting.
         //
-        // Most code will instead use _items, which contains contains
+        // Most code will instead use _items, which contains
         // only messages that should be displayed after excluding
         // muted topics and messages sent by muted users.
         this._all_items = [];
