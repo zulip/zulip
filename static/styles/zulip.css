@@ -2559,7 +2559,7 @@ select.invite-as {
 
 .sub-unsub-message .stream-status,
 .date_row span {
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 .sub-unsub-message span {
@@ -2577,8 +2577,8 @@ select.invite-as {
     vertical-align: middle;
     width: 50%;
     height: 0;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
+    opacity: 0.2;
+    border-bottom: 1px solid hsl(0, 0%, 0%);
 }
 
 .sub-unsub-message span::before,
