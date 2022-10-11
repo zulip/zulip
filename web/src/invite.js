@@ -5,16 +5,14 @@ import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
-import render_invite_subscription from "../templates/invite_subscription.hbs";
-import render_invite_user from "../templates/invite_user.hbs";
+import render_invite_user_modal from "../templates/invite_user_modal.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
-import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
+import * as dialog_widget from "./dialog_widget";
+import * as gear_menu from "./gear_menu";
 import {$t, $t_html} from "./i18n";
-import * as keydown_util from "./keydown_util";
-import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
@@ -27,8 +25,7 @@ let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 
 function reset_error_messages() {
-    $("#invite_status").hide().text("").removeClass(common.status_classes);
-    $("#multiuse_invite_status").hide().text("").removeClass(common.status_classes);
+    $("#dialog_error").hide().text("").removeClass(common.status_classes);
 
     if (page_params.development_environment) {
         $("#dev_env_msg").hide().text("").removeClass(common.status_classes);
@@ -68,14 +65,14 @@ function beforeSend() {
     // aren't in the right domain, etc.)
     //
     // OR, you could just let the server do it. Probably my temptation.
-    const loading_text = $("#submit-invitation").data("loading-text");
-    $("#submit-invitation").text(loading_text);
-    $("#submit-invitation").prop("disabled", true);
+    const loading_text = $("#invite-user-modal .dialog_submit_button").data("loading-text");
+    $("#invite-user-modal .dialog_submit_button").text(loading_text);
+    $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
     return true;
 }
 
 function submit_invitation_form() {
-    const $invite_status = $("#invite_status");
+    const $invite_status = $("#dialog_error");
     const $invitee_emails = $("#invitee_emails");
     const data = get_common_invitation_data();
     data.invitee_emails = $("#invitee_emails").val();
@@ -145,16 +142,17 @@ function submit_invitation_form() {
             }
         },
         complete() {
-            $("#submit-invitation").text($t({defaultMessage: "Invite"}));
-            $("#submit-invitation").prop("disabled", false);
+            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
+            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
-            ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
+            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
 
 function generate_multiuse_invite() {
-    const $invite_status = $("#multiuse_invite_status");
+    const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
     channel.post({
         url: "/json/invites/multiuse",
@@ -169,8 +167,12 @@ function generate_multiuse_invite() {
             ui_report.error("", xhr, $invite_status);
         },
         complete() {
-            $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
-            $("#submit-invitation").prop("disabled", false);
+            $("#invite-user-modal .dialog_submit_button").text(
+                $t({defaultMessage: "Generate invite link"}),
+            );
+            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            $("#invite-user-modal .dialog_cancel_button").prop("disabled", false);
+            ui.get_scroll_element($("#invite-user-modal"))[0].scrollTop = 0;
         },
     });
 }
@@ -179,42 +181,6 @@ export function get_invite_streams() {
     const streams = stream_data.get_invite_stream_data();
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
-}
-
-function update_subscription_checkboxes() {
-    const data = {
-        streams: get_invite_streams(),
-        notifications_stream: stream_data.get_notifications_stream(),
-    };
-    const html = render_invite_subscription(data);
-    $("#streams_to_add").html(html);
-}
-
-function prepare_form_to_be_shown() {
-    update_subscription_checkboxes();
-    reset_error_messages();
-}
-
-export function launch() {
-    $("#submit-invitation").button();
-    prepare_form_to_be_shown();
-
-    overlays.open_overlay({
-        name: "invite",
-        $overlay: $("#invite-user"),
-        on_close() {
-            browser_history.exit_overlay();
-        },
-    });
-
-    autosize($("#invitee_emails").trigger("focus"));
-
-    // Ctrl + Enter key to submit form
-    $("#invite-user").on("keydown", (e) => {
-        if (keydown_util.is_enter_event(e) && e.ctrlKey) {
-            submit_invitation_form();
-        }
-    });
 }
 
 function valid_to(expires_in) {
@@ -270,73 +236,128 @@ function set_custom_time_inputs_visibility() {
     }
 }
 
-export function initialize() {
+function open_invite_user_modal(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    gear_menu.close();
+
     const time_unit_choices = ["minutes", "hours", "days", "weeks"];
-    const rendered = render_invite_user({
+    const html_body = render_invite_user_modal({
         is_admin: page_params.is_admin,
         is_owner: page_params.is_owner,
         development_environment: page_params.development_environment,
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: time_unit_choices,
+        streams: get_invite_streams(),
+        notifications_stream: stream_data.get_notifications_stream(),
     });
 
-    $(".app").append(rendered);
-    set_custom_time_inputs_visibility();
-    set_expires_on_text();
+    function invite_user_modal_post_render() {
+        $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
-    $(document).on("click", "#invite_check_all_button", () => {
-        $("#streams_to_add :checkbox").prop("checked", true);
-    });
+        autosize($("#invitee_emails").trigger("focus"));
 
-    $(document).on("click", "#invite_uncheck_all_button", () => {
-        $("#streams_to_add :checkbox").prop("checked", false);
-    });
+        set_custom_time_inputs_visibility();
+        set_expires_on_text();
 
-    $("#submit-invitation").on("click", () => {
+        function toggle_invite_submit_button() {
+            $("#invite-user-modal .dialog_submit_button").prop(
+                "disabled",
+                ($("#invitee_emails").val().trim() === "" &&
+                    !$("#generate_multiuse_invite_radio").is(":checked")) ||
+                    $("#streams_to_add input:checked").length === 0,
+            );
+        }
+
+        $("#invite-user-modal").on("input", "input, textarea, select", () => {
+            toggle_invite_submit_button();
+        });
+
+        $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
+            $("#invitee_emails").prop("disabled", false);
+            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
+            $("#invite-user-modal .dialog_submit_button").data(
+                "loading-text",
+                $t({defaultMessage: "Inviting..."}),
+            );
+            $("#multiuse_radio_section").hide();
+            $("#invite-method-choice").show();
+            toggle_invite_submit_button();
+            reset_error_messages();
+        });
+
+        $("#generate_multiuse_invite_button").on("click", () => {
+            $("#generate_multiuse_invite_radio").prop("checked", true);
+            $("#multiuse_radio_section").show();
+            $("#invite-method-choice").hide();
+            $("#invitee_emails").prop("disabled", true);
+            $("#invite-user-modal .dialog_submit_button").text(
+                $t({defaultMessage: "Generate invite link"}),
+            );
+            $("#invite-user-modal .dialog_submit_button").data(
+                "loading-text",
+                $t({defaultMessage: "Generating link..."}),
+            );
+            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+            reset_error_messages();
+        });
+
+        $("#expires_in").on("change", () => {
+            set_custom_time_inputs_visibility();
+            set_expires_on_text();
+        });
+
+        $("#expires_on").text(valid_to($("#expires_in").val()));
+
+        $("#custom-expiration-time-input").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                return;
+            }
+        });
+
+        $(".custom-expiration-time").on("change", () => {
+            custom_expiration_time_input = $("#custom-expiration-time-input").val();
+            custom_expiration_time_unit = $("#custom-expiration-time-unit").val();
+            $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
+        });
+
+        $("#invite_check_all_button").on("click", () => {
+            $("#streams_to_add :checkbox").prop("checked", true);
+            toggle_invite_submit_button();
+        });
+
+        $("#invite_uncheck_all_button").on("click", () => {
+            $("#streams_to_add :checkbox").prop("checked", false);
+            $("#invite-user-modal .dialog_submit_button").prop(
+                "disabled",
+                !$("#generate_multiuse_invite_radio").is(":checked"),
+            );
+        });
+    }
+
+    function invite_users() {
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
             generate_multiuse_invite();
         } else {
             submit_invitation_form();
         }
-    });
+    }
 
-    $("#generate_multiuse_invite_button").on("click", () => {
-        $("#generate_multiuse_invite_radio").prop("checked", true);
-        $("#multiuse_radio_section").show();
-        $("#invite-method-choice").hide();
-        $("#invitee_emails").prop("disabled", true);
-        $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
-        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Generating link..."}));
-        reset_error_messages();
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Invite users to Zulip"}),
+        html_body,
+        html_submit_button: $t_html({defaultMessage: "Invite"}),
+        id: "invite-user-modal",
+        loading_spinner: true,
+        on_click: invite_users,
+        post_render: invite_user_modal_post_render,
     });
+}
 
-    $("#invite-user").on("change", "#generate_multiuse_invite_radio", () => {
-        $("#invitee_emails").prop("disabled", false);
-        $("#submit-invitation").text($t({defaultMessage: "Invite"}));
-        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Inviting..."}));
-        $("#multiuse_radio_section").hide();
-        $("#invite-method-choice").show();
-        reset_error_messages();
-    });
-
-    $("#expires_on").text(valid_to($("#expires_in").val()));
-    $("#expires_in").on("change", () => {
-        set_custom_time_inputs_visibility();
-        set_expires_on_text();
-    });
-
-    $(".custom-expiration-time").on("change", () => {
-        custom_expiration_time_input = $("#custom-expiration-time-input").val();
-        custom_expiration_time_unit = $("#custom-expiration-time-unit").val();
-        $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
-    });
-
-    $("#custom-expiration-time-input").on("keydown", (e) => {
-        if (keydown_util.is_enter_event(e)) {
-            e.preventDefault();
-            return;
-        }
-    });
+export function initialize() {
+    $(document).on("click", ".invite-user-link", open_invite_user_modal);
 }
