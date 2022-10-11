@@ -624,7 +624,7 @@ $category-text: hsl(219, 23%, 33%);
 
         .eligible_realm {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             padding: 5px 10px;
             border: 1px solid transparent;
             border-radius: 4px;
