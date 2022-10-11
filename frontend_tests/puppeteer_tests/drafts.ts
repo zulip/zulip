@@ -8,8 +8,16 @@ async function wait_for_drafts_to_disappear(page: Page): Promise<void> {
     await page.waitForSelector("#draft_overlay.show", {hidden: true});
 }
 
-async function wait_for_drafts_to_appear(page: Page): Promise<void> {
+async function wait_for_drafts_to_appear(
+    page: Page,
+    contains_draft: Boolean = false,
+): Promise<void> {
     await page.waitForSelector("#draft_overlay.show");
+    if (contains_draft) {
+        await page.waitForFunction(() =>
+            document?.activeElement?.classList?.contains("draft-info-box"),
+        );
+    }
 }
 
 async function get_drafts_count(page: Page): Promise<number> {
@@ -67,7 +75,7 @@ async function open_drafts_after_markdown_preview(page: Page): Promise<void> {
     await open_compose_markdown_preview(page);
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
-    await wait_for_drafts_to_appear(page);
+    await wait_for_drafts_to_appear(page, true);
 }
 
 async function test_previously_created_drafts_rendered(page: Page): Promise<void> {
@@ -141,7 +149,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
 
-    await wait_for_drafts_to_appear(page);
+    await wait_for_drafts_to_appear(page, true);
     assert.strictEqual(
         await common.get_text_from_selector(
             page,
@@ -188,7 +196,7 @@ async function test_delete_draft(page: Page): Promise<void> {
     console.log("Deleting draft");
     await page.waitForSelector(drafts_button, {visible: true});
     await page.click(drafts_button);
-    await wait_for_drafts_to_appear(page);
+    await wait_for_drafts_to_appear(page, true);
     await page.click("#drafts_table .message_row.private-message .delete-draft");
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 1, "Draft not deleted.");
@@ -217,7 +225,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     await page.click(drafts_button);
 
     console.log("Checking drafts survived after the reload");
-    await wait_for_drafts_to_appear(page);
+    await wait_for_drafts_to_appear(page, true);
     const drafts_count = await get_drafts_count(page);
     assert.strictEqual(drafts_count, 2, "All drafts aren't loaded.");
     assert.strictEqual(
