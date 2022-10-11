@@ -1211,6 +1211,8 @@
     .streams_subheader span::before,
     .streams_subheader span::after {
         opacity: 0.2;
+        border-top: 1px solid hsl(0, 0%, 88%);
+        border-bottom: 1px solid hsl(0, 0%, 100%);
     }
 
     .star:not(.empty-star),
