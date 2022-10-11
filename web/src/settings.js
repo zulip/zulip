@@ -108,6 +108,7 @@ export function build_page() {
         }),
         user_is_only_organization_owner: people.is_current_user_only_owner(),
         email_address_visibility_values: settings_config.email_address_visibility_values,
+        owner_is_only_user_in_organization: people.get_active_human_count() === 1,
     });
 
     $(".settings-box").html(rendered_settings_tab);
