@@ -287,10 +287,17 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
+            let date = timerender.render_date(last_edit_time, today)[0].textContent;
+            // If the date is today or yesterday, we don't want to show the date as capitalized.
+            // Thus, we need to check if the date string contains a digit or not using regex,
+            // since any other date except today/yesterday will contain a digit.
+            if (date && !/\d/.test(date)) {
+                date = date.toLowerCase();
+            }
             return $t(
                 {defaultMessage: "{date} at {time}"},
                 {
-                    date: timerender.render_date(last_edit_time, today)[0].textContent,
+                    date,
                     time: timerender.stringify_time(last_edit_time),
                 },
             );
