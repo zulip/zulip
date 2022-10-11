@@ -65,17 +65,6 @@ export function get_actions_popover_content_context(message_id) {
     const should_display_mark_as_unread =
         !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
 
-    const should_display_edit_history_option =
-        message.edit_history &&
-        message.edit_history.some(
-            (entry) =>
-                entry.prev_content !== undefined ||
-                entry.prev_stream !== undefined ||
-                entry.prev_topic !== undefined,
-        ) &&
-        page_params.realm_allow_edit_history &&
-        not_spectator;
-
     // Disabling this for /me messages is a temporary workaround
     // for the fact that we don't have a styling for how that
     // should look.  See also condense.js.
@@ -113,7 +102,6 @@ export function get_actions_popover_content_context(message_id) {
         should_display_collapse,
         should_display_uncollapse,
         should_display_add_reaction_option,
-        should_display_edit_history_option,
         should_display_hide_option,
         conversation_time_url,
         narrowed: narrow_state.active(),
