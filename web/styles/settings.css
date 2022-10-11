@@ -1829,6 +1829,14 @@ $option_title_width: 180px;
 }
 
 @media (width < $sm_min) {
+    .user_row,
+    .settings-section {
+        .bot_type,
+        .last_active {
+            display: none;
+        }
+    }
+
     #pw_strength {
         margin: auto;
     }
@@ -1864,6 +1872,10 @@ $option_title_width: 180px;
         .custom_user_field textarea {
             width: calc(100% - 25px);
         }
+    }
+
+    .topic_date_muted {
+        display: none;
     }
 }
 
