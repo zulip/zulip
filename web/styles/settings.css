@@ -1831,6 +1831,11 @@ $option_title_width: 180px;
         margin: auto;
         float: none;
     }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 400px;
+    }
 }
 
 @media (width < $ml_min) {
@@ -1849,6 +1854,11 @@ $option_title_width: 180px;
 
     .topic_date_muted {
         display: none;
+    }
+
+    #change_password_modal,
+    #change_email_modal {
+        width: 300px;
     }
 }
 
