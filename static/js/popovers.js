@@ -606,7 +606,6 @@ export function toggle_actions_popover(element, id) {
 
         const args = {
             message_id: message.id,
-            historical: message.historical,
             stream_id: message.stream_id,
             editability_menu_item,
             move_message_menu_item,
