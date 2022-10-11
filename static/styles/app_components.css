@@ -707,7 +707,7 @@ div.overlay {
             content: " \f0d8";
             white-space: pre;
             display: inline-block;
-            position: absolute;
+            position: relative;
             padding-top: 3px;
             font: normal normal normal 12px/1 FontAwesome;
             font-size: inherit;

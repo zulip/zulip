@@ -248,8 +248,13 @@ select.setting_email_notifications_batching_period_seconds {
 
 #uploaded_files_table > tr > td:nth-of-type(1),
 .upload-file-name {
-    width: 30%;
+    width: 43%;
     word-break: break-all;
+}
+
+.upload-mentioned-in,
+.upload-date {
+    word-break: normal;
 }
 
 #linkifier-settings {
@@ -1719,6 +1724,10 @@ $option_title_width: 180px;
 }
 
 @media (width < $lg_min) {
+    .upload-size {
+        display: none;
+    }
+
     .user-avatar-section,
     .realm-icon-section {
         display: block;
