@@ -46,6 +46,7 @@ export function update_user_profile_streams_list_for_users(user_ids) {
     const user_id = get_user_id_if_user_profile_modal_open();
     if (user_id && user_ids.includes(user_id) && user_streams_list_widget !== undefined) {
         const user_streams = stream_data.get_streams_for_user(user_id).subscribed;
+        user_streams.sort(compare_by_name);
         user_streams_list_widget.replace_list_data(user_streams);
     }
 }
