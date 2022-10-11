@@ -314,6 +314,7 @@ function build_topic_popover(opts) {
         html: true,
         trigger: "manual",
         fixed: true,
+        fix_positions: true,
     });
 
     $(elt).popover("show");
