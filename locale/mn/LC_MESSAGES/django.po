@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-21 00:38+0000\n"
+"POT-Creation-Date: 2022-10-10 15:54+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Undraa G, 2022\n"
 "Language-Team: Mongolian (http://www.transifex.com/zulip/zulip/language/mn/)\n"
@@ -25,45 +25,45 @@ msgstr ""
 "Language: mn\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views/stats.py:88 zerver/decorator.py:620 zerver/decorator.py:638
+#: analytics/views/stats.py:89 zerver/decorator.py:620 zerver/decorator.py:638
 msgid "Not allowed for guest users"
 msgstr "Зочин хэрэглэгчдэд зөвшөөрөгдөөгүй"
 
-#: analytics/views/stats.py:132
+#: analytics/views/stats.py:133
 msgid "Invalid organization"
 msgstr "Буруу бүлэг"
 
-#: analytics/views/stats.py:271
+#: analytics/views/stats.py:272
 msgid "Public streams"
 msgstr "Нээлттэй групп чат"
 
-#: analytics/views/stats.py:272
+#: analytics/views/stats.py:273
 msgid "Private streams"
 msgstr "Хаалттай групп чат"
 
-#: analytics/views/stats.py:273
+#: analytics/views/stats.py:274
 msgid "Private messages"
 msgstr "Хувийн мессежүүд"
 
-#: analytics/views/stats.py:274
+#: analytics/views/stats.py:275
 msgid "Group private messages"
 msgstr "Хувийн групп мессежүүд"
 
-#: analytics/views/stats.py:295
+#: analytics/views/stats.py:296
 msgid "Unknown chart name: {}"
 msgstr "Чартын: {}"
 
-#: analytics/views/stats.py:305
+#: analytics/views/stats.py:306
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
 msgstr "Эхлэх цаг дуусах хугацаанаас хожуу байна. Эхлэх: {start}, Дуусах: {end}"
 
-#: analytics/views/stats.py:327 analytics/views/stats.py:362
+#: analytics/views/stats.py:328 analytics/views/stats.py:363
 msgid "No analytics data available. Please contact your server administrator."
 msgstr "Аналитик мэдээлэл байхгүй. Серверийн админтайгаа холбогдоно уу."
 
-#: analytics/views/support.py:181 zerver/views/streams.py:298
-#: zerver/views/streams.py:302 zerver/views/streams.py:310
+#: analytics/views/support.py:181 zerver/views/streams.py:299
+#: zerver/views/streams.py:303 zerver/views/streams.py:311
 msgid "Invalid parameters"
 msgstr "Буруу параметрууд"
 
@@ -265,14 +265,44 @@ msgstr ""
 msgid "Internal server error"
 msgstr "Сервер дээрх алдаа"
 
-#: templates/500.html:22
+#: templates/500.html:23
+msgid ""
+"\n"
+"                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
+"                        "
+msgstr ""
+
+#: templates/500.html:28
+msgid ""
+"\n"
+"                        This page will reload automatically when service is restored.\n"
+"                        "
+msgstr ""
+
+#: templates/500.html:32
 #, python-format
 msgid ""
 "\n"
-"                    <p>This Zulip server is currently experiencing some technical difficulties. Sorry about that!</p>\n"
-"                    <p>The page will reload automatically soon after service is restored.</p>\n"
-"                    <p>If you'd like, you can <a href=\"mailto:%(support_email)s\">drop us a line</a> to let us know what happened.</p>\n"
-"                    "
+"                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
+"                            "
+msgstr ""
+
+#: templates/500.html:36
+#, python-format
+msgid ""
+"\n"
+"                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
+"                            this server's administrators</a> for support.\n"
+"                            "
+msgstr ""
+
+#: templates/500.html:44
+#, python-format
+msgid ""
+"\n"
+"                            If you administer this server, you may want to check out the\n"
+"                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
+"                            "
 msgstr ""
 
 #: templates/analytics/stats.html:6
@@ -292,103 +322,123 @@ msgstr "Байгууллагыг үүсгэснээс хойш 24 цагийн �
 msgid "Zulip analytics for %(target_name)s"
 msgstr "%(target_name)s-д зориулсан Zulip аналитик"
 
+#: templates/analytics/stats.html:25
+msgid "Organization summary"
+msgstr ""
+
 #: templates/analytics/stats.html:27
-msgid "Messages sent over time"
-msgstr "Цаг хугацааны явцад илгээсэн мессежүүд"
+msgid "Number of users"
+msgstr ""
 
-#: templates/analytics/stats.html:29 templates/analytics/stats.html:110
-msgid "Aggregation"
-msgstr "Нэгтгэх"
+#: templates/analytics/stats.html:28
+msgid "Users active during the last 15 days"
+msgstr ""
 
-#: templates/analytics/stats.html:31 templates/analytics/stats.html:112
-msgid "Daily"
-msgstr "Өдөр бүр"
+#: templates/analytics/stats.html:29
+msgid "Total number of messages"
+msgstr ""
 
-#: templates/analytics/stats.html:32 templates/analytics/stats.html:113
-msgid "Weekly"
-msgstr "Долоо хоног бүр"
+#: templates/analytics/stats.html:30
+msgid "Number of messages in the last 30 days"
+msgstr ""
 
-#: templates/analytics/stats.html:33 templates/analytics/stats.html:114
-msgid "Cumulative"
-msgstr "Нэгдсэн"
+#: templates/analytics/stats.html:31
+msgid "File storage in use"
+msgstr ""
 
-#: templates/analytics/stats.html:41 templates/analytics/stats.html:57
-#: templates/analytics/stats.html:98 templates/analytics/stats.html:122
+#: templates/analytics/stats.html:36
+msgid "Active users"
+msgstr "Идэвхтэй хэрэглэгчид"
+
+#: templates/analytics/stats.html:39
+msgid "Daily actives"
+msgstr "Өдөр тутмын идэвхтэй үйл ажиллагаа"
+
+#: templates/analytics/stats.html:40
+msgid "15 day actives"
+msgstr "15 хоногийн идэвхтэй"
+
+#: templates/analytics/stats.html:41
+msgid "Total users"
+msgstr "Бүх хэрэглэгчид"
+
+#: templates/analytics/stats.html:49
+msgid "Users"
+msgstr "Хэрэглэгчид"
+
+#: templates/analytics/stats.html:57
+msgid "Messages sent by recipient type"
+msgstr "Хүлээн авагчийн төрлөөр илгээсэн зурвасууд"
+
+#: templates/analytics/stats.html:60 templates/analytics/stats.html:90
+#: templates/analytics/stats.html:112 templates/analytics/stats.html:123
 msgid "Me"
 msgstr "Би"
 
-#: templates/analytics/stats.html:43
-msgid "Humans"
-msgstr "Humans"
-
-#: templates/analytics/stats.html:45
-msgid "Bots"
-msgstr "Ботууд"
-
-#: templates/analytics/stats.html:52
-msgid "Messages sent by client"
-msgstr "Хэрэглэгчээс илгээгдсэн мессежүүд"
-
-#: templates/analytics/stats.html:58 templates/analytics/stats.html:99
+#: templates/analytics/stats.html:61 templates/analytics/stats.html:114
 #: templates/analytics/stats.html:124
 msgid "Everyone"
 msgstr "Хүн бүр"
 
-#: templates/analytics/stats.html:59 templates/analytics/stats.html:100
+#: templates/analytics/stats.html:69 templates/analytics/stats.html:131
 msgid "Last week"
 msgstr "Сүүлийн долоо хоног"
 
-#: templates/analytics/stats.html:60 templates/analytics/stats.html:101
+#: templates/analytics/stats.html:70 templates/analytics/stats.html:132
 msgid "Last month"
 msgstr "Сүүлийн сар"
 
-#: templates/analytics/stats.html:61 templates/analytics/stats.html:102
+#: templates/analytics/stats.html:71 templates/analytics/stats.html:133
 msgid "Last year"
 msgstr "Сүүлийн жил"
 
-#: templates/analytics/stats.html:62 templates/analytics/stats.html:103
+#: templates/analytics/stats.html:72 templates/analytics/stats.html:134
 msgid "All time"
 msgstr "Бүх цаг"
 
-#: templates/analytics/stats.html:68
-msgid "Active users"
-msgstr "Идэвхтэй хэрэглэгчид"
+#: templates/analytics/stats.html:77
+msgid "Messages sent over time"
+msgstr "Цаг хугацааны явцад илгээсэн мессежүүд"
 
-#: templates/analytics/stats.html:71
-msgid "Daily actives"
-msgstr "Өдөр тутмын идэвхтэй үйл ажиллагаа"
+#: templates/analytics/stats.html:80 templates/analytics/stats.html:102
+msgid "Daily"
+msgstr "Өдөр бүр"
 
-#: templates/analytics/stats.html:72
-msgid "15 day actives"
-msgstr "15 хоногийн идэвхтэй"
+#: templates/analytics/stats.html:81 templates/analytics/stats.html:103
+msgid "Weekly"
+msgstr "Долоо хоног бүр"
 
-#: templates/analytics/stats.html:73
-msgid "Total users"
-msgstr "Бүх хэрэглэгчид"
-
-#: templates/analytics/stats.html:81
-msgid "Users"
-msgstr "Хэрэглэгчид"
+#: templates/analytics/stats.html:82 templates/analytics/stats.html:104
+msgid "Cumulative"
+msgstr "Нэгдсэн"
 
 #: templates/analytics/stats.html:92
-msgid "Messages sent by recipient type"
-msgstr "Хүлээн авагчийн төрлөөр илгээсэн зурвасууд"
+msgid "Humans"
+msgstr "Humans"
 
-#: templates/analytics/stats.html:108
+#: templates/analytics/stats.html:94
+msgid "Bots"
+msgstr "Ботууд"
+
+#: templates/analytics/stats.html:99
 msgid "Messages read over time"
 msgstr "Мессежүүд цаг хугацааны явцад уншина"
 
-#: templates/analytics/stats.html:132
+#: templates/analytics/stats.html:120
+msgid "Messages sent by client"
+msgstr "Хэрэглэгчээс илгээгдсэн мессежүүд"
+
+#: templates/analytics/stats.html:142
 msgid "Last update"
 msgstr "Сүүлийн шинэчлэл"
 
-#: templates/analytics/stats.html:133
+#: templates/analytics/stats.html:143
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
 msgstr "Бүх графикуудын бүрэн шинэчлэлт өдөрт нэг удаа хийгддэг. \"Цаг хугацааны туршид илгээсэн мессеж\" графикийг цагт нэг удаа шинэчилдэг."
 
-#: templates/analytics/stats.html:137
+#: templates/analytics/stats.html:147
 msgid "Analytics documentation"
 msgstr "Шинжилгээний баримт бичиг"
 
@@ -513,9 +563,9 @@ msgstr ""
 #: templates/corporate/for/events.html:34
 #: templates/corporate/for/events.html:288
 #: templates/corporate/for/open-source.html:36
-#: templates/corporate/for/open-source.html:709
+#: templates/corporate/for/open-source.html:711
 #: templates/corporate/for/research.html:36
-#: templates/corporate/for/research.html:401
+#: templates/corporate/for/research.html:402
 #: templates/corporate/for/use-cases.html:23
 #: templates/zerver/create_realm.html:29
 msgid "Create organization"
@@ -533,9 +583,9 @@ msgstr "Үнэ харах"
 #: templates/corporate/for/events.html:40
 #: templates/corporate/for/events.html:294
 #: templates/corporate/for/open-source.html:42
-#: templates/corporate/for/open-source.html:715
+#: templates/corporate/for/open-source.html:717
 #: templates/corporate/for/research.html:42
-#: templates/corporate/for/research.html:407
+#: templates/corporate/for/research.html:408
 #: templates/corporate/for/use-cases.html:29
 msgid "Self-host Zulip"
 msgstr ""
@@ -545,9 +595,9 @@ msgstr ""
 #: templates/corporate/for/events.html:37
 #: templates/corporate/for/events.html:291
 #: templates/corporate/for/open-source.html:39
-#: templates/corporate/for/open-source.html:712
+#: templates/corporate/for/open-source.html:714
 #: templates/corporate/for/research.html:39
-#: templates/corporate/for/research.html:404
+#: templates/corporate/for/research.html:405
 msgid "Request sponsorship"
 msgstr ""
 
@@ -1579,47 +1629,54 @@ msgid ""
 "content appearing in email notifications</a>."
 msgstr "Энэ имэйлд мессежийн агуулгыг агуулаагүй тул та <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">имэйлийн мэдэгдэлд гарч ирэх мессежийн агуулгыг</a> идэвхгүй болгосон байна."
 
-#: templates/zerver/emails/missed_message.source.html:30
-#: templates/zerver/emails/missed_message.txt:26
+#: templates/zerver/emails/missed_message.source.html:29
+#: templates/zerver/emails/missed_message.txt:25
+msgid "You are receiving this because you were personally mentioned."
+msgstr ""
+
+#: templates/zerver/emails/missed_message.source.html:31
+#: templates/zerver/emails/missed_message.txt:27
 #, python-format
 msgid ""
-"You are receiving this because @%(mentioned_user_group_name)s was mentioned "
-"in %(realm_name)s."
-msgstr "%(realm_name)s-д @%(mentioned_user_group_name)s-г дурдсан тул та энэ мэдэгдэлийг хүлээн авч байна."
+"You are receiving this because @%(mentioned_user_group_name)s was mentioned."
+msgstr ""
 
-#: templates/zerver/emails/missed_message.source.html:32
-#: templates/zerver/emails/missed_message.txt:28
+#: templates/zerver/emails/missed_message.source.html:33
+#: templates/zerver/emails/missed_message.txt:29
 #, python-format
-msgid "You are receiving this because you were mentioned in %(realm_name)s."
-msgstr "Таныг %(realm_name)s-д дурдсан тул та энэхүү мэдэгдэлийг хүлээн авч байна."
+msgid ""
+"You are receiving this because everyone was mentioned in #%(stream_name)s."
+msgstr ""
 
 #: templates/zerver/emails/missed_message.source.html:35
 #: templates/zerver/emails/missed_message.txt:31
+#, python-format
 msgid ""
-"You are receiving this because you have email notifications enabled for this"
-" stream."
-msgstr "Та энэ группын имэйл мэдэгдлийг идэвхжүүлсэн тул үүнийг хүлээн авч байна."
+"You are receiving this because you have email notifications enabled for "
+"#%(stream_name)s."
+msgstr ""
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
-"Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "Энэ имэйлд шууд хариу бичих, <a href=\"%(narrow_url)s\">Zulip дээр үзэх</a> , эсвэл <a href=\"%(notif_url)s\">имэйлийн тохиргоог удирдах боломжтой</a> ."
+"%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
+"preferences</a>."
+msgstr ""
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
 msgid ""
-"<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
+"<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Zulip дээр харах, хариу бичих</a> , эсвэл <a href=\"%(notif_url)s\">имэйлийн тохиргоог удирдах</a> ."
+msgstr ""
 
 #: templates/zerver/emails/missed_message.source.html:42
 #, python-format
 msgid ""
-"<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
+"<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Zulip хэлээр хариу бичих</a> эсвэл <a href=\"%(notif_url)s\">имэйлийн тохиргоог удирдах боломжтой</a> ."
+msgstr ""
 
 #: templates/zerver/emails/missed_message.source.html:44
 #, python-format
@@ -1660,16 +1717,19 @@ msgid ""
 msgstr "\nЭнэ имэйлд мессежийн агуулгыг оруулаагүй болно, учир нь та имэйлийн мэдэгдэлд гарч ирэх мессежийн агуулгыг идэвхгүй болгосон байна. \nИлүү дэлгэрэнгүйг %(alert_notif_url)s-с үзнэ үү.\n"
 
 #: templates/zerver/emails/missed_message.txt:35
-msgid "Reply to this email directly, or view it in Zulip:"
-msgstr "Энэ имэйлд шууд хариу бичих эсвэл Zulip дээр үзэх:"
+#, python-format
+msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
+msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:39
-msgid "View or reply in Zulip:"
-msgstr "Zulip-аар харах эсвэл хариу бичих:"
+#, python-format
+msgid "View or reply in %(realm_name)s Zulip:"
+msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:43
-msgid "Reply in Zulip:"
-msgstr "Zulip-аар хариулах:"
+#, python-format
+msgid "Reply in %(realm_name)s Zulip:"
+msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:47
 msgid ""
@@ -2187,7 +2247,7 @@ msgid "Incoming webhooks"
 msgstr ""
 
 #: templates/zerver/integrations/index.html:66
-#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:40
+#: templates/zerver/integrations/index.html:93 zerver/lib/integrations.py:38
 msgid "Interactive bots"
 msgstr "Интерактив ботууд"
 
@@ -2667,7 +2727,7 @@ msgstr "{user} таны Zulip-д нэгдэх хүсэлтийг хүлээн а
 msgid "Invalid order mapping."
 msgstr "Буруу захиалга"
 
-#: zerver/actions/custom_profile_fields.py:208 zerver/lib/users.py:389
+#: zerver/actions/custom_profile_fields.py:208 zerver/lib/users.py:391
 #: zerver/views/custom_profile_fields.py:193
 #: zerver/views/custom_profile_fields.py:214
 #, python-brace-format
@@ -2748,99 +2808,99 @@ msgid ""
 "invitation. We did send invitations to everyone else!"
 msgstr "Тэдгээр хаягуудын зарим нь аль хэдийн Zulip-г ашиглаж байгаа тул бид тэдэнд урилга илгээгээгүй. Бид бусад хүмүүст урилга илгээсэн!"
 
-#: zerver/actions/message_edit.py:87
+#: zerver/actions/message_edit.py:85
 msgid "Nothing to change"
 msgstr "Өөрчлөх зүйл байхгүй"
 
-#: zerver/actions/message_edit.py:91
+#: zerver/actions/message_edit.py:89
 msgid "Private messages cannot be moved to streams."
 msgstr "Хувийн мессежийг stream-руу шилжүүлэх боломжгүй."
 
-#: zerver/actions/message_edit.py:93
+#: zerver/actions/message_edit.py:91
 msgid "Private messages cannot have topics."
 msgstr "Хувийн зурвасууд topic-тэй байж болохгүй."
 
-#: zerver/actions/message_edit.py:96
+#: zerver/actions/message_edit.py:94
 msgid "Invalid propagate_mode without topic edit"
 msgstr ""
 
-#: zerver/actions/message_edit.py:102
+#: zerver/actions/message_edit.py:100
 msgid "Cannot change message content while changing stream"
 msgstr "Stream-ыг өөрчлөх үед мессежийн агуулгыг өөрчлөх боломжгүй"
 
-#: zerver/actions/message_edit.py:106
+#: zerver/actions/message_edit.py:104
 msgid "Widgets cannot be edited."
 msgstr "Виджетийг засах боломжгүй."
 
-#: zerver/actions/message_edit.py:182
+#: zerver/actions/message_edit.py:180
 #, python-brace-format
 msgid "{user} has marked this topic as resolved."
 msgstr "{user} энэ topic-ыг шийдсэн гэж тэмдэглэсэн."
 
-#: zerver/actions/message_edit.py:184
+#: zerver/actions/message_edit.py:182
 #, python-brace-format
 msgid "{user} has marked this topic as unresolved."
 msgstr "{user} энэ topic-ыг шийдэгдээгүй гэж тэмдэглэсэн."
 
-#: zerver/actions/message_edit.py:844
+#: zerver/actions/message_edit.py:842
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr "Энэ topic-ыг {user} {new_location} руу зөөсөн."
 
-#: zerver/actions/message_edit.py:848
+#: zerver/actions/message_edit.py:846
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr "{user} энэ topic-оос мессежийг {new_location} руу зөөсөн."
 
-#: zerver/actions/message_edit.py:852
+#: zerver/actions/message_edit.py:850
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
 msgstr "{changed_messages_count} мессежийг {user} энэ topic-оос {new_location} руу зөөсөн."
 
-#: zerver/actions/message_edit.py:859
+#: zerver/actions/message_edit.py:857
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "Энэ topic-ыг {old_location}-с {user} энд зөөсөн."
 
-#: zerver/actions/message_edit.py:863
+#: zerver/actions/message_edit.py:861
 #, python-brace-format
 msgid "A message was moved here from {old_location} by {user}."
 msgstr "{old_location}-с {user} мессежийг энд зөөсөн."
 
-#: zerver/actions/message_edit.py:867
+#: zerver/actions/message_edit.py:865
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr "{changed_messages_count} мессежийг {old_location}-с {user} энд зөөсөн."
 
-#: zerver/actions/message_edit.py:902
+#: zerver/actions/message_edit.py:900
 msgid "Your organization has turned off message editing"
 msgstr "Танай байгууллага мессеж засварлахыг эрхийг хаасан байна"
 
-#: zerver/actions/message_edit.py:918 zerver/actions/message_edit.py:923
+#: zerver/actions/message_edit.py:916 zerver/actions/message_edit.py:921
 msgid "You don't have permission to edit this message"
 msgstr "Та энэ мессежийг засах эрхгүй байна"
 
-#: zerver/actions/message_edit.py:934
+#: zerver/actions/message_edit.py:932
 msgid "The time limit for editing this message has passed"
 msgstr "Энэ мессежийг засварлах хугацаа өнгөрсөн байна"
 
-#: zerver/actions/message_edit.py:949
+#: zerver/actions/message_edit.py:947
 msgid "The time limit for editing this message's topic has passed"
 msgstr "Энэ мессежийн topic-ыг засварлах хугацаа хэтэрсэн байна"
 
-#: zerver/actions/message_edit.py:983 zerver/actions/message_send.py:1495
+#: zerver/actions/message_edit.py:981 zerver/actions/message_send.py:1495
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr "Танд уг групп -т wildcard мэншион хийх эрх алга."
 
-#: zerver/actions/message_edit.py:992
+#: zerver/actions/message_edit.py:990
 msgid "You don't have permission to move this message"
 msgstr "Та энэ мессежийг зөөх эрхгүй байна"
 
-#: zerver/actions/message_edit.py:998
+#: zerver/actions/message_edit.py:996
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
@@ -2858,56 +2918,56 @@ msgstr "Флаг засах боломжгүй: '{}'"
 msgid "Invalid message flag operation: '{}'"
 msgstr ""
 
-#: zerver/actions/message_send.py:153
+#: zerver/actions/message_send.py:151
 msgid "Unable to render message"
 msgstr "Мессежийг үзүүлэх боломжгүй"
 
-#: zerver/actions/message_send.py:1045
+#: zerver/actions/message_send.py:1044
 msgid "Expected exactly one stream"
 msgstr "Яг нэг stream хүлээж байсан"
 
-#: zerver/actions/message_send.py:1056
+#: zerver/actions/message_send.py:1055
 msgid "Invalid data type for stream"
 msgstr "Stream-ын өгөгдлийн төрөл буруу"
 
-#: zerver/actions/message_send.py:1072 zerver/actions/message_send.py:1082
+#: zerver/actions/message_send.py:1071 zerver/actions/message_send.py:1081
 msgid "Invalid data type for recipients"
 msgstr "Хүлээн авагчийн өгөгдлийн төрөл буруу байна"
 
-#: zerver/actions/message_send.py:1090 zerver/actions/message_send.py:1098
+#: zerver/actions/message_send.py:1089 zerver/actions/message_send.py:1097
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Хүлээн авагчийн лист дотор имэйл хаяг эсвэл хэрэглэгчийн ID байх боломжтой, хоёулаа байх боломжгүй."
 
-#: zerver/actions/message_send.py:1210
+#: zerver/actions/message_send.py:1209
 msgid "Reminders can only be set for streams."
 msgstr "Сануулгыг зөвхөн stream-д тохируулах боломжтой."
 
-#: zerver/actions/message_send.py:1277
+#: zerver/actions/message_send.py:1276
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Таны {bot_identity} бот {stream_id} stream ID-руу мессеж илгээхийг оролдсон боловч ийм ID-тай stream байхгүй байна."
 
-#: zerver/actions/message_send.py:1283
+#: zerver/actions/message_send.py:1282
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Таны бот {bot_identity} {stream_name} stream-руу мессеж илгээхийг оролдсон боловч энэ stream байхгүй байна. Stream үүсгэхийн тулд [энд]({new_stream_link}) дарна уу."
 
-#: zerver/actions/message_send.py:1291
+#: zerver/actions/message_send.py:1290
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Таны {bot_identity} бот {stream_name} руу мессеж илгээхийг оролдсон. Stream байгаа ч гишүүн байхгүй."
 
-#: zerver/actions/message_send.py:1338
+#: zerver/actions/message_send.py:1337
 msgid "Private messages are disabled in this organization."
 msgstr "Энэ байгууллагад хувийн мессежийг идэвхгүй болгосон"
 
-#: zerver/actions/message_send.py:1414
+#: zerver/actions/message_send.py:1413
 msgid "Topics are required in this organization"
 msgstr "Уг байгууллагад сэдэв шаардлагатай"
 
@@ -2924,18 +2984,18 @@ msgstr "Widgets: {error_msg}"
 msgid "Reaction already exists."
 msgstr ""
 
-#: zerver/actions/realm_emoji.py:31 zerver/views/realm_emoji.py:37
+#: zerver/actions/realm_emoji.py:32 zerver/views/realm_emoji.py:37
 msgid "A custom emoji with this name already exists."
 msgstr ""
 
-#: zerver/actions/streams.py:840
+#: zerver/actions/streams.py:827
 #, python-brace-format
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
 msgstr "{user} энэ stream-ын **{old_policy}**-с **{new_policy}** болгон [хандах зөвшөөрлийг](/help/stream-permissions) өөрчилсөн."
 
-#: zerver/actions/streams.py:1024
+#: zerver/actions/streams.py:1011
 #, python-brace-format
 msgid ""
 "{user} changed the [posting permissions](/help/stream-sending-policy) for this stream:\n"
@@ -2944,38 +3004,38 @@ msgid ""
 "* **New permissions**: {new_policy}.\n"
 msgstr ""
 
-#: zerver/actions/streams.py:1159
+#: zerver/actions/streams.py:1146
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} stream-ыг {old_stream_name} {new_stream_name} болгон өөрчилсөн."
 
-#: zerver/actions/streams.py:1178 zerver/actions/streams.py:1180
-#: zerver/views/streams.py:735
+#: zerver/actions/streams.py:1165 zerver/actions/streams.py:1167
+#: zerver/views/streams.py:736
 msgid "No description."
 msgstr "Тайлбар байхгүй."
 
-#: zerver/actions/streams.py:1183
+#: zerver/actions/streams.py:1170
 #, python-brace-format
 msgid "{user} changed the description for this stream."
 msgstr "{user} энэ stream-ын тайлбарыг өөрчилсөн."
 
-#: zerver/actions/streams.py:1185
+#: zerver/actions/streams.py:1172
 msgid "Old description"
 msgstr "Хуучин тайлбар"
 
-#: zerver/actions/streams.py:1189
+#: zerver/actions/streams.py:1176
 msgid "New description"
 msgstr "Шинэ тайлбар"
 
-#: zerver/actions/streams.py:1257 zerver/actions/streams.py:1262
+#: zerver/actions/streams.py:1244 zerver/actions/streams.py:1249
 msgid "Forever"
 msgstr "Forever"
 
-#: zerver/actions/streams.py:1263
+#: zerver/actions/streams.py:1250
 msgid "Messages in this stream will now be retained forever."
 msgstr ""
 
-#: zerver/actions/streams.py:1269
+#: zerver/actions/streams.py:1256
 #, python-brace-format
 msgid ""
 "{user} has changed the [message retention period](/help/message-retention-policy) for this stream:\n"
@@ -3019,10 +3079,10 @@ msgstr "Серверийн администратор байх ёстой"
 
 #: zerver/decorator.py:659 zerver/lib/streams.py:695 zerver/lib/streams.py:721
 #: zerver/lib/streams.py:723 zerver/lib/streams.py:738
-#: zerver/lib/user_groups.py:37 zerver/lib/user_groups.py:44
-#: zerver/lib/users.py:247 zerver/lib/users.py:276 zerver/views/invite.py:55
-#: zerver/views/realm_emoji.py:32 zerver/views/streams.py:330
-#: zerver/views/streams.py:597
+#: zerver/lib/user_groups.py:35 zerver/lib/user_groups.py:42
+#: zerver/lib/users.py:249 zerver/lib/users.py:278 zerver/views/invite.py:55
+#: zerver/views/realm_emoji.py:32 zerver/views/streams.py:331
+#: zerver/views/streams.py:598
 msgid "Insufficient permission"
 msgstr "Зөвшөөрөл хангалтгүй"
 
@@ -3038,7 +3098,7 @@ msgstr "Үндсэн баталгаажуулалтын зөвшөөрлийн �
 msgid "Missing authorization header for basic auth"
 msgstr "Үндсэн баталгаажуулалтын зөвшөөрлийн толгой хэсэг байхгүй байна"
 
-#: zerver/decorator.py:881
+#: zerver/decorator.py:878
 msgid "Webhook bots can only access webhooks"
 msgstr "Webhook ботууд зөвхөн webhooks-рүү хандах боломжтой"
 
@@ -3229,7 +3289,7 @@ msgstr "Ноорог үүсээгүй байна."
 msgid "Open Zulip to see the spoiler content"
 msgstr "Spoiler агуулгыг харахын тулд Zulip-г нээнэ үү"
 
-#: zerver/lib/email_notifications.py:515
+#: zerver/lib/email_notifications.py:523
 msgid "Zulip notifications"
 msgstr "Zulip мэдэгдлүүд"
 
@@ -3421,131 +3481,136 @@ msgstr "дэд домайн буруу байна"
 msgid "Access denied"
 msgstr "Хандах эрхгүй байна"
 
-#: zerver/lib/external_accounts.py:37
+#: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
 msgstr ""
 
-#: zerver/lib/external_accounts.py:43
+#: zerver/lib/external_accounts.py:42
 msgid "GitHub username"
 msgstr ""
 
-#: zerver/lib/external_accounts.py:72
+#: zerver/lib/external_accounts.py:71
 msgid "Custom external account must define URL pattern"
 msgstr ""
 
-#: zerver/lib/external_accounts.py:74
+#: zerver/lib/external_accounts.py:73
 msgid "Invalid external account type"
 msgstr "Буруу гадаад аккаунтын төрөл"
 
-#: zerver/lib/hotspots.py:15
+#: zerver/lib/hotspots.py:13
 msgid "Catch up on a stream"
 msgstr ""
 
-#: zerver/lib/hotspots.py:17
+#: zerver/lib/hotspots.py:15
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
 msgstr "Stream-руу илгээсэн мессежийг тухайн stream-д нэгдсэн хүн бүр хардаг. Доорх stream-ын холбоосуудын аль нэг дээр дарж үзнэ үү."
 
-#: zerver/lib/hotspots.py:22
+#: zerver/lib/hotspots.py:20
 msgid "Topics"
 msgstr "Хэлэлцэх сэдвүүд"
 
-#: zerver/lib/hotspots.py:24
+#: zerver/lib/hotspots.py:22
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
 msgstr "Мессеж бүр topic-той байдаг. Topic нь харилцан яриаг дагахад хялбар болгож, таныг офлайн үед эхэлсэн харилцан ярианд хариулахад хялбар болгоно."
 
-#: zerver/lib/hotspots.py:30
+#: zerver/lib/hotspots.py:28
 msgid "Settings"
 msgstr "Тохиргоо"
 
-#: zerver/lib/hotspots.py:32
+#: zerver/lib/hotspots.py:30
 msgid "Go to Settings to configure your notifications and display settings."
 msgstr "Мэдэгдэл болон дэлгэцийн тохиргоог тохируулахын тулд Тохиргоо руу очно уу."
 
-#: zerver/lib/hotspots.py:36
+#: zerver/lib/hotspots.py:34
 msgid "Compose"
 msgstr "Compose"
 
-#: zerver/lib/hotspots.py:38
+#: zerver/lib/hotspots.py:36
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
 msgstr "Шинэ харилцан яриа эхлүүлэхийн тулд энд дарна уу. Topic-оо сонгоод (2-3 үг  байвал хамгийн тохиромжтой), цааш үргэлжлүүлээрэй!"
 
-#: zerver/lib/integrations.py:39
+#: zerver/lib/integrations.py:37
 msgid "Integration frameworks"
 msgstr "Integration frameworks"
 
-#: zerver/lib/integrations.py:45
+#: zerver/lib/integrations.py:43
 msgid "Continuous integration"
 msgstr "Тасралтгүй интеграци"
 
-#: zerver/lib/integrations.py:46
+#: zerver/lib/integrations.py:44
 msgid "Customer support"
 msgstr "Хэрэглэгчийн дэмжлэг"
 
-#: zerver/lib/integrations.py:47
+#: zerver/lib/integrations.py:45
 msgid "Deployment"
 msgstr "Байршил"
 
-#: zerver/lib/integrations.py:48
+#: zerver/lib/integrations.py:46
 msgid "Entertainment"
 msgstr "Entertainment"
 
-#: zerver/lib/integrations.py:49
+#: zerver/lib/integrations.py:47
 msgid "Communication"
 msgstr "Communication"
 
-#: zerver/lib/integrations.py:50
+#: zerver/lib/integrations.py:48
 msgid "Financial"
 msgstr "Санхүү"
 
-#: zerver/lib/integrations.py:51
+#: zerver/lib/integrations.py:49
 msgid "Human resources"
 msgstr ""
 
-#: zerver/lib/integrations.py:52
+#: zerver/lib/integrations.py:50
 msgid "Marketing"
 msgstr "Mаркетинг"
 
-#: zerver/lib/integrations.py:53
+#: zerver/lib/integrations.py:51
 msgid "Miscellaneous"
 msgstr "Бусад"
 
-#: zerver/lib/integrations.py:54
+#: zerver/lib/integrations.py:52
 msgid "Monitoring"
 msgstr ""
 
-#: zerver/lib/integrations.py:55
+#: zerver/lib/integrations.py:53
 msgid "Project management"
 msgstr "Төслийн менежмент"
 
-#: zerver/lib/integrations.py:56
+#: zerver/lib/integrations.py:54
 msgid "Productivity"
 msgstr "Productivity"
 
-#: zerver/lib/integrations.py:57
+#: zerver/lib/integrations.py:55
 msgid "Version control"
 msgstr "Хувилбарын хяналт"
 
-#: zerver/lib/message.py:193
+#: zerver/lib/message.py:190
 msgid "Message must not be empty"
 msgstr "Мессеж хоосон байж болохгүй"
 
-#: zerver/lib/message.py:195
+#: zerver/lib/message.py:192
 msgid "Message must not contain null bytes"
 msgstr "Мессеж нь хоосон байт агуулах ёсгүй"
 
-#: zerver/lib/message.py:753 zerver/lib/message.py:759
+#: zerver/lib/message.py:750 zerver/lib/message.py:756
 msgid "Invalid message(s)"
 msgstr "Буруу мессеж(үүд)"
 
-#: zerver/lib/narrow.py:29
+#: zerver/lib/narrow.py:96
 msgid "Operator {} not supported."
 msgstr "{} операторыг дэмждэггүй."
+
+#: zerver/lib/narrow.py:185
+#, python-brace-format
+msgid "Invalid narrow operator: {desc}"
+msgstr "Буруу оператор: {desc}"
 
 #: zerver/lib/onboarding.py:56
 #, python-brace-format
@@ -3758,7 +3823,7 @@ msgstr "{full_name} хүн бүрийг дурдсан:"
 
 #: zerver/lib/recipient_users.py:30 zerver/lib/streams.py:264
 #: zerver/lib/streams.py:272 zerver/lib/streams.py:834
-#: zerver/tornado/views.py:121 zerver/views/events_register.py:84
+#: zerver/tornado/views.py:121 zerver/views/events_register.py:92
 #: zerver/views/message_send.py:240 zerver/views/message_send.py:246
 #: zerver/views/message_send.py:265 zerver/views/users.py:691
 msgid "User not authorized for this query"
@@ -3850,7 +3915,7 @@ msgstr "'{}' stream-ын нэр буруу"
 msgid "Stream(s) ({}) do not exist"
 msgstr "Stream(үүд) ({}) байхгүй байна"
 
-#: zerver/lib/streams.py:734 zerver/views/streams.py:328
+#: zerver/lib/streams.py:734 zerver/views/streams.py:329
 msgid "Web-public streams are not enabled."
 msgstr ""
 
@@ -3906,11 +3971,11 @@ msgstr "Танигдахгүй хөдөлгөөнт зургийн формат.
 msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 
-#: zerver/lib/user_groups.py:46
+#: zerver/lib/user_groups.py:44
 msgid "Invalid user group"
 msgstr "Буруу хэрэглэгчийн групп"
 
-#: zerver/lib/user_groups.py:58
+#: zerver/lib/user_groups.py:56
 msgid "Invalid user group ID: {}"
 msgstr "Буруу хэрэглэгчийн группын ID: {}"
 
@@ -3939,44 +4004,44 @@ msgstr "Энэ нэрийг аль хэдийн хэрэглэгсэн байн�
 msgid "Bad name or username"
 msgstr "Нэр эсвэл хэрэглэгчийн нэр буруу байна"
 
-#: zerver/lib/users.py:93
+#: zerver/lib/users.py:95
 msgid "Invalid integration '{}'."
 msgstr "Буруу integration '{}'."
 
-#: zerver/lib/users.py:98
+#: zerver/lib/users.py:100
 msgid "Missing configuration parameters: {}"
 msgstr "Тохиргооны параметрүүд дутуу байна: {}"
 
-#: zerver/lib/users.py:107
+#: zerver/lib/users.py:109
 msgid "Invalid {} value {} ({})"
 msgstr "Буруу {} утга {} ({})"
 
-#: zerver/lib/users.py:122
+#: zerver/lib/users.py:124
 msgid "Invalid configuration data!"
 msgstr "Буруу тохиргооны өгөгдөл!"
 
-#: zerver/lib/users.py:156
+#: zerver/lib/users.py:158
 msgid "Invalid bot type"
 msgstr "Ботын төрөл буруу байна"
 
-#: zerver/lib/users.py:161
+#: zerver/lib/users.py:163
 msgid "Invalid interface type"
 msgstr "Интерфэйсийн төрөл буруу байна."
 
-#: zerver/lib/users.py:230 zerver/lib/users.py:235 zerver/models.py:4522
+#: zerver/lib/users.py:232 zerver/lib/users.py:237 zerver/models.py:4441
 msgid "Invalid user ID: {}"
 msgstr "Буруу хэрэглэгчийн ID: {}"
 
-#: zerver/lib/users.py:243 zerver/lib/users.py:245
+#: zerver/lib/users.py:245 zerver/lib/users.py:247
 msgid "No such bot"
 msgstr "Ийм бот байхгүй"
 
-#: zerver/lib/users.py:269 zerver/lib/users.py:296 zerver/lib/users.py:313
-#: zerver/views/presence.py:43
+#: zerver/lib/users.py:271 zerver/lib/users.py:298 zerver/lib/users.py:315
+#: zerver/views/presence.py:44
 msgid "No such user"
 msgstr "Ийм хэрэглэгч байхгүй"
 
-#: zerver/lib/users.py:271
+#: zerver/lib/users.py:273
 msgid "User is deactivated"
 msgstr "Хэрэглэгч deactivated"
 
@@ -4145,149 +4210,153 @@ msgstr "Ийм команд байхгүй: {}"
 msgid "CSRF error: {reason}"
 msgstr "CSRF алдаа: {reason}"
 
-#: zerver/models.py:491
+#: zerver/models.py:478
 msgid "stream events"
 msgstr ""
 
-#: zerver/models.py:607
+#: zerver/models.py:594
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
 msgstr "Zulip Cloud Standard дээр ашиглах боломжтой. Хандахын тулд шинэчилнэ үү."
 
-#: zerver/models.py:1097
+#: zerver/models.py:1085
 msgid "Invalid characters in emoji name"
 msgstr "Эможи нэр дээрх буруу тэмдэгтүүд"
 
-#: zerver/models.py:1221 zerver/models.py:1223
+#: zerver/models.py:1209 zerver/models.py:1211
 msgid "Bad regular expression: {}"
 msgstr ""
 
-#: zerver/models.py:1224
+#: zerver/models.py:1212
 msgid "Unknown regular expression error"
 msgstr ""
 
-#: zerver/models.py:1259
+#: zerver/models.py:1247
 msgid "Invalid format string in URL."
 msgstr "URL дээр буруу форматын мөр байна."
 
-#: zerver/models.py:1301
+#: zerver/models.py:1288
 #, python-format
 msgid ""
 "Group %(name)r in URL format string is not present in linkifier pattern."
 msgstr ""
 
-#: zerver/models.py:1313
+#: zerver/models.py:1300
 #, python-format
 msgid ""
 "Group %(name)r in linkifier pattern is not present in URL format string."
 msgstr ""
 
-#: zerver/models.py:1408 zerver/views/realm_playgrounds.py:25
+#: zerver/models.py:1395 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
 msgstr ""
 
-#: zerver/models.py:1909
+#: zerver/models.py:1886
 msgid "Organization owner"
 msgstr "Бүлгийн эзэн"
 
-#: zerver/models.py:1910
+#: zerver/models.py:1887
 msgid "Organization administrator"
 msgstr "Бүлгийн админ"
 
-#: zerver/models.py:1911
+#: zerver/models.py:1888
 msgid "Moderator"
 msgstr "Модератор"
 
-#: zerver/models.py:1912
+#: zerver/models.py:1889
 msgid "Member"
 msgstr "Гишүүн"
 
-#: zerver/models.py:1913
+#: zerver/models.py:1890
 msgid "Guest"
 msgstr "Зочин"
 
-#: zerver/models.py:2454
+#: zerver/models.py:2416
 msgid "Web-public"
 msgstr "Web-public"
 
-#: zerver/models.py:2460
+#: zerver/models.py:2422
 msgid "Public"
 msgstr "Олон нийтийн"
 
-#: zerver/models.py:2466
+#: zerver/models.py:2428
 msgid "Private, shared history"
 msgstr "Хувийн, хуваалцсан түүх"
 
-#: zerver/models.py:2472
+#: zerver/models.py:2434
 msgid "Private, protected history"
 msgstr "Хувийн, хамгаалагдсан түүх"
 
-#: zerver/models.py:2480
+#: zerver/models.py:2442
 msgid "Public, protected history"
 msgstr "Олон нийтийн, хамгаалагдсан түүх"
 
-#: zerver/models.py:2500
+#: zerver/models.py:2462
 msgid "All stream members can post"
 msgstr "Группын бүх гишүүд пост оруулах боломжтой"
 
-#: zerver/models.py:2501
+#: zerver/models.py:2463
 msgid "Only organization administrators can post"
 msgstr "Зөвхөн бүлгийн админууд постлох боломжтой"
 
-#: zerver/models.py:2503
+#: zerver/models.py:2465
 msgid "Only organization administrators and moderators can post"
 msgstr "Зөвхөн бүлгийн админ болон модераторууд постлох боломжтой"
 
-#: zerver/models.py:2506
+#: zerver/models.py:2468
 msgid "Only organization full members can post"
 msgstr "Зөвхөн бүлгийн бүрэн эрхтэй гишүүд постлох боломжтой"
 
-#: zerver/models.py:3140
+#: zerver/models.py:3085
 msgid "Unicode emoji"
 msgstr "Юникод эможи"
 
-#: zerver/models.py:3141
+#: zerver/models.py:3086
 msgid "Custom emoji"
 msgstr "Тусгай эможи"
 
-#: zerver/models.py:3142
+#: zerver/models.py:3087
 msgid "Zulip extra emoji"
 msgstr "Zulip нэмэлт эможи"
 
-#: zerver/models.py:4526
+#: zerver/models.py:4445
 msgid "User with ID {} is deactivated"
 msgstr " {}  ID-тэй хэрэглэгч актив биш байна"
 
-#: zerver/models.py:4529
+#: zerver/models.py:4448
 msgid "User with ID {} is a bot"
 msgstr " {} ID-тэй хэрэглэгч нь бот байна"
 
-#: zerver/models.py:4569
+#: zerver/models.py:4488
 msgid "List of options"
 msgstr "Хувилбаруудын жагсаалт"
 
-#: zerver/models.py:4572
+#: zerver/models.py:4491
 msgid "Person picker"
 msgstr ""
 
-#: zerver/models.py:4584
+#: zerver/models.py:4503
 msgid "Short text"
 msgstr "Богино текст"
 
-#: zerver/models.py:4585
+#: zerver/models.py:4504
 msgid "Long text"
 msgstr "Урт текст"
 
-#: zerver/models.py:4586
+#: zerver/models.py:4505
 msgid "Date picker"
 msgstr ""
 
-#: zerver/models.py:4587
+#: zerver/models.py:4506
 msgid "Link"
 msgstr "Холбоос"
 
-#: zerver/models.py:4590
+#: zerver/models.py:4509
 msgid "External account"
 msgstr "Гадаад аккаунт"
+
+#: zerver/models.py:4514
+msgid "Pronouns"
+msgstr ""
 
 #: zerver/signals.py:95
 msgid "Unknown IP address"
@@ -4398,6 +4467,10 @@ msgstr ""
 msgid "DevAuthBackend not enabled."
 msgstr "DevAuthBackend идэвхжээгүй."
 
+#: zerver/views/events_register.py:105 zerver/views/events_register.py:109
+msgid "Invalid '{}' parameter for anonymous request"
+msgstr ""
+
 #: zerver/views/hotspots.py:19
 msgid "Unknown hotspot: {}"
 msgstr "Unknown hotspot: {}"
@@ -4444,20 +4517,15 @@ msgstr "Энэ мессежийг устгах хугацаа өнгөрсөн �
 msgid "Message already deleted"
 msgstr "Мессеж аль хэдийн устсан байна"
 
-#: zerver/views/message_fetch.py:95
-#, python-brace-format
-msgid "Invalid narrow operator: {desc}"
-msgstr "Буруу оператор: {desc}"
-
-#: zerver/views/message_fetch.py:916
+#: zerver/views/message_fetch.py:216
 msgid "Missing 'anchor' argument."
 msgstr "'anchor' аргумент дутуу байна."
 
-#: zerver/views/message_fetch.py:936
+#: zerver/views/message_fetch.py:236
 msgid "Invalid anchor"
 msgstr "Хүчингүй anchor"
 
-#: zerver/views/message_fetch.py:956
+#: zerver/views/message_fetch.py:256
 msgid "Too many messages requested (maximum {})."
 msgstr "Хэт олон мессеж илгээсэн (хамгийн ихдээ {})."
 
@@ -4509,25 +4577,25 @@ msgstr ""
 msgid "User is not muted"
 msgstr ""
 
-#: zerver/views/presence.py:46
+#: zerver/views/presence.py:47
 msgid "Presence is not supported for bot users."
 msgstr ""
 
-#: zerver/views/presence.py:51
+#: zerver/views/presence.py:52
 #, python-brace-format
 msgid "No presence data for {user_id_or_email}"
 msgstr "{user_id_or_email}-д байгаа мэдээлэл алга"
 
-#: zerver/views/presence.py:85
+#: zerver/views/presence.py:86
 msgid "Client did not pass any new values."
 msgstr "Үйлчлүүлэгч ямар ч шинэ утгыг дамжуулаагүй."
 
-#: zerver/views/presence.py:106
+#: zerver/views/presence.py:107
 msgid ""
 "Client must pass emoji_name if they pass either emoji_code or reaction_type."
 msgstr ""
 
-#: zerver/views/presence.py:144
+#: zerver/views/presence.py:145
 msgid "Invalid status: {}"
 msgstr "Буруу статус: {}"
 
@@ -4553,23 +4621,23 @@ msgstr "Ямар ч хариу үйлдэл байхгүй."
 msgid "Read receipts are disabled in this organization."
 msgstr ""
 
-#: zerver/views/realm.py:156
+#: zerver/views/realm.py:155
 msgid "Invalid language '{}'"
 msgstr "Буруу хэл '{}'"
 
-#: zerver/views/realm.py:161
+#: zerver/views/realm.py:160
 msgid "At least one authentication method must be enabled."
 msgstr "Дор хаяж нэг баталгаажуулалтын аргыг идэвхжүүлсэн байх ёстой."
 
-#: zerver/views/realm.py:165
+#: zerver/views/realm.py:164
 msgid "Invalid video_chat_provider {}"
 msgstr "Буруу video_chat_provider {}"
 
-#: zerver/views/realm.py:169
+#: zerver/views/realm.py:168
 msgid "Invalid giphy_rating {}"
 msgstr "Буруу giphy_rating {}"
 
-#: zerver/views/realm.py:323
+#: zerver/views/realm.py:322
 msgid "Must be a demo organization."
 msgstr "Нэг тест бүлэг байх ёстой."
 
@@ -4642,79 +4710,79 @@ msgstr "Байгууллага үүсгэх холбоосын хугацаа д
 msgid "New organization creation disabled"
 msgstr "Шинэ байгууллага үүсгэхийг идэвхгүй болгосон"
 
-#: zerver/views/streams.py:116
+#: zerver/views/streams.py:117
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr "Хэрэглэгч '{principal}'-ын өмнөөс асуулга явуулах эрхгүй"
 
-#: zerver/views/streams.py:158
+#: zerver/views/streams.py:159
 msgid "Private streams cannot be made default."
 msgstr "Хувийн stream-ыг default болгох боломжгүй."
 
-#: zerver/views/streams.py:190
+#: zerver/views/streams.py:191
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:220
+#: zerver/views/streams.py:221
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr "\"op\"-ын утга буруу. \"add\" эсвэл \"remove\"-ын аль нэгийг зааж өгнө үү."
 
-#: zerver/views/streams.py:316
+#: zerver/views/streams.py:317
 msgid "Default streams cannot be made private."
 msgstr "Default stream-ыг хувийн болгох боломжгүй."
 
-#: zerver/views/streams.py:364
+#: zerver/views/streams.py:365
 msgid "Stream already has that name!"
 msgstr "Групп аль хэдийн ийм нэртэй болсон!"
 
-#: zerver/views/streams.py:418 zerver/views/user_groups.py:102
+#: zerver/views/streams.py:419 zerver/views/user_groups.py:102
 #: zerver/views/user_groups.py:210
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "Хийх зүйлгүй. \"Нэмэх\" эсвэл \"устгах\"-ын дор хаяж нэгийг зааж өгнө үү."
 
-#: zerver/views/streams.py:503
+#: zerver/views/streams.py:504
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
 msgstr ""
 
-#: zerver/views/streams.py:509
+#: zerver/views/streams.py:510
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
 msgstr ""
 
-#: zerver/views/streams.py:582
+#: zerver/views/streams.py:583
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
 msgstr "({stream_name}) группруу хандах боломжгүй"
 
-#: zerver/views/streams.py:592
+#: zerver/views/streams.py:593
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
 
-#: zerver/views/streams.py:709
+#: zerver/views/streams.py:710
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
 msgstr "{user_name}  нь дараах группуудыг үүсгэсэн байна: {stream_str}."
 
-#: zerver/views/streams.py:711
+#: zerver/views/streams.py:712
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
 msgstr "{user_name}  нь {stream_str} шинэ групп үүсгэсэн."
 
-#: zerver/views/streams.py:712
+#: zerver/views/streams.py:713
 msgid "new streams"
 msgstr "Шинэ группууд"
 
-#: zerver/views/streams.py:744
+#: zerver/views/streams.py:745
 #, python-brace-format
 msgid "**{policy}** stream created by {user_name}. **Description:**"
 msgstr "**{policy}** stream-ыг {user_name} үүсгэсэн.**Description:**"
 
-#: zerver/views/streams.py:975
+#: zerver/views/streams.py:986
 msgid "Unknown subscription property: {}"
 msgstr ""
 
-#: zerver/views/streams.py:979
+#: zerver/views/streams.py:990
 msgid "Not subscribed to stream id {}"
 msgstr ""
 
@@ -5040,18 +5108,18 @@ msgstr "Өгөгдөл ажиллахаа больсон."
 msgid "Invalid data."
 msgstr "Өгөгдөл буруу"
 
-#: zproject/backends.py:476
+#: zproject/backends.py:477
 msgid "You need to reset your password."
 msgstr "Та нууц үгээ солих хэрэгтэй."
 
-#: zproject/backends.py:2138
+#: zproject/backends.py:2139
 msgid "Missing id_token parameter"
 msgstr "id_token параметр алга"
 
-#: zproject/backends.py:2733
+#: zproject/backends.py:2734
 msgid "Invalid OTP"
 msgstr "OTP буруу"
 
-#: zproject/backends.py:2736
+#: zproject/backends.py:2737
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "mobile_flow_otp болон desktop_flow_otp -ийг хамт ашиглах боломжгүй."
