@@ -1498,6 +1498,20 @@ $option_title_width: 180px;
 }
 
 .dropdown-list-widget {
+    button.realm_notifications_stream_id_dropdown-toggle,
+    button.realm_signup_notifications_stream_id_dropdown-toggle {
+        display: inline-flex;
+        justify-content: space-between;
+
+        #realm_notifications_stream_id_name,
+        #realm_signup_notifications_stream_id_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 230px;
+        }
+    }
+
     button.dropdown-toggle {
         text-align: left;
 
