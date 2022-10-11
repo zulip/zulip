@@ -1034,6 +1034,11 @@ def process_message_files(
             # that are hidden because of 10k cap in free plan.
             continue
 
+        if fileinfo.get("file_access", "") == "access_denied":
+            # Slack sometimes includes file stubs for files it declares
+            # inaccessible and does not further reference.
+            continue
+
         url = fileinfo["url_private"]
 
         if "files.slack.com" in url:
