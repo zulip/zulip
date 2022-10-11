@@ -24,6 +24,8 @@ format used by the Zulip server that they are interacting with.
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  `PATCH /realm`: Added new `move_messages_between_streams_limit_seconds` setting.
 
 **Feature level 161**
 

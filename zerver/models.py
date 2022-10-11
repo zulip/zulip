@@ -387,6 +387,10 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
     )
 
+    move_messages_between_streams_limit_seconds = models.PositiveIntegerField(
+        default=DEFAULT_MOVE_MESSAGE_LIMIT_SECONDS, null=True
+    )
+
     # Who in the organization is allowed to add custom emojis.
     add_custom_emoji_policy = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
@@ -736,6 +740,7 @@ class Realm(models.Model):  # type: ignore[django-manager-missing] # django-stub
         message_content_allowed_in_email_notifications=bool,
         message_content_edit_limit_seconds=(int, type(None)),
         message_content_delete_limit_seconds=(int, type(None)),
+        move_messages_between_streams_limit_seconds=(int, type(None)),
         move_messages_within_stream_limit_seconds=(int, type(None)),
         message_retention_days=(int, type(None)),
         move_messages_between_streams_policy=int,
