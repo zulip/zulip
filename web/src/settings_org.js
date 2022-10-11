@@ -6,8 +6,8 @@ import render_settings_admin_auth_methods_list from "../templates/settings/admin
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
+import * as dialog_widget from "./dialog_widget";
 import {DropdownListWidget} from "./dropdown_list_widget";
 import {$t, $t_html, get_language_name} from "./i18n";
 import * as keydown_util from "./keydown_util";
@@ -46,7 +46,7 @@ export function maybe_disable_widgets() {
         .prop("disabled", true);
 
     if (page_params.is_admin) {
-        $("#deactivate_realm_button").prop("disabled", true);
+        $(".deactivate_realm_button").prop("disabled", true);
         $("#deactivate_realm_button_container").addClass("disabled_setting_tooltip");
         $("#org-message-retention").find("input, select").prop("disabled", true);
         $("#org-join-settings").find("input, select").prop("disabled", true);
@@ -700,6 +700,32 @@ export function discard_property_element_changes(elem, for_realm_default_setting
     }
 
     update_dependent_subsettings(property_name);
+}
+
+export function deactivate_organization(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    function do_deactivate_realm() {
+        channel.post({
+            url: "/json/realm/deactivate",
+            error(xhr) {
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+            },
+        });
+    }
+
+    const html_body = render_settings_deactivate_realm_modal();
+
+    dialog_widget.launch({
+        html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+        help_link: "/help/deactivate-your-organization",
+        html_body,
+        on_click: do_deactivate_realm,
+        close_on_submit: false,
+        focus_submit_on_open: true,
+        html_submit_button: $t_html({defaultMessage: "Confirm"}),
+    });
 }
 
 export function sync_realm_settings(property) {
@@ -1411,30 +1437,5 @@ export function build_page() {
         realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
     }
 
-    $("#deactivate_realm_button").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        function do_deactivate_realm() {
-            channel.post({
-                url: "/json/realm/deactivate",
-                error(xhr) {
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        $("#admin-realm-deactivation-status").expectOne(),
-                    );
-                },
-            });
-        }
-
-        const html_body = render_settings_deactivate_realm_modal();
-
-        confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Deactivate organization"}),
-            help_link: "/help/deactivate-your-organization",
-            html_body,
-            on_click: do_deactivate_realm,
-        });
-    });
+    $("#organization-profile .deactivate_realm_button").on("click", deactivate_organization);
 }

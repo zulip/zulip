@@ -22,6 +22,7 @@ import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as settings_bots from "./settings_bots";
 import * as settings_data from "./settings_data";
+import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui_report from "./ui_report";
@@ -764,6 +765,10 @@ export function set_up() {
         }
     });
 
+    $("#account-settings .deactivate_realm_button").on(
+        "click",
+        settings_org.deactivate_organization,
+    );
     $("#user_deactivate_account_button").on("click", (e) => {
         // This click event must not get propagated to parent container otherwise the modal
         // will not show up because of a call to `close_active_modal` in `settings.js`.

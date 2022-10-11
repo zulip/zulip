@@ -167,9 +167,13 @@ h3,
     cursor: not-allowed;
 }
 
+#account-settings .deactivate_realm_button {
+    margin-left: 10px;
+}
+
 #change_email_button,
 #user_deactivate_account_button,
-#deactivate_realm_button {
+.deactivate_realm_button {
     &:disabled {
         pointer-events: none;
     }
@@ -1860,6 +1864,12 @@ $option_title_width: 180px;
         .custom_user_field textarea {
             width: calc(100% - 25px);
         }
+    }
+}
+
+@media (width < $mm_min) {
+    .deactivate_realm_button {
+        margin-top: 20px;
     }
 }
 
