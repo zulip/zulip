@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
+import * as compose_fade from "./compose_fade";
 import * as compose_recipient from "./compose_recipient";
 import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
@@ -196,4 +197,12 @@ export function remove_deactivated_user_from_all_streams(user_id) {
             stream_settings_ui.update_subscribers_ui(sub);
         }
     }
+}
+
+export function process_subscriber_update(stream_ids) {
+    for (const stream_id of stream_ids) {
+        const sub = sub_store.get(stream_id);
+        stream_settings_ui.update_subscribers_ui(sub);
+    }
+    compose_fade.update_faded_users();
 }

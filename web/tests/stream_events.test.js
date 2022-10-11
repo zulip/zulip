@@ -42,6 +42,7 @@ const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
 const compose_recipient = zrequire("compose_recipient");
+const compose_fade = zrequire("compose_fade");
 
 const george = {
     email: "george@zulip.com",
@@ -441,4 +442,24 @@ test("remove_deactivated_user_from_all_streams", () => {
 
     // verify that we issue a call to update subscriber count/list UI
     assert.equal(subs_stub.num_calls, 1);
+});
+
+test("process_subscriber_update", () => {
+    const subsStub = make_stub();
+    stream_settings_ui.update_subscribers_ui = subsStub.f;
+
+    const fadedUsersStub = make_stub();
+    compose_fade.update_faded_users = fadedUsersStub.f;
+
+    // Sample stream IDs
+    const streamIds = [1, 2, 3];
+
+    // Call the function being tested
+    stream_events.process_subscriber_update(streamIds);
+
+    // Assert that update_subscribers_ui is called for each stream ID
+    assert.equal(subsStub.num_calls, streamIds.length);
+
+    // Assert that update_faded_users is called once
+    assert.equal(fadedUsersStub.num_calls, 1);
 });
