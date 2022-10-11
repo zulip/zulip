@@ -56,11 +56,6 @@
         box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
     }
 
-    #invite_user_form .modal-footer {
-        /* no transparency prevents overlap issues */
-        background-color: hsl(211, 28%, 14%);
-    }
-
     .enter_sends,
     .enter_sends_choices {
         color: hsl(236, 33%, 90%);
@@ -1231,6 +1226,14 @@
         /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
         box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
+    }
+
+    #invite-user-modal {
+        #clipboard_image {
+            path {
+                fill: hsl(236, 33%, 90%);
+            }
+        }
     }
 
     #user-profile-modal {

@@ -89,12 +89,6 @@ $user_status_emoji_width: 24px;
     }
 }
 
-#invite-user-link i {
-    text-decoration: none;
-    margin-right: 3px;
-    margin-left: 5px;
-}
-
 .user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
     display: flex;

@@ -2372,6 +2372,7 @@ textarea.invitee_emails {
     max-height: 300px;
     width: 96%;
     max-width: 96%;
+    resize: vertical !important;
 
     color: hsl(0, 0%, 33%);
     background-color: hsl(0, 0%, 100%);
@@ -2397,42 +2398,10 @@ textarea.invitee_emails {
     }
 }
 
-#invite-user {
-    .modal-header {
-        padding: 7px 15px;
-        border-color: hsl(0, 0%, 87%);
-
-        .exit {
-            font-size: 1.5rem;
-            font-weight: 600;
-            background-color: transparent;
-            border: none;
-            position: absolute;
-            top: 6px;
-            right: 5px;
-            color: hsl(0, 0%, 67%);
-        }
-    }
-
-    .overlay-content {
-        position: relative;
-        width: 500px;
-        border-radius: 4px;
-    }
-
-    .modal-body {
-        margin-bottom: 58px;
-        position: relative;
-    }
-
-    .modal-footer {
-        position: absolute;
-        bottom: 0;
-        width: calc(100% - 30px);
-    }
-
-    .invite-stream-controls {
-        margin-top: 5px;
+#invite-user-modal {
+    #custom-expiration-time-input,
+    #invite-user-form {
+        margin: 0;
     }
 }
 
@@ -2450,26 +2419,8 @@ select.invite-as {
     vertical-align: middle;
 }
 
-#invite_status {
-    display: none;
-}
-
-#invite-user-label {
-    font-size: 1em;
-    font-weight: 700;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-#multiuse_invite_status {
-    display: none;
-    margin-top: 7px;
-    margin-bottom: -5px;
-    text-align: left;
-}
-
 #multiuse_invite_link {
-    width: 350px;
+    width: 370px;
     text-overflow: ellipsis;
     white-space: nowrap;
     display: inline-block;
@@ -2478,8 +2429,6 @@ select.invite-as {
 }
 
 #invite-stream-checkboxes {
-    padding-bottom: 26px;
-
     i.zulip-icon-globe {
         font-size: 80%;
     }
