@@ -1180,9 +1180,9 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(False, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "D", "cordelia")
 
-        # non-admin users cannot edit topics sent > 72 hrs ago including
+        # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=290000)
+        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
         message.save()
         set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
@@ -1193,6 +1193,16 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_error(
             id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
         )
+
+        # set the topic edit limit to two weeks
+        do_set_realm_property(
+            hamlet.realm,
+            "move_messages_within_stream_limit_seconds",
+            604800 * 2,
+            acting_user=None,
+        )
+        do_edit_message_assert_success(id_, "G", "cordelia")
+        do_edit_message_assert_success(id_, "H", "hamlet")
 
         # anyone should be able to edit "no topic" indefinitely
         message.set_topic_name("(no topic)")

@@ -57,7 +57,6 @@ from zerver.models import (
     Attachment,
     Message,
     Reaction,
-    Realm,
     Stream,
     UserMessage,
     UserProfile,
@@ -955,11 +954,14 @@ def check_update_message(
     # and the time limit for editing topics is passed, raise an error.
     if (
         topic_name is not None
+        and user_profile.realm.move_messages_within_stream_limit_seconds is not None
         and not user_profile.is_realm_admin
         and not user_profile.is_moderator
         and not is_no_topic_msg
     ):
-        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        deadline_seconds = (
+            user_profile.realm.move_messages_within_stream_limit_seconds + edit_limit_buffer
+        )
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message's topic has passed"))
 
