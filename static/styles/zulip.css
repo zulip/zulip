@@ -870,7 +870,7 @@ td.pointer {
 .message_time {
     display: block;
     font-size: 12px;
-    opacity: 0.4;
+    opacity: 0.5;
     padding: 1px;
     font-weight: 400;
     position: absolute;
@@ -2490,7 +2490,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 .sub-unsub-message .stream-status,
 .date_row span {
-    opacity: 0.5;
+    opacity: 0.6;
+    font-weight: bold;
 }
 
 .sub-unsub-message span {
@@ -2508,8 +2509,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
     vertical-align: middle;
     width: 50%;
     height: 0;
-    border-top: 1px solid hsl(0, 0%, 88%);
-    border-bottom: 1px solid hsl(0, 0%, 100%);
+    opacity: 0.2;
+    border-top: 1px solid hsl(0, 0%, 0%);
+    border-bottom: 1px solid hsl(0, 0%, 0%);
 }
 
 .sub-unsub-message span::before,
