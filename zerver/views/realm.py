@@ -263,16 +263,6 @@ def update_realm(
     ):
         do_set_realm_authentication_methods(realm, authentication_methods, acting_user=user_profile)
         data["authentication_methods"] = authentication_methods
-    # The message_editing settings are coupled to each other, and thus don't fit
-    # into the do_set_realm_property framework.
-
-    message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
-    if message_content_edit_limit_seconds_raw is not None:
-        message_content_edit_limit_seconds = parse_message_content_edit_or_delete_limit(
-            message_content_edit_limit_seconds_raw,
-            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
-            setting_name="message_content_edit_limit_seconds",
-        )
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
