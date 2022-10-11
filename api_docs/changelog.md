@@ -26,6 +26,9 @@ format used by the Zulip server that they are interacting with.
   `PATCH /realm`: Added new `move_messages_within_stream_limit_seconds` setting.
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   `PATCH /realm`: Added new `move_messages_between_streams_limit_seconds` setting.
+* [`PATCH /messages/{message_id}`](/api/update-message): Time limit to edit
+  topics, for users other than administrators and moderators, can now be
+  configured using `move_messages_within_stream_limit_seconds` setting.
 
 **Feature level 161**
 
