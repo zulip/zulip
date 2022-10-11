@@ -416,6 +416,7 @@ export function initialize() {
     });
 
     message_list_tooltip([".recipient_bar_icon"], {
+        delay: LONG_HOVER_DELAY,
         onHidden(instance) {
             instance.destroy();
         },
