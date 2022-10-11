@@ -546,12 +546,8 @@ body.dark-theme {
         color: hsl(236, 33%, 80%);
     }
 
-    .narrow_to_compose_recipients:hover,
-    .expand_composebox_button:hover,
-    .collapse_composebox_button:hover,
     #message_edit_tooltip:hover,
-    .clear_search_button:hover,
-    .close:hover {
+    .clear_search_button:hover {
         color: hsl(0, 0%, 100%);
     }
 
