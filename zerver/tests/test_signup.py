@@ -43,6 +43,7 @@ from zerver.actions.invites import (
 )
 from zerver.actions.realm_settings import (
     do_deactivate_realm,
+    do_set_realm_authentication_methods,
     do_set_realm_property,
     do_set_realm_user_default_setting,
 )
@@ -114,7 +115,7 @@ from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_
 from zerver.views.development.registration import confirmation_key
 from zerver.views.invite import INVITATION_LINK_VALIDITY_MINUTES, get_invitee_emails_set
 from zerver.views.registration import accounts_home
-from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
+from zproject.backends import ExternalAuthDataDict, ExternalAuthResult, email_auth_enabled
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -809,6 +810,32 @@ class LoginTest(ZulipTestCase):
             f"Your account {user_profile.delivery_email} has been deactivated.", result
         )
         self.assert_logged_in_user_id(None)
+
+    def test_login_deactivate_user_error(self) -> None:
+        """
+        This is meant to test whether the error message signaled by the
+        is_deactivated is shown independently of whether the Email
+        backend is enabled.
+        """
+        user_profile = self.example_user("hamlet")
+        realm = user_profile.realm
+        self.assertTrue(email_auth_enabled(realm))
+
+        url = f"{realm.uri}/login/?" + urlencode({"is_deactivated": user_profile.delivery_email})
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response(
+            f"Your account {user_profile.delivery_email} has been deactivated.", result
+        )
+
+        auth_dict = realm.authentication_methods_dict()
+        auth_dict["Email"] = False
+        do_set_realm_authentication_methods(realm, auth_dict, acting_user=None)
+        result = self.client_get(url)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response(
+            f"Your account {user_profile.delivery_email} has been deactivated.", result
+        )
 
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
