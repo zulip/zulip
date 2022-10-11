@@ -86,6 +86,9 @@ export function set_up($input, pills, opts) {
             let matches = false;
             if (include_user_groups) {
                 matches = matches || group_matcher(query, item);
+                if (query.startsWith("@") && opts.prefer_user_groups) {
+                    matches = matches || group_matcher(query.trim().slice(1), item);
+                }
             }
 
             if (include_users) {
