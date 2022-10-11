@@ -269,11 +269,6 @@ def fetch_initial_state_data(
             Realm.POLICY_ADMINS_ONLY if user_profile is None else realm.delete_own_message_policy
         )
 
-        # TODO: Can we delete these lines?  They seem to be in property_types...
-        state["realm_message_content_edit_limit_seconds"] = realm.message_content_edit_limit_seconds
-        state[
-            "realm_message_content_delete_limit_seconds"
-        ] = realm.message_content_delete_limit_seconds
         state[
             "realm_community_topic_editing_limit_seconds"
         ] = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS
