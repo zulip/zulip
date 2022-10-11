@@ -57,7 +57,7 @@ export function show_user_list(message_id) {
                                     {
                                         num_of_people: users.length,
                                         "z-link": (content_html) =>
-                                            `<a href="/help/read-receipts">${content_html.join(
+                                            `<a href="/help/read-receipts" target="_blank" rel="noopener noreferrer">${content_html.join(
                                                 "",
                                             )}</a>`,
                                     },
