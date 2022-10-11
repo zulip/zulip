@@ -123,6 +123,17 @@ export const localstorage = function () {
             return undefined;
         },
 
+        getValueFromStorageEvent(event, key) {
+            if (event.key !== ls.formGetter(_data.VERSION, key)) {
+                return undefined;
+            }
+            const data = ls.parseJSON(event.newValue);
+            if (data) {
+                return data.data;
+            }
+            return undefined;
+        },
+
         set(name, data) {
             if (_data.VERSION !== undefined) {
                 ls.setData(_data.VERSION, name, data, _data.expires);

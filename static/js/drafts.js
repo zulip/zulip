@@ -35,11 +35,12 @@ function set_count(count) {
     ui_util.update_unread_count_in_dom($drafts_li, count);
 }
 
+// the key that the drafts are stored under.
+const KEY = "drafts";
+
 export const draft_model = (function () {
     const exports = {};
 
-    // the key that the drafts are stored under.
-    const KEY = "drafts";
     const ls = localstorage();
     ls.version = 1;
 
@@ -760,6 +761,13 @@ export function initialize() {
 
     window.addEventListener("beforeunload", () => {
         update_draft();
+    });
+    window.addEventListener("storage", (event) => {
+        const ls = localstorage();
+        const drafts = ls.getValueFromStorageEvent(event, KEY);
+        if (drafts !== undefined) {
+            set_count(Object.keys(drafts).length);
+        }
     });
 
     set_count(Object.keys(draft_model.get()).length);

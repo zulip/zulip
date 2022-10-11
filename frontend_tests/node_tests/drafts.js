@@ -186,8 +186,15 @@ test("snapshot_message", ({override_rewire}) => {
 });
 
 test("initialize", ({override_rewire}) => {
+    let beforeunload_listener_called = false;
+    let storage_listener_called = false;
     window.addEventListener = (event_name, f) => {
+        if (event_name === "storage") {
+            storage_listener_called = true;
+            return;
+        }
         assert.equal(event_name, "beforeunload");
+        beforeunload_listener_called = true;
         let called = false;
         override_rewire(drafts, "update_draft", () => {
             called = true;
@@ -200,6 +207,8 @@ test("initialize", ({override_rewire}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
+    assert.ok(beforeunload_listener_called);
+    assert.ok(storage_listener_called);
 });
 
 test("remove_old_drafts", () => {
