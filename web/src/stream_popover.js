@@ -680,8 +680,8 @@ export function register_stream_handlers() {
     // Mark all messages as read
     $("body").on("click", "#mark_all_messages_as_read", (e) => {
         hide_all_messages_popover();
-        unread_ops.mark_all_as_read();
         e.stopPropagation();
+        unread_ops.confirm_mark_all_as_read();
     });
 
     // Unstar all messages
