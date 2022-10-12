@@ -22,7 +22,7 @@ function make_message_view_header(filter) {
     const message_view_header = {};
     if (recent_topics_util.is_visible()) {
         return {
-            title: $t({defaultMessage: "Recent topics"}),
+            title: $t({defaultMessage: "Recent conversations"}),
             icon: "clock-o",
         };
     }

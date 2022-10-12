@@ -5,7 +5,7 @@ to the Zulip web app. You can also navigate to the default view via
 keyboard shortcuts.
 
 The default views available in Zulip are
-[Recent topics](/help/recent-topics) and
+[Recent conversations](/help/recent-conversations) and
 [All messages](/help/reading-strategies#all-messages). See
 [Reading strategies](/help/reading-strategies) for recommendations
 on how to use these views.
@@ -19,9 +19,9 @@ shortcut.
 
 Organization administrators can [set the default view for their
 organization](/help/configure-default-new-user-settings) to
-[**Recent topics**](/help/recent-topics) or
+[**Recent conversations**](/help/recent-conversations) or
 [**All messages**](/help/reading-strategies#all-messages).
-**Recent topics** is especially recommended for high-traffic
+**Recent conversations** is especially recommended for high-traffic
 organizations, and is configured by default.
 
 You can customize your personal default view regardless of
@@ -67,5 +67,5 @@ shortcut.
 ## Related articles
 
 * [Reading strategies](/help/reading-strategies)
-* [Recent topics](/help/recent-topics)
+* [Recent conversations](/help/recent-conversations)
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

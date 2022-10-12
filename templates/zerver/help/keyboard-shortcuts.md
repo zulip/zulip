@@ -161,16 +161,16 @@ below, and add more to your repertoire as needed.
   don't show up in any views (including All messages), and don't contribute
   to unread counts. Read more about [muting topics](/help/mute-a-topic).
 
-## Recent topics
+## Recent conversations
 
-* **View recent topics**: <kbd>T</kbd>
+* **View recent conversations**: <kbd>T</kbd>
 
-* **Search recent topics**: <kbd>T</kbd>
+* **Search recent conversations**: <kbd>T</kbd>
 
-* **Escape from recent topics search**: <kbd>Esc</kbd> or arrow keys
+* **Escape from recent conversations search**: <kbd>Esc</kbd> or arrow keys
 
-* **Navigate recent topics**: Use arrow keys or vim keys (<kbd>J</kbd>,
-  <kbd>K</kbd>, <kbd>L</kbd>, <kbd>H</kbd>).
+* **Navigate recent conversations**: Use arrow keys or vim keys
+  (<kbd>J</kbd>, <kbd>K</kbd>, <kbd>L</kbd>, <kbd>H</kbd>).
 
 Use <kbd>Enter</kbd> to engage with elements.
 

@@ -58,7 +58,7 @@ export const user_list_style_values = {
 export const default_view_values = {
     recent_topics: {
         code: "recent_topics",
-        description: $t({defaultMessage: "Recent topics"}),
+        description: $t({defaultMessage: "Recent conversations"}),
     },
     all_messages: {
         code: "all_messages",

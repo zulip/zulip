@@ -1,6 +1,6 @@
-# Recent topics
+# Recent conversations
 
-{!recent-topics.md!}
+{!recent-conversations.md!}
 
 !!! keyboard_tip ""
 

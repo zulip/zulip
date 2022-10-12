@@ -1,7 +1,7 @@
 # Mute a topic
 
 Messages from muted topics do not show up in either **All messages**
-or **Recent topics**, nor do they generate notifications (including
+or **Recent conversations**, nor do they generate notifications (including
 [alert word](/help/pm-mention-alert-notifications#alert-words)
 notifications), unless you are [mentioned](/help/mention-a-user-or-group).
 They also do not contribute to stream unread counts.
