@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -32,7 +33,7 @@ import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";
 
-function maybe_add_narrowed_messages(messages, msg_list, callback) {
+function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) {
     const ids = [];
 
     for (const elem of messages) {
@@ -80,15 +81,34 @@ function maybe_add_narrowed_messages(messages, msg_list, callback) {
             unread_ops.process_visible();
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error() {
-            // We might want to be more clever here
+        error(xhr) {
+            if (msg_list.narrowed && msg_list !== message_lists.current) {
+                return;
+            }
+            if (xhr.status === 400) {
+                // This narrow was invalid -- don't retry it, and don't display the message.
+                return;
+            }
+            if (attempt >= 5) {
+                // Too many retries -- bail out.  However, this means the `messages` are potentially
+                // missing from the search results view.  Since this is a very unlikely circumstance
+                // (Tornado is up, Django is down for 5 retries, user is in a search view that it
+                // cannot apply itself) and the failure mode is not bad (it will simply fail to
+                // include live updates of new matching messages), just log an error.
+                blueslip.error(
+                    "Failed to determine if new message matches current narrow, after 5 tries",
+                );
+                return;
+            }
+            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
+            const delay = Math.random() * 2 ** attempt * 2000;
             setTimeout(() => {
                 if (msg_list === message_lists.current) {
-                    // Don't actually try again if we unnarrowed
+                    // Don't actually try again if we un-narrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, callback);
+                    maybe_add_narrowed_messages(messages, msg_list, callback, attempt + 1);
                 }
-            }, 5000);
+            }, delay);
         },
     });
 }
