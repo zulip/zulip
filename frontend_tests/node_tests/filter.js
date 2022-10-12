@@ -1478,6 +1478,9 @@ test("navbar_helpers", () => {
     const group_pm_including_missing_person = [
         {operator: "pm-with", operand: "joe@example.com,STEVE@foo.com,sally@doesnotexist.com"},
     ];
+    // not common narrows, but used for browser title updates
+    const is_alerted = [{operator: "is", operand: "alerted"}];
+    const is_unread = [{operator: "is", operand: "unread"}];
 
     const test_cases = [
         {
@@ -1597,6 +1600,20 @@ test("navbar_helpers", () => {
                 "sally@doesnotexist.com",
             ]),
             redirect_url_with_search: "/#narrow/pm-with/undefined",
+        },
+        {
+            operator: is_alerted,
+            is_common_narrow: false,
+            icon: undefined,
+            title: "translated: Alerted messages",
+            redirect_url_with_search: "#",
+        },
+        {
+            operator: is_unread,
+            is_common_narrow: false,
+            icon: undefined,
+            title: "translated: Unread messages",
+            redirect_url_with_search: "#",
         },
     ];
 

@@ -706,6 +706,13 @@ export class Filter {
                 }
                 case "is-resolved":
                     return $t({defaultMessage: "Topics marked as resolved"});
+                // These cases return false for is_common_narrow, and therefore are not
+                // formatted in the message view header. They are used in narrow.js to
+                // update the browser title.
+                case "is-alerted":
+                    return $t({defaultMessage: "Alerted messages"});
+                case "is-unread":
+                    return $t({defaultMessage: "Unread messages"});
             }
         }
         /* istanbul ignore next */
