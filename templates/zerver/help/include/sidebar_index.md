@@ -77,7 +77,7 @@
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
-* [Recent topics](/help/recent-topics)
+* [Recent conversations](/help/recent-conversations)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Emoji reactions](/help/emoji-reactions)

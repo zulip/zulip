@@ -154,7 +154,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
                 )
                 + "\n\n",
                 _(
-                    "Check out [Recent topics](#recent_topics) to see what's happening! "
+                    "Check out [Recent conversations](#recent_topics) to see what's happening! "
                     'You can return to this conversation by clicking "Private messages" in the upper left.'
                 ),
             ]

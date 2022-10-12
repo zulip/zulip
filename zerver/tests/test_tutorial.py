@@ -98,7 +98,7 @@ class TutorialTests(ZulipTestCase):
             expected_response = (
                 "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
                 "They are light-weight subjects, very similar to the subject line of an email.\n\n"
-                "Check out [Recent topics](#recent_topics) to see what's happening! "
+                "Check out [Recent conversations](#recent_topics) to see what's happening! "
                 'You can return to this conversation by clicking "Private messages" in the upper left.'
             )
             self.assertEqual(most_recent_message(user).content, expected_response)

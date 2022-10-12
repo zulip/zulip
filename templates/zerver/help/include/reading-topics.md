@@ -1,8 +1,8 @@
 {start_tabs}
 
-{tab|via-recent-topics}
+{tab|via-recent-conversations}
 
-1. Open **Recent topics** from the left sidebar or by pressing the
+1. Open **Recent conversations** from the left sidebar or by pressing the
    <kbd>Esc</kbd> key.
 
 1. Click on the name of a topic in the **Topic** column.
@@ -16,7 +16,7 @@
 
 1. You can then click on another topic in the left sidebar, use the
    <kbd>N</kbd> key to go to the next unread topic, or go back to the
-   **Recent topics** view.
+   **Recent conversations** view.
 
 {tab|via-left-sidebar}
 

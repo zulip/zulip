@@ -67,10 +67,10 @@ discourse was gone,” Dan says.
 
 With Zulip, Dan has developed a comfortable workflow for catching up on
 conversations after being away. “When I start my day, I open up the [Recent
-topics](/help/recent-topics) page and work through the topics that have activity
-on-by-one,” Dan describes. More casual community participants can [skim the
-topic list](/help/reading-strategies) to find interesting discussions, and mark
-topics they don’t care about as read with a single click.
+topics](/help/recent-conversations) page and work through the topics that have
+activity on-by-one,” Dan describes. More casual community participants can [skim
+the topic list](/help/reading-strategies) to find interesting discussions, and
+mark topics they don’t care about as read with a single click.
 
 
 ## Powerful moderation tools help keep conversations on track

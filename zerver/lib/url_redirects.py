@@ -21,6 +21,7 @@ POLICY_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
 
 HELP_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
     # Add URL redirects for help center documentation here:
+    URLRedirect("/help/recent-topics", "/help/recent-conversations"),
     URLRedirect(
         "/help/add-custom-profile-fields",
         "/help/custom-profile-fields",
