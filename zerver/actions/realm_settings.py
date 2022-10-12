@@ -1,6 +1,6 @@
 import logging
 from email.headerregistry import Address
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, Tuple, Union
 
 import orjson
 from django.conf import settings
@@ -15,7 +15,10 @@ from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_delete_avatar_image, send_user_email_update_event
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.create_user import get_display_email_address
-from zerver.lib.message import update_first_visible_message_id
+from zerver.lib.message import (
+    parse_message_content_edit_or_delete_limit,
+    update_first_visible_message_id,
+)
 from zerver.lib.send_email import FromAddress, send_email_to_admins
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.user_counts import realm_user_count_by_role
@@ -116,6 +119,32 @@ def do_set_realm_property(
 
     if name == "waiting_period_threshold":
         update_users_in_full_members_system_group(realm, acting_user=acting_user)
+
+
+def parse_and_set_setting_value_if_required(
+    realm: Realm, setting_name: str, value: Union[int, str], *, acting_user: Optional[UserProfile]
+) -> Tuple[Optional[int], bool]:
+    parsed_value = parse_message_content_edit_or_delete_limit(
+        value,
+        Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
+        setting_name=setting_name,
+    )
+
+    setting_value_changed = False
+    if parsed_value is None and getattr(realm, setting_name) is not None:
+        # We handle "None" here separately, since in the update_realm view
+        # function, do_set_realm_property is called only if setting value is
+        # not "None". For values other than "None", the view function itself
+        # sets the value by calling "do_set_realm_property".
+        do_set_realm_property(
+            realm,
+            setting_name,
+            parsed_value,
+            acting_user=acting_user,
+        )
+        setting_value_changed = True
+
+    return parsed_value, setting_value_changed
 
 
 def do_set_realm_authentication_methods(

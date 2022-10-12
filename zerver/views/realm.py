@@ -17,12 +17,12 @@ from zerver.actions.realm_settings import (
     do_set_realm_property,
     do_set_realm_signup_notifications_stream,
     do_set_realm_user_default_setting,
+    parse_and_set_setting_value_if_required,
 )
 from zerver.decorator import require_realm_admin, require_realm_owner
 from zerver.forms import check_subdomain_available as check_subdomain
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.message import parse_message_content_edit_or_delete_limit
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.retention import parse_message_retention_days
@@ -197,47 +197,32 @@ def update_realm(
 
     message_content_delete_limit_seconds: Optional[int] = None
     if message_content_delete_limit_seconds_raw is not None:
-        message_content_delete_limit_seconds = parse_message_content_edit_or_delete_limit(
+        (
+            message_content_delete_limit_seconds,
+            setting_value_changed,
+        ) = parse_and_set_setting_value_if_required(
+            realm,
+            "message_content_delete_limit_seconds",
             message_content_delete_limit_seconds_raw,
-            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
-            setting_name="message_content_delete_limit_seconds",
+            acting_user=user_profile,
         )
-        if (
-            message_content_delete_limit_seconds is None
-            and realm.message_content_delete_limit_seconds is not None
-        ):
-            # We handle 'None' here separately, since in the loop below,
-            # do_set_realm_property is called only if setting value is
-            # not None.
-            do_set_realm_property(
-                realm,
-                "message_content_delete_limit_seconds",
-                message_content_delete_limit_seconds,
-                acting_user=user_profile,
-            )
+
+        if setting_value_changed:
             data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
 
     message_content_edit_limit_seconds: Optional[int] = None
     if message_content_edit_limit_seconds_raw is not None:
-        message_content_edit_limit_seconds = parse_message_content_edit_or_delete_limit(
+        (
+            message_content_edit_limit_seconds,
+            setting_value_changed,
+        ) = parse_and_set_setting_value_if_required(
+            realm,
+            "message_content_edit_limit_seconds",
             message_content_edit_limit_seconds_raw,
-            Realm.MESSAGE_CONTENT_EDIT_OR_DELETE_LIMIT_SPECIAL_VALUES_MAP,
-            setting_name="message_content_edit_limit_seconds",
+            acting_user=user_profile,
         )
 
-        if (
-            message_content_edit_limit_seconds is None
-            and realm.message_content_edit_limit_seconds is not None
-        ):
-            # We handle 'None' here separately, since in the loop below,
-            # do_set_realm_property is called only if setting value is
-            # not None.
-            do_set_realm_property(
-                realm,
-                "message_content_edit_limit_seconds",
-                message_content_edit_limit_seconds,
-                acting_user=user_profile,
-            )
+        if setting_value_changed:
             data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
 
     # The user of `locals()` here is a bit of a code smell, but it's
