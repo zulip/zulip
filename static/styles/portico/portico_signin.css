@@ -431,7 +431,7 @@ html {
     .alert {
         &:not(.alert-info) {
             padding: 0;
-            margin-bottom: 0;
+            margin-bottom: 5px;
             font-weight: 600;
             font-size: 0.7em;
             line-height: 1.2;
