@@ -33,45 +33,45 @@ Receive Zabbix notifications in Zulip!
 
 1. Click the **Pencil** to edit the script and replace any existing content with the below script:
 
-         try {
-            Zabbix.Log(4, 'zulip webhook script value='+value);
+       try {
+           Zabbix.Log(4, 'zulip webhook script value='+value);
 
-            var result = {
-               'tags': {
-                     'endpoint': 'zulip'
-               }
-            },
-            params = JSON.parse(value),
-            req = new CurlHttpRequest(),
-            payload = {},
-            resp;
+           var result = {
+              'tags': {
+                    'endpoint': 'zulip'
+              }
+           },
+           params = JSON.parse(value),
+           req = new HttpRequest(),
+           payload = {},
+           resp;
 
-            req.AddHeader('Content-Type: application/json');
+           req.addHeader('Content-Type: application/json');
 
-            payload.hostname = params.hostname;
-            payload.severity = params.severity;
-            payload.status = params.status;
-            payload.item = params.item;
-            payload.trigger = params.trigger;
-            payload.link = params.link;
-            resp = req.Post(params.zulip_endpoint,
-               JSON.stringify(payload))
+           payload.hostname = params.hostname;
+           payload.severity = params.severity;
+           payload.status = params.status;
+           payload.item = params.item;
+           payload.trigger = params.trigger;
+           payload.link = params.link;
+           resp = req.post(params.zulip_endpoint,
+              JSON.stringify(payload))
 
-            if (req.Status() != 200) {
-               throw 'Response code: '+req.Status();
-            }
+           if (req.getStatus() != 200) {
+              throw 'Response code: '+req.getStatus();
+           }
 
-            resp = JSON.parse(resp);
-            result.tags.issue_id = resp.id;
-            result.tags.issue_key = resp.key;
-         } catch (error) {
-            Zabbix.Log(4, 'zulip issue creation failed json : '+JSON.stringify(payload));
-            Zabbix.Log(4, 'zulip issue creation failed : '+error);
+           resp = JSON.parse(resp);
+           result.tags.issue_id = resp.id;
+           result.tags.issue_key = resp.key;
+        } catch (error) {
+           Zabbix.Log(4, 'zulip issue creation failed json : '+JSON.stringify(payload));
+           Zabbix.Log(4, 'zulip issue creation failed : '+error);
 
-            result = {};
-         }
+           result = {};
+        }
 
-         return JSON.stringify(result);
+        return JSON.stringify(result);
 
 1. Click **Apply**. Click **Message Templates**. Click **Add**. Select **Problem**.
 
