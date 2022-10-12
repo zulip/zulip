@@ -3825,9 +3825,11 @@ def get_user_by_id_in_realm_including_cross_realm(
 
 @cache_with_key(realm_user_dicts_cache_key, timeout=3600 * 24 * 7)
 def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
-    return UserProfile.objects.filter(
-        realm_id=realm_id,
-    ).values(*realm_user_dict_fields)
+    return list(
+        UserProfile.objects.filter(
+            realm_id=realm_id,
+        ).values(*realm_user_dict_fields)
+    )
 
 
 @cache_with_key(active_user_ids_cache_key, timeout=3600 * 24 * 7)
@@ -3879,7 +3881,7 @@ def get_source_profile(email: str, realm_id: int) -> Optional[UserProfile]:
 
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600 * 24 * 7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
-    return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
+    return list(UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields))
 
 
 def is_cross_realm_bot_email(email: str) -> bool:
