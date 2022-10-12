@@ -265,14 +265,14 @@ msgid ""
 "\n"
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n                        "
 
 #: templates/500.html:28
 msgid ""
 "\n"
 "                        This page will reload automatically when service is restored.\n"
 "                        "
-msgstr ""
+msgstr "\n                        This page will reload automatically when service is restored.\n                        "
 
 #: templates/500.html:32
 #, python-format
@@ -280,7 +280,7 @@ msgid ""
 "\n"
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
-msgstr ""
+msgstr "\n                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n                            "
 
 #: templates/500.html:36
 #, python-format
@@ -289,7 +289,7 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
 "                            this server's administrators</a> for support.\n"
 "                            "
-msgstr ""
+msgstr "\n                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n                            this server's administrators</a> for support.\n                            "
 
 #: templates/500.html:44
 #, python-format
@@ -298,7 +298,7 @@ msgid ""
 "                            If you administer this server, you may want to check out the\n"
 "                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                            "
-msgstr ""
+msgstr "\n                            If you administer this server, you may want to check out the\n                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n                            "
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -319,27 +319,27 @@ msgstr "Zulip analytics for %(target_name)s"
 
 #: templates/analytics/stats.html:25
 msgid "Organization summary"
-msgstr ""
+msgstr "Organisation summary"
 
 #: templates/analytics/stats.html:27
 msgid "Number of users"
-msgstr ""
+msgstr "Number of users"
 
 #: templates/analytics/stats.html:28
 msgid "Users active during the last 15 days"
-msgstr ""
+msgstr "Users active during the last 15 days"
 
 #: templates/analytics/stats.html:29
 msgid "Total number of messages"
-msgstr ""
+msgstr "Total number of messages"
 
 #: templates/analytics/stats.html:30
 msgid "Number of messages in the last 30 days"
-msgstr ""
+msgstr "Number of messages in the last 30 days"
 
 #: templates/analytics/stats.html:31
 msgid "File storage in use"
-msgstr ""
+msgstr "File storage in use"
 
 #: templates/analytics/stats.html:36
 msgid "Active users"
@@ -1627,21 +1627,21 @@ msgstr "This email does not include message content because you have disabled <a
 #: templates/zerver/emails/missed_message.source.html:29
 #: templates/zerver/emails/missed_message.txt:25
 msgid "You are receiving this because you were personally mentioned."
-msgstr ""
+msgstr "You are receiving this because you were personally mentioned."
 
 #: templates/zerver/emails/missed_message.source.html:31
 #: templates/zerver/emails/missed_message.txt:27
 #, python-format
 msgid ""
 "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
-msgstr ""
+msgstr "You are receiving this because @%(mentioned_user_group_name)s was mentioned."
 
 #: templates/zerver/emails/missed_message.source.html:33
 #: templates/zerver/emails/missed_message.txt:29
 #, python-format
 msgid ""
 "You are receiving this because everyone was mentioned in #%(stream_name)s."
-msgstr ""
+msgstr "You are receiving this because everyone was mentioned in #%(stream_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:35
 #: templates/zerver/emails/missed_message.txt:31
@@ -1649,7 +1649,7 @@ msgstr ""
 msgid ""
 "You are receiving this because you have email notifications enabled for "
 "#%(stream_name)s."
-msgstr ""
+msgstr "You are receiving this because you have email notifications enabled for #%(stream_name)s."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
@@ -1657,21 +1657,21 @@ msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "%(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email "
 "preferences</a>."
-msgstr ""
+msgstr "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in %(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr ""
+msgstr "<a href=\"%(narrow_url)s\">View or reply in %(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
 
 #: templates/zerver/emails/missed_message.source.html:42
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr ""
+msgstr "<a href=\"%(narrow_url)s\">Reply in %(realm_name)s Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
 
 #: templates/zerver/emails/missed_message.source.html:44
 #, python-format
@@ -1714,17 +1714,17 @@ msgstr "\nThis email does not include message content because you have disabled 
 #: templates/zerver/emails/missed_message.txt:35
 #, python-format
 msgid "Reply to this email directly, or view it in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "Reply to this email directly, or view it in %(realm_name)s Zulip:"
 
 #: templates/zerver/emails/missed_message.txt:39
 #, python-format
 msgid "View or reply in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "View or reply in %(realm_name)s Zulip:"
 
 #: templates/zerver/emails/missed_message.txt:43
 #, python-format
 msgid "Reply in %(realm_name)s Zulip:"
-msgstr ""
+msgstr "Reply in %(realm_name)s Zulip:"
 
 #: templates/zerver/emails/missed_message.txt:47
 msgid ""
@@ -4351,7 +4351,7 @@ msgstr "External account"
 
 #: zerver/models.py:4514
 msgid "Pronouns"
-msgstr ""
+msgstr "Pronouns"
 
 #: zerver/signals.py:95
 msgid "Unknown IP address"
@@ -4464,7 +4464,7 @@ msgstr "DevAuthBackend not enabled."
 
 #: zerver/views/events_register.py:105 zerver/views/events_register.py:109
 msgid "Invalid '{}' parameter for anonymous request"
-msgstr ""
+msgstr "Invalid '{}' parameter for anonymous request"
 
 #: zerver/views/hotspots.py:19
 msgid "Unknown hotspot: {}"

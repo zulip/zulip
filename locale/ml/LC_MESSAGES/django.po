@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-10 15:56+0000\n"
+"POT-Creation-Date: 2022-10-12 19:50+0000\n"
 "PO-Revision-Date: 2021-05-27 07:08+0000\n"
 "Last-Translator: Akash Nimare <svnitakash@gmail.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/"
@@ -442,10 +442,6 @@ msgstr ""
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr ""
-
-#: templates/analytics/stats.html:147
-msgid "Analytics documentation"
 msgstr ""
 
 #: templates/confirmation/confirm_email_change.html:4
@@ -2930,65 +2926,65 @@ msgstr ""
 msgid "{user} has marked this topic as unresolved."
 msgstr ""
 
-#: zerver/actions/message_edit.py:842
+#: zerver/actions/message_edit.py:847
 #, python-brace-format
 msgid "This topic was moved to {new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:846
+#: zerver/actions/message_edit.py:851
 #, python-brace-format
 msgid "A message was moved from this topic to {new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:850
+#: zerver/actions/message_edit.py:855
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved from this topic to "
 "{new_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:857
+#: zerver/actions/message_edit.py:879
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:861
+#: zerver/actions/message_edit.py:883
 #, python-brace-format
 msgid "A message was moved here from {old_location} by {user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:865
+#: zerver/actions/message_edit.py:887
 #, python-brace-format
 msgid ""
 "{changed_messages_count} messages were moved here from {old_location} by "
 "{user}."
 msgstr ""
 
-#: zerver/actions/message_edit.py:900
+#: zerver/actions/message_edit.py:922
 msgid "Your organization has turned off message editing"
 msgstr ""
 
-#: zerver/actions/message_edit.py:916 zerver/actions/message_edit.py:921
+#: zerver/actions/message_edit.py:938 zerver/actions/message_edit.py:943
 msgid "You don't have permission to edit this message"
 msgstr ""
 
-#: zerver/actions/message_edit.py:932
+#: zerver/actions/message_edit.py:954
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/actions/message_edit.py:947
+#: zerver/actions/message_edit.py:969
 msgid "The time limit for editing this message's topic has passed"
 msgstr ""
 
-#: zerver/actions/message_edit.py:981 zerver/actions/message_send.py:1495
+#: zerver/actions/message_edit.py:1003 zerver/actions/message_send.py:1495
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr ""
 
-#: zerver/actions/message_edit.py:990
+#: zerver/actions/message_edit.py:1012
 msgid "You don't have permission to move this message"
 msgstr ""
 
-#: zerver/actions/message_edit.py:996
+#: zerver/actions/message_edit.py:1018
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
@@ -4736,7 +4732,7 @@ msgstr ""
 msgid "Invalid giphy_rating {}"
 msgstr ""
 
-#: zerver/views/realm.py:322
+#: zerver/views/realm.py:312
 #, fuzzy
 #| msgid "Deactivated organization"
 msgid "Must be a demo organization."

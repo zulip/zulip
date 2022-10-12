@@ -292,14 +292,14 @@ msgid ""
 "\n"
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Dein Zulip-Chat kann nicht geladen werden, da der Server technische Schwierigkeiten hat.\n                        "
 
 #: templates/500.html:28
 msgid ""
 "\n"
 "                        This page will reload automatically when service is restored.\n"
 "                        "
-msgstr ""
+msgstr "\n                        Diese Seite wird automatisch neu geladen, wenn der Dienst wieder verfügbar ist.\n                        "
 
 #: templates/500.html:32
 #, python-format
@@ -307,7 +307,7 @@ msgid ""
 "\n"
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
-msgstr ""
+msgstr "\n                            Inzwischen kannst du den <a href=\"mailto:%(support_email)s\">Zulip-Support kontaktieren</a>.\n                            "
 
 #: templates/500.html:36
 #, python-format
@@ -316,7 +316,7 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
 "                            this server's administrators</a> for support.\n"
 "                            "
-msgstr ""
+msgstr "\n                            Inzwischen kannst du <a href=\"mailto:%(support_email)s\">den Administrator dieses Servers kontaktieren</a>, um Unterstützung anzufragen.\n                            "
 
 #: templates/500.html:44
 #, python-format
@@ -2672,7 +2672,7 @@ msgid ""
 "Please double-check that you have the full URL and try again, or <a "
 "href=\"mailto:%(support_email)s\">email us</a> and we'll get this squared "
 "away!"
-msgstr ""
+msgstr "Bitte überprüfe nochmals, dass deine URL vollständig ist, und versuche es noch einmal, oder <a href=\"mailto:%(support_email)s\">sende uns eine E-Mail</a> und wir finden eine Lösung!"
 
 #: templates/zerver/unsubscribe_success.html:4
 #: templates/zerver/unsubscribe_success.html:14
@@ -3505,11 +3505,11 @@ msgstr "Zugang verweigert"
 
 #: zerver/lib/external_accounts.py:36
 msgid "Twitter username"
-msgstr ""
+msgstr "Twitter-Benutzername"
 
 #: zerver/lib/external_accounts.py:42
 msgid "GitHub username"
-msgstr ""
+msgstr "GitHub-Benutzername"
 
 #: zerver/lib/external_accounts.py:71
 msgid "Custom external account must define URL pattern"
@@ -3587,7 +3587,7 @@ msgstr "Finanzen"
 
 #: zerver/lib/integrations.py:49
 msgid "Human resources"
-msgstr ""
+msgstr "Personal"
 
 #: zerver/lib/integrations.py:50
 msgid "Marketing"
@@ -3599,7 +3599,7 @@ msgstr "Verschiedenes"
 
 #: zerver/lib/integrations.py:52
 msgid "Monitoring"
-msgstr ""
+msgstr "Monitoring"
 
 #: zerver/lib/integrations.py:53
 msgid "Project management"
@@ -4461,7 +4461,7 @@ msgstr "Feld muss mindestens eine Auswahloption haben."
 
 #: zerver/views/custom_profile_fields.py:84
 msgid "Field type not supported for display in profile summary."
-msgstr ""
+msgstr "Feldtyp kann in der Profilzusammenfassung nicht angezeigt werden."
 
 #: zerver/views/custom_profile_fields.py:113
 msgid "Invalid field type."

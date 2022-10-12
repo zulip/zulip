@@ -1197,7 +1197,7 @@ msgstr "メール設定を管理"
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 msgid "Unsubscribe from marketing emails"
-msgstr "広告メールを購読解除"
+msgstr "広告メールを受け取らない"
 
 #: templates/zerver/emails/deactivate.source.html:8
 #, python-format
@@ -1233,7 +1233,7 @@ msgstr "ここをクリックしてZulipにログイン"
 
 #: templates/zerver/emails/digest.source.html:40
 msgid "Unsubscribe from digest emails"
-msgstr "ダイジェストメールを購読解除"
+msgstr "ダイジェストメールを受け取らない"
 
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
@@ -1252,7 +1252,7 @@ msgstr "メール設定を管理"
 
 #: templates/zerver/emails/digest.txt:19
 msgid "Unsubscribe from digest emails:"
-msgstr "ダイジェストメールを購読解除"
+msgstr "ダイジェストメールを受け取らない"
 
 #: templates/zerver/emails/email_base_default.source.html:31
 #: templates/zerver/emails/email_base_marketing.source.html:31
@@ -1506,7 +1506,7 @@ msgstr "ありがとう、"
 
 #: templates/zerver/emails/followup_day2.source.html:34
 msgid "Unsubscribe from welcome emails"
-msgstr "ウエルカムメールを購読解除"
+msgstr "ウエルカムメールを受け取らない"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
@@ -1533,7 +1533,7 @@ msgstr "試しにいきましょう"
 
 #: templates/zerver/emails/followup_day2.txt:22
 msgid "Unsubscribe from welcome emails:"
-msgstr "ウエルカムメールを購読解除："
+msgstr "ウエルカムメールを受け取らない："
 
 #: templates/zerver/emails/invitation.source.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2963,7 +2963,7 @@ msgstr "あなたのBot「{bot_identity}」がストリーム「{stream_name}」
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "あなたのBot「{bot_identity}」がストリームID「{stream_name}」にメッセージを送信しようとしました。ストリームは存在しますが購読者がいません。"
+msgstr "あなたのBot「{bot_identity}」がストリームID「{stream_name}」にメッセージを送信しようとしました。ストリームは存在しますがフォロワーがいません。"
 
 #: zerver/actions/message_send.py:1337
 msgid "Private messages are disabled in this organization."
@@ -3507,7 +3507,7 @@ msgstr "ストリームでキャッチアップ"
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "ストリームに送信されたメッセージはそのストリームを購読している人全員に見られます。以下のストリームのどれかをクリックしてみましょう。"
+msgstr "送信されたメッセージは、そのストリームのすべてのフォロワーが閲覧できます。以下のいずれかのストリームをクリックしてみましょう。"
 
 #: zerver/lib/hotspots.py:20
 msgid "Topics"
@@ -3681,7 +3681,7 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:145
 msgid "[Browse and subscribe to streams](#streams/all)."
-msgstr ""
+msgstr "[ストリームを閲覧してフォロー](#streams/all)."
 
 #: zerver/lib/onboarding.py:152
 msgid ""
@@ -3919,7 +3919,7 @@ msgstr "ストリーム（たち）（{}）が存在しません"
 
 #: zerver/lib/streams.py:734 zerver/views/streams.py:329
 msgid "Web-public streams are not enabled."
-msgstr ""
+msgstr "Web公開ストリームは利用できません"
 
 #: zerver/lib/streams.py:763
 msgid "Default stream group with id '{}' does not exist."
@@ -3927,7 +3927,7 @@ msgstr "IDが「{}」のデフォルトストリームグループは存在し�
 
 #: zerver/lib/string_validation.py:38
 msgid "Stream name can't be empty!"
-msgstr ""
+msgstr "ストリーム名を入力してください"
 
 #: zerver/lib/string_validation.py:42
 msgid "Stream name too long (limit: {} characters)."
@@ -3947,11 +3947,11 @@ msgstr ""
 
 #: zerver/lib/subscription_info.py:296
 msgid "Subscriber data is not available for this stream"
-msgstr "購読者データーはこのストリームで利用できません"
+msgstr "このストリームではフォロワーデータを利用できません"
 
 #: zerver/lib/subscription_info.py:303
 msgid "Unable to retrieve subscribers for private stream"
-msgstr "プライベートストリームの購読者は取得できません"
+msgstr "プライベートストリームのフォロワーは取得できません"
 
 #: zerver/lib/upload.py:128 zerver/lib/upload.py:144 zerver/lib/upload.py:238
 msgid "Could not decode image; did you upload an image file?"
@@ -3967,7 +3967,7 @@ msgstr ""
 
 #: zerver/lib/upload.py:177
 msgid "Unknown animated image format."
-msgstr ""
+msgstr "不明なアニメーション画像形式です"
 
 #: zerver/lib/upload.py:373
 msgid "Upload would exceed your organization's upload quota."
@@ -4745,12 +4745,12 @@ msgstr "なにもしません。\"add\"か\"delete\"のうち一つ以上を指�
 #: zerver/views/streams.py:504
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr "{user_full_name} は{stream_name}であなたを購読しました"
+msgstr "{user_full_name} が、あなたを{stream_name}のフォロワーに追加しました。"
 
 #: zerver/views/streams.py:510
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr "{user_full_name} は以下のストリームであなたを購読しました："
+msgstr "{user_full_name}があなたを以下のストリームのフォロワーに追加しました："
 
 #: zerver/views/streams.py:583
 #, python-brace-format
@@ -4786,7 +4786,7 @@ msgstr "不明なサブスクリプションプロパティー：{}"
 
 #: zerver/views/streams.py:990
 msgid "Not subscribed to stream id {}"
-msgstr "ストリームID{}を購読していません"
+msgstr "ストリームID{}をフォローしていません"
 
 #: zerver/views/submessage.py:38
 msgid "Invalid json for submessage"

@@ -2992,7 +2992,7 @@ msgstr "Vlastní obrázeček s tímto názvem již existuje."
 msgid ""
 "{user} changed the [access permissions](/help/stream-permissions) for this "
 "stream from **{old_policy}** to **{new_policy}**."
-msgstr ""
+msgstr "{user} změnil [přístupová oprávnění](/help/stream-permissions) k tomuto kanálu z **{old_policy}** na **{new_policy}**."
 
 #: zerver/actions/streams.py:1011
 #, python-brace-format
@@ -3001,7 +3001,7 @@ msgid ""
 "\n"
 "* **Old permissions**: {old_policy}.\n"
 "* **New permissions**: {new_policy}.\n"
-msgstr ""
+msgstr "{user} změnil [odesílací oprávnění](/help/stream-sending-policy) pro tento kanál:\n\n* **Stará oprávnění**: {old_policy}.\n* **Nová oprávnění**: {new_policy}.\n"
 
 #: zerver/actions/streams.py:1146
 #, python-brace-format
@@ -3900,7 +3900,7 @@ msgstr "Zvolte, prosím, jedno z: 'stream' nebo 'stream_id'."
 #: zerver/lib/streams.py:311 zerver/lib/streams.py:330
 #: zerver/lib/streams.py:413 zerver/lib/streams.py:479
 msgid "Invalid stream ID"
-msgstr ""
+msgstr "Neplatné ID kanálu"
 
 #: zerver/lib/streams.py:455
 msgid "Stream name '{}' is already taken."
