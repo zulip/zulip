@@ -12,7 +12,7 @@ import * as user_group_settings_ui from "./user_groups_settings_ui";
 class UserGroupMembershipError {
     report_no_members_to_user_group() {
         $("#user_group_membership_error").text(
-            $t({defaultMessage: "You cannot create a user_group with no members!"}),
+            $t({defaultMessage: "You cannot create a user group with no members!"}),
         );
         $("#user_group_membership_error").show();
     }

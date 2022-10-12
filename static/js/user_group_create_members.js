@@ -101,7 +101,6 @@ export function build_widgets() {
                 user_id,
                 full_name: user.full_name,
                 is_current_user: user_id === current_user_id,
-                disabled: user_id === current_user_id,
             };
             return render_new_user_group_user(item);
         },
