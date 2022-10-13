@@ -58,8 +58,9 @@ log][commit-log] for an up-to-date list of raw changes.
   profile.
 - Redesigned several organization settings pages to have more
   consistent design.
-- Redesigned the footer for self-hosted Zulip servers to no longer
-  link to zulip.com marketing pages.
+- Redesigned the footer for self-hosted Zulip servers. The footer is
+  now just has a few key links, rather than being almost identical to
+  the footer for the zulip.com website.
 - Redesigned the 500 error pages for self-hosted Zulip servers to be
   clearer and link to the Zulip server troubleshooting guide.
 - Redesigned the interface for configuring message editing and
@@ -92,9 +93,10 @@ log][commit-log] for an up-to-date list of raw changes.
 - Changed various icons to be more intuitive. The bell-based icon for
   muted topics has been replaced by a more standard speaker-based icon.
 - Reworked how a new user's language is set to prefer the browser's
-  configured language over the organization default language, which
-  has been renamed to reflect its remaining role as the language used
-  for automated notifications visible to many users.
+  configured language over the organization's configured
+  language. This organization-level setting has been renamed to
+  "Language for automated messages and invitation emails" to reflect
+  what it actually does following this change.
 - The Drafts panel now prioritizes drafts matching the current view.
 - New automated notification to the "stream events" topic when
   changing a stream's privacy settings.
@@ -110,11 +112,11 @@ log][commit-log] for an up-to-date list of raw changes.
 - Improved Python static type-checking to make use of Django stubs for
   `mypy`, fixing many minor bugs in the process.
 - Improved RealmAuditLog to cover several previously unauditable changes.
-- Improved the soft reactivation user experience; users who receive an
-  email notification or push notification because of a personal
-  mention or a private message are automatically soft reactivated at
-  that time, so that they are usually already soft-reactivated by the
-  time they visit Zulip after seeing the notification.
+- Improved the experience for users who have not logged in for a long
+  time, and receive an email or push notification about a private
+  message or personal mention. These users are now automatically soft
+  reactivated at the time of the notification, for a smoother
+  experience when they log in.
 - Improved user deactivation modal to provide details about bots and
   invitations that will be disabled.
 - Improve matching algorithm for left sidebar stream filtering.
@@ -136,8 +138,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed the app's main loading page to not suggest reloading until
   several seconds have passed.
 - Fixed a bug where public streams imported from other chat systems
-  could incorrectly be configured as without shared history, a
-  configuration not otherwise possible in Zulip.
+  could incorrectly be configured as public streams without shared
+  history, a configuration not otherwise possible in Zulip.
 - Fixed several subtle bugs involving editing custom profile field
   configuration.
 - Fixed several bugs involving compose box keyboard shortcuts.
