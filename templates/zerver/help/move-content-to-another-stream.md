@@ -26,11 +26,11 @@ destination streams.
 
 1. Select the destination stream for the topic from the streams dropdown list.
 
-1. (optional) Change the topic.
+1. _(optional)_ Change the topic name.
 
 1. Toggle whether automated notices should be sent.
 
-1. Click **Confirm**.
+1. Click **Confirm** to move the topic to another stream.
 
 
 !!! warn ""
@@ -52,13 +52,13 @@ destination streams.
 
 1. Select the destination stream for the message from the streams dropdown list.
 
-1. (optional) Change the topic.
-
-1. Toggle whether automated notices should be sent.
+1. _(optional)_ Change the topic name.
 
 1. From the dropdown menu, select which messages to move.
 
-1. Click **Save**.
+1. Toggle whether automated notices should be sent.
+
+1. Click **Confirm** to move the selected content to another stream.
 
 
 !!! warn ""
