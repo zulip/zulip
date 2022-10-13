@@ -363,7 +363,8 @@ else:
 
 # Perform system checks -- including database checks, so we don't need
 # to do them when we do migrations, below.
-subprocess.check_call(["./manage.py", "check", "--database", "default"], preexec_fn=su_to_zulip)
+if not args.skip_checks:
+    subprocess.check_call(["./manage.py", "check", "--database", "default"], preexec_fn=su_to_zulip)
 
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves
@@ -465,7 +466,7 @@ else:
         )
 
     logging.info("Restarting Zulip...")
-    start_args = []
+    start_args = ["--skip-checks"]
     if migrations_needed:
         start_args.append("--fill-cache")
     if IS_SERVER_UP:

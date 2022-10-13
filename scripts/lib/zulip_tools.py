@@ -645,6 +645,9 @@ def deport(netloc: str) -> str:
 def start_arg_parser(action: str, add_help: bool = False) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=add_help)
     parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
+    parser.add_argument(
+        "--skip-checks", action="store_true", help="Skip syntax and database checks"
+    )
     if action == "restart":
         parser.add_argument(
             "--less-graceful",
