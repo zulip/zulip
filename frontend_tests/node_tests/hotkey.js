@@ -80,7 +80,7 @@ mock_esm("../../static/js/recent_topics_util", {
     is_in_focus: () => false,
 });
 
-mock_esm("../../static/js/stream_popover", {
+const stream_popover = mock_esm("../../static/js/stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
     all_messages_popped: () => false,
@@ -262,7 +262,7 @@ function test_normal_typing() {
 run_test("allow normal typing when processing text", ({override, override_rewire}) => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped("bfmoyz");
+    assert_unmapped("bfoyz");
     assert_unmapped("BEFHILNOQTWXYZ");
 
     // All letters should return false if we are composing text.
@@ -336,7 +336,7 @@ run_test("modal open", ({override}) => {
     test_normal_typing();
 });
 
-run_test("misc", () => {
+run_test("misc", ({override}) => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsSuvi:GM";
 
@@ -370,6 +370,12 @@ run_test("misc", () => {
     assert_mapping(":", reactions, "open_reactions_popover", true);
     assert_mapping(">", compose_actions, "quote_and_reply");
     assert_mapping("e", message_edit, "start");
+
+    override(message_edit, "can_move_message", () => true);
+    assert_mapping("m", stream_popover, "build_move_topic_to_stream_popover");
+
+    override(message_edit, "can_move_message", () => false);
+    assert_unmapped("m");
 });
 
 run_test("lightbox overlay open", ({override}) => {
