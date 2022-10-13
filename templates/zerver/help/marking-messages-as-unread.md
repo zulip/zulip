@@ -1,24 +1,18 @@
 # Marking messages as unread
 
-Zulip offers tools to manually mark a series of messages as unread. If you want
-to remember to read a conversation later, you can mark the messages in that
-conversation as unread. When messages get marked as unread, a line will appear
-along the left side of those messages, and your name will be removed from the
-list of read receipts.
+Zulip lets you manually mark messages as unread, which makes it easy to return
+to a conversation later.
+
+Specifically, Zulip offers a **Mark as unread from here** option, which lets you
+mark the selected message and all newer messages in your current view as unread.
 
 ## Mark as unread from selected message
-
-Selecting this option on a message tells Zulip that you want the messages in
-that conversation to be added to your queue of unread messages.
 
 {start_tabs}
 
 {tab|desktop-web}
 
-1. Select a stream, topic, or **All messages** in the left sidebar.
-
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
-   to the right of the message where you want to begin marking as unread.
+{!message-actions-menu.md!}
 
 1. Click **Mark as unread from here**.
 
