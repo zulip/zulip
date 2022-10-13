@@ -4,7 +4,9 @@ either `&only_events=["event_a","event_b"]` or `&exclude_events=["event_a","even
 
 Below are the events that {{ integration_display_name }} bot supports:
 
-{% for event_type in all_event_types %} `{{ event_type }}` {% endfor %}
+{% set comma = joiner(", ") %}
+
+{% for event_type in all_event_types %} {{- comma() -}} `{{ event_type }}` {% endfor %}
 
 Note that you can also use UNIX-style wildcards like `*` to include
 multiple events. E.g., `test*` matches every event that starts with
