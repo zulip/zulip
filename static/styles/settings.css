@@ -355,6 +355,10 @@ td .button {
     }
 }
 
+.user_role {
+    min-width: 95px;
+}
+
 .button,
 .input-group {
     margin: 0 0 20px;
