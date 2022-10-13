@@ -11,6 +11,7 @@ import * as condense from "./condense";
 import {Filter} from "./filter";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_helper from "./message_helper";
@@ -990,7 +991,7 @@ function handle_post_narrow_deactivate_processes() {
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
     message_view_header.initialize();
-    narrow_title = "All messages";
+    narrow_title = $t({defaultMessage: "All messages"});
     notifications.redraw_title();
     message_scroll.update_top_of_narrow_notices(message_lists.home);
 }
