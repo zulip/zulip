@@ -101,6 +101,19 @@ class UserMessageNotificationsData:
     # For these functions, acting_user_id is the user sent a message
     # (or edited a message) triggering the event for which we need to
     # determine notifiability.
+    def trivially_should_not_notify(self, acting_user_id: int) -> bool:
+        """Common check for reasons not to trigger a notification that arex
+        independent of users' notification settings and thus don't
+        depend on what type of notification (email/push) it is.
+        """
+        if self.user_id == acting_user_id:
+            return True
+
+        if self.sender_is_muted:
+            return True
+
+        return False
+
     def is_notifiable(self, acting_user_id: int, idle: bool) -> bool:
         return self.is_email_notifiable(acting_user_id, idle) or self.is_push_notifiable(
             acting_user_id, idle
@@ -113,10 +126,7 @@ class UserMessageNotificationsData:
         if not idle and not self.online_push_enabled:
             return None
 
-        if self.user_id == acting_user_id:
-            return None
-
-        if self.sender_is_muted:
+        if self.trivially_should_not_notify(acting_user_id):
             return None
 
         # The order here is important. If, for example, both
@@ -140,10 +150,7 @@ class UserMessageNotificationsData:
         if not idle:
             return None
 
-        if self.user_id == acting_user_id:
-            return None
-
-        if self.sender_is_muted:
+        if self.trivially_should_not_notify(acting_user_id):
             return None
 
         # The order here is important. If, for example, both
