@@ -346,19 +346,18 @@ ul {
         padding-right: 16px;
     }
 
+    .modal__header {
+        justify-content: center;
+    }
+
     .modal__close {
-        float: right;
-        margin: 0;
+        position: absolute;
+        right: 20px;
     }
 
     #tab-toggle {
         font-weight: initial;
-        margin: 6px 4px 6px 0;
-        width: 100%;
-
-        .tab-switcher {
-            margin-left: 2px;
-        }
+        padding: 0 16px 6px;
     }
 
     .name {
@@ -406,18 +405,9 @@ ul {
         }
     }
 
-    #name {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        max-width: 100%;
-        text-align: center;
-        line-height: 30px;
-
-        #edit-button {
-            font-size: 18px;
-            margin-left: 10px;
-        }
+    #edit-button {
+        font-size: 18px;
+        margin-left: 10px;
     }
 
     #default-section {
@@ -470,14 +460,6 @@ ul {
         hr,
         #content {
             display: none;
-        }
-    }
-
-    &:not(.no-fields) {
-        #body {
-            padding-bottom: 10px;
-            padding-top: 4px;
-            margin-top: 10px;
         }
     }
 
