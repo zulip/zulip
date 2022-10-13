@@ -19,7 +19,7 @@ to avoid unnecessarily mentioning someone twice.
 
 {!message-actions-menu.md!}
 
-1. Click **Quote and reply**.
+1. Click **Quote and reply or forward**.
 
 1. *(optional)* Delete any parts of the quoted message that are not
    relevant to your reply.
@@ -30,7 +30,7 @@ to avoid unnecessarily mentioning someone twice.
 
 !!! keyboard_tip ""
 
-    You can also use <kbd>></kbd> to **quote and reply** to the
+    You can also use <kbd>></kbd> to **quote and reply or forward** the
     selected message.
 
 ## Related articles

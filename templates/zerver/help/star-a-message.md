@@ -10,7 +10,7 @@ tasks you need to go back to or documents you reference often.
 {tab|desktop}
 {!message-actions.md!}
 
-1. Click the star (<i class="fa fa-star-o"></i>) icon.
+1. Click the **star** (<i class="fa fa-star-o"></i>) icon.
 
 {tab|mobile}
 

@@ -16,7 +16,7 @@ The notification bot also generates automated private messages to
 individual users for some user specific events, such as [being
 subscribed to a stream][add-users-to-stream] by another user.
 
-Additionally, when [moving messages to a another stream][move-messages],
+Additionally, when [moving messages to another stream][move-messages],
 users can have the notification bot send automated notices to help
 others find the moved content.
 

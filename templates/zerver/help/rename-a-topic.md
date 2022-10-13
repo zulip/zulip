@@ -21,29 +21,30 @@ for the details on when topic editing is allowed.
 
 {start_tabs}
 
-1. Click on the <i class="fa fa-pencil"></i> icon in the message recipient bar.
+1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon in the message recipient bar.
 
 1. Edit the topic name.
 
-1. Click the **✔** to save your changes.
+1. Click the **checkmark** (<i class="fa fa-check"></i>) icon to save your changes.
 
 {end_tabs}
 
 
-### Via a message (alternate method)
+### Via the left sidebar (alternate method)
 
 {start_tabs}
 
-{!message-actions-menu.md!}
+{!topic-actions.md!}
 
-1. Select **Move message**. If you do not see this option, you do not have permission
-   to edit the topic of this message.
+1. Select **Move topic**.
 
-1. Edit the topic.
+1. Edit the topic name.
 
-1. From the dropdown menu, select **Change previous and following messages to this topic**.
+1. _(optional)_  Select the destination stream for the topic from the streams dropdown list.
 
-1. Click **Save**.
+1. Toggle whether automated notices should be sent.
+
+1. Click **Confirm** to rename the topic.
 
 {end_tabs}
 

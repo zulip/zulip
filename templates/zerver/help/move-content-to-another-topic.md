@@ -29,7 +29,9 @@ for the details on when topic editing is allowed.
 
 1. From the dropdown menu, select which messages to move.
 
-1. Click **Save**.
+1. Toggle whether automated notices should be sent.
+
+1. Click **Confirm** to move the selected content to another topic.
 
 {end_tabs}
 

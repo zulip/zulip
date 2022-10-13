@@ -11,7 +11,7 @@ underneath the message.
 
 {!message-actions.md!}
 
-1. Click the smiley face (<i class="fa fa-smile-o"></i>) icon.
+1. Click the **smiley face** (<i class="fa fa-smile-o"></i>) icon.
 
     !!! warn ""
 
