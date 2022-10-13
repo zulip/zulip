@@ -77,9 +77,9 @@ run_test("get_editability", ({override}) => {
     assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
     delete message.submessages;
     message.type = "private";
-    assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
+    assert.equal(get_editability(message, 45), editability_types.NO);
     // If we don't pass a second argument, treat it as 0
-    assert.equal(get_editability(message), editability_types.NO_LONGER);
+    assert.equal(get_editability(message), editability_types.NO);
 
     message = {
         sent_by_me: false,
