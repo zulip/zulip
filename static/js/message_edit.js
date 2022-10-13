@@ -181,6 +181,21 @@ export function get_deletability(message) {
     return false;
 }
 
+export function can_move_message(message) {
+    if (!page_params.realm_allow_message_editing) {
+        return false;
+    }
+
+    if (!message.is_stream) {
+        return false;
+    }
+
+    return (
+        get_editability(message) !== editability_types.NO ||
+        settings_data.user_can_move_messages_between_streams()
+    );
+}
+
 export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {
     /*  Checks to see if a stream_id and a topic match any historical
         stream_id and topic state in the message's edit history.

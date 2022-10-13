@@ -148,6 +148,7 @@ const keypress_mappings = {
     106: {name: "vim_down", message_view_only: true}, // 'j'
     107: {name: "vim_up", message_view_only: true}, // 'k'
     108: {name: "vim_right", message_view_only: true}, // 'l'
+    109: {name: "move_message", message_view_only: true}, // 'm'
     110: {name: "n_key", message_view_only: false}, // 'n'
     112: {name: "p_key", message_view_only: false}, // 'p'
     113: {name: "query_streams", message_view_only: true}, // 'q'
@@ -963,6 +964,14 @@ export function process_hotkey(e, hotkey) {
         case "edit_message": {
             const $row = message_lists.current.get_row(msg.id);
             message_edit.start($row);
+            return true;
+        }
+        case "move_message": {
+            if (!message_edit.can_move_message(msg)) {
+                return false;
+            }
+
+            stream_popover.build_move_topic_to_stream_popover(msg.stream_id, msg.topic, msg);
             return true;
         }
     }

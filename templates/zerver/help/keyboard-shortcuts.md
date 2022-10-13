@@ -145,6 +145,8 @@ below, and add more to your repertoire as needed.
 
 * **Edit message or view message source**: <kbd>E</kbd>
 
+* **Move message and (optionally) other messages in the same topic**: <kbd>M</kbd>
+
 * **Star message**: <kbd>Ctrl</kbd> + <kbd>S</kbd>
 
 * **React with <img alt=":thumbs_up:" class="emoji"
