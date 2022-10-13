@@ -2932,7 +2932,7 @@ class MarkdownErrorTests(ZulipTestCase):
             "``` curl",
             "curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
 
@@ -2946,14 +2946,14 @@ class MarkdownErrorTests(ZulipTestCase):
             "``` curl",
             "curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"',
             "```",
         ]
         expected = [
             "",
             "**curl:curl {{ api_url }}/v1/register",
             "    -u BOT_EMAIL_ADDRESS:BOT_API_KEY",
-            '    -d "queue_id=1375801870:2942"**',
+            '    -d "queue_id=fb67bf8a-c031-47cc-84cf-ed80accacda8"**',
             "",
             "",
         ]

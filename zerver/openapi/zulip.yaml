@@ -4381,7 +4381,7 @@ paths:
                           The ID of the registered queue.
                     example:
                       {
-                        "queue_id": "1375801870:2942",
+                        "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
                         "events":
                           [
                             {
@@ -5394,7 +5394,7 @@ paths:
             that it should replace the locally echoed message, rather than adding this new
             message (which would be correct if the user had sent the new message from another
             device).
-          example: "1593114627:0"
+          example: "fb67bf8a-c031-47cc-84cf-ed80accacda8"
         - name: local_id
           in: query
           schema:
@@ -12972,7 +12972,7 @@ paths:
                       {
                         "last_event_id": -1,
                         "msg": "",
-                        "queue_id": "1517975029:0",
+                        "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
                         "realm_emoji":
                           {
                             "1":
@@ -16753,8 +16753,8 @@ components:
           example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
-              "msg": "Bad event queue id: 1518820930:1",
-              "queue_id": "1518820930:1",
+              "msg": "Bad event queue id: fb67bf8a-c031-47cc-84cf-ed80accacda8",
+              "queue_id": "fb67bf8a-c031-47cc-84cf-ed80accacda8",
               "result": "error",
             }
     InvalidMessageError:
@@ -17024,7 +17024,7 @@ components:
         `POST /api/v1/register` (see [Register a queue](/api/register-queue)).
       schema:
         type: string
-      example: 1375801870:2942
+      example: fb67bf8a-c031-47cc-84cf-ed80accacda8
       required: true
     StreamIdInPath:
       name: stream_id
