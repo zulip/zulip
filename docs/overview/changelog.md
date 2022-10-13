@@ -27,16 +27,16 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned the left sidebar to better organize pinned and inactive
   streams, highlight topics where the user was mentioned, and better
   advertise streams that the current user can subscribe to.
-- Replaced the previous "away" status with a "Go invisible" feature
-  that better matches user intuition about what it does.
+- Replaced the previous "Unavailable" status with a "Go invisible" feature
+  that is more useful and intuitive.
 - The right sidebar now displays user status messages by default, with
   an optional compact design available.
 - The [public access option][public-access-option] was enhanced to
   skip the login page by default, support switching themes and
   languages, and add many other UI improvements.
-- Incoming webhook integrations now support filtering which classes of
-  events are sent into Zulip; this can be invaluable when the
-  third-party outgoing webhook .
+- Incoming webhook integrations now support filtering which classes of events
+  are sent into Zulip; this can be invaluable when the third-party service
+  doesn't support configuring which events to sent to Zulip.
 - Added support for Ubuntu 22.04.
 - Removed support for Debian 10 and PostgreSQL 10 due to their
   approaching end-of-life upstream.
@@ -46,40 +46,38 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Full feature changelog
 
-- Redesigned the message actions popover to have a cleaner design.
-- Redesigned moving messages to have a cleaner, more consistent UI
-  that is no longer combined with the message editing UI. One can now
-  choose whether to send automated notices when moving messages within
-  a stream (previously those were only available when moving messages
-  between streams).
+- Redesigned the message actions popover to be better organized.
+- Redesigned moving messages to have a cleaner, more consistent UI that is no
+  longer combined with the message editing UI. One can now choose to send
+  automated notices when moving messages within a stream, not only between
+  streams.
 - Redesigned full user profiles to have a cleaner look and also
   display user IDs, which can be important when using the API. Users
   can now administer bot stream subscriptions from the bot's full
   profile.
 - Redesigned several organization settings pages to have more
   consistent design.
-- Redesigned the footer for self-hosted Zulip servers. The footer is
-  now just has a few key links, rather than being almost identical to
-  the footer for the zulip.com website.
+- Redesigned the footer for self-hosted Zulip servers. The footer now has just a
+  few key links, rather than being almost identical to the footer for the
+  zulip.com website.
 - Redesigned the 500 error pages for self-hosted Zulip servers to be
   clearer and link to the Zulip server troubleshooting guide.
 - Redesigned the interface for configuring message editing and
-  deletion permissions to be simpler and easier to understand.
+  deletion permissions to be easier to understand.
 - Improved Recent Topics. The timestamp links now go to the latest
   message in the topic, arrow key navigation was improved, and many
   other bug fixes or subtle improvements.
-- Added support for modern unicode emoji which had previously been
-  unavailable in Zulip. Users using the deprecated "Google blobs"
-  emoji set are automatically migrated to the modern "Google" emoji
-  set. The "Google blobs" emoji set remains available for users who
-  prefer it (with the modern "Google" emoji set used for modern emoji
-  that do not exist in that emoji set).
+- Added support for modern unicode emoji, which had previously been unavailable
+  in Zulip. Users using the deprecated "Google blobs" emoji set are
+  automatically migrated to the modern "Google" emoji set. The "Google blobs"
+  emoji set remains available for users who prefer it, with any new emoji that
+  have been released since 2017 displayed in the modern "Google" style.
 - Added support for changing the role of bots in the UI; previously,
   this was only possible via the API.
-- Added confirmation modals for various destructive actions like
-  deactivating bots that were missing them.
+- Added confirmation modals for various destructive actions, such as
+  deactivating bots.
 - Added new summary statistics on the organization analytics
-  page. Fixed several bugs with the display of graphs.
+  page. Fixed several bugs with the display of analytics graphs.
 - Added support for administrators sending a final email to a user as
   part of deactivating their Zulip account.
 - Added API endpoint to get a single stream by ID.
@@ -91,22 +89,22 @@ log][commit-log] for an up-to-date list of raw changes.
 - Zulip's automated emails use the `X-Auto-Response-Suppress` header
   to reduce auto-responder replies.
 - Changed various icons to be more intuitive. The bell-based icon for
-  muted topics has been replaced by a more standard speaker-based icon.
-- Reworked how a new user's language is set to prefer the browser's
+  muted topics has been replaced by a more standard muted speaker icon.
+- Reworked how a new user's language is set to prefer their browser's
   configured language over the organization's configured
   language. This organization-level setting has been renamed to
   "Language for automated messages and invitation emails" to reflect
   what it actually does following this change.
-- The Drafts panel now prioritizes drafts matching the current view.
-- New automated notification to the "stream events" topic when
+- Organized the Drafts panel to prioritizes drafts matching the current view.
+- Added an automated notification to the "stream events" topic when
   changing a stream's privacy settings.
 - Improved the search typeahead to show profile pictures for users.
 - Improved typeahead matching algorithm for stream/user/emoji names
   containing multiple spaces and other corner cases.
-- Improved the Help Center, including better display of keyboard
+- Improved the help center, including better display of keyboard
   shortcuts, mobile documentation for common workflows and many polish
   improvements.
-- Improved API documentation, including new page on roles and
+- Improved API documentation, including a new page on roles and
   permissions, an audit to correct missing **Changes** entries, and
   new documentation for several previously undocumented endpoints.
 - Improved Python static type-checking to make use of Django stubs for
@@ -124,13 +122,11 @@ log][commit-log] for an up-to-date list of raw changes.
   Slack compatible incoming webhook.
 - Improved mention typeahead and rendering for cases where mention
   syntax appears next to symbols.
-- Improve the explanations in message notification emails explaining
+- Improve the language in message notification emails explaining
   why the notification was sent.
-- Improved many Help Center articles to more clearly explain features
-  or document how to access those features from the mobile apps.
 - Increased timeout for processing slow requests from 20s to 60s.
-- Removed limits that prevented replying to Zulip email notifications
-  several times or several days after receiving it.
+- Removed limits that prevented replying to Zulip email notifications multiple
+  times or, several days after receiving them.
 - Fixed numerous bugs and performance issues with the Rocket.Chat data
   import tool.
 - Fixed several bugs where drafts could fail to be saved.
