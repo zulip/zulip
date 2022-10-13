@@ -534,8 +534,8 @@ export function toggle_actions_popover(element, id) {
             !message_container.is_hidden &&
             not_spectator;
         const editability = message_edit.get_editability(message);
-        const is_stream_editable =
-            message.is_stream && settings_data.user_can_move_messages_between_streams();
+        const can_move_message = message_edit.can_move_message(message);
+
         let editability_menu_item;
         let move_message_menu_item;
         let view_source_menu_item;
@@ -545,10 +545,7 @@ export function toggle_actions_popover(element, id) {
             if (message.is_stream) {
                 move_message_menu_item = $t({defaultMessage: "Move message"});
             }
-        } else if (
-            editability === message_edit.editability_types.TOPIC_ONLY ||
-            is_stream_editable
-        ) {
+        } else if (can_move_message) {
             move_message_menu_item = $t({defaultMessage: "Move message"});
             view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
