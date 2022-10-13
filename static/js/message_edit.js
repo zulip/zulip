@@ -45,7 +45,6 @@ export let notify_new_thread_default = true;
 
 export const editability_types = {
     NO: 1,
-    NO_LONGER: 2,
     // Note: TOPIC_ONLY does not include stream messages with no topic sent
     // by someone else. You can edit the topic of such a message by editing
     // the topic of the whole recipient_row it appears in, but you can't
@@ -149,7 +148,7 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (message.type === "stream") {
         return editability_types.TOPIC_ONLY;
     }
-    return editability_types.NO_LONGER;
+    return editability_types.NO;
 }
 
 export function get_deletability(message) {
