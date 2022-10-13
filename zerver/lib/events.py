@@ -146,11 +146,14 @@ def fetch_initial_state_data(
     if want("alert_words"):
         state["alert_words"] = [] if user_profile is None else user_alert_words(user_profile)
 
-    # Spectators can't access full user profiles or personal settings,
-    # so there's no need to send custom profile field data.
-    if want("custom_profile_fields") and user_profile is not None:
-        fields = custom_profile_fields_for_realm(realm.id)
-        state["custom_profile_fields"] = [f.as_dict() for f in fields]
+    if want("custom_profile_fields"):
+        if user_profile is None:
+            # Spectators can't access full user profiles or
+            # personal settings, so we send an empty list.
+            state["custom_profile_fields"] = []
+        else:
+            fields = custom_profile_fields_for_realm(realm.id)
+            state["custom_profile_fields"] = [f.as_dict() for f in fields]
         state["custom_profile_field_types"] = {
             item[4]: {"id": item[0], "name": str(item[1])}
             for item in CustomProfileField.ALL_FIELD_TYPES
