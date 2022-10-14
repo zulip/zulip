@@ -84,6 +84,7 @@ run_test("insert_message", ({override}) => {
         sender_id: isaac.user_id,
         id: 1001,
         content: "example content",
+        topic: "Foo",
     };
 
     assert.equal(message_store.get(new_message.id), undefined);

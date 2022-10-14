@@ -94,6 +94,7 @@ run_test("unread_ops", ({override}) => {
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.
+    message_store.update_message_cache(test_messages[0]);
     unread.process_loaded_messages(test_messages);
 
     // Make our message_viewport appear visible.

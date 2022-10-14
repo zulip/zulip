@@ -183,8 +183,6 @@ export function update_messages(events) {
 
         message_store.update_booleans(msg, event.flags);
 
-        unread.update_message_for_mention(msg);
-
         condense.un_cache_message_content_height(msg.id);
 
         if (event.rendered_content !== undefined) {
@@ -227,6 +225,8 @@ export function update_messages(events) {
             // Update raw_content, so that editing a few times in a row is fast.
             msg.raw_content = event.content;
         }
+
+        unread.update_message_for_mention(msg, any_message_content_edited);
 
         // new_topic will be undefined if the topic is unchanged.
         const new_topic = util.get_edit_event_topic(event);
@@ -489,6 +489,7 @@ export function update_messages(events) {
                 new_stream_id: post_edit_stream_id,
                 new_topic: post_edit_topic,
             });
+            unread.clear_and_populate_unread_mention_topics();
             recent_topics_ui.process_topic_edit(...args);
         }
 

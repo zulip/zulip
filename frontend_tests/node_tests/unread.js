@@ -4,12 +4,13 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {zrequire, set_global} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params, user_settings} = require("../zjsunit/zpage_params");
 
 page_params.realm_push_notifications_enabled = false;
 
+set_global("document", "document-stub");
 const {FoldDict} = zrequire("fold_dict");
 const message_store = zrequire("message_store");
 const user_topics = zrequire("user_topics");
@@ -98,6 +99,8 @@ test("changing_topics", () => {
         topic: "lunCH",
         unread: true,
     };
+    message_store.update_message_cache(message);
+    message_store.update_message_cache(other_message);
 
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
@@ -266,6 +269,7 @@ test("num_unread_for_topic", () => {
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
         message.id = i;
+        message_store.update_message_cache(message);
         unread.process_loaded_messages([message]);
     }
 
@@ -363,7 +367,7 @@ test("phantom_messages", () => {
         stream_id: 555,
         topic: "phantom",
     };
-
+    message_store.update_message_cache(message);
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
@@ -557,6 +561,7 @@ test("mention updates", () => {
         id: 17,
         unread: false,
         type: "stream",
+        topic: "hello",
     };
 
     function test_counted(counted) {

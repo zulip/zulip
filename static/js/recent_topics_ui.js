@@ -343,6 +343,10 @@ function format_conversation(conversation_data) {
         context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
         const stream_muted = stream_data.is_muted(context.stream_id);
         context.muted = context.topic_muted || stream_muted;
+        context.mention_in_unread = unread.topic_has_any_unread_mentions(
+            context.stream_id,
+            context.topic,
+        );
 
         // Display in most recent sender first order
         all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
