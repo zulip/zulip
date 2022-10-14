@@ -6525,6 +6525,12 @@ paths:
         permissions. Now topic editing restrictions apply to messages without a
         topic as well.
 
+        Before Zulip 7.0 (feature level 172), users were allowed to move messages
+        that had passed the time limit by using `change_all` value for `propagate_mode`
+        parameter. Now, the server returns an error if users, other than organization
+        administrators and moderators, try to move messages that have passed the time
+        limit.
+
         [config-message-editing]: /help/restrict-message-editing-and-deletion
       x-curl-examples-parameters:
         oneOf:
@@ -6627,25 +6633,79 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/CodedError"
-                  - properties:
-                      msg:
-                        enum:
-                          - Your organization has turned off message editing
-                          - You don't have permission to edit this message
-                          - The time limit for editing this message has past
-                          - Nothing to change
-                          - Topic can't be empty
-                    example:
-                      {
-                        "code": "BAD_REQUEST",
-                        "msg": "You don't have permission to edit this message",
-                        "result": "error",
-                      }
-                    description: |
-                      A typical JSON response for when one doesn't have the permission to
-                      edit a particular message:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - properties:
+                          msg:
+                            enum:
+                              - Your organization has turned off message editing
+                              - You don't have permission to edit this message
+                              - The time limit for editing this message has past
+                              - Nothing to change
+                              - Topic can't be empty
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You don't have permission to edit this message",
+                            "result": "error",
+                          }
+                        description: |
+                          A typical JSON response for when one doesn't have the permission to
+                          edit a particular message:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
+                            "first_message_id_allowed_to_move": 123,
+                            "msg": "You only have permission to move the 2/5 most recent messages in this topic.",
+                            "result": "error",
+                            "total_messages_allowed_to_move": 2,
+                            "total_messages_in_topic": 5,
+                          }
+                        description: |
+                          A special failed JSON response for when the user has permission to move
+                          the target message, but asked to move all messages in a topic
+                          (`change_all`) and the user does not have permission to move the entire
+                          topic.
+
+                          This happens when the topic contains some messages that are older than an
+                          applicable time limit for the requested topic move
+                          (`move_messages_within_stream_limit_seconds` and/or
+                          `move_messages_between_streams_limit_seconds`).
+
+                          This response contains data on which portion of this topic the user has
+                          permission to move; `first_message_id_allowed_to_move` is the oldest
+                          message ID in this topic that the user has permission to move; the user
+                          has permission to move the most recent `total_messages_allowed_to_move`
+                          messages, but `total_messages_in_topic` exist in the topic.
+
+                          A client is recommended to either just present the error to the user, or
+                          if `first_message_id_allowed_to_move` is not `null`, prompt the user with
+                          this information. Clients should support this error code with
+                          `first_message_id_allowed_to_move=null` for forwards compatibility
+                          with future server versions that may use this error code in other
+                          propagation modes where it is possible that the user does not have
+                          permission to move any messages, or where the server did not calculate the
+                          other fields.
+
+                          If clients choose to present a prompt for this error code, they should
+                          recommend the option of cancelling and (manually) asking a moderator to
+                          move the entire topic, since that's often a better experience than
+                          partially moving a topic. This API supports a client that wishes to allow
+                          the user to repeat the request with a `change_later` propagation mode and
+                          a target message ID of `first_message_id_allowed_to_move`, if the user
+                          desires to move only the portion of the topic that they can.
+
+                          Note that in a stream with protected history, the Zulip security model
+                          requires that the above calculations only include messages the acting user
+                          has access to. So in the rare case of a user attempting to move a topic
+                          that started before the user joined a private stream with protected
+                          history, this API endpoint might move only portion of a topic that they
+                          have access to, without this error or any confirmation dialog.
+
+                          **Changes**: New in Zulip 7.0 (feature level 172).
     delete:
       operationId: delete-message
       summary: Delete a message

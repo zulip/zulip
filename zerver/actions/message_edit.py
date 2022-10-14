@@ -21,7 +21,7 @@ from zerver.actions.message_send import (
 )
 from zerver.actions.uploads import check_attachment_reference_change
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, MessageMoveError
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -36,7 +36,11 @@ from zerver.lib.message import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.streams import access_stream_by_id, check_stream_access_based_on_stream_post_policy
+from zerver.lib.streams import (
+    access_stream_by_id,
+    can_access_stream_history,
+    check_stream_access_based_on_stream_post_policy,
+)
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
@@ -941,6 +945,98 @@ def do_update_message(
     return len(changed_messages)
 
 
+def check_time_limit_for_change_all_propagate_mode(
+    message: Message,
+    user_profile: UserProfile,
+    topic_name: Optional[str] = None,
+    stream_id: Optional[int] = None,
+) -> None:
+    realm = user_profile.realm
+    message_move_limit_buffer = 20
+
+    topic_edit_deadline_seconds = None
+    if topic_name is not None and realm.move_messages_within_stream_limit_seconds is not None:
+        # We set topic_edit_deadline_seconds only if topic is actually
+        # changed and there is some time limit to edit topic.
+        topic_edit_deadline_seconds = (
+            realm.move_messages_within_stream_limit_seconds + message_move_limit_buffer
+        )
+
+    stream_edit_deadline_seconds = None
+    if stream_id is not None and realm.move_messages_between_streams_limit_seconds is not None:
+        # We set stream_edit_deadline_seconds only if stream is
+        # actually changed and there is some time limit to edit
+        # stream.
+        stream_edit_deadline_seconds = (
+            realm.move_messages_between_streams_limit_seconds + message_move_limit_buffer
+        )
+
+    # Calculate whichever of the applicable topic and stream moving
+    # limits is stricter, and use that.
+    if topic_edit_deadline_seconds is not None and stream_edit_deadline_seconds is not None:
+        # When both stream and topic are changed, we consider the
+        # minimum of the two limits to make sure that we raise the
+        # error even when user cannot change one of topic or stream.
+        message_move_deadline_seconds = min(
+            topic_edit_deadline_seconds, stream_edit_deadline_seconds
+        )
+    elif topic_edit_deadline_seconds is not None:
+        message_move_deadline_seconds = topic_edit_deadline_seconds
+    elif stream_edit_deadline_seconds is not None:
+        message_move_deadline_seconds = stream_edit_deadline_seconds
+    else:
+        # There is no applicable time limit for this move request, so
+        # approve it.
+        return
+
+    stream = get_stream_by_id_in_realm(message.recipient.type_id, realm)
+
+    if not can_access_stream_history(user_profile, stream):
+        # If the user doesn't have full access to the stream's
+        # history, check if the user can move the entire portion that
+        # they do have access to.
+        accessible_messages_in_topic = UserMessage.objects.filter(
+            user_profile=user_profile,
+            message__recipient_id=message.recipient_id,
+            message__subject__iexact=message.topic_name(),
+        ).values_list("message_id", flat=True)
+        messages_allowed_to_move: List[int] = list(
+            Message.objects.filter(
+                id__in=accessible_messages_in_topic,
+                date_sent__gt=timezone_now()
+                - datetime.timedelta(seconds=message_move_deadline_seconds),
+            )
+            .order_by("date_sent")
+            .values_list("id", flat=True)
+        )
+        total_messages_requested_to_move = len(accessible_messages_in_topic)
+    else:
+        all_messages_in_topic = (
+            messages_for_topic(message.recipient_id, message.topic_name())
+            .order_by("id")
+            .values_list("id", "date_sent")
+        )
+        oldest_allowed_message_date = timezone_now() - datetime.timedelta(
+            seconds=message_move_deadline_seconds
+        )
+        messages_allowed_to_move = [
+            message[0]
+            for message in all_messages_in_topic
+            if message[1] > oldest_allowed_message_date
+        ]
+        total_messages_requested_to_move = len(all_messages_in_topic)
+
+    if total_messages_requested_to_move == len(messages_allowed_to_move):
+        # We return if all messages are allowed to move.
+        return
+
+    raise MessageMoveError(
+        first_message_id_allowed_to_move=messages_allowed_to_move[0],
+        total_messages_in_topic=total_messages_requested_to_move,
+        total_messages_allowed_to_move=len(messages_allowed_to_move),
+    )
+
+
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
@@ -1074,6 +1170,14 @@ def check_update_message(
                 raise JsonableError(
                     _("The time limit for editing this message's stream has passed")
                 )
+
+    if (
+        propagate_mode == "change_all"
+        and not user_profile.is_realm_admin
+        and not user_profile.is_moderator
+        and (topic_name is not None or stream_id is not None)
+    ):
+        check_time_limit_for_change_all_propagate_mode(message, user_profile, topic_name, stream_id)
 
     number_changed = do_update_message(
         user_profile,
