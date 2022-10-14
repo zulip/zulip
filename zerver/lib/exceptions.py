@@ -39,6 +39,7 @@ class ErrorCode(Enum):
     AUTHENTICATION_FAILED = auto()
     UNAUTHORIZED = auto()
     REQUEST_TIMEOUT = auto()
+    MOVE_MESSAGES_TIME_LIMIT_EXCEEDED = auto()
 
 
 class JsonableError(Exception):
@@ -474,3 +475,28 @@ class ValidationFailureError(JsonableError):
     def __init__(self, error: ValidationError) -> None:
         super().__init__(error.messages[0])
         self.errors = error.message_dict
+
+
+class MessageMoveError(JsonableError):
+    code = ErrorCode.MOVE_MESSAGES_TIME_LIMIT_EXCEEDED
+    data_fields = [
+        "first_message_id_allowed_to_move",
+        "total_messages_in_topic",
+        "total_messages_allowed_to_move",
+    ]
+
+    def __init__(
+        self,
+        first_message_id_allowed_to_move: int,
+        total_messages_in_topic: int,
+        total_messages_allowed_to_move: int,
+    ) -> None:
+        self.first_message_id_allowed_to_move = first_message_id_allowed_to_move
+        self.total_messages_in_topic = total_messages_in_topic
+        self.total_messages_allowed_to_move = total_messages_allowed_to_move
+
+    @staticmethod
+    def msg_format() -> str:
+        return _(
+            "You only have permission to move the {total_messages_allowed_to_move}/{total_messages_in_topic} most recent messages in this topic."
+        )

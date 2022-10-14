@@ -24,6 +24,10 @@ format used by the Zulip server that they are interacting with.
 
 * [`PATCH /messages/{message_id}`](/api/update-message): Topic editing
   restrictions now apply to messages without a topic as well.
+* [`PATCH /messages/{message_id}`](/api/update-message): The endpoint
+  now returns an error when users, other than organization administrators
+  and moderators, try to move messages that have passed the time limit
+  using `change_all` value for `propagate_mode` parameter.
 
 **Feature level 171**:
 

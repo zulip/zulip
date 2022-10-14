@@ -1354,9 +1354,9 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        # This code path adds 17 (10 + 4/visibility_policy + 1/user + 1) to
+        # This code path adds 19 (12 + 4/visibility_policy + 1/user + 1) to
         # the number of database queries for moving a topic.
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(19):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1647,7 +1647,7 @@ class EditMessageTest(EditMessageTestCase):
             users_to_be_notified_via_muted_topics_event.append(user_topic.user_profile_id)
 
         change_all_topic_name = "Topic 1 edited"
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(24):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1965,6 +1965,215 @@ class EditMessageTest(EditMessageTestCase):
         self.check_topic(id2, topic_name="edited")
         self.check_topic(id3, topic_name="topiC1")
         self.check_topic(id4, topic_name="edited")
+
+    def test_change_all_propagate_mode_for_moving_old_messages(self) -> None:
+        user_profile = self.example_user("hamlet")
+        id1 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
+        id2 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
+        id3 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
+        id4 = self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
+        self.send_stream_message(user_profile, "Denmark", topic_name="topic1")
+
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+
+        message = Message.objects.get(id=id1)
+        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.save()
+
+        message = Message.objects.get(id=id2)
+        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.save()
+
+        message = Message.objects.get(id=id3)
+        message.date_sent = message.date_sent - datetime.timedelta(days=5)
+        message.save()
+
+        verona = get_stream("Verona", user_profile.realm)
+        denmark = get_stream("Denmark", user_profile.realm)
+        old_topic = "topic1"
+        old_stream = denmark
+
+        def test_moving_all_topic_messages(
+            new_topic: Optional[str] = None, new_stream: Optional[Stream] = None
+        ) -> None:
+            self.login("hamlet")
+            params_dict: Dict[str, Union[str, int]] = {
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            }
+
+            if new_topic is not None:
+                params_dict["topic"] = new_topic
+            else:
+                new_topic = old_topic
+
+            if new_stream is not None:
+                params_dict["stream_id"] = new_stream.id
+            else:
+                new_stream = old_stream
+
+            result = self.client_patch(
+                f"/json/messages/{id4}",
+                params_dict,
+            )
+            self.assert_json_error(
+                result,
+                "You only have permission to move the 3/5 most recent messages in this topic.",
+            )
+            # Check message count in old topic and/or stream.
+            messages = get_topic_messages(user_profile, old_stream, old_topic)
+            self.assert_length(messages, 5)
+
+            # Check message count in new topic and/or stream.
+            messages = get_topic_messages(user_profile, new_stream, new_topic)
+            self.assert_length(messages, 0)
+
+            json = orjson.loads(result.content)
+            first_message_id_allowed_to_move = json["first_message_id_allowed_to_move"]
+
+            params_dict["propagate_mode"] = "change_later"
+            result = self.client_patch(
+                f"/json/messages/{first_message_id_allowed_to_move}",
+                params_dict,
+            )
+            self.assert_json_success(result)
+
+            # Check message count in old topic and/or stream.
+            messages = get_topic_messages(user_profile, old_stream, old_topic)
+            self.assert_length(messages, 2)
+
+            # Check message count in new topic and/or stream.
+            messages = get_topic_messages(user_profile, new_stream, new_topic)
+            self.assert_length(messages, 3)
+
+            self.login("shiva")
+            # Move these messages to the original topic and stream, to test the case
+            # when user is moderator.
+            result = self.client_patch(
+                f"/json/messages/{id4}",
+                {
+                    "topic": old_topic,
+                    "stream_id": old_stream.id,
+                    "propagate_mode": "change_all",
+                    "send_notification_to_new_thread": "false",
+                },
+            )
+
+            params_dict["propagate_mode"] = "change_all"
+            result = self.client_patch(
+                f"/json/messages/{id4}",
+                params_dict,
+            )
+            self.assert_json_success(result)
+
+            # Check message count in old topic and/or stream.
+            messages = get_topic_messages(user_profile, old_stream, old_topic)
+            self.assert_length(messages, 0)
+
+            # Check message count in new topic and/or stream.
+            messages = get_topic_messages(user_profile, new_stream, new_topic)
+            self.assert_length(messages, 5)
+
+        # Test only topic editing case.
+        test_moving_all_topic_messages(new_topic="topic edited")
+
+        # Move these messages to the original topic to test the next case.
+        self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "topic": old_topic,
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        # Test only stream editing case
+        test_moving_all_topic_messages(new_stream=verona)
+
+        # Move these messages to the original stream to test the next case.
+        self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "stream_id": denmark.id,
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+
+        # Set time limit for moving messages between streams to 2 weeks.
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_limit_seconds",
+            604800 * 2,
+            acting_user=None,
+        )
+
+        # Test editing both topic and stream together.
+        test_moving_all_topic_messages(new_topic="edited", new_stream=verona)
+
+    def test_change_all_propagate_mode_for_moving_from_stream_with_restricted_history(self) -> None:
+        self.make_stream("privatestream", invite_only=True, history_public_to_subscribers=False)
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        self.subscribe(iago, "privatestream")
+        self.subscribe(cordelia, "privatestream")
+        id1 = self.send_stream_message(iago, "privatestream", topic_name="topic1")
+        id2 = self.send_stream_message(iago, "privatestream", topic_name="topic1")
+
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "privatestream")
+        id3 = self.send_stream_message(iago, "privatestream", topic_name="topic1")
+        id4 = self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
+        self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
+
+        message = Message.objects.get(id=id1)
+        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.save()
+
+        message = Message.objects.get(id=id2)
+        message.date_sent = message.date_sent - datetime.timedelta(days=9)
+        message.save()
+
+        message = Message.objects.get(id=id3)
+        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.save()
+
+        message = Message.objects.get(id=id4)
+        message.date_sent = message.date_sent - datetime.timedelta(days=6)
+        message.save()
+
+        self.login("hamlet")
+        result = self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "You only have permission to move the 2/3 most recent messages in this topic.",
+        )
+
+        self.login("cordelia")
+        result = self.client_patch(
+            f"/json/messages/{id4}",
+            {
+                "topic": "edited",
+                "propagate_mode": "change_all",
+                "send_notification_to_new_thread": "false",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "You only have permission to move the 2/5 most recent messages in this topic.",
+        )
 
     def test_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
