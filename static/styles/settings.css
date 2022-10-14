@@ -1797,6 +1797,12 @@ $option_title_width: 180px;
         }
 
         .sidebar {
+            position: absolute;
+            width: 100%;
+            border: none;
+            /* 48px is the height of settings header and 45px is the height of tab-container */
+            height: calc(100% - 93px);
+
             li.active {
                 /* Don't highlight the active section in the settings list. */
                 background: inherit;
