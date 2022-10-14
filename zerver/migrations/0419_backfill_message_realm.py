@@ -94,6 +94,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             backfill_message_realm,
+            reverse_code=migrations.RunPython.noop,
             elidable=True,
         ),
     ]
