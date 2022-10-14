@@ -123,7 +123,7 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
 def prepare_puppeteer_run(is_firefox: bool = False) -> None:
     os.chdir(ZULIP_PATH)
     download_path = platformdirs.user_cache_dir("zulip/puppeteer-download")
-    os.makedirs(download_path)
+    os.makedirs(download_path, exist_ok=True)
     os.environ["PUPPETEER_DOWNLOAD_PATH"] = download_path
     # This will determine if the browser will be firefox or chrome.
     os.environ["PUPPETEER_PRODUCT"] = "firefox" if is_firefox else "chrome"
