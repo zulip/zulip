@@ -427,6 +427,7 @@ body.dark-theme {
         }
     }
 
+    .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
@@ -549,6 +550,18 @@ body.dark-theme {
     #message_edit_tooltip:hover,
     .clear_search_button:hover {
         color: hsl(0, 0%, 100%);
+    }
+
+    .spectator_login_buttons a {
+        color: hsl(236, 33%, 90%);
+
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
+    }
+
+    .spectator_narrow_login_button .login_button i {
+        color: hsl(236, 33%, 90%);
     }
 
     #user_presences li .user-list-sidebar-menu-icon:hover,
