@@ -1079,7 +1079,6 @@ h4.user_group_setting_subsection_title {
     #groups_overlay .right,
     #subscription_overlay .left,
     #subscription_overlay .right,
-    #settings_page .left,
     #settings_page .content-wrapper.right {
         position: absolute;
         display: block;
