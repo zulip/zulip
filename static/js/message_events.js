@@ -288,7 +288,9 @@ export function update_messages(events) {
                 compose_fade.set_focused_recipient("stream");
             }
 
-            drafts.rename_topic(old_stream_id, orig_topic, new_topic);
+            if (going_forward_change) {
+                drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
 
             for (const msg of event_messages) {
                 if (page_params.realm_allow_edit_history) {

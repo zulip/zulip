@@ -11,6 +11,8 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const user_pill = zrequire("user_pill");
 const people = zrequire("people");
 const compose_state = zrequire("compose_state");
+const sub_store = zrequire("sub_store");
+const stream_data = zrequire("stream_data");
 const aaron = {
     email: "aaron@zulip.com",
     user_id: 6,
@@ -31,15 +33,7 @@ mock_esm("../../static/js/markdown", {
 mock_esm("../../static/js/overlays", {
     open_overlay: noop,
 });
-mock_esm("../../static/js/stream_data", {
-    get_color() {
-        return "#FFFFFF";
-    },
-    get_sub(stream_name) {
-        assert.equal(stream_name, "stream");
-        return {stream_id: 30};
-    },
-});
+
 const tippy_sel = ".top_left_drafts .unread_count";
 let tippy_args;
 let tippy_show_called;
@@ -60,7 +54,6 @@ mock_esm("tippy.js", {
         ];
     },
 });
-const sub_store = mock_esm("../../static/js/sub_store");
 user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
@@ -155,6 +148,11 @@ test("draft_model delete", ({override}) => {
 });
 
 test("snapshot_message", ({override_rewire}) => {
+    stream_data.get_sub = (stream_name) => {
+        assert.equal(stream_name, "stream");
+        return {stream_id: 30};
+    };
+
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
 
@@ -291,6 +289,94 @@ test("update_draft", ({override, override_rewire}) => {
     assert.ok(!tippy_destroy_called);
 });
 
+test("rename_stream_recipient", ({override_rewire}) => {
+    override_rewire(drafts, "set_count", noop);
+
+    const stream_A = {
+        subscribed: false,
+        name: "A",
+        stream_id: 1,
+    };
+    stream_data.add_sub(stream_A);
+    const stream_B = {
+        subscribed: false,
+        name: "B",
+        stream_id: 2,
+    };
+    stream_data.add_sub(stream_B);
+
+    const draft_1 = {
+        stream: stream_A.name,
+        stream_id: stream_A.stream_id,
+        topic: "a",
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const draft_2 = {
+        stream: stream_A.name,
+        stream_id: stream_A.stream_id,
+        topic: "b",
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const draft_3 = {
+        stream: stream_B.name,
+        stream_id: stream_B.stream_id,
+        topic: "a",
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const draft_4 = {
+        stream: stream_B.name,
+        stream_id: stream_B.stream_id,
+        topic: "c",
+        type: "stream",
+        content: "Test stream message",
+        updatedAt: Date.now(),
+    };
+    const data = {id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4};
+    const ls = localstorage();
+    ls.set("drafts", data);
+
+    const draft_model = drafts.draft_model;
+    function assert_draft(draft_id, stream_name, topic_name) {
+        const draft = draft_model.getDraft(draft_id);
+        assert.equal(draft.topic, topic_name);
+        assert.equal(draft.stream, stream_name);
+    }
+
+    // There are no drafts in B>b, so moving messages from there doesn't change drafts
+    drafts.rename_stream_recipient(stream_B.stream_id, "b", undefined, "c");
+    assert_draft("id1", "A", "a");
+    assert_draft("id2", "A", "b");
+    assert_draft("id3", "B", "a");
+    assert_draft("id4", "B", "c");
+
+    // Update with both stream and topic changes Bc -> Aa
+    drafts.rename_stream_recipient(stream_B.stream_id, "c", stream_A.stream_id, "a");
+    assert_draft("id1", "A", "a");
+    assert_draft("id2", "A", "b");
+    assert_draft("id3", "B", "a");
+    assert_draft("id4", "A", "a");
+
+    // Update with only stream change Aa -> Ba
+    drafts.rename_stream_recipient(stream_A.stream_id, "a", stream_B.stream_id, undefined);
+    assert_draft("id1", "B", "a");
+    assert_draft("id2", "A", "b");
+    assert_draft("id3", "B", "a");
+    assert_draft("id4", "B", "a");
+
+    // Update with only topic change, affecting three messages
+    drafts.rename_stream_recipient(stream_B.stream_id, "a", undefined, "e");
+    assert_draft("id1", "B", "e");
+    assert_draft("id2", "A", "b");
+    assert_draft("id3", "B", "e");
+    assert_draft("id4", "B", "e");
+});
+
 test("delete_all_drafts", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
@@ -306,6 +392,7 @@ test("delete_all_drafts", () => {
 });
 
 test("format_drafts", ({override_rewire, mock_template}) => {
+    stream_data.get_color = () => "#FFFFFF";
     function feb12() {
         return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
     }
