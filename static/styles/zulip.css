@@ -1731,6 +1731,7 @@ div.focused_table {
     border: none;
     white-space: nowrap;
     cursor: default;
+    justify-content: space-between;
 
     .hidden {
         display: none;
