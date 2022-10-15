@@ -21,7 +21,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, queries_captured
+from zerver.lib.test_helpers import get_subscription
 from zerver.lib.user_topics import add_topic_mute
 from zerver.models import (
     Message,
@@ -1332,9 +1332,8 @@ class MessageAccessTests(ZulipTestCase):
             Message.objects.select_related().get(id=message_id) for message_id in message_ids
         ]
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(2):
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
-        self.assert_length(queries, 2)
 
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
@@ -1349,9 +1348,8 @@ class MessageAccessTests(ZulipTestCase):
             acting_user=self.example_user("cordelia"),
         )
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(2):
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
-        self.assert_length(queries, 2)
 
         # Message sent before subscribing are accessible by 8user as stream
         # don't have protected history
@@ -1360,9 +1358,8 @@ class MessageAccessTests(ZulipTestCase):
         # Testing messages accessibility for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(2):
             filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
-        self.assert_length(queries, 2)
 
         self.assert_length(filtered_messages, 0)
 
@@ -1394,17 +1391,15 @@ class MessageAccessTests(ZulipTestCase):
         ]
 
         # All public stream messages are always accessible
-        with queries_captured() as queries:
+        with self.assert_database_query_count(2):
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
         self.assert_length(filtered_messages, 2)
-        self.assert_length(queries, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        with queries_captured() as queries:
+        with self.assert_database_query_count(2):
             filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
 
         self.assert_length(filtered_messages, 2)
-        self.assert_length(queries, 2)
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):

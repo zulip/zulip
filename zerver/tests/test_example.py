@@ -9,7 +9,7 @@ from zerver.actions.users import do_change_can_create_users, do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import most_recent_message, queries_captured
+from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
 from zerver.models import (
     UserProfile,
@@ -357,8 +357,8 @@ class TestQueryCounts(ZulipTestCase):
     def test_capturing_queries(self) -> None:
         # It's a common pitfall in Django to accidentally perform
         # database queries in a loop, due to lazy evaluation of
-        # foreign keys. We use the queries_captured context manager to
-        # ensure our query count is predictable.
+        # foreign keys. We use the assert_database_query_count
+        # context manager to ensure our query count is predictable.
         #
         # When a test containing one of these query count assertions
         # fails, we'll want to understand the new queries and whether
@@ -368,15 +368,12 @@ class TestQueryCounts(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(15):
             self.send_personal_message(
                 from_user=hamlet,
                 to_user=cordelia,
                 content="hello there!",
             )
-
-        # The assert_length helper is another useful extra from ZulipTestCase.
-        self.assert_length(queries, 15)
 
 
 class TestDevelopmentEmailsLog(ZulipTestCase):

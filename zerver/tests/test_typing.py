@@ -3,7 +3,6 @@ from typing import Any, List, Mapping
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
 from zerver.models import Huddle, get_huddle_hash
 
 
@@ -148,13 +147,12 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with queries_captured() as queries:
+        with self.assert_database_query_count(4):
             with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 4)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -185,12 +183,11 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             op="start",
         )
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 5)
 
         # We should not be adding new Huddles just because
         # a user started typing in the compose box.  Let's
@@ -366,12 +363,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -402,12 +398,11 @@ class TypingHappyPathTestStreams(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
-        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])

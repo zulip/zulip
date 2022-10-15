@@ -3,7 +3,6 @@ from unittest import mock
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
 from zerver.models import Client, UserActivity, UserProfile, flush_per_request_caches
 
 
@@ -33,23 +32,17 @@ class ActivityTest(ZulipTestCase):
         user_profile.save(update_fields=["is_staff"])
 
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(19):
             result = self.client_get("/activity")
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 19)
-
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(8):
             result = self.client_get("/realm_activity/zulip/")
             self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 8)
-
         iago = self.example_user("iago")
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             result = self.client_get(f"/user_activity/{iago.id}/")
             self.assertEqual(result.status_code, 200)
-
-        self.assert_length(queries, 5)

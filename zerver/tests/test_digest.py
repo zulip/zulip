@@ -24,7 +24,7 @@ from zerver.lib.digest import (
 from zerver.lib.message import get_last_message_id
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import cache_tries_captured, queries_captured
+from zerver.lib.test_helpers import cache_tries_captured
 from zerver.models import (
     Client,
     Message,
@@ -69,10 +69,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         # This code is run when we call `confirmation.models.create_confirmation_link`.
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(othello, "digest")
-        with queries_captured() as queries:
+        with self.assert_database_query_count(9):
             bulk_handle_digest_email([othello.id], cutoff)
-
-        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -148,10 +146,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         # This code is run when we call `confirmation.models.create_confirmation_link`.
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, "digest")
-        with queries_captured() as queries:
+        with self.assert_database_query_count(9):
             bulk_handle_digest_email([polonius.id], cutoff)
-
-        self.assert_length(queries, 9)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
         kwargs = mock_send_future_email.call_args[1]
@@ -213,11 +209,10 @@ class TestDigestEmailMessages(ZulipTestCase):
         with mock.patch("zerver.lib.digest.send_future_email") as mock_send_future_email:
             digest_user_ids = [user.id for user in digest_users]
 
-            with queries_captured() as queries:
+            with self.assert_database_query_count(12):
                 with cache_tries_captured() as cache_tries:
                     bulk_handle_digest_email(digest_user_ids, cutoff)
 
-            self.assert_length(queries, 12)
             self.assert_length(cache_tries, 0)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)

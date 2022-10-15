@@ -273,18 +273,16 @@ class EditMessageTest(EditMessageTestCase):
         ]
 
         # Check number of queries performed
-        with queries_captured() as queries:
-            MessageDict.to_dict_uncached(messages)
         # 1 query for realm_id per message = 3
         # 1 query each for reactions & submessage for all messages = 2
-        self.assert_length(queries, 5)
+        with self.assert_database_query_count(5):
+            MessageDict.to_dict_uncached(messages)
 
         realm_id = 2  # Fetched from stream object
         # Check number of queries performed with realm_id
-        with queries_captured() as queries:
-            MessageDict.to_dict_uncached(messages, realm_id)
         # 1 query each for reactions & submessage for all messages = 2
-        self.assert_length(queries, 2)
+        with self.assert_database_query_count(2):
+            MessageDict.to_dict_uncached(messages, realm_id)
 
     def test_save_message(self) -> None:
         """This is also tested by a client test, but here we can verify
@@ -1294,7 +1292,9 @@ class EditMessageTest(EditMessageTestCase):
         users_to_be_notified = list(map(notify, [hamlet.id, cordelia.id, aaron.id]))
         change_all_topic_name = "Topic 1 edited"
 
-        with queries_captured() as queries:
+        # This code path adds 9 (1 + 4/user with muted topics) + 1 to
+        # the number of database queries for moving a topic.
+        with self.assert_database_query_count(19):
             check_update_message(
                 user_profile=hamlet,
                 message_id=message_id,
@@ -1305,9 +1305,6 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            # This code path adds 9 (1 + 4/user with muted topics) + 1 to
-            # the number of database queries for moving a topic.
-            self.assert_length(queries, 19)
 
         for muting_user in get_users_muting_topic(stream.id, change_all_topic_name):
             for user in users_to_be_notified:
@@ -1381,7 +1378,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1391,7 +1388,6 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 31)
 
         self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic"))
         self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic"))
@@ -1413,7 +1409,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(33):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1423,7 +1419,6 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 33)
 
         # Cordelia is not subscribed to the private stream, so
         # Cordelia should have had the topic unmuted, while Desdemona
@@ -1447,7 +1442,7 @@ class EditMessageTest(EditMessageTestCase):
         set_topic_mutes(desdemona, muted_topics)
         set_topic_mutes(cordelia, muted_topics)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=desdemona,
                 message_id=message_id,
@@ -1458,7 +1453,6 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 31)
 
         self.assertFalse(topic_is_muted(desdemona, stream.id, "New topic 2"))
         self.assertFalse(topic_is_muted(cordelia, stream.id, "New topic 2"))
@@ -1471,7 +1465,7 @@ class EditMessageTest(EditMessageTestCase):
         second_message_id = self.send_stream_message(
             hamlet, stream_name, topic_name="changed topic name", content="Second message"
         )
-        with queries_captured() as queries:
+        with self.assert_database_query_count(25):
             check_update_message(
                 user_profile=desdemona,
                 message_id=second_message_id,
@@ -1482,7 +1476,6 @@ class EditMessageTest(EditMessageTestCase):
                 send_notification_to_new_thread=False,
                 content=None,
             )
-            self.assert_length(queries, 25)
 
         self.assertTrue(topic_is_muted(desdemona, new_public_stream.id, "changed topic name"))
         self.assertTrue(topic_is_muted(cordelia, new_public_stream.id, "changed topic name"))
@@ -2236,7 +2229,7 @@ class EditMessageTest(EditMessageTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with queries_captured() as queries, cache_tries_captured() as cache_tries:
+        with self.assert_database_query_count(53), cache_tries_captured() as cache_tries:
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -2246,7 +2239,6 @@ class EditMessageTest(EditMessageTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assert_length(queries, 53)
         self.assert_length(cache_tries, 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")

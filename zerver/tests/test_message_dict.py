@@ -7,7 +7,7 @@ from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import make_client, queries_captured
+from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
 from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import (
@@ -177,13 +177,12 @@ class MessageDictTest(ZulipTestCase):
         self.assertTrue(num_ids >= 600)
 
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(7):
             rows = list(MessageDict.get_raw_db_rows(ids))
 
             objs = [MessageDict.build_dict_from_raw_db_row(row) for row in rows]
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
-        self.assert_length(queries, 7)
         self.assert_length(rows, num_ids)
 
     def test_applying_markdown(self) -> None:

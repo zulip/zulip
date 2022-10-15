@@ -21,7 +21,6 @@ from zerver.lib.cache import (
     validate_cache_key,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
 from zerver.models import UserProfile, get_realm, get_system_bot, get_user, get_user_profile_by_id
 
 
@@ -86,12 +85,11 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
         with patch("zerver.lib.cache.cache_set") as mock_set, self.assertLogs(level="WARNING") as m:
-            with queries_captured() as queries:
+            with self.assert_database_query_count(1):
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
             self.assert_length(m.output, 1)
             self.assertEqual(result, hamlet)
-            self.assert_length(queries, 1)
             mock_set.assert_not_called()
 
     def test_cache_with_key_key_too_long(self) -> None:
@@ -105,12 +103,11 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
 
         with patch("zerver.lib.cache.cache_set") as mock_set, self.assertLogs(level="WARNING") as m:
-            with queries_captured() as queries:
+            with self.assert_database_query_count(1):
                 result = get_user_function_with_bad_cache_keys(hamlet.id)
 
             self.assert_length(m.output, 1)
             self.assertEqual(result, hamlet)
-            self.assert_length(queries, 1)
             mock_set.assert_not_called()
 
     def test_cache_with_key_good_key(self) -> None:
@@ -123,19 +120,17 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         hamlet = self.example_user("hamlet")
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(1):
             result = get_user_function_with_good_cache_keys(hamlet.id)
 
         self.assertEqual(result, hamlet)
-        self.assert_length(queries, 1)
 
         # The previous function call should have cached the result correctly, so now
         # no database queries should happen:
-        with queries_captured(keep_cache_warm=True) as queries_two:
+        with self.assert_database_query_count(0, keep_cache_warm=True):
             result_two = get_user_function_with_good_cache_keys(hamlet.id)
 
         self.assertEqual(result_two, hamlet)
-        self.assert_length(queries_two, 0)
 
     def test_cache_with_key_none_values(self) -> None:
         def cache_key_function(user_id: int) -> str:
@@ -151,17 +146,15 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
         last_user = UserProfile.objects.last()
         assert last_user is not None
         last_user_id = last_user.id
-        with queries_captured() as queries:
+        with self.assert_database_query_count(1):
             result = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result, None)
-        self.assert_length(queries, 1)
 
-        with queries_captured(keep_cache_warm=True) as queries:
+        with self.assert_database_query_count(0, keep_cache_warm=True):
             result_two = get_user_function_can_return_none(last_user_id + 1)
 
         self.assertEqual(result_two, None)
-        self.assert_length(queries, 0)
 
 
 class SafeCacheFunctionsTest(ZulipTestCase):
