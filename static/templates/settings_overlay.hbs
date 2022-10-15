@@ -63,7 +63,7 @@
                         {{/unless}}
                     </li>
                     <li class="collapse-org-settings {{#unless is_admin}}hide-org-settings{{/unless}}" tabindex="0" data-section="organization-settings">
-                        <i class="icon fa fa-flask" aria-hidden="true"></i>
+                        <i class="icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Organization settings" }}</div>
                         {{#unless is_admin}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings' }}"></i>
@@ -116,7 +116,7 @@
                     {{/unless}}
                     {{#unless is_guest}}
                     <li tabindex="0" data-section="deactivated-users-admin">
-                        <i class="icon fa fa-trash-o" aria-hidden="true"></i>
+                        <i class="icon fa fa-user-times" aria-hidden="true"></i>
                         <div class="text">{{t "Deactivated users" }}</div>
                         {{#unless is_admin}}
                         <i class="locked fa fa-lock" title="{{t 'Only organization administrators can edit these settings.' }}"></i>
@@ -157,7 +157,7 @@
                     </li>
                     {{#if is_admin}}
                     <li tabindex="0" data-section="profile-field-settings">
-                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <i class="icon fa fa-id-card" aria-hidden="true"></i>
                         <div class="text">{{t "Custom profile fields" }}</div>
                     </li>
                     {{/if}}
