@@ -12,7 +12,6 @@ from zerver.actions.custom_profile_fields import (
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import (
     CustomProfileField,
@@ -908,12 +907,10 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         test_bot = self.create_test_bot("foo-bot", iago)
         self.login_user(iago)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(4):
             response = self.client_get(
                 "/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"}
             )
-
-        self.assert_length(queries, 4)
 
         raw_users_data = self.assert_json_success(response)["members"]
 

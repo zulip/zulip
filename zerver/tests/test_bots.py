@@ -16,7 +16,7 @@ from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, queries_captured
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.models import (
     Realm,
     Service,
@@ -153,12 +153,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(num_bots)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(3):
             users_result = self.client_get("/json/users")
 
         self.assert_json_success(users_result)
-
-        self.assert_length(queries, 3)
 
     def test_add_bot(self) -> None:
         hamlet = self.example_user("hamlet")

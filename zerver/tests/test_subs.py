@@ -74,7 +74,6 @@ from zerver.lib.test_helpers import (
     get_subscription,
     most_recent_message,
     most_recent_usermessage,
-    queries_captured,
     reset_emails_in_zulip_realm,
 )
 from zerver.lib.types import (
@@ -2216,7 +2215,7 @@ class StreamAdminTest(ZulipTestCase):
         for user in other_sub_users:
             self.subscribe(user, stream_name)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(query_count):
             with cache_tries_captured() as cache_tries:
                 result = self.client_delete(
                     "/json/users/me/subscriptions",
@@ -2225,7 +2224,6 @@ class StreamAdminTest(ZulipTestCase):
                         "principals": orjson.dumps(principals).decode(),
                     },
                 )
-        self.assert_length(queries, query_count)
         if cache_count is not None:
             self.assert_length(cache_tries, cache_count)
 
@@ -4225,13 +4223,12 @@ class SubscriptionAPITest(ZulipTestCase):
         events: List[Mapping[str, Any]] = []
         flush_per_request_caches()
         with self.tornado_redirected_to_list(events, expected_num_events=5):
-            with queries_captured() as queries:
+            with self.assert_database_query_count(37):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
                     dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 )
-        self.assert_length(queries, 37)
 
         for ev in [x for x in events if x["event"]["type"] not in ("message", "stream")]:
             if ev["event"]["op"] == "add":
@@ -4250,13 +4247,12 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Now add ourselves
         with self.tornado_redirected_to_list(events, expected_num_events=2):
-            with queries_captured() as queries:
+            with self.assert_database_query_count(12):
                 self.common_subscribe_to_streams(
                     self.test_user,
                     streams_to_sub,
                     dict(principals=orjson.dumps([self.test_user.id]).decode()),
                 )
-        self.assert_length(queries, 12)
 
         add_event, add_peer_event = events
         self.assertEqual(add_event["event"]["type"], "subscription")
@@ -4518,7 +4514,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Sends 3 peer-remove events and 2 unsubscribe events.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=5):
-            with queries_captured() as query_count:
+            with self.assert_database_query_count(16):
                 with cache_tries_captured() as cache_count:
                     bulk_remove_subscriptions(
                         realm,
@@ -4527,7 +4523,6 @@ class SubscriptionAPITest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(query_count, 16)
         self.assert_length(cache_count, 3)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
@@ -4577,7 +4572,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # any tornado subscription events
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=0):
-            with queries_captured() as queries:
+            with self.assert_database_query_count(4):
                 self.common_subscribe_to_streams(
                     mit_user,
                     stream_names,
@@ -4585,7 +4580,6 @@ class SubscriptionAPITest(ZulipTestCase):
                     subdomain="zephyr",
                     allow_fail=True,
                 )
-        self.assert_length(queries, 4)
 
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             bulk_remove_subscriptions(
@@ -4627,7 +4621,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         test_user_ids = [user.id for user in test_users]
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(19):
             with cache_tries_captured() as cache_tries:
                 with mock.patch("zerver.views.streams.send_messages_for_new_subscribers"):
                     self.common_subscribe_to_streams(
@@ -4638,7 +4632,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # The only known O(N) behavior here is that we call
         # principal_to_user_profile for each of our users.
-        self.assert_length(queries, 19)
         self.assert_length(cache_tries, 4)
 
     def test_subscriptions_add_for_principal(self) -> None:
@@ -5102,29 +5095,27 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with queries_captured() as queries:
+        with self.assert_database_query_count(37):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[0]],
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
             )
-        self.assert_length(queries, 37)
 
         # Test creating private stream.
-        with queries_captured() as queries:
+        with self.assert_database_query_count(36):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[1]],
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 invite_only=True,
             )
-        self.assert_length(queries, 36)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(45):
             self.common_subscribe_to_streams(
                 self.test_user,
                 [new_streams[2]],
@@ -5133,7 +5124,6 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=orjson.dumps([user1.id, user2.id]).decode(),
                 ),
             )
-        self.assert_length(queries, 45)
 
 
 class GetStreamsTest(ZulipTestCase):
@@ -5544,13 +5534,12 @@ class GetSubscribersTest(ZulipTestCase):
             polonius.id,
         ]
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(46):
             self.common_subscribe_to_streams(
                 self.user_profile,
                 streams,
                 dict(principals=orjson.dumps(users_to_subscribe).decode()),
             )
-        self.assert_length(queries, 46)
 
         msg = f"""
             @**King Hamlet|{hamlet.id}** subscribed you to the following streams:
@@ -5593,7 +5582,7 @@ class GetSubscribersTest(ZulipTestCase):
         for user in [cordelia, othello, polonius]:
             self.assert_user_got_subscription_notification(user, msg)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(4):
             subscribed_streams, _ = gather_subscriptions(
                 self.user_profile, include_subscribers=True
             )
@@ -5602,7 +5591,6 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assert_length(sub["subscribers"], len(users_to_subscribe))
-        self.assert_length(queries, 4)
 
     def test_never_subscribed_streams(self) -> None:
         """
@@ -5669,11 +5657,10 @@ class GetSubscribersTest(ZulipTestCase):
         create_private_streams()
 
         def get_never_subscribed() -> List[NeverSubscribedStreamDict]:
-            with queries_captured() as queries:
+            with self.assert_database_query_count(4):
                 sub_data = gather_subscriptions_helper(self.user_profile)
                 self.verify_sub_fields(sub_data)
             never_subscribed = sub_data.never_subscribed
-            self.assert_length(queries, 4)
 
             # Ignore old streams.
             never_subscribed = [dct for dct in never_subscribed if dct["name"].startswith("test_")]
@@ -5834,7 +5821,7 @@ class GetSubscribersTest(ZulipTestCase):
             subdomain="zephyr",
         )
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(4):
             subscribed_streams, _ = gather_subscriptions(mit_user_profile, include_subscribers=True)
 
         self.assertGreaterEqual(len(subscribed_streams), 2)
@@ -5845,7 +5832,6 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assert_length(sub["subscribers"], len(users_to_subscribe))
             else:
                 self.assert_length(sub["subscribers"], 0)
-        self.assert_length(queries, 4)
 
     def test_nonsubscriber(self) -> None:
         """

@@ -42,7 +42,6 @@ from zerver.lib.test_helpers import (
     avatar_disk_path,
     create_s3_buckets,
     get_test_image_file,
-    queries_captured,
     read_test_image_file,
     use_s3_backend,
 )
@@ -757,21 +756,19 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(hamlet)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
         self.logout()
-        self.assert_length(queries, 5)
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(6):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
         self.logout()
-        self.assert_length(queries, 6)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             response = self.api_get(user, uri)
@@ -820,39 +817,35 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Owner user should be able to view file
         self.login_user(user)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(5):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
         self.logout()
-        self.assert_length(queries, 5)
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(6):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
         self.logout()
-        self.assert_length(queries, 6)
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(9):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
-        self.assert_length(queries, 9)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             self.login_user(user)
-            with queries_captured() as queries:
+            # It takes a few extra queries to verify lack of access with shared history.
+            with self.assert_database_query_count(8):
                 response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
-            # It takes a few extra queries to verify lack of access with shared history.
-            self.assert_length(queries, 8)
             self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
@@ -891,25 +884,22 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         user = self.example_user("aaron")
         self.login_user(user)
-        with queries_captured() as queries:
+        with self.assert_database_query_count(8):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-        self.assert_length(queries, 8)
 
         self.subscribe(user, "test-subscribe 1")
         self.subscribe(user, "test-subscribe 2")
 
-        with queries_captured() as queries:
+        # If we were accidentally one query per message, this would be 20+
+        with self.assert_database_query_count(9):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             self.assert_streaming_content(response, b"zulip!")
-        # If we were accidentally one query per message, this would be 20+
-        self.assert_length(queries, 9)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(6):
             self.assertTrue(validate_attachment_request(user, fp_path_id))
-        self.assert_length(queries, 6)
 
         self.logout()
 

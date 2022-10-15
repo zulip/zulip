@@ -42,7 +42,6 @@ from zerver.lib.test_helpers import (
     message_stream_count,
     most_recent_message,
     most_recent_usermessage,
-    queries_captured,
     reset_emails_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
@@ -1622,7 +1621,7 @@ class StreamMessagesTest(ZulipTestCase):
         # during the course of the unit test.
         flush_per_request_caches()
         cache_delete(get_stream_cache_key(stream_name, realm.id))
-        with queries_captured() as queries:
+        with self.assert_database_query_count(13):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1630,8 +1629,6 @@ class StreamMessagesTest(ZulipTestCase):
                 topic=topic_name,
                 body=content,
             )
-
-        self.assert_length(queries, 13)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")

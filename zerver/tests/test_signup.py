@@ -956,11 +956,10 @@ class LoginTest(ZulipTestCase):
         flush_per_request_caches()
         ContentType.objects.clear_cache()
 
-        with queries_captured() as queries, cache_tries_captured() as cache_tries:
+        # Ensure the number of queries we make is not O(streams)
+        with self.assert_database_query_count(96), cache_tries_captured() as cache_tries:
             with self.captureOnCommitCallbacks(execute=True):
                 self.register(self.nonreg_email("test"), "test")
-        # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 96)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related

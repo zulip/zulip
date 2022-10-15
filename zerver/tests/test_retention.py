@@ -19,7 +19,7 @@ from zerver.lib.retention import (
     restore_retention_policy_deletions_for_stream,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import queries_captured, zulip_reaction_info
+from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.lib.upload import create_attachment
 from zerver.models import (
     ArchivedAttachment,
@@ -1053,10 +1053,9 @@ class TestDoDeleteMessages(ZulipTestCase):
         message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with queries_captured() as queries:
+        with self.assert_database_query_count(19):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
-        self.assert_length(queries, 19)
 
         archived_messages = ArchivedMessage.objects.filter(id__in=message_ids)
         self.assertEqual(archived_messages.count(), len(message_ids))

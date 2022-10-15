@@ -18,12 +18,7 @@ from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    HostRequestMock,
-    dummy_handler,
-    queries_captured,
-    stub_event_queue_user_events,
-)
+from zerver.lib.test_helpers import HostRequestMock, dummy_handler, stub_event_queue_user_events
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     Realm,
@@ -1114,11 +1109,9 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         flush_per_request_caches()
-        with queries_captured() as queries:
+        with self.assert_database_query_count(37):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
-
-        self.assert_length(queries, 37)
 
         expected_counts = dict(
             alert_words=1,
@@ -1165,14 +1158,13 @@ class FetchQueriesTest(ZulipTestCase):
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
             flush_per_request_caches()
-            with queries_captured() as queries:
+            with self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
                 else:
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, event_types=event_types)
-            self.assert_length(queries, count)
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
