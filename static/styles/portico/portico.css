@@ -517,17 +517,6 @@ input.text-error {
             border: 1px solid hsl(0, 0%, 87%);
             box-shadow: 0 2px 5px hsla(0, 0%, 0%, 0.1);
 
-            &::before {
-                content: "\25B2";
-                position: absolute;
-                top: -4px;
-                right: 9px;
-                font-size: 0.5em;
-                color: hsl(0, 0%, 87%);
-                line-height: 0;
-                transform: scale(1.8, 1);
-            }
-
             li {
                 display: list-item;
                 margin: 0;
