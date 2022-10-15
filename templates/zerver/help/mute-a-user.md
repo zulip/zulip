@@ -47,34 +47,24 @@ have the following effects:
 
 [view-emoji-reactions]: /help/emoji-reactions#see-who-reacted-to-a-message
 
-### From the message view
+## Mute a user
 
 {start_tabs}
 
-1. Click on a user's profile picture or [mention](/help/mention-a-user-or-group).
+{!profile-summary-three-dot-menu.md!}
 
 1. Click **Mute this user**.
 
 1. On the confirmation popup, click **Confirm**.
 
-{end_tabs}
+!!! Tip ""
 
-### Via the right sidebar
-
-{start_tabs}
-
-1. Hover over a user's name in the right sidebar.
-
-1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to
-  the right of their name.
-
-1. Click **Mute this user**.
-
-1. On the confirmation popup, click **Confirm**.
+    You can also click on a user's profile picture or name on a
+    message they sent, and skip to step 3.
 
 {end_tabs}
 
-### Re-hide a message that has been revealed
+## Re-hide a message that has been revealed
 
 {start_tabs}
 
@@ -84,7 +74,7 @@ have the following effects:
 
 {end_tabs}
 
-### See your list of muted users
+## See your list of muted users
 
 {start_tabs}
 
