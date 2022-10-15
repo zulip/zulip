@@ -5,6 +5,8 @@ message. Mentions follow the same
 [notification settings](/help/pm-mention-alert-notifications) as private
 messages and alert words.
 
+## Mention a user or group
+
 ### From the compose box
 
 {start_tabs}
@@ -23,11 +25,22 @@ messages and alert words.
 
 {!right-sidebar-profile-menu.md!}
 
-1. Select **Reply mentioning user**.
+1. Select **Copy mention syntax** to add it to your clipboard.
+
+1. Paste the user's mention syntax in the compose box.
 
 {end_tabs}
 
-Alternatively, click on the profile picture of any user in the main message feed.
+### Via a message
+
+{start_tabs}
+
+1. Click on a user's profile picture or name on a message they sent.
+
+1. Select **Reply mentioning user** to start a reply to the conversation
+   with a mention inserted into the compose box.
+
+{end_tabs}
 
 ## Silently mention a user
 
@@ -58,3 +71,4 @@ streams](/help/stream-notifications).
 ## Related articles
 
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
+* [Quote and reply](/help/quote-and-reply)
