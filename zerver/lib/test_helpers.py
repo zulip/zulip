@@ -10,13 +10,13 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Generator,
     Iterable,
     Iterator,
     List,
     Mapping,
     Optional,
     Tuple,
+    TypedDict,
     TypeVar,
     Union,
     cast,
@@ -131,16 +131,21 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
+class CapturedQueryDict(TypedDict):
+    sql: bytes
+    time: str
+
+
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Generator[List[Dict[str, Union[str, bytes]]], None, None]:
+) -> Iterator[List[CapturedQueryDict]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[Dict[str, Union[str, bytes]]] = []
+    queries: List[CapturedQueryDict] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
