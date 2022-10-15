@@ -8,16 +8,13 @@ organization administrators can
 
 Organization administrators can always change any user's name.
 
-### Change a user's name
+## Change a user's name
 
 {start_tabs}
 
 {tab|via-user-profile}
 
-1. Hover over a user's name in the right sidebar.
-
-1. Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>)
-   to the right of their name.
+{!profile-summary-three-dot-menu.md!}
 
 1. Click **Manage this user**.
 
