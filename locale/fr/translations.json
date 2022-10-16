@@ -358,6 +358,7 @@
   "Duration editing is allowed after posting (minutes)": "Durée pendant laquelle l'édition est autorisée après la publication (minutes)",
   "EDITED": "MODIFIÉ",
   "Edit": "Modifier",
+  "Edit selected message or view message source": "Modifier le message sélectionné ou afficher la source du message",
   "Edit #{stream_name}": "Modifier #{stream_name}",
   "Edit bot": "Modifier robot",
   "Edit custom profile field": "Modifier le champ de profil personnalisé",
