@@ -26,7 +26,7 @@ link_mapping = {
     ],
     "display-settings": ["Personal settings", "Display settings", "/#settings/display-settings"],
     "notifications": ["Personal settings", "Notifications", "/#settings/notifications"],
-    "your-bots": ["Personal settings", "Bots", "/#settings/your-bots"],
+    "your-bots": ["Personal settings", "your Bots", "/#settings/your-bots"],
     "alert-words": ["Personal settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Personal settings", "Uploaded files", "/#settings/uploaded-files"],
     "muted-topics": ["Personal settings", "Muted topics", "/#settings/muted-topics"],
@@ -64,7 +64,11 @@ link_mapping = {
         "Deactivated users",
         "/#organization/deactivated-users-admin",
     ],
-    "bot-list-admin": ["Manage organization", "Bots", "/#organization/bot-list-admin"],
+    "bot-list-admin": [
+        "Manage organization",
+        "your organization's Bots",
+        "/#organization/bot-list-admin",
+    ],
     "default-streams-list": [
         "Manage organization",
         "Default streams",

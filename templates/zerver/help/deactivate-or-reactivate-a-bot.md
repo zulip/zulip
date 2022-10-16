@@ -9,16 +9,63 @@ add. Organization admins can prevent users from reactivating bots by
 Organization administrators can also deactivate or reactivate any existing
 bot, regardless of who owns them.
 
-### Deactivate or reactivate a bot
+## Deactivate a bot
 
 {start_tabs}
 
+{tab|via-personal-settings}
+
+{settings_tab|your-bots}
+
+1. Click the **deactivate bot** (<i class="fa fa-user-times"></i>) icon on the profile
+   card for the bot you want to deactivate.
+
+1. Approve by clicking **Deactivate**.
+
+!!! tip ""
+
+    You can also click the **pencil** (<i class="fa fa-pencil"></i>) icon,
+    scroll down to the bottom, and click **Deactivate bot**.
+
+{tab|via-organization-settings}
+
 {settings_tab|bot-list-admin}
 
-4. Find the bot that you would like to manage and click
-**Deactivate** or **Reactivate** to its right.
+1. In the **Actions** column, click the **deactivate bot** (<i class="fa fa-user-times"></i>)
+   icon for the bot you want to deactivate.
+
+1. Approve by clicking **Deactivate**.
+
+!!! tip ""
+
+    You can also click the **pencil** (<i class="fa fa-pencil"></i>) icon,
+    scroll down to the bottom, and click **Deactivate bot**.
 
 {end_tabs}
+
+## Reactivate a bot
+
+{start_tabs}
+
+{tab|via-personal-settings}
+
+{settings_tab|your-bots}
+
+1. Click the **Inactive bots** tab.
+
+1. Click **Reactivate bot** on the profile card for the bot you want to reactivate.
+
+{tab|via-organization-settings}
+
+{settings_tab|bot-list-admin}
+
+1. In the **Actions** column, click the **reactivate bot** (<i class="fa fa-user-plus"></i>)
+   icon for the bot you want to reactivate.
+
+1. Approve by clicking **Confirm**.
+
+{end_tabs}
+
 
 ## Related articles
 

@@ -77,6 +77,7 @@ TAB_SECTION_LABELS = {
     "web-public-streams": "Web-public streams",
     "via-user-profile": "Via the user's profile",
     "via-organization-settings": "Via organization settings",
+    "via-personal-settings": "Via personal settings",
     "default-subdomain": "Default subdomain",
     "custom-subdomain": "Custom subdomain",
     "zulip-cloud": "Zulip Cloud",

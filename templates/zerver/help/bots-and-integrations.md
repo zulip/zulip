@@ -9,7 +9,7 @@ Bots allow you to
 A bot that sends content to or from another product is often called an
 **integration**.
 
-### Pre-made bots
+## Pre-made bots
 
 Zulip natively supports integrations with over one hundred products, and with
 almost a thousand more through Zapier and IFTTT. If you're looking to add an
