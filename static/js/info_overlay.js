@@ -22,99 +22,147 @@ export let toggler;
 
 const markdown_help_rows = [
     {
-        markdown: "*italic*",
+        markdown: "*" + $t({defaultMessage: "italic"}) + "*",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>I</kbd>)",
     },
     {
-        markdown: "**bold**",
+        markdown: "**" + $t({defaultMessage: "Bold"}).toLowerCase() + "**",
         usage_html: "(or <kbd>Ctrl</kbd>+<kbd>B</kbd>)",
     },
     {
-        markdown: "~~strikethrough~~",
+        markdown: "~~" + $t({defaultMessage: "strikethrough"}) + "~~",
     },
     {
         markdown: "[Zulip website](https://zulip.org)",
-        usage_html: "(or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
+        usage_html:
+            "(" + $t({defaultMessage: "or"}) + " <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>)",
     },
     {
-        markdown: `\
-* Milk
-* Tea
-  * Green tea
-  * Black tea
-  * Oolong tea
-* Coffee`,
+        markdown:
+            `\
+* ` +
+            $t({defaultMessage: "Milk"}) +
+            `
+* ` +
+            $t({defaultMessage: "Tea"}) +
+            `
+  * ` +
+            $t({defaultMessage: "Green tea"}) +
+            `
+  * ` +
+            $t({defaultMessage: "Black tea"}) +
+            `
+  * ` +
+            $t({defaultMessage: "Oolong tea"}) +
+            `
+* ` +
+            $t({defaultMessage: "Coffee"}),
     },
     {
-        markdown: `\
-1. Milk
-1. Tea
-1. Coffee`,
+        markdown:
+            `\
+1. ` +
+            $t({defaultMessage: "Milk"}) +
+            `
+2. ` +
+            $t({defaultMessage: "Tea"}) +
+            `
+3. ` +
+            $t({defaultMessage: "Coffee"}),
     },
     {
         markdown: ":heart:",
         usage_html:
-            '(and <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank" rel="noopener noreferrer">many others</a>, from the <a href="https://code.google.com/p/noto/" target="_blank" rel="noopener noreferrer">Noto Project</a>)',
+            "(" +
+            $t({defaultMessage: "and"}) +
+            ' <a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank" rel="noopener noreferrer">' +
+            $t({defaultMessage: "many others"}) +
+            "</a>, " +
+            $t({defaultMessage: "from the"}) +
+            ' <a href="https://code.google.com/p/noto/" target="_blank" rel="noopener noreferrer">' +
+            $t({defaultMessage: "Noto Project"}) +
+            "</a>)",
     },
     {
         markdown: "@**Joe Smith**",
-        usage_html: "(autocompletes from @joe)",
+        usage_html: "(" + $t({defaultMessage: "autocompletes from"}) + " @joe)",
         output_html: '<p><span class="user-mention">@Joe Smith</span></p>',
-        effect_html: "(notifies Joe Smith)",
+        effect_html: "(" + $t({defaultMessage: "notifies"}) + " Joe Smith)",
     },
     {
         markdown: "@_**Joe Smith**",
-        usage_html: "(autocompletes from @_joe)",
+        usage_html: "(" + $t({defaultMessage: "autocompletes from"}) + " @_joe)",
         output_html: '<p><span class="user-mention">Joe Smith</span></p>',
-        effect_html: "(links to profile but doesn't notify Joe Smith)",
+        effect_html:
+            "(" + $t({defaultMessage: "links to profile but doesn't notify Joe Smith"}) + ")",
     },
     {
         markdown: "@**all**",
-        effect_html: "(notifies all recipients)",
+        effect_html: "(" + $t({defaultMessage: "notifies all recipients"}) + ")",
     },
     {
-        markdown: "#**streamName**",
-        output_html: "<p><a>#streamName</a></p>",
-        effect_html: "(links to a stream)",
+        markdown: "#**" + $t({defaultMessage: "streamName"}) + "**",
+        output_html: "<p><a>#" + $t({defaultMessage: "streamName"}) + "</a></p>",
+        effect_html: "(" + $t({defaultMessage: "links to a stream"}) + ")",
     },
     {
-        markdown: "/me is busy working",
-        output_html: '<p><span class="sender_name-in-status">Iago</span> is busy working</p>',
+        markdown: "/me " + $t({defaultMessage: "is busy working"}),
+        output_html:
+            '<p><span class="sender_name-in-status">Iago</span> ' +
+            $t({defaultMessage: "is busy working"}) +
+            "</p>",
     },
     {
-        markdown: `/poll What did you drink this morning?
-Milk
-Tea
-Coffee`,
-        output_html: `\
+        markdown:
+            `/poll ` +
+            $t({defaultMessage: "What did you drink this morning?"}) +
+            `
+` +
+            $t({defaultMessage: "Milk"}) +
+            `
+` +
+            $t({defaultMessage: "Tea"}) +
+            `
+` +
+            $t({defaultMessage: "Coffee"}),
+        output_html:
+            `\
 <div class="poll-widget">
-    <h4 class="poll-question-header reduced-font-size">What did you drink this morning?</h4>
+    <h4 class="poll-question-header reduced-font-size">` +
+            $t({defaultMessage: "What did you drink this morning?"}) +
+            `</h4>
     <i class="fa fa-pencil poll-edit-question"></i>
     <ul class="poll-widget">
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Milk</span>
+        <span>` +
+            $t({defaultMessage: "Milk"}) +
+            `</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Tea</span>
+        <span>` +
+            $t({defaultMessage: "Tea"}) +
+            `</span>
     </li>
     <li>
         <button class="poll-vote">
             0
         </button>
-        <span>Coffee</span>
+        <span>` +
+            $t({defaultMessage: "Coffee"}) +
+            `</span>
     </li>
     </ul>
 </div>
 `,
     },
     {
-        markdown: "Some inline `code`",
+        markdown: $t({defaultMessage: "Some inline code"}),
     },
     {
         markdown: `\
@@ -146,22 +194,30 @@ def zulip():
         ),
     },
     {
-        markdown: "> Quoted",
+        markdown: "> " + $t({defaultMessage: "Quoted"}),
     },
     {
-        markdown: `\
+        markdown:
+            `\
 \`\`\`quote
-Quoted block
+` +
+            $t({defaultMessage: "Quoted block"}) +
+            `
 \`\`\``,
     },
     {
-        markdown: `\
-\`\`\`spoiler Always visible heading
-This text won't be visible until the user clicks.
+        markdown:
+            `\
+\`\`\`spoiler ` +
+            $t({defaultMessage: "Always visible heading"}) +
+            `
+` +
+            $t({defaultMessage: "This text won't be visible until the user clicks."}) +
+            `
 \`\`\``,
     },
     {
-        markdown: "Some inline math $$ e^{i \\pi} + 1 = 0 $$",
+        markdown: $t({defaultMessage: "Some inline math"}) + " $$ e^{i \\pi} + 1 = 0 $$",
     },
     {
         markdown: `\
