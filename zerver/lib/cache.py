@@ -75,7 +75,8 @@ def remote_cache_stats_finish() -> None:
     remote_cache_total_time += time.time() - remote_cache_time_start
 
 
-def get_or_create_key_prefix() -> str:
+def get_or_create_key_prefix() -> str:  # nocoverage
+    # re nocoverage, see https://github.com/zulip/zulip/pull/21835/files#r865436720
     if settings.PUPPETEER_TESTS:
         # This sets the prefix for the benefit of the Puppeteer tests.
         #
@@ -819,7 +820,8 @@ def items_tuple_to_dict(user_function: Callable[..., Any]) -> Callable[..., Any]
         if isinstance(arg, tuple):
             try:
                 return dict(arg)
-            except TypeError:
+            except TypeError:  # nocoverage
+                # todo: is 'pass' correct? will it lead to false sharing of cache entries?
                 pass
         return arg
 

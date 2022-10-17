@@ -76,8 +76,6 @@ not_yet_fully_covered = [
     # Major lib files should have 100% coverage
     "zerver/lib/addressee.py",
     "zerver/lib/markdown/__init__.py",
-    "zerver/lib/cache.py",
-    "zerver/lib/cache_helpers.py",
     "zerver/lib/i18n.py",
     "zerver/lib/send_email.py",
     "zerver/lib/url_preview/preview.py",
