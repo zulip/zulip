@@ -19,7 +19,6 @@ import * as ui_report from "./ui_report";
 
 const consts = {
     backfill_idle_time: 10 * 1000,
-    error_retry_time: 5000,
     backfill_batch_size: 1000,
     narrow_before: 50,
     narrow_after: 50,
@@ -177,7 +176,7 @@ function handle_operators_supporting_id_based_api(data) {
     return data;
 }
 
-export function load_messages(opts) {
+export function load_messages(opts, attempt = 1) {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -286,11 +285,15 @@ export function load_messages(opts) {
                 return;
             }
 
-            // We might want to be more clever here
+            // Backoff on retries, with full jitter: up to 2s, 4s, 8s, 16s, 32s
+            let delay = Math.random() * 2 ** attempt * 2000;
+            if (attempt >= 5) {
+                delay = 30000;
+            }
             ui_report.show_error($("#connection-error"));
             setTimeout(() => {
-                load_messages(opts);
-            }, consts.error_retry_time);
+                load_messages(opts, attempt + 1);
+            }, delay);
         },
     });
 }
