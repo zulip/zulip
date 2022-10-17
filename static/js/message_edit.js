@@ -440,7 +440,6 @@ function edit_message($row, raw_content) {
     }
 
     const is_editable = editability === editability_types.FULL;
-    // current message's stream has been already been added and selected in Handlebars
 
     const $form = $(
         render_message_edit_form({
