@@ -1550,14 +1550,14 @@ test("navbar_helpers", () => {
             operator: non_existent_stream,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream",
+            title: "translated: Unknown stream #Elephant",
             redirect_url_with_search: "#",
         },
         {
             operator: non_existent_stream_topic,
             is_common_narrow: true,
             icon: "question-circle-o",
-            title: "translated: Unknown stream",
+            title: "translated: Unknown stream #Elephant",
             redirect_url_with_search: "#",
         },
         {
