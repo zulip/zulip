@@ -77,9 +77,9 @@ run_test("get_editability", ({override}) => {
     assert.equal(get_editability(message, 45), editability_types.TOPIC_ONLY);
     delete message.submessages;
     message.type = "private";
-    assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
+    assert.equal(get_editability(message, 45), editability_types.NO);
     // If we don't pass a second argument, treat it as 0
-    assert.equal(get_editability(message), editability_types.NO_LONGER);
+    assert.equal(get_editability(message), editability_types.NO);
 
     message = {
         sent_by_me: false,
@@ -109,6 +109,10 @@ run_test("get_editability", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     page_params.is_admin = false;
+    message.topic = "translated: (no topic)";
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    message.topic = "test topic";
     override(settings_data, "user_can_edit_topic_of_any_message", () => true);
     assert.equal(message_edit.is_topic_editable(message), true);
 

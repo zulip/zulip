@@ -170,6 +170,10 @@
             opacity: 0.7;
         }
 
+        .unread_mention_info:not(:empty) {
+            margin-right: -5px;
+        }
+
         .unread_hidden {
             visibility: hidden;
         }
@@ -207,6 +211,10 @@
             margin-left: 10px;
             display: flex;
             flex-flow: row nowrap;
+        }
+
+        .mention_in_unread {
+            opacity: 0.7;
         }
 
         .recent_topic_actions .recent_topics_focusable {

@@ -39,16 +39,12 @@
 
 {{#if (or is_owner is_stream_edit)}}
 <div>
-    <label class="stream-title">{{t "Message retention for stream" }}
-        {{> ../help_link_widget link="/help/message-retention-policy" }}
-    </label>
-
     {{> ../settings/upgrade_tip_widget}}
 
     <div class="input-group inline-block message-retention-setting-group">
-        <div class="dropdown-title">{{t "Message retention period" }}
-            <i class="fa fa-info-circle settings-info-icon stream_message_retention_tooltip tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Only owners can change stream message retention policy.' }}"></i>
-        </div>
+        <label class="dropdown-title">{{t "Message retention period" }}
+            {{> ../help_link_widget link="/help/message-retention-policy" }}
+        </label>
         <select name="stream_message_retention_setting"
           class="stream_message_retention_setting prop-element"
           {{#if disable_message_retention_setting}}disabled{{/if}}>

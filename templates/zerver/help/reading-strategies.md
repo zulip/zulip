@@ -15,9 +15,9 @@ topic-by-topic.
 
 ### Finding a topic to read
 
-#### From Recent topics
+#### From Recent conversations
 
-{!recent-topics.md!}
+{!recent-conversations.md!}
 
 #### From the list of streams
 
@@ -62,7 +62,7 @@ like to reply to later.
 ## Related articles
 
 * [Getting started with Zulip](/help/getting-started-with-zulip)
-* [Recent topics](/help/recent-topics)
+* [Recent conversations](/help/recent-conversations)
 * [Searching for messages](/help/search-for-messages)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)

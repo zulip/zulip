@@ -521,7 +521,7 @@ export function on_topic_narrow() {
     compose_validate.warn_if_topic_resolved(true);
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
-    $("#compose-textarea").trigger("focus").trigger("select");
+    $("#compose-textarea").trigger("focus");
 }
 
 export function quote_and_reply(opts) {

@@ -1,4 +1,4 @@
-# Add custom profile fields
+# Custom profile fields
 
 {!admin-only.md!}
 
@@ -25,6 +25,19 @@ methods][authentication-production] documentation for details.
 
 1. In the **Labels** column, click and drag the vertical dots to reorder the
    list of custom profile fields.
+
+{end_tabs}
+
+## Edit a custom profile field
+
+{start_tabs}
+
+{settings_tab|profile-field-settings}
+
+1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+   icon for the profile field you want to edit.
+
+1. Edit profile field information as desired, and click **Save changes**.
 
 {end_tabs}
 
@@ -58,8 +71,8 @@ checkboxes will be disabled.
 
 {settings_tab|profile-field-settings}
 
-1. Click the **pencil** (<i class="fa fa-pencil"></i>) icon on the profile field
-   you want to edit.
+1. In the **Actions** column, click the **pencil** (<i class="fa fa-pencil"></i>)
+   icon for the profile field you want to edit.
 
 1. Toggle **Display in profile summary**.
 

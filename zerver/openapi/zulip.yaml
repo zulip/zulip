@@ -6488,7 +6488,7 @@ paths:
       tags: ["users"]
       description: |
         Retrieve details on all users in the organization. Optionally
-        includes values of [custom profile field](/help/add-custom-profile-fields).
+        includes values of [custom profile fields](/help/custom-profile-fields).
 
         You can also [fetch details on a single user](/api/get-user).
       x-curl-examples-parameters:
@@ -8227,7 +8227,7 @@ paths:
       summary: Get all custom profile fields
       tags: ["server_and_organizations"]
       description: |
-        Get all the [custom profile fields](/help/add-custom-profile-fields)
+        Get all the [custom profile fields](/help/custom-profile-fields)
         configured for the user's organization.
       responses:
         "200":
@@ -8341,7 +8341,7 @@ paths:
         endpoint allows administrative settings UI to change the field ordering.
 
         This endpoint is used to implement the dragging feature described in the
-        [custom profile fields documentation](/help/add-custom-profile-fields).
+        [custom profile fields documentation](/help/custom-profile-fields).
       x-requires-administrator: true
       parameters:
         - name: order
@@ -8365,7 +8365,7 @@ paths:
       summary: Create a custom profile field
       tags: ["server_and_organizations"]
       description: |
-        [Create a custom profile field](/help/add-custom-profile-fields) in the user's organization.
+        [Create a custom profile field](/help/custom-profile-fields#add-a-custom-profile-field) in the user's organization.
       x-requires-administrator: true
       parameters:
         - name: name
@@ -8389,8 +8389,8 @@ paths:
           in: query
           description: |
             The field type can be any of the supported custom profile field types. See the
-            [custom profile fields documentation](/help/add-custom-profile-fields)
-            more details on what each type means.
+            [custom profile fields documentation](/help/custom-profile-fields)
+            for more details on what each type means.
 
             - **1**: Short text
             - **2**: Long text
@@ -8440,7 +8440,7 @@ paths:
             The "Person picker" profile field is also not supported, but that is likely to
             be temporary.
 
-            [profile-field-types]: /help/add-custom-profile-fields#profile-field-types
+            [profile-field-types]: /help/custom-profile-fields#profile-field-types
 
             **Changes**: New in Zulip 6.0 (feature level 146).
           schema:
@@ -8516,7 +8516,7 @@ paths:
           in: query
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
-            for the web app's center panel (message feed, recent topics) on wide screens.
+            for the web app's center panel (message feed, recent conversations) on wide screens.
           schema:
             type: boolean
           example: true
@@ -8586,7 +8586,7 @@ paths:
             The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-            - "recent_topics" - Recent topics view
+            - "recent_topics" - Recent conversations view
             - "all_messages" - All messages view
           schema:
             type: string
@@ -9191,7 +9191,7 @@ paths:
         Supports everything an administrator can do to edit details of another
         user's account, including editing full name,
         [role](/help/roles-and-permissions), and [custom profile
-        fields](/help/add-custom-profile-fields).
+        fields](/help/custom-profile-fields).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - name: full_name
@@ -10544,7 +10544,7 @@ paths:
                             type: boolean
                             description: |
                               Whether to use the [maximum available screen width](/help/enable-full-width-display)
-                              for the web app's center panel (message feed, recent topics) on wide screens.
+                              for the web app's center panel (message feed, recent conversations) on wide screens.
                           high_contrast_mode:
                             type: boolean
                             description: |
@@ -10594,7 +10594,7 @@ paths:
                               The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent topics view
+                              - "recent_topics" - Recent conversations view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -12468,7 +12468,7 @@ paths:
                             type: boolean
                             description: |
                               Whether to use the [maximum available screen width](/help/enable-full-width-display)
-                              for the web app's center panel (message feed, recent topics) on wide screens.
+                              for the web app's center panel (message feed, recent conversations) on wide screens.
                           high_contrast_mode:
                             type: boolean
                             description: |
@@ -12518,7 +12518,7 @@ paths:
                               The [default view](/help/configure-default-view) used when opening a new
                               Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-                              - "recent_topics" - Recent topics view
+                              - "recent_topics" - Recent conversations view
                               - "all_messages" - All messages view
                           escape_navigates_to_default_view:
                             type: boolean
@@ -13399,7 +13399,7 @@ paths:
           in: query
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
-            for the web app's center panel (message feed, recent topics) on wide screens.
+            for the web app's center panel (message feed, recent conversations) on wide screens.
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
             the `PATCH /settings/display` endpoint.
@@ -13500,7 +13500,7 @@ paths:
             The [default view](/help/configure-default-view) used when opening a new
             Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
-            - "recent_topics" - Recent topics view
+            - "recent_topics" - Recent conversations view
             - "all_messages" - All messages view
 
             **Changes**: Before Zulip 5.0 (feature level 80), this setting was managed by
@@ -15505,15 +15505,15 @@ components:
         id:
           type: integer
           description: |
-            The ID of the custom profile field. This will be referenced in custom
-            the profile fields section of user objects.
+            The ID of the custom profile field. This will be referenced in the custom
+            profile fields section of user objects.
         type:
           type: integer
           description: |
             An integer indicating the type of the custom profile field, which determines
             how it is configured and displayed to users.
 
-            See the [Add custom profile fields](/help/add-custom-profile-fields)
+            See the [Custom profile fields](/help/custom-profile-fields#profile-field-types)
             article for details on what each type means.
 
             - **1**: Short text
@@ -15557,7 +15557,7 @@ components:
             Whether the custom profile field, display or not in the user profile summary.
 
             Currently it's value not allowed to be `true` of `Long text` and `Person picker`
-            [profile field types](/help/add-custom-profile-fields#profile-field-types).
+            [profile field types](/help/custom-profile-fields#profile-field-types).
 
             **Changes**: New in Zulip 6.0 (feature level 146).
     Hotspot:
@@ -17158,7 +17158,7 @@ components:
       name: include_custom_profile_fields
       in: query
       description: |
-        Whether the client wants [custom profile field](/help/add-custom-profile-fields)
+        Whether the client wants [custom profile field](/help/custom-profile-fields)
         data to be included in the response.
 
         **Changes**: New in Zulip 2.1.0. Previous versions do no offer these

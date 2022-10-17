@@ -32,7 +32,8 @@
     }
 }
 
-.user_full_name {
+.user_full_name,
+.bot_owner {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -345,19 +346,18 @@ ul {
         padding-right: 16px;
     }
 
+    .modal__header {
+        justify-content: center;
+    }
+
     .modal__close {
-        float: right;
-        margin: 0;
+        position: absolute;
+        right: 20px;
     }
 
     #tab-toggle {
         font-weight: initial;
-        margin: 6px 4px 6px 0;
-        width: 100%;
-
-        .tab-switcher {
-            margin-left: 2px;
-        }
+        padding: 0 16px 6px;
     }
 
     .name {
@@ -405,18 +405,9 @@ ul {
         }
     }
 
-    #name {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        max-width: 100%;
-        text-align: center;
-        line-height: 30px;
-
-        #edit-button {
-            font-size: 18px;
-            margin-left: 10px;
-        }
+    #edit-button {
+        font-size: 18px;
+        margin-left: 10px;
     }
 
     #default-section {
@@ -463,21 +454,6 @@ ul {
 
     .col-right {
         width: fit-content;
-    }
-
-    &.no-fields {
-        hr,
-        #content {
-            display: none;
-        }
-    }
-
-    &:not(.no-fields) {
-        #body {
-            padding-bottom: 10px;
-            padding-top: 4px;
-            margin-top: 10px;
-        }
     }
 
     .tab-data {
@@ -780,12 +756,22 @@ ul {
     .status_emoji {
         height: 18px;
         width: 18px;
-        top: 2px;
-
         /* Override the default 3px left margin for status emoji, which is
            intended for their presentation elsewhere to the left of a
            user's name. */
         margin-left: 0;
+        margin-right: 2px;
+    }
+
+    #status_message {
+        padding: 1px 0;
+        display: flex;
+        align-items: baseline;
+        hyphens: auto;
+    }
+
+    .status_text {
+        overflow-wrap: anywhere;
     }
 }
 

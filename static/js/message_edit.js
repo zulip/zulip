@@ -45,7 +45,6 @@ export let notify_new_thread_default = true;
 
 export const editability_types = {
     NO: 1,
-    NO_LONGER: 2,
     // Note: TOPIC_ONLY does not include stream messages with no topic sent
     // by someone else. You can edit the topic of such a message by editing
     // the topic of the whole recipient_row it appears in, but you can't
@@ -66,6 +65,10 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
     if (message.sent_by_me) {
+        return true;
+    }
+
+    if (message.topic === compose.empty_topic_placeholder()) {
         return true;
     }
 
@@ -149,7 +152,7 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (message.type === "stream") {
         return editability_types.TOPIC_ONLY;
     }
-    return editability_types.NO_LONGER;
+    return editability_types.NO;
 }
 
 export function get_deletability(message) {
@@ -180,6 +183,21 @@ export function get_deletability(message) {
         return true;
     }
     return false;
+}
+
+export function can_move_message(message) {
+    if (!page_params.realm_allow_message_editing) {
+        return false;
+    }
+
+    if (!message.is_stream) {
+        return false;
+    }
+
+    return (
+        get_editability(message) !== editability_types.NO ||
+        settings_data.user_can_move_messages_between_streams()
+    );
 }
 
 export function stream_and_topic_exist_in_edit_history(message, stream_id, topic) {

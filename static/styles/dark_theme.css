@@ -427,6 +427,7 @@ body.dark-theme {
         }
     }
 
+    .spectator_narrow_login_button,
     .top-navbar-border {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
@@ -551,6 +552,18 @@ body.dark-theme {
         color: hsl(0, 0%, 100%);
     }
 
+    .spectator_login_buttons a {
+        color: hsl(236, 33%, 90%);
+
+        &:hover {
+            color: hsl(0, 0%, 100%);
+        }
+    }
+
+    .spectator_narrow_login_button .login_button i {
+        color: hsl(236, 33%, 90%);
+    }
+
     #user_presences li .user-list-sidebar-menu-icon:hover,
     .all-messages-sidebar-menu-icon:hover,
     .starred-messages-sidebar-menu-icon:hover,
@@ -614,7 +627,7 @@ body.dark-theme {
         background-color: hsl(211, 18%, 25%) !important;
     }
 
-    .btn-recent-filters {
+    .recent_topics_container #recent_topics_table .btn-recent-filters {
         background-color: hsl(211, 29%, 14%);
         border-color: hsl(0, 0%, 0%);
         color: hsl(0, 0%, 100%);
@@ -622,6 +635,16 @@ body.dark-theme {
         &:focus {
             background-color: hsla(0, 0%, 0%, 0.5) !important;
             outline: 0;
+        }
+
+        &.fake_disabled_button {
+            cursor: not-allowed;
+            opacity: 0.5;
+
+            &:hover {
+                background-color: hsla(0, 0%, 0%, 0.5);
+                border-color: hsl(0, 0%, 0%);
+            }
         }
     }
 

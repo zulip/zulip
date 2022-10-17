@@ -1,10 +1,10 @@
-Use the **Recent topics** view to get an overview of all the ongoing
+Use the **Recent conversations** view to get an overview of all the ongoing
 conversations. This view is particularly useful for catching up on
 messages sent while you were away.
 
 {start_tabs}
 
-1. Open **Recent topics** from the left sidebar or by pressing the
+1. Open **Recent conversations** from the left sidebar or by pressing the
    <kbd>Esc</kbd> key.
 
 1. The filters at the top help you quickly find relevant conversations.

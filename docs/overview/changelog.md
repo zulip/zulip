@@ -64,9 +64,10 @@ log][commit-log] for an up-to-date list of raw changes.
   clearer and link to the Zulip server troubleshooting guide.
 - Redesigned the interface for configuring message editing and
   deletion permissions to be easier to understand.
-- Improved Recent Topics. The timestamp links now go to the latest
-  message in the topic, arrow key navigation was improved, and many
-  other bug fixes or subtle improvements.
+- Improved "Recent topics" and renamed to "Recent conversations" with
+  the addition of including private messages in the view. The timestamp
+  links now go to the latest message in the topic, arrow key navigation
+  was improved, and many other bug fixes or subtle improvements.
 - Added support for emoji added in unicode versions since 2017, which
   had previously been unavailable in Zulip. Users using the deprecated
   "Google blobs" emoji set are automatically migrated to the modern
@@ -423,7 +424,7 @@ log][commit-log] for an up-to-date list of raw changes.
   sending email notifications after a mention or PM.
 - Improved integrations: BigBlueButton, GitHub, Grafana, PagerDuty,
   and many more.
-- Improved various interaction and performance details in Recent Topics.
+- Improved various interaction and performance details in "Recent topics".
 - Improved styling for poll and todo list widgets.
 - Zulip now supports configuring the database name and username when
   using a remote Postgres server. Previously, these were hardcoded to "zulip".
@@ -768,7 +769,7 @@ log][commit-log] for an up-to-date list of raw changes.
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
 - Added support for muting another user.
-- Recent topics is no longer beta, no longer an overlay, supports
+- "Recent topics" is no longer beta, no longer an overlay, supports
   composing messages, and is now the default view. The previous
   default view, "All messages", is still available, and the default
   view can now be configured via "Display settings".
@@ -1049,7 +1050,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Redesigned the top navbar/search area to be much cleaner and show
   useful data like subscriber counts and stream descriptions in
   default views.
-- Added a new "recent topics" widget, which lets one browse recent
+- Added a new "Recent topics" widget, which lets one browse recent
   and ongoing conversations at a glance. We expect this widget to
   replace "All messages" as the default view in Zulip in the
   next major release.
@@ -2833,7 +2834,7 @@ running a version from before 1.7 should upgrade directly to 1.7.1.
 - Added easy configuration support for a remote PostgreSQL database.
 - Added extensive documentation on scalability, backups, and security.
 - Recent private message threads are now displayed expanded similar to
-  the pre-existing recent topics feature.
+  the pre-existing "Recent topics" feature.
 - Made it possible to set LDAP and EMAIL_HOST passwords in
   /etc/zulip/secrets.conf.
 - Improved the styling for the Administration page and added tabs.

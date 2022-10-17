@@ -341,8 +341,15 @@ function render_user_info_popover(
     init_email_clipboard();
     init_email_tooltip(user);
     const $user_name_element = $popover_content.find(".user_full_name");
+    const $bot_owner_element = $popover_content.find(".bot_owner");
     if ($user_name_element.prop("clientWidth") < $user_name_element.prop("scrollWidth")) {
         $user_name_element.addClass("tippy-zulip-tooltip");
+    }
+    if (
+        args.bot_owner &&
+        $bot_owner_element.prop("clientWidth") < $bot_owner_element.prop("scrollWidth")
+    ) {
+        $bot_owner_element.addClass("tippy-zulip-tooltip");
     }
 
     // Note: We pass the normal-size avatar in initial rendering, and
@@ -534,8 +541,8 @@ export function toggle_actions_popover(element, id) {
             !message_container.is_hidden &&
             not_spectator;
         const editability = message_edit.get_editability(message);
-        const is_stream_editable =
-            message.is_stream && settings_data.user_can_move_messages_between_streams();
+        const can_move_message = message_edit.can_move_message(message);
+
         let editability_menu_item;
         let move_message_menu_item;
         let view_source_menu_item;
@@ -543,13 +550,10 @@ export function toggle_actions_popover(element, id) {
         if (editability === message_edit.editability_types.FULL) {
             editability_menu_item = $t({defaultMessage: "Edit message"});
             if (message.is_stream) {
-                move_message_menu_item = $t({defaultMessage: "Move message"});
+                move_message_menu_item = $t({defaultMessage: "Move messages"});
             }
-        } else if (
-            editability === message_edit.editability_types.TOPIC_ONLY ||
-            is_stream_editable
-        ) {
-            move_message_menu_item = $t({defaultMessage: "Move message"});
+        } else if (can_move_message) {
+            move_message_menu_item = $t({defaultMessage: "Move messages"});
             view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
             view_source_menu_item = $t({defaultMessage: "View message source"});

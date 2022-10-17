@@ -150,6 +150,7 @@ mock_esm("../../static/js/unread", {
         }
         return 1;
     },
+    topic_has_any_unread_mentions: () => false,
 });
 
 const {all_messages_data} = zrequire("all_messages_data");
@@ -293,6 +294,7 @@ function generate_topic_data(topic_info_array) {
             conversation_key: get_topic_key(stream_id, topic),
             topic_url: "https://www.example.com",
             unread_count,
+            mention_in_unread: false,
             muted,
             topic_muted: muted,
             participated,

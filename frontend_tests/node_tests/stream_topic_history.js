@@ -10,6 +10,7 @@ const message_util = mock_esm("../../static/js/message_util");
 
 const all_messages_data = zrequire("all_messages_data");
 const unread = zrequire("unread");
+const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
@@ -266,6 +267,7 @@ test("test_unread_logic", () => {
         msg.type = "stream";
         msg.stream_id = stream_id;
         msg.unread = true;
+        message_store.update_message_cache(msg);
     }
 
     unread.process_loaded_messages(msgs);

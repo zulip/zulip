@@ -128,12 +128,27 @@ export function confirm_delete_all_drafts() {
     });
 }
 
-export function rename_topic(stream_id, old_topic, new_topic) {
+export function rename_stream_recipient(old_stream_id, old_topic, new_stream_id, new_topic) {
     const current_drafts = draft_model.get();
     for (const draft_id of Object.keys(current_drafts)) {
         const draft = current_drafts[draft_id];
-        if (util.same_stream_and_topic(draft, {stream_id, topic: old_topic})) {
-            draft.topic = new_topic;
+        if (util.same_stream_and_topic(draft, {stream_id: old_stream_id, topic: old_topic})) {
+            // If new_stream_id is undefined, that means the stream wasn't updated.
+            if (new_stream_id !== undefined) {
+                draft.stream_id = new_stream_id;
+                // TODO: For now we need both a stream_id and stream (stream name)
+                // because there can be partial input in the stream field.
+                // Once we complete our UI plan to change the stream input field
+                // to a dropdown_list_widget, there will no longer be the possibility
+                // of invalid partial input in the stream field, and we can have the
+                // drafts system ignore the legacy `stream` field, using only `stream_id`.
+                // After enough drafts are autodeleted, we'd no longer have a `stream` field.
+                draft.stream = sub_store.get(new_stream_id).name;
+            }
+            // If new_topic is undefined, that means the topic wasn't updated.
+            if (new_topic !== undefined) {
+                draft.topic = new_topic;
+            }
             draft_model.editDraft(draft_id, draft, false);
         }
     }

@@ -69,7 +69,7 @@ TAB_SECTION_LABELS = {
     "custom-proxy-settings": "Custom proxy settings",
     "stream": "From a stream view",
     "not-stream": "From other views",
-    "via-recent-topics": "Via recent topics",
+    "via-recent-conversations": "Via recent conversations",
     "via-left-sidebar": "Via left sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
     "public-streams": "Public streams",

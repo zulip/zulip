@@ -77,7 +77,7 @@
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
-* [Recent topics](/help/recent-topics)
+* [Recent conversations](/help/recent-conversations)
 * [Marking messages as read](/help/marking-messages-as-read)
 * [Marking messages as unread](/help/marking-messages-as-unread)
 * [Emoji reactions](/help/emoji-reactions)
@@ -153,7 +153,7 @@
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
-* [Add custom profile fields](/help/add-custom-profile-fields)
+* [Custom profile fields](/help/custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language](/help/configure-organization-language)
 * [User groups](/help/user-groups)

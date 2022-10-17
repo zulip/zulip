@@ -103,7 +103,7 @@ It just worked.”
 Zulip’s unique combination of [topic-based
 organization](/why-zulip/) with a casual chat app feel helps
 the Lean community create a welcoming environment for newcomers. By [browsing
-recent topics](/help/recent-topics), newcomers can see what’s
+recent conversations](/help/recent-conversations), newcomers can see what’s
 being discussed without being overwhelmed. They can start a new topic to ask
 basic questions without worrying about interrupting other conversations. Zulip’s
 threading model makes managing conversations incredibly efficient, allowing more

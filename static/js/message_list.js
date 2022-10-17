@@ -303,12 +303,14 @@ export class MessageList {
         }
         $row.find(".message_edit_form").append(edit_obj.$form);
         $row.find(".message_content, .status-message, .message_controls").hide();
+        $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".message_edit").css("display", "block");
         autosize($row.find(".message_edit_content"));
     }
 
     hide_edit_message($row) {
         $row.find(".message_content, .status-message, .message_controls").show();
+        $row.find(".sender-status").toggleClass("sender-status-edit");
         $row.find(".message_edit_form").empty();
         $row.find(".message_edit").hide();
         $row.trigger("mouseleave");

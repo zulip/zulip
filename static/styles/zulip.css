@@ -84,6 +84,7 @@ pre {
      * for tooltips here.
      */
     font-family: "Source Sans 3", sans-serif !important;
+    word-wrap: break-word;
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
@@ -193,7 +194,7 @@ p.n-margin {
 .all-messages-search-caution {
     border-radius: 4px;
     display: none;
-    height: 28px;
+    min-height: 28px;
     font-size: 16px;
     margin: 0 auto 12px;
     padding: 5px;
@@ -449,6 +450,65 @@ p.n-margin {
     position: absolute;
     right: 0;
     top: 0;
+
+    .spectator_login_buttons {
+        display: flex;
+        justify-content: space-evenly;
+        position: absolute;
+        top: 10px;
+        /* width of right column - width of gear icon(250px - 45px) */
+        width: 205px;
+
+        a {
+            font-size: calc(16em / 14);
+            font-weight: 600;
+            color: hsl(0, 0%, 20%);
+
+            &:hover {
+                text-decoration: none;
+                color: hsl(0, 0%, 0%);
+            }
+
+            i {
+                margin-right: 3px;
+            }
+        }
+
+        .divider {
+            color: hsl(0, 0%, 88%);
+            font-size: 20px;
+            line-height: 1;
+        }
+    }
+
+    .spectator_narrow_login_button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        /* Height of navbar in tablet sizes */
+        height: 40px;
+        /* Width of userlist-toggle button. */
+        width: 45px;
+        border-left: 1px solid hsl(0, 0%, 88%);
+
+        .login_button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            opacity: 0.5;
+
+            &:hover {
+                opacity: 1;
+                text-decoration: none;
+            }
+
+            i {
+                color: hsl(0, 0%, 20%);
+                font-size: 1.6em;
+            }
+        }
+    }
 }
 
 .column-left {
@@ -901,7 +961,19 @@ td.pointer {
     max-width: calc(100% - 50px);
 
     .message_edit_notice {
-        line-height: 18px;
+        vertical-align: middle;
+    }
+
+    &.sender-status-edit {
+        /* Hackery to place the textarea for the message edit form nicely
+           for /me messages. */
+
+        vertical-align: top;
+        line-height: 0;
+
+        .message_edit_notice {
+            line-height: 0;
+        }
     }
 }
 
@@ -1018,7 +1090,7 @@ td.pointer {
     }
 
     &.sender-status-controls {
-        top: 10px;
+        top: 8px;
     }
 
     .message_failed {
@@ -2954,8 +3026,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     #searchbox,
     #searchbox_legacy,
     .header {
-        height: 30px;
         line-height: 30px;
+        height: 30px;
+    }
+
+    .spectator_narrow_login_button {
+        height: 30px !important;
     }
 
     #search_query {

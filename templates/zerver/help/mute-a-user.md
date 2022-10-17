@@ -34,8 +34,8 @@ have the following effects:
   for all messages. Zulip never shares whether or not you have read
   a message with a user you've muted.
 
-* Recent topics and other features that display avatars will show a
-  generic user symbol in place of a muted user's profile picture.
+* **Recent conversations** and other features that display avatars will
+  show a generic user symbol in place of a muted user's profile picture.
 
 * To avoid interfering with administration tasks, stream and
   organization settings display muted users' names and other details.

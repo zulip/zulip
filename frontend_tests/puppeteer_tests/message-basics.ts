@@ -95,7 +95,7 @@ async function un_narrow_by_clicking_org_icon(page: Page): Promise<void> {
 
 async function expect_recent_topics(page: Page): Promise<void> {
     await page.waitForSelector("#recent_topics_table", {visible: true});
-    assert.strictEqual(await page.title(), "Recent topics - Zulip Dev - Zulip");
+    assert.strictEqual(await page.title(), "Recent conversations - Zulip Dev - Zulip");
 }
 
 async function test_navigations_from_home(page: Page): Promise<void> {
@@ -232,7 +232,7 @@ async function search_tests(page: Page): Promise<void> {
         "topic:test",
         "",
         expect_test_topic,
-        "All messages - Zulip Dev - Zulip",
+        "Search results - Zulip Dev - Zulip",
     );
 
     await search_silent_user(page, "sender:emailgateway@zulip.com", "");

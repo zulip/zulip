@@ -1,3 +1,6 @@
+/* Width of emoji used by user to display status. */
+$user_status_emoji_width: 24px;
+
 .right-sidebar {
     a:hover {
         text-decoration: none;
@@ -109,8 +112,13 @@
     flex-direction: row;
 }
 
+.user-name-and-status-wrapper {
+    display: block;
+    width: 100%;
+}
+
 .user-presence-link {
-    width: calc(100% - 24px);
+    width: calc(100% - $user_status_emoji_width);
 
     .status_emoji {
         top: 9px;
@@ -123,6 +131,31 @@
 
 .selectable_sidebar_block {
     cursor: pointer;
+}
+
+.user_list_style_values {
+    .user-name-and-status-emoji {
+        display: block;
+        width: 100%;
+        height: 20px;
+
+        .user-name {
+            display: inline-block;
+            max-width: calc(100% - $user_status_emoji_width);
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status_emoji {
+            line-height: 20px;
+            top: -2px;
+        }
+    }
+
+    .status-text {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .user_sidebar_entry {

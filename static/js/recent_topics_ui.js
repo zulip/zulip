@@ -34,6 +34,7 @@ import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
+import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
@@ -342,6 +343,10 @@ function format_conversation(conversation_data) {
         context.topic_muted = Boolean(user_topics.is_topic_muted(context.stream_id, context.topic));
         const stream_muted = stream_data.is_muted(context.stream_id);
         context.muted = context.topic_muted || stream_muted;
+        context.mention_in_unread = unread.topic_has_any_unread_mentions(
+            context.stream_id,
+            context.topic,
+        );
 
         // Display in most recent sender first order
         all_senders = recent_senders.get_topic_recent_senders(context.stream_id, context.topic);
@@ -757,7 +762,7 @@ export function show() {
     compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
-    const recent_topics_title = $t({defaultMessage: "Recent topics"});
+    const recent_topics_title = $t({defaultMessage: "Recent conversations"});
     narrow.set_narrow_title(recent_topics_title);
     message_view_header.render_title_area();
     narrow.handle_middle_pane_transition();
@@ -801,8 +806,7 @@ export function hide() {
 }
 
 function is_focus_at_last_table_row() {
-    const $topic_rows = $("#recent_topics_table table tbody tr");
-    return row_focus === $topic_rows.length - 1;
+    return row_focus >= topics_widget.get_current_list().length - 1;
 }
 
 function has_unread(row) {
@@ -863,12 +867,56 @@ function up_arrow_navigation(row, col) {
 }
 
 function down_arrow_navigation(row, col) {
+    if (is_focus_at_last_table_row()) {
+        return;
+    }
     const type = get_row_type(row);
-
     if (type === "stream" && col === 2 && !has_unread(row + 1)) {
         col_focus = 1;
     }
     row_focus += 1;
+}
+
+function get_page_up_down_delta() {
+    const table_height = $("#recent_topics_table .table_fix_head").height();
+    const table_header_height = $("#recent_topics_table table thead").height();
+    const compose_box_height = $("#compose").height();
+    // One usually wants PageDown to move what had been the bottom row
+    // to now be at the top, so one can be confident one will see
+    // every row using it. This offset helps achieve that goal.
+    //
+    // See navigate.amount_to_paginate for similar logic in the message feed.
+    const scrolling_reduction_to_maintain_context = 75;
+
+    const delta =
+        table_height -
+        table_header_height -
+        compose_box_height -
+        scrolling_reduction_to_maintain_context;
+    return delta;
+}
+
+function page_up_navigation() {
+    const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
+    const delta = get_page_up_down_delta();
+    const new_scrollTop = $scroll_container.scrollTop() - delta;
+    if (new_scrollTop <= 0) {
+        row_focus = 0;
+    }
+    $scroll_container.scrollTop(new_scrollTop);
+    set_table_focus(row_focus, col_focus);
+}
+
+function page_down_navigation() {
+    const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
+    const delta = get_page_up_down_delta();
+    const new_scrollTop = $scroll_container.scrollTop() + delta;
+    const table_height = $("#recent_topics_table .table_fix_head").height();
+    if (new_scrollTop >= table_height) {
+        row_focus = topics_widget.get_current_list().length - 1;
+    }
+    $scroll_container.scrollTop(new_scrollTop);
+    set_table_focus(row_focus, col_focus);
 }
 
 function check_row_type_transition(row, col) {
@@ -1035,6 +1083,12 @@ export function change_focused_element($elt, input_key) {
             case "up_arrow":
                 up_arrow_navigation(row_focus, col_focus);
                 break;
+            case "page_up":
+                page_up_navigation();
+                return true;
+            case "page_down":
+                page_down_navigation();
+                return true;
         }
 
         if (check_row_type_transition(row_focus, col_focus)) {

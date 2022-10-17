@@ -541,7 +541,7 @@ export function initialize() {
 
     // SIDEBARS
 
-    $(".right-sidebar .login_button").on("click", (e) => {
+    $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         window.location.href = hash_util.build_login_link();
