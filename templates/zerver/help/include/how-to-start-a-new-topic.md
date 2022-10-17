@@ -2,8 +2,8 @@
 
 {tab|stream}
 
-1. Click the **New topic** button at the bottom of the Zulip window,
-   or type <kbd>C</kbd>.
+1. Click the **New topic** button at the bottom of the app, or
+   use the <kbd>C</kbd> keyboard shortcut.
 
 1. Enter a topic name. Auto-complete will provide suggestions for previously
    used topics.
@@ -12,8 +12,8 @@
 
 {tab|not-stream}
 
-1. Click the **New topic** button at the bottom of the Zulip window, or
-   type <kbd>C</kbd>.
+1. Click the **New topic** button at the bottom of the app, or
+   use the <kbd>C</kbd> keyboard shortcut.
 
 1. Enter a stream name. Auto-complete will provide suggestions for streams you
    can send to.
