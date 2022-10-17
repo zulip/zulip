@@ -543,10 +543,10 @@ export function toggle_actions_popover(element, id) {
         if (editability === message_edit.editability_types.FULL) {
             editability_menu_item = $t({defaultMessage: "Edit message"});
             if (message.is_stream) {
-                move_message_menu_item = $t({defaultMessage: "Move message"});
+                move_message_menu_item = $t({defaultMessage: "Move messages"});
             }
         } else if (can_move_message) {
-            move_message_menu_item = $t({defaultMessage: "Move message"});
+            move_message_menu_item = $t({defaultMessage: "Move messages"});
             view_source_menu_item = $t({defaultMessage: "View message source"});
         } else {
             view_source_menu_item = $t({defaultMessage: "View message source"});
