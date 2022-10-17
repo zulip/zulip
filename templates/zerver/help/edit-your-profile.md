@@ -4,7 +4,7 @@ By default, your profile includes your name, email, the date you joined, and
 when you were last active.
 
 Organization administrators can also
-[add custom profile fields](/help/add-custom-profile-fields). Custom profile
+[add custom profile fields](/help/custom-profile-fields#add-a-custom-profile-field). Custom profile
 fields are always optional, and will not appear in your profile unless you
 fill them out.
 

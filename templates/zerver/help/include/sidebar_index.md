@@ -153,7 +153,7 @@
 * [Invite new users](/help/invite-new-users)
 * [Restrict account creation](/help/restrict-account-creation)
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
-* [Add custom profile fields](/help/add-custom-profile-fields)
+* [Custom profile fields](/help/custom-profile-fields)
 * [Configure default new user settings](/help/configure-default-new-user-settings)
 * [Configure organization language](/help/configure-organization-language)
 * [User groups](/help/user-groups)
