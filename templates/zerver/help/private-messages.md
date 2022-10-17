@@ -25,7 +25,7 @@ and do not appear in your list of streams.
 1. Start typing the name of the person you want to message, and
    select their name from the list of suggestions.
 
-1. Compose your message, and click **Send**.
+{!compose-and-send-message.md!}
 
 !!! tip ""
 
@@ -56,40 +56,7 @@ and do not appear in your list of streams.
 
 ## Send a group PM
 
-{start_tabs}
-
-{tab|desktop-web}
-
-1. Click the **New private message** button at the bottom of the app, or
-   use the <kbd>X</kbd> keyboard shortcut.
-
-1. Start typing the name of the person you want to message, and
-   select their name from the list of suggestions. You can continue
-   adding as many message recipients as you like.
-
-1. Compose your message, and click **Send**.
-
-{tab|mobile}
-
-1. Tap the private messages
-   ( <img src="/static/images/help/mobile-pm-tab-icon.svg" alt="private messages" class="mobile-icon"/> )
-   tab at the bottom of the app.
-
-1. Tap the **New group PM** button at the top of the app.
-
-1. Start typing the name of the person you want to message, and
-   select their name from the list of suggestions. You can continue
-   adding as many message recipients as you like.
-
-1. Approve by tapping the checkmark
-   (<img src="/static/images/help/mobile-check-circle-icon.svg" alt="checkmark" class="mobile-icon"/>)
-   button in the bottom right corner of the app.
-
-1. Compose your message, and tap the send
-   (<img src="/static/images/help/mobile-send-circle-icon.svg" alt="send" class="mobile-icon"/>)
-   button in the bottom right corner of the app.
-
-{end_tabs}
+{!send-group-pm.md!}
 
 ## Access a PM or group PM
 
