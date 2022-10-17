@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import migrations, transaction
 from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
-from django.db.models import Max, OuterRef, Subquery
+from django.db.models import Exists, Max, OuterRef, Subquery
 
 
 def backfill_message_realm(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
@@ -14,9 +14,23 @@ def backfill_message_realm(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
     ArchivedMessage = apps.get_model("zerver", "ArchivedMessage")
     Recipient = apps.get_model("zerver", "Recipient")
     Subscription = apps.get_model("zerver", "Subscription")
+    Stream = apps.get_model("zerver", "Stream")
     UserProfile = apps.get_model("zerver", "UserProfile")
+    Huddle = apps.get_model("zerver", "Huddle")
 
     print()
+
+    print("Deleting dangling Recipient objects and their messages, which are inaccessible.")
+    Recipient.objects.annotate(
+        has_object=Exists(UserProfile.objects.filter(id=OuterRef("type_id")))
+    ).filter(type=RECIPIENT_PERSONAL, has_object=False).delete()
+    Recipient.objects.annotate(
+        has_object=Exists(Stream.objects.filter(id=OuterRef("type_id")))
+    ).filter(type=RECIPIENT_STREAM, has_object=False).delete()
+    Recipient.objects.annotate(
+        has_object=Exists(Huddle.objects.filter(id=OuterRef("type_id")))
+    ).filter(type=RECIPIENT_HUDDLE, has_object=False).delete()
+
     BATCH_SIZE = 10000
     for message_model in [Message, ArchivedMessage]:
         lower_bound = 1
