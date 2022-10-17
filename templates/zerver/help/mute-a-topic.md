@@ -13,22 +13,20 @@ They also do not contribute to stream unread counts.
 1. In the left sidebar, click on the stream that
    contains the topic you want to mute.
 
-1. Hover over the topic in the left sidebar.
+{!topic-actions.md!}
 
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
-
-4. Select **Mute topic**.
+1. Select **Mute topic**.
 
 {end_tabs}
 
-### From the message recipient bar (alternate method)
+## From the message recipient bar (alternate method)
 
 {start_tabs}
 
 1. Find a message belonging to the topic that you
    wish to mute.
 
-2. Click on the <i class="zulip-icon zulip-icon-mute"></i> to mute the topic.
+1. Click on the <i class="zulip-icon zulip-icon-mute"></i> to mute the topic.
 
 {end_tabs}
 
