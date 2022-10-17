@@ -667,7 +667,8 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
         ) {
             if (!this._sub) {
-                return $t({defaultMessage: "Unknown stream"});
+                const search_text = this.operands("stream")[0];
+                return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
             }
             return this._sub.name;
         }
@@ -681,7 +682,8 @@ export class Filter {
                     return $t({defaultMessage: "Messages in all public streams"});
                 case "stream":
                     if (!this._sub) {
-                        return $t({defaultMessage: "Unknown stream"});
+                        const search_text = this.operands("stream")[0];
+                        return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
                     }
                     return this._sub.name;
                 case "is-starred":
