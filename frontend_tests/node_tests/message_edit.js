@@ -109,6 +109,10 @@ run_test("get_editability", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     page_params.is_admin = false;
+    message.topic = "translated: (no topic)";
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    message.topic = "test topic";
     override(settings_data, "user_can_edit_topic_of_any_message", () => true);
     assert.equal(message_edit.is_topic_editable(message), true);
 
