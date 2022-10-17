@@ -126,32 +126,37 @@ export function set_narrow_title(title) {
 }
 
 function update_narrow_title(filter) {
-    // Take the most detailed part of the narrow to use as the title.
-    // If the operator is something other than "stream", "topic", or
-    // "is", we shouldn't update the narrow title
-    if (filter.has_operator("stream")) {
-        const stream_name = filter.operands("stream")[0];
-        if (filter.has_operator("topic")) {
-            const topic_name = filter.operands("topic")[0];
-            set_narrow_title("#" + stream_name + " > " + topic_name);
-        } else {
-            set_narrow_title("#" + stream_name);
-        }
-    } else if (filter.has_operator("is")) {
-        const title = filter.operands("is")[0];
-        set_narrow_title(title.charAt(0).toUpperCase() + title.slice(1) + " messages");
-    } else if (filter.has_operator("pm-with")) {
-        const emails = filter.operands("pm-with")[0];
-        const user_ids = people.emails_strings_to_user_ids_string(emails);
-        if (user_ids !== undefined) {
-            const names = people.get_recipients(user_ids);
-            set_narrow_title(names);
-        } else {
-            if (emails.includes(",")) {
-                set_narrow_title("Invalid users");
+    const filter_title = filter.get_title();
+    const search_default = $t({defaultMessage: "Search results"});
+
+    if (filter_title !== undefined) {
+        if (filter.has_operator("stream")) {
+            if (!filter._sub) {
+                // The stream is not set because it does not currently
+                // exist (possibly due to a stream name change), or it
+                // is a private stream and the user is not subscribed.
+                set_narrow_title(filter_title);
+            } else if (filter.has_operator("topic")) {
+                const topic_name = filter.operands("topic")[0];
+                set_narrow_title("#" + filter_title + " > " + topic_name);
             } else {
-                set_narrow_title("Invalid user");
+                set_narrow_title("#" + filter_title);
             }
+        } else if (filter.has_operator("pm-with")) {
+            const emails = filter.operands("pm-with")[0];
+            const user_ids = people.emails_strings_to_user_ids_string(emails);
+            if (user_ids !== undefined) {
+                const names = people.get_recipients(user_ids);
+                set_narrow_title(names);
+            } else {
+                if (emails.includes(",")) {
+                    set_narrow_title("Invalid users");
+                } else {
+                    set_narrow_title("Invalid user");
+                }
+            }
+        } else {
+            set_narrow_title(filter_title);
         }
     } else if (filter.has_operator("group-pm-with")) {
         const emails = filter.operands("group-pm-with")[0];
@@ -166,6 +171,8 @@ function update_narrow_title(filter) {
                 set_narrow_title("Invalid user");
             }
         }
+    } else {
+        set_narrow_title(search_default);
     }
 }
 
