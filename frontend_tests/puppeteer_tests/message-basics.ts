@@ -232,7 +232,7 @@ async function search_tests(page: Page): Promise<void> {
         "topic:test",
         "",
         expect_test_topic,
-        "All messages - Zulip Dev - Zulip",
+        "Search results - Zulip Dev - Zulip",
     );
 
     await search_silent_user(page, "sender:emailgateway@zulip.com", "");
