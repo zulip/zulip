@@ -1536,7 +1536,7 @@ test("navbar_helpers", () => {
             operator: streams_public,
             is_common_narrow: true,
             icon: undefined,
-            title: "translated: Public stream messages in organization",
+            title: "translated: Messages in all public streams",
             redirect_url_with_search: "/#narrow/streams/public",
         },
         {
