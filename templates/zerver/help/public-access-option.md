@@ -130,7 +130,7 @@ but not to logged out visitors:
   [their status](/help/status-and-availability),
   and whether they have set themselves as unavailable.
 * Detailed profile information, such as [custom profile
-  fields](/help/add-custom-profile-fields).
+  fields](/help/custom-profile-fields).
 * Which users are subscribed to which web-public streams.
 
 ## Managing abuse

@@ -1,4 +1,4 @@
-# Add custom profile fields
+# Custom profile fields
 
 {!admin-only.md!}
 
