@@ -287,7 +287,7 @@ export function load_messages(opts) {
             }
 
             // We might want to be more clever here
-            $("#connection-error").addClass("show");
+            ui_report.show_error($("#connection-error"));
             setTimeout(() => {
                 load_messages(opts);
             }, consts.error_retry_time);
