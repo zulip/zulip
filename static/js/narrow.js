@@ -140,16 +140,25 @@ function update_narrow_title(filter) {
     } else if (filter.has_operator("is")) {
         const title = filter.operands("is")[0];
         set_narrow_title(title.charAt(0).toUpperCase() + title.slice(1) + " messages");
-    } else if (filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
-        const emails = filter.public_operators()[0].operand;
+    } else if (filter.has_operator("pm-with")) {
+        const emails = filter.operands("pm-with")[0];
         const user_ids = people.emails_strings_to_user_ids_string(emails);
         if (user_ids !== undefined) {
             const names = people.get_recipients(user_ids);
-            if (filter.has_operator("pm-with")) {
-                set_narrow_title(names);
+            set_narrow_title(names);
+        } else {
+            if (emails.includes(",")) {
+                set_narrow_title("Invalid users");
             } else {
-                set_narrow_title(names + " and others");
+                set_narrow_title("Invalid user");
             }
+        }
+    } else if (filter.has_operator("group-pm-with")) {
+        const emails = filter.operands("group-pm-with")[0];
+        const user_ids = people.emails_strings_to_user_ids_string(emails);
+        if (user_ids !== undefined) {
+            const names = people.get_recipients(user_ids);
+            set_narrow_title(names + " and others");
         } else {
             if (emails.includes(",")) {
                 set_narrow_title("Invalid users");
