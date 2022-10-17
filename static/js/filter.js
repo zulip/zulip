@@ -678,7 +678,7 @@ export class Filter {
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted streams"});
                 case "streams-public":
-                    return $t({defaultMessage: "Public stream messages in organization"});
+                    return $t({defaultMessage: "Messages in all public streams"});
                 case "stream":
                     if (!this._sub) {
                         return $t({defaultMessage: "Unknown stream"});
