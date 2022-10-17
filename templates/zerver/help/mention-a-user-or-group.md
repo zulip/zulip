@@ -21,9 +21,7 @@ messages and alert words.
 
 {start_tabs}
 
-1. Hover over a user in the right sidebar.
-
-1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
+{!right-sidebar-profile-menu.md!}
 
 1. Select **Reply mentioning user**.
 
