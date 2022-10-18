@@ -788,4 +788,23 @@ export function initialize() {
         const $subsection = $(e.target).closest(".settings-subsection-parent");
         settings_org.save_discard_widget_status_handler($subsection, false, sub);
     });
+
+    $("#manage_streams_container").on(
+        "click",
+        ".subsection-header .subsection-changes-discard button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const stream_id = $(e.target).closest(".subscription_settings.show").data("stream-id");
+            const sub = sub_store.get(stream_id);
+
+            const $subsection = $(e.target).closest(".settings-subsection-parent");
+            for (const elem of settings_org.get_subsection_property_elements($subsection)) {
+                settings_org.discard_property_element_changes(elem, false, sub);
+            }
+            const $save_btn_controls = $(e.target).closest(".save-button-controls");
+            settings_org.change_save_button_state($save_btn_controls, "discarded");
+        },
+    );
 }
