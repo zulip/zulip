@@ -204,7 +204,7 @@ export function extract_property_name($elem, for_realm_default_settings) {
     return /^id_(.*)$/.exec($elem.attr("id").replace(/-/g, "_"))[1];
 }
 
-function get_subsection_property_elements(subsection) {
+export function get_subsection_property_elements(subsection) {
     return Array.from($(subsection).find(".prop-element"));
 }
 
@@ -537,10 +537,10 @@ export let default_code_language_widget = null;
 export let notifications_stream_widget = null;
 export let signup_notifications_stream_widget = null;
 
-function discard_property_element_changes(elem, for_realm_default_settings) {
+export function discard_property_element_changes(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    const property_value = get_property_value(property_name, for_realm_default_settings);
+    const property_value = get_property_value(property_name, for_realm_default_settings, sub);
 
     switch (property_name) {
         case "realm_authentication_methods":
@@ -566,6 +566,7 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             break;
         case "emojiset":
         case "user_list_style":
+        case "stream_privacy":
             // Because this widget has a radio button structure, it
             // needs custom reset code.
             $elem.find(`input[value='${CSS.escape(property_value)}']`).prop("checked", true);
@@ -591,7 +592,8 @@ function discard_property_element_changes(elem, for_realm_default_settings) {
             set_time_limit_setting(property_name);
             break;
         case "realm_message_retention_days":
-            set_message_retention_setting_dropdown();
+        case "message_retention_days":
+            set_message_retention_setting_dropdown(sub);
             break;
         default:
             if (property_value !== undefined) {
