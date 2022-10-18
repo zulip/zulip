@@ -662,17 +662,14 @@ export class Filter {
     get_title() {
         // Nice explanatory titles for common views.
         const term_types = this.sorted_term_types();
-        if (
-            (term_types.length === 3 && _.isEqual(term_types, ["stream", "topic", "search"])) ||
-            (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
-        ) {
+        if (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"])) {
             if (!this._sub) {
                 const search_text = this.operands("stream")[0];
                 return $t({defaultMessage: "Unknown stream #{search_text}"}, {search_text});
             }
             return this._sub.name;
         }
-        if (term_types.length === 1 || (term_types.length === 2 && term_types[1] === "search")) {
+        if (term_types.length === 1) {
             switch (term_types[0]) {
                 case "in-home":
                     return $t({defaultMessage: "All messages"});
