@@ -142,7 +142,7 @@
 
         <div id="org-msg-editing" class="settings-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Message and topic editing" }}
+                <h3>{{t "Message editing" }}
                     {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
                 </h3>
                 {{> settings_save_discard_widget section_name="msg-editing" }}
@@ -153,6 +153,12 @@
                   prefix="id_"
                   is_checked=realm_allow_message_editing
                   label=admin_settings_label.realm_allow_message_editing}}
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_edit_history"
+                  prefix="id_"
+                  is_checked=realm_allow_edit_history
+                  label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group time-limit-setting">
                     <label for="realm_message_content_edit_limit_seconds" class="dropdown-title">{{t "Time limit for editing messages" }}</label>
@@ -173,27 +179,29 @@
                           {{#unless realm_allow_message_editing}}disabled{{/unless}}/>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="input-group">
-                    <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can move messages to another topic" }}</label>
-                    <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=edit_topic_policy_values}}
-                    </select>
-                </div>
+        <div id="org-moving-msgs" class="settings-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Moving messages" }}
+                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="moving-msgs" }}
+            </div>
+            <div class="input-group">
+                <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can move messages to another topic" }}</label>
+                <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=edit_topic_policy_values}}
+                </select>
+            </div>
 
-                {{> settings_checkbox
-                  setting_name="realm_allow_edit_history"
-                  prefix="id_"
-                  is_checked=realm_allow_edit_history
-                  label=admin_settings_label.realm_allow_edit_history}}
-
-                <div class="input-group">
-                    <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another stream" }}
-                    </label>
-                    <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
-                        {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
-                    </select>
-                </div>
+            <div class="input-group">
+                <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another stream" }}
+                </label>
+                <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
+                    {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
+                </select>
             </div>
         </div>
 
