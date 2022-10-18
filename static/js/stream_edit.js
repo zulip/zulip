@@ -378,6 +378,39 @@ function get_message_retention_days_from_sub(sub) {
     return sub.message_retention_days;
 }
 
+export function get_request_data_for_stream_privacy(selected_val) {
+    switch (selected_val) {
+        case stream_data.stream_privacy_policy_values.public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+        case stream_data.stream_privacy_policy_values.private.code: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: false,
+                is_web_public: false,
+            };
+        }
+        case stream_data.stream_privacy_policy_values.web_public.code: {
+            return {
+                is_private: false,
+                history_public_to_subscribers: true,
+                is_web_public: true,
+            };
+        }
+        default: {
+            return {
+                is_private: true,
+                history_public_to_subscribers: true,
+                is_web_public: false,
+            };
+        }
+    }
+}
+
 function change_stream_privacy(e) {
     e.stopPropagation();
 
@@ -788,6 +821,24 @@ export function initialize() {
         const $subsection = $(e.target).closest(".settings-subsection-parent");
         settings_org.save_discard_widget_status_handler($subsection, false, sub);
     });
+
+    $("#manage_streams_container").on(
+        "click",
+        ".subsection-header .subsection-changes-save button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const $save_button = $(e.currentTarget);
+            const $subsection_elem = $save_button.closest(".settings-subsection-parent");
+
+            const stream_id = $save_button.closest(".subscription_settings.show").data("stream-id");
+            const sub = sub_store.get(stream_id);
+            const data = settings_org.populate_data_for_request($subsection_elem, false, sub);
+
+            const url = "/json/streams/" + stream_id;
+            settings_org.save_organization_settings(data, $save_button, url);
+        },
+    );
 
     $("#manage_streams_container").on(
         "click",

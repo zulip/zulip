@@ -22,6 +22,7 @@ import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
 import * as stream_data from "./stream_data";
+import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
@@ -821,7 +822,7 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     return parse_time_limit($custom_input_elem);
 }
 
-function check_property_changed(elem, for_realm_default_settings, sub) {
+export function check_property_changed(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
     let current_val = get_property_value(property_name, for_realm_default_settings, sub);
@@ -864,6 +865,7 @@ function check_property_changed(elem, for_realm_default_settings, sub) {
             break;
         case "emojiset":
         case "user_list_style":
+        case "stream_privacy":
             proposed_val = get_input_element_value($elem, "radio-group");
             break;
         default:
@@ -950,17 +952,17 @@ function enable_or_disable_save_button($subsection_elem) {
     $subsection_elem.find(".subsection-changes-save button").prop("disabled", disable_save_btn);
 }
 
-function populate_data_for_request(subsection, for_realm_default_settings) {
-    const data = {};
+export function populate_data_for_request(subsection, for_realm_default_settings, sub) {
+    let data = {};
     const properties_elements = get_subsection_property_elements(subsection);
 
     for (const input_elem of properties_elements) {
         const $input_elem = $(input_elem);
-        if (check_property_changed($input_elem, for_realm_default_settings)) {
+        if (check_property_changed($input_elem, for_realm_default_settings, sub)) {
             const input_value = get_input_element_value($input_elem);
             if (input_value !== undefined) {
                 let property_name;
-                if (for_realm_default_settings) {
+                if (for_realm_default_settings || sub) {
                     property_name = extract_property_name($input_elem, for_realm_default_settings);
                 } else if ($input_elem.attr("id").startsWith("id_authmethod")) {
                     // Authentication Method component IDs include authentication method name
@@ -972,6 +974,14 @@ function populate_data_for_request(subsection, for_realm_default_settings) {
                     [, property_name] = /^id_authmethod[\da-z]+_(.*)$/.exec($input_elem.attr("id"));
                 } else {
                     [, property_name] = /^id_realm_(.*)$/.exec($input_elem.attr("id"));
+                }
+
+                if (property_name === "stream_privacy") {
+                    data = {
+                        ...data,
+                        ...stream_edit.get_request_data_for_stream_privacy(input_value),
+                    };
+                    continue;
                 }
                 data[property_name] = input_value;
             }
