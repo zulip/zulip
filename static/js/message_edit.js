@@ -70,7 +70,7 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
-    if (!settings_data.user_can_edit_topic_of_any_message()) {
+    if (!settings_data.user_can_move_messages_to_another_topic()) {
         return false;
     }
 

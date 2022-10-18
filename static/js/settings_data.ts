@@ -222,7 +222,7 @@ export function user_can_add_custom_emoji(): boolean {
     return user_has_permission(page_params.realm_add_custom_emoji_policy);
 }
 
-export function user_can_edit_topic_of_any_message(): boolean {
+export function user_can_move_messages_to_another_topic(): boolean {
     return user_has_permission(page_params.realm_edit_topic_policy);
 }
 

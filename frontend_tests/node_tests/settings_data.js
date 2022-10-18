@@ -243,16 +243,16 @@ function test_message_policy(label, policy, validation_func) {
 }
 
 test_message_policy(
-    "user_can_edit_topic_of_any_message",
+    "user_can_move_messages_to_another_topic",
     "realm_edit_topic_policy",
-    settings_data.user_can_edit_topic_of_any_message,
+    settings_data.user_can_move_messages_to_another_topic,
 );
 
-run_test("user_can_edit_topic_of_any_message_nobody_case", () => {
+run_test("user_can_move_messages_to_another_topic_nobody_case", () => {
     page_params.is_admin = true;
     page_params.is_guest = false;
     page_params.realm_edit_topic_policy = settings_config.edit_topic_policy_values.nobody.code;
-    assert.equal(settings_data.user_can_edit_topic_of_any_message(), false);
+    assert.equal(settings_data.user_can_move_messages_to_another_topic(), false);
 });
 
 run_test("user_can_move_messages_between_streams_nobody_case", () => {

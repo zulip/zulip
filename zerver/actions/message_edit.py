@@ -112,9 +112,9 @@ def can_edit_topic(
     if is_no_topic_msg:
         return True
 
-    # The can_edit_topic_of_any_message helper returns whether the user can edit the topic
-    # or not based on edit_topic_policy setting and the user's role.
-    if user_profile.can_edit_topic_of_any_message():
+    # The can_move_messages_to_another_topic helper returns whether the user can edit
+    # the topic or not based on edit_topic_policy setting and the user's role.
+    if user_profile.can_move_messages_to_another_topic():
         return True
 
     return False
