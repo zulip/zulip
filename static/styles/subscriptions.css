@@ -979,6 +979,7 @@ div.settings-radio-input-parent {
         float: left;
         width: auto;
         cursor: pointer;
+        margin: 3.5px 0 1px;
 
         &:focus {
             outline: 1px dotted hsl(0, 0%, 20%);
@@ -992,7 +993,7 @@ div.settings-radio-input-parent {
     }
 }
 
-#stream_privacy_modal,
+.stream-permissions,
 .stream-creation-body {
     .input-group {
         margin-bottom: 10px;
@@ -1016,15 +1017,6 @@ div.settings-radio-input-parent {
     }
 }
 
-.stream-creation-body input[type="radio"] {
-    margin: 3.5px 0 1px;
-}
-
-/* we have this 2px difference due to the font size being larger in the modal */
-#stream_privacy_modal input[type="radio"] {
-    margin: 5.5px 0 1px;
-}
-
 #change_user_group_description,
 #change_stream_description {
     width: 100%;
@@ -1033,7 +1025,7 @@ div.settings-radio-input-parent {
     box-sizing: border-box;
 }
 
-#stream_privacy_modal .stream-message-retention-days-input input[type="text"] {
+.stream-permissions .stream-message-retention-days-input input[type="text"] {
     border-radius: 5px;
     box-shadow: none;
     margin: 0;

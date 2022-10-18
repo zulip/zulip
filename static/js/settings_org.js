@@ -135,7 +135,7 @@ export function get_realm_time_limits_in_minutes(property) {
     return val.toString();
 }
 
-function get_property_value(property_name, for_realm_default_settings) {
+function get_property_value(property_name, for_realm_default_settings, sub) {
     if (for_realm_default_settings) {
         // realm_user_default_settings are stored in a separate object.
         if (property_name === "twenty_four_hour_time") {
@@ -148,6 +148,10 @@ function get_property_value(property_name, for_realm_default_settings) {
             return realm_user_settings_defaults.email_notifications_batching_period_seconds;
         }
         return realm_user_settings_defaults[property_name];
+    }
+
+    if (sub) {
+        return sub[property_name];
     }
 
     if (property_name === "realm_waiting_period_setting") {
@@ -363,12 +367,19 @@ function get_dropdown_value_for_message_retention_setting(setting_value) {
         return "unlimited";
     }
 
+    if (setting_value === null) {
+        return "realm_default";
+    }
+
     return "custom_period";
 }
 
-function set_message_retention_setting_dropdown() {
-    const property_name = "realm_message_retention_days";
-    const setting_value = get_property_value(property_name, false);
+export function set_message_retention_setting_dropdown(sub) {
+    let property_name = "realm_message_retention_days";
+    if (sub !== undefined) {
+        property_name = "message_retention_days";
+    }
+    const setting_value = get_property_value(property_name, false, sub);
     const dropdown_val = get_dropdown_value_for_message_retention_setting(setting_value);
 
     const $dropdown_elem = $(`#id_${CSS.escape(property_name)}`);

@@ -136,6 +136,32 @@ export function update_change_stream_privacy_settings(sub) {
     }
 }
 
+export function enable_or_disable_permission_settings_in_edit_panel(sub) {
+    const $stream_settings = stream_settings_containers.get_edit_container(sub);
+
+    const $general_settings_container = $stream_settings.find($("#stream_permission_settings"));
+    $general_settings_container
+        .find("input, select")
+        .prop("disabled", !sub.can_change_stream_permissions);
+
+    if (!sub.can_change_stream_permissions) {
+        return;
+    }
+
+    const disable_message_retention_setting =
+        !page_params.zulip_plan_is_not_limited || !page_params.is_owner;
+    $stream_settings
+        .find(".stream_message_retention_setting")
+        .prop("disabled", disable_message_retention_setting);
+    $stream_settings
+        .find(".message-retention-setting-custom-input")
+        .prop("disabled", disable_message_retention_setting);
+
+    stream_settings_ui.update_web_public_stream_privacy_option_state(
+        $("#stream_permission_settings"),
+    );
+}
+
 export function update_stream_privacy_icon_in_settings(sub) {
     if (!hash_util.is_editing_stream(sub.stream_id)) {
         return;
