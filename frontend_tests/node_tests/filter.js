@@ -1670,7 +1670,7 @@ test("navbar_helpers", () => {
 
     const stream_topic_search_operator_test_case = {
         operator: stream_topic_search_operator,
-        title: "Foo",
+        title: undefined,
     };
 
     test_get_title(stream_topic_search_operator_test_case);
