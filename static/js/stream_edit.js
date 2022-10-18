@@ -778,4 +778,14 @@ export function initialize() {
             message_retention_setting_dropdown_value === "custom_period",
         );
     });
+
+    $("#manage_streams_container").on("change input", "input, select, textarea", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = get_stream_id(e.target);
+        const sub = sub_store.get(stream_id);
+        const $subsection = $(e.target).closest(".settings-subsection-parent");
+        settings_org.save_discard_widget_status_handler($subsection, false, sub);
+    });
 }

@@ -1170,6 +1170,11 @@ div.settings-radio-input-parent {
             max-width: max-content;
             white-space: nowrap;
         }
+
+        .save-button-controls {
+            display: block;
+            margin: 0 0 10px;
+        }
     }
 }
 

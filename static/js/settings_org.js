@@ -21,6 +21,7 @@ import * as settings_notifications from "./settings_notifications";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_ui from "./settings_ui";
+import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
@@ -151,6 +152,10 @@ function get_property_value(property_name, for_realm_default_settings, sub) {
     }
 
     if (sub) {
+        if (property_name === "stream_privacy") {
+            return stream_data.get_stream_privacy_policy(sub.stream_id);
+        }
+
         return sub[property_name];
     }
 
@@ -353,6 +358,13 @@ function get_message_retention_setting_value($input_elem, for_api_data = true) {
             return settings_config.retain_message_forever;
         }
         return JSON.stringify("unlimited");
+    }
+
+    if (select_elem_val === "realm_default") {
+        if (!for_api_data) {
+            return null;
+        }
+        return JSON.stringify("realm_default");
     }
 
     const $custom_input = $input_elem.parent().find(".message-retention-setting-custom-input");
@@ -807,10 +819,10 @@ function get_time_limit_setting_value($input_elem, for_api_data = true) {
     return parse_time_limit($custom_input_elem);
 }
 
-function check_property_changed(elem, for_realm_default_settings) {
+function check_property_changed(elem, for_realm_default_settings, sub) {
     const $elem = $(elem);
     const property_name = extract_property_name($elem, for_realm_default_settings);
-    let current_val = get_property_value(property_name, for_realm_default_settings);
+    let current_val = get_property_value(property_name, for_realm_default_settings, sub);
     let proposed_val;
 
     switch (property_name) {
@@ -840,6 +852,7 @@ function check_property_changed(elem, for_realm_default_settings) {
             proposed_val = get_time_limit_setting_value($elem, false);
             break;
         case "realm_message_retention_days":
+        case "message_retention_days":
             proposed_val = get_message_retention_setting_value($elem, false);
             break;
         case "realm_default_language":
@@ -861,12 +874,12 @@ function check_property_changed(elem, for_realm_default_settings) {
     return current_val !== proposed_val;
 }
 
-export function save_discard_widget_status_handler($subsection, for_realm_default_settings) {
+export function save_discard_widget_status_handler($subsection, for_realm_default_settings, sub) {
     $subsection.find(".subsection-failed-status p").hide();
     $subsection.find(".save-button").show();
     const properties_elements = get_subsection_property_elements($subsection);
     const show_change_process_button = properties_elements.some((elem) =>
-        check_property_changed(elem, for_realm_default_settings),
+        check_property_changed(elem, for_realm_default_settings, sub),
     );
 
     const $save_btn_controls = $subsection.find(".subsection-header .save-button-controls");
