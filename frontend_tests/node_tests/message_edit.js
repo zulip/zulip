@@ -17,7 +17,7 @@ const editability_types = message_edit.editability_types;
 const settings_data = mock_esm("../../static/js/settings_data");
 
 run_test("get_editability", ({override}) => {
-    override(settings_data, "user_can_edit_topic_of_any_message", () => true);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
     // You can't edit a null message
     assert.equal(get_editability(null), editability_types.NO);
     // You can't edit a message you didn't send
@@ -119,7 +119,7 @@ run_test("is_topic_editable", ({override}) => {
         type: "stream",
     };
     page_params.realm_allow_message_editing = true;
-    override(settings_data, "user_can_edit_topic_of_any_message", () => true);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
     page_params.is_admin = true;
 
     assert.equal(message_edit.is_topic_editable(message), false);
@@ -134,7 +134,7 @@ run_test("is_topic_editable", ({override}) => {
     page_params.sent_by_me = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
-    override(settings_data, "user_can_edit_topic_of_any_message", () => false);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     page_params.is_admin = false;
@@ -144,13 +144,13 @@ run_test("is_topic_editable", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.topic = "test topic";
-    override(settings_data, "user_can_edit_topic_of_any_message", () => false);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => false);
     assert.equal(message_edit.is_topic_editable(message), false);
 
     page_params.realm_community_topic_editing_limit_seconds = 259200;
     message.timestamp = current_timestamp - 60;
 
-    override(settings_data, "user_can_edit_topic_of_any_message", () => true);
+    override(settings_data, "user_can_move_messages_to_another_topic", () => true);
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.timestamp = current_timestamp - 600000;

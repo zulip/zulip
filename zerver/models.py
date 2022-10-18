@@ -2121,7 +2121,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     def can_edit_user_groups(self) -> bool:
         return self.has_permission("user_group_edit_policy")
 
-    def can_edit_topic_of_any_message(self) -> bool:
+    def can_move_messages_to_another_topic(self) -> bool:
         return self.has_permission("edit_topic_policy")
 
     def can_add_custom_emoji(self) -> bool:

@@ -201,7 +201,7 @@ export function warn_if_topic_resolved(topic_changed) {
             return;
         }
 
-        const button_text = settings_data.user_can_edit_topic_of_any_message()
+        const button_text = settings_data.user_can_move_messages_to_another_topic()
             ? $t({defaultMessage: "Unresolve topic"})
             : null;
 
