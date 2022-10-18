@@ -85,7 +85,7 @@ const ls = localstorage();
 
 let filters = new Set();
 
-const recent_conversation_key_prefix = "recent_conversion:";
+const recent_conversation_key_prefix = "recent_conversation:";
 
 export function clear_for_tests() {
     filters.clear();
