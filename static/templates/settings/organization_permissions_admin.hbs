@@ -175,7 +175,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can edit the topic of any message" }}</label>
+                    <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can move messages to another topic" }}</label>
                     <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=edit_topic_policy_values}}
                     </select>
@@ -188,7 +188,7 @@
                   label=admin_settings_label.realm_allow_edit_history}}
 
                 <div class="input-group">
-                    <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages between streams" }}
+                    <label for="realm_move_messages_between_streams_policy">{{t "Who can move messages to another stream" }}
                     </label>
                     <select name="realm_move_messages_between_streams_policy" class="setting-widget prop-element" id="id_realm_move_messages_between_streams_policy" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=move_messages_between_streams_policy_values}}
