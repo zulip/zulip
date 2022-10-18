@@ -34,6 +34,7 @@ import * as stream_list from "./stream_list";
 import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
+import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_topics from "./user_topics";
@@ -871,6 +872,39 @@ function down_arrow_navigation(row, col) {
     row_focus += 1;
 }
 
+function get_page_up_down_delta() {
+    const table_height = $("#recent_topics_table .table_fix_head").height();
+    const table_header_height = $("#recent_topics_table table thead").height();
+    const compose_box_height = $("#compose").height();
+    // One usually wants PageDown to move what had been the bottom row
+    // to now be at the top, so one can be confident one will see
+    // every row using it. This offset helps achieve that goal.
+    //
+    // See navigate.amount_to_paginate for similar logic in the message feed.
+    const scrolling_reduction_to_maintain_context = 75;
+
+    const delta =
+        table_height -
+        table_header_height -
+        compose_box_height -
+        scrolling_reduction_to_maintain_context;
+    return delta;
+}
+
+function page_up_navigation() {
+    const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
+    const delta = get_page_up_down_delta();
+
+    $scroll_container.scrollTop($scroll_container.scrollTop() - delta);
+}
+
+function page_down_navigation() {
+    const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
+    const delta = get_page_up_down_delta();
+
+    $scroll_container.scrollTop($scroll_container.scrollTop() + delta);
+}
+
 function check_row_type_transition(row, col) {
     // This function checks if the row is transitioning
     // from type "Private messages" to "Stream" or vice versa.
@@ -1035,6 +1069,12 @@ export function change_focused_element($elt, input_key) {
             case "up_arrow":
                 up_arrow_navigation(row_focus, col_focus);
                 break;
+            case "page_up":
+                page_up_navigation();
+                return true;
+            case "page_down":
+                page_down_navigation();
+                return true;
         }
 
         if (check_row_type_transition(row_focus, col_focus)) {

@@ -571,6 +571,8 @@ export function process_hotkey(e, hotkey) {
         case "down_arrow":
         case "left_arrow":
         case "right_arrow":
+        case "page_down":
+        case "page_up":
         case "vim_up":
         case "vim_down":
         case "vim_left":
