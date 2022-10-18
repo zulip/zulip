@@ -114,6 +114,11 @@ export function initialize() {
         target: ".message_reaction, .message_reactions .reaction_button",
         placement: "bottom",
         onShow(instance) {
+            if (!document.body.contains(instance.reference)) {
+                // It is possible for reaction to be removed before `onShow` is triggered,
+                // so, we check if the element exists before proceeding.
+                return false;
+            }
             const $elem = $(instance.reference);
             if (!instance.reference.classList.contains("reaction_button")) {
                 const local_id = $elem.attr("data-reaction-id");
@@ -130,6 +135,7 @@ export function initialize() {
                 $elem.get(0),
             ];
             hide_tooltip_if_reference_removed(target, config, instance, nodes_to_check_for_removal);
+            return true;
         },
         onHidden(instance) {
             instance.destroy();
