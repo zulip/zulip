@@ -802,8 +802,7 @@ export function hide() {
 }
 
 function is_focus_at_last_table_row() {
-    const $topic_rows = $("#recent_topics_table table tbody tr");
-    return row_focus === $topic_rows.length - 1;
+    return row_focus >= topics_widget.get_current_list().length - 1;
 }
 
 function has_unread(row) {
