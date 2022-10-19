@@ -1,12 +1,7 @@
 import ctypes
 import logging
-import sys
-import threading
-import time
-from types import TracebackType
-from typing import Callable, Optional, Tuple, Type, TypeVar
-
-# Based on https://code.activestate.com/recipes/483752/
+from threading import Semaphore, Thread
+from typing import Callable, Optional, TypeVar, Union
 
 
 class TimeoutExpired(Exception):
@@ -14,6 +9,10 @@ class TimeoutExpired(Exception):
 
     def __str__(self) -> str:
         return "Function call timed out."
+
+
+class NoResult:
+    pass
 
 
 ResultT = TypeVar("ResultT")
@@ -35,62 +34,52 @@ def timeout(timeout: float, func: Callable[[], ResultT]) -> ResultT:
     stuck in a long-running primitive interpreter
     operation."""
 
-    class TimeoutThread(threading.Thread):
-        def __init__(self) -> None:
-            threading.Thread.__init__(self)
-            self.result: Optional[ResultT] = None
-            self.exc_info: Tuple[
-                Optional[Type[BaseException]],
-                Optional[BaseException],
-                Optional[TracebackType],
-            ] = (None, None, None)
+    result: Union[ResultT, NoResult] = NoResult()
+    exception: Optional[BaseException] = None
 
-            # Don't block the whole program from exiting
-            # if this is the only thread left.
-            self.daemon = True
+    # This semaphore prevents calling PyThreadState_SetAsyncExc after
+    # the function is done and the thread is stopping.
+    semaphore = Semaphore()
 
-        def run(self) -> None:
-            try:
-                self.result = func()
-            except BaseException:
-                self.exc_info = sys.exc_info()
+    def run() -> None:
+        nonlocal result, exception
+        try:
+            result = func()
+        except BaseException as e:
+            exception = e
+        semaphore.acquire()
 
-        def raise_async_timeout(self) -> None:
-            # This function is called from another thread; we attempt
-            # to raise a TimeoutExpired in _this_ thread.
-            assert self.ident is not None
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                ctypes.c_ulong(self.ident),
-                ctypes.py_object(TimeoutExpired),
-            )
-
-    thread = TimeoutThread()
+    thread = Thread(target=run, daemon=True)
     thread.start()
     thread.join(timeout)
 
-    if thread.is_alive():
-        # We need to retry, because an async exception received while
-        # the thread is in a system call is simply ignored.
-        for i in range(10):
-            thread.raise_async_timeout()
-            time.sleep(0.1)
-            if not thread.is_alive():
-                break
-        if thread.exc_info[1] is not None:
-            # Re-raise the exception we sent, if possible, so the
-            # stacktrace originates in the slow code
-            raise thread.exc_info[1].with_traceback(thread.exc_info[2])
-        # If we don't have that for some reason (e.g. we failed to
-        # kill it), just raise from here; the thread _may still be
-        # running_ because it failed to see any of our exceptions, and
-        # we just ignore it.
-        if thread.is_alive():
+    # We need a retry loop, because an async exception received while
+    # the thread is in a system call is simply ignored.
+    for i in range(10):
+        if not thread.is_alive() or not semaphore.acquire(blocking=False):
+            break
+        assert thread.ident is not None
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_ulong(thread.ident),
+            ctypes.py_object(TimeoutExpired),
+        )
+        # Give the thread another chance to exit, so we can get a
+        # stack trace for the TimeoutExpired exception originating
+        # with the slow code.
+        semaphore.release()
+        thread.join(0.1)
+    else:
+        if thread.is_alive() and semaphore.acquire(blocking=False):
+            # If we we failed to kill the thread for some reason, just
+            # raise from here; the thread _may still be running_
+            # because it failed to see any of our exceptions, and we
+            # just ignore it.
+            semaphore.release()
             logging.warning("Failed to time out backend thread")
-        raise TimeoutExpired
+            raise TimeoutExpired
 
-    if thread.exc_info[1] is not None:
-        # Died with some other exception; re-raise it
-        raise thread.exc_info[1].with_traceback(thread.exc_info[2])
+    if exception is not None:
+        raise exception
 
-    assert thread.result is not None
-    return thread.result
+    assert not isinstance(result, NoResult)
+    return result
