@@ -32,7 +32,8 @@
     }
 }
 
-.user_full_name {
+.user_full_name,
+.bot_owner {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
