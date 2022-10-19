@@ -20,6 +20,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.utils.translation import gettext as _
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.engine import Connection
 from sqlalchemy.sql import (
     ClauseElement,
     ColumnElement,
@@ -173,6 +174,9 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
         return True
 
     return narrow_filter
+
+
+LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 
 
 class BadNarrowOperator(JsonableError):
@@ -885,3 +889,94 @@ def add_narrow_conditions(
         query = builder.add_term(query, search_term)
 
     return (query, is_search)
+
+
+def find_first_unread_anchor(
+    sa_conn: Connection, user_profile: Optional[UserProfile], narrow: OptionalNarrowListT
+) -> int:
+    # For anonymous web users, all messages are treated as read, and so
+    # always return LARGER_THAN_MAX_MESSAGE_ID.
+    if user_profile is None:
+        return LARGER_THAN_MAX_MESSAGE_ID
+
+    # We always need UserMessage in our query, because it has the unread
+    # flag for the user.
+    need_user_message = True
+
+    # Because we will need to call exclude_muting_conditions, unless
+    # the user hasn't muted anything, we will need to include Message
+    # in our query.  It may be worth eventually adding an optimization
+    # for the case of a user who hasn't muted anything to avoid the
+    # join in that case, but it's low priority.
+    need_message = True
+
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+        is_web_public_query=False,
+        realm=user_profile.realm,
+    )
+
+    condition = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
+
+    # We exclude messages on muted topics when finding the first unread
+    # message in this narrow
+    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+    if muting_conditions:
+        condition = and_(condition, *muting_conditions)
+
+    first_unread_query = query.where(condition)
+    first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
+    first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
+    if len(first_unread_result) > 0:
+        anchor = first_unread_result[0][0]
+    else:
+        anchor = LARGER_THAN_MAX_MESSAGE_ID
+
+    return anchor
+
+
+def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool) -> Optional[int]:
+    """Given the anchor and use_first_unread_anchor parameters passed by
+    the client, computes what anchor value the client requested,
+    handling backwards-compatibility and the various string-valued
+    fields.  We encode use_first_unread_anchor as anchor=None.
+    """
+    if use_first_unread_anchor:
+        # Backwards-compatibility: Before we added support for the
+        # special string-typed anchor values, clients would pass
+        # anchor=None and use_first_unread_anchor=True to indicate
+        # what is now expressed as anchor="first_unread".
+        return None
+    if anchor_val is None:
+        # Throw an exception if neither an anchor argument not
+        # use_first_unread_anchor was specified.
+        raise JsonableError(_("Missing 'anchor' argument."))
+    if anchor_val == "oldest":
+        return 0
+    if anchor_val == "newest":
+        return LARGER_THAN_MAX_MESSAGE_ID
+    if anchor_val == "first_unread":
+        return None
+    try:
+        # We don't use `.isnumeric()` to support negative numbers for
+        # anchor.  We don't recommend it in the API (if you want the
+        # very first message, use 0 or 1), but it used to be supported
+        # and was used by the web app, so we need to continue
+        # supporting it for backwards-compatibility
+        anchor = int(anchor_val)
+        if anchor < 0:
+            return 0
+        elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
+            return LARGER_THAN_MAX_MESSAGE_ID
+        return anchor
+    except ValueError:
+        raise JsonableError(_("Invalid anchor"))
