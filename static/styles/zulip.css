@@ -84,6 +84,7 @@ pre {
      * for tooltips here.
      */
     font-family: "Source Sans 3", sans-serif !important;
+    word-wrap: break-word;
 
     /* Affects all tippy tooltips not using any theme. */
     .tippy-box:not([data-theme]) {
