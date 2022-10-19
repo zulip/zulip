@@ -569,6 +569,11 @@ $category-text: hsl(219, 23%, 33%);
                 margin: 20px 0;
             }
 
+            .logos_disclaimer {
+                font-size: 13px;
+                font-style: italic;
+            }
+
             @media (width >= 768px) {
                 width: calc(100% - 200px);
             }
