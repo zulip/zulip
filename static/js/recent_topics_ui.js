@@ -895,15 +895,24 @@ function get_page_up_down_delta() {
 function page_up_navigation() {
     const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
     const delta = get_page_up_down_delta();
-
-    $scroll_container.scrollTop($scroll_container.scrollTop() - delta);
+    const new_scrollTop = $scroll_container.scrollTop() - delta;
+    if (new_scrollTop <= 0) {
+        row_focus = 0;
+    }
+    $scroll_container.scrollTop(new_scrollTop);
+    set_table_focus(row_focus, col_focus);
 }
 
 function page_down_navigation() {
     const $scroll_container = ui.get_scroll_element($("#recent_topics_table .table_fix_head"));
     const delta = get_page_up_down_delta();
-
-    $scroll_container.scrollTop($scroll_container.scrollTop() + delta);
+    const new_scrollTop = $scroll_container.scrollTop() + delta;
+    const table_height = $("#recent_topics_table .table_fix_head").height();
+    if (new_scrollTop >= table_height) {
+        row_focus = topics_widget.get_current_list().length - 1;
+    }
+    $scroll_container.scrollTop(new_scrollTop);
+    set_table_focus(row_focus, col_focus);
 }
 
 function check_row_type_transition(row, col) {
