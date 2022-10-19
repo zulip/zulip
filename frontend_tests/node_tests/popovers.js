@@ -211,7 +211,9 @@ test_ui("sender_hover", ({override, mock_template}) => {
     $.create(".user_popover_email", {children: []});
     $popover_content.get = () => {};
     const $user_name_element = $.create("user_full_name");
+    const $bot_owner_element = $.create("bot_owner");
     $popover_content.set_find_results(".user_full_name", $user_name_element);
+    $popover_content.set_find_results(".bot_owner", $bot_owner_element);
 
     const image_stubber = make_image_stubber();
     handler.call($target, e);
