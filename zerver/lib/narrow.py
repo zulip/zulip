@@ -41,6 +41,8 @@ from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.streams import (
+    can_access_stream_history_by_id,
+    can_access_stream_history_by_name,
     get_public_streams_queryset,
     get_stream_by_narrow_operand_access_unchecked,
     get_web_public_streams_queryset,
@@ -702,6 +704,56 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
         raise ValueError("element is not a dictionary")
 
     return list(map(convert_term, data))
+
+
+def ok_to_include_history(
+    narrow: OptionalNarrowListT, user_profile: Optional[UserProfile], is_web_public_query: bool
+) -> bool:
+    # There are occasions where we need to find Message rows that
+    # have no corresponding UserMessage row, because the user is
+    # reading a public stream that might include messages that
+    # were sent while the user was not subscribed, but which they are
+    # allowed to see.  We have to be very careful about constructing
+    # queries in those situations, so this function should return True
+    # only if we are 100% sure that we're gonna add a clause to the
+    # query that narrows to a particular public stream on the user's realm.
+    # If we screw this up, then we can get into a nasty situation of
+    # polluting our narrow results with messages from other realms.
+
+    # For web-public queries, we are always returning history.  The
+    # analogues of the below stream access checks for whether streams
+    # have is_web_public set and banning is operators in this code
+    # path are done directly in NarrowBuilder.
+    if is_web_public_query:
+        assert user_profile is None
+        return True
+
+    assert user_profile is not None
+
+    include_history = False
+    if narrow is not None:
+        for term in narrow:
+            if term["operator"] == "stream" and not term.get("negated", False):
+                operand: Union[str, int] = term["operand"]
+                if isinstance(operand, str):
+                    include_history = can_access_stream_history_by_name(user_profile, operand)
+                else:
+                    include_history = can_access_stream_history_by_id(user_profile, operand)
+            elif (
+                term["operator"] == "streams"
+                and term["operand"] == "public"
+                and not term.get("negated", False)
+                and user_profile.can_access_public_streams()
+            ):
+                include_history = True
+        # Disable historical messages if the user is narrowing on anything
+        # that's a property on the UserMessage table.  There cannot be
+        # historical messages in these cases anyway.
+        for term in narrow:
+            if term["operator"] == "is":
+                include_history = False
+
+    return include_history
 
 
 def get_stream_from_narrow_access_unchecked(

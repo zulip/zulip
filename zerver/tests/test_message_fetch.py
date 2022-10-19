@@ -32,6 +32,7 @@ from zerver.lib.narrow import (
     build_narrow_filter,
     exclude_muting_conditions,
     is_spectator_compatible,
+    ok_to_include_history,
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
@@ -57,7 +58,6 @@ from zerver.views.message_fetch import (
     LARGER_THAN_MAX_MESSAGE_ID,
     find_first_unread_anchor,
     get_messages_backend,
-    ok_to_include_history,
     post_process_limited_query,
 )
 
