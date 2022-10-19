@@ -863,8 +863,10 @@ function up_arrow_navigation(row, col) {
 }
 
 function down_arrow_navigation(row, col) {
+    if (is_focus_at_last_table_row()) {
+        return;
+    }
     const type = get_row_type(row);
-
     if (type === "stream" && col === 2 && !has_unread(row + 1)) {
         col_focus = 1;
     }
