@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
-from sqlalchemy.engine import Connection, Row
+from sqlalchemy.engine import Row
 from sqlalchemy.sql import (
     ColumnElement,
     Select,
@@ -24,15 +24,17 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
+    LARGER_THAN_MAX_MESSAGE_ID,
     NarrowBuilder,
     OptionalNarrowListT,
     add_narrow_conditions,
-    exclude_muting_conditions,
+    find_first_unread_anchor,
     get_base_query_for_search,
     is_spectator_compatible,
     is_web_public_narrow,
     narrow_parameter,
     ok_to_include_history,
+    parse_anchor_value,
 )
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
@@ -42,7 +44,6 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
 from zerver.models import Realm, UserMessage, UserProfile
 
-LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
 MAX_MESSAGES_PER_FETCH = 5000
 
 
@@ -93,97 +94,6 @@ def get_search_fields(
         "match_content": highlight_string(rendered_content, content_matches),
         MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
     }
-
-
-def find_first_unread_anchor(
-    sa_conn: Connection, user_profile: Optional[UserProfile], narrow: OptionalNarrowListT
-) -> int:
-    # For anonymous web users, all messages are treated as read, and so
-    # always return LARGER_THAN_MAX_MESSAGE_ID.
-    if user_profile is None:
-        return LARGER_THAN_MAX_MESSAGE_ID
-
-    # We always need UserMessage in our query, because it has the unread
-    # flag for the user.
-    need_user_message = True
-
-    # Because we will need to call exclude_muting_conditions, unless
-    # the user hasn't muted anything, we will need to include Message
-    # in our query.  It may be worth eventually adding an optimization
-    # for the case of a user who hasn't muted anything to avoid the
-    # join in that case, but it's low priority.
-    need_message = True
-
-    query, inner_msg_id_col = get_base_query_for_search(
-        user_profile=user_profile,
-        need_message=need_message,
-        need_user_message=need_user_message,
-    )
-
-    query, is_search = add_narrow_conditions(
-        user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
-        query=query,
-        narrow=narrow,
-        is_web_public_query=False,
-        realm=user_profile.realm,
-    )
-
-    condition = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
-
-    # We exclude messages on muted topics when finding the first unread
-    # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
-    if muting_conditions:
-        condition = and_(condition, *muting_conditions)
-
-    first_unread_query = query.where(condition)
-    first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
-    first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
-    if len(first_unread_result) > 0:
-        anchor = first_unread_result[0][0]
-    else:
-        anchor = LARGER_THAN_MAX_MESSAGE_ID
-
-    return anchor
-
-
-def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool) -> Optional[int]:
-    """Given the anchor and use_first_unread_anchor parameters passed by
-    the client, computes what anchor value the client requested,
-    handling backwards-compatibility and the various string-valued
-    fields.  We encode use_first_unread_anchor as anchor=None.
-    """
-    if use_first_unread_anchor:
-        # Backwards-compatibility: Before we added support for the
-        # special string-typed anchor values, clients would pass
-        # anchor=None and use_first_unread_anchor=True to indicate
-        # what is now expressed as anchor="first_unread".
-        return None
-    if anchor_val is None:
-        # Throw an exception if neither an anchor argument not
-        # use_first_unread_anchor was specified.
-        raise JsonableError(_("Missing 'anchor' argument."))
-    if anchor_val == "oldest":
-        return 0
-    if anchor_val == "newest":
-        return LARGER_THAN_MAX_MESSAGE_ID
-    if anchor_val == "first_unread":
-        return None
-    try:
-        # We don't use `.isnumeric()` to support negative numbers for
-        # anchor.  We don't recommend it in the API (if you want the
-        # very first message, use 0 or 1), but it used to be supported
-        # and was used by the web app, so we need to continue
-        # supporting it for backwards-compatibility
-        anchor = int(anchor_val)
-        if anchor < 0:
-            return 0
-        elif anchor > LARGER_THAN_MAX_MESSAGE_ID:
-            return LARGER_THAN_MAX_MESSAGE_ID
-        return anchor
-    except ValueError:
-        raise JsonableError(_("Invalid anchor"))
 
 
 @has_request_variables
