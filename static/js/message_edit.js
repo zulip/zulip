@@ -23,6 +23,7 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
@@ -68,15 +69,45 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (message.sent_by_me) {
         return true;
     }
+    if (message.type === "stream") {
+        const sub = stream_data.get_sub(message.stream);
+        const stream_post_permission_type = stream_data.stream_post_policy_values;
+        const stream_post_policy = sub.stream_post_policy;
 
-    if (!settings_data.user_can_edit_topic_of_any_message()) {
-        return false;
-    }
+        if (stream_post_policy === stream_post_permission_type.admins.code) {
+            return false;
+        }
 
-    // moderators can edit the topic if edit_topic_policy allows them to do so,
-    // irrespective of the topic editing deadline.
-    if (page_params.is_moderator) {
-        return true;
+        if (!settings_data.user_can_edit_topic_of_any_message()) {
+            return false;
+        }
+
+        // moderators can edit the topic if edit_topic_policy allows them to do so,
+        // irrespective of the topic editing deadline.
+        if (page_params.is_moderator) {
+            return true;
+        }
+        if (stream_post_policy === stream_post_permission_type.moderators.code) {
+            return false;
+        }
+        if (
+            page_params.is_guest &&
+            stream_post_policy !== stream_post_permission_type.everyone.code
+        ) {
+            return false;
+        }
+
+        const person = people.get_by_user_id(page_params.user_id);
+        const current_datetime = new Date(Date.now());
+        const person_date_joined = new Date(person.date_joined);
+        const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+        if (
+            stream_post_policy === stream_post_permission_type.non_new_members.code &&
+            days < page_params.realm_waiting_period_threshold
+        ) {
+            return false;
+        }
     }
 
     // If you're using community topic editing, there's a deadline.
