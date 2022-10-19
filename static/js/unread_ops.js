@@ -128,9 +128,15 @@ export function process_unread_messages_event({message_ids, message_details}) {
         });
 
         if (message_info.type === "stream") {
+            // TODO: Rather than passing a fake partial message, we
+            // should probably define a proper type for unread message
+            // data where we don't have the full message object, that
+            // we can use both in this function and pass to recent
+            // topics here.
             recent_topics_ui.update_topic_unread_count({
                 stream_id: message_info.stream_id,
                 topic: message_info.topic,
+                type: message_info.type,
             });
         }
     }
