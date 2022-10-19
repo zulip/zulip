@@ -27,10 +27,12 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.narrow import (
+    LARGER_THAN_MAX_MESSAGE_ID,
     BadNarrowOperator,
     NarrowBuilder,
     build_narrow_filter,
     exclude_muting_conditions,
+    find_first_unread_anchor,
     is_spectator_compatible,
     ok_to_include_history,
 )
@@ -54,12 +56,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
-from zerver.views.message_fetch import (
-    LARGER_THAN_MAX_MESSAGE_ID,
-    find_first_unread_anchor,
-    get_messages_backend,
-    post_process_limited_query,
-)
+from zerver.views.message_fetch import get_messages_backend, post_process_limited_query
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
