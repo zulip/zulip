@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
+const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire, with_overrides} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -11,9 +13,21 @@ const blueslip = zrequire("blueslip");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const user_pill = zrequire("user_pill");
 const people = zrequire("people");
+const compose_fade = zrequire("compose_fade");
 const compose_state = zrequire("compose_state");
+const compose_ui = zrequire("compose_ui");
 const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+
+let stream_value = "";
+compose_ui.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 const aaron = {
     email: "aaron@zulip.com",
@@ -150,13 +164,20 @@ test("draft_model delete", ({override}) => {
 });
 
 test("snapshot_message", ({override_rewire}) => {
+    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
+    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    mock_banners();
+    compose_ui.on_compose_select_stream_update = noop;
+
     stream_data.get_sub = (stream_name) => {
         assert.equal(stream_name, "stream");
         return {stream_id: 30};
     };
 
-    override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
-    override_rewire(compose_pm_pill, "set_from_emails", noop);
+    $(".narrow_to_compose_recipients").toggleClass = noop;
+
+    mock_stream_header_colorblock();
+    compose_fade.update_all = noop;
 
     let curr_draft;
 

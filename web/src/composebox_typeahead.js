@@ -204,7 +204,6 @@ function handle_keydown(e) {
             target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
-        const on_stream = target_sel === "#stream_message_recipient_stream";
         const on_topic = target_sel === "#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
@@ -242,15 +241,9 @@ function handle_keydown(e) {
 
                 handle_enter($("#compose-textarea"), e);
             }
-        } else if (on_stream || on_topic || on_pm) {
+        } else if (on_topic || on_pm) {
             // We are doing the focusing on keyup to not abort the typeahead.
-            if (on_stream) {
-                $nextFocus = $("#stream_message_recipient_topic");
-            } else if (on_topic) {
-                $nextFocus = $("#compose-textarea");
-            } else if (on_pm) {
-                $nextFocus = $("#compose-textarea");
-            }
+            $nextFocus = $("#compose-textarea");
         }
     }
 }
@@ -1095,24 +1088,6 @@ export function initialize() {
     // These handlers are at the "form" level so that they are called after typeahead
     $("form#send_message_form").on("keydown", handle_keydown);
     $("form#send_message_form").on("keyup", handle_keyup);
-
-    // limit number of items so the list doesn't fall off the screen
-    $("#stream_message_recipient_stream").typeahead({
-        source() {
-            return stream_data.subscribed_streams();
-        },
-        items: 3,
-        fixed: true,
-        highlighter(item) {
-            return typeahead_helper.render_typeahead_item({primary: item});
-        },
-        matcher(item) {
-            // The matcher for "stream" is strictly prefix-based,
-            // because we want to avoid mixing up streams.
-            const q = this.query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
-        },
-    });
 
     $("#stream_message_recipient_topic").typeahead({
         source() {

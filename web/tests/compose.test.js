@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
@@ -303,6 +304,20 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
     $("#compose-textarea").toggleClass = noop;
+    mock_stream_header_colorblock();
+    compose_actions.open_compose_stream_dropup = noop;
+    compose.update_on_recipient_change = noop;
+    compose_ui.on_compose_select_stream_update = noop;
+    let stream_value = "";
+    compose_ui.compose_stream_widget = {
+        value() {
+            return stream_value;
+        },
+        render(val) {
+            stream_value = val;
+        },
+    };
+
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -351,6 +366,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
 
 test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
+    mock_stream_header_colorblock();
+
     override_rewire(compose_banner, "clear_message_sent_banners", () => {});
     override(reminder, "is_deferred_delivery", () => false);
     override(document, "to_$", () => $("document-stub"));
@@ -516,9 +533,8 @@ test_ui("update_fade", ({override}) => {
     mock_banners();
     initialize_handlers({override});
 
-    const selector =
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
-    const keyup_handler_func = $(selector).get_on_handler("keyup");
+    const selector = "#stream_message_recipient_topic,#private_message_recipient";
+    const keyup_handler_func = $(selector).get_on_handler("change");
 
     let set_focused_recipient_checked = false;
     let update_all_called = false;
@@ -575,6 +591,8 @@ test_ui("trigger_submit_compose_form", ({override, override_rewire}) => {
 });
 
 test_ui("on_events", ({override}) => {
+    mock_stream_header_colorblock();
+
     initialize_handlers({override});
 
     override(rendered_markdown, "update_elements", () => {});
@@ -745,6 +763,8 @@ test_ui("on_events", ({override}) => {
 });
 
 test_ui("create_message_object", ({override, override_rewire}) => {
+    mock_stream_header_colorblock();
+
     compose_state.set_stream_name("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");

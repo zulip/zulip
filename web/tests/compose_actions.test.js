@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
@@ -25,8 +26,18 @@ const compose_fade = mock_esm("../src/compose_fade", {
     clear_compose: noop,
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+let stream_value = "";
 const compose_ui = mock_esm("../src/compose_ui", {
     autosize_textarea: noop,
+    on_compose_select_stream_update: noop,
+    compose_stream_widget: {
+        value() {
+            return stream_value;
+        },
+        render(val) {
+            stream_value = val;
+        },
+    },
     is_full_size: () => false,
 });
 const hash_util = mock_esm("../src/hash_util");
@@ -62,6 +73,7 @@ const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
+const stream_bar = zrequire("stream_bar");
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -113,6 +125,8 @@ test("start", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "blur_compose_inputs", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
+    stream_bar.decorate = () => {};
+    mock_stream_header_colorblock();
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -234,6 +248,7 @@ test("respond_to_message", ({override, override_rewire}) => {
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
     override_rewire(compose_actions, "clear_textarea", () => {});
     override_private_message_recipient({override});
+    mock_stream_header_colorblock();
 
     // Test PM
     const person = {
@@ -271,6 +286,7 @@ test("respond_to_message", ({override, override_rewire}) => {
 
 test("reply_with_mention", ({override, override_rewire}) => {
     mock_banners();
+    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     override_rewire(compose_actions, "set_focus", () => {});
     override_rewire(compose_actions, "complete_starting_tasks", () => {});
@@ -318,6 +334,7 @@ test("reply_with_mention", ({override, override_rewire}) => {
 
 test("quote_and_reply", ({disallow, override, override_rewire}) => {
     mock_banners();
+    mock_stream_header_colorblock();
     compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
@@ -419,7 +436,7 @@ test("get_focus_area", () => {
         }),
         "#compose-textarea",
     );
-    assert.equal(get_focus_area("stream", {}), "#stream_message_recipient_stream");
+    assert.equal(get_focus_area("stream", {}), "#compose_select_stream_widget");
     assert.equal(get_focus_area("stream", {stream: "fun"}), "#stream_message_recipient_topic");
     assert.equal(get_focus_area("stream", {stream: "fun", topic: "more"}), "#compose-textarea");
     assert.equal(

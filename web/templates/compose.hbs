@@ -68,17 +68,15 @@
                             </template>
                         </div>
                         <div id="compose-stream-recipient" class="order-1">
-                            <div class="stream-selection-header-colorblock message_header_stream left_part" tab-index="-1"></div>
                             <div class="right_part">
-                                <span id="compose-lock-icon">
-                                    <i class="fa fa-lock" title="{{t 'This is a private stream' }}" aria-hidden="true"></i>
-                                </span>
-                                <span id="compose-globe-icon">
-                                    <i class="zulip-icon zulip-icon-globe" title="{{t 'This is a web-public stream' }}" aria-hidden="true"></i>
-                                </span>
                                 <a role="button" class="narrow_to_compose_recipients zulip-icon zulip-icon-arrow-left-circle order-1" data-tooltip-template-id="narrow_to_compose_recipients_tooltip" tabindex="0">
                                 </a>
-                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="{{ max_stream_name_length }}" value="" placeholder="{{t 'Stream' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Stream' }}" />
+                                <div id="compose_stream_selection_dropdown" class="new-style">
+                                    <div class="stream_header_colorblock"></div>
+                                    {{> settings/dropdown_list_widget
+                                      widget_name="compose_select_stream"
+                                      list_placeholder=(t 'Filter streams')}}
+                                </div>
                                 <i class="fa fa-angle-right" aria-hidden="true"></i>
                                 <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="{{ max_topic_length }}" value="" placeholder="{{t 'Topic' }}" autocomplete="off" tabindex="0" aria-label="{{t 'Topic' }}" />
                             </div>

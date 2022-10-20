@@ -445,12 +445,14 @@ export function render_and_show_preview($preview_spinner, $preview_content_box, 
 
 export function initialize() {
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("keyup", update_on_recipient_change);
-    $(
-        "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
-    ).on("change", () => {
+    // `keyup` isn't relevant for streams since it registers as a change only
+    // when an item in the dropdown is selected.
+    $("#stream_message_recipient_topic,#private_message_recipient").on(
+        "keyup",
+        update_on_recipient_change,
+    );
+    // changes for the stream dropdown are handled in on_compose_select_stream_update
+    $("#stream_message_recipient_topic,#private_message_recipient").on("change", () => {
         update_on_recipient_change();
         compose_state.set_recipient_edited_manually(true);
     });
@@ -516,7 +518,7 @@ export function initialize() {
             event.preventDefault();
 
             const stream_name = compose_state.stream_name();
-            if (stream_name === undefined) {
+            if (stream_name === "") {
                 return;
             }
             const sub = stream_data.get_sub(stream_name);

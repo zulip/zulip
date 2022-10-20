@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_ui from "./compose_ui";
 
 let message_type = false; // 'stream', 'private', or false-y
 let recipient_edited_manually = false;
@@ -67,13 +68,13 @@ function get_or_set(fieldname, keep_leading_whitespace, no_trim) {
 }
 
 export function stream_name() {
-    return $("#stream_message_recipient_stream").val().trim();
+    return compose_ui.compose_stream_widget.value();
 }
 
 export function set_stream_name(newval) {
-    if (newval !== undefined) {
-        const $elem = $("#stream_message_recipient_stream");
-        $elem.val(newval);
+    if (newval !== undefined && newval !== "" && compose_ui.compose_stream_widget) {
+        compose_ui.compose_stream_widget.render(newval);
+        compose_ui.on_compose_select_stream_update(newval);
     }
 }
 
@@ -127,7 +128,7 @@ export function focus_in_empty_compose(consider_start_of_whitespace_message_empt
             return private_message_recipient().length === 0;
         case "stream_message_recipient_topic":
             return topic() === "";
-        case "stream_message_recipient_stream":
+        case "compose_select_stream_name":
             return stream_name() === "";
     }
 

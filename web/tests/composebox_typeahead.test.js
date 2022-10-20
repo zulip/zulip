@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 const $ = require("./lib/zjquery");
@@ -9,18 +10,13 @@ const {user_settings} = require("./lib/zpage_params");
 
 const noop = () => {};
 
-const compose = mock_esm("../src/compose", {
-    finish: noop,
-});
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
+    warn_if_topic_resolved: noop,
 });
 const input_pill = mock_esm("../src/input_pill");
 const message_user_ids = mock_esm("../src/message_user_ids", {
     user_ids: () => [],
-});
-const stream_topic_history = mock_esm("../src/stream_topic_history", {
-    stream_has_topics: () => false,
 });
 const stream_topic_history_util = mock_esm("../src/stream_topic_history_util");
 
@@ -35,6 +31,7 @@ set_global("setTimeout", (f, time) => {
 set_global("document", "document-stub");
 
 const typeahead = zrequire("../shared/src/typeahead");
+const stream_topic_history = zrequire("stream_topic_history");
 const compose_state = zrequire("compose_state");
 const emoji = zrequire("emoji");
 const typeahead_helper = zrequire("typeahead_helper");
@@ -42,6 +39,7 @@ const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
+const compose = zrequire("compose");
 const compose_pm_pill = zrequire("compose_pm_pill");
 const compose_ui = zrequire("compose_ui");
 const composebox_typeahead = zrequire("composebox_typeahead");
@@ -54,6 +52,16 @@ const ct = composebox_typeahead;
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
 ct.__Rewire__("max_num_items", 15);
+
+let stream_value = "";
+compose_ui.compose_stream_widget = {
+    value() {
+        return stream_value;
+    },
+    render(val) {
+        stream_value = val;
+    },
+};
 
 run_test("verify wildcard mentions typeahead for stream message", () => {
     const mention_all = ct.broadcast_mentions()[0];
@@ -359,8 +367,8 @@ function test(label, f) {
     });
 }
 
-test("topics_seen_for", ({override}) => {
-    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
+test("topics_seen_for", ({override, override_rewire}) => {
+    override_rewire(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
     });
@@ -664,7 +672,11 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-test("initialize", ({override, mock_template}) => {
+test("initialize", ({override, override_rewire, mock_template}) => {
+    mock_stream_header_colorblock();
+    compose.update_on_recipient_change = noop;
+    compose_ui.on_compose_select_stream_update = noop;
+
     let pill_items = [];
     let cleared = false;
     let appended_names = [];
@@ -694,40 +706,6 @@ test("initialize", ({override, mock_template}) => {
         return html;
     });
     override(stream_topic_history_util, "get_server_history", () => {});
-
-    let stream_typeahead_called = false;
-    $("#stream_message_recipient_stream").typeahead = (options) => {
-        // options.source()
-        //
-        let actual_value = options.source();
-        assert.deepEqual(actual_value.sort(), ["Denmark", "Sweden"]);
-
-        // options.highlighter()
-        options.query = "De";
-        actual_value = options.highlighter("Denmark");
-        expected_value = "<strong>Denmark</strong>";
-        assert.equal(actual_value, expected_value);
-
-        options.query = "the n";
-        actual_value = options.highlighter("The Netherlands");
-        expected_value = "<strong>The Netherlands</strong>";
-        assert.equal(actual_value, expected_value);
-
-        // options.matcher()
-        options.query = "de";
-        assert.equal(options.matcher("Denmark"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        options.query = "De";
-        assert.equal(options.matcher("Denmark"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        options.query = "the ";
-        assert.equal(options.matcher("The Netherlands"), true);
-        assert.equal(options.matcher("Sweden"), false);
-
-        stream_typeahead_called = true;
-    };
 
     let topic_typeahead_called = false;
     $("#stream_message_recipient_topic").typeahead = (options) => {
@@ -818,6 +796,8 @@ test("initialize", ({override, mock_template}) => {
             backend,
             call_center,
         ];
+        actual_value.sort((a, b) => a.user_id - b.user_id);
+        expected_value.sort((a, b) => a.user_id - b.user_id);
         assert.deepEqual(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -888,6 +868,8 @@ test("initialize", ({override, mock_template}) => {
         query = "co"; // Matches everything ("x@zulip.COm")
         actual_value = sorter(query, [othello, deactivated_user, cordelia]);
         expected_value = [cordelia, deactivated_user, othello];
+        actual_value.sort((a, b) => a.user_id - b.user_id);
+        expected_value.sort((a, b) => a.user_id - b.user_id);
         assert.deepEqual(actual_value, expected_value);
 
         query = "non-existing-user";
@@ -1113,24 +1095,19 @@ test("initialize", ({override, mock_template}) => {
     $("#private_message_recipient").trigger("blur");
     assert.equal($("#private_message_recipient").val(), "othello@zulip.com");
 
-    // handle_keydown()
+    // the UI of selecting a stream is tested in puppeteer tests.
+    compose_state.set_stream_name("Sweden");
+
     let event = {
         type: "keydown",
-        key: "Enter",
+        key: "Tab",
+        shiftKey: false,
         target: {
-            id: "stream_message_recipient_stream",
+            id: "stream_message_recipient_topic",
         },
         preventDefault: noop,
         stopPropagation: noop,
     };
-
-    $("form#send_message_form").trigger(event);
-
-    $("form#send_message_form").trigger(event);
-
-    event.key = "Tab";
-    event.shiftKey = false;
-    event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
     $("form#send_message_form").trigger(event);
@@ -1155,7 +1132,7 @@ test("initialize", ({override, mock_template}) => {
     user_settings.enter_sends = false;
     event.metaKey = true;
     let compose_finish_called = false;
-    override(compose, "finish", () => {
+    override_rewire(compose, "finish", () => {
         compose_finish_called = true;
     });
 
@@ -1182,12 +1159,14 @@ test("initialize", ({override, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
+    // the UI of selecting a stream is tested in puppeteer tests.
+    compose_state.set_stream_name("Sweden");
     // handle_keyup()
     event = {
         type: "keydown",
         key: "Enter",
         target: {
-            id: "stream_message_recipient_stream",
+            id: "stream_message_recipient_topic",
         },
         preventDefault: noop,
     };
@@ -1202,7 +1181,6 @@ test("initialize", ({override, mock_template}) => {
     event.key = "a";
     $("form#send_message_form").trigger(event);
 
-    $("#stream_message_recipient_stream").off("focus");
     $("#stream_message_recipient_topic").off("focus");
     $("#private_message_recipient").off("focus");
     $("form#send_message_form").off("keydown");
@@ -1213,7 +1191,6 @@ test("initialize", ({override, mock_template}) => {
 
     // Now let's make sure that all the stub functions have been called
     // during the initialization.
-    assert.ok(stream_typeahead_called);
     assert.ok(topic_typeahead_called);
     assert.ok(pm_recipient_typeahead_called);
     assert.ok(compose_textarea_typeahead_called);
@@ -1257,11 +1234,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
         assert.deepEqual(values, reference);
     }
 
-    function assert_stream_list(input, rest = "") {
-        const values = get_values(input, rest);
-        assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
-    }
-
     const people_only = {is_silent: true};
     const all_mentions = {is_silent: false};
     const lang_list = Object.keys(pygments_data.langs);
@@ -1276,7 +1248,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // Make sure that the last token is the one we read.
     assert_typeahead_equals("~~~ @zulip", all_mentions);
     assert_typeahead_equals("@zulip :ta", emoji_list);
-    assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
     assert_typeahead_equals(":tada: <time:", ["translated: Mention a time-zone-aware time"]);
 
@@ -1350,10 +1321,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test # a", false);
     assert_typeahead_equals("test no#o", false);
-    assert_stream_list("#s");
-    assert_stream_list(" #s");
-    assert_stream_list("test #D");
-    assert_stream_list("test #**v");
 
     assert_typeahead_equals("/", composebox_typeahead.slash_commands);
     assert_typeahead_equals("/m", composebox_typeahead.slash_commands);
@@ -1430,7 +1397,6 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
     for (const symbol of terminal_symbols.split()) {
-        assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
@@ -1755,6 +1721,7 @@ test("PM recipients sorted according to stream / topic being viewed", ({override
         (stream_id, user_id) =>
             stream_id === denmark_stream.stream_id && user_id === cordelia.user_id,
     );
+    mock_stream_header_colorblock();
 
     // When viewing no stream, sorting is alphabetical
     compose_state.set_stream_name("");

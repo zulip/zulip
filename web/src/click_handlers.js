@@ -668,6 +668,11 @@ export function initialize() {
             return;
         }
 
+        // The dropdown menu needs to process clicks to open and close.
+        if ($target.parents("#compose_stream_selection_dropdown").length > 0) {
+            return;
+        }
+
         // The mobile compose button has its own popover when clicked, so it already.
         // hides other popovers.
         if ($target.is(".compose_mobile_button, .compose_mobile_button *")) {

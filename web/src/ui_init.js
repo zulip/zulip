@@ -23,6 +23,7 @@ import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_ui from "./compose_ui";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as copy_and_paste from "./copy_and_paste";
@@ -88,7 +89,6 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
-import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
@@ -293,6 +293,10 @@ export function initialize_kitchen_sink_stuff() {
 
     // Ignore wheel events in the compose area which weren't already handled above.
     $("#compose").on("wheel", (e) => {
+        // Except for the stream select dropdown, which still needs scroll events.
+        if ($(e.target).parents(".dropdown-list-body").length > 0) {
+            return;
+        }
         e.stopPropagation();
         e.preventDefault();
     });
@@ -365,14 +369,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("#main_div").on("mouseleave", ".embed-video a", function () {
         $(this).removeClass("fa fa-play");
-    });
-
-    $("#stream_message_recipient_stream").on("change", function () {
-        stream_bar.decorate(
-            this.value,
-            $("#compose-stream-recipient .message_header_stream"),
-            true,
-        );
     });
 
     $(window).on("blur", () => {
@@ -637,6 +633,7 @@ export function initialize_everything() {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(stream_data_params);
+    compose_ui.initialize_compose_stream_dropdown();
     user_group_edit_members.initialize();
     pm_conversations.recent.initialize(pm_conversations_params);
     user_topics.initialize();
