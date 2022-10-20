@@ -62,7 +62,7 @@ function get_focus_area(msg_type, opts) {
     }
 
     if (msg_type === "stream") {
-        return "#stream_message_recipient_stream";
+        return "#compose_select_stream_widget";
     }
     return "#private_message_recipient";
 }
@@ -70,9 +70,16 @@ function get_focus_area(msg_type, opts) {
 // Export for testing
 export const _get_focus_area = get_focus_area;
 
+export function open_compose_stream_dropup() {
+    if ($("#id_compose_select_stream").hasClass("open")) {
+        return;
+    }
+    $("#id_compose_select_stream > .dropdown-toggle").dropdown("toggle");
+}
+
 export function set_focus(msg_type, opts) {
-    const focus_area = get_focus_area(msg_type, opts);
     if (window.getSelection().toString() === "" || opts.trigger !== "message click") {
+        const focus_area = get_focus_area(msg_type, opts);
         const $elt = $(focus_area);
         $elt.trigger("focus").trigger("select");
     }
@@ -320,6 +327,12 @@ export function start(msg_type, opts) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
+
+    compose_ui.compose_stream_widget.render(opts.stream);
+    const $stream_header_colorblock = $("#compose_stream_selection_dropdown").find(
+        ".stream_header_colorblock",
+    );
+    stream_bar.decorate(opts.stream, $stream_header_colorblock, false);
 
     // We set the stream/topic/private_message_recipient
     // unconditionally here, which assumes the caller will have passed

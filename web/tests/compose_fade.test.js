@@ -7,12 +7,6 @@ const {run_test} = require("./lib/test");
 
 mock_jquery((selector) => {
     switch (selector) {
-        case "#stream_message_recipient_stream":
-            return {
-                val() {
-                    return "social";
-                },
-            };
         case "#stream_message_recipient_topic":
             return {
                 val() {
@@ -29,7 +23,14 @@ const stream_data = zrequire("stream_data");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const compose_fade = zrequire("compose_fade");
+const compose_ui = zrequire("compose_ui");
 const compose_fade_helper = zrequire("compose_fade_helper");
+
+compose_ui.compose_stream_widget = {
+    value() {
+        return "social";
+    },
+};
 
 const me = {
     email: "me@example.com",

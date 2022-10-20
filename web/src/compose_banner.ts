@@ -98,5 +98,10 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
     const $compose_banner_area = $("#compose_banners");
     $compose_banner_area.append(new_row);
     hide_compose_spinner();
-    $("#stream_message_recipient_stream").trigger("focus").trigger("select");
+
+    // TODO: Replace with compose_actions.open_compose_stream_dropup() when it is converted to ts.
+    if ($("#id_compose_select_stream").hasClass("open")) {
+        return;
+    }
+    $("#id_compose_select_stream button").trigger("click");
 }
