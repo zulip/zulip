@@ -7,7 +7,7 @@ class SlackIncomingHookTests(WebhookTestCase):
     WEBHOOK_DIR_NAME = "slack_incoming"
 
     def test_message(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 Hello, world.
 """.strip()
@@ -38,7 +38,7 @@ Hello, world.
             self.assert_stream_message(
                 message=msg,
                 stream_name=self.STREAM_NAME,
-                topic_name="(no topic)",
+                topic_name="general chat",
                 content=output_value,
             )
 
@@ -83,7 +83,7 @@ Danny Torrence left the following *review* for your property:
         )
 
     def test_message_with_blocks(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 Danny Torrence left the following review for your property:
 
@@ -133,7 +133,7 @@ Danny Torrence left the following review for your property:
         # Paste the JSON into
         # https://api.slack.com/tools/block-kit-builder to see how it
         # is rendered in Slack
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## Hello from TaskBot
 
@@ -168,7 +168,7 @@ There are two ways to quickly create tasks:
     def test_attachment_blocks(self) -> None:
         # On https://api.slack.com/tools/block-kit-builder choose
         # "Attachment preview" and paste the JSON in.
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 This is a section block with an accessory image.
 
@@ -184,7 +184,7 @@ This is a section block with a button.
         )
 
     def test_attachment_fields(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 Build bla bla succeeded
 
@@ -204,7 +204,7 @@ Value without title
         )
 
     def test_attachment_pieces(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## Test
 
@@ -227,7 +227,7 @@ Value without title
         return self.webhook_fixture_data("slack_incoming", fixture_name, file_type=file_type)
 
     def test_attachment_pieces_title_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 Sample pretext.
 
@@ -247,7 +247,7 @@ Sample footer.
         )
 
     def test_attachment_pieces_image_url_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## [Sample title.](https://www.google.com)
 
@@ -267,7 +267,7 @@ Sample footer.
         )
 
     def test_attachment_pieces_ts_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## [Sample title.](https://www.google.com)
 
@@ -287,7 +287,7 @@ Sample footer.
         )
 
     def test_attachment_pieces_text_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## [Sample title.](https://www.google.com)
 
@@ -307,7 +307,7 @@ Sample footer.
         )
 
     def test_attachment_pieces_pretext_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## [Sample title.](https://www.google.com)
 
@@ -327,7 +327,7 @@ Sample footer.
         )
 
     def test_attachment_pieces_footer_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## [Sample title.](https://www.google.com)
 
@@ -347,7 +347,7 @@ Sample text.
         )
 
     def test_attachment_pieces_title_link_null(self) -> None:
-        expected_topic = "(no topic)"
+        expected_topic = "general chat"
         expected_message = """
 ## Sample title.
 

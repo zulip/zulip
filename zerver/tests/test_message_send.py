@@ -2704,7 +2704,7 @@ class CheckMessageTest(ZulipTestCase):
         sender = self.example_user("iago")
         client = make_client(name="test suite")
         stream = get_stream("Denmark", realm)
-        topic_name = "(no topic)"
+        topic_name = "general chat"
         message_content = "whatever"
         addressee = Addressee.for_stream(stream, topic_name)
 

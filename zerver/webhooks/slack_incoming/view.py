@@ -55,7 +55,7 @@ def api_slack_incoming_webhook(
         user_specified_topic = re.sub("^[@#]", "", channel)
 
     if user_specified_topic is None:
-        user_specified_topic = "(no topic)"
+        user_specified_topic = "general chat"
 
     pieces = []
     if "blocks" in payload and payload["blocks"]:

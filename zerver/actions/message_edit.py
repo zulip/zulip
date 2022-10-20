@@ -108,7 +108,7 @@ def can_edit_topic(
     user_profile: UserProfile,
     is_no_topic_msg: bool,
 ) -> bool:
-    # We allow anyone to edit (no topic) messages to help tend them.
+    # We allow anyone to edit general chat messages to help tend them.
     if is_no_topic_msg:
         return True
 
@@ -932,7 +932,7 @@ def check_update_message(
         if message.sender_id != user_profile.id:
             raise JsonableError(_("You don't have permission to edit this message"))
 
-    is_no_topic_msg = message.topic_name() == "(no topic)"
+    is_no_topic_msg = message.topic_name() == "general chat"
 
     if topic_name is not None and not can_edit_topic(user_profile, is_no_topic_msg):
         raise JsonableError(_("You don't have permission to edit this message"))

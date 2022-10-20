@@ -74,6 +74,7 @@ IGNORED_PHRASES = [
     r"user",
     r"an unknown operating system",
     r"Go to Settings",
+    r"general chat",
     # SPECIAL CASES
     # Because topics usually are lower-case, this would look weird if it were capitalized
     r"more topics",

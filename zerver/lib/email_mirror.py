@@ -403,11 +403,11 @@ def is_forwarded(subject: str) -> bool:
 
 def process_stream_message(to: str, message: EmailMessage) -> None:
     subject_header = message.get("Subject", "")
-    subject = strip_from_subject(subject_header) or "(no topic)"
+    subject = strip_from_subject(subject_header) or "general chat"
 
     # We don't want to reject email messages with disallowed characters in the Subject,
     # so we just remove them to make it a valid Zulip topic name.
-    subject = "".join([char for char in subject if is_character_printable(char)]) or "(no topic)"
+    subject = "".join([char for char in subject if is_character_printable(char)]) or "general chat"
 
     stream, options = decode_stream_email_address(to)
     # Don't remove quotations if message is forwarded, unless otherwise specified:

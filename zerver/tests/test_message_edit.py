@@ -1194,8 +1194,8 @@ class EditMessageTest(EditMessageTestCase):
             id_, "G", "The time limit for editing this message's topic has passed", "hamlet"
         )
 
-        # anyone should be able to edit "no topic" indefinitely
-        message.set_topic_name("(no topic)")
+        # anyone should be able to edit "general chat" indefinitely
+        message.set_topic_name("general chat")
         message.save()
         do_edit_message_assert_success(id_, "D", "cordelia")
 

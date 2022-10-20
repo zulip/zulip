@@ -124,7 +124,7 @@ export function abort_video_callbacks(edit_message_id = "") {
 }
 
 export function empty_topic_placeholder() {
-    return $t({defaultMessage: "(no topic)"});
+    return $t({defaultMessage: "general chat"});
 }
 
 export function create_message_object() {

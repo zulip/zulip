@@ -1410,7 +1410,7 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        if realm.mandatory_topics and topic_name == "(no topic)":
+        if realm.mandatory_topics and topic_name == "general chat":
             raise JsonableError(_("Topics are required in this organization"))
 
     elif addressee.is_private():

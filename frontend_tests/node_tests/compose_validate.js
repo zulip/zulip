@@ -280,7 +280,7 @@ test_ui("validate", ({override, mock_template}) => {
     assert.ok(missing_topic_error_rendered);
 
     missing_topic_error_rendered = false;
-    compose_state.topic("(no topic)");
+    compose_state.topic("general chat");
     assert.ok(!compose_validate.validate());
     assert.ok(missing_topic_error_rendered);
 });
