@@ -55,6 +55,8 @@ bot, regardless of who owns them.
 
 1. Click **Reactivate bot** on the profile card for the bot you want to reactivate.
 
+1. Approve by clicking **Confirm**.
+
 {tab|via-organization-settings}
 
 {settings_tab|bot-list-admin}
