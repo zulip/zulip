@@ -241,7 +241,7 @@ export function add_reaction(event) {
 
     const local_id = get_local_reaction_id(event);
     const user_id = event.user_id;
-    const clean_reaction_object = message.clean_reactions.get(local_id);
+    let clean_reaction_object = message.clean_reactions.get(local_id);
     if (clean_reaction_object && clean_reaction_object.user_ids.includes(user_id)) {
         return;
     }
@@ -249,77 +249,59 @@ export function add_reaction(event) {
     if (clean_reaction_object) {
         clean_reaction_object.user_ids.push(user_id);
         update_user_fields(clean_reaction_object);
+        view.update_existing_reaction(clean_reaction_object, message_id, user_id);
     } else {
-        message.clean_reactions.set(
+        clean_reaction_object = make_clean_reaction({
             local_id,
-            make_clean_reaction({
-                local_id,
-                user_ids: [user_id],
-                reaction_type: event.reaction_type,
-                emoji_name: event.emoji_name,
-                emoji_code: event.emoji_code,
-            }),
-        );
-    }
+            user_ids: [user_id],
+            reaction_type: event.reaction_type,
+            emoji_name: event.emoji_name,
+            emoji_code: event.emoji_code,
+        });
 
-    const opts = {
-        message_id,
-        reaction_type: event.reaction_type,
-        emoji_name: event.emoji_name,
-        emoji_code: event.emoji_code,
-        user_id,
-    };
-
-    if (clean_reaction_object) {
-        opts.user_list = clean_reaction_object.user_ids;
-        view.update_existing_reaction(opts);
-    } else {
-        view.insert_new_reaction(opts);
+        message.clean_reactions.set(local_id, clean_reaction_object);
+        view.insert_new_reaction(clean_reaction_object, message_id, user_id);
     }
 }
 
-view.update_existing_reaction = function ({
-    message_id,
-    emoji_name,
-    user_list,
-    user_id,
-    reaction_type,
-    emoji_code,
-}) {
+view.update_existing_reaction = function (clean_reaction_object, message_id, acting_user_id) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
-    const local_id = get_local_reaction_id({reaction_type, emoji_code});
+    const local_id = get_local_reaction_id(clean_reaction_object);
     const $reaction = find_reaction(message_id, local_id);
 
-    set_reaction_count($reaction, user_list.length);
+    set_reaction_count($reaction, clean_reaction_object.user_ids.length);
 
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
     $reaction.attr("aria-label", new_label);
 
-    if (user_id === page_params.user_id) {
+    if (acting_user_id === page_params.user_id) {
         $reaction.addClass("reacted");
     }
 };
 
-view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_code, reaction_type}) {
+view.insert_new_reaction = function (clean_reaction_object, message_id, user_id) {
     // Our caller ensures we are the first user to react to this
-    // message with this emoji, and it populates user_list for
-    // us.  We then render the emoji/title/count and insert it
-    // before the add button.
-
-    const user_list = [user_id];
+    // message with this emoji. We then render the emoji/title/count
+    // and insert it before the add button.
 
     const context = {
         message_id,
-        ...emoji.get_emoji_details_for_rendering({emoji_name, emoji_code, reaction_type}),
+        ...emoji.get_emoji_details_for_rendering(clean_reaction_object),
     };
 
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
 
     context.count = 1;
     context.label = new_label;
-    context.local_id = get_local_reaction_id({reaction_type, emoji_code});
+    context.local_id = get_local_reaction_id(clean_reaction_object);
     context.emoji_alt_code = user_settings.emojiset === "text";
     context.is_realm_emoji =
         context.reaction_type === "realm_emoji" || context.reaction_type === "zulip_extra_emoji";
@@ -338,9 +320,6 @@ view.insert_new_reaction = function ({message_id, user_id, emoji_name, emoji_cod
 };
 
 export function remove_reaction(event) {
-    const reaction_type = event.reaction_type;
-    const emoji_name = event.emoji_name;
-    const emoji_code = event.emoji_code;
     const message_id = event.message_id;
     const user_id = event.user_id;
     const message = message_store.get(message_id);
@@ -372,28 +351,15 @@ export function remove_reaction(event) {
         message.clean_reactions.delete(local_id);
     }
 
-    view.remove_reaction({
-        message_id,
-        reaction_type,
-        emoji_name,
-        emoji_code,
-        user_list: clean_reaction_object.user_ids,
-        user_id,
-    });
+    view.remove_reaction(clean_reaction_object, message_id, user_id);
 }
 
-view.remove_reaction = function ({
-    message_id,
-    emoji_name,
-    user_list,
-    user_id,
-    reaction_type,
-    emoji_code,
-}) {
-    const local_id = get_local_reaction_id({reaction_type, emoji_code});
+view.remove_reaction = function (clean_reaction_object, message_id, user_id) {
+    const local_id = get_local_reaction_id(clean_reaction_object);
     const $reaction = find_reaction(message_id, local_id);
+    const reaction_count = clean_reaction_object.user_ids.length;
 
-    if (user_list.length === 0) {
+    if (reaction_count === 0) {
         // If this user was the only one reacting for this emoji, we simply
         // remove the reaction and exit.
         $reaction.remove();
@@ -403,14 +369,12 @@ view.remove_reaction = function ({
     // The emoji still has reactions from other users, so we need to update
     // the title/count and, if the user is the current user, turn off the
     // "reacted" class.
-
-    const new_label = generate_title(emoji_name, user_list);
+    const new_label = generate_title(
+        clean_reaction_object.emoji_name,
+        clean_reaction_object.user_ids,
+    );
     $reaction.attr("aria-label", new_label);
-
-    // If the user is the current user, turn off the "reacted" class.
-
-    set_reaction_count($reaction, user_list.length);
-
+    set_reaction_count($reaction, reaction_count);
     if (user_id === page_params.user_id) {
         $reaction.removeClass("reacted");
     }
