@@ -62,7 +62,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
         if "+" in address.username:
             raise EmailContainsPlusError
 
-        domain = address.domain
+        domain = address.domain.lower()
 
         if domain in allowed_domains:
             return

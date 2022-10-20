@@ -97,7 +97,7 @@ def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
     except ValidationError:
         return False
 
-    domain = Address(addr_spec=email).domain
+    domain = Address(addr_spec=email).domain.lower()
 
     # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
@@ -116,7 +116,7 @@ def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
     except ValidationError:
         return False
 
-    domain = Address(addr_spec=email).domain
+    domain = Address(addr_spec=email).domain.lower()
     if domain.startswith("irc."):
         domain = domain[len("irc.") :]
 
@@ -133,7 +133,7 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
 
     # If your Jabber users have a different email domain than the
     # Zulip users, this is where you would do any translation.
-    domain = Address(addr_spec=email).domain
+    domain = Address(addr_spec=email).domain.lower()
 
     # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
