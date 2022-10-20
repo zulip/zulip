@@ -101,8 +101,17 @@ run_test("is_topic_editable", ({override}) => {
 
     const message = {
         sent_by_me: true,
+        locally_echoed: true,
     };
     page_params.realm_allow_message_editing = true;
+
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    message.locally_echoed = false;
+    message.failed_request = true;
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    message.failed_request = false;
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = false;

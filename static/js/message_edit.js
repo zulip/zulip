@@ -56,6 +56,10 @@ export const editability_types = {
 };
 
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return false;
+    }
+
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
         return false;
@@ -199,6 +203,10 @@ export function can_move_message(message) {
     }
 
     if (!message.is_stream) {
+        return false;
+    }
+
+    if (!is_message_editable_ignoring_permissions(message)) {
         return false;
     }
 
