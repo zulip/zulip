@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
+import render_user_with_status_icon from "../templates/user_with_status_icon.hbs";
 
 import * as buddy_data from "./buddy_data";
 import * as compose_closed_ui from "./compose_closed_ui";
@@ -38,6 +39,7 @@ import * as top_left_corner from "./top_left_corner";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import * as user_status from "./user_status";
 import * as user_topics from "./user_topics";
 
 let topics_widget;
@@ -406,7 +408,18 @@ function format_conversation(conversation_data) {
     } else if (type === "private") {
         // Private message info
         context.user_ids_string = last_msg.to_user_ids;
-        context.pm_with = last_msg.display_reply_to;
+        context.rendered_pm_with = last_msg.display_recipient
+            .filter(
+                (recipient) =>
+                    !people.is_my_user_id(recipient.id) || last_msg.display_recipient.length === 1,
+            )
+            .map((user) =>
+                render_user_with_status_icon({
+                    name: user.full_name,
+                    status_emoji_info: user_status.get_status_emoji(user.id),
+                }),
+            )
+            .join(", ");
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
         context.is_group = last_msg.display_recipient.length > 2;

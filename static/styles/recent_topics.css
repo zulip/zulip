@@ -183,6 +183,12 @@
 
         .flex_container .left_part {
             flex-wrap: wrap;
+
+            .user_status_icon_wrapper {
+                display: inline-flex;
+                align-items: center;
+                flex-direction: row;
+            }
         }
 
         .flex_container .right_part {
