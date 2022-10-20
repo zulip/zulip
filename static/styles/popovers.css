@@ -456,13 +456,6 @@ ul {
         width: fit-content;
     }
 
-    &.no-fields {
-        hr,
-        #content {
-            display: none;
-        }
-    }
-
     .tab-data {
         .active {
             display: block;
