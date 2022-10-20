@@ -146,6 +146,11 @@ class BaseDocumentationSpider(scrapy.Spider):
         ):
             return
 
+        # This page has some invisible to the user anchor links like #all
+        # that are currently invisible, and thus would otherwise fail this test.
+        if url.startswith("http://localhost:9981/communities"):
+            return
+
         callback: Callable[[Response], Optional[Iterator[Request]]] = self.parse
         dont_filter = False
         method = "GET"
