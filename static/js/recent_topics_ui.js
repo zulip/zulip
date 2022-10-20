@@ -318,6 +318,43 @@ function message_to_conversation_unread_count(msg) {
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
 
+export function get_pm_tooltip_data(user_ids_string) {
+    const user_id = Number.parseInt(user_ids_string, 10);
+    const person = people.get_by_user_id(user_id);
+
+    if (person.is_bot) {
+        const bot_owner = people.get_bot_owner_user(person);
+
+        if (bot_owner) {
+            const bot_owner_name = $t(
+                {defaultMessage: "Owner: {name}"},
+                {name: bot_owner.full_name},
+            );
+
+            return {
+                first_line: person.full_name,
+                second_line: bot_owner_name,
+            };
+        }
+
+        // Bot does not have an owner.
+        return {
+            first_line: person.full_name,
+            second_line: "",
+            third_line: "",
+        };
+    }
+
+    const last_seen = buddy_data.user_last_seen_time_status(user_id);
+
+    // Users does not have a status.
+    return {
+        first_line: last_seen,
+        second_line: "",
+        third_line: "",
+    };
+}
+
 function format_conversation(conversation_data) {
     const context = {};
     const last_msg = message_store.get(conversation_data.last_msg_id);
@@ -379,9 +416,15 @@ function format_conversation(conversation_data) {
         senders = all_senders.slice(-MAX_AVATAR).map((sender) => sender.id);
 
         if (!context.is_group) {
-            context.user_circle_class = buddy_data.get_user_circle_class(
-                Number.parseInt(last_msg.to_user_ids, 10),
-            );
+            const user_id = Number.parseInt(last_msg.to_user_ids, 10);
+            const user = people.get_by_user_id(user_id);
+            if (user.is_bot) {
+                // Bots do not have status emoji, and are modeled as
+                // always present.
+                context.user_circle_class = "user_circle_green";
+            } else {
+                context.user_circle_class = buddy_data.get_user_circle_class(user_id);
+            }
         }
 
         // Collect extra senders fullname for tooltip.

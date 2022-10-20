@@ -1,4 +1,4 @@
-<tr id="recent_conversation:{{conversation_key}}" {{#if unread_count}}class="unread_topic"{{/if}} data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}" data-private="{{is_private}}">
+<tr id="recent_conversation:{{conversation_key}}" class="{{#if unread_count}}unread_topic{{/if}} {{#if is_private}}private_conversation_row{{/if}}" data-unread-count="{{unread_count}}" data-muted="{{muted}}" data-participated="{{participated}}" data-private="{{is_private}}">
     <td class="recent_topic_stream">
         <div class="flex_container flex_container_pm">
             <div class="left_part recent_topics_focusable">
@@ -15,7 +15,7 @@
             {{!-- For presence/group indicator --}}
             {{#if is_private}}
             <div class="right_part">
-                <span class="pm_status_icon">
+                <span class="pm_status_icon {{#unless is_group}}show-tooltip{{/unless}}" data-tippy-placement="top" data-user-ids-string="{{user_ids_string}}">
                     {{#if is_group}}
                     <span class="fa fa-group"></span>
                     {{else}}

@@ -592,7 +592,12 @@ export function initialize() {
             $(".tooltip").remove();
         });
 
-    function do_render_buddy_list_tooltip($elem, title_data) {
+    function do_render_buddy_list_tooltip(
+        $elem,
+        title_data,
+        parent_element_to_append = null,
+        is_custom_observer_needed = true,
+    ) {
         let placement = "left";
         let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
@@ -611,9 +616,14 @@ export function initialize() {
             showOnCreate: true,
             onHidden: (instance) => {
                 instance.destroy();
-                observer.disconnect();
+                if (is_custom_observer_needed) {
+                    observer.disconnect();
+                }
             },
             onShow: (instance) => {
+                if (!is_custom_observer_needed) {
+                    return;
+                }
                 // For both buddy list and top left corner pm list, `target_node`
                 // is their parent `ul` element. We cannot use MutationObserver
                 // directly on the reference element because it will be removed
@@ -638,7 +648,7 @@ export function initialize() {
                 observer = new MutationObserver(callback);
                 observer.observe(target_node, config);
             },
-            appendTo: () => document.body,
+            appendTo: () => parent_element_to_append || document.body,
         });
     }
 
@@ -661,6 +671,19 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip($elem, title_data);
+    });
+
+    // Recent conversations PMs
+    $("body").on("mouseenter", ".recent_topic_stream .pm_status_icon", (e) => {
+        e.stopPropagation();
+        const $elem = $(e.currentTarget);
+        const user_ids_string = $elem.attr("data-user-ids-string");
+        // Don't show tooltip for group PMs.
+        if (!user_ids_string || user_ids_string.split(",").length !== 1) {
+            return;
+        }
+        const title_data = recent_topics_ui.get_pm_tooltip_data(user_ids_string);
+        do_render_buddy_list_tooltip($elem, title_data, undefined, false);
     });
 
     // MISC
