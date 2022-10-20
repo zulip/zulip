@@ -3,11 +3,7 @@
         <!-- this is inline block so that the alert notification can sit beside
         it. If there's not an alert, don't make it inline-block.-->
         <div class="subsection-header inline-block">
-            {{#if for_realm_settings}}
-            <h3>{{t "Time" }}</h3>
-            {{else}}
-            <h3>{{t "Language and time" }}</h3>
-            {{/if}}
+            <h3>{{t "General" }}</h3>
             {{> settings_save_discard_widget section_name="lang-time-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
         {{#unless for_realm_settings}}
@@ -26,20 +22,19 @@
             </select>
         </div>
 
+        <div class="input-group">
+            <label for="color_scheme" class="dropdown-title">{{t "Theme" }}</label>
+            <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
+                {{> dropdown_options_widget option_values=color_scheme_values}}
+            </select>
+        </div>
     </div>
 
 
     <div class="theme-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
-            <h3 class="light">{{t "Theme" }}</h3>
+            <h3 class="light">{{t "Emoji" }}</h3>
             {{> settings_save_discard_widget section_name="theme-settings" show_only_indicator=(not for_realm_settings) }}
-        </div>
-
-        <div class="input-group">
-            <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}</label>
-            <select name="color_scheme" class="setting_color_scheme prop-element" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=color_scheme_values}}
-            </select>
         </div>
 
         <div class="input-group">
@@ -82,6 +77,14 @@
           prefix=prefix}}
         {{/if}}
 
+    </div>
+
+    <div class="advanced-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
+        <div class="subsection-header">
+            <h3 class="light">{{t "Advanced" }}</h3>
+            {{> settings_save_discard_widget section_name="advanced-settings" show_only_indicator=(not for_realm_settings) }}
+        </div>
+
         <div class="input-group">
             <label class="title">{{t "User list style" }}</label>
             <div class="user_list_style_values grey-box">
@@ -107,13 +110,6 @@
                     </label>
                 {{/each}}
             </div>
-        </div>
-    </div>
-
-    <div class="advanced-settings {{#if for_realm_settings}}org-subsection-parent{{else}}subsection-parent{{/if}}">
-        <div class="subsection-header">
-            <h3 class="light">{{t "Advanced" }}</h3>
-            {{> settings_save_discard_widget section_name="advanced-settings" show_only_indicator=(not for_realm_settings) }}
         </div>
 
         <div class="input-group thinner setting-next-is-related">

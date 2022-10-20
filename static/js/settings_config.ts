@@ -69,15 +69,15 @@ export const default_view_values = {
 export const color_scheme_values = {
     automatic: {
         code: 1,
-        description: $t({defaultMessage: "Sync with computer"}),
-    },
-    night: {
-        code: 2,
-        description: $t({defaultMessage: "Dark theme"}),
+        description: $t({defaultMessage: "Automatic (follows system settings)"}),
     },
     day: {
         code: 3,
-        description: $t({defaultMessage: "Light theme"}),
+        description: $t({defaultMessage: "Light"}),
+    },
+    night: {
+        code: 2,
+        description: $t({defaultMessage: "Dark"}),
     },
 };
 
