@@ -98,12 +98,9 @@ function is_widget_message(message) {
     return false;
 }
 
-export function get_editability(message, edit_limit_seconds_buffer = 0) {
+export function is_message_editable_ignoring_permissions(message) {
     if (!message) {
-        return editability_types.NO;
-    }
-    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
-        return editability_types.NO;
+        return false;
     }
 
     if (message.failed_request) {
@@ -112,12 +109,27 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
         //       other message updates.  This commit changed the result
         //       from FULL to NO, since the prior implementation was
         //       buggy.
-        return editability_types.NO;
+        return false;
     }
 
     // Locally echoed messages are not editable, since the message hasn't
     // finished being sent yet.
     if (message.locally_echoed) {
+        return false;
+    }
+
+    if (currently_echoing_messages.has(message.id)) {
+        return false;
+    }
+    return true;
+}
+
+export function get_editability(message, edit_limit_seconds_buffer = 0) {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return editability_types.NO;
+    }
+
+    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
         return editability_types.NO;
     }
 
@@ -131,10 +143,6 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
         !is_widget_message(message)
     ) {
         return editability_types.FULL;
-    }
-
-    if (currently_echoing_messages.has(message.id)) {
-        return editability_types.NO;
     }
 
     if (
