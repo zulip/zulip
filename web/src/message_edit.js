@@ -3,6 +3,7 @@ import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
+import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
 import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
@@ -998,6 +999,38 @@ export function handle_narrow_deactivated() {
     }
 }
 
+function handle_message_move_failure_due_to_time_limit(xhr, handle_confirm) {
+    const total_messages_allowed_to_move = xhr.responseJSON.total_messages_allowed_to_move;
+    const messages_allowed_to_move_text = $t(
+        {
+            defaultMessage:
+                "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?",
+        },
+        {total_messages_allowed_to_move},
+    );
+    const messages_not_allowed_to_move_text = $t(
+        {
+            defaultMessage:
+                "{messages_not_allowed_to_move, plural, one {# message} other {# messages}} will remain in the current topic.",
+        },
+        {
+            messages_not_allowed_to_move:
+                xhr.responseJSON.total_messages_in_topic - total_messages_allowed_to_move,
+        },
+    );
+
+    const html_body = render_confirm_moving_messages_modal({
+        messages_allowed_to_move_text,
+        messages_not_allowed_to_move_text,
+    });
+    confirm_dialog.launch({
+        html_heading: $t_html({defaultMessage: "Move some messages?"}),
+        html_body,
+        on_click: handle_confirm,
+        loading_spinner: true,
+    });
+}
+
 export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
@@ -1041,6 +1074,24 @@ export function move_topic_containing_message_to_stream(
         },
         error(xhr) {
             reset_modal_ui();
+            if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
+                const allowed_message_id = xhr.responseJSON.first_message_id_allowed_to_move;
+                function handle_confirm() {
+                    move_topic_containing_message_to_stream(
+                        allowed_message_id,
+                        new_stream_id,
+                        new_topic_name,
+                        send_notification_to_new_thread,
+                        send_notification_to_old_thread,
+                        "change_later",
+                    );
+                }
+
+                const partial_move_confirmation_modal_callback = () =>
+                    handle_message_move_failure_due_to_time_limit(xhr, handle_confirm);
+                dialog_widget.close_modal(partial_move_confirmation_modal_callback);
+                return;
+            }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
         },
     });
