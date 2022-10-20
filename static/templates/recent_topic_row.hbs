@@ -30,7 +30,7 @@
         <div class="flex_container">
             <div class="left_part recent_topics_focusable line_clamp">
                 {{#if is_private}}
-                <a href="{{pm_url}}">{{pm_with}}</a>
+                <a href="{{pm_url}}">{{{rendered_pm_with}}}</a>
                 {{else}}
                 <a href="{{topic_url}}">{{topic}}</a>
                 {{/if}}
