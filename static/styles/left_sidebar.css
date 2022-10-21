@@ -387,6 +387,10 @@ li.top_left_recent_topics {
     line-height: 1.1;
 }
 
+.left_sidebar_menu_icon_visible {
+    display: block !important;
+}
+
 /*
     All of our left sidebar handlers use absolute
     positioning.  We should fix that.
