@@ -66,6 +66,10 @@ export const send_read = (function () {
     return add;
 })();
 
+export function mark_as_read(message_ids) {
+    send_flag_update_for_messages(message_ids, "read", "add");
+}
+
 export function mark_as_unread(message_ids) {
     send_flag_update_for_messages(message_ids, "read", "remove");
 }
