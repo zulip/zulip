@@ -150,6 +150,7 @@ def maybe_send_to_registration(
     password_required: bool = True,
     multiuse_object_key: str = "",
     full_name_validated: bool = False,
+    redirect_to: str = "",
 ) -> HttpResponse:
     """Given a successful authentication for an email address (i.e. we've
     confirmed the user controls the email address) that does not
@@ -257,7 +258,9 @@ def maybe_send_to_registration(
             prereg_user.multiuse_invite = multiuse_obj
             prereg_user.save()
 
-        confirmation_link = create_confirmation_link(prereg_user, Confirmation.USER_REGISTRATION)
+        confirmation_link = create_confirmation_link(
+            prereg_user, Confirmation.USER_REGISTRATION, next=redirect_to
+        )
         if is_signup:
             return redirect(confirmation_link)
 
@@ -287,7 +290,6 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs: Dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
     kwargs.pop("subdomain", None)
-    kwargs.pop("redirect_to", None)
     kwargs.pop("is_realm_creation", None)
 
     kwargs["password_required"] = False

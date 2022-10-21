@@ -101,6 +101,10 @@ function show_all_message_view() {
     setTimeout(navigate.maybe_scroll_to_selected, 0);
 }
 
+export function is_current_hash_default_view() {
+    return window.location.hash === "";
+}
+
 export function set_hash_to_default_view() {
     window.location.hash = "";
 }

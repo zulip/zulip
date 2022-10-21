@@ -52,7 +52,7 @@ def register_development_user(request: HttpRequest) -> HttpResponse:
         email, realm, realm_creation=False, password_required=False
     )
     activation_url = create_confirmation_link(prereg, Confirmation.USER_REGISTRATION)
-    key = activation_url.split("/")[-1]
+    key = activation_url.split("/")[-2]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(request, key=key, full_name=name, password="test", terms="true")
 
@@ -68,7 +68,7 @@ def register_development_realm(request: HttpRequest) -> HttpResponse:
     realm_type = Realm.ORG_TYPES["business"]["id"]
     prereg = create_preregistration_user(email, None, realm_creation=True, password_required=False)
     activation_url = create_confirmation_link(prereg, Confirmation.REALM_CREATION)
-    key = activation_url.split("/")[-1]
+    key = activation_url.split("/")[-2]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(
         request,
@@ -93,7 +93,7 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
     realm_type = Realm.ORG_TYPES["business"]["id"]
     prereg = create_preregistration_user(email, None, realm_creation=True, password_required=False)
     activation_url = create_confirmation_link(prereg, Confirmation.REALM_CREATION)
-    key = activation_url.split("/")[-1]
+    key = activation_url.split("/")[-2]
     # Need to add test data to POST request as it doesn't originally contain the required parameters
     modify_postdata(
         request,

@@ -16,6 +16,7 @@ post to another view which executes in our code to produce the desired form.
 <form id="register" action="/accounts/register/" method="post">
     {{ csrf_input }}
     <input type="hidden" value="{{ key }}" name="key"/>
+    <input type="hidden" value="{{ next }}" name="next"/>
     <input type="hidden" value="1" name="from_confirmation"/>
     <input type="hidden" value="{% if full_name %}{{ full_name }}{% endif %}" name="full_name"/>
 </form>

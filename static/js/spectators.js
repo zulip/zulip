@@ -18,11 +18,12 @@ export function login_to_access(empty_narrow) {
     // Hide all overlays, popover and go back to the previous hash if the
     // hash has changed.
     const login_link = hash_util.build_login_link();
+    const signup_link = hash_util.build_signup_link();
     const realm_name = page_params.realm_name;
 
     $("body").append(
         render_login_to_access_modal({
-            signup_link: "/register",
+            signup_link,
             login_link,
             empty_narrow,
             realm_name,

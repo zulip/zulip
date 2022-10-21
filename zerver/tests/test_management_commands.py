@@ -301,7 +301,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             get_realm("test")
         result = self.client_post(generated_link, {"email": email})
         self.assertEqual(result.status_code, 302)
-        self.assertTrue(re.search(r"/accounts/do_confirm/\w+$", result["Location"]))
+        self.assertTrue(re.search(r"/accounts/do_confirm/\w+/$", result["Location"]))
 
         # Bypass sending mail for confirmation, go straight to creation form
         result = self.client_get(result["Location"])

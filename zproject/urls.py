@@ -525,6 +525,8 @@ i18n_urls = [
     path("accounts/login/social/<backend>", start_social_login, name="login-social"),
     path("accounts/login/social/<backend>/<extra_arg>", start_social_login, name="login-social"),
     path("accounts/register/social/<backend>", start_social_signup, name="signup-social"),
+    # To support `next` in urls.
+    path("accounts/register/social/<backend>/", start_social_signup, name="signup-social"),
     path(
         "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
@@ -572,8 +574,14 @@ i18n_urls = [
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
+    # For backward compatibility.
     path(
         "accounts/do_confirm/<confirmation_key>",
+        get_prereg_key_and_redirect,
+        name="get_prereg_key_and_redirect",
+    ),
+    path(
+        "accounts/do_confirm/<confirmation_key>/",
         get_prereg_key_and_redirect,
         name="get_prereg_key_and_redirect",
     ),
