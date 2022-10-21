@@ -35,6 +35,7 @@ from zerver.lib.narrow import (
     find_first_unread_anchor,
     is_spectator_compatible,
     ok_to_include_history,
+    post_process_limited_query,
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
@@ -56,7 +57,7 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
-from zerver.views.message_fetch import get_messages_backend, post_process_limited_query
+from zerver.views.message_fetch import get_messages_backend
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
