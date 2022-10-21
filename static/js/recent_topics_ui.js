@@ -78,7 +78,7 @@ export const COLUMNS = {
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
 const MAX_SELECTABLE_TOPIC_COLS = 4;
-const MAX_SELECTABLE_PM_COLS = 2;
+const MAX_SELECTABLE_PM_COLS = 3;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";
@@ -357,6 +357,7 @@ function format_conversation(conversation_data) {
         displayed_other_senders = extra_sender_ids.slice(-MAX_EXTRA_SENDERS);
     } else if (type === "private") {
         // Private message info
+        context.user_ids_string = last_msg.to_user_ids;
         context.pm_with = last_msg.display_reply_to;
         context.recipient_id = last_msg.recipient_id;
         context.pm_url = last_msg.pm_with_url;
@@ -873,8 +874,7 @@ function down_arrow_navigation(row, col) {
     if (is_focus_at_last_table_row()) {
         return;
     }
-    const type = get_row_type(row);
-    if (type === "stream" && col === 2 && !has_unread(row + 1)) {
+    if (col === 2 && !has_unread(row + 1)) {
         col_focus = 1;
     }
     row_focus += 1;
