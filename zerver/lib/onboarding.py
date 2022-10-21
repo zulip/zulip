@@ -17,6 +17,17 @@ from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
+WELCOME_BOT_COMMANDS = [
+    "apps",
+    "profile",
+    "theme",
+    "streams",
+    "topics",
+    "message formatting",
+    "keyboard shortcuts",
+    "help",
+]
+
 
 def missing_any_realm_internal_bots() -> bool:
     bot_emails = [
@@ -41,6 +52,13 @@ def create_if_missing_realm_internal_bots() -> None:
     if missing_any_realm_internal_bots():
         for realm in Realm.objects.all():
             setup_realm_internal_bots(realm)
+
+
+def bot_commands(include_help_command: bool = True) -> str:
+    commands = WELCOME_BOT_COMMANDS.copy()
+    if not include_help_command:
+        commands.remove("help")
+    return ", ".join(["`" + command + "`" for command in commands]) + "."
 
 
 def send_initial_pms(user: UserProfile) -> None:
@@ -95,21 +113,6 @@ def send_initial_pms(user: UserProfile) -> None:
     internal_send_private_message(
         get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
     )
-
-
-def bot_commands(no_help_command: bool = False) -> str:
-    commands = [
-        "apps",
-        "profile",
-        "theme",
-        "streams",
-        "topics",
-        "message formatting",
-        "keyboard shortcuts",
-    ]
-    if not no_help_command:
-        commands.append("help")
-    return ", ".join(["`" + command + "`" for command in commands]) + "."
 
 
 def select_welcome_bot_response(human_response_lower: str) -> str:
@@ -189,7 +192,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         return "".join(
             [
                 _("Here are a few messages I understand:") + " ",
-                bot_commands(no_help_command=True) + "\n\n",
+                bot_commands(include_help_command=False) + "\n\n",
                 _(
                     "Check out our [Getting started guide](/help/getting-started-with-zulip), "
                     "or browse the [Help center](/help/) to learn more!"
@@ -208,13 +211,28 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         )
 
 
+@transaction.atomic
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     """Given the send_request object for a private message from the user
     to welcome-bot, trigger the welcome-bot reply."""
-    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
-    human_response_lower = send_request.message.content.lower()
-    content = select_welcome_bot_response(human_response_lower)
-    internal_send_private_message(welcome_bot, send_request.message.sender, content)
+
+    # Locking the message row to add a reaction.
+    message = Message.objects.select_for_update().get(id=send_request.message.id)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, message.sender.realm_id)
+    human_response_lower = message.content.lower()
+    human_recipient_id = message.sender.recipient_id
+    assert human_recipient_id is not None
+    content = ""
+    if Message.objects.filter(sender=welcome_bot, recipient_id=human_recipient_id).count() < 2:
+        # This block adds a ":tada:" reaction and a special message on first reply by the user.
+        emoji_reaction = "tada"
+        (emoji_code, reaction_type) = emoji_name_to_emoji_code(message.sender.realm, emoji_reaction)
+        do_add_reaction(welcome_bot, message, emoji_reaction, emoji_code, reaction_type)
+
+        content += _("I'm happy to help you out!") + " " ":tada:" "\n" "\n"
+
+    content += select_welcome_bot_response(human_response_lower)
+    internal_send_private_message(welcome_bot, message.sender, content)
 
 
 @transaction.atomic

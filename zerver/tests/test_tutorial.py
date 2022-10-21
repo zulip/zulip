@@ -2,7 +2,7 @@ from django.conf import settings
 
 from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import message_stream_count, most_recent_message
+from zerver.lib.test_helpers import get_user_messages, message_stream_count, most_recent_message
 from zerver.models import UserProfile, get_system_bot
 
 
@@ -36,132 +36,171 @@ class TutorialTests(ZulipTestCase):
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["app", "Apps"]
+        expected_response = (
+            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "Zulip also works great in a browser."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "You can [download](/apps) the [mobile and desktop apps](/apps). "
-                "Zulip also works great in a browser."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_edit(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["profile", "Profile"]
+        expected_response = (
+            "Go to [Profile settings](#settings/profile) "
+            "to add a [profile picture](/help/change-your-profile-picture) "
+            "and edit your [profile information](/help/edit-your-profile)."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "Go to [Profile settings](#settings/profile) "
-                "to add a [profile picture](/help/change-your-profile-picture) "
-                "and edit your [profile information](/help/edit-your-profile)."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_theme(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["theme", "Theme"]
+        expected_response = (
+            "Go to [Display settings](#settings/display-settings) "
+            "to [switch between the light and dark themes](/help/dark-theme), "
+            "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
+            "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "Go to [Display settings](#settings/display-settings) "
-                "to [switch between the light and dark themes](/help/dark-theme), "
-                "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
-                "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_stream(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Streams", "streams", "channels"]
+        expected_response = (
+            "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
+            "They are similar to channels in other chat apps.\n\n"
+            "[Browse and subscribe to streams](#streams/all)."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
-                "They are similar to channels in other chat apps.\n\n"
-                "[Browse and subscribe to streams](#streams/all)."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_topic(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Topics", "topics"]
+        expected_response = (
+            "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
+            "They are light-weight subjects, very similar to the subject line of an email.\n\n"
+            "Check out [Recent topics](#recent_topics) to see what's happening! "
+            'You can return to this conversation by clicking "Private messages" in the upper left.'
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
-                "They are light-weight subjects, very similar to the subject line of an email.\n\n"
-                "Check out [Recent topics](#recent_topics) to see what's happening! "
-                'You can return to this conversation by clicking "Private messages" in the upper left.'
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_shortcuts(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Keyboard shortcuts", "shortcuts", "Shortcuts"]
+        expected_response = (
+            "Zulip's [keyboard shortcuts](#keyboard-shortcuts) "
+            "let you navigate the app quickly and efficiently.\n\n"
+            "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "Zulip's [keyboard shortcuts](#keyboard-shortcuts) "
-                "let you navigate the app quickly and efficiently.\n\n"
-                "Press `?` any time to see a [cheat sheet](#keyboard-shortcuts)."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_formatting(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["message formatting", "Formatting"]
+        expected_response = (
+            "Zulip uses [Markdown](/help/format-your-message-using-markdown), "
+            "an intuitive format for **bold**, *italics*, bulleted lists, and more. "
+            "Click [here](#message-formatting) for a cheat sheet.\n\n"
+            "Check out our [messaging tips](/help/messaging-tips) to learn about emoji reactions, "
+            "code blocks and much more!"
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "Zulip uses [Markdown](/help/format-your-message-using-markdown), "
-                "an intuitive format for **bold**, *italics*, bulleted lists, and more. "
-                "Click [here](#message-formatting) for a cheat sheet.\n\n"
-                "Check out our [messaging tips](/help/messaging-tips) to learn about emoji reactions, "
-                "code blocks and much more!"
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_help(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["help", "Help", "?"]
+        expected_response = (
+            "Here are a few messages I understand: "
+            "`apps`, `profile`, `theme`, "
+            "`streams`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
+            "Check out our [Getting started guide](/help/getting-started-with-zulip), "
+            "or browse the [Help center](/help/) to learn more!"
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "Here are a few messages I understand: "
-                "`apps`, `profile`, `theme`, "
-                "`streams`, `topics`, `message formatting`, `keyboard shortcuts`.\n\n"
-                "Check out our [Getting started guide](/help/getting-started-with-zulip), "
-                "or browse the [Help center](/help/) to learn more!"
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
 
     def test_response_to_pm_for_undefined(self) -> None:
         user = self.example_user("hamlet")
         bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         messages = ["Hello", "HAHAHA", "OKOK", "LalulaLapas"]
+        expected_response = (
+            "I’m sorry, I did not understand your message. Please try one of the following commands: "
+            "`apps`, `profile`, `theme`, `streams`, "
+            "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
+        )
         self.login_user(user)
         for content in messages:
             self.send_personal_message(user, bot, content)
-            expected_response = (
-                "I’m sorry, I did not understand your message. Please try one of the following commands: "
-                "`apps`, `profile`, `theme`, `streams`, "
-                "`topics`, `message formatting`, `keyboard shortcuts`, `help`."
-            )
-            self.assertEqual(most_recent_message(user).content, expected_response)
+            self.assertIn(expected_response, most_recent_message(user).content)
+
+    def test_response_to_pm_for_first_message(self) -> None:
+        # This test checks the complete response(using assertEqual and not assertIn like the above tests)
+        # to the first message by the user.
+        user = self.example_user("hamlet")
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+        self.login_user(user)
+        content = "app"
+        self.send_personal_message(user, bot, content)
+        expected_response = (
+            "I'm happy to help you out! :tada:\n\n"
+            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "Zulip also works great in a browser."
+        )
+        self.assertEqual(most_recent_message(user).content, expected_response)
+
+    def test_reaction_to_pm_for_first_message(self) -> None:
+        user = self.example_user("hamlet")
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+        self.login_user(user)
+        content = "topics"
+        self.send_personal_message(user, bot, content)
+        expected_reaction = "tada"
+        user_message = get_user_messages(user)[-2]
+        emoji_reaction = user_message.reaction_set.filter(user_profile=bot)[0]
+        self.assertEqual(emoji_reaction.emoji_name, expected_reaction)
+
+    def test_response_to_second_user_message(self) -> None:
+        # The second message to the bot shouldn't contain "I'm happy to help you out" message.
+        user = self.example_user("hamlet")
+        bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
+        self.login_user(user)
+        expected_response = (
+            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "Zulip also works great in a browser."
+        )
+        for _ in range(2):
+            self.send_personal_message(user, bot, "apps")
+        self.assertEqual(most_recent_message(user).content, expected_response)
 
     def test_no_response_to_group_pm(self) -> None:
         user1 = self.example_user("hamlet")
