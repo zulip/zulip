@@ -69,8 +69,8 @@ let col_focus = 1;
 export const COLUMNS = {
     stream: 0,
     topic: 1,
-    mute: 2,
-    read: 3,
+    read: 2,
+    mute: 3,
 };
 
 // The number of selectable actions in a recent_topics.  Used to
