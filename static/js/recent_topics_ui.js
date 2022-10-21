@@ -812,7 +812,10 @@ function is_focus_at_last_table_row() {
 function has_unread(row) {
     const last_msg_id = topics_widget.get_current_list()[row].last_msg_id;
     const last_msg = message_store.get(last_msg_id);
-    return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
+    if (last_msg.type === "stream") {
+        return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;
+    }
+    return unread.num_unread_for_user_ids_string(last_msg.to_user_ids) > 0;
 }
 
 export function focus_clicked_element(topic_row_index, col, topic_key) {
