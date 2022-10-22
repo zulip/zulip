@@ -422,9 +422,9 @@ test("private_messages", () => {
 
     assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
     assert.equal(unread.num_unread_for_person(bob.user_id.toString()), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
     const message = {
@@ -443,16 +443,18 @@ test("private_messages", () => {
 
     assert.equal(unread.num_unread_for_person(""), 0);
 
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), [message.id]);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), [
+        message.id,
+    ]);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     unread.mark_as_read(message.id);
     assert.equal(unread.num_unread_for_person(alice.user_id.toString()), 0);
     assert.equal(unread.num_unread_for_person(""), 0);
-    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id.toString()), []);
-    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(alice.user_id.toString()), []);
+    assert.deepEqual(unread.get_msg_ids_for_user_ids_string(bob.user_id.toString()), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
     const counts = unread.get_counts();
