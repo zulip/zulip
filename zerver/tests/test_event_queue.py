@@ -5,6 +5,7 @@ from unittest import mock
 import orjson
 from django.http import HttpRequest, HttpResponse
 
+from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.muted_users import do_mute_user
 from zerver.actions.streams import do_change_subscription_property
 from zerver.actions.user_settings import do_change_user_setting
@@ -673,6 +674,31 @@ class MissedMessageHookTest(ZulipTestCase):
             )
         self.destroy_event_queue(hambot, self.client_descriptor.event_queue.id)
         self.client_descriptor = hamlet_client_descriptor
+
+    # Internal PMs
+    def test_disable_external_notifications(self) -> None:
+        # The disable_external_notifications parameter, used for messages sent by welcome bot,
+        # should result in no email/push notifications being sent regardless of the message type.
+        msg_id = internal_send_private_message(
+            self.iago, self.user_profile, "Test Content", disable_external_notifications=True
+        )
+        assert msg_id is not None
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
+            mock_enqueue.assert_called_once()
+            args_dict = mock_enqueue.call_args_list[0][1]
+
+            self.assert_maybe_enqueue_notifications_call_args(
+                args_dict=args_dict,
+                message_id=msg_id,
+                user_id=self.user_profile.id,
+                pm_email_notify=True,
+                pm_push_notify=True,
+                disable_external_notifications=True,
+                # disable_external_notifications parameter set to False would have resulted in
+                # already_notified={"email_notified": True, "push_notified": True}
+                already_notified={"email_notified": False, "push_notified": False},
+            )
 
 
 class FileReloadLogicTest(ZulipTestCase):

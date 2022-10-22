@@ -804,7 +804,7 @@ class QueryCountTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
 
-        with self.assert_database_query_count(91):
+        with self.assert_database_query_count(90):
             with cache_tries_captured() as cache_tries:
                 with self.tornado_redirected_to_list(events, expected_num_events=11):
                     fred = do_create_user(

@@ -504,6 +504,7 @@ def build_message_send_dict(
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
+    disable_external_notifications: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -610,6 +611,7 @@ def build_message_send_dict(
         links_for_embed=links_for_embed,
         widget_content=widget_content_dict,
         limit_unread_user_ids=limit_unread_user_ids,
+        disable_external_notifications=disable_external_notifications,
     )
 
     return message_send_dict
@@ -893,6 +895,7 @@ def do_send_messages(
                 user_id=user_id,
                 flags=user_flags.get(user_id, []),
                 private_message=(message_type == "private"),
+                disable_external_notifications=send_request.disable_external_notifications,
                 online_push_user_ids=send_request.online_push_user_ids,
                 pm_mention_push_disabled_user_ids=send_request.pm_mention_push_disabled_user_ids,
                 pm_mention_email_disabled_user_ids=send_request.pm_mention_email_disabled_user_ids,
@@ -926,6 +929,7 @@ def do_send_messages(
             wildcard_mention_user_ids=list(send_request.wildcard_mention_user_ids),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
+            disable_external_notifications=send_request.disable_external_notifications,
         )
 
         if send_request.message.is_stream_message():
@@ -1346,6 +1350,7 @@ def check_message(
     skip_stream_access_check: bool = False,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
+    disable_external_notifications: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1477,6 +1482,7 @@ def check_message(
         email_gateway=email_gateway,
         mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
+        disable_external_notifications=disable_external_notifications,
     )
 
     if (
@@ -1499,6 +1505,7 @@ def _internal_prep_message(
     email_gateway: bool = False,
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
+    disable_external_notifications: bool = False,
 ) -> Optional[SendMessageRequest]:
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
@@ -1530,6 +1537,7 @@ def _internal_prep_message(
             email_gateway=email_gateway,
             mention_backend=mention_backend,
             limit_unread_user_ids=limit_unread_user_ids,
+            disable_external_notifications=disable_external_notifications,
         )
     except JsonableError as e:
         logging.exception(
@@ -1593,6 +1601,7 @@ def internal_prep_private_message(
     content: str,
     *,
     mention_backend: Optional[MentionBackend] = None,
+    disable_external_notifications: bool = False,
 ) -> Optional[SendMessageRequest]:
     """
     See _internal_prep_message for details of how this works.
@@ -1609,13 +1618,23 @@ def internal_prep_private_message(
         addressee=addressee,
         content=content,
         mention_backend=mention_backend,
+        disable_external_notifications=disable_external_notifications,
     )
 
 
 def internal_send_private_message(
-    sender: UserProfile, recipient_user: UserProfile, content: str
+    sender: UserProfile,
+    recipient_user: UserProfile,
+    content: str,
+    *,
+    disable_external_notifications: bool = False,
 ) -> Optional[int]:
-    message = internal_prep_private_message(sender, recipient_user, content)
+    message = internal_prep_private_message(
+        sender,
+        recipient_user,
+        content,
+        disable_external_notifications=disable_external_notifications,
+    )
     if message is None:
         return None
     message_ids = do_send_messages([message])
