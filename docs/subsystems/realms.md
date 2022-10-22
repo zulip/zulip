@@ -34,15 +34,6 @@ after the creation of the realm. The link also expires if not used
 within 7 days. The expiration period can be changed by modifying
 `REALM_CREATION_LINK_VALIDITY_DAYS` in settings.py.
 
-### Enabling open realm creation
-
-If you want anyone to be able to create new realms on your server, you
-can enable open realm creation. This will add a **Create new
-organization** link to your Zulip homepage footer, and anyone can
-create a new realm by visiting this link (**/new**). This
-feature is disabled by default in production instances, and can be
-enabled by setting `OPEN_REALM_CREATION = True` in settings.py.
-
 ## Subdomains
 
 One can host multiple realms in a Zulip server by giving each realm a
