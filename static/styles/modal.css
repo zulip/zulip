@@ -95,7 +95,6 @@
     transition: transform 0.25s ease-out;
 
     &:disabled {
-        background-color: hsl(0, 0%, 83%);
         cursor: not-allowed;
     }
 }
@@ -285,4 +284,9 @@
     path {
         fill: hsl(0, 0%, 100%);
     }
+}
+
+.modal__spinner {
+    display: flex;
+    justify-content: center;
 }
