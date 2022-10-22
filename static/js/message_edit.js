@@ -122,6 +122,8 @@ export function is_message_editable_ignoring_permissions(message) {
         return false;
     }
 
+    // Messages where we're currently locally echoing an edit not yet acknowledged
+    // by the server.
     if (currently_echoing_messages.has(message.id)) {
         return false;
     }
