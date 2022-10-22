@@ -93,7 +93,12 @@ def send_initial_pms(user: UserProfile) -> None:
     )
 
     internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
+        get_system_bot(settings.WELCOME_BOT, user.realm_id),
+        user,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
     )
 
 
@@ -214,7 +219,15 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
     human_response_lower = send_request.message.content.lower()
     content = select_welcome_bot_response(human_response_lower)
-    internal_send_private_message(welcome_bot, send_request.message.sender, content)
+
+    internal_send_private_message(
+        welcome_bot,
+        send_request.message.sender,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
+    )
 
 
 @transaction.atomic

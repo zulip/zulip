@@ -15,7 +15,15 @@ class TutorialTests(ZulipTestCase):
         user = self.example_user("hamlet")
         welcome_bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         content = "Shortened welcome message."
-        internal_send_private_message(welcome_bot, user, content)
+        internal_send_private_message(
+            welcome_bot,
+            user,
+            content,
+            # disable_external_notifications set to False will still lead
+            # the tests to pass. Setting this to True, because we contextually
+            # set this to true for welcome_bot in the codebase.
+            disable_external_notifications=True,
+        )
 
     def test_tutorial_status(self) -> None:
         user = self.example_user("hamlet")

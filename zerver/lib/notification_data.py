@@ -20,6 +20,7 @@ class UserMessageNotificationsData:
     stream_push_notify: bool
     stream_email_notify: bool
     sender_is_muted: bool
+    disable_external_notifications: bool
 
     def __post_init__(self) -> None:
         # Check that there's no dubious data.
@@ -36,6 +37,7 @@ class UserMessageNotificationsData:
         user_id: int,
         flags: Collection[str],
         private_message: bool,
+        disable_external_notifications: bool,
         online_push_user_ids: Set[int],
         pm_mention_push_disabled_user_ids: Set[int],
         pm_mention_email_disabled_user_ids: Set[int],
@@ -60,6 +62,7 @@ class UserMessageNotificationsData:
                 stream_push_notify=False,
                 stream_email_notify=False,
                 sender_is_muted=False,
+                disable_external_notifications=False,
             )
 
         # `wildcard_mention_user_ids` are those user IDs for whom wildcard mentions should
@@ -96,6 +99,7 @@ class UserMessageNotificationsData:
             stream_push_notify=(user_id in stream_push_user_ids),
             stream_email_notify=(user_id in stream_email_user_ids),
             sender_is_muted=(user_id in muted_sender_user_ids),
+            disable_external_notifications=disable_external_notifications,
         )
 
     # For these functions, acting_user_id is the user sent a message
@@ -110,6 +114,9 @@ class UserMessageNotificationsData:
             return True
 
         if self.sender_is_muted:
+            return True
+
+        if self.disable_external_notifications:
             return True
 
         return False

@@ -783,6 +783,9 @@ def missedmessage_hook(
             stream_email_notify=internal_data.get("stream_email_notify", False),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
+            disable_external_notifications=internal_data.get(
+                "disable_external_notifications", False
+            ),
         )
 
         mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
@@ -933,6 +936,7 @@ def process_message_event(
     wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
+    disable_external_notifications = event_template.get("disable_external_notifications", False)
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -973,6 +977,7 @@ def process_message_event(
             user_id=user_profile_id,
             flags=flags,
             private_message=private_message,
+            disable_external_notifications=disable_external_notifications,
             online_push_user_ids=online_push_user_ids,
             pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
             pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
@@ -1128,6 +1133,7 @@ def process_message_update_event(
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
+    disable_external_notifications = event_template.pop("disable_external_notifications", False)
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
@@ -1179,6 +1185,7 @@ def process_message_update_event(
                 user_id=user_profile_id,
                 flags=flags,
                 private_message=(stream_name is None),
+                disable_external_notifications=disable_external_notifications,
                 online_push_user_ids=online_push_user_ids,
                 pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
                 pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
