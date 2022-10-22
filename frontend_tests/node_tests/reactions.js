@@ -237,12 +237,15 @@ test("basics", () => {
 test("unknown realm emojis (add)", () => {
     assert.throws(
         () =>
-            reactions.view.insert_new_reaction({
-                reaction_type: "realm_emoji",
-                emoji_name: "false_emoji",
-                emoji_code: "broken",
-                user_ids: [alice.user_id],
-            }),
+            reactions.view.insert_new_reaction(
+                {
+                    reaction_type: "realm_emoji",
+                    emoji_name: "false_emoji",
+                    emoji_code: "broken",
+                },
+                1000,
+                alice.user_id,
+            ),
         {
             name: "Error",
             message: "Cannot find realm emoji for code 'broken'.",
@@ -253,12 +256,15 @@ test("unknown realm emojis (add)", () => {
 test("unknown realm emojis (insert)", () => {
     assert.throws(
         () =>
-            reactions.view.insert_new_reaction({
-                reaction_type: "realm_emoji",
-                emoji_name: "fake_emoji",
-                emoji_code: "bogus",
-                user_id: bob.user_id,
-            }),
+            reactions.view.insert_new_reaction(
+                {
+                    reaction_type: "realm_emoji",
+                    emoji_name: "fake_emoji",
+                    emoji_code: "bogus",
+                },
+                1000,
+                bob.user_id,
+            ),
         {
             name: "Error",
             message: "Cannot find realm emoji for code 'bogus'.",
@@ -425,32 +431,28 @@ test("add_reaction/remove_reaction", ({override}) => {
 
     let view_calls = [];
 
-    override(
-        reactions.view,
-        "insert_new_reaction",
-        (clean_reaction_object, message_id, user_id) => {
-            view_calls.push({
-                name: "insert_new_reaction",
-                clean_reaction_object,
-                message_id,
-                user_id,
-            });
-        },
-    );
+    override(reactions.view, "insert_new_reaction", (clean_reaction_object, message, user_id) => {
+        view_calls.push({
+            name: "insert_new_reaction",
+            clean_reaction_object,
+            message,
+            user_id,
+        });
+    });
     override(
         reactions.view,
         "update_existing_reaction",
-        (clean_reaction_object, message_id, user_id) => {
+        (clean_reaction_object, message, user_id) => {
             view_calls.push({
                 name: "update_existing_reaction",
                 clean_reaction_object,
-                message_id,
+                message,
                 user_id,
             });
         },
     );
-    override(reactions.view, "remove_reaction", (clean_reaction_object, message_id, user_id) => {
-        view_calls.push({name: "remove_reaction", clean_reaction_object, message_id, user_id});
+    override(reactions.view, "remove_reaction", (clean_reaction_object, message, user_id) => {
+        view_calls.push({name: "remove_reaction", clean_reaction_object, message, user_id});
     });
 
     function test_view_calls(test_params) {
@@ -489,6 +491,18 @@ test("add_reaction/remove_reaction", ({override}) => {
         user_id: cali.user_id,
     };
 
+    const clean_reaction_object_alice = {
+        class: "message_reaction reacted",
+        count: 1,
+        emoji_alt_code: false,
+        emoji_code: alice_8ball_event.emoji_code,
+        emoji_name: alice_8ball_event.emoji_name,
+        is_realm_emoji: false,
+        label: "translated: You (click to remove) reacted with :8ball:",
+        local_id: "unicode_emoji,1f3b1",
+        reaction_type: alice_8ball_event.reaction_type,
+        user_ids: [alice.user_id],
+    };
     test_view_calls({
         run_code() {
             reactions.add_reaction(alice_8ball_event);
@@ -496,19 +510,15 @@ test("add_reaction/remove_reaction", ({override}) => {
         expected_view_calls: [
             {
                 name: "insert_new_reaction",
-                clean_reaction_object: {
-                    class: "message_reaction reacted",
-                    count: 1,
-                    emoji_alt_code: false,
-                    emoji_code: alice_8ball_event.emoji_code,
-                    emoji_name: alice_8ball_event.emoji_name,
-                    is_realm_emoji: false,
-                    label: "translated: You (click to remove) reacted with :8ball:",
-                    local_id: "unicode_emoji,1f3b1",
-                    reaction_type: alice_8ball_event.reaction_type,
-                    user_ids: [alice.user_id],
+                clean_reaction_object: clean_reaction_object_alice,
+                message: {
+                    id: alice_8ball_event.message_id,
+                    clean_reactions: new Map(
+                        Object.entries({
+                            "unicode_emoji,1f3b1": clean_reaction_object_alice,
+                        }),
+                    ),
                 },
-                message_id: alice_8ball_event.message_id,
                 user_id: alice_8ball_event.user_id,
             },
         ],
@@ -524,6 +534,18 @@ test("add_reaction/remove_reaction", ({override}) => {
         alice_emojis: ["8ball"],
     });
 
+    const clean_reaction_object_bob = {
+        class: "message_reaction reacted",
+        count: 2,
+        emoji_alt_code: false,
+        emoji_code: bob_8ball_event.emoji_code,
+        emoji_name: bob_8ball_event.emoji_name,
+        is_realm_emoji: false,
+        label: "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
+        local_id: "unicode_emoji,1f3b1",
+        reaction_type: bob_8ball_event.reaction_type,
+        user_ids: [alice.user_id, bob.user_id],
+    };
     test_view_calls({
         run_code() {
             reactions.add_reaction(bob_8ball_event);
@@ -531,25 +553,33 @@ test("add_reaction/remove_reaction", ({override}) => {
         expected_view_calls: [
             {
                 name: "update_existing_reaction",
-                clean_reaction_object: {
-                    class: "message_reaction reacted",
-                    count: 2,
-                    emoji_alt_code: false,
-                    emoji_code: bob_8ball_event.emoji_code,
-                    emoji_name: bob_8ball_event.emoji_name,
-                    is_realm_emoji: false,
-                    label: "translated: You (click to remove) and Bob van Roberts reacted with :8ball:",
-                    local_id: "unicode_emoji,1f3b1",
-                    reaction_type: bob_8ball_event.reaction_type,
-                    user_ids: [alice.user_id, bob.user_id],
+                clean_reaction_object: clean_reaction_object_bob,
+                message: {
+                    id: bob_8ball_event.message_id,
+                    clean_reactions: new Map(
+                        Object.entries({
+                            "unicode_emoji,1f3b1": clean_reaction_object_bob,
+                        }),
+                    ),
                 },
-                message_id: bob_8ball_event.message_id,
                 user_id: bob_8ball_event.user_id,
             },
         ],
         alice_emojis: ["8ball"],
     });
 
+    const clean_reaction_object_cali = {
+        class: "message_reaction",
+        count: 1,
+        emoji_alt_code: false,
+        emoji_code: cali_airplane_event.emoji_code,
+        emoji_name: cali_airplane_event.emoji_name,
+        is_realm_emoji: false,
+        label: "translated: Cali reacted with :airplane:",
+        local_id: "unicode_emoji,2708",
+        reaction_type: cali_airplane_event.reaction_type,
+        user_ids: [cali.user_id],
+    };
     test_view_calls({
         run_code() {
             reactions.add_reaction(cali_airplane_event);
@@ -557,19 +587,16 @@ test("add_reaction/remove_reaction", ({override}) => {
         expected_view_calls: [
             {
                 name: "insert_new_reaction",
-                clean_reaction_object: {
-                    class: "message_reaction",
-                    count: 1,
-                    emoji_alt_code: false,
-                    emoji_code: cali_airplane_event.emoji_code,
-                    emoji_name: cali_airplane_event.emoji_name,
-                    is_realm_emoji: false,
-                    label: "translated: Cali reacted with :airplane:",
-                    local_id: "unicode_emoji,2708",
-                    reaction_type: cali_airplane_event.reaction_type,
-                    user_ids: [cali.user_id],
+                clean_reaction_object: clean_reaction_object_cali,
+                message: {
+                    id: cali_airplane_event.message_id,
+                    clean_reactions: new Map(
+                        Object.entries({
+                            "unicode_emoji,1f3b1": clean_reaction_object_bob,
+                            "unicode_emoji,2708": clean_reaction_object_cali,
+                        }),
+                    ),
                 },
-                message_id: cali_airplane_event.message_id,
                 user_id: cali_airplane_event.user_id,
             },
         ],
@@ -583,19 +610,16 @@ test("add_reaction/remove_reaction", ({override}) => {
         expected_view_calls: [
             {
                 name: "remove_reaction",
-                clean_reaction_object: {
-                    class: "message_reaction reacted",
-                    count: 1,
-                    emoji_alt_code: false,
-                    emoji_code: bob_8ball_event.emoji_code,
-                    emoji_name: bob_8ball_event.emoji_name,
-                    is_realm_emoji: false,
-                    label: "translated: You (click to remove) reacted with :8ball:",
-                    local_id: "unicode_emoji,1f3b1",
-                    reaction_type: bob_8ball_event.reaction_type,
-                    user_ids: [alice.user_id],
+                clean_reaction_object: clean_reaction_object_alice,
+                message: {
+                    clean_reactions: new Map(
+                        Object.entries({
+                            "unicode_emoji,1f3b1": clean_reaction_object_alice,
+                            "unicode_emoji,2708": clean_reaction_object_cali,
+                        }),
+                    ),
+                    id: bob_8ball_event.message_id,
                 },
-                message_id: bob_8ball_event.message_id,
                 user_id: bob_8ball_event.user_id,
             },
         ],
@@ -610,18 +634,17 @@ test("add_reaction/remove_reaction", ({override}) => {
             {
                 name: "remove_reaction",
                 clean_reaction_object: {
-                    class: "message_reaction reacted",
-                    count: 1,
-                    emoji_alt_code: false,
-                    emoji_code: alice_8ball_event.emoji_code,
-                    emoji_name: alice_8ball_event.emoji_name,
-                    is_realm_emoji: false,
-                    label: "translated: You (click to remove) reacted with :8ball:",
-                    local_id: "unicode_emoji,1f3b1",
-                    reaction_type: alice_8ball_event.reaction_type,
+                    ...clean_reaction_object_alice,
                     user_ids: [],
                 },
-                message_id: alice_8ball_event.message_id,
+                message: {
+                    clean_reactions: new Map(
+                        Object.entries({
+                            "unicode_emoji,2708": clean_reaction_object_cali,
+                        }),
+                    ),
+                    id: alice_8ball_event.message_id,
+                },
                 user_id: alice_8ball_event.user_id,
             },
         ],
@@ -681,7 +704,7 @@ test("view.insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.view.insert_new_reaction(clean_reaction_object, message_id, alice.user_id);
+    reactions.view.insert_new_reaction(clean_reaction_object, {id: message_id}, alice.user_id);
     assert.ok(insert_called);
 });
 
@@ -730,7 +753,7 @@ test("view.insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
         insert_called = true;
     };
 
-    reactions.view.insert_new_reaction(clean_reaction_object, message_id, bob.user_id);
+    reactions.view.insert_new_reaction(clean_reaction_object, {id: message_id}, bob.user_id);
     assert.ok(insert_called);
 });
 
@@ -752,7 +775,7 @@ test("view.update_existing_reaction (me)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.view.update_existing_reaction(clean_reaction_object, message_id, alice.user_id);
+    reactions.view.update_existing_reaction(clean_reaction_object, {id: message_id}, alice.user_id);
 
     assert.equal($reaction_count.text(), "2");
     assert.ok($our_reaction.hasClass("reacted"));
@@ -780,7 +803,11 @@ test("view.update_existing_reaction (them)", () => {
     const $reaction_count = $.create("reaction-count-stub");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.view.update_existing_reaction(clean_reaction_object, message_id, alexus.user_id);
+    reactions.view.update_existing_reaction(
+        clean_reaction_object,
+        {id: message_id},
+        alexus.user_id,
+    );
 
     assert.equal($reaction_count.text(), "4");
     assert.ok(!$our_reaction.hasClass("reacted"));
@@ -809,7 +836,7 @@ test("view.remove_reaction (me)", () => {
     $our_reaction.addClass("reacted");
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
-    reactions.view.remove_reaction(clean_reaction_object, message_id, alice.user_id);
+    reactions.view.remove_reaction(clean_reaction_object, {id: message_id}, alice.user_id);
 
     assert.equal($reaction_count.text(), "2");
     assert.ok(!$our_reaction.hasClass("reacted"));
@@ -839,7 +866,7 @@ test("view.remove_reaction (them)", () => {
     $our_reaction.set_find_results(".message_reaction_count", $reaction_count);
 
     $our_reaction.addClass("reacted");
-    reactions.view.remove_reaction(clean_reaction_object, message_id, bob.user_id);
+    reactions.view.remove_reaction(clean_reaction_object, {id: message_id}, bob.user_id);
 
     assert.equal($reaction_count.text(), "1");
     assert.ok($our_reaction.hasClass("reacted"));
@@ -869,7 +896,7 @@ test("view.remove_reaction (last person)", () => {
     $our_reaction.remove = () => {
         removed = true;
     };
-    reactions.view.remove_reaction(clean_reaction_object, message_id, bob.user_id);
+    reactions.view.remove_reaction(clean_reaction_object, {id: message_id}, bob.user_id);
     assert.ok(removed);
 });
 

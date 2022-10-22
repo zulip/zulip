@@ -249,7 +249,7 @@ export function add_reaction(event) {
     if (clean_reaction_object) {
         clean_reaction_object.user_ids.push(user_id);
         update_user_fields(clean_reaction_object);
-        view.update_existing_reaction(clean_reaction_object, message_id, user_id);
+        view.update_existing_reaction(clean_reaction_object, message, user_id);
     } else {
         clean_reaction_object = make_clean_reaction({
             local_id,
@@ -260,16 +260,16 @@ export function add_reaction(event) {
         });
 
         message.clean_reactions.set(local_id, clean_reaction_object);
-        view.insert_new_reaction(clean_reaction_object, message_id, user_id);
+        view.insert_new_reaction(clean_reaction_object, message, user_id);
     }
 }
 
-view.update_existing_reaction = function (clean_reaction_object, message_id, acting_user_id) {
+view.update_existing_reaction = function (clean_reaction_object, message, acting_user_id) {
     // Our caller ensures that this message already has a reaction
     // for this emoji and sets up our user_list.  This function
     // simply updates the DOM.
     const local_id = get_local_reaction_id(clean_reaction_object);
-    const $reaction = find_reaction(message_id, local_id);
+    const $reaction = find_reaction(message.id, local_id);
 
     set_reaction_count($reaction, clean_reaction_object.user_ids.length);
 
@@ -284,13 +284,13 @@ view.update_existing_reaction = function (clean_reaction_object, message_id, act
     }
 };
 
-view.insert_new_reaction = function (clean_reaction_object, message_id, user_id) {
+view.insert_new_reaction = function (clean_reaction_object, message, user_id) {
     // Our caller ensures we are the first user to react to this
     // message with this emoji. We then render the emoji/title/count
     // and insert it before the add button.
 
     const context = {
-        message_id,
+        message_id: message.id,
         ...emoji.get_emoji_details_for_rendering(clean_reaction_object),
     };
 
@@ -315,7 +315,7 @@ view.insert_new_reaction = function (clean_reaction_object, message_id, user_id)
     const $new_reaction = $(render_message_reaction(context));
 
     // Now insert it before the add button.
-    const $reaction_button_element = get_add_reaction_button(message_id);
+    const $reaction_button_element = get_add_reaction_button(message.id);
     $new_reaction.insertBefore($reaction_button_element);
 };
 
@@ -351,12 +351,12 @@ export function remove_reaction(event) {
         message.clean_reactions.delete(local_id);
     }
 
-    view.remove_reaction(clean_reaction_object, message_id, user_id);
+    view.remove_reaction(clean_reaction_object, message, user_id);
 }
 
-view.remove_reaction = function (clean_reaction_object, message_id, user_id) {
+view.remove_reaction = function (clean_reaction_object, message, user_id) {
     const local_id = get_local_reaction_id(clean_reaction_object);
-    const $reaction = find_reaction(message_id, local_id);
+    const $reaction = find_reaction(message.id, local_id);
     const reaction_count = clean_reaction_object.user_ids.length;
 
     if (reaction_count === 0) {
