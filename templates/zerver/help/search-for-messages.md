@@ -30,7 +30,7 @@ Here is the **full list of search operators**.
 * `is:private`: Search all your private messages.
 * `pm-with:ada@zulip.com`: Search 1-on-1 private messages between you and Ada.
 * `sender:ada@zulip.com`: Search messages sent by Ada.
-* `sender:me`: Search sent messages.
+* `sender:me`: [Search messages you've sent](/help/view-messages-sent-by-a-user#view-messages-youve-sent).
 * `near:12345`: Show messages around the message with ID `12345`.
 * `id:12345`: Show only message `12345`.
 * `streams:public`: Search the history of all [public

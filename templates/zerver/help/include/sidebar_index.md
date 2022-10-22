@@ -83,6 +83,7 @@
 * [Emoji reactions](/help/emoji-reactions)
 * [Star a message](/help/star-a-message)
 * [View and browse images](/help/view-and-browse-images)
+* [View messages sent by a user](/help/view-messages-sent-by-a-user)
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View message Markdown source](/help/view-the-markdown-source-of-a-message)
