@@ -4,7 +4,12 @@ import render_loader from "../templates/loader.hbs";
 
 export function make_indicator(
     $outer_container: JQuery,
-    {abs_positioned = false, text}: {abs_positioned?: boolean; text?: string} = {},
+    {
+        abs_positioned = false,
+        text,
+        width,
+        height,
+    }: {abs_positioned?: boolean; text?: string; width?: number; height?: number} = {},
 ): void {
     let $container = $outer_container;
 
@@ -48,7 +53,16 @@ export function make_indicator(
 
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
-    $container.css({width: 38 + text_width, height: 0});
+    if (width !== undefined) {
+        $container.css({width: width + text_width});
+    } else {
+        $container.css({width: 38 + text_width});
+    }
+    if (height !== undefined) {
+        $container.css({height});
+    } else {
+        $container.css({height: 0});
+    }
 
     $outer_container.data("destroying", false);
 }

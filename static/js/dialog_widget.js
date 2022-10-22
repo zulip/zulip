@@ -56,7 +56,12 @@ export function show_dialog_spinner() {
     $("#dialog_widget_modal .modal__btn").prop("disabled", true);
 
     const $spinner = $("#dialog_widget_modal .modal__spinner");
-    loading.make_indicator($spinner);
+    const dialog_submit_button_span_width = $(".dialog_submit_button span").width();
+    const dialog_submit_button_span_height = $(".dialog_submit_button span").height();
+    loading.make_indicator($spinner, {
+        width: dialog_submit_button_span_width,
+        height: dialog_submit_button_span_height,
+    });
 }
 
 // Supports a callback to be called once the modal finishes closing.
