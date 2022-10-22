@@ -91,7 +91,7 @@ export function sort_users(user_ids) {
 }
 
 function get_num_unread(user_id) {
-    return unread.num_unread_for_person(user_id.toString());
+    return unread.num_unread_for_user_ids_string(user_id.toString());
 }
 
 export function user_last_seen_time_status(user_id) {

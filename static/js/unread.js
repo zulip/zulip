@@ -716,7 +716,7 @@ export function get_topics_with_unread_mentions(stream_id) {
     return unread_topic_counter.get_topics_with_unread_mentions(stream_id);
 }
 
-export function num_unread_for_person(user_ids_string) {
+export function num_unread_for_user_ids_string(user_ids_string) {
     return unread_pm_counter.num_unread(user_ids_string);
 }
 

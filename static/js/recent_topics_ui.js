@@ -302,7 +302,7 @@ export function process_messages(messages) {
 
 function message_to_conversation_unread_count(msg) {
     if (msg.type === "private") {
-        return unread.num_unread_for_person(msg.to_user_ids);
+        return unread.num_unread_for_user_ids_string(msg.to_user_ids);
     }
     return unread.num_unread_for_topic(msg.stream_id, msg.topic);
 }
