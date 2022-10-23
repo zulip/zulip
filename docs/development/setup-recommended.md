@@ -303,6 +303,8 @@ environment](#step-3-start-the-development-environment).
 
 ### Step 3: Start the development environment
 
+If you would like to see an abbreviated version of the following instructions, please see [Quick Start for Windows](#quick-start-for-windows) or [Quick Start for macOS and Linux](#quick-start-for-macos-and-linux).
+
 Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
@@ -317,7 +319,22 @@ cd zulip
 vagrant up --provider=docker
 ```
 
-The first time you run this command it will take some time because vagrant
+If you are using macOS, you may see something like this:
+```bash
+The provider 'docker' that was requested to back the machine
+'default' is reporting that it is not usable on this system.
+```
+This likely means that Docker is not currently running. You can manually open Docker before starting the development environment: 
+
+```bash
+# On macOS or Linux:
+open a- Docker
+cd zulip
+vagrant up --provider=docker
+```
+Alternatively, you can configure your [Docker settings](https://docs.docker.com/desktop/settings/mac/) to facilitate a quicker launch. 
+
+The first time you start the development environment it will take some time because vagrant
 does the following:
 
 - downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
@@ -424,6 +441,28 @@ should see something like:
 [04/May/2016 18:21:57]"GET /login HTTP/1.0" 301 0
 2016-05-04 18:21:57,819 INFO     127.0.0.1       GET     200 209ms (db: 7ms/2q) /login/ (unauth@zulip via ?)
 ```
+
+#### Quick Start for Windows
+```bash
+# Development Server Quick Start On Windows:
+cd zulip
+vagrant plugin install vagrant-vbguest
+vagrant up --provider=virtualbox
+vagrant ssh
+./tools/run-dev.py
+```
+Navigate to http://localhost:9991/ in the browser on your main machine.
+
+#### Quick Start for macOS and Linux
+Start Docker manually if it is not already running.
+```bash
+# Development Server Quick Start On macOS and Linux:
+cd zulip
+vagrant up --provider=docker
+vagrant ssh
+./tools/run-dev.py
+```
+Navigate to http://localhost:9991/ in the browser on your main machine.
 
 Now you're ready for [Step 4: Developing](#step-4-developing).
 
