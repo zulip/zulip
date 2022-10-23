@@ -1035,6 +1035,11 @@ export function change_focused_element($elt, input_key) {
                 return true;
         }
     } else if (is_table_focused()) {
+        // Don't process hotkeys in table if there are no rows.
+        if (!topics_widget || topics_widget.get_current_list().length === 0) {
+            return true;
+        }
+
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
