@@ -998,12 +998,6 @@ export function process_keydown(e) {
     return process_hotkey(e, hotkey);
 }
 
-$(document).on("keydown", (e) => {
-    if (process_keydown(e)) {
-        e.preventDefault();
-    }
-});
-
 export function process_keypress(e) {
     const hotkey = get_keypress_hotkey(e);
     if (!hotkey) {
@@ -1012,8 +1006,16 @@ export function process_keypress(e) {
     return process_hotkey(e, hotkey);
 }
 
-$(document).on("keypress", (e) => {
-    if (process_keypress(e)) {
-        e.preventDefault();
-    }
-});
+export function initialize() {
+    $(document).on("keydown", (e) => {
+        if (process_keydown(e)) {
+            e.preventDefault();
+        }
+    });
+
+    $(document).on("keypress", (e) => {
+        if (process_keypress(e)) {
+            e.preventDefault();
+        }
+    });
+}
