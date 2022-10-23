@@ -35,6 +35,7 @@ import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
 import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
+import * as hotkey from "./hotkey";
 import * as hotspots from "./hotspots";
 import * as i18n from "./i18n";
 import * as invite from "./invite";
@@ -689,6 +690,7 @@ export function initialize_everything() {
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
     message_edit_history.initialize();
+    hotkey.initialize();
 
     $("#app-loading").addClass("loaded");
 }
