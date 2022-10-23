@@ -10,6 +10,11 @@ import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
 export function populate_realm_domains_table(realm_domains) {
+    // Don't populate the table if the realm domains modal isn't open.
+    if ($("#realm_domains_modal").length === 0) {
+        return;
+    }
+
     const $realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     $realm_domains_table_body.find("tr").remove();
 
