@@ -99,7 +99,20 @@ the UI will be frozen as the approximate time you enabled this setting.
     You can also toggle this setting in the **Account & privacy**
     tab of your **Personal settings** menu.
 
+### Disable updating availability
+
+Zulip supports the privacy option of never updating the availability
+information for your account.  The result is that you will always
+appear to other users as **Offline** (or **Unavailable**, if you've
+set an appropriate status), regardless of your activity in Zulip.
+
+With this setting, your "Active" time displayed to other users in
+the UI will be frozen as the time you enabled this setting.
+
+{start_tabs}
+
 {tab|mobile}
+
 
 {!mobile-profile-menu.md!}
 
