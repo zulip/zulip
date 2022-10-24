@@ -3,7 +3,6 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
-import * as resize from "./resize";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
@@ -14,7 +13,6 @@ export function do_unread_count_updates(messages, expect_no_new_unreads = false)
         // The following operations are expensive, and thus should
         // only happen if we found any unread messages justifying it.
         unread_ui.update_unread_counts();
-        resize.resize_page_components();
     }
 }
 

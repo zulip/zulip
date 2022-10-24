@@ -24,7 +24,6 @@ import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics_ui from "./recent_topics_ui";
-import * as resize from "./resize";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
@@ -156,7 +155,6 @@ export function insert_new_messages(messages, sent_by_this_client) {
     if (any_untracked_unread_messages) {
         unread_ui.update_unread_counts();
     }
-    resize.resize_page_components();
 
     unread_ops.process_visible();
     notifications.received_messages(messages);
