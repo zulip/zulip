@@ -205,6 +205,19 @@ run_test("hash_interactions", ({override}) => {
         [floating_recipient_bar, "update"],
     ]);
 
+    // Test old "#recent_topics" hash redirects to "#recent".
+    recent_topics_ui_shown = false;
+    window.location.hash = "#recent_topics";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    assert.equal(recent_topics_ui_shown, true);
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+    ]);
+    assert.equal(window.location.hash, "#recent");
+
     window.location.hash = "#narrow/stream/Denmark";
 
     helper.clear_events();
