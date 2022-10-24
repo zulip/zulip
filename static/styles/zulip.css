@@ -188,6 +188,8 @@ p.n-margin {
 .all-messages-search-caution {
     border: 1px solid hsla(192, 19%, 75%, 0.2);
     box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
+    display: inline-flex;
+    justify-content: center;
 }
 
 .history-limited-box,
@@ -197,7 +199,7 @@ p.n-margin {
     min-height: 28px;
     font-size: 16px;
     margin: 0 auto 12px;
-    padding: 5px;
+    padding: 10px;
 
     i {
         margin: 0 3px 0 1px;
@@ -207,6 +209,15 @@ p.n-margin {
         margin: 0;
         padding: 4px;
     }
+}
+
+.all-messages-search-caution[style*='block'] {
+    box-sizing: border-box;
+    width: 100%;
+    display: inline-flex !important;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .bottom-messages-logo {
