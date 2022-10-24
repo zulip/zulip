@@ -93,16 +93,26 @@ run_test("get_editability", ({override}) => {
     page_params.is_admin = false;
     message.timestamp = current_timestamp - 60;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+});
 
-    // Test `message_edit.is_topic_editable()`
-    assert.equal(message_edit.is_topic_editable(message), true);
+run_test("is_topic_editable", ({override}) => {
+    const now = new Date();
+    const current_timestamp = now / 1000;
 
-    message.sent_by_me = true;
-    override(settings_data, "user_can_edit_topic_of_any_message", () => false);
-    assert.equal(message_edit.is_topic_editable(message), true);
+    const message = {
+        sent_by_me: true,
+        locally_echoed: true,
+    };
+    page_params.realm_allow_message_editing = true;
 
-    message.sent_by_me = false;
     assert.equal(message_edit.is_topic_editable(message), false);
+
+    message.locally_echoed = false;
+    message.failed_request = true;
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    message.failed_request = false;
+    assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = false;
     page_params.is_admin = true;
@@ -113,6 +123,12 @@ run_test("get_editability", ({override}) => {
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.topic = "test topic";
+    override(settings_data, "user_can_edit_topic_of_any_message", () => false);
+    assert.equal(message_edit.is_topic_editable(message), false);
+
+    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    message.timestamp = current_timestamp - 60;
+
     override(settings_data, "user_can_edit_topic_of_any_message", () => true);
     assert.equal(message_edit.is_topic_editable(message), true);
 

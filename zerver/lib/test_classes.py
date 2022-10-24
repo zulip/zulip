@@ -1146,8 +1146,9 @@ Output:
     {count} queries expected, got {actual_count}.
     This is a performance-critical code path, where we check
     the number of database queries used in order to avoid accidental regressions.
-    If the new query is necessary, you should update this test,
-    and explain in the pull request why adding an additional query can't be avoided."""
+    If an unnecessary query was removed or the new query is necessary, you should
+    update this test, and explain what queries we added/removed in the pull request
+    and why any new queries can't be avoided."""
             )
 
     def assert_json_error_contains(
