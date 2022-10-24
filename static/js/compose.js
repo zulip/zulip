@@ -696,7 +696,6 @@ export function initialize() {
             $("#compose .preview_content"),
             content,
         );
-        resize.reset_compose_message_max_height();
     });
 
     $("#compose").on("click", ".undo_markdown_preview", (e) => {
