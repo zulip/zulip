@@ -514,7 +514,7 @@ test("mentions", () => {
     };
 
     const muted_direct_mention_message = {
-        id: 17,
+        id: 18,
         type: "stream",
         stream_id: muted_stream_id,
         topic: "lunch",
@@ -542,6 +542,7 @@ test("mentions", () => {
         mention_me_message.id,
         mention_all_message.id,
         muted_mention_all_message.id,
+        muted_direct_mention_message.id,
     ]);
     test_notifiable_count(counts.home_unread_messages, 3);
 

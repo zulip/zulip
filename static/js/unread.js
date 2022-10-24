@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -537,9 +538,34 @@ export function update_unread_topics(msg, event) {
     });
 }
 
-export function process_loaded_messages(messages) {
+export function process_loaded_messages(messages, expect_no_new_unreads = false) {
+    // Process a set of messages that we have full copies of from the
+    // server for whether any are unread but not tracked as such by
+    // our data structures. This can occur due to old_unreads_missing,
+    // changes in muting configuration, innocent races, or potentially bugs.
+    //
+    // Returns whether there were any new unread messages; in that
+    // case, the caller will need to trigger a rerender of UI
+    // displaying unread counts.
+
+    let any_untracked_unread_messages = false;
     for (const message of messages) {
         if (message.unread) {
+            if (unread_messages.has(message.id)) {
+                // If we're already tracking this message as unread, there's nothing to do.
+                continue;
+            }
+
+            if (expect_no_new_unreads && !page_params.unread_msgs.old_unreads_missing) {
+                // This may happen due to races, where someone narrows
+                // to a view and the message_fetch request returns
+                // before server_events system delivers the message to
+                // the client.
+                //
+                // For now, log it as a blueslip error so we can learn its prevalence.
+                blueslip.error("New unread discovered in process_loaded_messages.");
+            }
+
             const user_ids_string =
                 message.type === "private" ? people.pm_reply_user_string(message) : undefined;
 
@@ -553,8 +579,11 @@ export function process_loaded_messages(messages) {
                 unread: true,
                 user_ids_string,
             });
+            any_untracked_unread_messages = true;
         }
     }
+
+    return any_untracked_unread_messages;
 }
 
 export function process_unread_message(message) {
