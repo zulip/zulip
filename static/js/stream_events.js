@@ -1,10 +1,8 @@
 import $ from "jquery";
 
-import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import * as message_lists from "./message_lists";
-import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
@@ -17,6 +15,7 @@ import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as sub_store from "./sub_store";
+import * as unread_ui from "./unread_ui";
 
 // In theory, this function should apply the account-level defaults,
 // however, they are only called after a manual override, so
@@ -140,9 +139,9 @@ export function mark_subscribed(sub, subscribers, color) {
         message_lists.current.update_trailing_bookend();
     }
 
-    // Update unread counts as the new stream in sidebar might
-    // need its unread counts re-calculated
-    message_util.do_unread_count_updates(all_messages_data.all_messages());
+    // The new stream in sidebar might need its unread counts
+    // re-calculated.
+    unread_ui.update_unread_counts();
 
     stream_list.add_sidebar_row(sub);
     stream_list.update_subscribe_to_more_streams_link();
@@ -167,6 +166,10 @@ export function mark_unsubscribed(sub) {
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
         message_lists.current.update_trailing_bookend();
     }
+
+    // Unread messages in the now-unsubscribe stream need to be
+    // removed from global count totals.
+    unread_ui.update_unread_counts();
 
     stream_list.remove_sidebar_row(sub.stream_id);
     stream_list.update_subscribe_to_more_streams_link();
