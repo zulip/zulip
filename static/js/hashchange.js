@@ -181,6 +181,17 @@ function do_hashchange_normal(from_reload) {
             show_default_view();
             break;
         case "#recent_topics":
+            // The URL for Recent Conversations was changed from
+            // #recent_topics to #recent in 2022. Because pre-change
+            // Welcome Bot messages included links to this URL, we
+            // need to support the "#recent_topics" hash as an alias
+            // for #recent permanently. We show the view and then
+            // replace the current URL hash in a way designed to hide
+            // this detail in the browser's forward/back session history.
+            recent_topics_ui.show();
+            window.location.replace("#recent");
+            break;
+        case "#recent":
             recent_topics_ui.show();
             break;
         case "#all_messages":

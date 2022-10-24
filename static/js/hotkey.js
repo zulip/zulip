@@ -819,7 +819,7 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            browser_history.go_to_location("#recent_topics");
+            browser_history.go_to_location("#recent");
             return true;
         case "all_messages":
             browser_history.go_to_location("#all_messages");
