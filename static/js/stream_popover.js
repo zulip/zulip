@@ -25,7 +25,6 @@ import * as message_edit from "./message_edit";
 import * as muted_topics_ui from "./muted_topics_ui";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
-import * as resize from "./resize";
 import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
@@ -167,12 +166,8 @@ export function hide_drafts_popover() {
     }
 }
 
-// These are the only two functions that is really shared by the
-// two popovers, so we could split out topic stuff to
-// another module pretty easily.
 export function show_streamlist_sidebar() {
     $(".app-main .column-left").addClass("expanded");
-    resize.resize_page_components();
 }
 
 export function hide_streamlist_sidebar() {
