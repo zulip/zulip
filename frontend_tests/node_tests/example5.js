@@ -26,7 +26,6 @@ const message_util = mock_esm("../../static/js/message_util");
 const notifications = mock_esm("../../static/js/notifications");
 const pm_list = mock_esm("../../static/js/pm_list");
 const recent_topics_data = mock_esm("../../static/js/recent_topics_data");
-const resize = mock_esm("../../static/js/resize");
 const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const unread_ui = mock_esm("../../static/js/unread_ui");
@@ -94,7 +93,6 @@ run_test("insert_message", ({override}) => {
     helper.redirect(message_util, "add_new_messages");
     helper.redirect(notifications, "received_messages");
     helper.redirect(recent_topics_data, "process_message");
-    helper.redirect(resize, "resize_page_components");
     helper.redirect(stream_list, "update_streams_sidebar");
     helper.redirect(unread_ops, "process_visible");
     helper.redirect(unread_ui, "update_unread_counts");
@@ -112,7 +110,6 @@ run_test("insert_message", ({override}) => {
         [message_util, "add_new_messages_data"],
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
-        [resize, "resize_page_components"],
         [unread_ops, "process_visible"],
         [notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],
