@@ -1504,6 +1504,12 @@ td.pointer {
     visibility: visible !important;
     pointer-events: all !important;
     opacity: 1 !important;
+
+    i:focus {
+        /* Avoid displaying a focus outline outside the popover on the \vdots
+           icon when opened via the mouse. */
+        outline: 0 !important;
+    }
 }
 
 .has_actions_popover .info {
