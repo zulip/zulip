@@ -49,16 +49,9 @@ function process_result(data, opts) {
 
     messages = messages.map((message) => message_helper.process_new_message(message));
 
-    // In case any of the newly fetched messages are new, add them to
-    // our unread data structures.  It's important that this run even
-    // when fetching in a narrow, since we might return unread
-    // messages that aren't in the home view data set (e.g. on a muted
-    // stream).
-    //
-    // BUG: This code path calls pm_list.update_private_messages, even
-    // if there were no private messages (or even no new messages at
-    // all) in data.messages, which is a waste of resources.
-    message_util.do_unread_count_updates(messages);
+    // In some rare situations, we expect to discover new unread
+    // messages not tracked in unread.js during this fetching process.
+    message_util.do_unread_count_updates(messages, true);
 
     // If we're loading more messages into the home view, save them to
     // the all_messages_data as well, as the message_lists.home is

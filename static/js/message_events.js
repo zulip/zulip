@@ -116,7 +116,7 @@ function maybe_add_narrowed_messages(messages, msg_list, callback, attempt = 1) 
 export function insert_new_messages(messages, sent_by_this_client) {
     messages = messages.map((message) => message_helper.process_new_message(message));
 
-    unread.process_loaded_messages(messages);
+    const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     huddle_data.process_loaded_messages(messages);
 
     // all_messages_data is the data that we use to populate
@@ -153,7 +153,9 @@ export function insert_new_messages(messages, sent_by_this_client) {
         notifications.notify_local_mixes(messages, need_user_to_scroll);
     }
 
-    unread_ui.update_unread_counts();
+    if (any_untracked_unread_messages) {
+        unread_ui.update_unread_counts();
+    }
     resize.resize_page_components();
 
     unread_ops.process_visible();

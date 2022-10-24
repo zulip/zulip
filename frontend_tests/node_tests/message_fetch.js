@@ -7,6 +7,7 @@ const _ = require("lodash");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
@@ -267,6 +268,9 @@ run_test("initialize", () => {
     reset_lists();
 
     let home_loaded = false;
+    page_params.unread_msgs = {
+        old_unreads_missing: false,
+    };
 
     function home_view_loaded() {
         home_loaded = true;
@@ -351,6 +355,9 @@ run_test("loading_newer", () => {
 
     (function test_narrow() {
         const msg_list = simulate_narrow();
+        page_params.unread_msgs = {
+            old_unreads_missing: true,
+        };
 
         const data = {
             req: {
