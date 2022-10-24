@@ -814,11 +814,6 @@ export function show_userlist_sidebar() {
     resize.resize_page_components();
 }
 
-export function show_pm_list_sidebar() {
-    $(".app-main .column-left").addClass("expanded");
-    resize.resize_page_components();
-}
-
 let current_user_sidebar_user_id;
 let current_user_sidebar_popover;
 
