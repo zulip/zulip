@@ -11,21 +11,14 @@ const $ = require("../zjsunit/zjquery");
 const noop = () => {};
 
 const color_data = mock_esm("../../static/js/color_data");
-const message_util = mock_esm("../../static/js/message_util");
 const stream_color = mock_esm("../../static/js/stream_color");
 const stream_list = mock_esm("../../static/js/stream_list");
 const stream_muting = mock_esm("../../static/js/stream_muting");
 const stream_settings_ui = mock_esm("../../static/js/stream_settings_ui", {
     update_settings_for_subscribed: noop,
 });
+const unread_ui = mock_esm("../../static/js/unread_ui");
 
-mock_esm("../../static/js/all_messages_data", {
-    all_messages_data: {
-        all_messages() {
-            return ["msg"];
-        },
-    },
-});
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
 });
@@ -278,16 +271,14 @@ test("marked_subscribed (normal)", ({override}) => {
 
     narrow_to_frontend();
 
-    let args;
     let list_updated = false;
 
     const stream_list_stub = make_stub();
     const message_view_header_stub = make_stub();
-    const message_util_stub = make_stub();
 
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
-    override(message_util, "do_unread_count_updates", message_util_stub.f);
+    override(unread_ui, "update_unread_counts", noop);
     override(
         message_view_header,
         "maybe_rerender_title_area_for_stream",
@@ -299,10 +290,7 @@ test("marked_subscribed (normal)", ({override}) => {
 
     stream_events.mark_subscribed(sub, [], "blue");
 
-    args = message_util_stub.get_args("messages");
-    assert.deepEqual(args.messages, ["msg"]);
-
-    args = stream_list_stub.get_args("sub");
+    const args = stream_list_stub.get_args("sub");
     assert.equal(args.sub.stream_id, sub.stream_id);
     assert.equal(message_view_header_stub.num_calls, 1);
 
@@ -313,9 +301,9 @@ test("marked_subscribed (normal)", ({override}) => {
 });
 
 test("marked_subscribed (color)", ({override}) => {
-    override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(unread_ui, "update_unread_counts", noop);
 
     const sub = {
         subscribed: false,
@@ -349,9 +337,9 @@ test("marked_subscribed (emails)", ({override}) => {
 
     // Test assigning subscriber emails
     // narrow state is undefined
-    override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(unread_ui, "update_unread_counts", noop);
 
     const subs_stub = make_stub();
     override(stream_settings_ui, "update_settings_for_subscribed", subs_stub.f);
@@ -378,6 +366,7 @@ test("mark_unsubscribed (update_settings_for_unsubscribed)", ({override}) => {
     override(stream_settings_ui, "update_settings_for_unsubscribed", stub.f);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(unread_ui, "update_unread_counts", noop);
 
     stream_events.mark_unsubscribed(sub);
     const args = stub.get_args("sub");
@@ -400,6 +389,7 @@ test("mark_unsubscribed (render_title_area)", ({override}) => {
     override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
+    override(unread_ui, "update_unread_counts", noop);
 
     stream_events.mark_unsubscribed(sub);
 
