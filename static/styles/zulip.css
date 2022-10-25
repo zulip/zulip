@@ -188,8 +188,6 @@ p.n-margin {
 .all-messages-search-caution {
     border: 1px solid hsla(192, 19%, 75%, 0.2);
     box-shadow: 0 0 2px hsla(192, 19%, 75%, 0.2);
-    display: inline-flex;
-    justify-content: center;
 }
 
 .history-limited-box,
@@ -211,12 +209,12 @@ p.n-margin {
     }
 }
 
-.all-messages-search-caution[style*='block'] {
+.all-messages-search-caution[style*="block"] {
     box-sizing: border-box;
     width: 100%;
     display: inline-flex !important;
     justify-content: flex-start;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
 }
 

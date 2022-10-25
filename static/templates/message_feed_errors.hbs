@@ -10,20 +10,20 @@
     </p>
 </div>
 <div class="all-messages-search-caution hidden-for-spectators" hidden>
-        <i class="fa fa-exclamation-circle" aria-hidden="true"></i>  
-        <span>
-            {{#tr}}
-            End of results from your
-            <z-link>history</z-link>.
-            {{#*inline "z-link"}}<a href="/help/search-for-messages#searching-shared-history"
-            target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
-            &nbsp;
-            {{#tr}}
-            Consider <z-link>searching all public streams</z-link>.
-            {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
-        </span>
+    <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+    <span>
+        {{#tr}}
+        End of results from your
+        <z-link>history</z-link>.
+        {{#*inline "z-link"}}<a href="/help/search-for-messages#searching-shared-history"
+              target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+        &nbsp;
+        {{#tr}}
+        Consider <z-link>searching all public streams</z-link>.
+        {{#*inline "z-link"}}<a class="search-shared-history" href="">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </span>
 
 </div>
 <div class="empty_feed_notice_main"></div>
