@@ -508,7 +508,7 @@ test("get_items_for_users", () => {
     assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
         {
             faded: false,
-            href: "#narrow/pm-with/1001-self",
+            href: "#narrow/pm-with/1001-Human-Myself",
             is_current_user: true,
             name: "Human Myself",
             num_unread: 0,
@@ -520,7 +520,7 @@ test("get_items_for_users", () => {
         },
         {
             faded: false,
-            href: "#narrow/pm-with/1002-alice",
+            href: "#narrow/pm-with/1002-Alice-Smith",
             is_current_user: false,
             name: "Alice Smith",
             num_unread: 0,
@@ -532,7 +532,7 @@ test("get_items_for_users", () => {
         },
         {
             faded: false,
-            href: "#narrow/pm-with/1003-fred",
+            href: "#narrow/pm-with/1003-Fred-Flintstone",
             is_current_user: false,
             name: "Fred Flintstone",
             num_unread: 0,

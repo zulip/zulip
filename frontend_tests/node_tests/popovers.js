@@ -188,8 +188,8 @@ test_ui("sender_hover", ({override, mock_template}) => {
             user_circle_class: "user_circle_empty",
             user_last_seen_time_status:
                 "translated: Last active: translated: More than 2 weeks ago",
-            pm_with_url: "#narrow/pm-with/42-alice",
-            sent_by_uri: "#narrow/sender/42-alice",
+            pm_with_url: "#narrow/pm-with/42-Alice-Smith",
+            sent_by_uri: "#narrow/sender/42-Alice-Smith",
             private_message_class: "respond_personal_button",
             show_email: false,
             show_manage_menu: true,
