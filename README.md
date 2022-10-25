@@ -52,6 +52,8 @@ Come find us on the [development community chat](https://zulip.com/development-c
   recommend reading about Zulip's [unique
   approach](https://zulip.com/why-zulip/) to organizing conversations.
 
+  **Installing the development environment**.  Check out the [installation guide](https://zulip.readthedocs.io/en/latest/development/index.html) to install the development environment on your computer. The Zulip development environment can be installed on macOS, Windows, and Linux (Debian or Ubuntu recommended). You’ll need at least 2GB of available RAM.
+
 - **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
   images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
