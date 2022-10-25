@@ -212,10 +212,11 @@ p.n-margin {
 }
 
 .all-messages-search-caution[style*='block'] {
+    box-sizing: border-box;
+    width: 100%;
     display: inline-flex !important;
     justify-content: flex-start;
-    align-items: center;
-    width: 100%;
+    align-items: flex-start;
     gap: 10px;
 }
 
