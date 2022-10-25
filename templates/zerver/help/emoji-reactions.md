@@ -1,13 +1,16 @@
 # Emoji reactions
 
-Emoji reactions allow you to react to messages with fun little emoji. Any
-emoji can be used as a reaction, including
-[custom emoji](/help/custom-emoji). Reactions appear in little boxes
-underneath the message.
+Emoji reactions let you quickly respond to a message. For example, 👍 is
+commonly used to express agreement or confirm that you've [read the
+message](/help/read-receipts). Any emoji can be used as a reaction, including
+[custom emoji](/help/custom-emoji). Reactions appear at the bottom of the
+message.
 
-## Add a reaction
+## Add a new reaction
 
 {start_tabs}
+
+{tab|desktop-web}
 
 {!message-actions.md!}
 
@@ -22,22 +25,74 @@ underneath the message.
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji
    with your mouse.
 
+!!! tip ""
+    To add multiple reactions without closing the emoji picker, hold the
+    <kbd>Shift</kbd> key while selecting emoji.
+
+{tab|mobile}
+
+1. Long press on a message.
+
+1. Select **Add a reaction** in the menu that appears.
+
+1. Select an emoji. Type to search, or tap the emoji you'd like to use.
+
 {end_tabs}
 
-If someone has already added a reaction, you can just click or tap on it to
-second the reaction.
+## Add or remove an existing reaction
 
-If you'd like to add multiple reactions without closing the emoji
-picker, you can hold the `Shift` key while making selections.
+{start_tabs}
 
-## See who reacted to a message
+{tab|desktop-web}
 
-Hover over an emoji reaction on a message to see who reacted with that emoji.
+1. Click on an existing emoji reaction to add or remove your reaction.
 
-## Remove an emoji reaction
+!!! tip ""
+    To make it easy to see which reactions you have added, they are
+    highlighted in a different color.
 
-Reactions you've added have a tinted background. Click or tap on a reaction you
-added to remove it.
+{tab|mobile}
+
+1. Click on an existing emoji reaction to add or remove your reaction.
+
+!!! tip ""
+    Reactions you have added are highlighted in a different color.
+
+{end_tabs}
+
+
+## Viewing who reacted to a message
+
+For messages where few users have reacted, the names of users who have reacted
+are displayed directly on the message if the [option to do
+so](#toggle-whether-names-of-reacting-users-are-displayed) is enabled.
+
+### View who reacted to a message
+
+{start_tabs}
+
+{tab|desktop-web}
+
+1. Hover over an emoji reaction to see who reacted with that emoji.
+
+{tab|mobile}
+
+1. Long-press an emoji reaction to see who reacted with that emoji.
+
+{end_tabs}
+
+### Toggle whether names of reacting users are displayed
+
+{start_tabs}
+
+{tab|desktop-web}
+
+{settings_tab|display-settings}
+
+1. Under **Theme**, toggle **Display names of reacting users when few users have
+   reacted to a message**.
+
+{end_tabs}
 
 ## Related articles
 
