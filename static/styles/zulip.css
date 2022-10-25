@@ -216,7 +216,7 @@ p.n-margin {
     width: 100%;
     display: inline-flex !important;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
 }
 
