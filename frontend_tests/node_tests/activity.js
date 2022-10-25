@@ -383,7 +383,7 @@ test("first/prev/next", ({override, mock_template}) => {
                 rendered_alice = true;
                 assert.deepEqual(data, {
                     faded: true,
-                    href: "#narrow/pm-with/1-alice",
+                    href: "#narrow/pm-with/1-Alice-Smith",
                     is_current_user: false,
                     name: "Alice Smith",
                     num_unread: 0,
@@ -401,7 +401,7 @@ test("first/prev/next", ({override, mock_template}) => {
             case fred.user_id:
                 rendered_fred = true;
                 assert.deepEqual(data, {
-                    href: "#narrow/pm-with/2-fred",
+                    href: "#narrow/pm-with/2-Fred-Flintstone",
                     name: "Fred Flintstone",
                     user_id: fred.user_id,
                     is_current_user: false,
@@ -449,7 +449,7 @@ test("insert_one_user_into_empty_list", ({override, mock_template}) => {
     user_settings.user_list_style = 2;
     mock_template("presence_row.hbs", true, (data, html) => {
         assert.deepEqual(data, {
-            href: "#narrow/pm-with/1-alice",
+            href: "#narrow/pm-with/1-Alice-Smith",
             name: "Alice Smith",
             user_id: 1,
             is_current_user: false,

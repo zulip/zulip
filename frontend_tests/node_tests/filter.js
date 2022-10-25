@@ -1628,14 +1628,12 @@ test("navbar_helpers", () => {
     const redirect_edge_cases = [
         {
             operator: sender_me,
-            redirect_url_with_search:
-                "/#narrow/sender/" + me.user_id + "-" + parseOneAddress(me.email).local,
+            redirect_url_with_search: "/#narrow/sender/" + me.user_id + "-Me-Myself",
             is_common_narrow: false,
         },
         {
             operator: sender_joe,
-            redirect_url_with_search:
-                "/#narrow/sender/" + joe.user_id + "-" + parseOneAddress(joe.email).local,
+            redirect_url_with_search: "/#narrow/sender/" + joe.user_id + "-joe",
             is_common_narrow: false,
         },
     ];

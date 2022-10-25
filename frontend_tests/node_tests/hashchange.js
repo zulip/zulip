@@ -106,13 +106,13 @@ run_test("people_slugs", () => {
     people.add_active_user(alice);
     operators = [{operator: "sender", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
-    assert.equal(hash, "#narrow/sender/42-alice");
+    assert.equal(hash, "#narrow/sender/42-Alice-Smith");
     const narrow = hash_util.parse_narrow(hash.split("/"));
     assert.deepEqual(narrow, [{operator: "sender", operand: "alice@example.com", negated: false}]);
 
     operators = [{operator: "pm-with", operand: "alice@example.com"}];
     hash = hash_util.operators_to_hash(operators);
-    assert.equal(hash, "#narrow/pm-with/42-alice");
+    assert.equal(hash, "#narrow/pm-with/42-Alice-Smith");
 });
 
 function test_helper({override, change_tab}) {
