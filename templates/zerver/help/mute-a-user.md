@@ -45,7 +45,7 @@ have the following effects:
     Muting someone does not affect their Zulip experience in any way.
 
 
-[view-emoji-reactions]: /help/emoji-reactions#see-who-reacted-to-a-message
+[view-emoji-reactions]: /help/emoji-reactions#view-who-reacted-to-a-message
 
 ## Mute a user
 
