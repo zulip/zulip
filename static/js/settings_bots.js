@@ -19,6 +19,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as settings_users from "./settings_users";
 import * as ui_report from "./ui_report";
 import * as user_profile from "./user_profile";
 
@@ -539,13 +540,23 @@ export function set_up() {
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", (e) => {
         const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        e.stopPropagation();
+        e.preventDefault();
 
-        channel.post({
-            url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
-            error(xhr) {
-                bot_error(user_id, xhr);
-            },
-        });
+        function handle_confirm() {
+            channel.post({
+                url: "/json/users/" + encodeURIComponent(user_id) + "/reactivate",
+                success() {
+                    dialog_widget.close_modal();
+                },
+                error(xhr) {
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
+                    dialog_widget.hide_dialog_spinner();
+                },
+            });
+        }
+
+        settings_users.confirm_reactivation(user_id, handle_confirm, true);
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", (e) => {
