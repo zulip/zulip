@@ -934,13 +934,13 @@ class OpenAPIAttributesTest(ZulipTestCase):
                 for status_code, response in operation["responses"].items():
                     schema = response["content"]["application/json"]["schema"]
                     if "oneOf" in schema:
-                        for subschema_index, subschema in enumerate(schema["oneOf"]):
+                        for _, subschema in enumerate(schema["oneOf"]):
                             validate_schema(subschema)
                             assert validate_against_openapi_schema(
                                 subschema["example"],
                                 path,
                                 method,
-                                status_code + "_" + str(subschema_index),
+                                status_code,
                             )
                         continue
                     validate_schema(schema)
