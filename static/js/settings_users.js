@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_settings_deactivation_user_modal from "../templates/confirm_dialog/confirm_deactivate_user.hbs";
+import render_settings_reactivation_bot_modal from "../templates/confirm_dialog/confirm_reactivate_bot.hbs";
 import render_settings_reactivation_user_modal from "../templates/confirm_dialog/confirm_reactivate_user.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
@@ -524,7 +525,14 @@ export function confirm_reactivation(user_id, handle_confirm, loading_spinner) {
     const opts = {
         username: user.full_name,
     };
-    const html_body = render_settings_reactivation_user_modal(opts);
+
+    let html_body;
+    // check if bot or human
+    if (user.is_bot) {
+        html_body = render_settings_reactivation_bot_modal(opts);
+    } else {
+        html_body = render_settings_reactivation_user_modal(opts);
+    }
 
     confirm_dialog.launch({
         html_heading: $t_html({defaultMessage: "Reactivate {name}"}, {name: user.full_name}),
